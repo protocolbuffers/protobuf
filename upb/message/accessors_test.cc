@@ -38,8 +38,10 @@
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/string_view.h"
 #include "upb/collections/array.h"
+#include "upb/mini_table/common.h"
 #include "upb/mini_table/decode.h"
 #include "upb/mini_table/encode_internal.hpp"
+#include "upb/mini_table/field_internal.h"
 #include "upb/test/test.upb.h"
 #include "upb/upb.h"
 #include "upb/wire/decode.h"
@@ -327,7 +329,7 @@ TEST(GeneratedCode, RepeatedScalar) {
   // Test Get/Set Array values, validate with C API.
   EXPECT_EQ(0, len);
   EXPECT_EQ(NULL, arr);
-  EXPECT_EQ(NULL, upb_MiniTable_GetArray(msg, repeated_int32_field));
+  EXPECT_EQ(NULL, upb_Message_GetArray(msg, repeated_int32_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_resize_repeated_int32(
       msg, 10, arena);
   int32_t* mutable_values =
@@ -335,13 +337,13 @@ TEST(GeneratedCode, RepeatedScalar) {
           msg, &len);
   mutable_values[5] = 123;
   const upb_Array* readonly_arr =
-      upb_MiniTable_GetArray(msg, repeated_int32_field);
+      upb_Message_GetArray(msg, repeated_int32_field);
   EXPECT_EQ(123, upb_Array_Get(readonly_arr, 5).int32_val);
 
   upb_MessageValue new_value;
   new_value.int32_val = 567;
   upb_Array* mutable_array =
-      upb_MiniTable_GetMutableArray(msg, repeated_int32_field);
+      upb_Message_GetMutableArray(msg, repeated_int32_field);
   upb_Array_Set(mutable_array, 5, new_value);
   EXPECT_EQ(new_value.int32_val,
             protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(
@@ -580,6 +582,42 @@ upb_MiniTable* CreateMiniTableWithEmptySubTables(upb_Arena* arena) {
   return table;
 }
 
+// Create a minitable to mimic ModelWithMaps with unlinked subs
+// to lazily promote unknowns after parsing.
+upb_MiniTable* CreateMiniTableWithEmptySubTablesForMaps(upb_Arena* arena) {
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Int32, 1, 0);
+  e.PutField(kUpb_FieldType_Message, 3, kUpb_FieldModifier_IsRepeated);
+  e.PutField(kUpb_FieldType_Message, 4, kUpb_FieldModifier_IsRepeated);
+
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb_MiniTable* table =
+      upb_MiniTable_Build(e.data().data(), e.data().size(), arena, &status);
+  EXPECT_EQ(status.ok, true);
+  // Initialize sub table to null. Not using upb_MiniTable_SetSubMessage
+  // since it checks ->ext on parameter.
+  upb_MiniTableSub* sub = const_cast<upb_MiniTableSub*>(
+      &table->subs[table->fields[1].submsg_index]);
+  sub->submsg = nullptr;
+  sub = const_cast<upb_MiniTableSub*>(
+      &table->subs[table->fields[2].submsg_index]);
+  sub->submsg = nullptr;
+  return table;
+}
+
+upb_MiniTable* CreateMapEntryMiniTable(upb_Arena* arena) {
+  upb::MtDataEncoder e;
+  e.EncodeMap(kUpb_FieldType_String, kUpb_FieldType_String, 0, 0);
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb_MiniTable* table =
+      upb_MiniTable_Build(e.data().data(), e.data().size(), arena, &status);
+  EXPECT_EQ(status.ok, true);
+  return table;
+}
+
 TEST(GeneratedCode, PromoteUnknownMessage) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithSubMessages* input_msg =
@@ -619,6 +657,146 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
   EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
                 (upb_test_ModelWithExtensions*)promoted_message),
             12);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, PromoteUnknownRepeatedMessage) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithSubMessages* input_msg =
+      upb_test_ModelWithSubMessages_new(arena);
+  upb_test_ModelWithSubMessages_set_id(input_msg, 123);
+
+  // Add 2 repeated messages to input_msg.
+  upb_test_ModelWithExtensions* item =
+      upb_test_ModelWithSubMessages_add_items(input_msg, arena);
+  upb_test_ModelWithExtensions_set_random_int32(item, 5);
+  item = upb_test_ModelWithSubMessages_add_items(input_msg, arena);
+  upb_test_ModelWithExtensions_set_random_int32(item, 6);
+
+  size_t serialized_size;
+  char* serialized = upb_test_ModelWithSubMessages_serialize(input_msg, arena,
+                                                             &serialized_size);
+
+  upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTables(arena);
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
+  upb_DecodeStatus decode_status = upb_Decode(serialized, serialized_size, msg,
+                                              mini_table, nullptr, 0, arena);
+  EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+  int32_t val = upb_Message_GetInt32(
+      msg, upb_MiniTable_FindFieldByNumber(mini_table, 4), 0);
+  EXPECT_EQ(val, 123);
+
+  // Check that we have repeated field data in an unknown.
+  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 6);
+  EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
+
+  // Update mini table and promote unknown to a message.
+  upb_MiniTable_SetSubMessage(mini_table,
+                              (upb_MiniTableField*)&mini_table->fields[2],
+                              &upb_test_ModelWithExtensions_msg_init);
+  const int decode_options =
+      UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
+  upb_UnknownToMessage_Status promote_result =
+      upb_MiniTable_PromoteUnknownToMessageArray(
+          msg, &mini_table->fields[2], &upb_test_ModelWithExtensions_msg_init,
+          decode_options, arena);
+  EXPECT_EQ(promote_result, kUpb_UnknownToMessage_Ok);
+
+  upb_Array* array = upb_Message_GetMutableArray(msg, &mini_table->fields[2]);
+  const upb_Message* promoted_message = upb_Array_Get(array, 0).msg_val;
+  EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
+                (upb_test_ModelWithExtensions*)promoted_message),
+            5);
+  promoted_message = upb_Array_Get(array, 1).msg_val;
+  EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
+                (upb_test_ModelWithExtensions*)promoted_message),
+            6);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, PromoteUnknownToMap) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithMaps* input_msg = upb_test_ModelWithMaps_new(arena);
+  upb_test_ModelWithMaps_set_id(input_msg, 123);
+
+  // Add 2 map entries.
+  upb_test_ModelWithMaps_map_ss_set(input_msg,
+                                    upb_StringView_FromString("key1"),
+                                    upb_StringView_FromString("value1"), arena);
+  upb_test_ModelWithMaps_map_ss_set(input_msg,
+                                    upb_StringView_FromString("key2"),
+                                    upb_StringView_FromString("value2"), arena);
+
+  size_t serialized_size;
+  char* serialized =
+      upb_test_ModelWithMaps_serialize(input_msg, arena, &serialized_size);
+
+  upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTablesForMaps(arena);
+  upb_MiniTable* map_entry_mini_table = CreateMapEntryMiniTable(arena);
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
+  upb_DecodeStatus decode_status = upb_Decode(serialized, serialized_size, msg,
+                                              mini_table, nullptr, 0, arena);
+  EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+  int32_t val = upb_Message_GetInt32(
+      msg, upb_MiniTable_FindFieldByNumber(mini_table, 1), 0);
+  EXPECT_EQ(val, 123);
+
+  // Check that we have map data in an unknown.
+  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 3);
+  EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
+
+  // Update mini table and promote unknown to a message.
+  upb_MiniTable_SetSubMessage(mini_table,
+                              (upb_MiniTableField*)&mini_table->fields[1],
+                              map_entry_mini_table);
+  const int decode_options =
+      UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
+  upb_UnknownToMessage_Status promote_result =
+      upb_MiniTable_PromoteUnknownToMap(msg, mini_table, &mini_table->fields[1],
+                                        decode_options, arena);
+  EXPECT_EQ(promote_result, kUpb_UnknownToMessage_Ok);
+
+  upb_Map* map = upb_MiniTable_GetMutableMap(msg, map_entry_mini_table,
+                                             &mini_table->fields[1], arena);
+  EXPECT_NE(map, nullptr);
+  // Lookup in map.
+  upb_MessageValue key;
+  key.str_val = upb_StringView_FromString("key2");
+  upb_MessageValue value;
+  EXPECT_TRUE(upb_Map_Get(map, key, &value));
+  EXPECT_EQ(0, strncmp(value.str_val.data, "value2", 5));
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, EnumClosedCheck) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Int32, 4, 0);
+  e.PutField(kUpb_FieldType_Enum, 5, 0);
+
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb_MiniTable* table =
+      upb_MiniTable_Build(e.data().data(), e.data().size(), arena, &status);
+
+  const upb_MiniTableField* enumField = &table->fields[1];
+  EXPECT_EQ(upb_MiniTableField_Type(enumField), kUpb_FieldType_Enum);
+  EXPECT_FALSE(upb_MiniTableField_IsClosedEnum(enumField));
+
+  upb::MtDataEncoder e2;
+  e2.StartMessage(0);
+  e2.PutField(kUpb_FieldType_Int32, 4, 0);
+  e2.PutField(kUpb_FieldType_Enum, 6, kUpb_FieldModifier_IsClosedEnum);
+
+  upb_Status_Clear(&status);
+  table =
+      upb_MiniTable_Build(e2.data().data(), e2.data().size(), arena, &status);
+
+  const upb_MiniTableField* closedEnumField = &table->fields[1];
+  EXPECT_EQ(upb_MiniTableField_Type(closedEnumField), kUpb_FieldType_Enum);
+  EXPECT_TRUE(upb_MiniTableField_IsClosedEnum(closedEnumField));
   upb_Arena_Free(arena);
 }
 

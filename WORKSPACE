@@ -84,7 +84,7 @@ system_python(
 load("@system_python//:register.bzl", "register_system_python")
 register_system_python()
 
-load("@system_python//:pip.bzl", "pip_parse", "fuzzing_py_install_deps")
+load("@system_python//:pip.bzl", "pip_parse")
 
 pip_parse(
     name="pip_deps",
@@ -97,4 +97,5 @@ pip_parse(
 load("@pip_deps//:requirements.bzl", "install_deps")
 install_deps()
 
+load("@system_python//:fuzzing_py.bzl", "fuzzing_py_install_deps")
 fuzzing_py_install_deps()

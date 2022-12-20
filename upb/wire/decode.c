@@ -34,6 +34,7 @@
 #include "upb/mini_table/enum_internal.h"
 #include "upb/wire/common_internal.h"
 #include "upb/wire/decode_internal.h"
+#include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/swap_internal.h"
 #include "upb/wire/types.h"
 
@@ -94,6 +95,7 @@ const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, int status) {
   UPB_LONGJMP(d->err, status);
   return NULL;
 }
+
 static void _upb_Decoder_VerifyUtf8(upb_Decoder* d, const char* buf, int len) {
   if (!_upb_Decoder_VerifyUtf8Inline(buf, len)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_BadUtf8);
@@ -169,7 +171,8 @@ static const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
                                           uint32_t* size) {
   uint64_t size64;
   ptr = _upb_Decoder_DecodeVarint(d, ptr, &size64);
-  if (size64 >= INT32_MAX || ptr - d->end + (int)size64 > d->limit) {
+  if (size64 >= INT32_MAX ||
+      !upb_EpsCopyInputStream_CheckSize(&d->input, ptr, (int)size64)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
   }
   *size = size64;
@@ -216,15 +219,6 @@ static upb_Message* _upb_Decoder_NewSubMessage(
   return msg;
 }
 
-UPB_NOINLINE
-const char* _upb_Decoder_IsDoneFallback(upb_Decoder* d, const char* ptr,
-                                        int overrun) {
-  int status;
-  ptr = _upb_Decoder_IsDoneFallbackInline(d, ptr, overrun, &status);
-  if (ptr == NULL) _upb_Decoder_ErrorJmp(d, status);
-  return ptr;
-}
-
 static const char* _upb_Decoder_ReadString(upb_Decoder* d, const char* ptr,
                                            int size, upb_StringView* str) {
   if (d->options & kUpb_DecodeOption_AliasString) {
@@ -260,11 +254,11 @@ UPB_FORCEINLINE
 static const char* _upb_Decoder_DecodeSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field, int size) {
-  int saved_delta = _upb_Decoder_PushLimit(d, ptr, size);
+  int saved_delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, size);
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
   UPB_ASSERT(subl);
   ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, DECODE_NOGROUP);
-  _upb_Decoder_PopLimit(d, ptr, saved_delta);
+  upb_EpsCopyInputStream_PopLimit(&d->input, ptr, saved_delta);
   return ptr;
 }
 
@@ -411,7 +405,7 @@ static const char* _upb_Decoder_DecodeVarintPacked(
     upb_Decoder* d, const char* ptr, upb_Array* arr, wireval* val,
     const upb_MiniTableField* field, int lg2) {
   int scale = 1 << lg2;
-  int saved_limit = _upb_Decoder_PushLimit(d, ptr, val->size);
+  int saved_limit = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
   char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size << lg2, void);
   while (!_upb_Decoder_IsDone(d, &ptr)) {
     wireval elem;
@@ -424,7 +418,7 @@ static const char* _upb_Decoder_DecodeVarintPacked(
     memcpy(out, &elem, scale);
     out += scale;
   }
-  _upb_Decoder_PopLimit(d, ptr, saved_limit);
+  upb_EpsCopyInputStream_PopLimit(&d->input, ptr, saved_limit);
   return ptr;
 }
 
@@ -434,7 +428,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     const upb_MiniTableSub* subs, const upb_MiniTableField* field,
     wireval* val) {
   const upb_MiniTableEnum* e = subs[field->submsg_index].subenum;
-  int saved_limit = _upb_Decoder_PushLimit(d, ptr, val->size);
+  int saved_limit = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
   char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
   while (!_upb_Decoder_IsDone(d, &ptr)) {
     wireval elem;
@@ -450,7 +444,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     memcpy(out, &elem, 4);
     out += 4;
   }
-  _upb_Decoder_PopLimit(d, ptr, saved_limit);
+  upb_EpsCopyInputStream_PopLimit(&d->input, ptr, saved_limit);
   return ptr;
 }
 
@@ -1198,7 +1192,7 @@ static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
     d->debug_tagstart = ptr;
 #endif
 
-    UPB_ASSERT(ptr < d->limit_ptr);
+    UPB_ASSERT(ptr < d->input.limit_ptr);
     ptr = _upb_Decoder_DecodeTag(d, ptr, &tag);
     field_number = tag >> 3;
     wire_type = tag & 7;
@@ -1256,6 +1250,13 @@ static upb_DecodeStatus _upb_Decoder_DecodeTop(struct upb_Decoder* d,
   return kUpb_DecodeStatus_Ok;
 }
 
+UPB_NOINLINE
+const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
+                                        const char* ptr, int overrun) {
+  return _upb_EpsCopyInputStream_IsDoneFallbackInline(
+      e, ptr, overrun, _upb_Decoder_BufferFlipCallback);
+}
+
 upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
                             const upb_MiniTable* l,
                             const upb_ExtensionRegistry* extreg, int options,
@@ -1263,20 +1264,11 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
   upb_Decoder state;
   unsigned depth = (unsigned)options >> 16;
 
-  if (size <= 16) {
-    memset(&state.patch, 0, 32);
-    if (size) memcpy(&state.patch, buf, size);
-    buf = state.patch;
-    state.end = buf + size;
-    state.limit = 0;
+  if (upb_EpsCopyInputStream_Init(&state.input, &buf, size)) {
     options &= ~kUpb_DecodeOption_AliasString;  // Can't alias patch buf.
-  } else {
-    state.end = buf + size - 16;
-    state.limit = 16;
   }
 
   state.extreg = extreg;
-  state.limit_ptr = state.end;
   state.unknown = NULL;
   state.depth = depth ? depth : 64;
   state.end_group = DECODE_NOGROUP;

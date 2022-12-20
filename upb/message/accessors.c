@@ -27,7 +27,9 @@
 
 #include "upb/message/accessors.h"
 
+#include "upb/collections/array.h"
 #include "upb/collections/array_internal.h"
+#include "upb/collections/map.h"
 #include "upb/message/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
@@ -35,31 +37,6 @@
 
 // Must be last.
 #include "upb/port/def.inc"
-
-static size_t _upb_MiniTableField_Size(const upb_MiniTableField* f) {
-  static unsigned char sizes[] = {
-      0,                      /* 0 */
-      8,                      /* kUpb_FieldType_Double */
-      4,                      /* kUpb_FieldType_Float */
-      8,                      /* kUpb_FieldType_Int64 */
-      8,                      /* kUpb_FieldType_UInt64 */
-      4,                      /* kUpb_FieldType_Int32 */
-      8,                      /* kUpb_FieldType_Fixed64 */
-      4,                      /* kUpb_FieldType_Fixed32 */
-      1,                      /* kUpb_FieldType_Bool */
-      sizeof(upb_StringView), /* kUpb_FieldType_String */
-      sizeof(void*),          /* kUpb_FieldType_Group */
-      sizeof(void*),          /* kUpb_FieldType_Message */
-      sizeof(upb_StringView), /* kUpb_FieldType_Bytes */
-      4,                      /* kUpb_FieldType_UInt32 */
-      4,                      /* kUpb_FieldType_Enum */
-      4,                      /* kUpb_FieldType_SFixed32 */
-      8,                      /* kUpb_FieldType_SFixed64 */
-      4,                      /* kUpb_FieldType_SInt32 */
-      8,                      /* kUpb_FieldType_SInt64 */
-  };
-  return upb_IsRepeatedOrMap(f) ? sizeof(void*) : sizes[f->descriptortype];
-}
 
 // Maps descriptor type to elem_size_lg2.
 static int _upb_MiniTableField_CTypeLg2Size(const upb_MiniTableField* f) {
@@ -87,9 +64,8 @@ static int _upb_MiniTableField_CTypeLg2Size(const upb_MiniTableField* f) {
   return sizes[f->descriptortype];
 }
 
-void* upb_MiniTable_ResizeArray(upb_Message* msg,
-                                const upb_MiniTableField* field, size_t len,
-                                upb_Arena* arena) {
+void* upb_Message_ResizeArray(upb_Message* msg, const upb_MiniTableField* field,
+                              size_t len, upb_Arena* arena) {
   return _upb_Array_Resize_accessor2(
       msg, field->offset, len, _upb_MiniTableField_CTypeLg2Size(field), arena);
 }
@@ -391,6 +367,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   upb_Message* message = NULL;
   // Callers should check that message is not set first before calling
   // PromotoUnknownToMessage.
+  UPB_ASSERT(mini_table->subs[field->submsg_index].submsg == sub_mini_table);
   UPB_ASSERT(upb_MiniTable_GetMessage(msg, field, NULL) == NULL);
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;
@@ -434,7 +411,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
     upb_Message* msg, const upb_MiniTableField* field,
     const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena) {
-  upb_Array* repeated_messages = upb_MiniTable_GetMutableArray(msg, field);
+  upb_Array* repeated_messages = upb_Message_GetMutableArray(msg, field);
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
   do {
@@ -446,6 +423,11 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
       if (ret.status == kUpb_UnknownToMessage_Ok) {
         upb_MessageValue value;
         value.msg_val = ret.message;
+        // Allocate array on demand before append.
+        if (!repeated_messages) {
+          upb_Message_ResizeArray(msg, field, 0, arena);
+          repeated_messages = upb_Message_GetMutableArray(msg, field);
+        }
         if (!upb_Array_Append(repeated_messages, value, arena)) {
           return kUpb_UnknownToMessage_OutOfMemory;
         }
@@ -455,5 +437,66 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
       }
     }
   } while (unknown.status == kUpb_FindUnknown_Ok);
+  return kUpb_UnknownToMessage_Ok;
+}
+
+upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
+                                               const upb_MiniTable* mini_table,
+                                               const upb_MiniTableField* field,
+                                               upb_Message* map_entry_message,
+                                               upb_Arena* arena) {
+  const upb_MiniTable* map_entry_mini_table =
+      mini_table->subs[field->submsg_index].submsg;
+  UPB_ASSERT(map_entry_mini_table);
+  UPB_ASSERT(map_entry_mini_table->field_count == 2);
+  const upb_MiniTableField* map_entry_key_field =
+      &map_entry_mini_table->fields[0];
+  const upb_MiniTableField* map_entry_value_field =
+      &map_entry_mini_table->fields[1];
+  // Map key/value cannot have explicit defaults,
+  // hence assuming a zero default is valid.
+  upb_MessageValue default_val;
+  memset(&default_val, 0, sizeof(upb_MessageValue));
+  upb_MessageValue map_entry_key;
+  upb_MessageValue map_entry_value;
+  _upb_Message_GetField(map_entry_message, map_entry_key_field, &default_val,
+                        &map_entry_key);
+  _upb_Message_GetField(map_entry_message, map_entry_value_field, &default_val,
+                        &map_entry_value);
+  return upb_Map_Insert(map, map_entry_key, map_entry_value, arena);
+}
+
+// Moves repeated messages in unknowns to a upb_Map.
+upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
+    upb_Message* msg, const upb_MiniTable* mini_table,
+    const upb_MiniTableField* field, int decode_options, upb_Arena* arena) {
+  const upb_MiniTable* map_entry_mini_table =
+      mini_table->subs[field->submsg_index].submsg;
+  UPB_ASSERT(map_entry_mini_table);
+  UPB_ASSERT(map_entry_mini_table);
+  UPB_ASSERT(map_entry_mini_table->field_count == 2);
+  UPB_ASSERT(upb_FieldMode_Get(field) == kUpb_FieldMode_Map);
+  // Find all unknowns with given field number and parse.
+  upb_FindUnknownRet unknown;
+  while (1) {
+    unknown = upb_MiniTable_FindUnknown(msg, field->number);
+    if (unknown.status != kUpb_FindUnknown_Ok) break;
+    upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
+        unknown.ptr, unknown.len, map_entry_mini_table,
+        /* base_message= */ NULL, decode_options, arena);
+    if (ret.status != kUpb_UnknownToMessage_Ok) return ret.status;
+    // Allocate map on demand before append.
+    upb_Map* map =
+        upb_MiniTable_GetMutableMap(msg, map_entry_mini_table, field, arena);
+    upb_Message* map_entry_message = ret.message;
+    upb_MapInsertStatus insert_status = upb_Message_InsertMapEntry(
+        map, mini_table, field, map_entry_message, arena);
+    if (insert_status == kUpb_MapInsertStatus_OutOfMemory) {
+      return kUpb_UnknownToMessage_OutOfMemory;
+    }
+    UPB_ASSUME(insert_status == kUpb_MapInsertStatus_Inserted ||
+               insert_status == kUpb_MapInsertStatus_Replaced);
+    upb_Message_DeleteUnknown(msg, unknown.ptr, unknown.len);
+  }
   return kUpb_UnknownToMessage_Ok;
 }

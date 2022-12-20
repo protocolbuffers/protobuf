@@ -139,20 +139,7 @@ UPB_INLINE void _upb_sethas_field(const upb_Message* msg,
   _upb_sethas(msg, _upb_Message_Hasidx(f));
 }
 
-UPB_INLINE void _upb_clearhas_field(const upb_Message* msg,
-                                    const upb_MiniTableField* f) {
-  _upb_clearhas(msg, _upb_Message_Hasidx(f));
-}
-
 // Oneof case access ///////////////////////////////////////////////////////////
-
-UPB_INLINE uint32_t* _upb_oneofcase(upb_Message* msg, size_t case_ofs) {
-  return UPB_PTR_AT(msg, case_ofs, uint32_t);
-}
-
-UPB_INLINE uint32_t _upb_getoneofcase(const void* msg, size_t case_ofs) {
-  return *UPB_PTR_AT(msg, case_ofs, uint32_t);
-}
 
 UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTableField* f) {
   UPB_ASSERT(f->presence < 0);
@@ -161,16 +148,12 @@ UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTableField* f) {
 
 UPB_INLINE uint32_t* _upb_oneofcase_field(upb_Message* msg,
                                           const upb_MiniTableField* f) {
-  return _upb_oneofcase(msg, _upb_oneofcase_ofs(f));
+  return UPB_PTR_AT(msg, _upb_oneofcase_ofs(f), uint32_t);
 }
 
 UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
                                             const upb_MiniTableField* f) {
-  return _upb_getoneofcase(msg, _upb_oneofcase_ofs(f));
-}
-
-UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_Message* msg, size_t ofs) {
-  return *UPB_PTR_AT(msg, ofs, const upb_Message*) != NULL;
+  return *_upb_oneofcase_field((upb_Message*)msg, f);
 }
 
 // LINT.ThenChange(GoogleInternalName2)

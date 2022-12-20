@@ -28,7 +28,10 @@
 #ifndef UPB_MESSAGE_ACCESSORS_H_
 #define UPB_MESSAGE_ACCESSORS_H_
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/collections/array.h"
+#include "upb/collections/map.h"
+#include "upb/collections/map_internal.h"
 #include "upb/message/extension_internal.h"
 #include "upb/message/internal.h"
 #include "upb/mini_table/common.h"
@@ -109,7 +112,7 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
 // we are left with ideal code.  This can happen either through through
 // literals or UPB_ASSUME():
 //
-//   // Via string literals.
+//   // Via struct literals.
 //   bool FooMessage_set_bool_field(const upb_Message* msg, bool val) {
 //     const upb_MiniTableField field = {1, 0, 0, /* etc... */};
 //     // All value in "field" are compile-time known.
@@ -129,7 +132,7 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
 // As a result, we can use these universal getters/setters for *all* message
 // accessors: generated code, MiniTable accessors, and reflection.  The only
 // exception is the binary encoder/decoder, which need to be a bit more clever
-// about how the read/write the message data, for efficiency.
+// about how they read/write the message data, for efficiency.
 //
 // These functions work on both extensions and non-extensions. If the field
 // of a setter is known to be a non-extension, the arena may be NULL and the
@@ -237,7 +240,7 @@ UPB_INLINE void _upb_Message_ClearExtensionField(
 UPB_INLINE void _upb_Message_ClearNonExtensionField(
     upb_Message* msg, const upb_MiniTableField* field) {
   if (field->presence > 0) {
-    _upb_clearhas_field(msg, field);
+    _upb_clearhas(msg, _upb_Message_Hasidx(field));
   } else if (_upb_MiniTableField_InOneOf(field)) {
     uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
     if (*oneof_case != field->number) return;
@@ -268,6 +271,12 @@ UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
   } else {
     return _upb_Message_HasNonExtensionField(msg, field);
   }
+}
+
+UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
+    const upb_Message* message, const upb_MiniTableField* oneof_field) {
+  UPB_ASSUME(_upb_MiniTableField_InOneOf(oneof_field));
+  return _upb_getoneofcase_field(message, oneof_field);
 }
 
 UPB_API_INLINE bool upb_Message_GetBool(const upb_Message* msg,
@@ -499,7 +508,7 @@ UPB_API_INLINE upb_Message* upb_MiniTable_GetMutableMessage(
   return sub_message;
 }
 
-UPB_API_INLINE const upb_Array* upb_MiniTable_GetArray(
+UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const upb_Message* msg, const upb_MiniTableField* field) {
   const upb_Array* ret;
   const upb_Array* default_val = NULL;
@@ -507,14 +516,60 @@ UPB_API_INLINE const upb_Array* upb_MiniTable_GetArray(
   return ret;
 }
 
-UPB_API_INLINE upb_Array* upb_MiniTable_GetMutableArray(
+UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
     upb_Message* msg, const upb_MiniTableField* field) {
-  return (upb_Array*)upb_MiniTable_GetArray(msg, field);
+  return (upb_Array*)upb_Message_GetArray(msg, field);
 }
 
-void* upb_MiniTable_ResizeArray(upb_Message* msg,
-                                const upb_MiniTableField* field, size_t len,
-                                upb_Arena* arena);
+UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
+    upb_Message* msg, const upb_MiniTableField* field, upb_CType ctype,
+    upb_Arena* arena) {
+  upb_Array* array = upb_Message_GetMutableArray(msg, field);
+  if (!array) {
+    array = upb_Array_New(arena, ctype);
+    _upb_Message_SetField(msg, field, &array, arena);
+  }
+  return array;
+}
+
+void* upb_Message_ResizeArray(upb_Message* msg, const upb_MiniTableField* field,
+                              size_t len, upb_Arena* arena);
+
+UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
+    const upb_MiniTableField* field) {
+  return field->descriptortype == kUpb_FieldType_Enum;
+}
+
+UPB_API_INLINE upb_Map* upb_MiniTable_GetMutableMap(
+    upb_Message* msg, const upb_MiniTable* map_entry_mini_table,
+    const upb_MiniTableField* field, upb_Arena* arena) {
+  UPB_ASSERT(map_entry_mini_table != NULL);
+  UPB_ASSUME(upb_IsRepeatedOrMap(field));
+  upb_Map* map = NULL;
+  upb_Map* default_map_value = NULL;
+  _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
+  if (!map) {
+    // Allocate map.
+    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
+               field->descriptortype == kUpb_FieldType_Group);
+    const upb_MiniTableField* map_entry_key_field =
+        &map_entry_mini_table->fields[0];
+    const upb_MiniTableField* map_entry_value_field =
+        &map_entry_mini_table->fields[1];
+    map = upb_Map_New(arena, upb_MiniTableField_CType(map_entry_key_field),
+                      upb_MiniTableField_CType(map_entry_value_field));
+    _upb_Message_SetNonExtensionField(msg, field, &map);
+  }
+  return map;
+}
+
+// Updates a map entry given an entry message.
+upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
+                                               const upb_MiniTable* mini_table,
+                                               const upb_MiniTableField* field,
+                                               upb_Message* map_entry_message,
+                                               upb_Arena* arena);
+
 typedef enum {
   kUpb_GetExtension_Ok,
   kUpb_GetExtension_NotPresent,
@@ -596,6 +651,15 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
     upb_Message* msg, const upb_MiniTableField* field,
     const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena);
+
+// Promotes all unknown data that matches field tag id to upb_Map.
+//
+// The unknown data is removed from message after upb_Map is populated.
+// Since repeated messages can't be packed we remove each unknown that
+// contains the target tag id.
+upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
+    upb_Message* msg, const upb_MiniTable* mini_table,
+    const upb_MiniTableField* field, int decode_options, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

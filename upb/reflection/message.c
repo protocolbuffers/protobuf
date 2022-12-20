@@ -57,7 +57,7 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
     return upb_Message_HasFieldByDef(msg, f) ? f : NULL;
   } else {
     const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
-    uint32_t oneof_case = _upb_getoneofcase_field(msg, field);
+    uint32_t oneof_case = upb_Message_WhichOneofFieldNumber(msg, field);
     f = oneof_case ? upb_OneofDef_LookupNumber(o, oneof_case) : NULL;
     UPB_ASSERT((f != NULL) == (oneof_case != 0));
     return f;

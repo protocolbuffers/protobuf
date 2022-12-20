@@ -79,8 +79,8 @@ bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
 
 void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
                     size_t count) {
+  const int lg2 = arr->data & 7;
   char* data = _upb_array_ptr(arr);
-  int lg2 = arr->data & 7;
   memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
 }
 
@@ -88,7 +88,7 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
                       upb_Arena* arena) {
   UPB_ASSERT(i <= arr->size);
   UPB_ASSERT(count + arr->size >= count);
-  size_t oldsize = arr->size;
+  const size_t oldsize = arr->size;
   if (!upb_Array_Resize(arr, arr->size + count, arena)) {
     return false;
   }
@@ -101,7 +101,7 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
  * |------------|XXXXXXXX|--------|
  */
 void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
-  size_t end = i + count;
+  const size_t end = i + count;
   UPB_ASSERT(i <= end);
   UPB_ASSERT(end <= arr->size);
   upb_Array_Move(arr, i, end, arr->size - end);
@@ -109,7 +109,17 @@ void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
 }
 
 bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
-  return _upb_Array_Resize(arr, size, arena);
+  const size_t oldsize = arr->size;
+  if (UPB_UNLIKELY(!_upb_Array_ResizeUninitialized(arr, size, arena))) {
+    return false;
+  }
+  const size_t newsize = arr->size;
+  if (newsize > oldsize) {
+    const int lg2 = arr->data & 7;
+    char* data = _upb_array_ptr(arr);
+    memset(data + (oldsize << lg2), 0, (newsize - oldsize) << lg2);
+  }
+  return true;
 }
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
@@ -126,10 +136,7 @@ bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
 
   new_bytes = new_capacity << elem_size_lg2;
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
-
-  if (!ptr) {
-    return false;
-  }
+  if (!ptr) return false;
 
   arr->data = _upb_tag_arrptr(ptr, elem_size_lg2);
   arr->capacity = new_capacity;
@@ -150,8 +157,9 @@ static upb_Array* getorcreate_array(upb_Array** arr_ptr, int elem_size_lg2,
 void* _upb_Array_Resize_fallback(upb_Array** arr_ptr, size_t size,
                                  int elem_size_lg2, upb_Arena* arena) {
   upb_Array* arr = getorcreate_array(arr_ptr, elem_size_lg2, arena);
-  return arr && _upb_Array_Resize(arr, size, arena) ? _upb_array_ptr(arr)
-                                                    : NULL;
+  return arr && _upb_Array_ResizeUninitialized(arr, size, arena)
+             ? _upb_array_ptr(arr)
+             : NULL;
 }
 
 bool _upb_Array_Append_fallback(upb_Array** arr_ptr, const void* value,
@@ -160,10 +168,7 @@ bool _upb_Array_Append_fallback(upb_Array** arr_ptr, const void* value,
   if (!arr) return false;
 
   size_t elems = arr->size;
-
-  if (!_upb_Array_Resize(arr, elems + 1, arena)) {
-    return false;
-  }
+  if (!_upb_Array_ResizeUninitialized(arr, elems + 1, arena)) return false;
 
   char* data = _upb_array_ptr(arr);
   memcpy(data + (elems << elem_size_lg2), value, 1 << elem_size_lg2);
