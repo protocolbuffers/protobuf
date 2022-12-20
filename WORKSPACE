@@ -71,7 +71,7 @@ load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
 
 rules_fuzzing_init()
 
-load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
 

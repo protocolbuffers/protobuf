@@ -36,13 +36,14 @@ def upb_deps():
         sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
     )
 
-    rules_pkg_version = "0.7.0"
-
     maybe(
         http_archive,
         name = "rules_pkg",
-        url = "https://github.com/bazelbuild/rules_pkg/archive/refs/tags/{}.tar.gz".format(rules_pkg_version),
-        sha256 = "e110311d898c1ff35f39829ae3ec56e39c0ef92eb44de74418982a114f51e132",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
+            "https://github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
+        ],
+        sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
     )
 
     rules_python_version = "0.14.0"  # Latest @ November 20, 2022
