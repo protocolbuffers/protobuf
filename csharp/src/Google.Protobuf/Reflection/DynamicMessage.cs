@@ -21,25 +21,40 @@ namespace Google.Protobuf.Reflection
 
     /// <summary>
     /// An implementation of IMessage that can represent arbitrary types, given a MessageaDescriptor.
-    /// Unknown fields not supported.
     /// </summary>
-    public sealed class DynamicMessage : IMessage<DynamicMessage>
+    public sealed partial class DynamicMessage : IMessage<DynamicMessage>
     {
-        private readonly MessageDescriptor type;
-        private readonly FieldSet fieldSet = FieldSet.CreateInstance();
-        private int memoizedSize = -1;
-        private UnknownFieldSet _unknownFields;
+
+        private readonly MessageParser<MessageDescriptor, DynamicMessage> _parser = null;
 
         /// <summary>
+        /// Static properties for parsing and reflection
+        /// </summary> 
+        public MessageParser<MessageDescriptor, DynamicMessage> Parser { get { return _parser; } }
+
+        /// <summary>
+        /// Holds the descriptor information. This cant be static, as every DynamicMessage can have a separate descriptor.
+        /// </summary>
+        public MessageDescriptor Descriptor { get; }
+
+        private readonly FieldSet fieldSet = FieldSet.CreateInstance();
+        private UnknownFieldSet _unknownFields;
+
+        partial void OnConstruction();
+
+        /// <summary>
+        /// The default const being replaced with this one.
         /// The constructor takes in message descriptor.
         /// </summary>
-        /// <param name="type"></param>
-        public DynamicMessage(MessageDescriptor type)
+        /// <param name="descriptor"></param>
+        public DynamicMessage(MessageDescriptor descriptor)
         {
-            this.type = type;
+            this.Descriptor = descriptor;
+            _parser = new MessageParser<MessageDescriptor, DynamicMessage>((desc) => new DynamicMessage(desc), descriptor);
+            OnConstruction();
         }
 
-        public DynamicMessage(FieldSet fieldSet)
+        DynamicMessage(FieldSet fieldSet)
         {
             this.fieldSet = fieldSet;
         }
@@ -52,7 +67,9 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Descriptor for this message.
         /// </summary>
-        public MessageDescriptor Descriptor => type;
+        //MessageDescriptor IMessage.Descriptor => type;
+
+        MessageDescriptor IMessage.Descriptor { get; }
 
         public UnknownFieldSet UnknownFields => _unknownFields;
 
@@ -62,35 +79,21 @@ namespace Google.Protobuf.Reflection
         /// <returns></returns>
         public int CalculateSize()
         {
-            int size = memoizedSize;
-            if (size != -1)
-            {
-                return size;
-            }
-            size = fieldSet.GetSerializedSize();
+            int size = fieldSet.GetSerializedSize();
             if (_unknownFields != null)
             {
                 size += _unknownFields.CalculateSize();
             }
-            memoizedSize = size;
             return size;
         }
 
-        /// <summary>
-        /// Default implementation of Overridden method.
-        /// This specific implementation is never used, mergeFrom is used from the builder class.
-        /// MergeFrom functionality comes into picture when, we do desrialization from ByteString using static ParseFrom method.
-        /// Reads every field and sets it in the FieldSet instance
-        /// </summary>
-        /// <param name="input"></param>
-        /// <exception cref="NotImplementedException"></exception>
         public void MergeFrom(CodedInputStream input)
         {
             uint tag;
             while ((tag = input.ReadTag()) != 0)
             {
                 int fieldNumber = WireFormat.GetTagFieldNumber(tag);
-                FieldDescriptor fd = type.FindFieldByNumber(fieldNumber);
+                FieldDescriptor fd = Descriptor.FindFieldByNumber(fieldNumber);
 
                 if (fd == null)
                 {
@@ -296,6 +299,19 @@ namespace Google.Protobuf.Reflection
                     return rfBytes.GetEnumerator();
             }
             throw new Exception("FieldType:" + fieldType + ", not handled in GetFieldCodec method.");
+        }
+
+        internal void Add(String fieldName, object v)
+        {
+            FieldDescriptor fieldDescriptor = Descriptor.FindFieldByName(fieldName);
+            if (fieldDescriptor.IsRepeated)
+            {
+                fieldSet.AddRepeatedField(fieldDescriptor, v);
+            }
+            else
+            {
+                fieldSet.SetField(fieldDescriptor, v);
+            }
         }
     }
 }

@@ -1,13 +1,39 @@
 ﻿using Google.Protobuf.TestProtos;
-using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Google.Protobuf.Reflection
 {
     public class DynamicMessageTest
     {
+
+
+
+        [Test]
+        public void TestDynamicMessageUsage()
+        {
+            string fileName = "testFile.txt";
+            MessageDescriptor desc = TestAllTypes.Descriptor;
+
+            //create 
+            DynamicMessage dm = new DynamicMessage(desc);
+            dm.Add("single_string", "sss");
+
+            //serialize
+            Stream output = WriteTo(dm);
+
+            //deserialize
+            DynamicMessage deserializedDm;
+            DynamicMessage tempdm = new DynamicMessage(desc);
+            using (var input = File.OpenRead(fileName))
+            {
+                deserializedDm = (DynamicMessage) tempdm.Parser.ParseFrom(input);
+            }
+
+        }
+
 
         [Test]
         public void TestDynamicMessageParsingSingleString()
@@ -29,7 +55,7 @@ namespace Google.Protobuf.Reflection
         public DynamicMessage ParseFrom(MessageDescriptor type, ByteString data)
         {
             DynamicMessage dynMsg = new DynamicMessage(type);
-            dynMsg.MergeFrom(data);
+            dynMsg = (DynamicMessage) dynMsg.Parser.ParseFrom(data);
             return dynMsg;
         }
 
@@ -46,14 +72,21 @@ namespace Google.Protobuf.Reflection
         [Test]
         public void TestDynamicMessageWriteTo()
         {
-            TestAllTypes message = GetAllTypesMessage();
             MessageDescriptor desc = TestAllTypes.Descriptor;
-            ByteString byteStr = message.ToByteString();
-            DynamicMessage dm = ParseFrom(desc, byteStr);
-            ByteString dmByteString = Any.Pack(dm).Value;
-            DynamicMessage objectUnderTest = ParseFrom(desc, dmByteString);
-            Assertions(desc, objectUnderTest);
+            DynamicMessage dm = new DynamicMessage(desc);
+            string fieldName = "single_string";
+            string fieldValue = "sss";
+            dm.Add(fieldName, fieldValue);
+
+            Stream stream = WriteTo(dm);
+
+            var input = new CodedInputStream(stream);
+            int fieldNumber = WireFormat.GetTagFieldNumber(input.ReadTag());
+            Assert.AreEqual(desc.FindFieldByNumber(fieldNumber).Name, fieldName);
+            Assert.AreEqual(fieldValue, input.ReadString());
         }
+
+
 
         [Test]
         public void TestDynamicMessageSetterRejectsNull()
@@ -74,7 +107,17 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(1386, dm.CalculateSize());
         }
 
-        private TestAllTypes GetAllTypesMessage()
+        private static Stream WriteTo(DynamicMessage dm)
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            dm.WriteTo(output);
+            output.Flush();
+            stream.Position = 0;// TODO check if reqd
+            return stream;
+        }
+
+        private static TestAllTypes GetAllTypesMessage()
         {
             return new TestAllTypes
             {
@@ -123,7 +166,7 @@ namespace Google.Protobuf.Reflection
             };
         }
 
-        private void Assertions(MessageDescriptor desc, DynamicMessage res)
+        private static void Assertions(MessageDescriptor desc, DynamicMessage res)
         {
             Assert.NotNull(res);
             Assert.AreEqual("test", GetField(desc, res, "single_string"));
@@ -158,7 +201,7 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(UInt64.MinValue, GetField(desc, res, "repeated_uint64[1]"));
         }
 
-        private object GetField(MessageDescriptor desc, DynamicMessage dm, String fieldFullName)
+        private static object GetField(MessageDescriptor desc, DynamicMessage dm, String fieldFullName)
         {
             if (!fieldFullName.Contains(".") && !fieldFullName.Contains("["))
             {

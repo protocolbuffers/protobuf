@@ -407,5 +407,39 @@ namespace Google.Protobuf
         /// <returns>A newly configured message parser.</returns>
         public new MessageParser<T> WithExtensionRegistry(ExtensionRegistry registry) =>
             new MessageParser<T>(factory, DiscardUnknownFields, registry);
+
+    }
+
+    public sealed class MessageParser<MessageDescriptor, T> : MessageParser where T : IMessage<T>
+    {
+        private readonly Func<MessageDescriptor, T> factory;
+        private readonly MessageDescriptor descriptor;
+
+        public MessageParser(Func<MessageDescriptor, T> factory, MessageDescriptor msgDesc) : this(factory, msgDesc, false, null)
+        {
+
+        }
+
+        internal MessageParser(Func<MessageDescriptor, T> factory, MessageDescriptor msgDesc, bool discardUnknownFields, ExtensionRegistry extensions) : base(() => factory(msgDesc), discardUnknownFields, extensions)
+        {
+            this.factory = factory;
+            this.descriptor = msgDesc;
+        }
+
+        public new T ParseFrom(byte[] data)
+        {
+            T message = factory(descriptor);
+            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            return message;
+        }
+
+        public new T ParseJson(string json, MessageDescriptor descriptor)
+        {
+            T message = factory(descriptor);
+            JsonParser.Default.Merge(message, json);
+            return message;
+        }
     }
 }
+
+
