@@ -786,8 +786,8 @@ bool MessageDifferencer::CompareWithFieldsInternal(
   int field_index1 = 0;
   int field_index2 = 0;
 
-  const Reflection* reflection1 = message1.GetReflection();
-  const Reflection* reflection2 = message2.GetReflection();
+  const Reflection* reflection1 = nullptr;
+  const Reflection* reflection2 = nullptr;
 
   while (true) {
     const FieldDescriptor* field1 = message1_fields[field_index1];
@@ -822,10 +822,15 @@ bool MessageDifferencer::CompareWithFieldsInternal(
 
       if (reporter_ != NULL) {
         assert(field1 != NULL);
-        int count = field1->is_repeated()
-                        ? reflection1->FieldSize(message1, field1)
-                        : 1;
-
+        int count;
+        if (field1->is_repeated()) {
+          if (reflection1 == nullptr) {
+            reflection1 = message1.GetReflection();
+          }
+          count = reflection1->FieldSize(message1, field1);
+        } else {
+          count = 1;
+        }
         for (int i = 0; i < count; ++i) {
           SpecificField specific_field;
           specific_field.message1 = &message1;
@@ -872,10 +877,15 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       }
 
       if (reporter_ != NULL) {
-        int count = field2->is_repeated()
-                        ? reflection2->FieldSize(message2, field2)
-                        : 1;
-
+        int count;
+        if (field2->is_repeated()) {
+          if (reflection2 == nullptr) {
+            reflection2 = message2.GetReflection();
+          }
+          count = reflection2->FieldSize(message2, field2);
+        } else {
+          count = 1;
+        }
         for (int i = 0; i < count; ++i) {
           SpecificField specific_field;
           specific_field.message1 = &message1,
