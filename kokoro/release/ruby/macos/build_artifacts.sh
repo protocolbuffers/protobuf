@@ -1,11 +1,11 @@
 #!/bin/bash
 
 set -ex
-
-use_bazel.sh 5.1.1
   
 # change to repo root
 cd $(dirname $0)/../../../..
+
+use_bazel.sh 5.1.1
 
 # all artifacts come here
 mkdir artifacts
