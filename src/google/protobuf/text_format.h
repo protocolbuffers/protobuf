@@ -38,7 +38,6 @@
 #ifndef GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
-
 #include <atomic>
 #include <map>
 #include <memory>

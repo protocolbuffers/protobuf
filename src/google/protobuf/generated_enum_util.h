@@ -31,7 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
 #define GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
 
-
 #include <type_traits>
 
 #include "absl/strings/string_view.h"

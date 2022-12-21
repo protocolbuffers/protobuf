@@ -38,7 +38,6 @@
 #ifndef GOOGLE_PROTOBUF_UNKNOWN_FIELD_SET_H__
 #define GOOGLE_PROTOBUF_UNKNOWN_FIELD_SET_H__
 
-
 #include <assert.h>
 
 #include <string>

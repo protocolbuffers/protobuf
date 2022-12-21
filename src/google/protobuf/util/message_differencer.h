@@ -43,9 +43,6 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 #define GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 
-#include "google/protobuf/stubs/logging.h"
-
-
 #include <functional>
 #include <map>
 #include <memory>
@@ -58,6 +55,7 @@
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/container/fixed_array.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation

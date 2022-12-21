@@ -39,7 +39,6 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
-
 #include <climits>
 #include <iosfwd>
 #include <string>

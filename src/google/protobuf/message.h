@@ -110,7 +110,6 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_H__
 
-
 #include <iosfwd>
 #include <string>
 #include <type_traits>
