@@ -638,12 +638,12 @@ bool MessageDifferencer::Compare(const Message& message1,
       return Compare(*data1, *data2, unpacked_any + 1, parent_fields);
     }
   }
-  const Reflection* reflection1 = message1.GetReflection();
-  const Reflection* reflection2 = message2.GetReflection();
 
   bool unknown_compare_result = true;
   // Ignore unknown fields in EQUIVALENT mode
   if (message_field_comparison_ != EQUIVALENT) {
+    const Reflection* reflection1 = message1.GetReflection();
+    const Reflection* reflection2 = message2.GetReflection();
     const UnknownFieldSet& unknown_field_set1 =
         reflection1->GetUnknownFields(message1);
     const UnknownFieldSet& unknown_field_set2 =
