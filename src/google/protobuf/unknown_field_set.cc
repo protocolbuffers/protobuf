@@ -136,45 +136,45 @@ size_t UnknownFieldSet::SpaceUsedLong() const {
 }
 
 void UnknownFieldSet::AddVarint(int number, uint64_t value) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_VARINT);
   field.data_.varint_ = value;
-  fields_.push_back(field);
 }
 
 void UnknownFieldSet::AddFixed32(int number, uint32_t value) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED32);
   field.data_.fixed32_ = value;
-  fields_.push_back(field);
 }
 
 void UnknownFieldSet::AddFixed64(int number, uint64_t value) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED64);
   field.data_.fixed64_ = value;
-  fields_.push_back(field);
 }
 
 std::string* UnknownFieldSet::AddLengthDelimited(int number) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
   field.data_.length_delimited_.string_value = new std::string;
-  fields_.push_back(field);
   return field.data_.length_delimited_.string_value;
 }
 
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_GROUP);
   field.data_.group_ = new UnknownFieldSet;
-  fields_.push_back(field);
   return field.data_.group_;
 }
 
