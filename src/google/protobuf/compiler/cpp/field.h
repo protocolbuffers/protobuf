@@ -53,18 +53,22 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-// Customization points for each field codegen type. See FieldGenWrapper to
+// Customization points for each field codegen type. See FieldGenerator to
 // see how each of these functions is used.
-class FieldGenerator {
+//
+// TODO(b/245791219): Make every function except the dtor in this generator
+// non-pure-virtual. A generator with no implementation should be able to
+// automatically not contribute any code to the message it is part of, as a
+// matter of clean composability.
+class FieldGeneratorBase {
  public:
-  explicit FieldGenerator(const FieldDescriptor* descriptor,
-                          const Options& options)
+  FieldGeneratorBase(const FieldDescriptor* descriptor, const Options& options)
       : descriptor_(descriptor), options_(options) {}
 
-  FieldGenerator(const FieldGenerator&) = delete;
-  FieldGenerator& operator=(const FieldGenerator&) = delete;
+  FieldGeneratorBase(const FieldGeneratorBase&) = delete;
+  FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
 
-  virtual ~FieldGenerator() = 0;
+  virtual ~FieldGeneratorBase() = 0;
 
   virtual std::vector<io::Printer::Sub> MakeVars() const { return {}; }
 
@@ -131,9 +135,9 @@ class FieldGenerator {
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
 
-inline FieldGenerator::~FieldGenerator() = default;
+inline FieldGeneratorBase::~FieldGeneratorBase() = default;
 
-class FieldGenWrapper {
+class FieldGenerator {
  private:
   // This function must be defined here so that the inline definitions below
   // can see it, which is required because it has deduced return type.
@@ -155,14 +159,10 @@ class FieldGenWrapper {
   }
 
  public:
-  FieldGenWrapper(const FieldDescriptor* field, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer, int32_t hasbit_index,
-                  int32_t inlined_string_index);
-
-  FieldGenWrapper(const FieldGenWrapper&) = delete;
-  FieldGenWrapper& operator=(const FieldGenWrapper&) = delete;
-  FieldGenWrapper(FieldGenWrapper&&) = default;
-  FieldGenWrapper& operator=(FieldGenWrapper&&) = default;
+  FieldGenerator(const FieldGenerator&) = delete;
+  FieldGenerator& operator=(const FieldGenerator&) = delete;
+  FieldGenerator(FieldGenerator&&) = default;
+  FieldGenerator& operator=(FieldGenerator&&) = default;
 
   // Prints private members needed to represent this field.
   //
@@ -373,35 +373,39 @@ class FieldGenWrapper {
   }
 
  private:
-  friend class FieldGeneratorMap;
+  friend class FieldGeneratorTable;
+  FieldGenerator(const FieldDescriptor* field, const Options& options,
+                 MessageSCCAnalyzer* scc_analyzer,
+                 absl::optional<uint32_t> hasbit_index,
+                 absl::optional<uint32_t> inlined_string_index);
 
-  std::unique_ptr<FieldGenerator> impl_;
+  std::unique_ptr<FieldGeneratorBase> impl_;
   std::vector<io::Printer::Sub> field_vars_;
   std::vector<io::Printer::Sub> tracker_vars_;
   std::vector<io::Printer::Sub> per_generator_vars_;
 };
 
-// Convenience class which constructs FieldGenerators for a Descriptor.
-class FieldGeneratorMap {
+// Convenience class which constructs FieldGeneratorBases for a Descriptor.
+class FieldGeneratorTable {
  public:
-  explicit FieldGeneratorMap(const Descriptor* descriptor)
+  explicit FieldGeneratorTable(const Descriptor* descriptor)
       : descriptor_(descriptor) {}
 
-  FieldGeneratorMap(const FieldGeneratorMap&) = delete;
-  FieldGeneratorMap& operator=(const FieldGeneratorMap&) = delete;
+  FieldGeneratorTable(const FieldGeneratorTable&) = delete;
+  FieldGeneratorTable& operator=(const FieldGeneratorTable&) = delete;
 
   void Build(const Options& options, MessageSCCAnalyzer* scc_analyzer,
              absl::Span<const int32_t> has_bit_indices,
              absl::Span<const int32_t> inlined_string_indices);
 
-  const FieldGenWrapper& get(const FieldDescriptor* field) const {
+  const FieldGenerator& get(const FieldDescriptor* field) const {
     GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
     return fields_[field->index()];
   }
 
  private:
   const Descriptor* descriptor_;
-  std::vector<FieldGenWrapper> fields_;
+  std::vector<FieldGenerator> fields_;
 };
 
 // Helper function: set variables in the map that are the same for all

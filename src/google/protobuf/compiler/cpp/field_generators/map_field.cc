@@ -80,13 +80,13 @@ void SetMessageVariables(
   }
 }
 
-class MapFieldGenerator : public FieldGenerator {
+class MapFieldGenerator : public FieldGeneratorBase {
  public:
   MapFieldGenerator(const FieldDescriptor* descriptor, const Options& options,
                     MessageSCCAnalyzer* scc_analyzer);
   ~MapFieldGenerator() override = default;
 
-  // implements FieldGenerator ---------------------------------------
+  // implements FieldGeneratorBase ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
   void GenerateAccessorDeclarations(io::Printer* printer) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
@@ -114,7 +114,7 @@ class MapFieldGenerator : public FieldGenerator {
 MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
                                      const Options& options,
                                      MessageSCCAnalyzer* scc_analyzer)
-    : FieldGenerator(descriptor, options),
+    : FieldGeneratorBase(descriptor, options),
       has_required_fields_(
           scc_analyzer->HasRequiredFields(descriptor->message_type())) {
   SetMessageVariables(descriptor, &variables_, options);
@@ -361,9 +361,9 @@ ArenaDtorNeeds MapFieldGenerator::NeedsArenaDestructor() const {
 }
 }  // namespace
 
-std::unique_ptr<FieldGenerator> MakeMapGenerator(const FieldDescriptor* desc,
-                                                 const Options& options,
-                                                 MessageSCCAnalyzer* scc) {
+std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
   return std::make_unique<MapFieldGenerator>(desc, options, scc);
 }
 

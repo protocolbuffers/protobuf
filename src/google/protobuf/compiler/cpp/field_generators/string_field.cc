@@ -96,7 +96,7 @@ void SetStringVariables(
   }
 }
 
-class StringFieldGenerator : public FieldGenerator {
+class StringFieldGenerator : public FieldGeneratorBase {
  public:
   StringFieldGenerator(const FieldDescriptor* descriptor,
                        const Options& options);
@@ -146,7 +146,7 @@ class StringOneofFieldGenerator : public StringFieldGenerator {
   void GenerateConstructorCode(io::Printer* printer) const override;
 };
 
-class RepeatedStringFieldGenerator : public FieldGenerator {
+class RepeatedStringFieldGenerator : public FieldGeneratorBase {
  public:
   RepeatedStringFieldGenerator(const FieldDescriptor* descriptor,
                                const Options& options);
@@ -170,7 +170,7 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
 
 StringFieldGenerator::StringFieldGenerator(const FieldDescriptor* descriptor,
                                            const Options& options)
-    : FieldGenerator(descriptor, options),
+    : FieldGeneratorBase(descriptor, options),
       inlined_(IsStringInlined(descriptor, options)) {
   SetStringVariables(descriptor, &variables_, options);
 }
@@ -741,7 +741,7 @@ void StringOneofFieldGenerator::GenerateConstructorCode(
 
 RepeatedStringFieldGenerator::RepeatedStringFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
-    : FieldGenerator(descriptor, options) {
+    : FieldGeneratorBase(descriptor, options) {
   SetStringVariables(descriptor, &variables_, options);
 }
 
@@ -994,19 +994,19 @@ void RepeatedStringFieldGenerator::GenerateByteSize(
 }
 }  // namespace
 
-std::unique_ptr<FieldGenerator> MakeSinguarStringGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
   return absl::make_unique<StringFieldGenerator>(desc, options);
 }
 
-std::unique_ptr<FieldGenerator> MakeRepeatedStringGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
   return absl::make_unique<RepeatedStringFieldGenerator>(desc, options);
 }
 
-std::unique_ptr<FieldGenerator> MakeOneofStringGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeOneofStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
   return absl::make_unique<StringOneofFieldGenerator>(desc, options);

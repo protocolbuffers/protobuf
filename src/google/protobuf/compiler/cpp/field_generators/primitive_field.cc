@@ -123,7 +123,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options) {
   };
 }
 
-class PrimitiveFieldGenerator : public FieldGenerator {
+class PrimitiveFieldGenerator : public FieldGeneratorBase {
  public:
   PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
                           const Options& options);
@@ -162,7 +162,7 @@ class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
   void GenerateConstructorCode(io::Printer* printer) const override;
 };
 
-class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
+class RepeatedPrimitiveFieldGenerator : public FieldGeneratorBase {
  public:
   RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
                                   const Options& options);
@@ -194,7 +194,7 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
 
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
-    : FieldGenerator(descriptor, options) {}
+    : FieldGeneratorBase(descriptor, options) {}
 
 void PrimitiveFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
@@ -373,7 +373,7 @@ void PrimitiveOneofFieldGenerator::GenerateConstructorCode(
 
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
-    : FieldGenerator(descriptor, options) {}
+    : FieldGeneratorBase(descriptor, options) {}
 
 void RepeatedPrimitiveFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
@@ -587,19 +587,19 @@ void RepeatedPrimitiveFieldGenerator::GenerateCopyAggregateInitializer(
 }
 }  // namespace
 
-std::unique_ptr<FieldGenerator> MakeSinguarPrimitiveGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
   return absl::make_unique<PrimitiveFieldGenerator>(desc, options);
 }
 
-std::unique_ptr<FieldGenerator> MakeRepeatedPrimitiveGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
   return absl::make_unique<RepeatedPrimitiveFieldGenerator>(desc, options);
 }
 
-std::unique_ptr<FieldGenerator> MakeOneofPrimitiveGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeOneofPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
   return absl::make_unique<PrimitiveOneofFieldGenerator>(desc, options);

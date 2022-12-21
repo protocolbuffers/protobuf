@@ -45,6 +45,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -124,7 +125,7 @@ void SetCommonOneofFieldVariables(
   }
 }
 
-void FieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
+void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
   Formatter format(p, variables_);
   if (ShouldSplit(descriptor_, options_)) {
     format("decltype(Impl_::Split::$name$_){arena}");
@@ -133,18 +134,19 @@ void FieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
   format("decltype($field$){arena}");
 }
 
-void FieldGenerator::GenerateConstexprAggregateInitializer(
+void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   Formatter format(p, variables_);
   format("/*decltype($field$)*/{}");
 }
 
-void FieldGenerator::GenerateCopyAggregateInitializer(io::Printer* p) const {
+void FieldGeneratorBase::GenerateCopyAggregateInitializer(
+    io::Printer* p) const {
   Formatter format(p, variables_);
   format("decltype($field$){from.$field$}");
 }
 
-void FieldGenerator::GenerateCopyConstructorCode(io::Printer* p) const {
+void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
   if (ShouldSplit(descriptor_, options_)) {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
@@ -153,7 +155,7 @@ void FieldGenerator::GenerateCopyConstructorCode(io::Printer* p) const {
   }
 }
 
-void FieldGenerator::GenerateIfHasField(io::Printer* p) const {
+void FieldGeneratorBase::GenerateIfHasField(io::Printer* p) const {
   GOOGLE_ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
 
   Formatter format(p);
@@ -161,9 +163,9 @@ void FieldGenerator::GenerateIfHasField(io::Printer* p) const {
 }
 
 namespace {
-std::unique_ptr<FieldGenerator> MakeGenerator(const FieldDescriptor* field,
-                                              const Options& options,
-                                              MessageSCCAnalyzer* scc) {
+std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
+                                                  const Options& options,
+                                                  MessageSCCAnalyzer* scc) {
 
   if (field->is_map()) {
     return MakeMapGenerator(field, options, scc);
@@ -206,17 +208,17 @@ std::unique_ptr<FieldGenerator> MakeGenerator(const FieldDescriptor* field,
   }
 }
 
-void HasBitVars(const FieldDescriptor* field, const Options& opts, int32_t idx,
-                std::vector<Sub>& vars) {
-  if (!internal::cpp::HasHasbit(field) || idx < 0) {
-    GOOGLE_ABSL_CHECK_EQ(idx, -1);
+void HasBitVars(const FieldDescriptor* field, const Options& opts,
+                absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
+  if (!internal::cpp::HasHasbit(field)) {
+    GOOGLE_ABSL_CHECK(!idx.has_value());
     vars.emplace_back("set_hasbit", "");
     vars.emplace_back("clear_hasbit", "");
     return;
   }
 
-  int32_t index = idx / 32;
-  std::string mask = absl::StrFormat("0x%08xu", 1u << (idx % 32));
+  int32_t index = *idx / 32;
+  std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
 
   absl::string_view has_bits = IsMapEntryMessage(field->containing_type())
                                    ? "_has_bits_"
@@ -231,18 +233,18 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts, int32_t idx,
 }
 
 void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
-                       int32_t idx, std::vector<Sub>& vars) {
+                       absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
   if (!IsStringInlined(field, opts)) {
-    GOOGLE_ABSL_CHECK_EQ(idx, -1);
+    GOOGLE_ABSL_CHECK(!idx.has_value());
     return;
   }
 
   // The first bit is the tracking bit for on demand registering ArenaDtor.
-  GOOGLE_ABSL_CHECK_GT(idx, 0)
+  GOOGLE_ABSL_CHECK_GT(*idx, 0)
       << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
 
-  int32_t index = idx / 32;
-  std::string mask = absl::StrFormat("0x%08xu", 1u << (idx % 32));
+  int32_t index = *idx / 32;
+  std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
 
   absl::string_view array = IsMapEntryMessage(field->containing_type())
                                 ? "_inlined_string_donated_"
@@ -256,11 +258,11 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
 }
 }  // namespace
 
-FieldGenWrapper::FieldGenWrapper(const FieldDescriptor* field,
-                                 const Options& options,
-                                 MessageSCCAnalyzer* scc_analyzer,
-                                 int32_t hasbit_index,
-                                 int32_t inlined_string_index)
+FieldGenerator::FieldGenerator(const FieldDescriptor* field,
+                               const Options& options,
+                               MessageSCCAnalyzer* scc_analyzer,
+                               absl::optional<uint32_t> hasbit_index,
+                               absl::optional<uint32_t> inlined_string_index)
     : impl_(MakeGenerator(field, options, scc_analyzer)),
       tracker_vars_(MakeTrackerCalls(field, options)),
       per_generator_vars_(impl_->MakeVars()) {
@@ -275,21 +277,27 @@ FieldGenWrapper::FieldGenWrapper(const FieldDescriptor* field,
   InlinedStringVars(field, options, inlined_string_index, field_vars_);
 }
 
-void FieldGeneratorMap::Build(
+void FieldGeneratorTable::Build(
     const Options& options, MessageSCCAnalyzer* scc,
     absl::Span<const int32_t> has_bit_indices,
     absl::Span<const int32_t> inlined_string_indices) {
   // Construct all the FieldGenerators.
   fields_.reserve(descriptor_->field_count());
   for (const auto* field : internal::FieldRange(descriptor_)) {
-    int32_t has_bit_index =
-        has_bit_indices.empty() ? -1 : has_bit_indices[field->index()];
-    int32_t inlined_string_index = inlined_string_indices.empty()
-                                       ? -1
-                                       : inlined_string_indices[field->index()];
+    absl::optional<uint32_t> has_bit_index;
+    if (!has_bit_indices.empty() && has_bit_indices[field->index()] >= 0) {
+      has_bit_index = static_cast<uint32_t>(has_bit_indices[field->index()]);
+    }
 
-    fields_.emplace_back(field, options, scc, has_bit_index,
-                         inlined_string_index);
+    absl::optional<uint32_t> inlined_string_index;
+    if (!inlined_string_indices.empty() &&
+        inlined_string_indices[field->index()] >= 0) {
+      inlined_string_index =
+          static_cast<uint32_t>(inlined_string_indices[field->index()]);
+    }
+
+    fields_.push_back(FieldGenerator(field, options, scc, has_bit_index,
+                                     inlined_string_index));
   }
 }
 
