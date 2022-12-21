@@ -2,6 +2,8 @@
 
 set -ex
 
+use_bazel.sh 5.1.1
+
 # Remove any pre-existing protobuf installation.
 brew uninstall -f protobuf
 
