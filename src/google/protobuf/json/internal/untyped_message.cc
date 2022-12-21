@@ -44,6 +44,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/stubs/common.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/status/status.h"
@@ -295,7 +296,7 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         break;
       }
       case WireFormatLite::WIRETYPE_END_GROUP:
-        GOOGLE_ABSL_CHECK(false) << "unreachable";
+        ABSL_UNREACHABLE();
         break;
       default:
         return absl::InvalidArgumentError(
