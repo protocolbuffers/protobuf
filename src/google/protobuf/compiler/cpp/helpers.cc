@@ -63,6 +63,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -1200,48 +1201,50 @@ void NamespaceOpener::ChangeTo(absl::string_view name) {
   name_stack_ = std::move(new_stack);
 }
 
-static void GenerateUtf8CheckCode(const FieldDescriptor* field,
+static void GenerateUtf8CheckCode(io::Printer* p, const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const char* parameters,
-                                  const char* strict_function,
-                                  const char* verify_function,
-                                  const Formatter& format) {
-  switch (internal::cpp::GetUtf8CheckMode(
-      field,
-      GetOptimizeFor(field->file(), options) == FileOptions::LITE_RUNTIME)) {
-    case internal::cpp::Utf8CheckMode::kStrict: {
+                                  absl::string_view params,
+                                  absl::string_view strict_function,
+                                  absl::string_view verify_function) {
+  if (field->type() != FieldDescriptor::TYPE_STRING) return;
+
+  auto v = p->WithVars({
+      {"params", params},
+      {"Strict", strict_function},
+      {"Verify", verify_function},
+  });
+
+  bool is_lite =
+      GetOptimizeFor(field->file(), options) == FileOptions::LITE_RUNTIME;
+  switch (internal::cpp::GetUtf8CheckMode(field, is_lite)) {
+    case internal::cpp::Utf8CheckMode::kStrict:
       if (for_parse) {
-        format("DO_(");
-      }
-      format("::$proto_ns$::internal::WireFormatLite::$1$(\n", strict_function);
-      format.Indent();
-      format(parameters);
-      if (for_parse) {
-        format("::$proto_ns$::internal::WireFormatLite::PARSE,\n");
+        p->Emit(R"cc(
+          DO_($pbi$::WireFormatLite::$Strict$(
+              $params$ $pbi$::WireFormatLite::PARSE, "$pkg.Msg.field$"));
+        )cc");
       } else {
-        format("::$proto_ns$::internal::WireFormatLite::SERIALIZE,\n");
+        p->Emit(R"cc(
+          $pbi$::WireFormatLite::$Strict$(
+              $params$ $pbi$::WireFormatLite::SERIALIZE, "$pkg.Msg.field$");
+        )cc");
       }
-      format("\"$1$\")", field->full_name());
-      if (for_parse) {
-        format(")");
-      }
-      format(";\n");
-      format.Outdent();
       break;
-    }
-    case internal::cpp::Utf8CheckMode::kVerify: {
-      format("::$proto_ns$::internal::WireFormat::$1$(\n", verify_function);
-      format.Indent();
-      format(parameters);
+
+    case internal::cpp::Utf8CheckMode::kVerify:
       if (for_parse) {
-        format("::$proto_ns$::internal::WireFormat::PARSE,\n");
+        p->Emit(R"cc(
+          $pbi$::WireFormat::$Verify$($params$ $pbi$::WireFormat::PARSE,
+                                      "$pkg.Msg.field$");
+        )cc");
       } else {
-        format("::$proto_ns$::internal::WireFormat::SERIALIZE,\n");
+        p->Emit(R"cc(
+          $pbi$::WireFormat::$Verify$($params$ $pbi$::WireFormat::SERIALIZE,
+                                      "$pkg.Msg.field$");
+        )cc");
       }
-      format("\"$1$\");\n", field->full_name());
-      format.Outdent();
       break;
-    }
+
     case internal::cpp::Utf8CheckMode::kNone:
       break;
   }
@@ -1249,19 +1252,33 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
-                                    const char* parameters,
+                                    absl::string_view parameters,
                                     const Formatter& format) {
-  GenerateUtf8CheckCode(field, options, for_parse, parameters,
-                        "VerifyUtf8String", "VerifyUTF8StringNamedField",
-                        format);
+  GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
+                        "VerifyUtf8String", "VerifyUTF8StringNamedField");
 }
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const char* parameters,
+                                  absl::string_view parameters,
                                   const Formatter& format) {
-  GenerateUtf8CheckCode(field, options, for_parse, parameters, "VerifyUtf8Cord",
-                        "VerifyUTF8CordNamedField", format);
+  GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
+                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField");
+}
+
+void GenerateUtf8CheckCodeForString(io::Printer* p,
+                                    const FieldDescriptor* field,
+                                    const Options& options, bool for_parse,
+                                    absl::string_view parameters) {
+  GenerateUtf8CheckCode(p, field, options, for_parse, parameters,
+                        "VerifyUtf8String", "VerifyUTF8StringNamedField");
+}
+
+void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
+                                  const Options& options, bool for_parse,
+                                  absl::string_view parameters) {
+  GenerateUtf8CheckCode(p, field, options, for_parse, parameters,
+                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField");
 }
 
 void FlattenMessagesInFile(const FileDescriptor* file,
@@ -1655,6 +1672,21 @@ bool HasMessageFieldOrExtension(const Descriptor* desc) {
     if (f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) return true;
   }
   return false;
+}
+
+std::vector<io::Printer::Sub> AnnotatedAccessors(
+    const FieldDescriptor* field, absl::Span<const absl::string_view> prefixes,
+    absl::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic) {
+  auto field_name = FieldName(field);
+
+  std::vector<io::Printer::Sub> vars;
+  for (auto prefix : prefixes) {
+    vars.push_back(io::Printer::Sub(absl::StrCat(prefix, "name"),
+                                    absl::StrCat(prefix, field_name))
+                       .AnnotatedAs({field, semantic}));
+  }
+
+  return vars;
 }
 
 }  // namespace cpp

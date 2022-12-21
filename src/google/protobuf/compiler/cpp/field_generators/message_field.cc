@@ -64,16 +64,17 @@ void SetMessageVariables(
     const FieldDescriptor* descriptor, const Options& options,
     bool implicit_weak,
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
-  SetCommonFieldVariables(descriptor, variables, options);
+  bool split = ShouldSplit(descriptor, options);
+  std::string field_name = FieldMemberName(descriptor, split);
+
   (*variables)["type"] = FieldMessageTypeName(descriptor, options);
   variables->insert(
       {"casted_member", ReinterpretCast(absl::StrCat((*variables)["type"], "*"),
-                                        (*variables)["field"], implicit_weak)});
+                                        field_name, implicit_weak)});
   variables->insert(
       {"casted_member_const",
        ReinterpretCast(absl::StrCat("const ", (*variables)["type"], "&"),
-                       absl::StrCat("*", (*variables)["field"]),
-                       implicit_weak)});
+                       absl::StrCat("*", field_name), implicit_weak)});
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_default_instance_ptr"] = ReinterpretCast(
@@ -597,7 +598,6 @@ MessageOneofFieldGenerator::MessageOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options,
     MessageSCCAnalyzer* scc_analyzer)
     : MessageFieldGenerator(descriptor, options, scc_analyzer) {
-  SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
 void MessageOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
