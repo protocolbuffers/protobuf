@@ -2,8 +2,8 @@
 
 set -ex
 
-${KOKORO_GFILE_DIR}/use_bazel.sh 5.1.1
-
+use_bazel.sh 5.1.1
+  
 # change to repo root
 cd $(dirname $0)/../../../..
 
