@@ -38,7 +38,7 @@ namespace Google.Protobuf.Reflection
         public MessageDescriptor Descriptor { get; }
 
         private readonly FieldSet fieldSet = FieldSet.CreateInstance();
-        private UnknownFieldSet _unknownFields;
+        private UnknownFieldSet _unknownFields = new UnknownFieldSet();
 
         partial void OnConstruction();
 
@@ -67,8 +67,6 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Descriptor for this message.
         /// </summary>
-        //MessageDescriptor IMessage.Descriptor => type;
-
         MessageDescriptor IMessage.Descriptor { get; }
 
         public UnknownFieldSet UnknownFields => _unknownFields;
@@ -304,7 +302,11 @@ namespace Google.Protobuf.Reflection
         internal void Add(String fieldName, object v)
         {
             FieldDescriptor fieldDescriptor = Descriptor.FindFieldByName(fieldName);
-            if (fieldDescriptor.IsRepeated)
+            if (fieldDescriptor == null)
+            {
+                throw new Exception("unknown field not supported by this version of the method");
+            }
+            else if (fieldDescriptor.IsRepeated)
             {
                 fieldSet.AddRepeatedField(fieldDescriptor, v);
             }

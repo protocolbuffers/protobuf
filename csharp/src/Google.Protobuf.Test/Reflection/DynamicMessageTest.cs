@@ -3,6 +3,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Google.Protobuf.Reflection
 {
@@ -22,7 +23,11 @@ namespace Google.Protobuf.Reflection
             dm.Add("single_string", "sss");
 
             //serialize
-            Stream output = WriteTo(dm);
+            //Stream output = WriteTo(dm);
+            using (var output = File.Create(fileName))
+            {
+                dm.WriteTo(output);
+            }
 
             //deserialize
             DynamicMessage deserializedDm;
@@ -105,6 +110,56 @@ namespace Google.Protobuf.Reflection
             ByteString byteStr = message.ToByteString();
             DynamicMessage dm = ParseFrom(desc, byteStr);
             Assert.AreEqual(1386, dm.CalculateSize());
+        }
+
+        [Test]
+        public void TestUnknownField()
+        {
+            MessageDescriptor desc = GetMessageDescriptor();
+            DynamicMessage dm = new DynamicMessage(desc);
+            dm.Add("single_string", "sss");
+            UnknownField uf = new UnknownField();
+            uf.AddLengthDelimited(ByteString.CopyFromUtf8("ss1"));
+            dm.UnknownFields.AddOrReplaceField(2, uf);
+            //dm.AddUnknownField(FieldType.String, 2, "ss1");
+
+            Stream stream = WriteTo(dm);
+
+            var input = new CodedInputStream(stream);
+            int fieldNumber = WireFormat.GetTagFieldNumber(input.ReadTag());
+            Assert.AreEqual(desc.FindFieldByNumber(fieldNumber).Name, "single_string");
+            Assert.AreEqual("sss", input.ReadString());
+
+            Assert.AreEqual(2, WireFormat.GetTagFieldNumber(input.ReadTag()));
+            Assert.AreEqual("ss1", input.ReadString());
+        }
+
+        private static MessageDescriptor GetMessageDescriptor()
+        {
+            var fileDescProto = new FileDescriptorProto();
+            fileDescProto.Name = "Test";
+            var descP = new DescriptorProto();
+            descP.Name = "Test";
+            var fdProto = new FieldDescriptorProto()
+            {
+                Name = "single_string",
+                Type = FieldDescriptorProto.Types.Type.String,
+                Number = 1,
+                Label = FieldDescriptorProto.Types.Label.Optional
+
+            };
+            descP.Field.Add(fdProto);
+            fileDescProto.MessageType.Add(descP);
+            return ConvertToDescriptor(fileDescProto, "Test");
+        }
+        private static MessageDescriptor ConvertToDescriptor(FileDescriptorProto fileDescProto, string baseFieldName)
+        {
+            var fileDescSet = new FileDescriptorSet();
+            fileDescSet.File.Add(fileDescProto);
+            var byteStrings = fileDescSet.File.Select(f => f.ToByteString()).ToList();
+            IReadOnlyList<FileDescriptor> descriptors = FileDescriptor.BuildFromByteStrings(byteStrings);
+            //In the descriptors only 1 element is added.
+            return descriptors.First().FindTypeByName<MessageDescriptor>(baseFieldName);
         }
 
         private static Stream WriteTo(DynamicMessage dm)

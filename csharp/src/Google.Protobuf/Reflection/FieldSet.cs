@@ -236,7 +236,7 @@ namespace Google.Protobuf.Reflection
                 case FieldType.Group:
                     return WireFormat.WireType.StartGroup;
             }
-            throw new ArgumentException("unidentified type :" + type.ToString());
+            throw new ArgumentException("unidentified fieldtype :" + type);
         }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace Google.Protobuf.Reflection
             switch (type)
             {
                 case FieldType.String:
-                    output.WriteString(value.ToString());
+                    output.WriteString((string) value);
                     return;
                 case FieldType.Bool:
                     output.WriteBool((bool) value);
