@@ -5,7 +5,8 @@ set -ex
 # change to repo root
 cd $(dirname $0)/../../../..
 
-use_bazel.sh 5.1.1
+chmod ugo+x ${KOKORO_GFILE_DIR}/use_bazel.sh
+${KOKORO_GFILE_DIR}/use_bazel.sh 5.1.1
 
 # all artifacts come here
 mkdir artifacts
