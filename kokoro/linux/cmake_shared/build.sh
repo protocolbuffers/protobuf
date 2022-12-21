@@ -13,6 +13,7 @@ CONTAINER_IMAGE=gcr.io/protobuf-build/cmake/linux@sha256:79e6ed9d7f3f8e56167a330
 # Update git submodules and regenerate files
 git submodule update --init --recursive
 use_bazel.sh 5.1.1
+sudo ./kokoro/common/setup_kokoro_environment.sh
 ./regenerate_stale_files.sh
 
 tmpfile=$(mktemp -u)

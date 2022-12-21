@@ -11,6 +11,7 @@ cd $(dirname $0)/../../..
 # Initialize any submodules and regenerate files
 git submodule update --init --recursive
 use_bazel.sh 5.1.1
+sudo ./kokoro/common/setup_kokoro_environment.sh
 ./regenerate_stale_files.sh
 
 kokoro/linux/aarch64/qemu_helpers/prepare_qemu.sh

@@ -16,6 +16,7 @@ CONTAINER_IMAGE=gcr.io/protobuf-build/php/32bit@sha256:8c3cf171ac8a3f91296517d82
 
 git submodule update --init --recursive
 use_bazel.sh 5.1.1
+sudo ./kokoro/common/setup_kokoro_environment.sh
 ./regenerate_stale_files.sh
 
 docker run \
