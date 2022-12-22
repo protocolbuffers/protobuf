@@ -335,7 +335,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="fd"></param>
         /// <returns></returns>
-        internal object GetField(FieldDescriptor fd)
+        public object GetField(FieldDescriptor fd)
         {
             fields.TryGetValue(fd, out object value);
             return value;

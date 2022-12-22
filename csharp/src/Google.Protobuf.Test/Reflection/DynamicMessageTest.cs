@@ -142,7 +142,6 @@ namespace Google.Protobuf.Reflection
             uint tag = input.ReadTag();
             int fieldNumber = WireFormat.GetTagFieldNumber(tag);
             Assert.AreEqual(fieldNumber, 14);
-            Assert.IsNull(dm.Descriptor.FindFieldByName("single_string"));
             Assert.AreEqual("test", input.ReadString());
         }
 

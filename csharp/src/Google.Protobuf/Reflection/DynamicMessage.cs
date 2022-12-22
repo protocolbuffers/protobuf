@@ -23,7 +23,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Holds the descriptor information. This can't be static, as every DynamicMessage can have a separate descriptor.
         /// </summary>
-        public MessageDescriptor Descriptor { get; }
+        MessageDescriptor Descriptor { get; }
 
         /// <summary>
         /// The default const being replaced with this one.
