@@ -2,6 +2,8 @@
 
 set -ex
 
+use_bazel.sh 5.1.1
+
 # Fix permissions
 sudo chown -R $(whoami) $HOME/.rvm/
 sudo chown -R $(whoami) /Library/Ruby/
