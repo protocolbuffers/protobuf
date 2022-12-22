@@ -38,6 +38,7 @@
 #include <set>
 #include <utility>
 
+#include "absl/container/btree_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
@@ -119,7 +120,7 @@ SimpleDescriptorDatabase::~SimpleDescriptorDatabase() {}
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
     const FileDescriptorProto& file, Value value) {
-  if (!by_name_.insert({file.name(), value}).second) {
+  if (!by_name_.emplace(file.name(), value).second) {
     GOOGLE_ABSL_LOG(ERROR) << "File already exists in database: " << file.name();
     return false;
   }
@@ -197,7 +198,7 @@ bool IsSubSymbol(absl::string_view sub_symbol, absl::string_view super_symbol) {
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
-    const std::string& name, Value value) {
+    absl::string_view name, Value value) {
   // We need to make sure not to violate our map invariant.
 
   // If the symbol name is invalid it could break our lookup algorithm (which
@@ -214,8 +215,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
   if (iter == by_symbol_.end()) {
     // Apparently the map is currently empty.  Just insert and be done with it.
-    by_symbol_.insert(
-        typename std::map<std::string, Value>::value_type(name, value));
+    by_symbol_.try_emplace(name, value);
     return true;
   }
 
@@ -246,8 +246,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
   // Insert the new symbol using the iterator as a hint, the new entry will
   // appear immediately before the one the iterator is pointing at.
-  by_symbol_.insert(
-      iter, typename std::map<std::string, Value>::value_type(name, value));
+  by_symbol_.insert(iter, {std::string(name), value});
 
   return true;
 }
@@ -274,9 +273,9 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
     // The extension is fully-qualified.  We can use it as a lookup key in
     // the by_symbol_ table.
     if (!by_extension_
-             .insert(
-                 {std::make_pair(field.extendee().substr(1), field.number()),
-                  value})
+             .emplace(
+                 std::make_pair(field.extendee().substr(1), field.number()),
+                 value)
              .second) {
       GOOGLE_ABSL_LOG(ERROR)
           << "Extension conflicts with extension already in database: "
@@ -322,8 +321,7 @@ Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindExtension(
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
     const std::string& containing_type, std::vector<int>* output) {
-  typename std::map<std::pair<std::string, int>, Value>::const_iterator it =
-      by_extension_.lower_bound(std::make_pair(containing_type, 0));
+  auto it = by_extension_.lower_bound(std::make_pair(containing_type, 0));
   bool success = false;
 
   for (; it != by_extension_.end() && it->first.first == containing_type;
@@ -473,7 +471,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       return a < b.name(index);
     }
   };
-  std::set<FileEntry, FileCompare> by_name_{FileCompare{*this}};
+  absl::btree_set<FileEntry, FileCompare> by_name_{FileCompare{*this}};
   std::vector<FileEntry> by_name_flat_;
 
   struct SymbolEntry {
@@ -530,7 +528,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       return AsString(lhs) < AsString(rhs);
     }
   };
-  std::set<SymbolEntry, SymbolCompare> by_symbol_{SymbolCompare{*this}};
+  absl::btree_set<SymbolEntry, SymbolCompare> by_symbol_{SymbolCompare{*this}};
   std::vector<SymbolEntry> by_symbol_flat_;
 
   struct ExtensionEntry {
@@ -557,7 +555,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       return a < std::make_tuple(b.extendee(index), b.extension_number);
     }
   };
-  std::set<ExtensionEntry, ExtensionCompare> by_extension_{
+  absl::btree_set<ExtensionEntry, ExtensionCompare> by_extension_{
       ExtensionCompare{*this}};
   std::vector<ExtensionEntry> by_extension_flat_;
 };
@@ -815,7 +813,7 @@ EncodedDescriptorDatabase::DescriptorIndex::FindExtension(
 }
 
 template <typename T, typename Less>
-static void MergeIntoFlat(std::set<T, Less>* s, std::vector<T>* flat) {
+static void MergeIntoFlat(absl::btree_set<T, Less>* s, std::vector<T>* flat) {
   if (s->empty()) return;
   std::vector<T> new_flat(s->size() + flat->size());
   std::merge(s->begin(), s->end(), flat->begin(), flat->end(), &new_flat[0],

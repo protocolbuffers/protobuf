@@ -338,7 +338,7 @@ void Printer::Emit(absl::Span<const Sub> vars, absl::string_view format,
 
 absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
     absl::string_view varname, PrintOptions opts) {
-  auto it = substitutions_.find(std::string(varname));
+  auto it = substitutions_.find(varname);
   if (!Validate(it != substitutions_.end(), opts, [varname] {
         return absl::StrCat("undefined variable in annotation: ", varname);
       })) {
@@ -395,8 +395,9 @@ void Printer::WriteRaw(const char* data, size_t size) {
     // Fix up empty variables (e.g., "{") that should be annotated as
     // coming after the indent.
     for (const std::string& var : line_start_variables_) {
-      substitutions_[var].first += indent_;
-      substitutions_[var].second += indent_;
+      auto& pair = substitutions_[var];
+      pair.first += indent_;
+      pair.second += indent_;
     }
   }
 
@@ -747,8 +748,8 @@ void Printer::PrintImpl(absl::string_view format,
       }
 
       if (opts.use_substitution_map) {
-        auto insertion = substitutions_.emplace(
-            std::string(var), std::make_pair(range_start, range_end));
+        auto insertion =
+            substitutions_.emplace(var, std::make_pair(range_start, range_end));
 
         if (!insertion.second) {
           // This variable was used multiple times.

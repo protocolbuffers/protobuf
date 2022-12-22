@@ -143,7 +143,7 @@ class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
   const Descriptor* map_descriptor_;
   const FieldDescriptor* key_descriptor_;
   const FieldDescriptor* value_descriptor_;
-  std::map<int32_t, int32_t>
+  absl::flat_hash_map<int32_t, int32_t>
       initial_value_map_;  // copy of initial values inserted
 };
 

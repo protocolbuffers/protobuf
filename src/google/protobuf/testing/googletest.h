@@ -36,9 +36,9 @@
 
 #include <gmock/gmock.h>
 
-#include <map>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
 
@@ -92,7 +92,7 @@ class ScopedMemoryLog {
   const std::vector<std::string>& GetMessages(LogLevel error);
 
  private:
-  std::map<LogLevel, std::vector<std::string> > messages_;
+  absl::flat_hash_map<LogLevel, std::vector<std::string> > messages_;
   LogHandler* old_handler_;
 
   static void HandleLog(LogLevel level, const char* filename, int line,

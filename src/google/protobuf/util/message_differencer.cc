@@ -50,6 +50,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 #include "absl/container/fixed_array.h"
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
@@ -1449,9 +1450,8 @@ bool MessageDifferencer::IsUnknownFieldIgnored(
 
 const MessageDifferencer::MapKeyComparator*
 MessageDifferencer ::GetMapKeyComparator(const FieldDescriptor* field) const {
-  if (!field->is_repeated()) return NULL;
-  FieldKeyComparatorMap::const_iterator it =
-      map_field_key_comparator_.find(field);
+  if (!field->is_repeated()) return nullptr;
+  auto it = map_field_key_comparator_.find(field);
   if (it != map_field_key_comparator_.end()) {
     return it->second;
   }
@@ -1460,7 +1460,7 @@ MessageDifferencer ::GetMapKeyComparator(const FieldDescriptor* field) const {
     // TreatAsSet() call GetMapKeyComparator() and fail if it returns non-NULL.
     return &map_entry_key_comparator_;
   }
-  return NULL;
+  return nullptr;
 }
 
 namespace {
@@ -1764,7 +1764,7 @@ class MaximumMatcher {
   int count1_;
   int count2_;
   NodeMatchCallback match_callback_;
-  std::map<std::pair<int, int>, bool> cached_match_results_;
+  absl::flat_hash_map<std::pair<int, int>, bool> cached_match_results_;
   std::vector<int>* match_list1_;
   std::vector<int>* match_list2_;
 };
@@ -1804,13 +1804,12 @@ int MaximumMatcher::FindMaximumMatch(bool early_return) {
 
 bool MaximumMatcher::Match(int left, int right) {
   std::pair<int, int> p(left, right);
-  std::map<std::pair<int, int>, bool>::iterator it =
-      cached_match_results_.find(p);
+  auto it = cached_match_results_.find(p);
   if (it != cached_match_results_.end()) {
     return it->second;
   }
-  cached_match_results_[p] = match_callback_(left, right);
-  return cached_match_results_[p];
+  it = cached_match_results_.emplace_hint(it, p, match_callback_(left, right));
+  return it->second;
 }
 
 bool MaximumMatcher::FindArgumentPathDFS(int v, std::vector<bool>* visited) {
