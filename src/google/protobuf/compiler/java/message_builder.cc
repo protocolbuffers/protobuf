@@ -36,9 +36,9 @@
 
 #include <algorithm>
 #include <memory>
-#include <set>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
@@ -667,7 +667,7 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "piece",
       absl::StrCat(piece), "bit_field_name", GetBitFieldName(piece));
   printer->Indent();
-  std::set<int> declared_to_bitfields;
+  absl::btree_set<int> declared_to_bitfields;
 
   int bit = 0;
   int next = first_field;

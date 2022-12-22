@@ -42,11 +42,11 @@
 #include <climits>
 #include <cmath>
 #include <limits>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/numbers.h"

@@ -38,11 +38,11 @@
 #include <atomic>
 #include <cstdint>
 #include <cstring>
-#include <set>
 #include <string>
 
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/match.h"
@@ -1076,7 +1076,7 @@ void Reflection::SwapFieldsImpl(
       << "\").  Note that the exact same class is required; not just the same "
          "descriptor.";
 
-  std::set<int> swapped_oneof;
+  absl::flat_hash_set<int> swapped_oneof;
 
   const Message* prototype =
       message_factory_->GetPrototype(message1->GetDescriptor());
@@ -1094,10 +1094,9 @@ void Reflection::SwapFieldsImpl(
       if (schema_.InRealOneof(field)) {
         int oneof_index = field->containing_oneof()->index();
         // Only swap the oneof field once.
-        if (swapped_oneof.find(oneof_index) != swapped_oneof.end()) {
+        if (!swapped_oneof.insert(oneof_index).second) {
           continue;
         }
-        swapped_oneof.insert(oneof_index);
         SwapOneofField<unsafe_shallow_swap>(message1, message2,
                                             field->containing_oneof());
       } else {

@@ -35,13 +35,15 @@
 #include "google/protobuf/descriptor_database.h"
 
 #include <algorithm>
-#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/container/btree_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.pb.h"
 
 
@@ -50,8 +52,8 @@ namespace protobuf {
 
 namespace {
 void RecordMessageNames(const DescriptorProto& desc_proto,
-                        const std::string& prefix,
-                        std::set<std::string>* output) {
+                        absl::string_view prefix,
+                        absl::btree_set<std::string>* output) {
   GOOGLE_ABSL_CHECK(desc_proto.has_name());
   std::string full_name = prefix.empty()
                               ? desc_proto.name()
@@ -64,7 +66,7 @@ void RecordMessageNames(const DescriptorProto& desc_proto,
 }
 
 void RecordMessageNames(const FileDescriptorProto& file_proto,
-                        std::set<std::string>* output) {
+                        absl::btree_set<std::string>* output) {
   for (const auto& d : file_proto.message_type()) {
     RecordMessageNames(d, file_proto.package(), output);
   }
@@ -77,7 +79,7 @@ bool ForAllFileProtos(DescriptorDatabase* db, Fn callback,
   if (!db->FindAllFileNames(&file_names)) {
     return false;
   }
-  std::set<std::string> set;
+  absl::btree_set<std::string> set;
   FileDescriptorProto file_proto;
   for (const auto& f : file_names) {
     file_proto.Clear();
@@ -92,12 +94,13 @@ bool ForAllFileProtos(DescriptorDatabase* db, Fn callback,
 }
 }  // namespace
 
-DescriptorDatabase::~DescriptorDatabase() {}
+DescriptorDatabase::~DescriptorDatabase() = default;
 
 bool DescriptorDatabase::FindAllPackageNames(std::vector<std::string>* output) {
   return ForAllFileProtos(
       this,
-      [](const FileDescriptorProto& file_proto, std::set<std::string>* set) {
+      [](const FileDescriptorProto& file_proto,
+         absl::btree_set<std::string>* set) {
         set->insert(file_proto.package());
       },
       output);
@@ -106,7 +109,8 @@ bool DescriptorDatabase::FindAllPackageNames(std::vector<std::string>* output) {
 bool DescriptorDatabase::FindAllMessageNames(std::vector<std::string>* output) {
   return ForAllFileProtos(
       this,
-      [](const FileDescriptorProto& file_proto, std::set<std::string>* set) {
+      [](const FileDescriptorProto& file_proto,
+         absl::btree_set<std::string>* set) {
         RecordMessageNames(file_proto, set);
       },
       output);
@@ -426,7 +430,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
   bool AddExtension(absl::string_view filename, const FieldProto& field);
 
   // All the maps below have two representations:
-  //  - a std::set<> where we insert initially.
+  //  - a absl::btree_set<> where we insert initially.
   //  - a std::vector<> where we flatten the structure on demand.
   // The initial tree helps avoid O(N) behavior of inserting into a sorted
   // vector, while the vector reduces the heap requirements of the data
@@ -1018,15 +1022,15 @@ bool MergedDescriptorDatabase::FindFileContainingExtension(
 
 bool MergedDescriptorDatabase::FindAllExtensionNumbers(
     const std::string& extendee_type, std::vector<int>* output) {
-  std::set<int> merged_results;
+  absl::btree_set<int> merged_results;
   std::vector<int> results;
   bool success = false;
 
   for (DescriptorDatabase* source : sources_) {
     if (source->FindAllExtensionNumbers(extendee_type, &results)) {
       std::copy(results.begin(), results.end(),
-                std::insert_iterator<std::set<int> >(merged_results,
-                                                     merged_results.begin()));
+                std::insert_iterator<absl::btree_set<int> >(
+                    merged_results, merged_results.begin()));
       success = true;
     }
     results.clear();

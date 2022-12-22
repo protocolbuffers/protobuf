@@ -39,7 +39,6 @@
 #include <algorithm>
 #include <memory>
 #include <random>
-#include <set>
 #include <sstream>
 #include <vector>
 
@@ -49,6 +48,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/stubs/logging.h"
@@ -436,7 +436,7 @@ TEST_F(MapImplTest, BeginIsFast) {
 // was triggered.  This test is a hacky, but probably better than nothing.
 TEST_F(MapImplTest, HashFlood) {
   const int kTestSize = 1024;  // must be a power of 2
-  std::set<int> s;
+  absl::btree_set<int> s;
   for (int i = 0; s.size() < kTestSize; i++) {
     if ((map_.hash_function()(i) & (kTestSize - 1)) < 3) {
       s.insert(i);
@@ -447,7 +447,7 @@ TEST_F(MapImplTest, HashFlood) {
   // of 2 for table sizes, and that it's sufficient to "flood" with respect to
   // the low bits of the output of map_.hash_function().
   std::vector<int64_t> times;
-  std::set<int>::iterator it = s.begin();
+  auto it = s.begin();
   int count = 0;
   do {
     const int64_t start = Now();
@@ -475,9 +475,7 @@ TEST_F(MapImplTest, CopyIteratorStressTest) {
     map_[key] = i;
     v.push_back(map_.find(key));
   }
-  for (std::vector<Map<int32_t, int32_t>::iterator>::const_iterator it =
-           v.begin();
-       it != v.end(); it++) {
+  for (auto it = v.begin(); it != v.end(); it++) {
     Map<int32_t, int32_t>::iterator i = *it;
     ASSERT_EQ(i->first, (*it)->first);
     ASSERT_EQ(i->second, (*it)->second);
@@ -594,9 +592,9 @@ static void StressTestIterators(int n) {
     v.push_back(it);
   }
   ASSERT_EQ(m.size(), v.size());
-  const Map<int, int>::iterator erase_result = m.erase(m.find(last_key));
+  const auto erase_result = m.erase(m.find(last_key));
   int index = 0;
-  for (Map<int, int>::iterator it = m.begin(); it != m.end(); ++it, ++index) {
+  for (auto it = m.begin(); it != m.end(); ++it, ++index) {
     if (index == position_of_last_key) {
       EXPECT_EQ(&*erase_result, &*v[++index]);
     }
@@ -611,7 +609,7 @@ TEST_F(MapImplTest, IteratorInvalidation) {
 #else
   const int kMaxSizeToTest = 1000 * 1000;
 #endif
-  std::set<int> s;
+  absl::btree_set<int> s;
   int n = kMaxSizeToTest;
   unsigned int frog = k1 + n;
   while (n > 1 && s.size() < 25) {
@@ -625,8 +623,8 @@ TEST_F(MapImplTest, IteratorInvalidation) {
   s.insert(2);
   s.insert(3);
   // Now, the real work.
-  for (std::set<int>::iterator i = s.begin(); i != s.end(); ++i) {
-    StressTestIterators(*i);
+  for (int i : s) {
+    StressTestIterators(i);
   }
 }
 

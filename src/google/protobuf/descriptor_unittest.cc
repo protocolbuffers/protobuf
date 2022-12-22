@@ -42,6 +42,8 @@
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
@@ -577,7 +579,7 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
 }
 
 void ExtractDebugString(
-    const FileDescriptor* file, std::set<std::string>* visited,
+    const FileDescriptor* file, absl::flat_hash_set<std::string>* visited,
     std::vector<std::pair<std::string, std::string>>* debug_strings) {
   if (!visited->insert(file->name()).second) {
     return;
@@ -603,7 +605,7 @@ class SimpleErrorCollector : public io::ErrorCollector {
 // Test that the result of FileDescriptor::DebugString() can be used to create
 // the original descriptors.
 TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
-  std::set<std::string> visited;
+  absl::flat_hash_set<std::string> visited;
   std::vector<std::pair<std::string, std::string>> debug_strings;
   ExtractDebugString(protobuf_unittest::TestAllTypes::descriptor()->file(),
                      &visited, &debug_strings);
@@ -850,12 +852,13 @@ TEST_F(DescriptorTest, ContainingType) {
 
 TEST_F(DescriptorTest, FieldNamesDedup) {
   const auto collect_unique_names = [](const FieldDescriptor* field) {
-    std::set<std::string> names{field->name(), field->lowercase_name(),
-                                field->camelcase_name(), field->json_name()};
+    absl::btree_set<std::string> names{field->name(), field->lowercase_name(),
+                                       field->camelcase_name(),
+                                       field->json_name()};
     // Verify that we have the same number of string objects as we have string
     // values. That is, duplicate names use the same std::string object.
     // This is for memory efficiency.
-    EXPECT_EQ(names.size(), (std::set<const std::string*>{
+    EXPECT_EQ(names.size(), (absl::flat_hash_set<const std::string*>{
                                 &field->name(), &field->lowercase_name(),
                                 &field->camelcase_name(), &field->json_name()}
                                  .size()))
