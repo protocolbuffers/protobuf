@@ -46,7 +46,6 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
 
-
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
