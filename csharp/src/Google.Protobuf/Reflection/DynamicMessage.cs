@@ -50,11 +50,6 @@ namespace Google.Protobuf.Reflection
         MessageDescriptor IMessage.Descriptor { get; }
 
         /// <summary>
-        /// 
-        /// </summary>
-        //public UnknownFieldSet UnknownFields => _unknownFields;
-
-        /// <summary>
         /// Used to calculate the size of the serialized message.
         /// </summary>
         /// <returns></returns>

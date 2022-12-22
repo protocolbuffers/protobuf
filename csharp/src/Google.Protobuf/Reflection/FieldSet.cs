@@ -4,13 +4,15 @@ using System.Collections.Generic;
 
 namespace Google.Protobuf.Reflection
 {
-
+    /// <summary>
+    /// Class used to hold collection of FieldDescriptor and value mapping.
+    /// </summary>
     public sealed class FieldSet : IEquatable<FieldSet>, IDeepCloneable<FieldSet>
     {
 
         private readonly IDictionary<FieldDescriptor, object> fields;
 
-        public IDictionary<FieldDescriptor, object> Fields => fields;
+        private IDictionary<FieldDescriptor, object> Fields => fields;
 
         /// <summary>
         /// Creates a new instance.
@@ -125,7 +127,7 @@ namespace Google.Protobuf.Reflection
                     return CodedOutputStream.ComputeEnumSize((int) value);
 
             }
-            throw new ArgumentException("unidentified type :" + fieldType.ToString());
+            throw new ArgumentException($"unidentified type :{fieldType}");
         }
 
         /// <summary>
@@ -222,7 +224,7 @@ namespace Google.Protobuf.Reflection
                 case FieldType.Group:
                     return WireFormat.WireType.StartGroup;
             }
-            throw new ArgumentException("unidentified fieldtype :" + type);
+            throw new ArgumentException($"unidentified fieldtype :{type}");
         }
 
         /// <summary>
@@ -288,7 +290,7 @@ namespace Google.Protobuf.Reflection
                     output.WriteMessage((IMessage) value);
                     return;
             }
-            throw new ArgumentException("unidentified type :" + type.ToString());
+            throw new ArgumentException($"unidentified type :{type}");
         }
 
         /// <summary>
@@ -356,6 +358,11 @@ namespace Google.Protobuf.Reflection
             }
         }
 
+        /// <summary>
+        /// Compare for equality
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(FieldSet other)
         {
             if (ReferenceEquals(other, null))
@@ -370,6 +377,10 @@ namespace Google.Protobuf.Reflection
             return true;
         }
 
+        /// <summary>
+        /// To clone the FieldSet
+        /// </summary>
+        /// <returns></returns>
         public FieldSet Clone()
         {
             return new FieldSet(new Dictionary<FieldDescriptor, object>(fields));
