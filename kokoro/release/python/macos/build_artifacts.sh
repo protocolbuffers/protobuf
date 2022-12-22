@@ -2,13 +2,14 @@
 
 set -ex
 
-use_bazel.sh 5.1.1
-
 # Remove any pre-existing protobuf installation.
 brew uninstall -f protobuf
 
 # change to repo root
 pushd $(dirname $0)/../../../..
+
+chmod ugo+x ${KOKORO_GFILE_DIR}/use_bazel.sh
+${KOKORO_GFILE_DIR}/use_bazel.sh 5.1.1
 
 # Create stage dir
 ORIGINAL_DIR=`pwd`
