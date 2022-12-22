@@ -6,6 +6,7 @@ internal_ruby_proto_library(
     name = "test_ruby_protos",
     srcs = glob(["*.proto"]),
     includes = ["."],
+    protoc = "//ruby/compatibility_tests/v3.0.0:protoc",
 )
 
 ruby_test(

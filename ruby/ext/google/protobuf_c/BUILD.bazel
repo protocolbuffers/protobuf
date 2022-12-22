@@ -1,3 +1,4 @@
+load("@build_bazel_rules_apple//apple:apple_binary.bzl", "apple_binary")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@upb//cmake:build_defs.bzl", "staleness_test")
 
@@ -29,6 +30,7 @@ apple_binary(
         "-multiply_defined,suppress",
     ],
     platform_type = "macos",
+    minimum_os_version = "10.11",
     tags = ["manual"],
     deps = [
         ":protobuf_c",
