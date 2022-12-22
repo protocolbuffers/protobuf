@@ -436,7 +436,12 @@ pkg_files(
             "google/protobuf/internal/test_util.py",
             "google/protobuf/internal/import_test_package/__init__.py",
         ],
-    ),
+    ) + [
+      "README.md",
+      "google/__init__.py",
+      "setup.cfg",
+      "tox.ini",
+    ],
     visibility = ["@upb//:__subpackages__"],
     strip_prefix = "",
 )
