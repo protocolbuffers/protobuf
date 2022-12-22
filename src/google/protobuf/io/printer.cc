@@ -38,6 +38,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <map>
 #include <string>
 #include <type_traits>
 #include <utility>

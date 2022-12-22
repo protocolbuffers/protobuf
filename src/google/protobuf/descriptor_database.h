@@ -37,6 +37,7 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_DATABASE_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_DATABASE_H__
 
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
