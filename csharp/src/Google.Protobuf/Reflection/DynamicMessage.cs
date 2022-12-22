@@ -1,18 +1,4 @@
-﻿
-/* Unmerged change from project 'Google.Protobuf (net50)'
-Before:
-using Google.Protobuf.Collections;
-using System;
-After:
-using Google;
-using Google.Protobuf;
-using Google.Protobuf.Collections;
-using Google.Protobuf.Reflection;
-using Google.Protobuf.Reflection;
-using Google.Protobuf.Reflection.Dynamic;
-using System;
-*/
-using Google.Protobuf.Collections;
+﻿using Google.Protobuf.Collections;
 using System;
 using System.Collections;
 
@@ -25,22 +11,19 @@ namespace Google.Protobuf.Reflection
     public sealed partial class DynamicMessage : IMessage<DynamicMessage>
     {
 
-        private readonly MessageParser<MessageDescriptor, DynamicMessage> _parser = null;
-
-        /// <summary>
-        /// Static properties for parsing and reflection
-        /// </summary> 
-        public MessageParser<MessageDescriptor, DynamicMessage> Parser { get { return _parser; } }
-
-        /// <summary>
-        /// Holds the descriptor information. This cant be static, as every DynamicMessage can have a separate descriptor.
-        /// </summary>
-        public MessageDescriptor Descriptor { get; }
-
-        private readonly FieldSet fieldSet = FieldSet.CreateInstance();
+        private readonly MessageParser<DynamicMessage> _parser = null;
+        private FieldSet _fieldSet = FieldSet.CreateInstance();
         private UnknownFieldSet _unknownFields = new UnknownFieldSet();
 
-        partial void OnConstruction();
+        /// <summary>
+        /// Properties for parsing
+        /// </summary> 
+        public MessageParser<DynamicMessage> Parser { get { return _parser; } }
+
+        /// <summary>
+        /// Holds the descriptor information. This can't be static, as every DynamicMessage can have a separate descriptor.
+        /// </summary>
+        public MessageDescriptor Descriptor { get; }
 
         /// <summary>
         /// The default const being replaced with this one.
@@ -50,26 +33,26 @@ namespace Google.Protobuf.Reflection
         public DynamicMessage(MessageDescriptor descriptor)
         {
             this.Descriptor = descriptor;
-            _parser = new MessageParser<MessageDescriptor, DynamicMessage>((desc) => new DynamicMessage(desc), descriptor);
+            _parser = new MessageParser<DynamicMessage>(() => new DynamicMessage(descriptor));
             OnConstruction();
         }
 
-        DynamicMessage(FieldSet fieldSet)
-        {
-            this.fieldSet = fieldSet;
-        }
+        partial void OnConstruction();
 
         /// <summary>
         /// The FieldSet reference
         /// </summary>
-        public FieldSet FieldSet => fieldSet;
+        public FieldSet FieldSet => _fieldSet;
 
         /// <summary>
         /// Descriptor for this message.
         /// </summary>
         MessageDescriptor IMessage.Descriptor { get; }
 
-        public UnknownFieldSet UnknownFields => _unknownFields;
+        /// <summary>
+        /// 
+        /// </summary>
+        //public UnknownFieldSet UnknownFields => _unknownFields;
 
         /// <summary>
         /// Used to calculate the size of the serialized message.
@@ -77,7 +60,7 @@ namespace Google.Protobuf.Reflection
         /// <returns></returns>
         public int CalculateSize()
         {
-            int size = fieldSet.GetSerializedSize();
+            int size = _fieldSet.GetSerializedSize();
             if (_unknownFields != null)
             {
                 size += _unknownFields.CalculateSize();
@@ -85,6 +68,10 @@ namespace Google.Protobuf.Reflection
             return size;
         }
 
+        /// <summary>
+        /// Merges content from input into current DynamicMessage
+        /// </summary>
+        /// <param name="input"></param>
         public void MergeFrom(CodedInputStream input)
         {
             uint tag;
@@ -97,7 +84,7 @@ namespace Google.Protobuf.Reflection
                 {
                     _unknownFields = UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 }
-                if (fd.FieldType == FieldType.Message)
+                else if (fd.FieldType == FieldType.Message)
                 {
                     MergeFromMessageTypeField(input, fd);
                 }
@@ -114,18 +101,27 @@ namespace Google.Protobuf.Reflection
         /// <param name="output"></param>
         public void WriteTo(CodedOutputStream output)
         {
-            fieldSet.WriteTo(output);
+            _fieldSet.WriteTo(output);
             _unknownFields?.WriteTo(output);
         }
 
+        /// <summary>
+        /// Merges other DynamicMessage into current one.
+        /// </summary>
+        /// <param name="message"></param>
         public void MergeFrom(DynamicMessage message)
         {
             if (message == null)
                 return;
-            fieldSet.Merge(message.fieldSet);
+            _fieldSet.Merge(message._fieldSet);
             _unknownFields = UnknownFieldSet.MergeFrom(_unknownFields, message._unknownFields);
         }
 
+        /// <summary>
+        /// Compares for equality
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(DynamicMessage other)
         {
             if (ReferenceEquals(other, null))
@@ -136,13 +132,44 @@ namespace Google.Protobuf.Reflection
             {
                 return true;
             }
-            if (!fieldSet.Equals(other.fieldSet)) return false;
+            if (!Equals(_fieldSet, other._fieldSet)) return false;
             return Equals(_unknownFields, other._unknownFields);
         }
 
+        /// <summary>
+        /// Clone a DynamicMessage
+        /// </summary>
+        /// <returns></returns>
         public DynamicMessage Clone()
         {
-            return new DynamicMessage(fieldSet.Clone());
+            return new DynamicMessage(Descriptor)
+            {
+                _fieldSet = this._fieldSet.Clone(),
+                _unknownFields = UnknownFieldSet.Clone(this._unknownFields)
+            };
+        }
+
+        /// <summary>
+        /// To add a field to DynamicMessage
+        /// </summary>
+        /// <param name="fieldName"></param>
+        /// <param name="v"></param>
+        /// <exception cref="Exception"></exception>
+        public void Add(String fieldName, object v)
+        {
+            FieldDescriptor fieldDescriptor = Descriptor.FindFieldByName(fieldName);
+            if (fieldDescriptor == null)
+            {
+                throw new Exception("unknown field not supported by this version of the method");
+            }
+            else if (fieldDescriptor.IsRepeated)
+            {
+                _fieldSet.AddRepeatedField(fieldDescriptor, v);
+            }
+            else
+            {
+                _fieldSet.SetField(fieldDescriptor, v);
+            }
         }
 
         private void MergeFromPrimitiveTypeField(CodedInputStream input, uint tag, FieldDescriptor fd)
@@ -150,14 +177,14 @@ namespace Google.Protobuf.Reflection
             if (fd.ToProto().Label != FieldDescriptorProto.Types.Label.Repeated)
             {
                 object value = ReadField(fd.FieldType, input);
-                fieldSet.SetField(fd, value);
+                _fieldSet.SetField(fd, value);
             }
             else
             {
                 IEnumerator enumerator = GetFieldCodec(tag, fd.FieldType, input);
                 while (enumerator.MoveNext())
                 {
-                    fieldSet.AddRepeatedField(fd, enumerator.Current);
+                    _fieldSet.AddRepeatedField(fd, enumerator.Current);
                 }
             }
 
@@ -169,11 +196,11 @@ namespace Google.Protobuf.Reflection
             input.ReadMessage(value);
             if (fd.ToProto().Label != FieldDescriptorProto.Types.Label.Repeated)
             {
-                fieldSet.SetField(fd, value);
+                _fieldSet.SetField(fd, value);
             }
             else
             {
-                fieldSet.AddRepeatedField(fd, value);
+                _fieldSet.AddRepeatedField(fd, value);
             }
         }
 
@@ -299,21 +326,6 @@ namespace Google.Protobuf.Reflection
             throw new Exception("FieldType:" + fieldType + ", not handled in GetFieldCodec method.");
         }
 
-        internal void Add(String fieldName, object v)
-        {
-            FieldDescriptor fieldDescriptor = Descriptor.FindFieldByName(fieldName);
-            if (fieldDescriptor == null)
-            {
-                throw new Exception("unknown field not supported by this version of the method");
-            }
-            else if (fieldDescriptor.IsRepeated)
-            {
-                fieldSet.AddRepeatedField(fieldDescriptor, v);
-            }
-            else
-            {
-                fieldSet.SetField(fieldDescriptor, v);
-            }
-        }
+
     }
 }

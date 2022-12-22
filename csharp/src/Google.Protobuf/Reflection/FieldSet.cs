@@ -1,19 +1,5 @@
 ﻿using System;
 using System.Collections;
-
-/* Unmerged change from project 'Google.Protobuf (net50)'
-Before:
-using System.Collections.Generic;
-
-namespace Google.Protobuf.Reflection.Dynamic
-After:
-using System.Collections.Generic;
-using Google;
-using Google.Protobuf;
-using Google.Protobuf.Reflection;
-using Google.Protobuf.Reflection;
-using Google.Protobuf.Reflection.Dynamic
-*/
 using System.Collections.Generic;
 
 namespace Google.Protobuf.Reflection
