@@ -381,56 +381,6 @@ static int k0 = 812398771;
 static int k1 = 1312938717;
 static int k2 = 1321555333;
 
-// A naive begin() implementation will cause begin() to get slower and slower
-// if one erases elements at the "front" of the hash map, and we'd like to
-// avoid that, as std::unordered_map does.
-TEST_F(MapImplTest, BeginIsFast) {
-  if (true) return;  // TODO(gpike): make this less flaky and re-enable it.
-  Map<int32_t, int32_t> map;
-  const int kTestSize = 250000;
-  // Create a random-looking map of size n.  Use non-negative integer keys.
-  uint32_t frog = 123983;
-  int last_key = 0;
-  int counter = 0;
-  while (map.size() < kTestSize) {
-    frog *= static_cast<uint32_t>(k0);
-    frog ^= frog >> 17;
-    frog += counter++;
-    last_key =
-        static_cast<int>(frog) >= 0 ? static_cast<int>(frog) : last_key ^ 1;
-    GOOGLE_ABSL_DCHECK_GE(last_key, 0);
-    map[last_key] = last_key ^ 1;
-  }
-  std::vector<int64_t> times;
-  // We're going to do map.erase(map.begin()) over and over again.  But,
-  // just in case one iteration is fast compared to the granularity of
-  // our time keeping, we measure kChunkSize iterations per outer-loop iter.
-  const int kChunkSize = 1000;
-  GOOGLE_ABSL_CHECK_EQ(kTestSize % kChunkSize, 0);
-  do {
-    const int64_t start = Now();
-    for (int i = 0; i < kChunkSize; i++) {
-      map.erase(map.begin());
-    }
-    const int64_t end = Now();
-    if (end > start) {
-      times.push_back(end - start);
-    }
-  } while (!map.empty());
-  if (times.size() < .99 * kTestSize / kChunkSize) {
-    GOOGLE_ABSL_LOG(WARNING) << "Now() isn't helping us measure time";
-    return;
-  }
-  int64_t x0 = median(times.begin(), times.begin() + 9);
-  int64_t x1 = median(times.begin() + times.size() - 9, times.end());
-  GOOGLE_ABSL_LOG(INFO) << "x0=" << x0 << ", x1=" << x1;
-  // x1 will greatly exceed x0 if the code we just executed took O(n^2) time.
-  // And we'll probably time out and never get here.  So, this test is
-  // intentionally loose: we check that x0 and x1 are within a factor of 8.
-  EXPECT_GE(x1, x0 / 8);
-  EXPECT_GE(x0, x1 / 8);
-}
-
 // Try to create kTestSize keys that will land in just a few buckets, and
 // time the insertions, to get a rough estimate of whether an O(n^2) worst case
 // was triggered.  This test is a hacky, but probably better than nothing.

@@ -42,7 +42,6 @@
 #include <initializer_list>
 #include <iterator>
 #include <limits>  // To support Visual Studio 2008
-#include <map>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -57,6 +56,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/arena.h"
+#include "absl/container/btree_map.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/port.h"
@@ -305,8 +305,8 @@ using LessForTree = typename TransparentSupport<
 
 template <typename Key>
 using TreeForMap =
-    std::map<KeyForTree<Key>, NodeBase*, LessForTree<Key>,
-             MapAllocator<std::pair<const KeyForTree<Key>, NodeBase*>>>;
+    absl::btree_map<KeyForTree<Key>, NodeBase*, LessForTree<Key>,
+                    MapAllocator<std::pair<const KeyForTree<Key>, NodeBase*>>>;
 
 // Type safe tagged pointer.
 // We convert to/from nodes and trees using the operations below.
