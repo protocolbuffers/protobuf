@@ -40,12 +40,12 @@
 
 #include <algorithm>
 #include <cassert>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "absl/container/btree_map.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/port.h"
@@ -680,7 +680,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     };
   };
 
-  using LargeMap = absl::btree_map<int, Extension>;
+  typedef std::map<int, Extension> LargeMap;
 
   // Wrapper API that switches between flat-map and LargeMap.
 
