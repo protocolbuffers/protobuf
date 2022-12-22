@@ -48,6 +48,7 @@
 
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
+#include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/stubs/logging.h"
@@ -62,6 +63,7 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
 
 namespace google {
 namespace protobuf {
@@ -90,6 +92,10 @@ class GeneratedMessageReflectionTestHelper {
 };
 
 namespace {
+
+using ::testing::ElementsAre;
+using ::testing::Pointee;
+using ::testing::Property;
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
 const FieldDescriptor* F(const std::string& name) {
@@ -1375,6 +1381,51 @@ TEST(GeneratedMessageReflection, IsDescendantOneof) {
       IsDescendant(msg1, msg2.foo_message().optional_nested_message()));
   EXPECT_FALSE(
       IsDescendant(msg1, msg2.foo_message().repeated_foreign_message(0)));
+}
+
+TEST(GeneratedMessageReflection, ListFieldsSorted) {
+  unittest::TestFieldOrderings msg;
+  const Reflection* reflection = msg.GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+  msg.set_my_string("hello");             // tag 11
+  msg.mutable_optional_nested_message();  // tag 200
+  reflection->ListFields(msg, &fields);
+  // No sorting, in order declaration.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 11)),
+                          Pointee(Property(&FieldDescriptor::number, 200))));
+  msg.set_my_int(4242);  // tag 1
+  reflection->ListFields(msg, &fields);
+  // Sorting as fields are declared in order 11, 1, 200.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 1)),
+                          Pointee(Property(&FieldDescriptor::number, 11)),
+                          Pointee(Property(&FieldDescriptor::number, 200))));
+  msg.clear_optional_nested_message();  // tag 200
+  msg.SetExtension(unittest::my_extension_int,
+                   424242);  // tag 5 from extension
+  reflection->ListFields(msg, &fields);
+  // Sorting as extension tag is in between.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 1)),
+                          Pointee(Property(&FieldDescriptor::number, 5)),
+                          Pointee(Property(&FieldDescriptor::number, 11))));
+  msg.clear_my_string();  // tag 11.
+  reflection->ListFields(msg, &fields);
+  // No sorting as extension is bigger than tag 1.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 1)),
+                          Pointee(Property(&FieldDescriptor::number, 5))));
+  msg.set_my_float(1.0);  // tag 101
+  msg.SetExtension(unittest::my_extension_string,
+                   "hello");  // tag 50 from extension
+  reflection->ListFields(msg, &fields);
+  // Sorting of all as extensions are out of order and fields are in between.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 1)),
+                          Pointee(Property(&FieldDescriptor::number, 5)),
+                          Pointee(Property(&FieldDescriptor::number, 50)),
+                          Pointee(Property(&FieldDescriptor::number, 101))));
 }
 
 }  // namespace

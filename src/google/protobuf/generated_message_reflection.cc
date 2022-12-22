@@ -1558,6 +1558,13 @@ bool IsIndexInHasBitSet(const uint32_t* has_bit_set, uint32_t has_bit_index) {
 bool CreateUnknownEnumValues(const FileDescriptor* file) {
   return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
+
+void CheckInOrder(const FieldDescriptor* field, uint32_t* last) {
+  *last = *last <= static_cast<uint32_t>(field->number())
+              ? static_cast<uint32_t>(field->number())
+              : UINT32_MAX;
+}
+
 }  // namespace
 
 namespace internal {
@@ -1586,6 +1593,12 @@ void Reflection::ListFieldsMayFailOnStripped(
   const uint32_t* const has_bits_indices = schema_.has_bit_indices_;
   output->reserve(descriptor_->field_count());
   const int last_non_weak_field_index = last_non_weak_field_index_;
+  // Fields in messages are usually added with the increasing tags.
+  uint32_t last = 0;  // UINT32_MAX if out-of-order
+  auto append_to_output = [&last, &output](const FieldDescriptor* field) {
+    CheckInOrder(field, &last);
+    output->push_back(field);
+  };
   for (int i = 0; i <= last_non_weak_field_index; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (!should_fail && schema_.IsFieldStripped(field)) {
@@ -1593,7 +1606,7 @@ void Reflection::ListFieldsMayFailOnStripped(
     }
     if (field->is_repeated()) {
       if (FieldSize(message, field) > 0) {
-        output->push_back(field);
+        append_to_output(field);
       }
     } else {
       const OneofDescriptor* containing_oneof = field->containing_oneof();
@@ -1604,26 +1617,44 @@ void Reflection::ListFieldsMayFailOnStripped(
         // Equivalent to: HasOneofField(message, field)
         if (static_cast<int64_t>(oneof_case_array[containing_oneof->index()]) ==
             field->number()) {
-          output->push_back(field);
+          append_to_output(field);
         }
       } else if (has_bits && has_bits_indices[i] != static_cast<uint32_t>(-1)) {
         CheckInvalidAccess(schema_, field);
         // Equivalent to: HasBit(message, field)
         if (IsIndexInHasBitSet(has_bits, has_bits_indices[i])) {
-          output->push_back(field);
+          append_to_output(field);
         }
       } else if (HasBit(message, field)) {  // Fall back on proto3-style HasBit.
-        output->push_back(field);
+        append_to_output(field);
       }
     }
   }
+  // Descriptors of ExtensionSet are appended in their increasing tag
+  // order and they are usually bigger than the field tags so if all fields are
+  // not sorted, let them be sorted.
+  if (last == UINT32_MAX) {
+    std::sort(output->begin(), output->end(), FieldNumberSorter());
+    last = output->back()->number();
+  }
+  size_t last_size = output->size();
   if (schema_.HasExtensionSet()) {
+    // Descriptors of ExtensionSet are appended in their increasing order.
     GetExtensionSet(message).AppendToList(descriptor_, descriptor_pool_,
                                           output);
+    GOOGLE_ABSL_DCHECK(std::is_sorted(output->begin() + last_size, output->end(),
+                               FieldNumberSorter()));
+    if (output->size() != last_size) {
+      CheckInOrder((*output)[last_size], &last);
+    }
   }
-
-  // ListFields() must sort output by field number.
-  std::sort(output->begin(), output->end(), FieldNumberSorter());
+  if (last != UINT32_MAX) {
+    GOOGLE_ABSL_DCHECK(
+        std::is_sorted(output->begin(), output->end(), FieldNumberSorter()));
+  } else {
+    // ListFields() must sort output by field number.
+    std::sort(output->begin(), output->end(), FieldNumberSorter());
+  }
 }
 
 void Reflection::ListFields(const Message& message,
