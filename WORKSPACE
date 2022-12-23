@@ -31,12 +31,6 @@ http_archive(
     urls = ["https://github.com/bazelbuild/platforms/archive/da5541f26b7de1dc8e04c075c99df5351742a4a2.zip"],  # 2022-05-27
 )
 
-# TODO(mkruskal) Delete this before merging, it's for local dev only.
-local_repository(
-    name = "rules_ruby",
-    path = "../rules_ruby",
-)
-
 # Load common dependencies.
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 protobuf_deps()
