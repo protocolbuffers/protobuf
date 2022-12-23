@@ -71,6 +71,9 @@ UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
 UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
                                               const upb_MiniTableField* field) {
   char zero[16] = {0};
+  if (upb_IsRepeatedOrMap(field)) {
+    return memcmp(&zero, default_val, sizeof(void*));
+  }
   switch (_upb_MiniTableField_GetRep(field)) {
     case kUpb_FieldRep_1Byte:
       return memcmp(&zero, default_val, 1) != 0;
@@ -88,6 +91,10 @@ UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
 
 UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
                                              const upb_MiniTableField* field) {
+  if (upb_IsRepeatedOrMap(field)) {
+    memcpy(to, from, sizeof(void*));
+    return;
+  }
   switch (_upb_MiniTableField_GetRep(field)) {
     case kUpb_FieldRep_1Byte:
       memcpy(to, from, 1);
@@ -249,6 +256,20 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
   const char zeros[16] = {0};
   _upb_MiniTable_CopyFieldData(_upb_MiniTableField_GetPtr(msg, field), zeros,
                                field);
+}
+
+UPB_INLINE upb_Map* _upb_MiniTable_GetOrCreateMutableMap(
+    upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
+    size_t val_size, upb_Arena* arena) {
+  UPB_ASSUME(upb_IsRepeatedOrMap(field));
+  upb_Map* map = NULL;
+  upb_Map* default_map_value = NULL;
+  _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
+  if (!map) {
+    map = _upb_Map_New(arena, key_size, val_size);
+    _upb_Message_SetNonExtensionField(msg, field, &map);
+  }
+  return map;
 }
 
 // EVERYTHING ABOVE THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
@@ -540,27 +561,30 @@ UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
   return field->descriptortype == kUpb_FieldType_Enum;
 }
 
+UPB_API_INLINE const upb_Map* upb_Message_GetMap(
+    const upb_Message* msg, const upb_MiniTableField* field) {
+  UPB_ASSUME(upb_FieldMode_Get(field) == kUpb_FieldMode_Map);
+  const upb_Map* ret;
+  const upb_Map* default_val = NULL;
+  _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
+  return ret;
+}
+
+// TODO: rename to GetOrCreateMutableMap
 UPB_API_INLINE upb_Map* upb_MiniTable_GetMutableMap(
     upb_Message* msg, const upb_MiniTable* map_entry_mini_table,
     const upb_MiniTableField* field, upb_Arena* arena) {
-  UPB_ASSERT(map_entry_mini_table != NULL);
-  UPB_ASSUME(upb_IsRepeatedOrMap(field));
-  upb_Map* map = NULL;
-  upb_Map* default_map_value = NULL;
-  _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
-  if (!map) {
-    // Allocate map.
-    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
-               field->descriptortype == kUpb_FieldType_Group);
-    const upb_MiniTableField* map_entry_key_field =
-        &map_entry_mini_table->fields[0];
-    const upb_MiniTableField* map_entry_value_field =
-        &map_entry_mini_table->fields[1];
-    map = upb_Map_New(arena, upb_MiniTableField_CType(map_entry_key_field),
-                      upb_MiniTableField_CType(map_entry_value_field));
-    _upb_Message_SetNonExtensionField(msg, field, &map);
-  }
-  return map;
+  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
+             field->descriptortype == kUpb_FieldType_Group);
+  const upb_MiniTableField* map_entry_key_field =
+      &map_entry_mini_table->fields[0];
+  const upb_MiniTableField* map_entry_value_field =
+      &map_entry_mini_table->fields[1];
+  return _upb_MiniTable_GetOrCreateMutableMap(
+      msg, field,
+      _upb_Map_CTypeSize(upb_MiniTableField_CType(map_entry_key_field)),
+      _upb_Map_CTypeSize(upb_MiniTableField_CType(map_entry_value_field)),
+      arena);
 }
 
 // Updates a map entry given an entry message.
