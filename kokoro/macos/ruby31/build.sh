@@ -8,9 +8,4 @@ cd $(dirname $0)/../../..
 # Fix locale issues in Monterey.
 export LC_ALL=en_US.UTF-8
 
-# Prepare worker environment to run tests
-KOKORO_INSTALL_RVM=yes
-source kokoro/macos/prepare_build_macos_rc
-
-cd ruby
-./travis-test.sh ruby-3.1.0
+./kokoro/macos/test_ruby.sh ruby-3.1.0

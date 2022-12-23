@@ -18,14 +18,14 @@ test_version() {
        which ruby && \
        git clean -f && \
        gem install --no-document bundler && bundle && \
-       bazel test //ruby/... $bazel_args --define=ruby_platform=java"
+       bazel test //ruby/... $bazel_args"
   else
     bash --login -c \
       "rvm install $version && rvm use $version && \
        which ruby && \
        git clean -f && \
        gem install --no-document bundler -v 1.17.3 && bundle && \
-       bazel test //ruby/... $bazel_args --define=ruby_platform=c"
+       bazel test //ruby/... $bazel_args"
   fi
 }
 

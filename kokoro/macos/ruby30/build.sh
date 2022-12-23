@@ -5,9 +5,4 @@
 # Change to repo root
 cd $(dirname $0)/../../..
 
-# Prepare worker environment to run tests
-KOKORO_INSTALL_RVM=yes
-source kokoro/macos/prepare_build_macos_rc
-
-cd ruby
-./travis-test.sh ruby-3.0.2
+./kokoro/macos/test_ruby.sh ruby-3.0.2
