@@ -54,12 +54,30 @@ const int8_t _kUpb_FromBase92[] = {
 };
 
 const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
-    const upb_MiniTable* table, uint32_t number) {
-  int n = table->field_count;
-  for (int i = 0; i < n; i++) {
-    if (table->fields[i].number == number) {
-      return &table->fields[i];
+    const upb_MiniTable* t, uint32_t number) {
+  const size_t i = ((size_t)number) - 1;  // 0 wraps to SIZE_MAX
+
+  // Ideal case: index into dense fields
+  if (i < t->dense_below) {
+    UPB_ASSERT(t->fields[i].number == number);
+    return &t->fields[i];
+  }
+
+  // Slow case: binary search
+  int lo = t->dense_below;
+  int hi = t->field_count - 1;
+  while (lo <= hi) {
+    int mid = (lo + hi) / 2;
+    int num = t->fields[mid].number;
+    if (num < number) {
+      lo = mid + 1;
+      continue;
     }
+    if (num > number) {
+      hi = mid - 1;
+      continue;
+    }
+    return &t->fields[mid];
   }
   return NULL;
 }
