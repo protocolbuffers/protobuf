@@ -76,7 +76,7 @@ UPB_INLINE bool _upb_msg_map_delete(upb_Message* msg, size_t ofs,
                                     const void* key, size_t key_size) {
   upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
   if (!map) return false;
-  return _upb_Map_Delete(map, key, key_size);
+  return _upb_Map_Delete(map, key, key_size, NULL);
 }
 
 UPB_INLINE void _upb_msg_map_clear(upb_Message* msg, size_t ofs) {

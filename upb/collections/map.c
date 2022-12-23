@@ -71,8 +71,12 @@ upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
                                               map->val_size, arena);
 }
 
-bool upb_Map_Delete(upb_Map* map, upb_MessageValue key) {
-  return _upb_Map_Delete(map, &key, map->key_size);
+bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key,
+                     upb_MessageValue* val) {
+  upb_value v;
+  const bool ok = _upb_Map_Delete(map, &key, map->key_size, &v);
+  if (val) val->uint64_val = v.val;
+  return ok;
 }
 
 bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,

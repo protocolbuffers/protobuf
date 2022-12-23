@@ -111,10 +111,10 @@ UPB_INLINE void _upb_Map_Clear(upb_Map* map) {
   upb_strtable_clear(&map->table);
 }
 
-UPB_INLINE bool _upb_Map_Delete(upb_Map* map, const void* key,
-                                size_t key_size) {
+UPB_INLINE bool _upb_Map_Delete(upb_Map* map, const void* key, size_t key_size,
+                                upb_value* val) {
   upb_StringView k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove2(&map->table, k.data, k.size, NULL);
+  return upb_strtable_remove2(&map->table, k.data, k.size, val);
 }
 
 UPB_INLINE bool _upb_Map_Get(const upb_Map* map, const void* key,

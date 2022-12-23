@@ -76,7 +76,14 @@ UPB_INLINE bool upb_Map_Set(upb_Map* map, upb_MessageValue key,
 }
 
 // Deletes this key from the table. Returns true if the key was present.
-bool upb_Map_Delete(upb_Map* map, upb_MessageValue key);
+// If present and |val| is non-NULL, stores the deleted value.
+bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key, upb_MessageValue* val);
+
+// Deletes this key from the table. Returns true if the key was present.
+// (DEPRECATED and going away soon. Do not use.)
+UPB_INLINE bool upb_Map_Delete(upb_Map* map, upb_MessageValue key) {
+  return upb_Map_Delete2(map, key, NULL);
+}
 
 // Map iteration:
 //
