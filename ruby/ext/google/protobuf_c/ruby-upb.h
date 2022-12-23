@@ -57,10 +57,6 @@
  */
 #define UPB_PTR_AT(msg, ofs, type) ((type*)((char*)(msg) + (ofs)))
 
-#define UPB_WRITE_ONEOF(msg, fieldtype, offset, value, case_offset, case_val) \
-  *UPB_PTR_AT(msg, case_offset, int) = case_val;                             \
-  *UPB_PTR_AT(msg, offset, fieldtype) = value;
-
 #define UPB_MAPTYPE_STRING 0
 
 // UPB_EXPORT: always generate a public symbol.
@@ -689,41 +685,42 @@ UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
 extern "C" {
 #endif
 
-/* Creates a new array on the given arena that holds elements of this type. */
-upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
+// Creates a new array on the given arena that holds elements of this type.
+UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
 
-/* Returns the number of elements in the array. */
-size_t upb_Array_Size(const upb_Array* arr);
+// Returns the number of elements in the array.
+UPB_API size_t upb_Array_Size(const upb_Array* arr);
 
-/* Returns the given element, which must be within the array's current size. */
-upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
+// Returns the given element, which must be within the array's current size.
+UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
 
-/* Sets the given element, which must be within the array's current size. */
-void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
+// Sets the given element, which must be within the array's current size.
+UPB_API void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
 
-/* Appends an element to the array.  Returns false on allocation failure. */
-bool upb_Array_Append(upb_Array* array, upb_MessageValue val, upb_Arena* arena);
+// Appends an element to the array. Returns false on allocation failure.
+UPB_API bool upb_Array_Append(upb_Array* array, upb_MessageValue val,
+                              upb_Arena* arena);
 
-/* Moves elements within the array using memmove(). Like memmove(), the source
- * and destination elements may be overlapping. */
-void upb_Array_Move(upb_Array* array, size_t dst_idx, size_t src_idx,
-                    size_t count);
+// Moves elements within the array using memmove().
+// Like memmove(), the source and destination elements may be overlapping.
+UPB_API void upb_Array_Move(upb_Array* array, size_t dst_idx, size_t src_idx,
+                            size_t count);
 
-/* Inserts one or more empty elements into the array.  Existing elements are
- * shifted right.  The new elements have undefined state and must be set with
- * `upb_Array_Set()`.
- * REQUIRES: `i <= upb_Array_Size(arr)` */
-bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
-                      upb_Arena* arena);
+// Inserts one or more empty elements into the array.
+// Existing elements are shifted right.
+// The new elements have undefined state and must be set with `upb_Array_Set()`.
+// REQUIRES: `i <= upb_Array_Size(arr)`
+UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
+                              upb_Arena* arena);
 
-/* Deletes one or more elements from the array.  Existing elements are shifted
- * left.
- * REQUIRES: `i + count <= upb_Array_Size(arr)` */
-void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
+// Deletes one or more elements from the array.
+// Existing elements are shifted left.
+// REQUIRES: `i + count <= upb_Array_Size(arr)`
+UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
 
-/* Changes the size of a vector.  New elements are initialized to empty/0.
- * Returns false on allocation failure. */
-bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
+// Changes the size of a vector. New elements are initialized to NULL/0.
+// Returns false on allocation failure.
+UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -794,8 +791,9 @@ UPB_INLINE bool _upb_array_reserve(upb_Array* arr, size_t size,
   return true;
 }
 
-UPB_INLINE bool _upb_Array_Resize(upb_Array* arr, size_t size,
-                                  upb_Arena* arena) {
+// Resize without initializing new elements.
+UPB_INLINE bool _upb_Array_ResizeUninitialized(upb_Array* arr, size_t size,
+                                               upb_Arena* arena) {
   if (!_upb_array_reserve(arr, size, arena)) return false;
   arr->size = size;
   return true;
@@ -949,7 +947,14 @@ UPB_INLINE bool upb_Map_Set(upb_Map* map, upb_MessageValue key,
 }
 
 // Deletes this key from the table. Returns true if the key was present.
-bool upb_Map_Delete(upb_Map* map, upb_MessageValue key);
+// If present and |val| is non-NULL, stores the deleted value.
+bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key, upb_MessageValue* val);
+
+// Deletes this key from the table. Returns true if the key was present.
+// (DEPRECATED and going away soon. Do not use.)
+UPB_INLINE bool upb_Map_Delete(upb_Map* map, upb_MessageValue key) {
+  return upb_Map_Delete2(map, key, NULL);
+}
 
 // Map iteration:
 //
@@ -1378,10 +1383,10 @@ UPB_INLINE void _upb_Map_Clear(upb_Map* map) {
   upb_strtable_clear(&map->table);
 }
 
-UPB_INLINE bool _upb_Map_Delete(upb_Map* map, const void* key,
-                                size_t key_size) {
+UPB_INLINE bool _upb_Map_Delete(upb_Map* map, const void* key, size_t key_size,
+                                upb_value* val) {
   upb_StringView k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove2(&map->table, k.data, k.size, NULL);
+  return upb_strtable_remove2(&map->table, k.data, k.size, val);
 }
 
 UPB_INLINE bool _upb_Map_Get(const upb_Map* map, const void* key,
@@ -1798,20 +1803,7 @@ UPB_INLINE void _upb_sethas_field(const upb_Message* msg,
   _upb_sethas(msg, _upb_Message_Hasidx(f));
 }
 
-UPB_INLINE void _upb_clearhas_field(const upb_Message* msg,
-                                    const upb_MiniTableField* f) {
-  _upb_clearhas(msg, _upb_Message_Hasidx(f));
-}
-
 // Oneof case access ///////////////////////////////////////////////////////////
-
-UPB_INLINE uint32_t* _upb_oneofcase(upb_Message* msg, size_t case_ofs) {
-  return UPB_PTR_AT(msg, case_ofs, uint32_t);
-}
-
-UPB_INLINE uint32_t _upb_getoneofcase(const void* msg, size_t case_ofs) {
-  return *UPB_PTR_AT(msg, case_ofs, uint32_t);
-}
 
 UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTableField* f) {
   UPB_ASSERT(f->presence < 0);
@@ -1820,16 +1812,12 @@ UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTableField* f) {
 
 UPB_INLINE uint32_t* _upb_oneofcase_field(upb_Message* msg,
                                           const upb_MiniTableField* f) {
-  return _upb_oneofcase(msg, _upb_oneofcase_ofs(f));
+  return UPB_PTR_AT(msg, _upb_oneofcase_ofs(f), uint32_t);
 }
 
 UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
                                             const upb_MiniTableField* f) {
-  return _upb_getoneofcase(msg, _upb_oneofcase_ofs(f));
-}
-
-UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_Message* msg, size_t ofs) {
-  return *UPB_PTR_AT(msg, ofs, const upb_Message*) != NULL;
+  return *_upb_oneofcase_field((upb_Message*)msg, f);
 }
 
 // LINT.ThenChange(GoogleInternalName2)
@@ -2203,7 +2191,7 @@ UPB_INLINE bool _upb_msg_map_delete(upb_Message* msg, size_t ofs,
                                     const void* key, size_t key_size) {
   upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
   if (!map) return false;
-  return _upb_Map_Delete(map, key, key_size);
+  return _upb_Map_Delete(map, key, key_size, NULL);
 }
 
 UPB_INLINE void _upb_msg_map_clear(upb_Message* msg, size_t ofs) {
@@ -2279,6 +2267,8 @@ UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);
 
 UPB_API upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
+
+UPB_API upb_CType upb_MiniTableField_CType(const upb_MiniTableField* field);
 
 UPB_API_INLINE bool upb_MiniTableField_IsExtension(
     const upb_MiniTableField* field) {
@@ -2384,7 +2374,7 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
 // we are left with ideal code.  This can happen either through through
 // literals or UPB_ASSUME():
 //
-//   // Via string literals.
+//   // Via struct literals.
 //   bool FooMessage_set_bool_field(const upb_Message* msg, bool val) {
 //     const upb_MiniTableField field = {1, 0, 0, /* etc... */};
 //     // All value in "field" are compile-time known.
@@ -2404,7 +2394,7 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
 // As a result, we can use these universal getters/setters for *all* message
 // accessors: generated code, MiniTable accessors, and reflection.  The only
 // exception is the binary encoder/decoder, which need to be a bit more clever
-// about how the read/write the message data, for efficiency.
+// about how they read/write the message data, for efficiency.
 //
 // These functions work on both extensions and non-extensions. If the field
 // of a setter is known to be a non-extension, the arena may be NULL and the
@@ -2512,7 +2502,7 @@ UPB_INLINE void _upb_Message_ClearExtensionField(
 UPB_INLINE void _upb_Message_ClearNonExtensionField(
     upb_Message* msg, const upb_MiniTableField* field) {
   if (field->presence > 0) {
-    _upb_clearhas_field(msg, field);
+    _upb_clearhas(msg, _upb_Message_Hasidx(field));
   } else if (_upb_MiniTableField_InOneOf(field)) {
     uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
     if (*oneof_case != field->number) return;
@@ -2543,6 +2533,12 @@ UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
   } else {
     return _upb_Message_HasNonExtensionField(msg, field);
   }
+}
+
+UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
+    const upb_Message* message, const upb_MiniTableField* oneof_field) {
+  UPB_ASSUME(_upb_MiniTableField_InOneOf(oneof_field));
+  return _upb_getoneofcase_field(message, oneof_field);
 }
 
 UPB_API_INLINE bool upb_Message_GetBool(const upb_Message* msg,
@@ -2774,7 +2770,7 @@ UPB_API_INLINE upb_Message* upb_MiniTable_GetMutableMessage(
   return sub_message;
 }
 
-UPB_API_INLINE const upb_Array* upb_MiniTable_GetArray(
+UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const upb_Message* msg, const upb_MiniTableField* field) {
   const upb_Array* ret;
   const upb_Array* default_val = NULL;
@@ -2782,19 +2778,59 @@ UPB_API_INLINE const upb_Array* upb_MiniTable_GetArray(
   return ret;
 }
 
-UPB_API_INLINE upb_Array* upb_MiniTable_GetMutableArray(
+UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
     upb_Message* msg, const upb_MiniTableField* field) {
-  return (upb_Array*)upb_MiniTable_GetArray(msg, field);
+  return (upb_Array*)upb_Message_GetArray(msg, field);
 }
 
-void* upb_MiniTable_ResizeArray(upb_Message* msg,
-                                const upb_MiniTableField* field, size_t len,
-                                upb_Arena* arena);
+UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
+    upb_Message* msg, const upb_MiniTableField* field, upb_CType ctype,
+    upb_Arena* arena) {
+  upb_Array* array = upb_Message_GetMutableArray(msg, field);
+  if (!array) {
+    array = upb_Array_New(arena, ctype);
+    _upb_Message_SetField(msg, field, &array, arena);
+  }
+  return array;
+}
+
+void* upb_Message_ResizeArray(upb_Message* msg, const upb_MiniTableField* field,
+                              size_t len, upb_Arena* arena);
 
 UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
     const upb_MiniTableField* field) {
   return field->descriptortype == kUpb_FieldType_Enum;
 }
+
+UPB_API_INLINE upb_Map* upb_MiniTable_GetMutableMap(
+    upb_Message* msg, const upb_MiniTable* map_entry_mini_table,
+    const upb_MiniTableField* field, upb_Arena* arena) {
+  UPB_ASSERT(map_entry_mini_table != NULL);
+  UPB_ASSUME(upb_IsRepeatedOrMap(field));
+  upb_Map* map = NULL;
+  upb_Map* default_map_value = NULL;
+  _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
+  if (!map) {
+    // Allocate map.
+    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
+               field->descriptortype == kUpb_FieldType_Group);
+    const upb_MiniTableField* map_entry_key_field =
+        &map_entry_mini_table->fields[0];
+    const upb_MiniTableField* map_entry_value_field =
+        &map_entry_mini_table->fields[1];
+    map = upb_Map_New(arena, upb_MiniTableField_CType(map_entry_key_field),
+                      upb_MiniTableField_CType(map_entry_value_field));
+    _upb_Message_SetNonExtensionField(msg, field, &map);
+  }
+  return map;
+}
+
+// Updates a map entry given an entry message.
+upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
+                                               const upb_MiniTable* mini_table,
+                                               const upb_MiniTableField* field,
+                                               upb_Message* map_entry_message,
+                                               upb_Arena* arena);
 
 typedef enum {
   kUpb_GetExtension_Ok,
@@ -2877,6 +2913,15 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
     upb_Message* msg, const upb_MiniTableField* field,
     const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena);
+
+// Promotes all unknown data that matches field tag id to upb_Map.
+//
+// The unknown data is removed from message after upb_Map is populated.
+// Since repeated messages can't be packed we remove each unknown that
+// contains the target tag id.
+upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
+    upb_Message* msg, const upb_MiniTable* mini_table,
+    const upb_MiniTableField* field, int decode_options, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -9202,8 +9247,6 @@ UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
 
 #undef UPB_SIZE
 #undef UPB_PTR_AT
-#undef UPB_READ_ONEOF
-#undef UPB_WRITE_ONEOF
 #undef UPB_MAPTYPE_STRING
 #undef UPB_EXPORT
 #undef UPB_INLINE
