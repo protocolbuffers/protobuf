@@ -5,4 +5,4 @@
 # Change to repo root
 cd $(dirname $0)/../../..
 
-./kokoro/macos/test_ruby.sh ruby-3.0.2
+bash -l kokoro/macos/test_ruby.sh ruby-3.0.2

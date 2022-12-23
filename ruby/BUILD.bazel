@@ -73,7 +73,6 @@ pkg_files(
         "Gemfile",
         "Rakefile",
         "README.md",
-        "travis-test.sh",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],

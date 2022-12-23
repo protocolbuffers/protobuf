@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -eux
 
 VERSION=$1
 
@@ -8,12 +8,17 @@ VERSION=$1
 KOKORO_INSTALL_RVM=yes
 source kokoro/macos/prepare_build_macos_rc
 
-# Setup ruby
+# Install dependencies
+brew install wget
+
+# Configure system ruby.
+# We need to disable unbound variable errors, due to a known issue described in
+# https://github.com/rvm/rvm/issues/4618.
+set +u
 rvm install $VERSION
 rvm use $VERSION
-rvm get head
-which ruby
 rvm current | grep -qe "${RUBY_VERSION}.*" || exit 1;
+set -u
 
 # Run tests
 bazel test //ruby/... --test_env=KOKORO_RUBY_VERSION=$VERSION

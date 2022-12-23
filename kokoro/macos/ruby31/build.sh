@@ -8,4 +8,4 @@ cd $(dirname $0)/../../..
 # Fix locale issues in Monterey.
 export LC_ALL=en_US.UTF-8
 
-./kokoro/macos/test_ruby.sh ruby-3.1.0
+bash -l kokoro/macos/test_ruby.sh ruby-3.1.0
