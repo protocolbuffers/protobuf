@@ -227,30 +227,6 @@ std::string CTypeConst(const protobuf::FieldDescriptor* field) {
   return CTypeInternal(field, true);
 }
 
-std::string MapKeyCType(const protobuf::FieldDescriptor* map_field) {
-  return CType(map_field->message_type()->map_key());
-}
-
-std::string MapValueCType(const protobuf::FieldDescriptor* map_field) {
-  return CType(map_field->message_type()->map_value());
-}
-
-std::string MapKeySize(const protobuf::FieldDescriptor* map_field,
-                       absl::string_view expr) {
-  return map_field->message_type()->map_key()->cpp_type() ==
-                 protobuf::FieldDescriptor::CPPTYPE_STRING
-             ? "0"
-             : absl::StrCat("sizeof(", expr, ")");
-}
-
-std::string MapValueSize(const protobuf::FieldDescriptor* map_field,
-                         absl::string_view expr) {
-  return map_field->message_type()->map_value()->cpp_type() ==
-                 protobuf::FieldDescriptor::CPPTYPE_STRING
-             ? "0"
-             : absl::StrCat("sizeof(", expr, ")");
-}
-
 std::string FieldInitializer(const FileLayout& layout,
                              const protobuf::FieldDescriptor* field);
 
@@ -460,39 +436,38 @@ void GenerateMapGetters(const protobuf::FieldDescriptor* field,
                         const FileLayout& layout, absl::string_view msg_name,
                         const NameToFieldDescriptorMap& field_names,
                         Output& output) {
+  const protobuf::Descriptor* entry = field->message_type();
+  const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
+  const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
   std::string resolved_name = ResolveFieldName(field, field_names);
   output(
       R"cc(
         UPB_INLINE size_t $0_$1_size(const $0* msg) {
-          const upb_MiniTableField field = $2;
-          const upb_Map* map = upb_Message_GetMap(msg, &field);
-          return map ? _upb_Map_Size(map) : 0;
+          return _upb_msg_map_size(msg, $2);
         }
       )cc",
-      msg_name, resolved_name, FieldInitializer(layout, field));
+      msg_name, resolved_name, layout.GetFieldOffset(field));
   output(
       R"cc(
         UPB_INLINE bool $0_$1_get(const $0* msg, $2 key, $3* val) {
-          const upb_MiniTableField field = $4;
-          const upb_Map* map = upb_Message_GetMap(msg, &field);
-          if (!map) return false;
-          return _upb_Map_Get(map, &key, $5, val, $6);
+          return _upb_msg_map_get(msg, $4, &key, $5, val, $6);
         }
       )cc",
-      msg_name, resolved_name, MapKeyCType(field), MapValueCType(field),
-      FieldInitializer(layout, field), MapKeySize(field, "key"),
-      MapValueSize(field, "*val"));
+      msg_name, resolved_name, CType(key), CType(val),
+      layout.GetFieldOffset(field),
+      key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+          ? "0"
+          : "sizeof(key)",
+      val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+          ? "0"
+          : "sizeof(*val)");
   output(
       R"cc(
         UPB_INLINE $0 $1_$2_next(const $1* msg, size_t* iter) {
-          const upb_MiniTableField field = $3;
-          const upb_Map* map = upb_Message_GetMap(msg, &field);
-          if (!map) return NULL;
-          return ($0)_upb_map_next(map, iter);
+          return ($0)_upb_msg_map_next(msg, $3, iter);
         }
       )cc",
-      CTypeConst(field), msg_name, resolved_name,
-      FieldInitializer(layout, field));
+      CTypeConst(field), msg_name, resolved_name, layout.GetFieldOffset(field));
 }
 
 void GenerateMapEntryGetters(const protobuf::FieldDescriptor* field,
@@ -564,50 +539,46 @@ void GenerateMapSetters(const protobuf::FieldDescriptor* field,
                         const FileLayout& layout, absl::string_view msg_name,
                         const NameToFieldDescriptorMap& field_names,
                         Output& output) {
+  const protobuf::Descriptor* entry = field->message_type();
+  const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
+  const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
   std::string resolved_name = ResolveFieldName(field, field_names);
   output(
       R"cc(
-        UPB_INLINE void $0_$1_clear($0* msg) {
-          const upb_MiniTableField field = $2;
-          upb_Map* map = (upb_Map*)upb_Message_GetMap(msg, &field);
-          if (!map) return;
-          _upb_Map_Clear(map);
-        }
+        UPB_INLINE void $0_$1_clear($0* msg) { _upb_msg_map_clear(msg, $2); }
       )cc",
-      msg_name, resolved_name, FieldInitializer(layout, field));
+      msg_name, resolved_name, layout.GetFieldOffset(field));
   output(
       R"cc(
         UPB_INLINE bool $0_$1_set($0* msg, $2 key, $3 val, upb_Arena* a) {
-          const upb_MiniTableField field = $4;
-          upb_Map* map = _upb_MiniTable_GetOrCreateMutableMap(msg, &field, $5, $6, a);
-          return _upb_Map_Insert(map, &key, $5, &val, $6, a) !=
-                 kUpb_MapInsertStatus_OutOfMemory;
+          return _upb_msg_map_set(msg, $4, &key, $5, &val, $6, a);
         }
       )cc",
-      msg_name, resolved_name, MapKeyCType(field), MapValueCType(field),
-      FieldInitializer(layout, field), MapKeySize(field, "key"),
-      MapValueSize(field, "val"));
+      msg_name, resolved_name, CType(key), CType(val),
+      layout.GetFieldOffset(field),
+      key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+          ? "0"
+          : "sizeof(key)",
+      val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+          ? "0"
+          : "sizeof(val)");
   output(
       R"cc(
         UPB_INLINE bool $0_$1_delete($0* msg, $2 key) {
-          const upb_MiniTableField field = $3;
-          upb_Map* map = (upb_Map*)upb_Message_GetMap(msg, &field);
-          if (!map) return false;
-          return _upb_Map_Delete(map, &key, $4);
+          return _upb_msg_map_delete(msg, $3, &key, $4);
         }
       )cc",
-      msg_name, resolved_name, MapKeyCType(field),
-      FieldInitializer(layout, field), MapKeySize(field, "key"));
+      msg_name, resolved_name, CType(key), layout.GetFieldOffset(field),
+      key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+          ? "0"
+          : "sizeof(key)");
   output(
       R"cc(
         UPB_INLINE $0 $1_$2_nextmutable($1* msg, size_t* iter) {
-          const upb_MiniTableField field = $3;
-          upb_Map* map = (upb_Map*)upb_Message_GetMap(msg, &field);
-          if (!map) return NULL;
-          return ($0)_upb_map_next(map, iter);
+          return ($0)_upb_msg_map_next(msg, $3, iter);
         }
       )cc",
-      CType(field), msg_name, resolved_name, FieldInitializer(layout, field));
+      CType(field), msg_name, resolved_name, layout.GetFieldOffset(field));
 }
 
 void GenerateRepeatedSetters(const protobuf::FieldDescriptor* field,

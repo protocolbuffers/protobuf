@@ -151,13 +151,6 @@ UPB_INLINE size_t _upb_Map_Size(const upb_Map* map) {
   return map->table.t.count;
 }
 
-// Strings/bytes are special-cased in maps.
-extern char _upb_Map_CTypeSizeTable[12];
-
-UPB_INLINE size_t _upb_Map_CTypeSize(upb_CType ctype) {
-  return _upb_Map_CTypeSizeTable[ctype];
-}
-
 // Creates a new map on the given arena with this key/value type.
 upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
 
