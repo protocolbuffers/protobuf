@@ -72,7 +72,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(byte[] data)
         {
             IMessage message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(new ReadOnlySpan<byte>(data), DiscardUnknownFields, Extensions);
             return message;
         }
 
@@ -86,7 +86,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(byte[] data, int offset, int length)
         {
             IMessage message = factory();
-            message.MergeFrom(data, offset, length, DiscardUnknownFields, Extensions);
+            message.MergeFrom(new ReadOnlySpan<byte>(data, offset, length), DiscardUnknownFields, Extensions);
             return message;
         }
 
@@ -98,7 +98,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(ByteString data)
         {
             IMessage message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data.Span, DiscardUnknownFields, Extensions);
             return message;
         }
 
