@@ -282,7 +282,7 @@ namespace Google.Protobuf
         public new T ParseFrom(byte[] data)
         {
             T message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(new ReadOnlySpan<byte>(data), DiscardUnknownFields, Extensions);
             return message;
         }
 
@@ -296,7 +296,7 @@ namespace Google.Protobuf
         public new T ParseFrom(byte[] data, int offset, int length)
         {
             T message = factory();
-            message.MergeFrom(data, offset, length, DiscardUnknownFields, Extensions);
+            message.MergeFrom(new ReadOnlySpan<byte>(data, offset, length), DiscardUnknownFields, Extensions);
             return message;
         }
 
@@ -308,7 +308,7 @@ namespace Google.Protobuf
         public new T ParseFrom(ByteString data)
         {
             T message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data.Span, DiscardUnknownFields, Extensions);
             return message;
         }
 

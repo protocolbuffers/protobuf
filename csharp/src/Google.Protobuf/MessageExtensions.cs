@@ -253,37 +253,21 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(data, nameof(data));
-            CodedInputStream input = new CodedInputStream(data)
-            {
-                DiscardUnknownFields = discardUnknownFields,
-                ExtensionRegistry = registry
-            };
-            message.MergeFrom(input);
-            input.CheckReadEndOfStreamTag();
+            MergeFrom(message, new ReadOnlySpan<byte>(data), discardUnknownFields, registry);
         }
 
         internal static void MergeFrom(this IMessage message, byte[] data, int offset, int length, bool discardUnknownFields, ExtensionRegistry registry)
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(data, nameof(data));
-            CodedInputStream input = new CodedInputStream(data, offset, length)
-            {
-                DiscardUnknownFields = discardUnknownFields,
-                ExtensionRegistry = registry
-            };
-            message.MergeFrom(input);
-            input.CheckReadEndOfStreamTag();
+            MergeFrom(message, new ReadOnlySpan<byte>(data, offset, length), discardUnknownFields, registry);
         }
 
         internal static void MergeFrom(this IMessage message, ByteString data, bool discardUnknownFields, ExtensionRegistry registry)
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(data, nameof(data));
-            CodedInputStream input = data.CreateCodedInput();
-            input.DiscardUnknownFields = discardUnknownFields;
-            input.ExtensionRegistry = registry;
-            message.MergeFrom(input);
-            input.CheckReadEndOfStreamTag();
+            MergeFrom(message, data.Span, discardUnknownFields, registry);
         }
 
         internal static void MergeFrom(this IMessage message, Stream input, bool discardUnknownFields, ExtensionRegistry registry)
