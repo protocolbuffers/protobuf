@@ -1,14 +1,13 @@
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
-load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
+load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
-load(":protobuf.bzl", "py_proto_library")
+load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 
 licenses(["notice"])
 
-exports_files(["LICENCE"])
+exports_files(["LICENSE"])
 
 # Well Known Types Proto Library rules
 # https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
@@ -82,32 +81,32 @@ alias(
 # Source files - aliases to a filegroup, not a 'proto_library' - internal stuff
 alias(
   name = "lite_well_known_protos",
-  actual = "//src/google/protobuf:well_known_type_protos", # filegroup
+  actual = "//src/google/protobuf:well_known_type_protos",  # filegroup
   visibility = ["//visibility:public"],
 )
 
 alias(
   name = "well_known_type_protos",
-  actual = "//src/google/protobuf:well_known_type_protos", # filegroup
+  actual = "//src/google/protobuf:well_known_type_protos",  # filegroup
   visibility = ["//visibility:public"],
 )
 
 # internal runtime protos - they're not well-known types
 alias(
   name = "descriptor_proto",
-  actual = "//src/google/protobuf:descriptor_proto", # proto_library
+  actual = "//src/google/protobuf:descriptor_proto",  # proto_library
   visibility = ["//visibility:public"],
 )
 
 alias(
   name = "descriptor_proto_srcs",
-  actual = "//src/google/protobuf:descriptor_proto_srcs", # filegroup
+  actual = "//src/google/protobuf:descriptor_proto_srcs",  # filegroup
   visibility = ["//visibility:public"],
 )
 
 alias(
   name = "compiler_plugin_proto",
-  actual = "//src/google/protobuf/compiler:plugin_proto", # proto_library
+  actual = "//src/google/protobuf/compiler:plugin_proto",  # proto_library
   visibility = ["//visibility:public"],
 )
 
@@ -126,13 +125,30 @@ filegroup(
   srcs = [
     ":descriptor_proto_srcs",
     ":well_known_type_protos",
-    "//src/google/protobuf/compiler:plugin.proto"
+    "//src/google/protobuf/compiler:plugin.proto",
   ],
   deprecation = "We recommend using :well_known_type_protos as an alternative",
   visibility = ["//visibility:public"],
 )
 
+internal_ruby_proto_library(
+  name = "well_known_ruby_protos",
+  srcs = [":well_known_protos"],
+  includes = ["src"],
+  visibility = [
+    "//conformance:__pkg__",
+    "//ruby:__subpackages__",
+  ],
+)
+
 # Compiler
+
+alias(
+  name = "protoc_lib",
+  actual = "//src/google/protobuf/compiler:protoc_lib",
+  visibility = ["//visibility:public"],
+)
+
 cc_binary(
   name = "protoc",
   linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
