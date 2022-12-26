@@ -260,3 +260,31 @@ proto_lang_toolchain(
   runtime = ":protobuf",
   visibility = ["//visibility:public"],
 )
+
+# Objective C
+alias(
+  name = "objectivec",
+  actual = "//objectivec",
+  tags = ["manual"],
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "protobuf_objc",
+  actual = "//objectivec",
+  tags = ["manual"],
+  visibility = ["//visibility:public"],
+)
+
+# Test Protos
+alias(
+  name = "lite_test_proto_srcs",
+  actual = "//src/google/protobuf:lite_test_proto_srcs", # proto_library
+  visibility = ["//:__subpackages__"],
+)
+
+alias(
+  name = "lite_test_protos",
+  actual = "//src/google/protobuf:lite_test_protos", # proto_library
+  visibility = ["//:__subpackages__"],
+)
