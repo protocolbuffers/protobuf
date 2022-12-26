@@ -24,13 +24,12 @@ def _arch_test_impl(
         name = name,
         tools = bazel_binaries,
         cmd = """
-          for binary in "$(rootpaths %s) %s"; do
+          for binary in "%s"; do
             (file -L $$binary | grep -q "%s") \
                 || (echo "Test binary is not an %s binary: "; file -L $$binary; exit 1)
           done
         """ % (
-            " ".join(bazel_binaries),
-            " ".join(system_binaries),
+            " ".join(["$(rootpaths %s)" % b for b in bazel_binaries] + system_binaries),
             file_platform,
             platform,
         ),
@@ -44,13 +43,13 @@ def _arch_test_impl(
 def aarch64_test(**kwargs):
     _arch_test_impl(
         platform = "aarch64",
-        file_platform = "ELF 64-bit LSB executable, ARM aarch64",
+        file_platform = "ELF 64-bit LSB.* ARM aarch64",
         **kwargs
     )
 
 def x86_64_test(**kwargs):
     _arch_test_impl(
         platform = "x86_64",
-        file_platform = "ELF 64-bit LSB executable, ARM x86_64",
+        file_platform = "ELF 64-bit LSB.*, ARM x86_64",
         **kwargs
     )

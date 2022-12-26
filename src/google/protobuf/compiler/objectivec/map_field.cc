@@ -30,10 +30,11 @@
 
 #include "google/protobuf/compiler/objectivec/map_field.h"
 
-#include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -78,7 +79,7 @@ const char* MapEntryTypeName(const FieldDescriptor* descriptor, bool isKey) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
@@ -112,6 +113,9 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
   }
   if (absl::StrContains(value_field_flags, "GPBFieldHasEnumDescriptor")) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
+    if (absl::StrContains(value_field_flags, "GPBFieldClosedEnum")) {
+      field_flags.push_back("GPBFieldClosedEnum");
+    }
   }
 
   variables_["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
@@ -160,31 +164,36 @@ void MapFieldGenerator::FinishInitialization() {
 }
 
 void MapFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls, bool include_external_types) const {
+    absl::btree_set<std::string>* fwd_decls,
+    bool include_external_types) const {
   RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls,
                                                        include_external_types);
+  const FieldDescriptor* value_descriptor =
+      descriptor_->message_type()->map_value();
   // NOTE: Maps with values of enums don't have to worry about adding the
   // forward declaration because `GPB*EnumDictionary` isn't generic to the
   // specific enum (like say `NSDictionary<String, MyMessage>`) and thus doesn't
   // reference the type in the header.
+  if (GetObjectiveCType(value_descriptor) != OBJECTIVECTYPE_MESSAGE) {
+    return;
+  }
 
-  const FieldDescriptor* value_descriptor =
-      descriptor_->message_type()->map_value();
+  const Descriptor* value_msg_descriptor = value_descriptor->message_type();
+
   // Within a file there is no requirement on the order of the messages, so
   // local references need a forward declaration. External files (not WKTs),
   // need one when requested.
-  if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE &&
-      ((include_external_types &&
-        !IsProtobufLibraryBundledProtoFile(value_descriptor->file())) ||
-       descriptor_->file() == value_descriptor->file())) {
+  if ((include_external_types &&
+       !IsProtobufLibraryBundledProtoFile(value_msg_descriptor->file())) ||
+      descriptor_->file() == value_msg_descriptor->file()) {
     const std::string& value_storage_type =
         value_field_generator_->variable("storage_type");
-    fwd_decls->insert("@class " + value_storage_type);
+    fwd_decls->insert(absl::StrCat("@class ", value_storage_type, ";"));
   }
 }
 
 void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<std::string>* fwd_decls) const {
+    absl::btree_set<std::string>* fwd_decls) const {
   // Class name is already in "storage_type".
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();

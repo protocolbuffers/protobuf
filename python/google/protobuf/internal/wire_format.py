@@ -43,7 +43,7 @@ TAG_TYPE_MASK = (1 << TAG_TYPE_BITS) - 1  # 0x7
 # These numbers identify the wire type of a protocol buffer value.
 # We use the least-significant TAG_TYPE_BITS bits of the varint-encoded
 # tag-and-type to store one of these WIRETYPE_* constants.
-# These values must match WireType enum in google/protobuf/wire_format.h.
+# These values must match WireType enum in //google/protobuf/wire_format.h.
 WIRETYPE_VARINT = 0
 WIRETYPE_FIXED64 = 1
 WIRETYPE_LENGTH_DELIMITED = 2

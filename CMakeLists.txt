@@ -61,11 +61,6 @@ else()
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
-# For -fvisibility=hidden and -fvisibility-inlines-hidden
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
-
 # The Intel compiler isn't able to deal with noinline member functions of
 # template classes defined in headers.  As such it spams the output with
 #   warning #2196: routine is both "inline" and "noinline"
@@ -107,6 +102,20 @@ include(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake)
 if (protobuf_BUILD_SHARED_LIBS)
   # This is necessary for linking in Abseil.
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+  # Build Abseil as shared libraries to avoid ODR violations.
+  set(BUILD_SHARED_LIBS ON)
+
+  # Output directory is correct by default for most build setups. However, when
+  # building Protobuf as a DLL, it is important to have the DLL in the same
+  # directory as the executable using it. Thus, we put all binaries in a single
+  # /bin directory.
+  if (MSVC)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_PDB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+  endif ()
 endif ()
 
 # Version metadata
@@ -229,7 +238,7 @@ if (NOT MSVC)
   check_cxx_source_compiles("
     #include <atomic>
     int main() {
-      return std::atomic<int64_t>{};
+      return static_cast<int>(std::atomic<int64_t>{});
     }
   " protobuf_HAVE_BUILTIN_ATOMICS)
   if (NOT protobuf_HAVE_BUILTIN_ATOMICS)

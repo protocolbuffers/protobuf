@@ -43,9 +43,11 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/util/type_resolver.h"
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "conformance/conformance.pb.h"
+#include "google/protobuf/wire_format_lite.h"
 
 namespace conformance {
 class ConformanceRequest;
@@ -261,8 +263,6 @@ class ConformanceTestSuite {
     std::string test_name_;
   };
 
-  bool CheckSetEmpty(const std::set<std::string>& set_to_check,
-                     const std::string& write_to_file, const std::string& msg);
   std::string WireFormatToString(conformance::WireFormat wire_format);
 
   // Parse payload in the response to the given message. Returns true on
@@ -319,20 +319,20 @@ class ConformanceTestSuite {
 
   // The set of test names that are expected to fail in this run, but haven't
   // failed yet.
-  std::set<std::string> expected_to_fail_;
+  absl::btree_set<std::string> expected_to_fail_;
 
   // The set of test names that have been run.  Used to ensure that there are no
   // duplicate names in the suite.
-  std::set<std::string> test_names_;
+  absl::flat_hash_set<std::string> test_names_;
 
   // The set of tests that failed, but weren't expected to.
-  std::set<std::string> unexpected_failing_tests_;
+  absl::btree_set<std::string> unexpected_failing_tests_;
 
   // The set of tests that succeeded, but weren't expected to.
-  std::set<std::string> unexpected_succeeding_tests_;
+  absl::btree_set<std::string> unexpected_succeeding_tests_;
 
   // The set of tests that the testee opted out of;
-  std::set<std::string> skipped_;
+  absl::btree_set<std::string> skipped_;
 };
 
 }  // namespace protobuf

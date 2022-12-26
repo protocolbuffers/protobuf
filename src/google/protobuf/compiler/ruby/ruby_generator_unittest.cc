@@ -68,26 +68,18 @@ void RubyTest(std::string proto_file, std::string import_proto_file = "") {
 
   // Copy generated_code.proto to the temporary test directory.
   std::string test_input;
-  GOOGLE_CHECK_OK(File::GetContents(
-      ruby_tests + proto_file + ".proto",
-      &test_input,
-      true));
-  GOOGLE_CHECK_OK(File::SetContents(
-      TestTempDir() + proto_file + ".proto",
-      test_input,
-      true));
+  GOOGLE_ABSL_CHECK_OK(
+      File::GetContents(ruby_tests + proto_file + ".proto", &test_input, true));
+  GOOGLE_ABSL_CHECK_OK(File::SetContents(TestTempDir() + proto_file + ".proto",
+                                  test_input, true));
 
   // Copy generated_code_import.proto to the temporary test directory.
   std::string test_import;
   if (!import_proto_file.empty()) {
-    GOOGLE_CHECK_OK(File::GetContents(
-        ruby_tests + import_proto_file + ".proto",
-        &test_import,
-        true));
-    GOOGLE_CHECK_OK(File::SetContents(
-        TestTempDir() + import_proto_file + ".proto",
-        test_import,
-        true));
+    GOOGLE_ABSL_CHECK_OK(File::GetContents(ruby_tests + import_proto_file + ".proto",
+                                    &test_import, true));
+    GOOGLE_ABSL_CHECK_OK(File::SetContents(
+        TestTempDir() + import_proto_file + ".proto", test_import, true));
   }
 
   // Invoke the proto compiler (we will be inside TestTempDir() at this point).
@@ -106,15 +98,11 @@ void RubyTest(std::string proto_file, std::string import_proto_file = "") {
 
   // Load the generated output and compare to the expected result.
   std::string output;
-  GOOGLE_CHECK_OK(File::GetContentsAsText(
-      TestTempDir() + proto_file + "_pb.rb",
-      &output,
-      true));
+  GOOGLE_ABSL_CHECK_OK(File::GetContentsAsText(TestTempDir() + proto_file + "_pb.rb",
+                                        &output, true));
   std::string expected_output;
-  GOOGLE_CHECK_OK(File::GetContentsAsText(
-      ruby_tests + proto_file + "_pb.rb",
-      &expected_output,
-      true));
+  GOOGLE_ABSL_CHECK_OK(File::GetContentsAsText(ruby_tests + proto_file + "_pb.rb",
+                                        &expected_output, true));
   EXPECT_EQ(expected_output, output);
 }
 

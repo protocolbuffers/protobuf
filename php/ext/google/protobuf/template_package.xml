@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.9.5" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+ <name>protobuf</name>
+ <channel>pecl.php.net</channel>
+ <summary>Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data.</summary>
+ <description>https://developers.google.com/protocol-buffers/</description>
+ <lead>
+  <name>Protobuf Team</name>
+  <user>protobufpackages</user>
+  <email>protobuf-packages@google.com</email>
+  <active>yes</active>
+ </lead>
+ <date>TEMPLATE_DATE</date>
+ <time>TEMPLATE_TIME</time>
+ <version>
+  <release>TEMPLATE_PHP_RELEASE</release>
+  <api>TEMPLATE_PHP_API</api>
+ </version>
+ <stability>
+  <release>TEMPLATE_PHP_STABILITY</release>
+  <api>TEMPLATE_PHP_STABILITY</api>
+ </stability>
+ <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
+ <notes>
+ * See github.com/protocolbuffers/protobuf/releases/tag/vTEMPLATE_PROTOC_VERSION for release notes.
+ </notes>
+ <contents>
+  <dir baseinstalldir="/" name="/">TEMPLATE_FILES</dir>
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>7.0.0</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0</min>
+   </pearinstaller>
+  </required>
+ </dependencies>
+ <providesextension>protobuf</providesextension>
+ <extsrcrelease/>
+</package>

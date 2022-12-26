@@ -340,7 +340,7 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   return message_type()
 
 
-# These values must match WireType enum in google/protobuf/wire_format.h.
+# These values must match WireType enum in //google/protobuf/wire_format.h.
 WIRETYPE_LENGTH_DELIMITED = 2
 WIRETYPE_START_GROUP = 3
 
@@ -883,7 +883,7 @@ class _Parser(object):
       type_url_prefix, packed_type_name = self._ConsumeAnyTypeUrl(tokenizer)
       tokenizer.Consume(']')
       tokenizer.TryConsume(':')
-      self._DetectSilentMarker(tokenizer,
+      self._DetectSilentMarker(tokenizer, message_descriptor.full_name,
                                type_url_prefix + '/' + packed_type_name)
       if tokenizer.TryConsume('<'):
         expanded_any_end_token = '>'
@@ -982,11 +982,13 @@ class _Parser(object):
 
       if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
         tokenizer.TryConsume(':')
-        self._DetectSilentMarker(tokenizer, field.full_name)
+        self._DetectSilentMarker(tokenizer, message_descriptor.full_name,
+                                 field.full_name)
         merger = self._MergeMessageField
       else:
         tokenizer.Consume(':')
-        self._DetectSilentMarker(tokenizer, field.full_name)
+        self._DetectSilentMarker(tokenizer, message_descriptor.full_name,
+                                 field.full_name)
         merger = self._MergeScalarField
 
       if (field.label == descriptor.FieldDescriptor.LABEL_REPEATED and
@@ -1004,19 +1006,19 @@ class _Parser(object):
 
     else:  # Proto field is unknown.
       assert (self.allow_unknown_extension or self.allow_unknown_field)
-      self._SkipFieldContents(tokenizer, name)
+      self._SkipFieldContents(tokenizer, name, message_descriptor.full_name)
 
     # For historical reasons, fields may optionally be separated by commas or
     # semicolons.
     if not tokenizer.TryConsume(','):
       tokenizer.TryConsume(';')
 
-  def _LogSilentMarker(self, field_name):
+  def _LogSilentMarker(self, immediate_message_type, field_name):
     pass
 
-  def _DetectSilentMarker(self, tokenizer, field_name):
+  def _DetectSilentMarker(self, tokenizer, immediate_message_type, field_name):
     if tokenizer.contains_silent_marker_before_current_token:
-      self._LogSilentMarker(field_name)
+      self._LogSilentMarker(immediate_message_type, field_name)
 
   def _ConsumeAnyTypeUrl(self, tokenizer):
     """Consumes a google.protobuf.Any type URL and returns the type name."""
@@ -1091,12 +1093,6 @@ class _Parser(object):
       else:
         getattr(message, field.name)[sub_message.key] = sub_message.value
 
-  @staticmethod
-  def _IsProto3Syntax(message):
-    message_descriptor = message.DESCRIPTOR
-    return (hasattr(message_descriptor, 'syntax') and
-            message_descriptor.syntax == 'proto3')
-
   def _MergeScalarField(self, tokenizer, message, field):
     """Merges a single scalar field into a message.
 
@@ -1148,7 +1144,7 @@ class _Parser(object):
     else:
       if field.is_extension:
         if (not self._allow_multiple_scalars and
-            not self._IsProto3Syntax(message) and
+            field.has_presence and
             message.HasExtension(field)):
           raise tokenizer.ParseErrorPreviousToken(
               'Message type "%s" should not have multiple "%s" extensions.' %
@@ -1158,12 +1154,12 @@ class _Parser(object):
       else:
         duplicate_error = False
         if not self._allow_multiple_scalars:
-          if self._IsProto3Syntax(message):
-            # Proto3 doesn't represent presence so we try best effort to check
-            # multiple scalars by compare to default values.
-            duplicate_error = bool(getattr(message, field.name))
-          else:
+          if field.has_presence:
             duplicate_error = message.HasField(field.name)
+          else:
+            # For field that doesn't represent presence, try best effort to
+            # check multiple scalars by compare to default values.
+            duplicate_error = bool(getattr(message, field.name))
 
         if duplicate_error:
           raise tokenizer.ParseErrorPreviousToken(
@@ -1172,12 +1168,14 @@ class _Parser(object):
         else:
           setattr(message, field.name, value)
 
-  def _SkipFieldContents(self, tokenizer, field_name):
+  def _SkipFieldContents(self, tokenizer, field_name, immediate_message_type):
     """Skips over contents (value or message) of a field.
 
     Args:
       tokenizer: A tokenizer to parse the field name and values.
       field_name: The field name currently being parsed.
+      immediate_message_type: The type of the message immediately containing
+        the silent marker.
     """
     # Try to guess the type of this field.
     # If this field is not a message, there should be a ":" between the
@@ -1187,20 +1185,22 @@ class _Parser(object):
     # to be a message or the input is ill-formed.
     if tokenizer.TryConsume(
         ':') and not tokenizer.LookingAt('{') and not tokenizer.LookingAt('<'):
-      self._DetectSilentMarker(tokenizer, field_name)
+      self._DetectSilentMarker(tokenizer, immediate_message_type, field_name)
       if tokenizer.LookingAt('['):
         self._SkipRepeatedFieldValue(tokenizer)
       else:
         self._SkipFieldValue(tokenizer)
     else:
-      self._DetectSilentMarker(tokenizer, field_name)
-      self._SkipFieldMessage(tokenizer)
+      self._DetectSilentMarker(tokenizer, immediate_message_type, field_name)
+      self._SkipFieldMessage(tokenizer, immediate_message_type)
 
-  def _SkipField(self, tokenizer):
+  def _SkipField(self, tokenizer, immediate_message_type):
     """Skips over a complete field (name and value/message).
 
     Args:
       tokenizer: A tokenizer to parse the field name and values.
+      immediate_message_type: The type of the message immediately containing
+        the silent marker.
     """
     field_name = ''
     if tokenizer.TryConsume('['):
@@ -1220,18 +1220,20 @@ class _Parser(object):
     else:
       field_name += tokenizer.ConsumeIdentifierOrNumber()
 
-    self._SkipFieldContents(tokenizer, field_name)
+    self._SkipFieldContents(tokenizer, field_name, immediate_message_type)
 
     # For historical reasons, fields may optionally be separated by commas or
     # semicolons.
     if not tokenizer.TryConsume(','):
       tokenizer.TryConsume(';')
 
-  def _SkipFieldMessage(self, tokenizer):
+  def _SkipFieldMessage(self, tokenizer, immediate_message_type):
     """Skips over a field message.
 
     Args:
       tokenizer: A tokenizer to parse the field name and values.
+      immediate_message_type: The type of the message immediately containing
+        the silent marker
     """
     if tokenizer.TryConsume('<'):
       delimiter = '>'
@@ -1240,7 +1242,7 @@ class _Parser(object):
       delimiter = '}'
 
     while not tokenizer.LookingAt('>') and not tokenizer.LookingAt('}'):
-      self._SkipField(tokenizer)
+      self._SkipField(tokenizer, immediate_message_type)
 
     tokenizer.Consume(delimiter)
 
@@ -1852,12 +1854,8 @@ def ParseEnum(field, value):
       raise ValueError('Enum type "%s" has no value named %s.' %
                        (enum_descriptor.full_name, value))
   else:
-    # Numeric value.
-    if hasattr(field.file, 'syntax'):
-      # Attribute is checked for compatibility.
-      if field.file.syntax == 'proto3':
-        # Proto3 accept numeric unknown enums.
-        return number
+    if not field.enum_type.is_closed:
+      return number
     enum_value = enum_descriptor.values_by_number.get(number, None)
     if enum_value is None:
       raise ValueError('Enum type "%s" has no value with number %d.' %

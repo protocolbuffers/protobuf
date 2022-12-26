@@ -34,6 +34,7 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -121,8 +122,8 @@ std::string StringifySyntax(FileDescriptor::Syntax syntax) {
       return "proto3";
     case FileDescriptor::SYNTAX_UNKNOWN:
     default:
-      GOOGLE_LOG(FATAL) << "Unsupported syntax; this generator only supports "
-                           "proto2 and proto3 syntax.";
+      GOOGLE_ABSL_LOG(FATAL) << "Unsupported syntax; this generator only supports "
+                         "proto2 and proto3 syntax.";
       return "";
   }
 }
@@ -247,7 +248,8 @@ void GenerateOneof(const OneofDescriptor* oneof, io::Printer* printer) {
 bool GenerateMessage(const Descriptor* message, io::Printer* printer,
                      std::string* error) {
   if (message->extension_range_count() > 0 || message->extension_count() > 0) {
-    GOOGLE_LOG(WARNING) << "Extensions are not yet supported for proto2 .proto files.";
+    GOOGLE_ABSL_LOG(WARNING)
+        << "Extensions are not yet supported for proto2 .proto files.";
   }
 
   // Don't generate MapEntry messages -- we use the Ruby extension's native
@@ -422,8 +424,8 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
     if (package_name.find("::") != std::string::npos) {
       need_change_to_module = false;
     } else if (package_name.find('.') != std::string::npos) {
-      GOOGLE_LOG(WARNING) << "ruby_package option should be in the form of:"
-                          << " 'A::B::C' and not 'A.B.C'";
+      GOOGLE_ABSL_LOG(WARNING) << "ruby_package option should be in the form of:"
+                        << " 'A::B::C' and not 'A.B.C'";
     }
   } else {
     package_name = file->package();
@@ -519,7 +521,8 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   // TODO: Remove this when ruby supports extensions for proto2 syntax.
   if (file->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
       file->extension_count() > 0) {
-    GOOGLE_LOG(WARNING) << "Extensions are not yet supported for proto2 .proto files.";
+    GOOGLE_ABSL_LOG(WARNING)
+        << "Extensions are not yet supported for proto2 .proto files.";
   }
 
   bool use_raw_descriptor = file->name() == "google/protobuf/descriptor.proto";

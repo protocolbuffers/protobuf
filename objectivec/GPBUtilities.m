@@ -669,8 +669,7 @@ int32_t GPBGetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field) {
   // If this is presevering unknown enums, make sure the value is valid before
   // returning it.
 
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  if (GPBHasPreservingUnknownEnumSemantics(syntax) && ![field isValidEnumValue:result]) {
+  if (!GPBFieldIsClosedEnum(field) && ![field isValidEnumValue:result]) {
     result = kGPBUnrecognizedEnumeratorValue;
   }
   return result;

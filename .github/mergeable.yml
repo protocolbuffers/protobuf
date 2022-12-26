@@ -5,14 +5,11 @@ mergeable:
         - must_exclude:
             regex: '^disposition/DO NOT MERGE'
             message: 'Pull request marked not mergeable'
-        - or:
-          - and:
-            - must_include:
-                regex: 'release notes: yes'
-                message: 'Include release notes: yes'
-            - must_include:
-                regex: '^(autotools|bazel|c#|c\+\+|cleanup|cmake|conformance tests|integration|go|java|javascript|objective-c|php|protoc|python|ruby|kotlin)'
-                message: 'at least a language label (e.g., c++, java, python). Or apply one of the following labels: autotools, bazel, cmake, cleanup, conformance tests, integration, protoc.'
-          - must_include:
-              regex: 'release notes: no'
-              message: 'Include release notes: no'
+        - must_include:
+            regex: 'mergeable:force-allow'
+            message: 'Pull requests should not be merged directly and should instead
+              be handled by Copybara.
+
+              To enable Github merges, add the `mergeable:force-allow` label.
+              This should almost never be used except for releases or as a break glass measure
+              after discussing with the team.'

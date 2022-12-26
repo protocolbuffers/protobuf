@@ -33,16 +33,12 @@
 #include "google/protobuf/compiler/plugin.h"
 
 #include <iostream>
-#include <set>
-
 #ifdef _WIN32
 #include <fcntl.h>
 #else
 #include <unistd.h>
 #endif
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"

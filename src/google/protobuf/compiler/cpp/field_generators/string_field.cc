@@ -32,12 +32,14 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/cpp/string_field.h"
-
+#include <memory>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "absl/strings/str_cat.h"
+#include "google/protobuf/stubs/logging.h"
+#include "absl/memory/memory.h"
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -45,7 +47,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
 namespace {
 
 void SetStringVariables(
@@ -53,7 +54,6 @@ void SetStringVariables(
     absl::flat_hash_map<absl::string_view, std::string>* variables,
     const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
-
 
   (*variables)["default"] = DefaultValue(options, descriptor);
   (*variables)["default_length"] =
@@ -96,18 +96,84 @@ void SetStringVariables(
   }
 }
 
-}  // namespace
+class StringFieldGenerator : public FieldGeneratorBase {
+ public:
+  StringFieldGenerator(const FieldDescriptor* descriptor,
+                       const Options& options);
+  ~StringFieldGenerator() override = default;
 
-// ===================================================================
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateStaticMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateNonInlineAccessorDefinitions(
+      io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMessageClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
+  void GenerateCopyConstructorCode(io::Printer* printer) const override;
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateArenaDestructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
+  bool IsInlined() const override { return inlined_; }
+  ArenaDtorNeeds NeedsArenaDestructor() const override;
+
+ private:
+  bool inlined_;
+};
+
+class StringOneofFieldGenerator : public StringFieldGenerator {
+ public:
+  StringOneofFieldGenerator(const FieldDescriptor* descriptor,
+                            const Options& options);
+  ~StringOneofFieldGenerator() override = default;
+
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+
+  // StringFieldGenerator, from which we inherit, overrides this so we need to
+  // override it as well.
+  void GenerateMessageClearingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
+};
+
+class RepeatedStringFieldGenerator : public FieldGeneratorBase {
+ public:
+  RepeatedStringFieldGenerator(const FieldDescriptor* descriptor,
+                               const Options& options);
+  ~RepeatedStringFieldGenerator() override = default;
+
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
+  void GenerateCopyConstructorCode(io::Printer* printer) const override {
+    GOOGLE_ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+  }
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+};
 
 StringFieldGenerator::StringFieldGenerator(const FieldDescriptor* descriptor,
                                            const Options& options)
-    : FieldGenerator(descriptor, options),
+    : FieldGeneratorBase(descriptor, options),
       inlined_(IsStringInlined(descriptor, options)) {
   SetStringVariables(descriptor, &variables_, options);
 }
-
-StringFieldGenerator::~StringFieldGenerator() {}
 
 void StringFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -115,9 +181,7 @@ void StringFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
     format("::$proto_ns$::internal::ArenaStringPtr $name$_;\n");
   } else {
     // Skips the automatic destruction; rather calls it explicitly if
-    // allocating arena is null. This is required to support message-owned
-    // arena (go/path-to-arenas) where a root proto is destroyed but
-    // InlinedStringField may have arena-allocated memory.
+    // allocating arena is null.
     format("::$proto_ns$::internal::InlinedStringField $name$_;\n");
   }
 }
@@ -291,7 +355,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
 
   if (internal::cpp::HasHasbit(descriptor_)) {
     format(
-        "  if (!_internal_has_$name$()) {\n"
+        "  if (($has_hasbit$) == 0) {\n"
         "    return nullptr;\n"
         "  }\n"
         "  $clear_hasbit$\n");
@@ -318,11 +382,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
       "inline void $classname$::set_allocated_$name$(std::string* $name$) {\n"
       "$maybe_prepare_split_message$");
 
-  auto nonempty = [this](const char* fn) {
-    auto var_it = variables_.find(fn);
-    return var_it != variables_.end() && !var_it->second.empty();
-  };
-  if (nonempty("set_hasbit") || nonempty("clear_hasbit")) {
+  if (internal::cpp::HasHasbit(descriptor_)) {
     format(
         "  if ($name$ != nullptr) {\n"
         "    $set_hasbit$\n"
@@ -330,6 +390,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
         "    $clear_hasbit$\n"
         "  }\n");
   }
+
   if (!inlined_) {
     format("  $field$.SetAllocated($name$, GetArenaForAllocation());\n");
     if (descriptor_->default_value_string().empty()) {
@@ -369,7 +430,7 @@ void StringFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   if (descriptor_->default_value_string().empty()) {
     format("$field$.ClearToEmpty();\n");
   } else {
-    GOOGLE_DCHECK(!inlined_);
+    GOOGLE_ABSL_DCHECK(!inlined_);
     format(
         "$field$.ClearToDefault($lazy_variable$, GetArenaForAllocation());\n");
   }
@@ -443,7 +504,7 @@ void StringFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   if (inlined_ && descriptor_->default_value_string().empty()) {
     return;
   }
-  GOOGLE_DCHECK(!inlined_);
+  GOOGLE_ABSL_DCHECK(!inlined_);
   format("$field$.InitDefault();\n");
   if (IsString(descriptor_, options_) &&
       descriptor_->default_value_string().empty()) {
@@ -463,7 +524,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
   }
 
   if (internal::cpp::HasHasbit(descriptor_)) {
-    format("if (from._internal_has_$name$()) {\n");
+    format("if ((from.$has_hasbit$) != 0) {\n");
   } else {
     format("if (!from._internal_$name$().empty()) {\n");
   }
@@ -496,10 +557,8 @@ void StringFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
     return;
   }
   // Explicitly calls ~InlinedStringField as its automatic call is disabled.
-  // Destructor has been implicitly skipped as a union, and even the
-  // message-owned arena is enabled, arena could still be missing for
-  // Arena::CreateMessage(nullptr).
-  GOOGLE_DCHECK(!ShouldSplit(descriptor_, options_));
+  // Destructor has been implicitly skipped as a union.
+  GOOGLE_ABSL_DCHECK(!ShouldSplit(descriptor_, options_));
   format("$field$.~InlinedStringField();\n");
 }
 
@@ -557,7 +616,7 @@ void StringFieldGenerator::GenerateAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (ShouldSplit(descriptor_, options_)) {
-    GOOGLE_CHECK(!inlined_);
+    GOOGLE_ABSL_CHECK(!inlined_);
     format("decltype(Impl_::Split::$name$_){}");
     return;
   }
@@ -580,12 +639,7 @@ StringOneofFieldGenerator::StringOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
     : StringFieldGenerator(descriptor, options) {
   SetCommonOneofFieldVariables(descriptor, &variables_);
-  variables_["field_name"] = UnderscoresToCamelCase(descriptor->name(), true);
-  variables_["oneof_index"] =
-      absl::StrCat(descriptor->containing_oneof()->index());
 }
-
-StringOneofFieldGenerator::~StringOneofFieldGenerator() {}
 
 void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
@@ -598,7 +652,7 @@ void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "template <typename ArgT0, typename... ArgT>\n"
       "inline void $classname$::set_$name$(ArgT0&& arg0, ArgT... args) {\n"
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "    $field$.InitDefault();\n"
@@ -615,14 +669,14 @@ void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return _s;\n"
       "}\n"
       "inline const std::string& $classname$::_internal_$name$() const {\n"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    return $field$.Get();\n"
       "  }\n"
       "  return $default_string$;\n"
       "}\n"
       "inline void $classname$::_internal_set_$name$(const std::string& "
       "value) {\n"
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "    $field$.InitDefault();\n"
@@ -631,7 +685,7 @@ void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n");
   format(
       "inline std::string* $classname$::_internal_mutable_$name$() {\n"
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "    $field$.InitDefault();\n"
@@ -642,7 +696,7 @@ void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "inline std::string* $classname$::$release_name$() {\n"
       "$annotate_release$"
       "  // @@protoc_insertion_point(field_release:$full_name$)\n"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    clear_has_$oneof_name$();\n"
       "    return $field$.Release();\n"
       "  } else {\n"
@@ -687,11 +741,9 @@ void StringOneofFieldGenerator::GenerateConstructorCode(
 
 RepeatedStringFieldGenerator::RepeatedStringFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
-    : FieldGenerator(descriptor, options) {
+    : FieldGeneratorBase(descriptor, options) {
   SetStringVariables(descriptor, &variables_, options);
 }
-
-RepeatedStringFieldGenerator::~RepeatedStringFieldGenerator() {}
 
 void RepeatedStringFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
@@ -939,6 +991,25 @@ void RepeatedStringFieldGenerator::GenerateByteSize(
       "::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
       "    $field$.Get(i));\n"
       "}\n");
+}
+}  // namespace
+
+std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<StringFieldGenerator>(desc, options);
+}
+
+std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<RepeatedStringFieldGenerator>(desc, options);
+}
+
+std::unique_ptr<FieldGeneratorBase> MakeOneofStringGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<StringOneofFieldGenerator>(desc, options);
 }
 
 }  // namespace cpp

@@ -31,8 +31,12 @@
 #include "google/protobuf/compiler/php/php_generator.h"
 
 #include <sstream>
+#include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_replace.h"
@@ -43,18 +47,18 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
-const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
-const std::string kEmptyFile = "google/protobuf/empty.proto";
-const std::string kEmptyMetadataFile = "GPBMetadata/Google/Protobuf/GPBEmpty.php";
-const std::string kDescriptorMetadataFile =
+constexpr absl::string_view kDescriptorFile =
+    "google/protobuf/descriptor.proto";
+constexpr absl::string_view kEmptyFile = "google/protobuf/empty.proto";
+constexpr absl::string_view kEmptyMetadataFile =
+    "GPBMetadata/Google/Protobuf/GPBEmpty.php";
+constexpr absl::string_view kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
-const std::string kDescriptorDirName = "Google/Protobuf/Internal";
-const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
-const char* const kValidConstantNames[] = {
-    "int",   "float", "bool", "string",   "true",
-    "false", "null",  "void", "iterable", "parent",
-    "self", "readonly"
-};
+constexpr absl::string_view kDescriptorPackageName =
+    "Google\\Protobuf\\Internal";
+constexpr absl::string_view kValidConstantNames[] = {
+    "int",  "float", "bool",     "string", "true", "false",
+    "null", "void",  "iterable", "parent", "self", "readonly"};
 const int kValidConstantNamesSize = 12;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
@@ -69,7 +73,7 @@ struct Options {
   bool is_descriptor = false;
   bool aggregate_metadata = false;
   bool gen_c_wkt = false;
-  std::set<std::string> aggregate_metadata_prefixes;
+  absl::flat_hash_set<std::string> aggregate_metadata_prefixes;
 };
 
 namespace {
@@ -206,7 +210,7 @@ std::string PhpNamePrefix(const std::string& classname) {
 
 std::string PhpName(const std::string& full_name, const Options& options) {
   if (options.is_descriptor) {
-    return kDescriptorPackageName;
+    return std::string(kDescriptorPackageName);
   }
 
   std::string segment;
@@ -262,17 +266,17 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   std::string segment = "";
 
   if (proto_file == kEmptyFile) {
-    return kEmptyMetadataFile;
+    return std::string(kEmptyMetadataFile);
   }
   if (options.is_descriptor) {
-    return kDescriptorMetadataFile;
+    return std::string(kDescriptorMetadataFile);
   }
 
   // Append directory name.
   std::string file_no_suffix;
   int lastindex = proto_file.find_last_of('.');
   if (proto_file == kEmptyFile) {
-    return kEmptyMetadataFile;
+    return std::string(kEmptyMetadataFile);
   } else {
     file_no_suffix = proto_file.substr(0, lastindex);
   }
@@ -991,9 +995,10 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
 
 static void AnalyzeDependencyForFile(
     const FileDescriptor* file,
-    std::set<const FileDescriptor*>* nodes_without_dependency,
-    std::map<const FileDescriptor*, std::set<const FileDescriptor*>>* deps,
-    std::map<const FileDescriptor*, int>* dependency_count) {
+    absl::flat_hash_set<const FileDescriptor*>* nodes_without_dependency,
+    absl::flat_hash_map<const FileDescriptor*,
+                        absl::flat_hash_set<const FileDescriptor*>>* deps,
+    absl::flat_hash_map<const FileDescriptor*, int>* dependency_count) {
   int count = file->dependency_count();
   for (int i = 0; i < file->dependency_count(); i++) {
       const FileDescriptor* dependency = file->dependency(i);
@@ -1013,7 +1018,7 @@ static void AnalyzeDependencyForFile(
         continue;
       }
       if (deps->find(dependency) == deps->end()) {
-        (*deps)[dependency] = std::set<const FileDescriptor*>();
+        (*deps)[dependency] = {};
       }
       (*deps)[dependency].insert(file);
       AnalyzeDependencyForFile(
@@ -1049,9 +1054,11 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       "}\n");
 
   // Sort files according to dependency
-  std::map<const FileDescriptor*, std::set<const FileDescriptor*>> deps;
-  std::map<const FileDescriptor*, int> dependency_count;
-  std::set<const FileDescriptor*> nodes_without_dependency;
+  absl::flat_hash_map<const FileDescriptor*,
+                      absl::flat_hash_set<const FileDescriptor*>>
+      deps;
+  absl::flat_hash_map<const FileDescriptor*, int> dependency_count;
+  absl::flat_hash_set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
 
   AnalyzeDependencyForFile(
@@ -2303,14 +2310,14 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       options.aggregate_metadata = true;
       for (const auto& prefix : absl::StrSplit(option_pair[1], "#", absl::AllowEmpty())) {
         options.aggregate_metadata_prefixes.emplace(prefix);
-        GOOGLE_LOG(INFO) << prefix;
+        GOOGLE_ABSL_LOG(INFO) << prefix;
       }
     } else if (option_pair[0] == "internal") {
       options.is_descriptor = true;
     } else if (option_pair[0] == "internal_generate_c_wkt") {
       GenerateCWellKnownTypes(files, generator_context);
     } else {
-      GOOGLE_LOG(FATAL) << "Unknown codegen option: " << option_pair[0];
+      GOOGLE_ABSL_LOG(FATAL) << "Unknown codegen option: " << option_pair[0];
     }
   }
 

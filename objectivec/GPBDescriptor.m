@@ -36,6 +36,32 @@
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
+@interface GPBDescriptor ()
+- (instancetype)initWithClass:(Class)messageClass
+                         file:(GPBFileDescriptor *)file
+                       fields:(NSArray *)fields
+                  storageSize:(uint32_t)storage
+                   wireFormat:(BOOL)wireFormat;
+@end
+
+@interface GPBFieldDescriptor ()
+// Single initializer
+// description has to be long lived, it is held as a raw pointer.
+- (instancetype)initWithFieldDescription:(void *)description
+                                    file:(GPBFileDescriptor *)file
+                          decriptorFlags:(GPBDescriptorInitializationFlags)decriptorFlags;
+
+@end
+
+@interface GPBEnumDescriptor ()
+- (instancetype)initWithName:(NSString *)name
+                  valueNames:(const char *)valueNames
+                      values:(const int32_t *)values
+                       count:(uint32_t)valueCount
+                enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                       flags:(GPBEnumDescriptorInitializationFlags)flags;
+@end
+
 // Direct access is use for speed, to avoid even internally declaring things
 // read/write, etc. The warning is enabled in the project to ensure code calling
 // protos can turn on -Wdirect-ivar-access without issues.
@@ -118,31 +144,20 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   // The rootClass is no longer used, but it is passed in to ensure it
   // was started up during initialization also.
   (void)rootClass;
-  NSMutableArray *fields = nil;
-  GPBFileSyntax syntax = file.syntax;
+  NSMutableArray *fields =
+      (fieldCount ? [[NSMutableArray alloc] initWithCapacity:fieldCount] : nil);
   BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
-  BOOL usesClassRefs = (flags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0;
-  BOOL proto3OptionalKnown = (flags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) != 0;
 
   void *desc;
   for (uint32_t i = 0; i < fieldCount; ++i) {
-    if (fields == nil) {
-      fields = [[NSMutableArray alloc] initWithCapacity:fieldCount];
-    }
     // Need correctly typed pointer for array indexing below to work.
     if (fieldsIncludeDefault) {
-      GPBMessageFieldDescriptionWithDefault *fieldDescWithDefault = fieldDescriptions;
-      desc = &(fieldDescWithDefault[i]);
+      desc = &(((GPBMessageFieldDescriptionWithDefault *)fieldDescriptions)[i]);
     } else {
-      GPBMessageFieldDescription *fieldDesc = fieldDescriptions;
-      desc = &(fieldDesc[i]);
+      desc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
     }
     GPBFieldDescriptor *fieldDescriptor =
-        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc
-                                             includesDefault:fieldsIncludeDefault
-                                               usesClassRefs:usesClassRefs
-                                         proto3OptionalKnown:proto3OptionalKnown
-                                                      syntax:syntax];
+        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc file:file decriptorFlags:flags];
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
   }
@@ -443,33 +458,18 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   Class msgClass_;
 
   // Enum ivars.
-  // If protos are generated with GenerateEnumDescriptors on then it will
-  // be a enumDescriptor, otherwise it will be a enumVerifier.
-  union {
-    GPBEnumDescriptor *enumDescriptor_;
-    GPBEnumValidationFunc enumVerifier_;
-  } enumHandling_;
+  GPBEnumDescriptor *enumDescriptor_;
 }
 
 @synthesize msgClass = msgClass_;
 @synthesize containingOneof = containingOneof_;
 
-- (instancetype)init {
-  // Throw an exception if people attempt to not use the designated initializer.
-  self = [super init];
-  if (self != nil) {
-    [self doesNotRecognizeSelector:_cmd];
-    self = nil;
-  }
-  return self;
-}
-
 - (instancetype)initWithFieldDescription:(void *)description
-                         includesDefault:(BOOL)includesDefault
-                           usesClassRefs:(BOOL)usesClassRefs
-                     proto3OptionalKnown:(BOOL)proto3OptionalKnown
-                                  syntax:(GPBFileSyntax)syntax {
+                                    file:(GPBFileDescriptor *)file
+                          decriptorFlags:(GPBDescriptorInitializationFlags)decriptorFlags {
   if ((self = [super init])) {
+    BOOL includesDefault =
+        (decriptorFlags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
     GPBMessageFieldDescription *coreDesc;
     if (includesDefault) {
       coreDesc = &(((GPBMessageFieldDescriptionWithDefault *)description)->core);
@@ -486,16 +486,37 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
     // If proto3 optionals weren't known (i.e. generated code from an
     // older version), compute the flag for the rest of the runtime.
-    if (!proto3OptionalKnown) {
+    if ((decriptorFlags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) == 0) {
       // If it was...
       //  - proto3 syntax
       //  - not repeated/map
       //  - not in a oneof (negative has index)
       //  - not a message (the flag doesn't make sense for messages)
-      BOOL clearOnZero = ((syntax == GPBFileSyntaxProto3) && !isMapOrArray &&
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+      BOOL clearOnZero = ((file.syntax == GPBFileSyntaxProto3) && !isMapOrArray &&
                           (coreDesc->hasIndex >= 0) && !isMessage);
+#pragma clang diagnostic pop
       if (clearOnZero) {
         coreDesc->flags |= GPBFieldClearHasIvarOnZero;
+      }
+    }
+
+    // If the ClosedEnum flag wasn't known (i.e. generated code from an older
+    // version), compute the flag for the rest of the runtime.
+    if ((decriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) == 0) {
+      // NOTE: This isn't correct, it is using the syntax of the file that
+      // declared the field, not the syntax of the file that declared the
+      // enum; but for older generated code, that's all we have and that happens
+      // to be what the runtime was doing (even though it was wrong). This is
+      // only wrong in the rare cases an enum is declared in a proto3 syntax
+      // file but used for a field in the proto2 syntax file.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+      BOOL isClosedEnum = (dataType == GPBDataTypeEnum && file.syntax != GPBFileSyntaxProto3);
+#pragma clang diagnostic pop
+      if (isClosedEnum) {
+        coreDesc->flags |= GPBFieldClosedEnum;
       }
     }
 
@@ -519,7 +540,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       // Note: Only fetch the class here, can't send messages to it because
       // that could cause cycles back to this class within +initialize if
       // two messages have each other in fields (i.e. - they build a graph).
-      if (usesClassRefs) {
+      if ((decriptorFlags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0) {
         msgClass_ = coreDesc->dataTypeSpecific.clazz;
       } else {
         // Backwards compatibility for sources generated with older protoc.
@@ -528,11 +549,14 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
         NSAssert(msgClass_, @"Class %s not defined", className);
       }
     } else if (dataType == GPBDataTypeEnum) {
-      if ((coreDesc->flags & GPBFieldHasEnumDescriptor) != 0) {
-        enumHandling_.enumDescriptor_ = coreDesc->dataTypeSpecific.enumDescFunc();
-      } else {
-        enumHandling_.enumVerifier_ = coreDesc->dataTypeSpecific.enumVerifier;
-      }
+      enumDescriptor_ = coreDesc->dataTypeSpecific.enumDescFunc();
+#if defined(DEBUG) && DEBUG
+      NSAssert((coreDesc->flags & GPBFieldHasEnumDescriptor) != 0,
+               @"Field must have GPBFieldHasEnumDescriptor set");
+      NSAssert(((decriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) != 0) ||
+                   (((coreDesc->flags & GPBFieldClosedEnum) != 0) == enumDescriptor_.isClosed),
+               @"Internal error, ClosedEnum flag doesn't agree with EnumDescriptor");
+#endif  // DEBUG
     }
 
     // Non map<>/repeated fields can have defaults in proto2 syntax.
@@ -636,19 +660,11 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 - (BOOL)isValidEnumValue:(int32_t)value {
   NSAssert(description_->dataType == GPBDataTypeEnum, @"Field Must be of type GPBDataTypeEnum");
-  if (description_->flags & GPBFieldHasEnumDescriptor) {
-    return enumHandling_.enumDescriptor_.enumVerifier(value);
-  } else {
-    return enumHandling_.enumVerifier_(value);
-  }
+  return enumDescriptor_.enumVerifier(value);
 }
 
 - (GPBEnumDescriptor *)enumDescriptor {
-  if (description_->flags & GPBFieldHasEnumDescriptor) {
-    return enumHandling_.enumDescriptor_;
-  } else {
-    return nil;
-  }
+  return enumDescriptor_;
 }
 
 - (GPBGenericValue)defaultValue {
@@ -743,6 +759,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   const uint8_t *extraTextFormatInfo_;
   uint32_t *nameOffsets_;
   uint32_t valueCount_;
+  uint32_t flags_;
 }
 
 @synthesize name = name_;
@@ -752,12 +769,14 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
                             valueNames:(const char *)valueNames
                                 values:(const int32_t *)values
                                  count:(uint32_t)valueCount
-                          enumVerifier:(GPBEnumValidationFunc)enumVerifier {
+                          enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                                 flags:(GPBEnumDescriptorInitializationFlags)flags {
   GPBEnumDescriptor *descriptor = [[self alloc] initWithName:name
                                                   valueNames:valueNames
                                                       values:values
                                                        count:valueCount
-                                                enumVerifier:enumVerifier];
+                                                enumVerifier:enumVerifier
+                                                       flags:flags];
   return descriptor;
 }
 
@@ -766,29 +785,61 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
                                 values:(const int32_t *)values
                                  count:(uint32_t)valueCount
                           enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                                 flags:(GPBEnumDescriptorInitializationFlags)flags
                    extraTextFormatInfo:(const char *)extraTextFormatInfo {
   // Call the common case.
   GPBEnumDescriptor *descriptor = [self allocDescriptorForName:name
                                                     valueNames:valueNames
                                                         values:values
                                                          count:valueCount
-                                                  enumVerifier:enumVerifier];
+                                                  enumVerifier:enumVerifier
+                                                         flags:flags];
   // Set the extra info.
   descriptor->extraTextFormatInfo_ = (const uint8_t *)extraTextFormatInfo;
   return descriptor;
+}
+
++ (instancetype)allocDescriptorForName:(NSString *)name
+                            valueNames:(const char *)valueNames
+                                values:(const int32_t *)values
+                                 count:(uint32_t)valueCount
+                          enumVerifier:(GPBEnumValidationFunc)enumVerifier {
+  return [self allocDescriptorForName:name
+                           valueNames:valueNames
+                               values:values
+                                count:valueCount
+                         enumVerifier:enumVerifier
+                                flags:GPBEnumDescriptorInitializationFlag_None];
+}
+
++ (instancetype)allocDescriptorForName:(NSString *)name
+                            valueNames:(const char *)valueNames
+                                values:(const int32_t *)values
+                                 count:(uint32_t)valueCount
+                          enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                   extraTextFormatInfo:(const char *)extraTextFormatInfo {
+  return [self allocDescriptorForName:name
+                           valueNames:valueNames
+                               values:values
+                                count:valueCount
+                         enumVerifier:enumVerifier
+                                flags:GPBEnumDescriptorInitializationFlag_None
+                  extraTextFormatInfo:extraTextFormatInfo];
 }
 
 - (instancetype)initWithName:(NSString *)name
                   valueNames:(const char *)valueNames
                       values:(const int32_t *)values
                        count:(uint32_t)valueCount
-                enumVerifier:(GPBEnumValidationFunc)enumVerifier {
+                enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                       flags:(GPBEnumDescriptorInitializationFlags)flags {
   if ((self = [super init])) {
     name_ = [name copy];
     valueNames_ = valueNames;
     values_ = values;
     valueCount_ = valueCount;
     enumVerifier_ = enumVerifier;
+    flags_ = flags;
   }
   return self;
 }
@@ -797,6 +848,10 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   [name_ release];
   if (nameOffsets_) free(nameOffsets_);
   [super dealloc];
+}
+
+- (BOOL)isClosed {
+  return (flags_ & GPBEnumDescriptorInitializationFlag_IsClosed) != 0;
 }
 
 - (void)calcValueNameOffsets {
@@ -837,7 +892,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   const char *nameAsCStr = [name UTF8String];
   nameAsCStr += prefixLen;
 
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+  [self calcValueNameOffsets];
   if (nameOffsets_ == NULL) return NO;
 
   // Find it.
@@ -854,7 +909,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (BOOL)getValue:(int32_t *)outValue forEnumTextFormatName:(NSString *)textFormatName {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+  [self calcValueNameOffsets];
   if (nameOffsets_ == NULL) return NO;
 
   for (uint32_t i = 0; i < valueCount_; ++i) {
@@ -891,7 +946,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)getEnumNameForIndex:(uint32_t)index {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+  [self calcValueNameOffsets];
   if (nameOffsets_ == NULL) return nil;
 
   if (index >= valueCount_) {
@@ -903,7 +958,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)getEnumTextFormatNameForIndex:(uint32_t)index {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+  [self calcValueNameOffsets];
   if (nameOffsets_ == NULL) return nil;
 
   if (index >= valueCount_) {

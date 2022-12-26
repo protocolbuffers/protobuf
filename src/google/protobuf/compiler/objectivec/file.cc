@@ -31,17 +31,21 @@
 #include "google/protobuf/compiler/objectivec/file.h"
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <iterator>
-#include <set>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
 #include "google/protobuf/compiler/objectivec/import_writer.h"
@@ -60,27 +64,9 @@ namespace objectivec {
 namespace {
 
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.
-const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30004;
+const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30005;
 
 const char* kHeaderExtension = ".pbobjc.h";
-
-std::string BundledFileName(const FileDescriptor* file) {
-  return "GPB" + FilePathBasename(file) + kHeaderExtension;
-}
-
-// Checks if a message contains any enums definitions (on the message or
-// a nested message under it).
-bool MessageContainsEnums(const Descriptor* message) {
-  if (message->enum_type_count() > 0) {
-    return true;
-  }
-  for (int i = 0; i < message->nested_type_count(); i++) {
-    if (MessageContainsEnums(message->nested_type(i))) {
-      return true;
-    }
-  }
-  return false;
-}
 
 // Checks if a message contains any extension definitions (on the message or
 // a nested message under it).
@@ -90,20 +76,6 @@ bool MessageContainsExtensions(const Descriptor* message) {
   }
   for (int i = 0; i < message->nested_type_count(); i++) {
     if (MessageContainsExtensions(message->nested_type(i))) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Checks if the file contains any enum definitions (at the root or
-// nested under a message).
-bool FileContainsEnums(const FileDescriptor* file) {
-  if (file->enum_type_count() > 0) {
-    return true;
-  }
-  for (int i = 0; i < file->message_type_count(); i++) {
-    if (MessageContainsEnums(file->message_type(i))) {
       return true;
     }
   }
@@ -140,6 +112,24 @@ struct FileDescriptorsOrderedByName {
   }
 };
 
+void MakeDescriptors(
+    const Descriptor* descriptor, const std::string& root_classname,
+    std::vector<std::unique_ptr<EnumGenerator>>* enum_generators,
+    std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
+    std::vector<std::unique_ptr<MessageGenerator>>* message_generators) {
+  for (int i = 0; i < descriptor->enum_type_count(); i++) {
+    enum_generators->emplace_back(
+        std::make_unique<EnumGenerator>(descriptor->enum_type(i)));
+  }
+  for (int i = 0; i < descriptor->nested_type_count(); i++) {
+    message_generators->emplace_back(std::make_unique<MessageGenerator>(
+        root_classname, descriptor->nested_type(i)));
+    message_generators->back()->AddExtensionGenerators(extension_generators);
+    MakeDescriptors(descriptor->nested_type(i), root_classname, enum_generators,
+                    extension_generators, message_generators);
+  }
+}
+
 }  // namespace
 
 const FileGenerator::CommonState::MinDepsEntry&
@@ -151,7 +141,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
   }
 
   absl::flat_hash_set<const FileDescriptor*> min_deps_collector;
-  absl::flat_hash_set<const FileDescriptor*> covered_deps_collector;
+  absl::flat_hash_set<const FileDescriptor*> transitive_deps_collector;
   absl::flat_hash_set<const FileDescriptor*> to_prune;
   for (int i = 0; i < file->dependency_count(); i++) {
     const FileDescriptor* dep = file->dependency(i);
@@ -159,11 +149,12 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
         CollectMinimalFileDepsContainingExtensionsInternal(dep);
 
     // Everything the dep covered, this file will also cover.
-    covered_deps_collector.insert(dep_info.covered_deps.begin(),
-                                  dep_info.covered_deps.end());
+    transitive_deps_collector.insert(dep_info.transitive_deps.begin(),
+                                     dep_info.transitive_deps.end());
     // Prune everything from the dep's covered list in case another dep lists it
     // as a min dep.
-    to_prune.insert(dep_info.covered_deps.begin(), dep_info.covered_deps.end());
+    to_prune.insert(dep_info.transitive_deps.begin(),
+                    dep_info.transitive_deps.end());
 
     // Does the dep have any extensions...
     if (dep_info.has_extensions) {
@@ -171,8 +162,8 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
       // deps.
       min_deps_collector.insert(dep);
       to_prune.insert(dep_info.min_deps.begin(), dep_info.min_deps.end());
-      covered_deps_collector.insert(dep_info.min_deps.begin(),
-                                    dep_info.min_deps.end());
+      transitive_deps_collector.insert(dep_info.min_deps.begin(),
+                                       dep_info.min_deps.end());
     } else {
       // No -> Just use its min_deps.
       min_deps_collector.insert(dep_info.min_deps.begin(),
@@ -187,7 +178,8 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
   if (to_prune.empty() || file->dependency_count() == 1) {
     return deps_info_cache
         .insert(
-            {file, {file_has_exts, min_deps_collector, covered_deps_collector}})
+            {file,
+             {file_has_exts, min_deps_collector, transitive_deps_collector}})
         .first->second;
   }
 
@@ -198,7 +190,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
                  return to_prune.find(value) == to_prune.end();
                });
   return deps_info_cache
-      .insert({file, {file_has_exts, min_deps, covered_deps_collector}})
+      .insert({file, {file_has_exts, min_deps, transitive_deps_collector}})
       .first->second;
 }
 
@@ -211,7 +203,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
 // There are comments about what the expected code should be line and limited
 // testing objectivec/Tests/GPBUnittestProtos2.m around compilation (#imports
 // specifically).
-const std::vector<const FileDescriptor*>
+std::vector<const FileDescriptor*>
 FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
     const FileDescriptor* file) {
   absl::flat_hash_set<const FileDescriptor*> min_deps =
@@ -227,255 +219,112 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
                              CommonState& common_state)
     : file_(file),
       generation_options_(generation_options),
-      common_state_(common_state),
+      common_state_(&common_state),
       root_class_name_(FileClassName(file)),
       is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
-    EnumGenerator* generator = new EnumGenerator(file_->enum_type(i));
-    enum_generators_.emplace_back(generator);
-  }
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    MessageGenerator* generator =
-        new MessageGenerator(root_class_name_, file_->message_type(i));
-    message_generators_.emplace_back(generator);
+    enum_generators_.emplace_back(
+        std::make_unique<EnumGenerator>(file_->enum_type(i)));
   }
   for (int i = 0; i < file_->extension_count(); i++) {
-    ExtensionGenerator* generator =
-        new ExtensionGenerator(root_class_name_, file_->extension(i));
-    extension_generators_.emplace_back(generator);
+    extension_generators_.push_back(std::make_unique<ExtensionGenerator>(
+        root_class_name_, file_->extension(i)));
+  }
+  for (int i = 0; i < file_->message_type_count(); i++) {
+    message_generators_.emplace_back(std::make_unique<MessageGenerator>(
+        root_class_name_, file_->message_type(i)));
+    message_generators_.back()->AddExtensionGenerators(&extension_generators_);
+    MakeDescriptors(file_->message_type(i), root_class_name_, &enum_generators_,
+                    &extension_generators_, &message_generators_);
   }
 }
 
-void FileGenerator::GenerateHeader(io::Printer* printer) {
-  std::vector<std::string> headers;
-  // Generated files bundled with the library get minimal imports, everything
-  // else gets the wrapper so everything is usable.
-  if (is_bundled_proto_) {
-    headers.push_back("GPBDescriptor.h");
-    headers.push_back("GPBMessage.h");
-    headers.push_back("GPBRootObject.h");
-    for (int i = 0; i < file_->dependency_count(); i++) {
-      const std::string header_name = BundledFileName(file_->dependency(i));
-      headers.push_back(header_name);
+void FileGenerator::GenerateHeader(io::Printer* p) const {
+  GenerateFile(p, GeneratedFileType::kHeader, [&] {
+    p->Print("CF_EXTERN_C_BEGIN\n\n");
+
+    absl::btree_set<std::string> fwd_decls;
+    for (const auto& generator : message_generators_) {
+      generator->DetermineForwardDeclarations(&fwd_decls,
+                                              /* include_external_types = */
+                                              HeadersUseForwardDeclarations());
     }
-  } else {
-    headers.push_back("GPBProtocolBuffers.h");
-  }
-  PrintFileRuntimePreamble(printer, headers);
-
-  // Add some verification that the generated code matches the source the
-  // code is being compiled with.
-  // NOTE: This captures the raw numeric values at the time the generator was
-  // compiled, since that will be the versions for the ObjC runtime at that
-  // time.  The constants in the generated code will then get their values at
-  // at compile time (so checking against the headers being used to compile).
-  // clang-format off
-  printer->Print(
-      "#if GOOGLE_PROTOBUF_OBJC_VERSION < $google_protobuf_objc_version$\n"
-      "#error This file was generated by a newer version of protoc which is incompatible with your Protocol Buffer library sources.\n"
-      "#endif\n"
-      "#if $google_protobuf_objc_version$ < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION\n"
-      "#error This file was generated by an older version of protoc which is incompatible with your Protocol Buffer library sources.\n"
-      "#endif\n"
-      "\n",
-      "google_protobuf_objc_version", absl::StrCat(GOOGLE_PROTOBUF_OBJC_VERSION));
-  // clang-format on
-
-  // The bundled protos (WKTs) don't use of forward declarations.
-  bool headers_use_forward_declarations =
-      generation_options_.headers_use_forward_declarations &&
-      !is_bundled_proto_;
-
-  {
-    ImportWriter import_writer(
-        generation_options_.generate_for_named_framework,
-        generation_options_.named_framework_to_proto_path_mappings_path,
-        generation_options_.runtime_import_prefix,
-        /* include_wkt_imports = */ false);
-    const std::string header_extension(kHeaderExtension);
-    if (headers_use_forward_declarations) {
-      // #import any headers for "public imports" in the proto file.
-      for (int i = 0; i < file_->public_dependency_count(); i++) {
-        import_writer.AddFile(file_->public_dependency(i), header_extension);
-      }
-    } else {
-      for (int i = 0; i < file_->dependency_count(); i++) {
-        import_writer.AddFile(file_->dependency(i), header_extension);
-      }
+    if (!fwd_decls.empty()) {
+      p->Print("$fwd_decls$\n\n", "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
     }
-    import_writer.Print(printer);
-  }
 
-  // Note:
-  //  deprecated-declarations suppression is only needed if some place in this
-  //    proto file is something deprecated or if it references something from
-  //    another file that is deprecated.
-  // clang-format off
-  printer->Print(
-      "// @@protoc_insertion_point(imports)\n"
-      "\n"
-      "#pragma clang diagnostic push\n"
-      "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n"
-      "\n"
-      "CF_EXTERN_C_BEGIN\n"
-      "\n");
-  // clang-format on
+    p->Print("NS_ASSUME_NONNULL_BEGIN\n\n");
 
-  std::set<std::string> fwd_decls;
-  for (const auto& generator : message_generators_) {
-    generator->DetermineForwardDeclarations(
-        &fwd_decls,
-        /* include_external_types = */ headers_use_forward_declarations);
-  }
-  for (std::set<std::string>::const_iterator i(fwd_decls.begin());
-       i != fwd_decls.end(); ++i) {
-    printer->Print("$value$;\n", "value", *i);
-  }
-  if (fwd_decls.begin() != fwd_decls.end()) {
-    printer->Print("\n");
-  }
+    for (const auto& generator : enum_generators_) {
+      generator->GenerateHeader(p);
+    }
 
-  printer->Print(
-      "NS_ASSUME_NONNULL_BEGIN\n"
-      "\n");
-
-  // need to write out all enums first
-  for (const auto& generator : enum_generators_) {
-    generator->GenerateHeader(printer);
-  }
-
-  for (const auto& generator : message_generators_) {
-    generator->GenerateEnumHeader(printer);
-  }
-
-  // For extensions to chain together, the Root gets created even if there
-  // are no extensions.
-  printer->Print(
-      // clang-format off
-      "#pragma mark - $root_class_name$\n"
-      "\n"
-      "/**\n"
-      " * Exposes the extension registry for this file.\n"
-      " *\n"
-      " * The base class provides:\n"
-      " * @code\n"
-      " *   + (GPBExtensionRegistry *)extensionRegistry;\n"
-      " * @endcode\n"
-      " * which is a @c GPBExtensionRegistry that includes all the extensions defined by\n"
-      " * this file and all files that it depends on.\n"
-      " **/\n"
-      "GPB_FINAL @interface $root_class_name$ : GPBRootObject\n"
-      "@end\n"
-      "\n",
-      // clang-format off
-      "root_class_name", root_class_name_);
-
-  if (!extension_generators_.empty()) {
-    // The dynamic methods block is only needed if there are extensions.
-    printer->Print(
-        "@interface $root_class_name$ (DynamicMethods)\n",
+    // For extensions to chain together, the Root gets created even if there
+    // are no extensions.
+    p->Print(
+        // clang-format off
+        "#pragma mark - $root_class_name$\n"
+        "\n"
+        "/**\n"
+        " * Exposes the extension registry for this file.\n"
+        " *\n"
+        " * The base class provides:\n"
+        " * @code\n"
+        " *   + (GPBExtensionRegistry *)extensionRegistry;\n"
+        " * @endcode\n"
+        " * which is a @c GPBExtensionRegistry that includes all the extensions defined by\n"
+        " * this file and all files that it depends on.\n"
+        " **/\n"
+        "GPB_FINAL @interface $root_class_name$ : GPBRootObject\n"
+        "@end\n"
+        "\n",
+        // clang-format on
         "root_class_name", root_class_name_);
 
-    for (const auto& generator : extension_generators_) {
-      generator->GenerateMembersHeader(printer);
+    // The dynamic methods block is only needed if there are extensions that are
+    // file level scoped (not message scoped). The first
+    // file_->extension_count() of extension_generators_ are the file scoped
+    // ones.
+    if (file_->extension_count()) {
+      p->Print("@interface $root_class_name$ (DynamicMethods)\n",
+               "root_class_name", root_class_name_);
+
+      for (int i = 0; i < file_->extension_count(); i++) {
+        extension_generators_[i]->GenerateMembersHeader(p);
+      }
+
+      p->Print("@end\n\n");
+    }  // file_->extension_count()
+
+    for (const auto& generator : message_generators_) {
+      generator->GenerateMessageHeader(p);
     }
 
-    printer->Print("@end\n\n");
-  }  // !extension_generators_.empty()
-
-  for (const auto& generator : message_generators_) {
-    generator->GenerateMessageHeader(printer);
-  }
-
-  // clang-format off
-  printer->Print(
+    // clang-format off
+    p->Print(
       "NS_ASSUME_NONNULL_END\n"
       "\n"
-      "CF_EXTERN_C_END\n"
-      "\n"
-      "#pragma clang diagnostic pop\n"
-      "\n"
-      "// @@protoc_insertion_point(global_scope)\n"
-      "\n"
-      "// clange-format on\n");
-  // clang-format on
+      "CF_EXTERN_C_END\n");
+    // clang-format on
+  });
 }
 
-void FileGenerator::GenerateSource(io::Printer* printer) {
-  // #import the runtime support.
-  std::vector<std::string> headers;
-  headers.push_back("GPBProtocolBuffers_RuntimeSupport.h");
-  if (is_bundled_proto_) {
-    headers.push_back(BundledFileName(file_));
-  }
-  PrintFileRuntimePreamble(printer, headers);
-
-  // Enums use atomic in the generated code, so add the system import as needed.
-  if (FileContainsEnums(file_)) {
-    printer->Print(
-        "#import <stdatomic.h>\n"
-        "\n");
-  }
-
+void FileGenerator::GenerateSource(io::Printer* p) const {
   std::vector<const FileDescriptor*> deps_with_extensions =
-      common_state_.CollectMinimalFileDepsContainingExtensions(file_);
+      common_state_->CollectMinimalFileDepsContainingExtensions(file_);
 
-  // The bundled protos (WKTs) don't use of forward declarations.
-  bool headers_use_forward_declarations =
-      generation_options_.headers_use_forward_declarations &&
-      !is_bundled_proto_;
-
-  {
-    ImportWriter import_writer(
-        generation_options_.generate_for_named_framework,
-        generation_options_.named_framework_to_proto_path_mappings_path,
-        generation_options_.runtime_import_prefix,
-        /* include_wkt_imports = */ false);
-    const std::string header_extension(kHeaderExtension);
-
-    // #import the header for this proto file.
-    import_writer.AddFile(file_, header_extension);
-
-    if (headers_use_forward_declarations) {
-      // #import the headers for anything that a plain dependency of this proto
-      // file (that means they were just an include, not a "public" include).
-      std::set<std::string> public_import_names;
-      for (int i = 0; i < file_->public_dependency_count(); i++) {
-        public_import_names.insert(file_->public_dependency(i)->name());
-      }
-      for (int i = 0; i < file_->dependency_count(); i++) {
-        const FileDescriptor* dep = file_->dependency(i);
-        bool public_import = (public_import_names.count(dep->name()) != 0);
-        if (!public_import) {
-          import_writer.AddFile(dep, header_extension);
-        }
-      }
-    }
-
-    // If any indirect dependency provided extensions, it needs to be directly
-    // imported so it can get merged into the root's extensions registry.
-    // See the Note by CollectMinimalFileDepsContainingExtensions before
-    // changing this.
-    for (std::vector<const FileDescriptor*>::iterator iter =
-             deps_with_extensions.begin();
-         iter != deps_with_extensions.end(); ++iter) {
-      if (!IsDirectDependency(*iter, file_)) {
-        import_writer.AddFile(*iter, header_extension);
-      }
-    }
-
-    import_writer.Print(printer);
-  }
-
-  bool includes_oneof = false;
-  for (const auto& generator : message_generators_) {
-    if (generator->IncludesOneOfDefinition()) {
-      includes_oneof = true;
-      break;
+  // If any indirect dependency provided extensions, it needs to be directly
+  // imported so it can get merged into the root's extensions registry.
+  // See the Note by CollectMinimalFileDepsContainingExtensions before
+  // changing this.
+  std::vector<const FileDescriptor*> extra_files;
+  for (auto& dep : deps_with_extensions) {
+    if (!IsDirectDependency(dep, file_)) {
+      extra_files.push_back(dep);
     }
   }
 
-  std::set<std::string> fwd_decls;
+  absl::btree_set<std::string> fwd_decls;
   for (const auto& generator : message_generators_) {
     generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
   }
@@ -483,251 +332,414 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
   }
 
-  // Note:
-  //  deprecated-declarations suppression is only needed if some place in this
-  //    proto file is something deprecated or if it references something from
-  //    another file that is deprecated.
-  //  dollar-in-identifier-extension is needed because we use references to
-  //    objc class names that have $ in identifiers.
+  std::vector<std::string> ignored_warnings;
+  // The generated code for oneof's uses direct ivar access, suppress the
+  // warning in case developer turn that on in the context they compile the
+  // generated code.
+  for (const auto& generator : message_generators_) {
+    if (generator->IncludesOneOfDefinition()) {
+      ignored_warnings.push_back("direct-ivar-access");
+      break;
+    }
+  }
+  if (!fwd_decls.empty()) {
+    ignored_warnings.push_back("dollar-in-identifier-extension");
+  }
+
+  GenerateFile(
+      p, GeneratedFileType::kSource, ignored_warnings, extra_files, [&] {
+        if (!fwd_decls.empty()) {
+          p->Print(
+              // clang-format off
+              "#pragma mark - Objective C Class declarations\n"
+              "// Forward declarations of Objective C classes that we can use as\n"
+              "// static values in struct initializers.\n"
+              "// We don't use [Foo class] because it is not a static value.\n"
+              "$fwd_decls$\n"
+              "\n",
+              // clang-format on
+              "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+        }
+
+        PrintRootImplementation(p, deps_with_extensions);
+        PrintFileDescriptorImplementation(p);
+
+        for (const auto& generator : enum_generators_) {
+          generator->GenerateSource(p);
+        }
+        for (const auto& generator : message_generators_) {
+          generator->GenerateSource(p);
+        }
+      });
+}
+
+void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
+  std::vector<const FileDescriptor*> deps_with_extensions =
+      common_state_->CollectMinimalFileDepsContainingExtensions(file_);
+
+  // If any indirect dependency provided extensions, it needs to be directly
+  // imported so it can get merged into the root's extensions registry.
+  // See the Note by CollectMinimalFileDepsContainingExtensions before
+  // changing this.
+  std::vector<const FileDescriptor*> extra_files;
+  for (auto& dep : deps_with_extensions) {
+    if (!IsDirectDependency(dep, file_)) {
+      extra_files.push_back(dep);
+    }
+  }
+
+  absl::btree_set<std::string> fwd_decls;
+  for (const auto& generator : extension_generators_) {
+    generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+  }
+
+  std::vector<std::string> ignored_warnings;
+  if (!fwd_decls.empty()) {
+    ignored_warnings.push_back("dollar-in-identifier-extension");
+  }
+
+  GenerateFile(
+      p, GeneratedFileType::kSource, ignored_warnings, extra_files, [&] {
+        if (!fwd_decls.empty()) {
+          p->Print(
+              // clang-format off
+              "#pragma mark - Objective C Class declarations\n"
+              "// Forward declarations of Objective C classes that we can use as\n"
+              "// static values in struct initializers.\n"
+              "// We don't use [Foo class] because it is not a static value.\n"
+              "$fwd_decls$\n"
+              "\n",
+              // clang-format on
+              "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+        }
+
+        PrintRootImplementation(p, deps_with_extensions);
+        PrintFileDescriptorImplementation(p);
+      });
+}
+
+void FileGenerator::GenerateSourceForEnum(int idx, io::Printer* p) const {
+  GenerateFile(p, GeneratedFileType::kSource,
+               [&] { enum_generators_[idx]->GenerateSource(p); });
+}
+
+void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
+  const auto& generator = message_generators_[idx];
+
+  absl::btree_set<std::string> fwd_decls;
+  generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+
+  std::vector<std::string> ignored_warnings;
+  // The generated code for oneof's uses direct ivar access, suppress the
+  // warning in case developer turn that on in the context they compile the
+  // generated code.
+  if (generator->IncludesOneOfDefinition()) {
+    ignored_warnings.push_back("direct-ivar-access");
+  }
+
+  GenerateFile(p, GeneratedFileType::kSource, ignored_warnings, {}, [&] {
+    p->Print(
+        "extern GPBFileDescriptor *$root_class_name$_FileDescriptor(void);\n\n",
+        "root_class_name", root_class_name_);
+
+    if (!fwd_decls.empty()) {
+      p->Print(
+          // clang-format off
+              "#pragma mark - Objective C Class declarations\n"
+              "// Forward declarations of Objective C classes that we can use as\n"
+              "// static values in struct initializers.\n"
+              "// We don't use [Foo class] because it is not a static value.\n"
+              "$fwd_decls$\n"
+              "\n",
+          // clang-format on
+          "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+    }
+
+    generator->GenerateSource(p);
+  });
+}
+
+void FileGenerator::GenerateFile(
+    io::Printer* p, GeneratedFileType file_type,
+    const std::vector<std::string>& ignored_warnings,
+    const std::vector<const FileDescriptor*>& extra_files_to_import,
+    std::function<void()> body) const {
+  ImportWriter import_writer(
+      generation_options_.generate_for_named_framework,
+      generation_options_.named_framework_to_proto_path_mappings_path,
+      generation_options_.runtime_import_prefix,
+      /* for_bundled_proto = */ is_bundled_proto_);
+  const std::string header_extension(kHeaderExtension);
+
+  switch (file_type) {
+    case GeneratedFileType::kHeader:
+      // Generated files bundled with the library get minimal imports,
+      // everything else gets the wrapper so everything is usable.
+      if (is_bundled_proto_) {
+        import_writer.AddRuntimeImport("GPBDescriptor.h");
+        import_writer.AddRuntimeImport("GPBMessage.h");
+        import_writer.AddRuntimeImport("GPBRootObject.h");
+      } else {
+        import_writer.AddRuntimeImport("GPBProtocolBuffers.h");
+      }
+      if (HeadersUseForwardDeclarations()) {
+        // #import any headers for "public imports" in the proto file.
+        for (int i = 0; i < file_->public_dependency_count(); i++) {
+          import_writer.AddFile(file_->public_dependency(i), header_extension);
+        }
+      } else {
+        for (int i = 0; i < file_->dependency_count(); i++) {
+          import_writer.AddFile(file_->dependency(i), header_extension);
+        }
+      }
+      break;
+    case GeneratedFileType::kSource:
+      import_writer.AddRuntimeImport("GPBProtocolBuffers_RuntimeSupport.h");
+      import_writer.AddFile(file_, header_extension);
+      if (HeadersUseForwardDeclarations()) {
+        // #import the headers for anything that a plain dependency of this
+        // proto file (that means they were just an include, not a "public"
+        // include).
+        absl::flat_hash_set<std::string> public_import_names;
+        for (int i = 0; i < file_->public_dependency_count(); i++) {
+          public_import_names.insert(file_->public_dependency(i)->name());
+        }
+        for (int i = 0; i < file_->dependency_count(); i++) {
+          const FileDescriptor* dep = file_->dependency(i);
+          if (!public_import_names.contains(dep->name())) {
+            import_writer.AddFile(dep, header_extension);
+          }
+        }
+      }
+      break;
+  }
+
+  for (const auto& dep : extra_files_to_import) {
+    import_writer.AddFile(dep, header_extension);
+  }
+
+  p->Print(
+      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+      "// $clangfmt$ off\n"
+      "// source: $filename$\n"
+      "\n",
+      "filename", file_->name(), "clangfmt", "clang-format");
+
+  import_writer.PrintRuntimeImports(
+      p, /* default_cpp_symbol = */ !is_bundled_proto_);
+
+  p->Print("\n");
+
+  if (file_type == GeneratedFileType::kHeader) {
+    // Add some verification that the generated code matches the source the
+    // code is being compiled with.
+    // NOTE: This captures the raw numeric values at the time the generator was
+    // compiled, since that will be the versions for the ObjC runtime at that
+    // time.  The constants in the generated code will then get their values at
+    // at compile time (so checking against the headers being used to compile).
+    p->Print(
+        // clang-format off
+        "#if GOOGLE_PROTOBUF_OBJC_VERSION < $google_protobuf_objc_version$\n"
+        "#error This file was generated by a newer version of protoc which is incompatible with your Protocol Buffer library sources.\n"
+        "#endif\n"
+        "#if $google_protobuf_objc_version$ < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION\n"
+        "#error This file was generated by an older version of protoc which is incompatible with your Protocol Buffer library sources.\n"
+        "#endif\n"
+        "\n",
+        // clang-format on
+        "google_protobuf_objc_version",
+        absl::StrCat(GOOGLE_PROTOBUF_OBJC_VERSION));
+  }
+
+  // Enum implementation uses atomic in the generated code, so add
+  // the system import as needed.
+  if (file_type == GeneratedFileType::kSource && !enum_generators_.empty()) {
+    p->Print("#import <stdatomic.h>\n\n");
+  }
+
+  import_writer.PrintFileImports(p);
+
   // clang-format off
-  printer->Print(
+  p->Print(
       "// @@protoc_insertion_point(imports)\n"
       "\n"
       "#pragma clang diagnostic push\n"
       "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n");
   // clang-format on
-  if (includes_oneof) {
-    // The generated code for oneof's uses direct ivar access, suppress the
-    // warning in case developer turn that on in the context they compile the
-    // generated code.
-    printer->Print(
-        "#pragma clang diagnostic ignored \"-Wdirect-ivar-access\"\n");
+  for (const auto& warning : ignored_warnings) {
+    p->Print("#pragma clang diagnostic ignored \"-W$warning$\"\n", "warning",
+             warning);
   }
-  if (!fwd_decls.empty()) {
-    // clang-format off
-    printer->Print(
-        "#pragma clang diagnostic ignored \"-Wdollar-in-identifier-extension\"\n");
-    // clang-format on
-  }
-  printer->Print("\n");
-  if (!fwd_decls.empty()) {
-    // clang-format off
-    printer->Print(
-        "#pragma mark - Objective C Class declarations\n"
-        "// Forward declarations of Objective C classes that we can use as\n"
-        "// static values in struct initializers.\n"
-        "// We don't use [Foo class] because it is not a static value.\n");
-    // clang-format on
-  }
-  for (const auto& i : fwd_decls) {
-    printer->Print("$value$\n", "value", i);
-  }
-  if (!fwd_decls.empty()) {
-    printer->Print("\n");
-  }
-  printer->Print(
-      // clang-format off
-      "#pragma mark - $root_class_name$\n"
-      "\n"
-      "@implementation $root_class_name$\n\n",
-      // clang-format on
-      "root_class_name", root_class_name_);
+  p->Print("\n");
 
-  const bool file_contains_extensions = FileContainsExtensions(file_);
+  body();
 
-  // If there were any extensions or this file has any dependencies, output
-  // a registry to override to create the file specific registry.
-  if (file_contains_extensions || !deps_with_extensions.empty()) {
-    // clang-format off
-    printer->Print(
-        "+ (GPBExtensionRegistry*)extensionRegistry {\n"
-        "  // This is called by +initialize so there is no need to worry\n"
-        "  // about thread safety and initialization of registry.\n"
-        "  static GPBExtensionRegistry* registry = nil;\n"
-        "  if (!registry) {\n"
-        "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n"
-        "    registry = [[GPBExtensionRegistry alloc] init];\n");
-    // clang-format on
-
-    printer->Indent();
-    printer->Indent();
-
-    if (file_contains_extensions) {
-      printer->Print("static GPBExtensionDescription descriptions[] = {\n");
-      printer->Indent();
-      for (const auto& generator : extension_generators_) {
-        generator->GenerateStaticVariablesInitialization(printer);
-      }
-      for (const auto& generator : message_generators_) {
-        generator->GenerateStaticVariablesInitialization(printer);
-      }
-      printer->Outdent();
-      // clang-format off
-      printer->Print(
-          "};\n"
-          "for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {\n"
-          "  GPBExtensionDescriptor *extension =\n"
-          "      [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]\n"
-          "                                                     usesClassRefs:YES];\n"
-          "  [registry addExtension:extension];\n"
-          "  [self globallyRegisterExtension:extension];\n"
-          "  [extension release];\n"
-          "}\n");
-      // clang-format on
-    }
-
-    if (deps_with_extensions.empty()) {
-      // clang-format off
-      printer->Print(
-          "// None of the imports (direct or indirect) defined extensions, so no need to add\n"
-          "// them to this registry.\n");
-      // clang-format on
-    } else {
-      // clang-format off
-      printer->Print(
-          "// Merge in the imports (direct or indirect) that defined extensions.\n");
-      // clang-format on
-      for (std::vector<const FileDescriptor*>::iterator iter =
-               deps_with_extensions.begin();
-           iter != deps_with_extensions.end(); ++iter) {
-        const std::string root_class_name(FileClassName((*iter)));
-        printer->Print(
-            "[registry addExtensions:[$dependency$ extensionRegistry]];\n",
-            "dependency", root_class_name);
-      }
-    }
-
-    printer->Outdent();
-    printer->Outdent();
-
-    // clang-format off
-    printer->Print(
-        "  }\n"
-        "  return registry;\n"
-        "}\n");
-    // clang-format on
-  } else {
-    if (file_->dependency_count() > 0) {
-      // clang-format off
-      printer->Print(
-          "// No extensions in the file and none of the imports (direct or indirect)\n"
-          "// defined extensions, so no need to generate +extensionRegistry.\n");
-      // clang-format on
-    } else {
-      // clang-format off
-      printer->Print(
-          "// No extensions in the file and no imports, so no need to generate\n"
-          "// +extensionRegistry.\n");
-      // clang-format on
-    }
-  }
-
-  printer->Print("\n@end\n\n");
-
-  // File descriptor only needed if there are messages to use it.
-  if (!message_generators_.empty()) {
-    absl::flat_hash_map<absl::string_view, std::string> vars;
-    vars["root_class_name"] = root_class_name_;
-    vars["package"] = file_->package();
-    vars["objc_prefix"] = FileClassPrefix(file_);
-    switch (file_->syntax()) {
-      case FileDescriptor::SYNTAX_UNKNOWN:
-        vars["syntax"] = "GPBFileSyntaxUnknown";
-        break;
-      case FileDescriptor::SYNTAX_PROTO2:
-        vars["syntax"] = "GPBFileSyntaxProto2";
-        break;
-      case FileDescriptor::SYNTAX_PROTO3:
-        vars["syntax"] = "GPBFileSyntaxProto3";
-        break;
-    }
-    // clang-format off
-    printer->Print(
-        vars,
-        "#pragma mark - $root_class_name$_FileDescriptor\n"
-        "\n"
-        "static GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
-        "  // This is called by +initialize so there is no need to worry\n"
-        "  // about thread safety of the singleton.\n"
-        "  static GPBFileDescriptor *descriptor = NULL;\n"
-        "  if (!descriptor) {\n"
-        "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
-    // clang-format on
-    if (!vars["objc_prefix"].empty()) {
-      // clang-format off
-      printer->Print(
-          vars,
-          "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
-          "                                                 objcPrefix:@\"$objc_prefix$\"\n"
-          "                                                     syntax:$syntax$];\n");
-      // clang-format on
-    } else {
-      // clang-format off
-      printer->Print(
-          vars,
-          "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
-          "                                                     syntax:$syntax$];\n");
-      // clang-format on
-    }
-    // clang-format off
-    printer->Print(
-        "  }\n"
-        "  return descriptor;\n"
-        "}\n"
-        "\n");
-    // clang-format on
-  }
-
-  for (const auto& generator : enum_generators_) {
-    generator->GenerateSource(printer);
-  }
-  for (const auto& generator : message_generators_) {
-    generator->GenerateSource(printer);
-  }
-
-  // clang-format off
-  printer->Print(
+  p->Print(
       "\n"
       "#pragma clang diagnostic pop\n"
       "\n"
       "// @@protoc_insertion_point(global_scope)\n"
       "\n"
-      "// clang-format on\n");
+      "// $clangfmt$ on\n",
+      "clangfmt", "clang-format");
+}
+
+void FileGenerator::PrintRootImplementation(
+    io::Printer* p,
+    const std::vector<const FileDescriptor*>& deps_with_extensions) const {
+  p->Print(
+      // clang-format off
+      "#pragma mark - $root_class_name$\n"
+      "\n"
+      "@implementation $root_class_name$\n"
+      "\n",
+      // clang-format on
+      "root_class_name", root_class_name_);
+
+  // If there were any extensions or this file has any dependencies, output a
+  // registry to override to create the file specific registry.
+  if (extension_generators_.empty() && deps_with_extensions.empty()) {
+    if (file_->dependency_count() == 0) {
+      // clang-format off
+      p->Print(
+          "// No extensions in the file and no imports, so no need to generate\n"
+          "// +extensionRegistry.\n");
+      // clang-format on
+    } else {
+      // clang-format off
+      p->Print(
+          "// No extensions in the file and none of the imports (direct or indirect)\n"
+          "// defined extensions, so no need to generate +extensionRegistry.\n");
+      // clang-format on
+    }
+  } else {
+    PrintRootExtensionRegistryImplementation(p, deps_with_extensions);
+  }
+
+  p->Print("\n@end\n\n");
+}
+
+void FileGenerator::PrintRootExtensionRegistryImplementation(
+    io::Printer* p,
+    const std::vector<const FileDescriptor*>& deps_with_extensions) const {
+  // clang-format off
+  p->Print(
+      "+ (GPBExtensionRegistry*)extensionRegistry {\n"
+      "  // This is called by +initialize so there is no need to worry\n"
+      "  // about thread safety and initialization of registry.\n"
+      "  static GPBExtensionRegistry* registry = nil;\n"
+      "  if (!registry) {\n"
+      "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n"
+      "    registry = [[GPBExtensionRegistry alloc] init];\n");
+  // clang-format on
+
+  p->Indent();
+  p->Indent();
+
+  if (!extension_generators_.empty()) {
+    p->Print("static GPBExtensionDescription descriptions[] = {\n");
+    p->Indent();
+    for (const auto& generator : extension_generators_) {
+      generator->GenerateStaticVariablesInitialization(p);
+    }
+    p->Outdent();
+    // clang-format off
+    p->Print(
+        "};\n"
+        "for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {\n"
+        "  GPBExtensionDescriptor *extension =\n"
+        "      [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]\n"
+        "                                                     usesClassRefs:YES];\n"
+        "  [registry addExtension:extension];\n"
+        "  [self globallyRegisterExtension:extension];\n"
+        "  [extension release];\n"
+        "}\n");
+    // clang-format on
+  }
+
+  if (deps_with_extensions.empty()) {
+    // clang-format off
+    p->Print(
+        "// None of the imports (direct or indirect) defined extensions, so no need to add\n"
+        "// them to this registry.\n");
+    // clang-format on
+  } else {
+    // clang-format off
+    p->Print(
+        "// Merge in the imports (direct or indirect) that defined extensions.\n");
+    // clang-format on
+    for (const auto& dep : deps_with_extensions) {
+      const std::string root_class_name(FileClassName((dep)));
+      p->Print("[registry addExtensions:[$dependency$ extensionRegistry]];\n",
+               "dependency", root_class_name);
+    }
+  }
+
+  p->Outdent();
+  p->Outdent();
+
+  // clang-format off
+  p->Print(
+      "  }\n"
+      "  return registry;\n"
+      "}\n");
   // clang-format on
 }
 
-// Helper to print the import of the runtime support at the top of generated
-// files. This currently only supports the runtime coming from a framework
-// as defined by the official CocoaPod.
-void FileGenerator::PrintFileRuntimePreamble(
-    io::Printer* printer,
-    const std::vector<std::string>& headers_to_import) const {
-  printer->Print(
-      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
-      "// clang-format off\n"
-      "// source: $filename$\n"
-      "\n",
-      "filename", file_->name());
-
-  if (is_bundled_proto_) {
-    // This is basically a clone of ImportWriter::PrintRuntimeImports() but
-    // without the CPP symbol gate, since within the bundled files, that isn't
-    // needed.
-    std::string import_prefix = generation_options_.runtime_import_prefix;
-    if (!import_prefix.empty()) {
-      import_prefix += "/";
-    }
-    for (const auto& header : headers_to_import) {
-      printer->Print("#import \"$import_prefix$$header$\"\n", "import_prefix",
-                     import_prefix, "header", header);
-    }
-  } else {
-    ImportWriter::PrintRuntimeImports(printer, headers_to_import,
-                                      generation_options_.runtime_import_prefix,
-                                      true);
+void FileGenerator::PrintFileDescriptorImplementation(io::Printer* p) const {
+  // File descriptor only needed if there are messages to use it.
+  if (message_generators_.empty()) {
+    return;
   }
 
-  printer->Print("\n");
+  const std::string objc_prefix(FileClassPrefix(file_));
+  absl::flat_hash_map<absl::string_view, std::string> vars;
+  vars["root_class_name"] = root_class_name_;
+  vars["package"] = file_->package();
+  switch (file_->syntax()) {
+    case FileDescriptor::SYNTAX_UNKNOWN:
+      vars["syntax"] = "GPBFileSyntaxUnknown";
+      break;
+    case FileDescriptor::SYNTAX_PROTO2:
+      vars["syntax"] = "GPBFileSyntaxProto2";
+      break;
+    case FileDescriptor::SYNTAX_PROTO3:
+      vars["syntax"] = "GPBFileSyntaxProto3";
+      break;
+  }
+  if (objc_prefix.empty()) {
+    vars["prefix_arg"] = "";
+  } else {
+    vars["prefix_arg"] = absl::StrCat(
+        "                                                 objcPrefix:@\"",
+        objc_prefix, "\"\n");
+  }
+
+  if (generation_options_.experimental_multi_source_generation) {
+    vars["file_desc_scope"] = "";
+  } else {
+    vars["file_desc_scope"] = "static ";
+  }
+
+  // clang-format off
+  p->Print(
+      vars,
+      "#pragma mark - $root_class_name$_FileDescriptor\n"
+      "\n"
+      "$file_desc_scope$GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
+      "  // This is called by +initialize so there is no need to worry\n"
+      "  // about thread safety of the singleton.\n"
+      "  static GPBFileDescriptor *descriptor = NULL;\n"
+      "  if (!descriptor) {\n"
+      "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n"
+      "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
+      "$prefix_arg$"
+      "                                                     syntax:$syntax$];\n"
+      "  }\n"
+      "  return descriptor;\n"
+      "}\n"
+      "\n");
+  // clang-format on
 }
 
 }  // namespace objectivec

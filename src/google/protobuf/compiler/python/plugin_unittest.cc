@@ -37,11 +37,12 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/python/generator.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_split.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -78,19 +79,19 @@ class TestGenerator : public CodeGenerator {
 TEST(PythonPluginTest, ImportTest) {
   // Create files test1.proto and test2.proto with the former importing the
   // latter.
-  GOOGLE_CHECK_OK(File::SetContents(TestTempDir() + "/test1.proto",
-                             "syntax = \"proto3\";\n"
-                             "package foo;\n"
-                             "import \"test2.proto\";"
-                             "message Message1 {\n"
-                             "  Message2 message_2 = 1;\n"
-                             "}\n",
-                             true));
-  GOOGLE_CHECK_OK(File::SetContents(TestTempDir() + "/test2.proto",
-                             "syntax = \"proto3\";\n"
-                             "package foo;\n"
-                             "message Message2 {}\n",
-                             true));
+  GOOGLE_ABSL_CHECK_OK(File::SetContents(TestTempDir() + "/test1.proto",
+                                  "syntax = \"proto3\";\n"
+                                  "package foo;\n"
+                                  "import \"test2.proto\";"
+                                  "message Message1 {\n"
+                                  "  Message2 message_2 = 1;\n"
+                                  "}\n",
+                                  true));
+  GOOGLE_ABSL_CHECK_OK(File::SetContents(TestTempDir() + "/test2.proto",
+                                  "syntax = \"proto3\";\n"
+                                  "package foo;\n"
+                                  "message Message2 {}\n",
+                                  true));
 
   compiler::CommandLineInterface cli;
   cli.SetInputsAreProtoPathRelative(true);
@@ -105,8 +106,8 @@ TEST(PythonPluginTest, ImportTest) {
   // Loop over the lines of the generated code and verify that we find an
   // ordinary Python import but do not find the string "importlib".
   std::string output;
-  GOOGLE_CHECK_OK(File::GetContents(TestTempDir() + "/test1_pb2.py", &output,
-                             true));
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(TestTempDir() + "/test1_pb2.py", &output,
+                                  true));
   std::vector<std::string> lines = absl::StrSplit(output, "\n");
   std::string expected_import = "import test2_pb2";
   bool found_expected_import = false;

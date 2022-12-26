@@ -30,7 +30,6 @@
 
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 
-#include <set>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
@@ -76,7 +75,7 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor)
 
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
     io::Printer* printer) const {
-  if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (descriptor_->enum_type()->is_closed()) {
     return;
   }
 
@@ -100,7 +99,9 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
 
 void EnumFieldGenerator::GenerateCFunctionImplementations(
     io::Printer* printer) const {
-  if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) return;
+  if (descriptor_->enum_type()->is_closed()) {
+    return;
+  }
 
   // clang-format off
   printer->Print(
@@ -121,7 +122,8 @@ void EnumFieldGenerator::GenerateCFunctionImplementations(
 }
 
 void EnumFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls, bool include_external_types) const {
+    absl::btree_set<std::string>* fwd_decls,
+    bool include_external_types) const {
   SingleFieldGenerator::DetermineForwardDeclarations(fwd_decls,
                                                      include_external_types);
   // If it is an enum defined in a different file (and not a WKT), then we'll
@@ -132,7 +134,7 @@ void EnumFieldGenerator::DetermineForwardDeclarations(
       !IsProtobufLibraryBundledProtoFile(descriptor_->enum_type()->file())) {
     // Enum name is already in "storage_type".
     const std::string& name = variable("storage_type");
-    fwd_decls->insert("GPB_ENUM_FWD_DECLARE(" + name + ")");
+    fwd_decls->insert(absl::StrCat("GPB_ENUM_FWD_DECLARE(", name, ");"));
   }
 }
 

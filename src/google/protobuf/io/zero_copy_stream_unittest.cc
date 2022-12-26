@@ -46,6 +46,7 @@
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.
 
+#include <algorithm>
 #include <chrono>
 #include <thread>
 
@@ -59,25 +60,39 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/test_util2.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/cord_buffer.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/test_util2.h"
 
 #if HAVE_ZLIB
 #include "google/protobuf/io/gzip_stream.h"
 #endif
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
+#include "absl/status/status.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/cord_buffer.h"
+#include "absl/strings/string_view.h"
+
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -573,7 +588,7 @@ TEST_F(IoTest, CompressionOptions) {
   std::string golden_filename =
       TestUtil::GetTestDataPath("third_party/protobuf/testdata/golden_message");
   std::string golden;
-  GOOGLE_CHECK_OK(File::GetContents(golden_filename, &golden, true));
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(golden_filename, &golden, true));
 
   GzipOutputStream::Options options;
   std::string gzip_compressed = Compress(golden, options);
@@ -735,6 +750,698 @@ TEST_F(IoTest, LargeOutput) {
   output.Next(&unused_data, &size);
   EXPECT_GT(size, 0);
 #endif  // THREAD_SANITIZER
+}
+
+TEST(DefaultReadCordTest, ReadSmallCord) {
+  std::string source = "abcdefghijk";
+  ArrayInputStream input(source.data(), source.size());
+
+  absl::Cord dest;
+  EXPECT_TRUE(input.Skip(1));
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  EXPECT_EQ(dest, "bcdefghij");
+}
+
+TEST(DefaultReadCordTest, ReadSmallCordAfterBackUp) {
+  std::string source = "abcdefghijk";
+  ArrayInputStream input(source.data(), source.size());
+
+  absl::Cord dest;
+  const void* buffer;
+  int size;
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  input.BackUp(size - 1);
+
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  EXPECT_EQ(dest, "bcdefghij");
+}
+
+TEST(DefaultReadCordTest, ReadLargeCord) {
+  std::string source = "abcdefghijk";
+  for (int i = 0; i < 1024; i++) {
+    source.append("abcdefghijk");
+  }
+
+  absl::Cord dest;
+  ArrayInputStream input(source.data(), source.size());
+  EXPECT_TRUE(input.Skip(1));
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  absl::Cord expected(source);
+  expected.RemovePrefix(1);
+  expected.RemoveSuffix(1);
+
+  EXPECT_EQ(expected, dest);
+}
+
+TEST(DefaultReadCordTest, ReadLargeCordAfterBackup) {
+  std::string source = "abcdefghijk";
+  for (int i = 0; i < 1024; i++) {
+    source.append("abcdefghijk");
+  }
+
+  absl::Cord dest;
+  ArrayInputStream input(source.data(), source.size());
+
+  const void* buffer;
+  int size;
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  input.BackUp(size - 1);
+
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  absl::Cord expected(source);
+  expected.RemovePrefix(1);
+  expected.RemoveSuffix(1);
+
+  EXPECT_EQ(expected, dest);
+
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  EXPECT_EQ("k", std::string(reinterpret_cast<const char*>(buffer), size));
+}
+
+TEST(DefaultReadCordTest, ReadCordEof) {
+  std::string source = "abcdefghijk";
+
+  absl::Cord dest;
+  ArrayInputStream input(source.data(), source.size());
+  input.Skip(1);
+  EXPECT_FALSE(input.ReadCord(&dest, source.size()));
+
+  absl::Cord expected(source);
+  expected.RemovePrefix(1);
+  EXPECT_EQ(expected, dest);
+}
+
+TEST(DefaultWriteCordTest, WriteEmptyCordToArray) {
+  absl::Cord source;
+  std::string buffer = "abc";
+  ArrayOutputStream output(&buffer[0], static_cast<int>(buffer.length()));
+  EXPECT_TRUE(output.WriteCord(source));
+  EXPECT_EQ(output.ByteCount(), source.size());
+  EXPECT_EQ(buffer, "abc");
+}
+
+TEST(DefaultWriteCordTest, WriteSmallCord) {
+  absl::Cord source("foo bar");
+
+  std::string buffer(source.size(), 'z');
+  ArrayOutputStream output(&buffer[0], static_cast<int>(buffer.length()));
+  EXPECT_TRUE(output.WriteCord(source));
+  EXPECT_EQ(output.ByteCount(), source.size());
+  EXPECT_EQ(buffer, source);
+}
+
+TEST(DefaultWriteCordTest, WriteLargeCord) {
+  absl::Cord source;
+  for (int i = 0; i < 1024; i++) {
+    source.Append("foo bar");
+  }
+  // Verify that we created a fragmented cord.
+  ASSERT_GT(std::distance(source.chunk_begin(), source.chunk_end()), 1);
+
+  std::string buffer(source.size(), 'z');
+  ArrayOutputStream output(&buffer[0], static_cast<int>(buffer.length()));
+  EXPECT_TRUE(output.WriteCord(source));
+  EXPECT_EQ(output.ByteCount(), source.size());
+  EXPECT_EQ(buffer, source);
+}
+
+TEST(DefaultWriteCordTest, WriteTooLargeCord) {
+  absl::Cord source;
+  for (int i = 0; i < 1024; i++) {
+    source.Append("foo bar");
+  }
+
+  std::string buffer(source.size() - 1, 'z');
+  ArrayOutputStream output(&buffer[0], static_cast<int>(buffer.length()));
+  EXPECT_FALSE(output.WriteCord(source));
+  EXPECT_EQ(output.ByteCount(), buffer.size());
+  EXPECT_EQ(buffer, source.Subcord(0, output.ByteCount()));
+}
+
+TEST(CordInputStreamTest, SkipToEnd) {
+  absl::Cord source(std::string(10000, 'z'));
+  CordInputStream stream(&source);
+  EXPECT_TRUE(stream.Skip(10000));
+  EXPECT_EQ(stream.ByteCount(), 10000);
+}
+
+TEST_F(IoTest, CordIo) {
+  CordOutputStream output;
+  int size = WriteStuff(&output);
+  absl::Cord cord = output.Consume();
+  EXPECT_EQ(size, cord.size());
+
+  {
+    CordInputStream input(&cord);
+    ReadStuff(&input);
+  }
+}
+
+template <typename Container>
+absl::Cord MakeFragmentedCord(const Container& c) {
+  absl::Cord result;
+  for (const auto& s : c) {
+    absl::string_view sv(s);
+    auto buffer = absl::CordBuffer::CreateWithDefaultLimit(sv.size());
+    absl::Span<char> out = buffer.available_up_to(sv.size());
+    memcpy(out.data(), sv.data(), out.size());
+    buffer.SetLength(out.size());
+    result.Append(std::move(buffer));
+  }
+  return result;
+}
+
+// Test that we can read correctly from a fragmented Cord.
+TEST_F(IoTest, FragmentedCordInput) {
+  std::string str;
+  {
+    StringOutputStream output(&str);
+    WriteStuff(&output);
+  }
+
+  for (int i = 0; i < kBlockSizeCount; i++) {
+    int block_size = kBlockSizes[i];
+    if (block_size < 0) {
+      // Skip the -1 case.
+      continue;
+    }
+    absl::string_view str_piece = str;
+
+    // Create a fragmented cord by splitting the input into many cord
+    // functions.
+    std::vector<absl::string_view> fragments;
+    while (!str_piece.empty()) {
+      size_t n = std::min<size_t>(str_piece.size(), block_size);
+      fragments.push_back(str_piece.substr(0, n));
+      str_piece.remove_prefix(n);
+    }
+    absl::Cord fragmented_cord = MakeFragmentedCord(fragments);
+
+    CordInputStream input(&fragmented_cord);
+    ReadStuff(&input);
+  }
+}
+
+TEST_F(IoTest, ReadSmallCord) {
+  absl::Cord source;
+  source.Append("foo bar");
+
+  absl::Cord dest;
+  CordInputStream input(&source);
+  EXPECT_TRUE(input.Skip(1));
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  EXPECT_EQ(absl::Cord("oo ba"), dest);
+}
+
+TEST_F(IoTest, ReadSmallCordAfterBackUp) {
+  absl::Cord source;
+  source.Append("foo bar");
+
+  absl::Cord dest;
+  CordInputStream input(&source);
+
+  const void* buffer;
+  int size;
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  input.BackUp(size - 1);
+
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  EXPECT_EQ(absl::Cord("oo ba"), dest);
+}
+
+TEST_F(IoTest, ReadLargeCord) {
+  absl::Cord source;
+  for (int i = 0; i < 1024; i++) {
+    source.Append("foo bar");
+  }
+
+  absl::Cord dest;
+  CordInputStream input(&source);
+  EXPECT_TRUE(input.Skip(1));
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  absl::Cord expected = source;
+  expected.RemovePrefix(1);
+  expected.RemoveSuffix(1);
+
+  EXPECT_EQ(expected, dest);
+}
+
+TEST_F(IoTest, ReadLargeCordAfterBackUp) {
+  absl::Cord source;
+  for (int i = 0; i < 1024; i++) {
+    source.Append("foo bar");
+  }
+
+  absl::Cord dest;
+  CordInputStream input(&source);
+
+  const void* buffer;
+  int size;
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  input.BackUp(size - 1);
+
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  absl::Cord expected = source;
+  expected.RemovePrefix(1);
+  expected.RemoveSuffix(1);
+
+  EXPECT_EQ(expected, dest);
+
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  EXPECT_EQ("r", std::string(reinterpret_cast<const char*>(buffer), size));
+}
+
+TEST_F(IoTest, ReadCordEof) {
+  absl::Cord source;
+  source.Append("foo bar");
+
+  absl::Cord dest;
+  CordInputStream input(&source);
+  input.Skip(1);
+  EXPECT_FALSE(input.ReadCord(&dest, source.size()));
+
+  absl::Cord expected = source;
+  expected.RemovePrefix(1);
+  EXPECT_EQ(expected, dest);
+}
+
+TEST(CordOutputStreamTest, Empty) {
+  CordOutputStream output;
+  EXPECT_TRUE(output.Consume().empty());
+}
+
+TEST(CordOutputStreamTest, ConsumesCordClearingState) {
+  CordOutputStream output(absl::Cord("abcdef"));
+  EXPECT_EQ(output.Consume(), "abcdef");
+  EXPECT_TRUE(output.Consume().empty());
+}
+
+TEST(CordOutputStreamTest, DonateEmptyCordBuffer) {
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
+  absl::Span<char> available = buffer.available();
+  void* available_data = available.data();
+  CordOutputStream output(std::move(buffer));
+  void* data;
+  int size;
+  EXPECT_TRUE(output.Next(&data, &size));
+  EXPECT_EQ(data, available_data);
+  EXPECT_EQ(size, static_cast<int>(available.size()));
+  memset(data, 'a', static_cast<size_t>(size));
+
+  absl::Cord cord = output.Consume();
+  ASSERT_TRUE(cord.TryFlat());
+  absl::string_view flat = *cord.TryFlat();
+  EXPECT_EQ(flat, std::string(static_cast<size_t>(size), 'a'));
+  EXPECT_EQ(flat.data(), available_data);
+}
+
+TEST(CordOutputStreamTest, DonatePartialCordBuffer) {
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
+  absl::Span<char> available = buffer.available();
+  memset(available.data(), 'a', 100);
+  buffer.IncreaseLengthBy(100);
+  void* available_data = available.data();
+  CordOutputStream output(std::move(buffer));
+
+  absl::Cord cord = output.Consume();
+  ASSERT_TRUE(cord.TryFlat());
+  absl::string_view flat = *cord.TryFlat();
+  EXPECT_EQ(flat, std::string(100, 'a'));
+  EXPECT_EQ(flat.data(), available_data);
+}
+
+TEST(CordOutputStreamTest, DonatePartialCordBufferAndUseExtraCapacity) {
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
+  absl::Span<char> available = buffer.available();
+  memset(available.data(), 'a', 100);
+  buffer.IncreaseLengthBy(100);
+  void* available_data = available.data();
+  void* next_available_data = available.data() + 100;
+  CordOutputStream output(std::move(buffer));
+  void* data;
+  int size;
+  EXPECT_TRUE(output.Next(&data, &size));
+  EXPECT_EQ(data, next_available_data);
+  EXPECT_EQ(size, static_cast<int>(available.size() - 100));
+  memset(data, 'b', static_cast<size_t>(size));
+
+  absl::Cord cord = output.Consume();
+  ASSERT_TRUE(cord.TryFlat());
+  absl::string_view flat = *cord.TryFlat();
+  EXPECT_EQ(flat, std::string(100, 'a') +
+                      std::string(static_cast<size_t>(size), 'b'));
+  EXPECT_EQ(flat.data(), available_data);
+}
+
+TEST(CordOutputStreamTest, DonateCordAndPartialCordBufferAndUseExtraCapacity) {
+  absl::Cord cord(std::string(400, 'a'));
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
+  absl::Span<char> available = buffer.available();
+  memset(available.data(), 'b', 100);
+  buffer.IncreaseLengthBy(100);
+  void* next_available_data = available.data() + 100;
+  CordOutputStream output(std::move(cord), std::move(buffer));
+  void* data;
+  int size;
+  EXPECT_TRUE(output.Next(&data, &size));
+  EXPECT_EQ(data, next_available_data);
+  EXPECT_EQ(size, static_cast<int>(available.size() - 100));
+  memset(data, 'c', static_cast<size_t>(size));
+
+  cord = output.Consume();
+  EXPECT_FALSE(cord.TryFlat());
+  EXPECT_EQ(cord, std::string(400, 'a') + std::string(100, 'b') +
+                      std::string(static_cast<size_t>(size), 'c'));
+}
+
+TEST(CordOutputStreamTest, DonateFullCordBuffer) {
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
+  absl::Span<char> available = buffer.available();
+  memset(available.data(), 'a', available.size());
+  buffer.IncreaseLengthBy(available.size());
+  CordOutputStream output(std::move(buffer));
+  void* data;
+  int size;
+  EXPECT_TRUE(output.Next(&data, &size));
+  memset(data, 'b', static_cast<size_t>(size));
+
+  absl::Cord cord = output.Consume();
+  EXPECT_FALSE(cord.TryFlat());
+  EXPECT_EQ(cord, std::string(available.size(), 'a') +
+                      std::string(static_cast<size_t>(size), 'b'));
+}
+
+TEST(CordOutputStreamTest, DonateFullCordBufferAndCord) {
+  absl::Cord cord(std::string(400, 'a'));
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
+  absl::Span<char> available = buffer.available();
+  memset(available.data(), 'b', available.size());
+  buffer.IncreaseLengthBy(available.size());
+  CordOutputStream output(std::move(cord), std::move(buffer));
+  void* data;
+  int size;
+  EXPECT_TRUE(output.Next(&data, &size));
+  memset(data, 'c', static_cast<size_t>(size));
+
+  cord = output.Consume();
+  EXPECT_FALSE(cord.TryFlat());
+  EXPECT_EQ(cord, std::string(400, 'a') +
+                      std::string(available.size(), 'b') +
+                      std::string(static_cast<size_t>(size), 'c'));
+}
+
+TEST(CordOutputStreamTest, DonateFullCordBufferAndBackup) {
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
+  absl::Span<char> available = buffer.available();
+  memset(available.data(), 'a', available.size());
+  buffer.IncreaseLengthBy(available.size());
+
+  // We back up by 100 before calling Next()
+  void* available_data = available.data();
+  void* next_available_data = available.data() + available.size() - 100;
+  CordOutputStream output(std::move(buffer));
+  output.BackUp(100);
+
+  void* data;
+  int size;
+  EXPECT_TRUE(output.Next(&data, &size));
+  EXPECT_EQ(data, next_available_data);
+  EXPECT_EQ(size, 100);
+  memset(data, 'b', 100);
+
+  absl::Cord cord = output.Consume();
+  ASSERT_TRUE(cord.TryFlat());
+  absl::string_view flat = *cord.TryFlat();
+  EXPECT_EQ(flat,
+            std::string(available.size() - 100, 'a') + std::string(100, 'b'));
+  EXPECT_EQ(flat.data(), available_data);
+}
+
+TEST(CordOutputStreamTest, DonateCordAndFullCordBufferAndBackup) {
+  absl::Cord cord(std::string(400, 'a'));
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
+  absl::Span<char> available = buffer.available();
+  memset(available.data(), 'b', available.size());
+  buffer.IncreaseLengthBy(available.size());
+
+  // We back up by 100 before calling Next()
+  void* next_available_data = available.data() + available.size() - 100;
+  CordOutputStream output(std::move(cord), std::move(buffer));
+  output.BackUp(100);
+
+  void* data;
+  int size;
+  EXPECT_TRUE(output.Next(&data, &size));
+  EXPECT_EQ(data, next_available_data);
+  EXPECT_EQ(size, 100);
+  memset(data, 'c', 100);
+
+  cord = output.Consume();
+  EXPECT_FALSE(cord.TryFlat());
+  EXPECT_EQ(cord, std::string(400, 'a') +
+                      std::string(available.size() - 100, 'b') +
+                      std::string(100, 'c'));
+}
+
+TEST(CordOutputStreamTest, ProperHintCreatesSingleFlatCord) {
+  CordOutputStream output(2000);
+  void* data;
+  int size;
+  ASSERT_TRUE(output.Next(&data, &size));
+  ASSERT_EQ(size, 2000);
+  memset(data, 'a', 2000);
+
+  absl::Cord cord = output.Consume();
+  ASSERT_TRUE(cord.TryFlat());
+  absl::string_view flat = *cord.TryFlat();
+  EXPECT_EQ(flat, std::string(2000, 'a'));
+}
+
+TEST(CordOutputStreamTest, SizeHintDicatesTotalSize) {
+  absl::Cord cord(std::string(500, 'a'));
+  CordOutputStream output(std::move(cord), 2000);
+  void* data;
+  int size;
+
+  int remaining = 1500;
+  while (remaining > 0) {
+    ASSERT_TRUE(output.Next(&data, &size));
+    ASSERT_LE(size, remaining);
+    memset(data, 'b', static_cast<size_t>(size));
+    remaining -= size;
+  }
+  ASSERT_EQ(remaining, 0);
+
+  cord = output.Consume();
+  EXPECT_EQ(cord, absl::StrCat(std::string(500, 'a'), std::string(1500, 'b')));
+}
+
+TEST(CordOutputStreamTest, BackUpReusesPartialBuffer) {
+  CordOutputStream output(2000);
+  void* data;
+  int size;
+
+  ASSERT_TRUE(output.Next(&data, &size));
+  ASSERT_EQ(size, 2000);
+  memset(data, '1', 100);
+  output.BackUp(1900);
+
+  ASSERT_TRUE(output.Next(&data, &size));
+  ASSERT_EQ(size, 1900);
+  memset(data, '2', 200);
+  output.BackUp(1700);
+
+  ASSERT_TRUE(output.Next(&data, &size));
+  ASSERT_EQ(size, 1700);
+  memset(data, '3', 400);
+  output.BackUp(1300);
+
+  ASSERT_TRUE(output.Next(&data, &size));
+  ASSERT_EQ(size, 1300);
+  memset(data, '4', 1300);
+
+  absl::Cord cord = output.Consume();
+  ASSERT_TRUE(cord.TryFlat());
+  absl::string_view flat = *cord.TryFlat();
+  EXPECT_EQ(flat, absl::StrCat(std::string(100, '1'), std::string(200, '2'),
+                               std::string(400, '3'), std::string(1300, '4')));
+}
+
+TEST(CordOutputStreamTest, UsesPrivateCapacityInDonatedCord) {
+  absl::Cord cord;
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(2000);
+  memset(buffer.data(), 'a', 500);
+  buffer.SetLength(500);
+  cord.Append(std::move(buffer));
+
+  CordOutputStream output(std::move(cord), 2000);
+  void* data;
+  int size;
+
+  ASSERT_TRUE(output.Next(&data, &size));
+  ASSERT_EQ(size, 1500);
+  memset(data, 'b', 1500);
+
+  cord = output.Consume();
+  ASSERT_TRUE(cord.TryFlat());
+  absl::string_view flat = *cord.TryFlat();
+  EXPECT_EQ(flat, absl::StrCat(std::string(500, 'a'), std::string(1500, 'b')));
+}
+
+TEST(CordOutputStreamTest, UsesPrivateCapacityInAppendedCord) {
+  absl::Cord cord;
+  absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(2000);
+  memset(buffer.data(), 'a', 500);
+  buffer.SetLength(500);
+  cord.Append(std::move(buffer));
+
+  CordOutputStream output(2000);
+  void* data;
+  int size;
+
+  // Add cord. Clearing it makes it privately owned by 'output' as it's non
+  // trivial size guarantees it is ref counted, not deep copied.
+  output.WriteCord(cord);
+  cord.Clear();
+
+  ASSERT_TRUE(output.Next(&data, &size));
+  ASSERT_EQ(size, 1500);
+  memset(data, 'b', 1500);
+
+  cord = output.Consume();
+  ASSERT_TRUE(cord.TryFlat());
+  absl::string_view flat = *cord.TryFlat();
+  EXPECT_EQ(flat, absl::StrCat(std::string(500, 'a'), std::string(1500, 'b')));
+}
+
+TEST(CordOutputStreamTest, CapsSizeAtHintButUsesCapacityBeyondHint) {
+  // This tests verifies that when we provide a hint of 'x' bytes, that the
+  // returned size from Next() will be capped at 'size_hint', but that if we
+  // exceed size_hint, it will use the capacity in any internal buffer beyond
+  // the size hint. We test this by providing a hint that is too large to be
+  // inlined, but so small that we have a guarantee it's smaller than the
+  // minimum flat size so we will have a 'capped' larger buffer as state.
+  size_t size_hint = sizeof(absl::Cord) + 1;
+  CordOutputStream output(size_hint);
+  void* data;
+  int size;
+
+  ASSERT_TRUE(output.Next(&data, &size));
+  ASSERT_EQ(size, size_hint);
+  memset(data, 'a', static_cast<size_t>(size));
+
+  ASSERT_TRUE(output.Next(&data, &size));
+  memset(data, 'b', static_cast<size_t>(size));
+
+  // We should have received the same buffer on each Next() call
+  absl::Cord cord = output.Consume();
+  ASSERT_TRUE(cord.TryFlat());
+  absl::string_view flat = *cord.TryFlat();
+  EXPECT_EQ(flat, absl::StrCat(std::string(size_hint, 'a'),
+                               std::string(static_cast<size_t>(size), 'b')));
+}
+
+TEST(CordOutputStreamTest, SizeDoublesWithoutHint) {
+  CordOutputStream output;
+  void* data;
+  int size;
+
+  // Whitebox: we are guaranteed at least 128 bytes initially. We also assume
+  // that the maximum size is roughly 4KiB - overhead without being precise.
+  int min_size = 128;
+  const int max_size = 4000;
+  ASSERT_TRUE(output.Next(&data, &size));
+  memset(data, 0, static_cast<size_t>(size));
+  ASSERT_GE(size, min_size);
+
+  for (int i = 0; i < 6; ++i) {
+    ASSERT_TRUE(output.Next(&data, &size));
+    memset(data, 0, static_cast<size_t>(size));
+    ASSERT_GE(size, min_size);
+    min_size = (std::min)(min_size * 2, max_size);
+  }
+}
+
+TEST_F(IoTest, WriteSmallCord) {
+  absl::Cord source;
+  source.Append("foo bar");
+
+  CordOutputStream output(absl::Cord("existing:"));
+  EXPECT_TRUE(output.WriteCord(source));
+  absl::Cord cord = output.Consume();
+  EXPECT_EQ(absl::Cord("existing:foo bar"), cord);
+}
+
+TEST_F(IoTest, WriteLargeCord) {
+  absl::Cord source;
+  for (int i = 0; i < 1024; i++) {
+    source.Append("foo bar");
+  }
+
+  CordOutputStream output(absl::Cord("existing:"));
+  EXPECT_TRUE(output.WriteCord(source));
+  absl::Cord cord = output.Consume();
+
+  absl::Cord expected = source;
+  expected.Prepend("existing:");
+  EXPECT_EQ(expected, cord);
+}
+
+// Test that large size hints lead to large block sizes.
+TEST_F(IoTest, CordOutputSizeHint) {
+  CordOutputStream output1;
+  CordOutputStream output2(12345);
+
+  void* data1;
+  void* data2;
+  int size1, size2;
+  ASSERT_TRUE(output1.Next(&data1, &size1));
+  ASSERT_TRUE(output2.Next(&data2, &size2));
+
+  // Prevent 'unflushed output' debug checks and warnings
+  output1.BackUp(size1);
+  output2.BackUp(size2);
+
+  EXPECT_GT(size2, size1);
+
+  // Prevent any warnings on unused or unflushed data
+  output1.Consume();
+  output2.Consume();
+}
+
+// Test that when we use a size hint, we get a buffer boundary exactly on that
+// byte.
+TEST_F(IoTest, CordOutputBufferEndsAtSizeHint) {
+  static const int kSizeHint = 12345;
+
+  CordOutputStream output(kSizeHint);
+
+  void* data;
+  int size;
+  int total_read = 0;
+
+  while (total_read < kSizeHint) {
+    ASSERT_TRUE(output.Next(&data, &size));
+    memset(data, 0, static_cast<size_t>(size));  // Avoid uninitialized data UB
+    total_read += size;
+  }
+
+  EXPECT_EQ(kSizeHint, total_read);
+
+  // We should be able to keep going past the size hint.
+  ASSERT_TRUE(output.Next(&data, &size));
+  EXPECT_GT(size, 0);
+
+  // Prevent any warnings on unused or unflushed data
+  output.Consume();
 }
 
 

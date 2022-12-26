@@ -35,16 +35,15 @@
 #include "google/protobuf/unknown_field_set.h"
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -62,7 +61,7 @@ const UnknownFieldSet& UnknownFieldSet::default_instance() {
 }
 
 void UnknownFieldSet::ClearFallback() {
-  GOOGLE_DCHECK(!fields_.empty());
+  GOOGLE_ABSL_DCHECK(!fields_.empty());
   int n = fields_.size();
   do {
     (fields_)[--n].Delete();
@@ -137,45 +136,45 @@ size_t UnknownFieldSet::SpaceUsedLong() const {
 }
 
 void UnknownFieldSet::AddVarint(int number, uint64_t value) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_VARINT);
   field.data_.varint_ = value;
-  fields_.push_back(field);
 }
 
 void UnknownFieldSet::AddFixed32(int number, uint32_t value) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED32);
   field.data_.fixed32_ = value;
-  fields_.push_back(field);
 }
 
 void UnknownFieldSet::AddFixed64(int number, uint64_t value) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED64);
   field.data_.fixed64_ = value;
-  fields_.push_back(field);
 }
 
 std::string* UnknownFieldSet::AddLengthDelimited(int number) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
   field.data_.length_delimited_.string_value = new std::string;
-  fields_.push_back(field);
   return field.data_.length_delimited_.string_value;
 }
 
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
-  UnknownField field;
+  fields_.emplace_back();
+  auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_GROUP);
   field.data_.group_ = new UnknownFieldSet;
-  fields_.push_back(field);
   return field.data_.group_;
 }
 
@@ -256,6 +255,19 @@ bool UnknownFieldSet::SerializeToCodedStream(
   google::protobuf::internal::WireFormat::SerializeUnknownFields(*this, output);
   return !output->HadError();
 }
+
+bool UnknownFieldSet::SerializeToCord(absl::Cord* output) const {
+  const size_t size =
+      google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(*this);
+  io::CordOutputStream cord_output_stream(size);
+  {
+    io::CodedOutputStream coded_output_stream(&cord_output_stream);
+    if (!SerializeToCodedStream(&coded_output_stream)) return false;
+  }
+  *output = cord_output_stream.Consume();
+  return true;
+}
+
 void UnknownField::Delete() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
@@ -290,7 +302,7 @@ void UnknownField::DeepCopy(const UnknownField& other) {
 
 uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
-  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
+  GOOGLE_ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
   const std::string& data = *data_.length_delimited_.string_value;
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
   target = stream->WriteRaw(data.data(), data.size(), target);

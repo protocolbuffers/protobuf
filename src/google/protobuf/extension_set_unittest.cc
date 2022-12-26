@@ -34,25 +34,24 @@
 
 #include "google/protobuf/extension_set.h"
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_mset.pb.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/wire_format.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_mset.pb.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -830,8 +829,7 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
 
   // Repeated primitive extensions will increase space used by at least a
   // RepeatedField<T>, and will cause additional allocations when the array
-  // gets too big for the initial space.  Note, we explicitly allocate on the
-  // heap to avoid message-owned arenas.
+  // gets too big for the initial space.
   // This macro:
   //   - Adds a value to the repeated extension, then clears it, establishing
   //     the base size.

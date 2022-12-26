@@ -31,7 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ONEOF_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ONEOF_H__
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -54,13 +53,13 @@ class OneofGenerator {
 
   void SetOneofIndexBase(int index_base);
 
-  void GenerateCaseEnum(io::Printer* printer);
+  void GenerateCaseEnum(io::Printer* printer) const;
 
-  void GeneratePublicCasePropertyDeclaration(io::Printer* printer);
-  void GenerateClearFunctionDeclaration(io::Printer* printer);
+  void GeneratePublicCasePropertyDeclaration(io::Printer* printer) const;
+  void GenerateClearFunctionDeclaration(io::Printer* printer) const;
 
-  void GeneratePropertyImplementation(io::Printer* printer);
-  void GenerateClearFunctionImplementation(io::Printer* printer);
+  void GeneratePropertyImplementation(io::Printer* printer) const;
+  void GenerateClearFunctionImplementation(io::Printer* printer) const;
 
   std::string DescriptorName() const;
   std::string HasIndexAsString() const;

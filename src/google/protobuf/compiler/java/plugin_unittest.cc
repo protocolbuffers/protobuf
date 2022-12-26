@@ -35,13 +35,14 @@
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/compiler/java/generator.h"
-#include "google/protobuf/compiler/command_line_interface.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/java/generator.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -80,16 +81,16 @@ class TestGenerator : public CodeGenerator {
 // not verify that they are correctly-placed; that would require actually
 // compiling the output which is a bit more than I care to do for this test.
 TEST(JavaPluginTest, PluginTest) {
-  GOOGLE_CHECK_OK(File::SetContents(TestTempDir() + "/test.proto",
-                             "syntax = \"proto2\";\n"
-                             "package foo;\n"
-                             "option java_package = \"\";\n"
-                             "option java_outer_classname = \"Test\";\n"
-                             "message Bar {\n"
-                             "  message Baz {}\n"
-                             "}\n"
-                             "enum Qux { BLAH = 1; }\n",
-                             true));
+  GOOGLE_ABSL_CHECK_OK(File::SetContents(TestTempDir() + "/test.proto",
+                                  "syntax = \"proto2\";\n"
+                                  "package foo;\n"
+                                  "option java_package = \"\";\n"
+                                  "option java_outer_classname = \"Test\";\n"
+                                  "message Bar {\n"
+                                  "  message Baz {}\n"
+                                  "}\n"
+                                  "enum Qux { BLAH = 1; }\n",
+                                  true));
 
   CommandLineInterface cli;
   cli.SetInputsAreProtoPathRelative(true);
@@ -112,8 +113,8 @@ TEST(JavaPluginTest, PluginTest) {
   // expect
 
   std::string output;
-  GOOGLE_CHECK_OK(File::GetContents(TestTempDir() + "/Test.java", &output,
-                             true));
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(TestTempDir() + "/Test.java", &output,
+                                  true));
   std::vector<std::string> lines = absl::StrSplit(output, "\n");
   bool found_generated_annotation = false;
   bool found_do_not_edit = false;

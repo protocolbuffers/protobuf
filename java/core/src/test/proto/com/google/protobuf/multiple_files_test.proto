@@ -38,8 +38,8 @@ syntax = "proto2";
 // See:  http://go/proto2-generic-services-default
 package protobuf_unittest;
 
-import "google/protobuf/unittest.proto";
 import "google/protobuf/descriptor.proto";
+import "google/protobuf/unittest.proto";
 
 option java_generic_services = true;  // auto-added
 option java_multiple_files = true;
@@ -49,7 +49,9 @@ message MessageWithNoOuter {
   message NestedMessage {
     optional int32 i = 1;
   }
-  enum NestedEnum { BAZ = 3; }
+  enum NestedEnum {
+    BAZ = 3;
+  }
   optional NestedMessage nested = 1;
   repeated TestAllTypes foreign = 2;
   optional NestedEnum nested_enum = 3;

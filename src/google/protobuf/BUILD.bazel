@@ -5,6 +5,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(
@@ -106,15 +107,22 @@ WELL_KNOWN_TYPES = [
     "wrappers",
 ]
 
+# When we generate code for the well-known types, we put the resulting files in
+# wkt/google/protobuf and add ./wkt to the include paths below. This is a
+# somewhat strange setup but is necessary to satisfy these two constraints:
+# - We need to keep the checked-in sources for now, since Cocoapods relies on
+#   them.
+# - The Bazel build should always use the generated sources so that developers
+#   don't have to worry about manually updating the checked-in sources.
 genrule(
     name = "gen_wkt_cc_sources",
     srcs = [wkt + ".proto" for wkt in WELL_KNOWN_TYPES],
     outs =
-        [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
-        [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+        ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
     cmd = """
         $(execpath //src/google/protobuf/compiler:protoc_nowkt) \
-            --cpp_out=$(RULEDIR)/../.. \
+            --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$(RULEDIR)/wkt \
             --proto_path=$$(dirname $$(dirname $$(dirname $(location any.proto)))) \
             $(SRCS)
     """,
@@ -122,12 +130,21 @@ genrule(
     visibility = ["//visibility:private"],
 )
 
+staleness_test(
+    name = "well_known_types_staleness_test",
+    outs =
+        [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    generated_pattern = "wkt/google/protobuf/%s",
+    tags = ["manual"],
+)
+
 cc_library(
     name = "wkt_cc_proto",
-    srcs = [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
-    hdrs = [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
+    srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    hdrs = ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
     copts = COPTS,
-    include_prefix = "google/protobuf",
+    includes = ["wkt"],
     linkopts = LINK_OPTS,
     visibility = ["//pkg:__pkg__"],
     deps = [":protobuf_nowkt"],
@@ -227,8 +244,9 @@ cc_library(
     hdrs = [
         "arena.h",
         "arena_config.h",
-        "arena_impl.h",
         "arenaz_sampler.h",
+        "serial_arena.h",
+        "thread_safe_arena.h",
     ],
     include_prefix = "google/protobuf",
     visibility = [
@@ -236,6 +254,7 @@ cc_library(
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
+        ":arena_align",
         ":arena_allocation_policy",
         ":arena_cleanup",
         ":arena_config",
@@ -266,7 +285,6 @@ cc_library(
     hdrs = [
         "any.h",
         "arena.h",
-        "arena_impl.h",
         "arenastring.h",
         "arenaz_sampler.h",
         "endian.h",
@@ -290,6 +308,8 @@ cc_library(
         "port.h",
         "repeated_field.h",
         "repeated_ptr_field.h",
+        "serial_arena.h",
+        "thread_safe_arena.h",
         "wire_format_lite.h",
     ],
     copts = COPTS + select({
@@ -308,6 +328,7 @@ cc_library(
     # In Bazel 6.0+, these will be `interface_deps`:
     deps = [
         ":arena",
+        ":arena_align",
         ":arena_config",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
@@ -380,6 +401,7 @@ cc_library(
         "//src/google/protobuf/stubs",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/base:dynamic_annotations",
+        "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/hash",
@@ -706,6 +728,7 @@ cc_library(
         ":cc_test_protos",
         ":lite_test_util",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_googletest//:gtest",
     ],
 )
@@ -964,6 +987,7 @@ cc_test(
         ":protobuf",
         ":test_util",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -987,6 +1011,8 @@ cc_test(
         ":cc_test_protos",
         ":protobuf",
         ":test_util",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

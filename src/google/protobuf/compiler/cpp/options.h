@@ -33,8 +33,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
 
-#include <set>
 #include <string>
+
+#include "absl/container/flat_hash_set.h"
 
 namespace google {
 namespace protobuf {
@@ -53,7 +54,7 @@ enum class EnforceOptimizeMode {
 
 struct FieldListenerOptions {
   bool inject_field_listener_events = false;
-  std::set<std::string> forbidden_field_listener_events;
+  absl::flat_hash_set<std::string> forbidden_field_listener_events;
 };
 
 // Generator options (see generator.cc for a description of each):
@@ -83,7 +84,6 @@ struct Options {
   bool unused_field_stripping = false;
   bool unverified_lazy_message_sets = false;
   bool profile_driven_inline_string = true;
-  bool message_owned_arena_trial = false;
   bool force_split = false;
   bool profile_driven_split = true;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS

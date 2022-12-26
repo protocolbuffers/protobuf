@@ -39,12 +39,9 @@
 #include <typeinfo>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_arena.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "google/protobuf/arena_test_util.h"
@@ -56,6 +53,8 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/test_util.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_arena.pb.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -332,6 +331,16 @@ TEST(ArenaTest, CreateDestroy) {
   // The arena message should still exist.
   EXPECT_EQ(strlen(original.optional_string().c_str()),
             strlen(arena_message->optional_string().c_str()));
+}
+
+struct OnlyArenaConstructible {
+  using InternalArenaConstructable_ = void;
+  explicit OnlyArenaConstructible(Arena* arena) {}
+};
+
+TEST(ArenaTest, ArenaOnlyTypesCanBeConstructed) {
+  Arena arena;
+  Arena::CreateMessage<OnlyArenaConstructible>(&arena);
 }
 
 TEST(ArenaTest, Parsing) {
@@ -1458,7 +1467,7 @@ TEST(ArenaTest, Alignment) {
   Arena arena;
   for (int i = 0; i < 200; i++) {
     void* p = Arena::CreateArray<char>(&arena, i);
-    GOOGLE_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
+    GOOGLE_ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
   }
 }
 

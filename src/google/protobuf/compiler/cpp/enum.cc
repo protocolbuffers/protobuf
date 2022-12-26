@@ -54,6 +54,8 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 absl::flat_hash_map<absl::string_view, std::string> EnumVars(
     const EnumDescriptor* enum_, const Options& options,
     const EnumValueDescriptor* min, const EnumValueDescriptor* max) {
@@ -120,10 +122,12 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   auto v1 = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
 
   auto v2 = p->WithVars({
-      {"Msg_Enum_Enum_MIN",
-       absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(), "_MIN"), enum_},
-      {"Msg_Enum_Enum_MAX",
-       absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(), "_MAX"), enum_},
+      Sub("Msg_Enum_Enum_MIN",
+          absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(), "_MIN"))
+          .AnnotatedAs(enum_),
+      Sub("Msg_Enum_Enum_MAX",
+          absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(), "_MAX"))
+          .AnnotatedAs(enum_),
   });
   p->Emit(
       {
@@ -133,12 +137,10 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
                const auto* value = enum_->value(i);
                p->Emit(
                    {
-                       {
-                           "Msg_Enum_VALUE",
+                       Sub("Msg_Enum_VALUE",
                            absl::StrCat(p->LookupVar("Msg_Enum_"),
-                                        EnumValueName(value)),
-                           value,
-                       },
+                                        EnumValueName(value)))
+                           .AnnotatedAs(value),
                        {"kNumber", Int32ToString(value->number())},
                        {"DEPRECATED", value->options().deprecated()
                                           ? "PROTOBUF_DEPRECATED_ENUM"
@@ -151,7 +153,8 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
            }},
           // Only emit annotations for the $Msg_Enum$ used in the `enum`
           // definition.
-          {"Msg_Enum_annotated", p->LookupVar("Msg_Enum"), enum_},
+          Sub("Msg_Enum_annotated", p->LookupVar("Msg_Enum"))
+              .AnnotatedAs(enum_),
           {"open_enum_sentinels",
            [&] {
              if (enum_->is_closed()) {
@@ -183,13 +186,13 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
       )cc");
 
   if (generate_array_size_) {
-    p->Emit(
-        {{"Msg_Enum_Enum_ARRAYSIZE",
-          absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(), "_ARRAYSIZE"),
-          enum_}},
-        R"cc(
-          constexpr int $Msg_Enum_Enum_ARRAYSIZE$ = $kMax$ + 1;
-        )cc");
+    p->Emit({Sub("Msg_Enum_Enum_ARRAYSIZE",
+                 absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(),
+                              "_ARRAYSIZE"))
+                 .AnnotatedAs(enum_)},
+            R"cc(
+              constexpr int $Msg_Enum_Enum_ARRAYSIZE$ = $kMax$ + 1;
+            )cc");
   }
 
   if (has_reflection_) {
@@ -289,18 +292,15 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
 void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
   auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
 
-  {
-    auto a = p->WithVars({{"Enum_annotated", p->LookupVar("Enum_"), enum_}});
-    p->Emit(R"cc(
-      using $Enum_annotated$ = $Msg_Enum$;
-    )cc");
-  }
+  p->Emit({Sub("Enum_", p->LookupVar("Enum_")).AnnotatedAs(enum_)}, R"cc(
+    using $Enum_$ = $Msg_Enum$;
+  )cc");
 
   for (int j = 0; j < enum_->value_count(); ++j) {
     const auto* value = enum_->value(j);
     p->Emit(
         {
-            {"VALUE", EnumValueName(enum_->value(j)), value},
+            Sub("VALUE", EnumValueName(enum_->value(j))).AnnotatedAs(value),
             {"DEPRECATED",
              value->options().deprecated() ? "PROTOBUF_DEPRECATED_ENUM" : ""},
         },
@@ -311,8 +311,10 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
 
   p->Emit(
       {
-          {"Enum_MIN", absl::StrCat(enum_->name(), "_MIN"), enum_},
-          {"Enum_MAX", absl::StrCat(enum_->name(), "_MAX"), enum_},
+          Sub("Enum_MIN", absl::StrCat(enum_->name(), "_MIN"))
+              .AnnotatedAs(enum_),
+          Sub("Enum_MAX", absl::StrCat(enum_->name(), "_MAX"))
+              .AnnotatedAs(enum_),
       },
       R"cc(
         static inline bool $Enum$_IsValid(int value) {
@@ -324,7 +326,10 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
 
   if (generate_array_size_) {
     p->Emit(
-        {{"Enum_ARRAYSIZE", absl::StrCat(enum_->name(), "_ARRAYSIZE"), enum_}},
+        {
+            Sub("Enum_ARRAYSIZE", absl::StrCat(enum_->name(), "_ARRAYSIZE"))
+                .AnnotatedAs(enum_),
+        },
         R"cc(
           static constexpr int $Enum_ARRAYSIZE$ = $Msg_Enum$_$Enum$_ARRAYSIZE;
         )cc");

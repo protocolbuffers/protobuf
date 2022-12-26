@@ -37,9 +37,7 @@
 
 #include <cstdint>
 #include <limits>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -188,7 +186,7 @@ class MessageGenerator {
   const Descriptor* descriptor_;
   int index_in_file_messages_;
   Options options_;
-  FieldGeneratorMap field_generators_;
+  FieldGeneratorTable field_generators_;
   // optimized_order_ is the order we layout the message's fields in the
   // class. This is reused to initialize the fields in-order for cache
   // efficiency.

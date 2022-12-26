@@ -119,6 +119,8 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
       output.get(), '$',
       file_options.annotate_code ? &annotation_collector : nullptr);
 
+  file_generator->GenerateKotlin(&printer);
+
   file_generator->GenerateKotlinSiblings(package_dir, context, &all_files,
                                          &all_annotations);
 

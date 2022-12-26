@@ -44,12 +44,12 @@ from google.protobuf import field_mask_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
 from google.protobuf import wrappers_pb2
-from google.protobuf import any_test_pb2
-from google.protobuf import unittest_mset_pb2
-from google.protobuf import unittest_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import json_format
+from google.protobuf import any_test_pb2
+from google.protobuf import unittest_pb2
+from google.protobuf import unittest_mset_pb2
 from google.protobuf.util import json_format_pb2
 from google.protobuf.util import json_format_proto3_pb2
 
@@ -607,6 +607,23 @@ class JsonFormatTest(JsonFormatBase):
     message.Clear()
     json_format.Parse('{"value": null}', message)
     self.assertEqual(message.value.WhichOneof('kind'), 'null_value')
+
+  def testValueMessageErrors(self):
+    message = json_format_proto3_pb2.TestValue()
+    message.value.number_value = math.inf
+    with self.assertRaises(json_format.SerializeToJsonError) as cm:
+      json_format.MessageToJson(message)
+    self.assertEqual(
+        'Failed to serialize value field: Fail to serialize Infinity for '
+        'Value.number_value, which would parse as string_value.',
+        str(cm.exception))
+    message.value.number_value = math.nan
+    with self.assertRaises(json_format.SerializeToJsonError) as cm:
+      json_format.MessageToJson(message)
+    self.assertEqual(
+        'Failed to serialize value field: Fail to serialize NaN for '
+        'Value.number_value, which would parse as string_value.',
+        str(cm.exception))
 
   def testListValueMessage(self):
     message = json_format_proto3_pb2.TestListValue()

@@ -146,7 +146,8 @@ void Message_PrintMessage(StringBuilder* b, const upb_Message* msg,
   for (int i = 0; i < n; i++) {
     const upb_FieldDef* field = upb_MessageDef_Field(m, i);
 
-    if (upb_FieldDef_HasPresence(field) && !upb_Message_Has(msg, field)) {
+    if (upb_FieldDef_HasPresence(field) &&
+        !upb_Message_HasFieldByDef(msg, field)) {
       continue;
     }
 
@@ -156,7 +157,7 @@ void Message_PrintMessage(StringBuilder* b, const upb_Message* msg,
       first = false;
     }
 
-    upb_MessageValue msgval = upb_Message_Get(msg, field);
+    upb_MessageValue msgval = upb_Message_GetFieldByDef(msg, field);
 
     StringBuilder_Printf(b, "%s: ", upb_FieldDef_Name(field));
 
@@ -279,7 +280,8 @@ static VALUE Message_oneof_accessor(VALUE _self, const upb_OneofDef* o,
       return oneof_field == NULL ? Qfalse : Qtrue;
     case METHOD_CLEAR:
       if (oneof_field != NULL) {
-        upb_Message_ClearField(Message_GetMutable(_self, NULL), oneof_field);
+        upb_Message_ClearFieldByDef(Message_GetMutable(_self, NULL),
+                                    oneof_field);
       }
       return Qnil;
     case METHOD_GETTER:
@@ -302,13 +304,13 @@ static void Message_setfield(upb_Message* msg, const upb_FieldDef* f, VALUE val,
   } else {
     if (val == Qnil &&
         (upb_FieldDef_IsSubMessage(f) || upb_FieldDef_RealContainingOneof(f))) {
-      upb_Message_ClearField(msg, f);
+      upb_Message_ClearFieldByDef(msg, f);
       return;
     }
     msgval =
         Convert_RubyToUpb(val, upb_FieldDef_Name(f), TypeInfo_get(f), arena);
   }
-  upb_Message_Set(msg, f, msgval, arena);
+  upb_Message_SetFieldByDef(msg, f, msgval, arena);
 }
 
 VALUE Message_getfield(VALUE _self, const upb_FieldDef* f) {
@@ -330,12 +332,12 @@ VALUE Message_getfield(VALUE _self, const upb_FieldDef* f) {
     upb_Array* arr = upb_Message_Mutable(msg, f, arena).array;
     return RepeatedField_GetRubyWrapper(arr, TypeInfo_get(f), self->arena);
   } else if (upb_FieldDef_IsSubMessage(f)) {
-    if (!upb_Message_Has(self->msg, f)) return Qnil;
+    if (!upb_Message_HasFieldByDef(self->msg, f)) return Qnil;
     upb_Message* submsg = upb_Message_Mutable(msg, f, arena).msg;
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
     return Message_GetRubyWrapper(submsg, m, self->arena);
   } else {
-    upb_MessageValue msgval = upb_Message_Get(self->msg, f);
+    upb_MessageValue msgval = upb_Message_GetFieldByDef(self->msg, f);
     return Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
   }
 }
@@ -349,23 +351,24 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
       Message_setfield(Message_GetMutable(_self, NULL), f, argv[1], arena);
       return Qnil;
     case METHOD_CLEAR:
-      upb_Message_ClearField(Message_GetMutable(_self, NULL), f);
+      upb_Message_ClearFieldByDef(Message_GetMutable(_self, NULL), f);
       return Qnil;
     case METHOD_PRESENCE:
       if (!upb_FieldDef_HasPresence(f)) {
         rb_raise(rb_eRuntimeError, "Field does not have presence.");
       }
-      return upb_Message_Has(Message_Get(_self, NULL), f);
+      return upb_Message_HasFieldByDef(Message_Get(_self, NULL), f);
     case METHOD_WRAPPER_GETTER: {
       Message* self = ruby_to_Message(_self);
-      if (upb_Message_Has(self->msg, f)) {
+      if (upb_Message_HasFieldByDef(self->msg, f)) {
         PBRUBY_ASSERT(upb_FieldDef_IsSubMessage(f) &&
                       !upb_FieldDef_IsRepeated(f));
-        upb_MessageValue wrapper = upb_Message_Get(self->msg, f);
+        upb_MessageValue wrapper = upb_Message_GetFieldByDef(self->msg, f);
         const upb_MessageDef* wrapper_m = upb_FieldDef_MessageSubDef(f);
         const upb_FieldDef* value_f =
             upb_MessageDef_FindFieldByNumber(wrapper_m, 1);
-        upb_MessageValue value = upb_Message_Get(wrapper.msg_val, value_f);
+        upb_MessageValue value =
+            upb_Message_GetFieldByDef(wrapper.msg_val, value_f);
         return Convert_UpbToRuby(value, TypeInfo_get(value_f), self->arena);
       } else {
         return Qnil;
@@ -374,19 +377,20 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
     case METHOD_WRAPPER_SETTER: {
       upb_Message* msg = Message_GetMutable(_self, NULL);
       if (argv[1] == Qnil) {
-        upb_Message_ClearField(msg, f);
+        upb_Message_ClearFieldByDef(msg, f);
       } else {
         const upb_FieldDef* val_f =
             upb_MessageDef_FindFieldByNumber(upb_FieldDef_MessageSubDef(f), 1);
         upb_MessageValue msgval = Convert_RubyToUpb(
             argv[1], upb_FieldDef_Name(f), TypeInfo_get(val_f), arena);
         upb_Message* wrapper = upb_Message_Mutable(msg, f, arena).msg;
-        upb_Message_Set(wrapper, val_f, msgval, arena);
+        upb_Message_SetFieldByDef(wrapper, val_f, msgval, arena);
       }
       return Qnil;
     }
     case METHOD_ENUM_GETTER: {
-      upb_MessageValue msgval = upb_Message_Get(Message_Get(_self, NULL), f);
+      upb_MessageValue msgval =
+          upb_Message_GetFieldByDef(Message_Get(_self, NULL), f);
 
       if (upb_FieldDef_Label(f) == kUpb_Label_Repeated) {
         // Map repeated fields to a new type with ints
@@ -511,8 +515,8 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   k = Convert_RubyToUpb(key, "", map_init->key_type, NULL);
 
   if (map_init->val_type.type == kUpb_CType_Message && TYPE(val) == T_HASH) {
-    upb_Message* msg =
-        upb_Message_New(map_init->val_type.def.msgdef, map_init->arena);
+    upb_MiniTable* t = upb_MessageDef_MiniTable(map_init->val_type.def.msgdef);
+    upb_Message* msg = upb_Message_New(t, map_init->arena);
     Message_InitFromValue(msg, map_init->val_type.def.msgdef, val,
                           map_init->arena);
     v.msg_val = msg;
@@ -542,7 +546,8 @@ static upb_MessageValue MessageValue_FromValue(VALUE val, TypeInfo info,
                                                upb_Arena* arena) {
   if (info.type == kUpb_CType_Message) {
     upb_MessageValue msgval;
-    upb_Message* msg = upb_Message_New(info.def.msgdef, arena);
+    upb_MiniTable* t = upb_MessageDef_MiniTable(info.def.msgdef);
+    upb_Message* msg = upb_Message_New(t, arena);
     Message_InitFromValue(msg, info.def.msgdef, val, arena);
     msgval.msg_val = msg;
     return msgval;
@@ -594,7 +599,7 @@ static void Message_InitFieldFromValue(upb_Message* msg, const upb_FieldDef* f,
   } else {
     upb_MessageValue msgval =
         Convert_RubyToUpb(val, upb_FieldDef_Name(f), TypeInfo_get(f), arena);
-    upb_Message_Set(msg, f, msgval, arena);
+    upb_Message_SetFieldByDef(msg, f, msgval, arena);
   }
 }
 
@@ -657,7 +662,8 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   Message* self = ruby_to_Message(_self);
   VALUE arena_rb = Arena_new();
   upb_Arena* arena = Arena_get(arena_rb);
-  upb_Message* msg = upb_Message_New(self->msgdef, arena);
+  upb_MiniTable* t = upb_MessageDef_MiniTable(self->msgdef);
+  upb_Message* msg = upb_Message_New(t, arena);
 
   Message_InitPtr(_self, msg, arena_rb);
 
@@ -830,7 +836,8 @@ static VALUE Message_CreateHash(const upb_Message* msg,
     VALUE msg_key;
 
     if (!is_proto2 && upb_FieldDef_IsSubMessage(field) &&
-        !upb_FieldDef_IsRepeated(field) && !upb_Message_Has(msg, field)) {
+        !upb_FieldDef_IsRepeated(field) &&
+        !upb_Message_HasFieldByDef(msg, field)) {
       // TODO: Legacy behavior, remove when we fix the is_proto2 differences.
       msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
       rb_hash_aset(hash, msg_key, Qnil);
@@ -839,12 +846,12 @@ static VALUE Message_CreateHash(const upb_Message* msg,
 
     // Do not include fields that are not present (oneof or optional fields).
     if (is_proto2 && upb_FieldDef_HasPresence(field) &&
-        !upb_Message_Has(msg, field)) {
+        !upb_Message_HasFieldByDef(msg, field)) {
       continue;
     }
 
     msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
-    msgval = upb_Message_Get(msg, field);
+    msgval = upb_Message_GetFieldByDef(msg, field);
 
     // Proto2 omits empty map/repeated filds also.
 
@@ -947,7 +954,7 @@ static VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
   }
 
   val = Convert_RubyToUpb(value, upb_FieldDef_Name(f), TypeInfo_get(f), arena);
-  upb_Message_Set(Message_GetMutable(_self, NULL), f, val, arena);
+  upb_Message_SetFieldByDef(Message_GetMutable(_self, NULL), f, val, arena);
 
   return Qnil;
 }
@@ -1300,7 +1307,7 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
   return mod;
 }
 
-// Internal only; used by Google::Protobuf.deep_copy.
+// Internal to the library; used by Google::Protobuf.deep_copy.
 upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
                                upb_Arena* arena) {
   // Serialize and parse.
@@ -1308,7 +1315,7 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   size_t size;
 
-  upb_Message* new_msg = upb_Message_New(m, arena);
+  upb_Message* new_msg = upb_Message_New(layout, arena);
   char* data;
 
   if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) !=
@@ -1341,7 +1348,8 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
     switch (upb_MessageDef_WellKnownType(m)) {
       case kUpb_WellKnown_Timestamp: {
         // Time -> Google::Protobuf::Timestamp
-        upb_Message* msg = upb_Message_New(m, arena);
+        const upb_MiniTable* t = upb_MessageDef_MiniTable(m);
+        upb_Message* msg = upb_Message_New(t, arena);
         upb_MessageValue sec, nsec;
         struct timespec time;
         const upb_FieldDef* sec_f = upb_MessageDef_FindFieldByNumber(m, 1);
@@ -1352,13 +1360,14 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
         time = rb_time_timespec(value);
         sec.int64_val = time.tv_sec;
         nsec.int32_val = time.tv_nsec;
-        upb_Message_Set(msg, sec_f, sec, arena);
-        upb_Message_Set(msg, nsec_f, nsec, arena);
+        upb_Message_SetFieldByDef(msg, sec_f, sec, arena);
+        upb_Message_SetFieldByDef(msg, nsec_f, nsec, arena);
         return msg;
       }
       case kUpb_WellKnown_Duration: {
         // Numeric -> Google::Protobuf::Duration
-        upb_Message* msg = upb_Message_New(m, arena);
+        const upb_MiniTable* t = upb_MessageDef_MiniTable(m);
+        upb_Message* msg = upb_Message_New(t, arena);
         upb_MessageValue sec, nsec;
         const upb_FieldDef* sec_f = upb_MessageDef_FindFieldByNumber(m, 1);
         const upb_FieldDef* nsec_f = upb_MessageDef_FindFieldByNumber(m, 2);
@@ -1367,8 +1376,8 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
 
         sec.int64_val = NUM2LL(value);
         nsec.int32_val = round((NUM2DBL(value) - NUM2LL(value)) * 1000000000);
-        upb_Message_Set(msg, sec_f, sec, arena);
-        upb_Message_Set(msg, nsec_f, nsec, arena);
+        upb_Message_SetFieldByDef(msg, sec_f, sec, arena);
+        upb_Message_SetFieldByDef(msg, nsec_f, nsec, arena);
         return msg;
       }
       default:

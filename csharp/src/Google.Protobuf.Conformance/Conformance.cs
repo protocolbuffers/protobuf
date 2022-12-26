@@ -64,7 +64,7 @@ namespace Conformance {
     [pbr::OriginalName("PROTOBUF")] Protobuf = 1,
     [pbr::OriginalName("JSON")] Json = 2,
     /// <summary>
-    /// Google internal only. Opensource testees just skip it.
+    /// Only used inside Google. Opensource testees just skip it.
     /// </summary>
     [pbr::OriginalName("JSPB")] Jspb = 3,
     [pbr::OriginalName("TEXT_FORMAT")] TextFormat = 4,
@@ -89,7 +89,7 @@ namespace Conformance {
     /// </summary>
     [pbr::OriginalName("JSON_IGNORE_UNKNOWN_PARSING_TEST")] JsonIgnoreUnknownParsingTest = 3,
     /// <summary>
-    /// Test jspb wire format. Google internal only. Opensource testees just skip it.
+    /// Test jspb wire format. Only used inside Google. Opensource testees just skip it.
     /// </summary>
     [pbr::OriginalName("JSPB_TEST")] JspbTest = 4,
     /// <summary>
@@ -382,7 +382,7 @@ namespace Conformance {
     /// <summary>Field number for the "jspb_payload" field.</summary>
     public const int JspbPayloadFieldNumber = 7;
     /// <summary>
-    /// Google internal only.  Opensource testees just skip it.
+    /// Only used inside google.  Opensource testees just skip it.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1026,8 +1026,8 @@ namespace Conformance {
     public const int JspbPayloadFieldNumber = 7;
     /// <summary>
     /// If the input was successfully parsed and the requested output was JSPB,
-    /// serialize to JSPB and set it in this field. JSPB is google internal only
-    /// format. Opensource testees can just skip it.
+    /// serialize to JSPB and set it in this field. JSPB is only used inside
+    /// Google. Opensource testees can just skip it.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

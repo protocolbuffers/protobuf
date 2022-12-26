@@ -82,6 +82,7 @@ class FileGenerator {
   void Generate(io::Printer* printer);
 
   std::string GetKotlinClassname();
+  void GenerateKotlin(io::Printer* printer);
   void GenerateKotlinSiblings(const std::string& package_dir,
                               GeneratorContext* generator_context,
                               std::vector<std::string>* file_list,

@@ -49,8 +49,8 @@ namespace {
 // Only call if at start of tag.
 bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth) {
   constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
-  GOOGLE_DCHECK_GE(overrun, 0);
-  GOOGLE_DCHECK_LE(overrun, kSlopBytes);
+  GOOGLE_ABSL_DCHECK_GE(overrun, 0);
+  GOOGLE_ABSL_DCHECK_LE(overrun, kSlopBytes);
   auto ptr = begin + overrun;
   auto end = begin + kSlopBytes;
   while (ptr < end) {
@@ -101,7 +101,7 @@ bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth) {
 const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   if (next_chunk_ == nullptr) return nullptr;  // We've reached end of stream.
   if (next_chunk_ != buffer_) {
-    GOOGLE_DCHECK(size_ > kSlopBytes);
+    GOOGLE_ABSL_DCHECK(size_ > kSlopBytes);
     // The chunk is large enough to be used directly
     buffer_end_ = next_chunk_ + size_ - kSlopBytes;
     auto res = next_chunk_;
@@ -133,7 +133,7 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
         if (aliasing_ >= kNoDelta) aliasing_ = kOnPatch;
         return buffer_;
       }
-      GOOGLE_DCHECK(size_ == 0) << size_;
+      GOOGLE_ABSL_DCHECK(size_ == 0) << size_;
     }
     overall_limit_ = 0;  // Next failed, no more needs for next
   }
@@ -154,7 +154,7 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
 }
 
 const char* EpsCopyInputStream::Next() {
-  GOOGLE_DCHECK(limit_ > kSlopBytes);
+  GOOGLE_ABSL_DCHECK(limit_ > kSlopBytes);
   auto p = NextBuffer(0 /* immaterial */, -1);
   if (p == nullptr) {
     limit_end_ = buffer_end_;
@@ -171,25 +171,25 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
                                                               int depth) {
   // Did we exceeded the limit (parse error).
   if (PROTOBUF_PREDICT_FALSE(overrun > limit_)) return {nullptr, true};
-  GOOGLE_DCHECK(overrun != limit_);  // Guaranteed by caller.
-  GOOGLE_DCHECK(overrun < limit_);   // Follows from above
+  GOOGLE_ABSL_DCHECK(overrun != limit_);  // Guaranteed by caller.
+  GOOGLE_ABSL_DCHECK(overrun < limit_);   // Follows from above
   // TODO(gerbens) Instead of this dcheck we could just assign, and remove
   // updating the limit_end from PopLimit, ie.
   // limit_end_ = buffer_end_ + (std::min)(0, limit_);
   // if (ptr < limit_end_) return {ptr, false};
-  GOOGLE_DCHECK(limit_end_ == buffer_end_ + (std::min)(0, limit_));
+  GOOGLE_ABSL_DCHECK(limit_end_ == buffer_end_ + (std::min)(0, limit_));
   // At this point we know the following assertion holds.
-  GOOGLE_DCHECK_GT(limit_, 0);
-  GOOGLE_DCHECK(limit_end_ == buffer_end_);  // because limit_ > 0
+  GOOGLE_ABSL_DCHECK_GT(limit_, 0);
+  GOOGLE_ABSL_DCHECK(limit_end_ == buffer_end_);  // because limit_ > 0
   const char* p;
   do {
     // We are past the end of buffer_end_, in the slop region.
-    GOOGLE_DCHECK_GE(overrun, 0);
+    GOOGLE_ABSL_DCHECK_GE(overrun, 0);
     p = NextBuffer(overrun, depth);
     if (p == nullptr) {
       // We are at the end of the stream
       if (PROTOBUF_PREDICT_FALSE(overrun != 0)) return {nullptr, true};
-      GOOGLE_DCHECK_GT(limit_, 0);
+      GOOGLE_ABSL_DCHECK_GT(limit_, 0);
       limit_end_ = buffer_end_;
       // Distinguish ending on a pushed limit or ending on end-of-stream.
       SetEndOfStream();
@@ -265,12 +265,12 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
 const char* ParseContext::ReadSizeAndPushLimitAndDepth(const char* ptr,
                                                        int* old_limit) {
   int size = ReadSize(&ptr);
-  if (PROTOBUF_PREDICT_FALSE(!ptr)) {
+  if (PROTOBUF_PREDICT_FALSE(!ptr) || depth_ <= 0) {
     *old_limit = 0;  // Make sure this isn't uninitialized even on error return
     return nullptr;
   }
   *old_limit = PushLimit(ptr, size);
-  if (--depth_ < 0) return nullptr;
+  --depth_;
   return ptr;
 }
 
@@ -278,7 +278,9 @@ const char* ParseContext::ParseMessage(MessageLite* msg, const char* ptr) {
   int old;
   ptr = ReadSizeAndPushLimitAndDepth(ptr, &old);
   if (ptr == nullptr) return ptr;
+  auto old_depth = depth_;
   ptr = msg->_InternalParse(ptr, this);
+  if (ptr != nullptr) GOOGLE_ABSL_DCHECK_EQ(old_depth, depth_);
   depth_++;
   if (!PopLimit(old)) return nullptr;
   return ptr;
@@ -616,7 +618,7 @@ const char* UnknownFieldParse(uint32_t tag, std::string* unknown,
 // result = <multiple operations to calculate result>
 // num_bits = ValueBarrier(num_bits, result);
 // if (num_bits == 63) {
-//   GOOGLE_LOG(FATAL) << "Invalid num_bits value";
+//   GOOGLE_ABSL_LOG(FATAL) << "Invalid num_bits value";
 // }
 // ```
 template <typename V1Type, typename V2Type>
@@ -636,7 +638,7 @@ PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1) {
 
 PROTOBUF_ALWAYS_INLINE inline uint64_t ExtractAndMergeTwoChunks(
     uint64_t data, uint64_t first_byte) {
-  GOOGLE_DCHECK(first_byte <= 6);
+  GOOGLE_ABSL_DCHECK_LE(first_byte, 6);
   uint64_t first = Ubfx7(data, first_byte * 8);
   uint64_t second = Ubfx7(data, (first_byte + 1) * 8);
   return ForceToRegister(first | (second << 7));

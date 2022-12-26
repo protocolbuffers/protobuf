@@ -32,10 +32,11 @@
 
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/names.h"
 
@@ -104,7 +105,7 @@ std::string ClassNameWithoutPackage(const ServiceDescriptor* descriptor,
   std::string full_name =
       StripPackageName(descriptor->full_name(), descriptor->file());
   // We don't allow nested service definitions.
-  GOOGLE_CHECK(full_name.find('.') == std::string::npos);
+  GOOGLE_ABSL_CHECK(full_name.find('.') == std::string::npos);
   return full_name;
 }
 

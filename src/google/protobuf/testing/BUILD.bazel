@@ -1,7 +1,7 @@
 # Protobuf testing support.
 #   This package contains testonly utilities used in C++ unit tests.
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
@@ -25,6 +25,7 @@ cc_library(
         "//:protobuf_lite",  # for ShutdownProtobufLibrary
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
     ],

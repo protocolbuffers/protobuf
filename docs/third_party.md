@@ -8,6 +8,7 @@ If you have a project that should be listed here, please
 ## Programming Languages
 
 These are projects we know about implementing Protocol Buffers for other programming languages:
+
 * Action Script: https://code.google.com/p/protobuf-actionscript3/
 * Action Script: https://code.google.com/p/protoc-gen-as3/
 * Action Script: https://github.com/matrix3d/JProtoc
@@ -21,6 +22,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C: https://github.com/eerimoq/pbtools
 * C++: https://github.com/protocolbuffers/protobuf (Google-official implementation)
 * C++: https://EmbeddedProto.com
+* C++: https://github.com/yksten/struct2x
 * C/C++: http://spbc.sf.net/
 * C#: https://code.google.com/p/protobuf-csharp-port
 * C#: https://silentorbit.com/protobuf/

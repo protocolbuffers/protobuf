@@ -33,8 +33,8 @@
 
 #include <type_traits>
 
-#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_entry_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -99,10 +99,7 @@ class MapFieldLite {
   int size() const { return static_cast<int>(map_.size()); }
   void Clear() { return map_.clear(); }
   void MergeFrom(const MapFieldLite& other) {
-    for (typename Map<Key, T>::const_iterator it = other.map_.begin();
-         it != other.map_.end(); ++it) {
-      map_[it->first] = it->second;
-    }
+    internal::MapMergeFrom(map_, other.map_);
   }
   void Swap(MapFieldLite* other) { map_.swap(other->map_); }
   void InternalSwap(MapFieldLite* other) { map_.InternalSwap(&other->map_); }
@@ -196,7 +193,7 @@ struct MapEntryToMapField<
 #ifndef NDEBUG
 inline PROTOBUF_NOINLINE void MapFieldLiteNotDestructed(void* map_field_lite) {
   bool proper_destruct = false;
-  GOOGLE_CHECK(proper_destruct) << map_field_lite;
+  GOOGLE_ABSL_CHECK(proper_destruct) << map_field_lite;
 }
 #endif
 

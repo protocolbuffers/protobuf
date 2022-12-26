@@ -32,11 +32,12 @@
 
 #include <iostream>
 #include <ostream>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -98,6 +99,9 @@ void SetCommonFieldVariables(
   if (needs_custom_name) field_flags.push_back("GPBFieldTextFormatNameCustom");
   if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
+    if (descriptor->enum_type()->is_closed()) {
+      field_flags.push_back("GPBFieldClosedEnum");
+    }
   }
   // It will clear on a zero value if...
   //  - not repeated/map
@@ -165,7 +169,7 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return false;
 }
 
@@ -231,12 +235,13 @@ void FieldGenerator::GenerateCFunctionImplementations(
 }
 
 void FieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls, bool include_external_types) const {
+    absl::btree_set<std::string>* fwd_decls,
+    bool include_external_types) const {
   // Nothing
 }
 
 void FieldGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<std::string>* fwd_decls) const {
+    absl::btree_set<std::string>* fwd_decls) const {
   // Nothing
 }
 
@@ -329,8 +334,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
   // clang-format off
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;\n"
-      "\n");
+      "@property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;\n");
   // clang-format on
   if (WantsHasProperty()) {
     // clang-format off
@@ -339,6 +343,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
         "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;\n");
     // clang-format on
   }
+  printer->Print("\n");
 }
 
 void SingleFieldGenerator::GeneratePropertyImplementation(
@@ -473,7 +478,7 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
 
 const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
-  GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
+  GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
 }
 

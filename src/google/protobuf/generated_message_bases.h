@@ -35,9 +35,9 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_BASES_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_BASES_H__
 
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/parse_context.h"
 
@@ -63,8 +63,7 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
 
  protected:
   constexpr ZeroFieldsBase() {}
-  explicit ZeroFieldsBase(Arena* arena, bool is_message_owned)
-      : Message(arena, is_message_owned) {}
+  explicit ZeroFieldsBase(Arena* arena) : Message(arena) {}
   ZeroFieldsBase(const ZeroFieldsBase&) = delete;
   ZeroFieldsBase& operator=(const ZeroFieldsBase&) = delete;
   ~ZeroFieldsBase() override;

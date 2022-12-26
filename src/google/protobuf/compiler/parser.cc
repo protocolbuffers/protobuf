@@ -44,11 +44,11 @@
 #include <tuple>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -517,8 +517,8 @@ int Parser::LocationRecorder::CurrentPathSize() const {
 void Parser::LocationRecorder::AttachComments(
     std::string* leading, std::string* trailing,
     std::vector<std::string>* detached_comments) const {
-  GOOGLE_CHECK(!location_->has_leading_comments());
-  GOOGLE_CHECK(!location_->has_trailing_comments());
+  GOOGLE_ABSL_CHECK(!location_->has_leading_comments());
+  GOOGLE_ABSL_CHECK(!location_->has_trailing_comments());
 
   if (!leading->empty()) {
     location_->mutable_leading_comments()->swap(*leading);
@@ -598,7 +598,7 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
     return false;
   }
 
-  std::set<int> used_values;
+  absl::flat_hash_set<int> used_values;
   bool has_duplicates = false;
   for (int i = 0; i < proto->value_size(); ++i) {
     const EnumValueDescriptorProto& enum_value = proto->value(i);
@@ -672,10 +672,11 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
         file->set_syntax(syntax_identifier_);
       }
     } else if (!stop_after_syntax_identifier_) {
-      GOOGLE_LOG(WARNING) << "No syntax specified for the proto file: " << file->name()
-                   << ". Please use 'syntax = \"proto2\";' "
-                   << "or 'syntax = \"proto3\";' to specify a syntax "
-                   << "version. (Defaulted to proto2 syntax.)";
+      GOOGLE_ABSL_LOG(WARNING) << "No syntax specified for the proto file: "
+                        << file->name()
+                        << ". Please use 'syntax = \"proto2\";' "
+                        << "or 'syntax = \"proto3\";' to specify a syntax "
+                        << "version. (Defaulted to proto2 syntax.)";
       syntax_identifier_ = "proto2";
     }
 
@@ -1489,7 +1490,7 @@ bool Parser::ParseOption(Message* options,
   // Create an entry in the uninterpreted_option field.
   const FieldDescriptor* uninterpreted_option_field =
       options->GetDescriptor()->FindFieldByName("uninterpreted_option");
-  GOOGLE_CHECK(uninterpreted_option_field != nullptr)
+  GOOGLE_ABSL_CHECK(uninterpreted_option_field != nullptr)
       << "No field named \"uninterpreted_option\" in the Options proto.";
 
   const Reflection* reflection = options->GetReflection();
@@ -1542,7 +1543,8 @@ bool Parser::ParseOption(Message* options,
 
     switch (input_->current().type) {
       case io::Tokenizer::TYPE_START:
-        GOOGLE_LOG(FATAL) << "Trying to read value before any tokens have been read.";
+        GOOGLE_ABSL_LOG(FATAL)
+            << "Trying to read value before any tokens have been read.";
         return false;
 
       case io::Tokenizer::TYPE_END:
@@ -1551,9 +1553,9 @@ bool Parser::ParseOption(Message* options,
 
       case io::Tokenizer::TYPE_WHITESPACE:
       case io::Tokenizer::TYPE_NEWLINE:
-        GOOGLE_CHECK(!input_->report_whitespace() && !input_->report_newlines())
+        GOOGLE_ABSL_CHECK(!input_->report_whitespace() && !input_->report_newlines())
             << "Whitespace tokens were not requested.";
-        GOOGLE_LOG(FATAL) << "Tokenizer reported whitespace.";
+        GOOGLE_ABSL_LOG(FATAL) << "Tokenizer reported whitespace.";
         return false;
 
       case io::Tokenizer::TYPE_IDENTIFIER: {

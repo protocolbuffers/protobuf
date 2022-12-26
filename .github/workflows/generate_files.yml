@@ -1,16 +1,20 @@
-name: Generate CMake File Lists
+name: Auto-generate checked-in files
 
 on:
   push:
     branches:
       - main
       - '[0-9]+.x'
-      # The 21.x branch predates support for auto-generation of the CMake file
-      # lists, so we make sure to exclude it.
+      # The 21.x branch predates support for auto-generation, so we make sure
+      # to exclude it.
       - '!21.x'
 
+permissions: {}
 jobs:
   cmake:
+    permissions:
+      contents: write  #  for git push
+
     if: github.repository == 'protocolbuffers/protobuf'
     runs-on: ubuntu-latest
 
@@ -26,4 +30,4 @@ jobs:
       - name: Configure name and email address in Git
         run: cd ${{ github.workspace }} && git config user.name "Protobuf Team Bot" && git config user.email "protobuf-team-bot@google.com"
       - name: Commit and push update
-        run: cd ${{ github.workspace }} && ./cmake/push_auto_update.sh
+        run: cd ${{ github.workspace }} && ./push_auto_update.sh

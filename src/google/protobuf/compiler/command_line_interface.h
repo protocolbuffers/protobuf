@@ -40,13 +40,12 @@
 
 #include <cstdint>
 #include <functional>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
@@ -322,7 +321,7 @@ class PROTOC_EXPORT CommandLineInterface {
   static void GetTransitiveDependencies(
       const FileDescriptor* file, bool include_json_name,
       bool include_source_code_info,
-      std::set<const FileDescriptor*>* already_seen,
+      absl::flat_hash_set<const FileDescriptor*>* already_seen,
       RepeatedPtrField<FileDescriptorProto>* output);
 
   // Implements the --print_free_field_numbers. This function prints free field
@@ -360,9 +359,8 @@ class PROTOC_EXPORT CommandLineInterface {
   const GeneratorInfo* FindGeneratorByFlag(const std::string& name) const;
   const GeneratorInfo* FindGeneratorByOption(const std::string& option) const;
 
-  using GeneratorMap = std::map<std::string, GeneratorInfo>;
-  GeneratorMap generators_by_flag_name_;
-  GeneratorMap generators_by_option_name_;
+  absl::btree_map<std::string, GeneratorInfo> generators_by_flag_name_;
+  absl::flat_hash_map<std::string, GeneratorInfo> generators_by_option_name_;
   // A map from generator names to the parameters specified using the option
   // flag. For example, if the user invokes the compiler with:
   //   protoc --foo_out=outputdir --foo_opt=enable_bar ...
@@ -412,7 +410,7 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // Names of proto files which are allowed to be imported. Used by build
   // systems to enforce depend-on-what-you-import.
-  std::set<std::string> direct_dependencies_;
+  absl::flat_hash_set<std::string> direct_dependencies_;
   bool direct_dependencies_explicitly_set_ = false;
 
   // If there's a violation of depend-on-what-you-import, this string will be

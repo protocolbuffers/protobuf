@@ -37,6 +37,8 @@
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "google/protobuf/stubs/mathutil.h"
 
@@ -120,8 +122,8 @@ FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
       return RECURSE;
 
     default:
-      GOOGLE_LOG(FATAL) << "No comparison code for field " << field->full_name()
-                 << " of CppType = " << field->cpp_type();
+      GOOGLE_ABSL_LOG(FATAL) << "No comparison code for field " << field->full_name()
+                      << " of CppType = " << field->cpp_type();
       return DIFFERENT;
   }
 }
@@ -142,8 +144,8 @@ void SimpleFieldComparator::SetDefaultFractionAndMargin(double fraction,
 void SimpleFieldComparator::SetFractionAndMargin(const FieldDescriptor* field,
                                                  double fraction,
                                                  double margin) {
-  GOOGLE_CHECK(FieldDescriptor::CPPTYPE_FLOAT == field->cpp_type() ||
-        FieldDescriptor::CPPTYPE_DOUBLE == field->cpp_type())
+  GOOGLE_ABSL_CHECK(FieldDescriptor::CPPTYPE_FLOAT == field->cpp_type() ||
+             FieldDescriptor::CPPTYPE_DOUBLE == field->cpp_type())
       << "Field has to be float or double type. Field name is: "
       << field->full_name();
   map_tolerance_[field] = Tolerance(fraction, margin);

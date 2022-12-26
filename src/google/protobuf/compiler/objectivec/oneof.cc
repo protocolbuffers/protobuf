@@ -67,11 +67,11 @@ void OneofGenerator::SetOneofIndexBase(int index_base) {
   variables_["index"] = absl::StrCat(-index);
 }
 
-void OneofGenerator::GenerateCaseEnum(io::Printer* printer) {
+void OneofGenerator::GenerateCaseEnum(io::Printer* printer) const {
   printer->Print(variables_, "typedef GPB_ENUM($enum_name$) {\n");
   printer->Indent();
   printer->Print(variables_, "$enum_name$_GPBUnsetOneOfCase = 0,\n");
-  std::string enum_name = variables_["enum_name"];
+  std::string enum_name = variables_.find("enum_name")->second;
   for (int j = 0; j < descriptor_->field_count(); j++) {
     const FieldDescriptor* field = descriptor_->field(j);
     std::string field_name = FieldNameCapitalized(field);
@@ -88,7 +88,7 @@ void OneofGenerator::GenerateCaseEnum(io::Printer* printer) {
 }
 
 void OneofGenerator::GeneratePublicCasePropertyDeclaration(
-    io::Printer* printer) {
+    io::Printer* printer) const {
   // clang-format off
   printer->Print(
       variables_,
@@ -98,7 +98,8 @@ void OneofGenerator::GeneratePublicCasePropertyDeclaration(
   // clang-format on
 }
 
-void OneofGenerator::GenerateClearFunctionDeclaration(io::Printer* printer) {
+void OneofGenerator::GenerateClearFunctionDeclaration(
+    io::Printer* printer) const {
   // clang-format off
   printer->Print(
       variables_,
@@ -109,11 +110,13 @@ void OneofGenerator::GenerateClearFunctionDeclaration(io::Printer* printer) {
   // clang-format on
 }
 
-void OneofGenerator::GeneratePropertyImplementation(io::Printer* printer) {
+void OneofGenerator::GeneratePropertyImplementation(
+    io::Printer* printer) const {
   printer->Print(variables_, "@dynamic $name$OneOfCase;\n");
 }
 
-void OneofGenerator::GenerateClearFunctionImplementation(io::Printer* printer) {
+void OneofGenerator::GenerateClearFunctionImplementation(
+    io::Printer* printer) const {
   // clang-format off
   printer->Print(
       variables_,

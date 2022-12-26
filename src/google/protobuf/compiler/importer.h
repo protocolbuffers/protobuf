@@ -37,7 +37,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__
 #define GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__
 
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>

@@ -34,7 +34,7 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
-#include "absl/container/btree_map.h"
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 
 #include "google/protobuf/stubs/platform_macros.h"
@@ -73,6 +73,7 @@
 #endif
 
 #include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/compiler/plugin.pb.h"
@@ -141,7 +142,7 @@ void SetFdToTextMode(int fd) {
 #ifdef _WIN32
   if (setmode(fd, _O_TEXT) == -1) {
     // This should never happen, I think.
-    GOOGLE_LOG(WARNING) << "setmode(" << fd << ", _O_TEXT): " << strerror(errno);
+    GOOGLE_ABSL_LOG(WARNING) << "setmode(" << fd << ", _O_TEXT): " << strerror(errno);
   }
 #endif
   // (Text and binary are the same on non-Windows platforms.)
@@ -151,7 +152,8 @@ void SetFdToBinaryMode(int fd) {
 #ifdef _WIN32
   if (setmode(fd, _O_BINARY) == -1) {
     // This should never happen, I think.
-    GOOGLE_LOG(WARNING) << "setmode(" << fd << ", _O_BINARY): " << strerror(errno);
+    GOOGLE_ABSL_LOG(WARNING) << "setmode(" << fd
+                      << ", _O_BINARY): " << strerror(errno);
   }
 #endif
   // (Text and binary are the same on non-Windows platforms.)
@@ -806,95 +808,95 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
     }
 
     it->second.swap(data_);
+    return;
+  }
+  // This was an OpenForInsert().
+
+  // If the data doesn't end with a clean line break, add one.
+  if (!data_.empty() && data_[data_.size() - 1] != '\n') {
+    data_.push_back('\n');
+  }
+
+  // Find the file we are going to insert into.
+  if (!already_present) {
+    std::cerr << filename_ << ": Tried to insert into file that doesn't exist."
+              << std::endl;
+    directory_->had_error_ = true;
+    return;
+  }
+  std::string* target = &it->second;
+
+  // Find the insertion point.
+  std::string magic_string =
+      absl::Substitute("@@protoc_insertion_point($0)", insertion_point_);
+  std::string::size_type pos = target->find(magic_string);
+
+  if (pos == std::string::npos) {
+    std::cerr << filename_ << ": insertion point \"" << insertion_point_
+              << "\" not found." << std::endl;
+    directory_->had_error_ = true;
+    return;
+  }
+
+  if ((pos > 3) && (target->substr(pos - 3, 2) == "/*")) {
+    // Support for inline "/* @@protoc_insertion_point() */"
+    pos = pos - 3;
   } else {
-    // This was an OpenForInsert().
-
-    // If the data doesn't end with a clean line break, add one.
-    if (!data_.empty() && data_[data_.size() - 1] != '\n') {
-      data_.push_back('\n');
-    }
-
-    // Find the file we are going to insert into.
-    if (!already_present) {
-      std::cerr << filename_
-                << ": Tried to insert into file that doesn't exist."
-                << std::endl;
-      directory_->had_error_ = true;
-      return;
-    }
-    std::string* target = &it->second;
-
-    // Find the insertion point.
-    std::string magic_string =
-        absl::Substitute("@@protoc_insertion_point($0)", insertion_point_);
-    std::string::size_type pos = target->find(magic_string);
-
+    // Seek backwards to the beginning of the line, which is where we will
+    // insert the data.  Note that this has the effect of pushing the
+    // insertion point down, so the data is inserted before it.  This is
+    // intentional because it means that multiple insertions at the same point
+    // will end up in the expected order in the final output.
+    pos = target->find_last_of('\n', pos);
     if (pos == std::string::npos) {
-      std::cerr << filename_ << ": insertion point \"" << insertion_point_
-                << "\" not found." << std::endl;
-      directory_->had_error_ = true;
-      return;
-    }
-
-    if ((pos > 3) && (target->substr(pos - 3, 2) == "/*")) {
-      // Support for inline "/* @@protoc_insertion_point() */"
-      pos = pos - 3;
+      // Insertion point is on the first line.
+      pos = 0;
     } else {
-      // Seek backwards to the beginning of the line, which is where we will
-      // insert the data.  Note that this has the effect of pushing the
-      // insertion point down, so the data is inserted before it.  This is
-      // intentional because it means that multiple insertions at the same point
-      // will end up in the expected order in the final output.
-      pos = target->find_last_of('\n', pos);
-      if (pos == std::string::npos) {
-        // Insertion point is on the first line.
-        pos = 0;
-      } else {
-        // Advance to character after '\n'.
-        ++pos;
-      }
-    }
-
-    // Extract indent.
-    std::string indent_(*target, pos,
-                        target->find_first_not_of(" \t", pos) - pos);
-
-    if (indent_.empty()) {
-      // No indent.  This makes things easier.
-      target->insert(pos, data_);
-      UpdateMetadata(data_, pos, data_.size(), 0);
-    } else {
-      // Calculate how much space we need.
-      int indent_size = 0;
-      for (int i = 0; i < data_.size(); i++) {
-        if (data_[i] == '\n') indent_size += indent_.size();
-      }
-
-      // Make a hole for it.
-      target->insert(pos, data_.size() + indent_size, '\0');
-
-      // Now copy in the data.
-      std::string::size_type data_pos = 0;
-      char* target_ptr = &(*target)[pos];
-      while (data_pos < data_.size()) {
-        // Copy indent.
-        memcpy(target_ptr, indent_.data(), indent_.size());
-        target_ptr += indent_.size();
-
-        // Copy line from data_.
-        // We already guaranteed that data_ ends with a newline (above), so this
-        // search can't fail.
-        std::string::size_type line_length =
-            data_.find_first_of('\n', data_pos) + 1 - data_pos;
-        memcpy(target_ptr, data_.data() + data_pos, line_length);
-        target_ptr += line_length;
-        data_pos += line_length;
-      }
-      UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
-
-      GOOGLE_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
+      // Advance to character after '\n'.
+      ++pos;
     }
   }
+
+  // Extract indent.
+  std::string indent_(*target, pos,
+                      target->find_first_not_of(" \t", pos) - pos);
+
+  if (indent_.empty()) {
+    // No indent.  This makes things easier.
+    target->insert(pos, data_);
+    UpdateMetadata(data_, pos, data_.size(), 0);
+    return;
+  }
+  // Calculate how much space we need.
+  int indent_size = 0;
+  for (int i = 0; i < data_.size(); i++) {
+    if (data_[i] == '\n') indent_size += indent_.size();
+  }
+
+  // Make a hole for it.
+  target->insert(pos, data_.size() + indent_size, '\0');
+
+  // Now copy in the data.
+  std::string::size_type data_pos = 0;
+  char* target_ptr = &(*target)[pos];
+  while (data_pos < data_.size()) {
+    // Copy indent.
+    memcpy(target_ptr, indent_.data(), indent_.size());
+    target_ptr += indent_.size();
+
+    // Copy line from data_.
+    // We already guaranteed that data_ ends with a newline (above), so this
+    // search can't fail.
+    std::string::size_type line_length =
+        data_.find_first_of('\n', data_pos) + 1 - data_pos;
+    memcpy(target_ptr, data_.data() + data_pos, line_length);
+    target_ptr += line_length;
+    data_pos += line_length;
+  }
+
+  GOOGLE_ABSL_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
+
+  UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
 }
 
 // ===================================================================
@@ -1106,7 +1108,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   if (!dependency_out_name_.empty()) {
-    GOOGLE_DCHECK(disk_source_tree.get());
+    GOOGLE_ABSL_DCHECK(disk_source_tree.get());
     if (!GenerateDependencyManifestFile(parsed_files, output_directories,
                                         disk_source_tree.get())) {
       return 1;
@@ -1126,7 +1128,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       FileDescriptorProto file;
       file.set_name("empty_message.proto");
       file.add_message_type()->set_name("EmptyMessage");
-      GOOGLE_CHECK(pool.BuildFile(file) != nullptr);
+      GOOGLE_ABSL_CHECK(pool.BuildFile(file) != nullptr);
       codec_type_ = "EmptyMessage";
       if (!EncodeOrDecode(&pool)) {
         return 1;
@@ -1154,8 +1156,9 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         }
         break;
       case PRINT_NONE:
-        GOOGLE_LOG(ERROR) << "If the code reaches here, it usually means a bug of "
-                      "flag parsing in the CommandLineInterface.";
+        GOOGLE_ABSL_LOG(ERROR)
+            << "If the code reaches here, it usually means a bug of "
+               "flag parsing in the CommandLineInterface.";
         return 1;
 
         // Do not add a default case.
@@ -1558,7 +1561,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
           input_files_.empty() && descriptor_set_in_names_.empty();
       break;
     default:
-      GOOGLE_LOG(FATAL) << "Unexpected mode: " << mode_;
+      GOOGLE_ABSL_LOG(FATAL) << "Unexpected mode: " << mode_;
   }
   if (missing_proto_definitions) {
     std::cerr << "Missing input file." << std::endl;
@@ -1763,7 +1766,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     direct_dependencies_explicitly_set_ = true;
     std::vector<std::string> direct =
         absl::StrSplit(value, ":", absl::SkipEmpty());
-    GOOGLE_DCHECK(direct_dependencies_.empty());
+    GOOGLE_ABSL_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
 
   } else if (name == "--direct_dependencies_violation_msg") {
@@ -2163,8 +2166,8 @@ bool CommandLineInterface::GenerateOutput(
   std::string error;
   if (output_directive.generator == nullptr) {
     // This is a plugin.
-    GOOGLE_CHECK(absl::StartsWith(output_directive.name, "--") &&
-          absl::EndsWith(output_directive.name, "_out"))
+    GOOGLE_ABSL_CHECK(absl::StartsWith(output_directive.name, "--") &&
+               absl::EndsWith(output_directive.name, "_out"))
         << "Bad name for plugin generator: " << output_directive.name;
 
     std::string plugin_name = PluginName(plugin_prefix_, output_directive.name);
@@ -2212,7 +2215,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     DiskSourceTree* source_tree) {
   FileDescriptorSet file_set;
 
-  std::set<const FileDescriptor*> already_seen;
+  absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (int i = 0; i < parsed_files.size(); i++) {
     GetTransitiveDependencies(parsed_files[i], false, false, &already_seen,
                               file_set.mutable_file());
@@ -2293,7 +2296,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   }
 
 
-  std::set<const FileDescriptor*> already_seen;
+  absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (int i = 0; i < parsed_files.size(); i++) {
     request.add_file_to_generate(parsed_files[i]->name());
     GetTransitiveDependencies(parsed_files[i],
@@ -2442,13 +2445,13 @@ bool CommandLineInterface::WriteDescriptorSet(
     const std::vector<const FileDescriptor*>& parsed_files) {
   FileDescriptorSet file_set;
 
-  std::set<const FileDescriptor*> already_seen;
+  absl::flat_hash_set<const FileDescriptor*> already_seen;
   if (!imports_in_descriptor_set_) {
     // Since we don't want to output transitive dependencies, but we do want
     // things to be in dependency order, add all dependencies that aren't in
     // parsed_files to already_seen.  This will short circuit the recursion
     // in GetTransitiveDependencies.
-    std::set<const FileDescriptor*> to_output;
+    absl::flat_hash_set<const FileDescriptor*> to_output;
     to_output.insert(parsed_files.begin(), parsed_files.end());
     for (int i = 0; i < parsed_files.size(); i++) {
       const FileDescriptor* file = parsed_files[i];
@@ -2506,7 +2509,7 @@ bool CommandLineInterface::WriteDescriptorSet(
 void CommandLineInterface::GetTransitiveDependencies(
     const FileDescriptor* file, bool include_json_name,
     bool include_source_code_info,
-    std::set<const FileDescriptor*>* already_seen,
+    absl::flat_hash_set<const FileDescriptor*>* already_seen,
     RepeatedPtrField<FileDescriptorProto>* output) {
   if (!already_seen->insert(file).second) {
     // Already saw this file.  Skip.
@@ -2579,9 +2582,9 @@ namespace {
 // order of the nested messages is also preserved.
 typedef std::pair<int, int> FieldRange;
 void GatherOccupiedFieldRanges(
-    const Descriptor* descriptor, std::set<FieldRange>* ranges,
+    const Descriptor* descriptor, absl::btree_set<FieldRange>* ranges,
     std::vector<const Descriptor*>* nested_messages) {
-  std::set<const Descriptor*> groups;
+  absl::flat_hash_set<const Descriptor*> groups;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     const FieldDescriptor* fd = descriptor->field(i);
     ranges->insert(FieldRange(fd->number(), fd->number() + 1));
@@ -2613,27 +2616,26 @@ void GatherOccupiedFieldRanges(
 // Actually prints the formatted free field numbers for given message name and
 // occupied ranges.
 void FormatFreeFieldNumbers(const std::string& name,
-                            const std::set<FieldRange>& ranges) {
+                            const absl::btree_set<FieldRange>& ranges) {
   std::string output;
   absl::StrAppendFormat(&output, "%-35s free:", name.c_str());
   int next_free_number = 1;
-  for (std::set<FieldRange>::const_iterator i = ranges.begin();
-       i != ranges.end(); ++i) {
+  for (const auto& range : ranges) {
     // This happens when groups re-use parent field numbers, in which
     // case we skip the FieldRange entirely.
-    if (next_free_number >= i->second) continue;
+    if (next_free_number >= range.second) continue;
 
-    if (next_free_number < i->first) {
-      if (next_free_number + 1 == i->first) {
+    if (next_free_number < range.first) {
+      if (next_free_number + 1 == range.first) {
         // Singleton
         absl::StrAppendFormat(&output, " %d", next_free_number);
       } else {
         // Range
         absl::StrAppendFormat(&output, " %d-%d", next_free_number,
-                              i->first - 1);
+                              range.first - 1);
       }
     }
-    next_free_number = i->second;
+    next_free_number = range.second;
   }
   if (next_free_number <= FieldDescriptor::kMaxNumber) {
     absl::StrAppendFormat(&output, " %d-INF", next_free_number);
@@ -2644,7 +2646,7 @@ void FormatFreeFieldNumbers(const std::string& name,
 }  // namespace
 
 void CommandLineInterface::PrintFreeFieldNumbers(const Descriptor* descriptor) {
-  std::set<FieldRange> ranges;
+  absl::btree_set<FieldRange> ranges;
   std::vector<const Descriptor*> nested_messages;
   GatherOccupiedFieldRanges(descriptor, &ranges, &nested_messages);
 

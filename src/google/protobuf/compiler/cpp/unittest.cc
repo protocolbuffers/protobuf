@@ -33,7 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // To test the code generator, we actually use it to generate code for
-// net/proto2/internal/unittest.proto, then test that.  This means that we
+// third_party/protobuf/unittest.proto, then test that.  This means that we
 // are actually testing the parser and other parts of the system at the same
 // time, and that problems in the generator may show up as compile-time errors
 // rather than unittest failures, which may be surprising.  However, testing
@@ -46,10 +46,10 @@
 
 #include "google/protobuf/compiler/cpp/unittest.h"
 
+#include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_embed_optimize_for.pb.h"
 #include "google/protobuf/unittest_optimize_for.pb.h"
-#include "google/protobuf/test_util.h"
 
 #define MESSAGE_TEST_NAME MessageTest
 #define GENERATED_DESCRIPTOR_TEST_NAME GeneratedDescriptorTest
@@ -59,7 +59,7 @@
 #define HELPERS_TEST_NAME HelpersTest
 #define DESCRIPTOR_INIT_TEST_NAME DescriptorInitializationTest
 
-#define UNITTEST_PROTO_PATH "net/proto2/internal/unittest.proto"
+#define UNITTEST_PROTO_PATH "third_party/protobuf/unittest.proto"
 #define UNITTEST ::protobuf_unittest
 #define UNITTEST_IMPORT ::protobuf_unittest_import
 

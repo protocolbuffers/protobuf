@@ -42,20 +42,22 @@
 // "generate_descriptor_proto.sh" and add
 // descriptor.pb.{h,cc} to your changelist.
 
+#include <memory>
 #include <string>
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/importer.h"
-#include "google/protobuf/test_util2.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/test_util2.h"
 
 namespace google {
 namespace protobuf {
@@ -95,15 +97,15 @@ class MockGeneratorContext : public GeneratorContext {
 
     std::string expected_contents = *it->second;
     std::string actual_contents;
-    GOOGLE_CHECK_OK(
+    GOOGLE_ABSL_CHECK_OK(
         File::GetContents(TestUtil::TestSourceDir() + "/" + physical_filename,
                           &actual_contents, true))
         << physical_filename;
 
 #ifdef WRITE_FILES  // Define to debug mismatched files.
-    GOOGLE_CHECK_OK(File::SetContents("/tmp/expected.cc", expected_contents,
-                               true));
-    GOOGLE_CHECK_OK(
+    GOOGLE_ABSL_CHECK_OK(File::SetContents("/tmp/expected.cc", expected_contents,
+                                    true));
+    GOOGLE_ABSL_CHECK_OK(
         File::SetContents("/tmp/actual.cc", actual_contents, true));
 #endif
 
@@ -123,7 +125,7 @@ class MockGeneratorContext : public GeneratorContext {
   }
 
  private:
-  std::map<std::string, std::unique_ptr<std::string>> files_;
+  absl::flat_hash_map<std::string, std::unique_ptr<std::string>> files_;
 };
 
 const char kDescriptorParameter[] = "dllexport_decl=PROTOBUF_EXPORT";

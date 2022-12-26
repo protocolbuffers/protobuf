@@ -219,7 +219,7 @@ bool PrefixModeStorage::is_package_exempted(const std::string& package) {
     }
   }
 
-  return exceptions_.count(package) != 0;
+  return exceptions_.contains(package);
 }
 
 PrefixModeStorage& g_prefix_mode = *new PrefixModeStorage();
@@ -321,7 +321,7 @@ std::string UnderscoresToCamelCase(const std::string& input,
   std::string result;
   bool first_segment_forces_upper = false;
   for (auto& value : values) {
-    bool all_upper = (UpperSegments().count(value) > 0);
+    bool all_upper = UpperSegments().contains(value);
     if (all_upper && (result.length() == 0)) {
       first_segment_forces_upper = true;
     }
@@ -583,9 +583,8 @@ std::string SanitizeNameForObjC(const std::string& prefix,
   } else {
     sanitized = prefix + input;
   }
-  if (IsReservedCIdentifier(sanitized) ||
-      (ReservedWords().count(sanitized) > 0) ||
-      (NSObjectMethods().count(sanitized) > 0)) {
+  if (IsReservedCIdentifier(sanitized) || ReservedWords().contains(sanitized) ||
+      NSObjectMethods().contains(sanitized)) {
     if (out_suffix_added) *out_suffix_added = extension;
     return sanitized + extension;
   }

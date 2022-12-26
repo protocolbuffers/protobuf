@@ -89,11 +89,11 @@ else
     else
       utf8_root = '../third_party/utf8_range'
     end
-    FileUtils.mkdir_p("ext/google/protobuf_c/third_party/utf8_range")
-    FileUtils.cp(utf8_root+"/utf8_range.h", "ext/google/protobuf_c/third_party/utf8_range")
-    FileUtils.cp(utf8_root+"/naive.c", "ext/google/protobuf_c/third_party/utf8_range")
-    FileUtils.cp(utf8_root+"/range2-neon.c", "ext/google/protobuf_c/third_party/utf8_range")
-    FileUtils.cp(utf8_root+"/range2-sse.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.mkdir_p("ext/google/protobuf_c")
+    FileUtils.cp(utf8_root+"/utf8_range.h", "ext/google/protobuf_c")
+    FileUtils.cp(utf8_root+"/naive.c", "ext/google/protobuf_c")
+    FileUtils.cp(utf8_root+"/range2-neon.c", "ext/google/protobuf_c")
+    FileUtils.cp(utf8_root+"/range2-sse.c", "ext/google/protobuf_c")
   end
 
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|

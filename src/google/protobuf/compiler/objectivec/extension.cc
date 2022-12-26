@@ -32,10 +32,10 @@
 
 #include <iostream>
 #include <ostream>
-#include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -63,7 +63,7 @@ ExtensionGenerator::ExtensionGenerator(const std::string& root_class_name,
   }
 }
 
-void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
+void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["method_name"] = method_name_;
   if (IsRetainedName(method_name_)) {
@@ -90,7 +90,7 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
 }
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
-    io::Printer* printer) {
+    io::Printer* printer) const {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["root_class_and_method_name"] = root_class_and_method_name_;
   const std::string containing_type = ClassName(descriptor_->containing_type());
@@ -146,7 +146,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
 }
 
 void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<std::string>* fwd_decls) {
+    absl::btree_set<std::string>* fwd_decls) const {
   std::string extended_type = ClassName(descriptor_->containing_type());
   fwd_decls->insert(ObjCClassDeclaration(extended_type));
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
@@ -156,7 +156,8 @@ void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
   }
 }
 
-void ExtensionGenerator::GenerateRegistrationSource(io::Printer* printer) {
+void ExtensionGenerator::GenerateRegistrationSource(
+    io::Printer* printer) const {
   // clang-format off
   printer->Print(
       "[registry addExtension:$root_class_and_method_name$];\n",

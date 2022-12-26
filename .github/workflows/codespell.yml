@@ -3,6 +3,8 @@
 # https://github.com/codespell-project/codespell
 name: codespell
 on: [push, pull_request]
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
 jobs:
   codespell:
     name: Check for spelling errors

@@ -28,16 +28,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Test for google.protobuf.internal.well_known_types."""
+"""Test for google3.net.proto2.python.internal.well_known_types."""
 
 import unittest
 
 from google.protobuf import field_mask_pb2
-from google.protobuf import map_unittest_pb2
-from google.protobuf import unittest_pb2
 from google.protobuf.internal import field_mask
 from google.protobuf.internal import test_util
 from google.protobuf import descriptor
+from google.protobuf import map_unittest_pb2
+from google.protobuf import unittest_pb2
 
 
 class FieldMaskTest(unittest.TestCase):

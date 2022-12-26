@@ -39,8 +39,9 @@
 #include <limits>
 #include <vector>
 
-#include "google/protobuf/wire_format.h"
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -52,6 +53,7 @@
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -106,7 +108,7 @@ void PrintEnumVerifierLogic(
 
 std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter) {
-  GOOGLE_CHECK(!input.empty());
+  GOOGLE_ABSL_CHECK(!input.empty());
   std::string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
@@ -287,7 +289,7 @@ JavaType GetJavaType(const FieldDescriptor* field) {
       // types are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return JAVATYPE_INT;
 }
 
@@ -316,7 +318,7 @@ const char* PrimitiveTypeName(JavaType type) {
       // JavaTypes are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return NULL;
 }
 
@@ -349,7 +351,7 @@ const char* BoxedPrimitiveTypeName(JavaType type) {
       // JavaTypes are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return NULL;
 }
 
@@ -382,7 +384,7 @@ const char* KotlinTypeName(JavaType type) {
       // JavaTypes are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return NULL;
 }
 
@@ -441,7 +443,7 @@ const char* FieldTypeName(FieldDescriptor::Type field_type) {
       // types are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return NULL;
 }
 
@@ -529,7 +531,7 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
       // types are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
@@ -561,7 +563,7 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field) {
       // types are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return false;
 }
 
@@ -675,7 +677,7 @@ bool IsReferenceType(JavaType type) {
       // JavaTypes are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return false;
 }
 
@@ -724,7 +726,7 @@ const char* GetCapitalizedType(const FieldDescriptor* field, bool immutable,
       // types are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return NULL;
 }
 
@@ -774,7 +776,7 @@ int FixedSize(FieldDescriptor::Type type) {
       // No default because we want the compiler to complain if any new
       // types are added.
   }
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return -1;
 }
 
@@ -910,7 +912,7 @@ int GetExperimentalJavaFieldTypeForPacked(const FieldDescriptor* field) {
   } else if (result > FieldDescriptor::TYPE_BYTES) {
     return result + 30;
   } else {
-    GOOGLE_LOG(FATAL) << field->full_name() << " can't be packed.";
+    GOOGLE_ABSL_LOG(FATAL) << field->full_name() << " can't be packed.";
     return 0;
   }
 }

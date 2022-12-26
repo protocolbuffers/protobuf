@@ -41,7 +41,6 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.

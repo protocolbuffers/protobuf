@@ -38,6 +38,7 @@
 
 #include <cstdint>
 
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_format.h"
 
 #ifndef _MSC_VER
@@ -51,9 +52,6 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/test_util2.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -64,12 +62,15 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/mock_code_generator.h"
 #include "google/protobuf/compiler/subprocess.h"
-#include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_custom_options.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -288,7 +289,7 @@ void CommandLineInterfaceTest::SetUp() {
   }
 
   // Create the temp directory.
-  GOOGLE_CHECK_OK(File::CreateDir(temp_directory_, 0777));
+  GOOGLE_ABSL_CHECK_OK(File::CreateDir(temp_directory_, 0777));
 
   // Register generators.
   CodeGenerator* generator = new MockCodeGenerator("test_generator");
@@ -361,7 +362,7 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
 #endif
 
     if (plugin_path.empty() || !FileExists(plugin_path)) {
-      GOOGLE_LOG(ERROR)
+      GOOGLE_ABSL_LOG(ERROR)
           << "Plugin executable not found.  Plugin tests are likely to fail."
           << plugin_path;
     } else {
@@ -401,21 +402,21 @@ void CommandLineInterfaceTest::CreateTempFile(const std::string& name,
   if (slash_pos != std::string::npos) {
     std::string dir = name.substr(0, slash_pos);
     if (!FileExists(temp_directory_ + "/" + dir)) {
-      GOOGLE_CHECK_OK(File::RecursivelyCreateDir(temp_directory_ + "/" + dir,
-                                          0777));
+      GOOGLE_ABSL_CHECK_OK(File::RecursivelyCreateDir(temp_directory_ + "/" + dir,
+                                               0777));
     }
   }
 
   // Write file.
   std::string full_name = temp_directory_ + "/" + name;
-  GOOGLE_CHECK_OK(File::SetContents(
+  GOOGLE_ABSL_CHECK_OK(File::SetContents(
       full_name, absl::StrReplaceAll(contents, {{"$tmpdir", temp_directory_}}),
       true));
 }
 
 void CommandLineInterfaceTest::CreateTempDir(const std::string& name) {
-  GOOGLE_CHECK_OK(File::RecursivelyCreateDir(temp_directory_ + "/" + name,
-                                      0777));
+  GOOGLE_ABSL_CHECK_OK(File::RecursivelyCreateDir(temp_directory_ + "/" + name,
+                                           0777));
 }
 
 // -------------------------------------------------------------------
@@ -503,7 +504,7 @@ void CommandLineInterfaceTest::ReadDescriptorSet(
     const std::string& filename, FileDescriptorSet* descriptor_set) {
   std::string path = temp_directory_ + "/" + filename;
   std::string file_contents;
-  GOOGLE_CHECK_OK(File::GetContents(path, &file_contents, true));
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
 
   if (!descriptor_set->ParseFromString(file_contents)) {
     FAIL() << "Could not parse file contents: " << path;
@@ -513,7 +514,7 @@ void CommandLineInterfaceTest::ReadDescriptorSet(
 void CommandLineInterfaceTest::WriteDescriptorSet(
     const std::string& filename, const FileDescriptorSet* descriptor_set) {
   std::string binary_proto;
-  GOOGLE_CHECK(descriptor_set->SerializeToString(&binary_proto));
+  GOOGLE_ABSL_CHECK(descriptor_set->SerializeToString(&binary_proto));
   CreateTempFile(filename, binary_proto);
 }
 
@@ -539,7 +540,7 @@ void CommandLineInterfaceTest::ExpectFileContent(const std::string& filename,
                                                  const std::string& content) {
   std::string path = temp_directory_ + "/" + filename;
   std::string file_contents;
-  GOOGLE_CHECK_OK(File::GetContents(path, &file_contents, true));
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
 
   EXPECT_EQ(absl::StrReplaceAll(content, {{"$tmpdir", temp_directory_}}),
             file_contents);
@@ -2560,8 +2561,8 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 
   void RedirectStdinFromText(const std::string& input) {
     std::string filename = TestTempDir() + "/test_stdin";
-    GOOGLE_CHECK_OK(File::SetContents(filename, input, true));
-    GOOGLE_CHECK(RedirectStdinFromFile(filename));
+    GOOGLE_ABSL_CHECK_OK(File::SetContents(filename, input, true));
+    GOOGLE_ABSL_CHECK(RedirectStdinFromFile(filename));
   }
 
   bool RedirectStdinFromFile(const std::string& filename) {
@@ -2629,7 +2630,8 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 
   void ExpectStdoutMatchesBinaryFile(const std::string& filename) {
     std::string expected_output;
-    GOOGLE_CHECK_OK(File::GetContents(filename, &expected_output, true));
+    GOOGLE_ABSL_CHECK_OK(
+        File::GetContents(filename, &expected_output, true));
 
     // Don't use EXPECT_EQ because we don't want to print raw binary data to
     // stdout on failure.
@@ -2638,7 +2640,8 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 
   void ExpectStdoutMatchesTextFile(const std::string& filename) {
     std::string expected_output;
-    GOOGLE_CHECK_OK(File::GetContents(filename, &expected_output, true));
+    GOOGLE_ABSL_CHECK_OK(
+        File::GetContents(filename, &expected_output, true));
 
     ExpectStdoutMatchesText(expected_output);
   }
@@ -2670,12 +2673,12 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     protobuf_unittest_import::PublicImportMessage public_import_message;
     public_import_message.descriptor()->file()->CopyTo(
         file_descriptor_set.add_file());
-    GOOGLE_DCHECK(file_descriptor_set.IsInitialized());
+    GOOGLE_ABSL_DCHECK(file_descriptor_set.IsInitialized());
 
     std::string binary_proto;
-    GOOGLE_CHECK(file_descriptor_set.SerializeToString(&binary_proto));
-    GOOGLE_CHECK_OK(File::SetContents(unittest_proto_descriptor_set_filename_,
-                               binary_proto, true));
+    GOOGLE_ABSL_CHECK(file_descriptor_set.SerializeToString(&binary_proto));
+    GOOGLE_ABSL_CHECK_OK(File::SetContents(unittest_proto_descriptor_set_filename_,
+                                    binary_proto, true));
   }
 
   int duped_stdin_;
@@ -2691,7 +2694,7 @@ TEST_P(EncodeDecodeTest, Encode) {
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
     args.append(
-        TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto"));
+        TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
   }
   EXPECT_TRUE(Run(args + " --encode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
@@ -2703,7 +2706,7 @@ TEST_P(EncodeDecodeTest, Decode) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
       "third_party/protobuf/testdata/golden_message_oneof_implemented"));
   EXPECT_TRUE(
-      Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
+      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
           " --decode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesTextFile(TestUtil::GetTestDataPath(
       "third_party/protobuf/"
@@ -2714,7 +2717,7 @@ TEST_P(EncodeDecodeTest, Decode) {
 TEST_P(EncodeDecodeTest, Partial) {
   RedirectStdinFromText("");
   EXPECT_TRUE(
-      Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
+      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
           " --encode=protobuf_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText(
@@ -2738,7 +2741,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
 
 TEST_P(EncodeDecodeTest, UnknownType) {
   EXPECT_FALSE(
-      Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
+      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
           " --encode=NoSuchType"));
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText("Type not defined: NoSuchType\n");
@@ -2760,7 +2763,7 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
     args.append(
-        TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto"));
+        TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
   }
   EXPECT_TRUE(Run(
       args + " --encode=protobuf_unittest.TestAllTypes --deterministic_output"));
@@ -2773,7 +2776,7 @@ TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
       "third_party/protobuf/testdata/golden_message_oneof_implemented"));
   EXPECT_FALSE(
-      Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
+      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
           " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));
   ExpectStderrMatchesText(
       "Can only use --deterministic_output with --encode.\n");
