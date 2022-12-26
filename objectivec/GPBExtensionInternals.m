@@ -38,12 +38,6 @@
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
 
-static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
-                                        GPBCodedInputStream *input,
-                                        id<GPBExtensionRegistry> extensionRegistry,
-                                        GPBMessage *existingValue)
-    __attribute__((ns_returns_retained));
-
 GPB_INLINE size_t DataTypeSize(GPBDataType dataType) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-enum"
@@ -263,38 +257,6 @@ static void WriteArrayIncludingTagsToCodedOutputStream(NSArray *values,
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
-void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOOL isPackedOnStream,
-                                      GPBCodedInputStream *input,
-                                      id<GPBExtensionRegistry> extensionRegistry,
-                                      GPBMessage *message) {
-  GPBExtensionDescription *description = extension->description_;
-  GPBCodedInputStreamState *state = &input->state_;
-  if (isPackedOnStream) {
-    NSCAssert(GPBExtensionIsRepeated(description), @"How was it packed if it isn't repeated?");
-    int32_t length = GPBCodedInputStreamReadInt32(state);
-    size_t limit = GPBCodedInputStreamPushLimit(state, length);
-    while (GPBCodedInputStreamBytesUntilLimit(state) > 0) {
-      id value = NewSingleValueFromInputStream(extension, input, extensionRegistry, nil);
-      [message addExtension:extension value:value];
-      [value release];
-    }
-    GPBCodedInputStreamPopLimit(state, limit);
-  } else {
-    id existingValue = nil;
-    BOOL isRepeated = GPBExtensionIsRepeated(description);
-    if (!isRepeated && GPBDataTypeIsMessage(description->dataType)) {
-      existingValue = [message getExistingExtension:extension];
-    }
-    id value = NewSingleValueFromInputStream(extension, input, extensionRegistry, existingValue);
-    if (isRepeated) {
-      [message addExtension:extension value:value];
-    } else {
-      [message setExtension:extension value:value];
-    }
-    [value release];
-  }
-}
-
 void GPBWriteExtensionValueToOutputStream(GPBExtensionDescriptor *extension, id value,
                                           GPBCodedOutputStream *output) {
   GPBExtensionDescription *description = extension->description_;
@@ -312,78 +274,6 @@ size_t GPBComputeExtensionSerializedSizeIncludingTag(GPBExtensionDescriptor *ext
   } else {
     return ComputeSerializedSizeIncludingTagOfObject(description, value);
   }
-}
-
-// Note that this returns a retained value intentionally.
-static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
-                                        GPBCodedInputStream *input,
-                                        id<GPBExtensionRegistry> extensionRegistry,
-                                        GPBMessage *existingValue) {
-  GPBExtensionDescription *description = extension->description_;
-  GPBCodedInputStreamState *state = &input->state_;
-  switch (description->dataType) {
-    case GPBDataTypeBool:
-      return [[NSNumber alloc] initWithBool:GPBCodedInputStreamReadBool(state)];
-    case GPBDataTypeFixed32:
-      return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadFixed32(state)];
-    case GPBDataTypeSFixed32:
-      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSFixed32(state)];
-    case GPBDataTypeFloat:
-      return [[NSNumber alloc] initWithFloat:GPBCodedInputStreamReadFloat(state)];
-    case GPBDataTypeFixed64:
-      return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadFixed64(state)];
-    case GPBDataTypeSFixed64:
-      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSFixed64(state)];
-    case GPBDataTypeDouble:
-      return [[NSNumber alloc] initWithDouble:GPBCodedInputStreamReadDouble(state)];
-    case GPBDataTypeInt32:
-      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadInt32(state)];
-    case GPBDataTypeInt64:
-      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadInt64(state)];
-    case GPBDataTypeSInt32:
-      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSInt32(state)];
-    case GPBDataTypeSInt64:
-      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSInt64(state)];
-    case GPBDataTypeUInt32:
-      return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadUInt32(state)];
-    case GPBDataTypeUInt64:
-      return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadUInt64(state)];
-    case GPBDataTypeBytes:
-      return GPBCodedInputStreamReadRetainedBytes(state);
-    case GPBDataTypeString:
-      return GPBCodedInputStreamReadRetainedString(state);
-    case GPBDataTypeEnum:
-      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadEnum(state)];
-    case GPBDataTypeGroup:
-    case GPBDataTypeMessage: {
-      GPBMessage *message;
-      if (existingValue) {
-        message = [existingValue retain];
-      } else {
-        GPBDescriptor *descriptor = [extension.msgClass descriptor];
-        message = [[descriptor.messageClass alloc] init];
-      }
-
-      if (description->dataType == GPBDataTypeGroup) {
-        [input readGroup:description->fieldNumber
-                      message:message
-            extensionRegistry:extensionRegistry];
-      } else {
-        // description->dataType == GPBDataTypeMessage
-        if (GPBExtensionIsWireFormat(description)) {
-          // For MessageSet fields the message length will have already been
-          // read.
-          [message mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
-        } else {
-          [input readMessage:message extensionRegistry:extensionRegistry];
-        }
-      }
-
-      return message;
-    }
-  }
-
-  return nil;
 }
 
 #pragma clang diagnostic pop

@@ -28,13 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/compiler/cpp/map_field.h"
-
+#include <memory>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/wire_format.h"
 
@@ -42,6 +43,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+namespace {
 void SetMessageVariables(
     const FieldDescriptor* descriptor,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
@@ -78,16 +80,45 @@ void SetMessageVariables(
   }
 }
 
+class MapFieldGenerator : public FieldGeneratorBase {
+ public:
+  MapFieldGenerator(const FieldDescriptor* descriptor, const Options& options,
+                    MessageSCCAnalyzer* scc_analyzer);
+  ~MapFieldGenerator() override = default;
+
+  // implements FieldGeneratorBase ---------------------------------------
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
+  void GenerateCopyConstructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateIsInitialized(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateArenaDestructorCode(io::Printer* printer) const override;
+  ArenaDtorNeeds NeedsArenaDestructor() const override;
+
+ private:
+  bool has_required_fields_;
+};
+
 MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
                                      const Options& options,
                                      MessageSCCAnalyzer* scc_analyzer)
-    : FieldGenerator(descriptor, options),
+    : FieldGeneratorBase(descriptor, options),
       has_required_fields_(
           scc_analyzer->HasRequiredFields(descriptor->message_type())) {
   SetMessageVariables(descriptor, &variables_, options);
 }
-
-MapFieldGenerator::~MapFieldGenerator() {}
 
 void MapFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -300,7 +331,7 @@ void MapFieldGenerator::GenerateAggregateInitializer(
 }
 
 void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (ShouldSplit(descriptor_, options_)) {
@@ -327,6 +358,13 @@ ArenaDtorNeeds MapFieldGenerator::NeedsArenaDestructor() const {
   return HasDescriptorMethods(descriptor_->file(), options_)
              ? ArenaDtorNeeds::kRequired
              : ArenaDtorNeeds::kNone;
+}
+}  // namespace
+
+std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return std::make_unique<MapFieldGenerator>(desc, options, scc);
 }
 
 }  // namespace cpp

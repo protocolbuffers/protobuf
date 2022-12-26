@@ -36,8 +36,6 @@
 
 #include <memory>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
@@ -45,6 +43,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/status/status.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -267,7 +266,7 @@ class DiskSourceTreeTest : public testing::Test {
       if (FileExists(dirnames_[i])) {
         File::DeleteRecursively(dirnames_[i], NULL, NULL);
       }
-      GOOGLE_CHECK_OK(File::CreateDir(dirnames_[i], 0777));
+      GOOGLE_ABSL_CHECK_OK(File::CreateDir(dirnames_[i], 0777));
     }
   }
 
@@ -280,11 +279,11 @@ class DiskSourceTreeTest : public testing::Test {
   }
 
   void AddFile(const std::string& filename, const char* contents) {
-    GOOGLE_CHECK_OK(File::SetContents(filename, contents, true));
+    GOOGLE_ABSL_CHECK_OK(File::SetContents(filename, contents, true));
   }
 
   void AddSubdir(const std::string& dirname) {
-    GOOGLE_CHECK_OK(File::CreateDir(dirname, 0777));
+    GOOGLE_ABSL_CHECK_OK(File::CreateDir(dirname, 0777));
   }
 
   void ExpectFileContents(const std::string& filename,
@@ -398,7 +397,8 @@ TEST_F(DiskSourceTreeTest, OrderingTrumpsSpecificity) {
   // directory is more-specific than a former one.
 
   // Create the "bar" directory so we can put a file in it.
-  GOOGLE_CHECK_OK(File::CreateDir(dirnames_[0] + "/bar", 0777));
+  GOOGLE_ABSL_CHECK_OK(
+      File::CreateDir(dirnames_[0] + "/bar", 0777));
 
   // Add files and map paths.
   AddFile(dirnames_[0] + "/bar/foo", "Hello World!");

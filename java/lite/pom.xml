@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.21.9</version>
+    <version>3.21.12</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -156,7 +156,6 @@
                     <include>ProtoSyntax.java</include>
                     <include>Protobuf.java</include>
                     <include>ProtobufArrayList.java</include>
-                    <include>ProtobufLists.java</include>
                     <include>ProtocolStringList.java</include>
                     <include>RawMessageInfo.java</include>
                     <include>Reader.java</include>

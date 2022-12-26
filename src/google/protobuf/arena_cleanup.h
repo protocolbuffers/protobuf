@@ -35,9 +35,10 @@
 #include <cstdint>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
+#include "absl/strings/cord.h"
 
 
 // Must be included last.
@@ -59,7 +60,8 @@ void arena_destruct_object(void* object) {
 // types must start with a `uintptr_t` that stores `Tag` in its low two bits.
 enum class Tag : uintptr_t {
   kDynamic = 0,  // DynamicNode
-  kString = 1,   // StringNode (std::string)
+  kString = 1,   // TaggedNode (std::string)
+  kCord = 2,     // TaggedNode (absl::Cord)
 };
 
 // DynamicNode contains the object (`elem`) that needs to be
@@ -70,18 +72,18 @@ struct DynamicNode {
   void (*destructor)(void*);
 };
 
-// StringNode contains a `std::string` object (`elem`) that needs to be
-// destroyed. The lowest 2 bits of `elem` contain the non-zero kString tag.
-struct StringNode {
+// TaggedNode contains a `std::string` or `absl::Cord` object (`elem`) that
+// needs to be destroyed. The lowest 2 bits of `elem` contain the non-zero
+// `kString` or `kCord` tag.
+struct TaggedNode {
   uintptr_t elem;
 };
-
 
 // EnableSpecializedTags() return true if the alignment of tagged objects
 // such as std::string allow us to poke tags in the 2 LSB bits.
 inline constexpr bool EnableSpecializedTags() {
   // For now we require 2 bits
-  return alignof(std::string) >= 8;
+  return alignof(std::string) >= 8 && alignof(absl::Cord) >= 8;
 }
 
 // Adds a cleanup entry identified by `tag` at memory location `pos`.
@@ -90,10 +92,15 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
                                                     void (*destructor)(void*)) {
   auto elem = reinterpret_cast<uintptr_t>(elem_raw);
   if (EnableSpecializedTags()) {
-    GOOGLE_DCHECK_EQ(elem & 3, 0ULL);  // Must be aligned
+    GOOGLE_ABSL_DCHECK_EQ(elem & 3, 0ULL);  // Must be aligned
     switch (tag) {
       case Tag::kString: {
-        StringNode n = {elem | static_cast<uintptr_t>(Tag::kString)};
+        TaggedNode n = {elem | static_cast<uintptr_t>(Tag::kString)};
+        memcpy(pos, &n, sizeof(n));
+        return;
+      }
+      case Tag::kCord: {
+        TaggedNode n = {elem | static_cast<uintptr_t>(Tag::kCord)};
         memcpy(pos, &n, sizeof(n));
         return;
       }
@@ -106,32 +113,49 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
 }
 
 // Optimization: performs a prefetch on `elem_address`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void PrefetchNode(
-    const void* elem_address) {
-  (void)elem_address;
+// Returns the size of the cleanup (meta) data at this address, allowing the
+// caller to advance cleanup iterators without needing to examine or know
+// anything about the underlying cleanup node or cleanup meta data / tags.
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t
+PrefetchNode(const void* elem_address) {
+  if (EnableSpecializedTags()) {
+    uintptr_t elem;
+    memcpy(&elem, elem_address, sizeof(elem));
+    if (static_cast<Tag>(elem & 3) != Tag::kDynamic) {
+      return sizeof(TaggedNode);
+    }
+  }
+  return sizeof(DynamicNode);
 }
 
-// Destroys the node idenitfied by `tag` stored at memory location `pos`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void DestroyNode(Tag tag, const void* pos) {
+// Destroys the object referenced by the cleanup node at memory location `pos`.
+// Returns the size of the cleanup (meta) data at this address, allowing the
+// caller to advance cleanup iterators without needing to examine or know
+// anything about the underlying cleanup node or cleanup meta data / tags.
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t DestroyNode(const void* pos) {
+  uintptr_t elem;
+  memcpy(&elem, pos, sizeof(elem));
   if (EnableSpecializedTags()) {
-    switch (tag) {
+    switch (static_cast<Tag>(elem & 3)) {
       case Tag::kString: {
-        StringNode n;
-        memcpy(&n, pos, sizeof(n));
-        auto* s = reinterpret_cast<std::string*>(n.elem & ~0x7ULL);
         // Some compilers don't like fully qualified explicit dtor calls,
         // so use an alias to avoid having to type `::`.
-        using string_type = std::string;
-        s->~string_type();
-        return;
+        using T = std::string;
+        reinterpret_cast<T*>(elem - static_cast<uintptr_t>(Tag::kString))->~T();
+        return sizeof(TaggedNode);
+      }
+      case Tag::kCord: {
+        using T = absl::Cord;
+        reinterpret_cast<T*>(elem - static_cast<uintptr_t>(Tag::kCord))->~T();
+        return sizeof(TaggedNode);
       }
       default:
         break;
     }
   }
-  DynamicNode n;
-  memcpy(&n, pos, sizeof(n));
-  n.destructor(reinterpret_cast<void*>(n.elem));
+  static_cast<const DynamicNode*>(pos)->destructor(
+      reinterpret_cast<void*>(elem - static_cast<uintptr_t>(Tag::kDynamic)));
+  return sizeof(DynamicNode);
 }
 
 // Returns the `tag` identifying the type of object for `destructor` or
@@ -140,6 +164,9 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE Tag Type(void (*destructor)(void*)) {
   if (EnableSpecializedTags()) {
     if (destructor == &arena_destruct_object<std::string>) {
       return Tag::kString;
+    }
+    if (destructor == &arena_destruct_object<absl::Cord>) {
+      return Tag::kCord;
     }
   }
   return Tag::kDynamic;
@@ -157,8 +184,10 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE Tag Type(void* raw) {
       return Tag::kDynamic;
     case Tag::kString:
       return Tag::kString;
+    case Tag::kCord:
+      return Tag::kCord;
     default:
-      GOOGLE_LOG(FATAL) << "Corrupted cleanup tag: " << (elem & 0x7ULL);
+      GOOGLE_ABSL_LOG(FATAL) << "Corrupted cleanup tag: " << (elem & 0x7ULL);
       return Tag::kDynamic;
   }
 }
@@ -171,9 +200,11 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(Tag tag) {
     case Tag::kDynamic:
       return sizeof(DynamicNode);
     case Tag::kString:
-      return sizeof(StringNode);
+      return sizeof(TaggedNode);
+    case Tag::kCord:
+      return sizeof(TaggedNode);
     default:
-      GOOGLE_LOG(FATAL) << "Corrupted cleanup tag: " << static_cast<int>(tag);
+      GOOGLE_ABSL_LOG(FATAL) << "Corrupted cleanup tag: " << static_cast<int>(tag);
       return sizeof(DynamicNode);
   }
 }

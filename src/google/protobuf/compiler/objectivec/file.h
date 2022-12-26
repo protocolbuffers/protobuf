@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -56,7 +57,7 @@ class FileGenerator {
   struct CommonState {
     CommonState() = default;
 
-    const std::vector<const FileDescriptor*>
+    std::vector<const FileDescriptor*>
     CollectMinimalFileDepsContainingExtensions(const FileDescriptor* file);
 
    private:
@@ -80,23 +81,52 @@ class FileGenerator {
   FileGenerator(const FileGenerator&) = delete;
   FileGenerator& operator=(const FileGenerator&) = delete;
 
-  void GenerateSource(io::Printer* printer);
-  void GenerateHeader(io::Printer* printer);
+  void GenerateHeader(io::Printer* p) const;
+  void GenerateSource(io::Printer* p) const;
+
+  int NumEnums() const { return enum_generators_.size(); }
+  int NumMessages() const { return message_generators_.size(); }
+
+  void GenerateGlobalSource(io::Printer* p) const;
+  void GenerateSourceForMessage(int idx, io::Printer* p) const;
+  void GenerateSourceForEnum(int idx, io::Printer* p) const;
 
  private:
+  enum class GeneratedFileType : int { kHeader, kSource };
+
+  void GenerateFile(io::Printer* p, GeneratedFileType file_type,
+                    const std::vector<std::string>& ignored_warnings,
+                    const std::vector<const FileDescriptor*>& extra_files,
+                    std::function<void()> body) const;
+  void GenerateFile(io::Printer* p, GeneratedFileType file_type,
+                    std::function<void()> body) const {
+    GenerateFile(p, file_type, {}, {}, body);
+  }
+
+  void PrintRootImplementation(
+      io::Printer* p,
+      const std::vector<const FileDescriptor*>& deps_with_extensions) const;
+  void PrintRootExtensionRegistryImplementation(
+      io::Printer* p,
+      const std::vector<const FileDescriptor*>& deps_with_extensions) const;
+  void PrintFileDescriptorImplementation(io::Printer* p) const;
+
+  bool HeadersUseForwardDeclarations() const {
+    // The bundled protos (WKTs) don't make use of forward declarations.
+    return !is_bundled_proto_ &&
+           generation_options_.headers_use_forward_declarations;
+  }
+
   const FileDescriptor* file_;
   const GenerationOptions& generation_options_;
-  CommonState& common_state_;
-  std::string root_class_name_;
-  bool is_bundled_proto_;
+  mutable CommonState* common_state_;
+  const std::string root_class_name_;
+  const bool is_bundled_proto_;
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
+  // The first file_->extension_count() are the extensions at file level scope.
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-
-  void PrintFileRuntimePreamble(
-      io::Printer* printer,
-      const std::vector<std::string>& headers_to_import) const;
 };
 
 }  // namespace objectivec

@@ -45,6 +45,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/test_util2.h"
@@ -2072,11 +2073,124 @@ TEST_F(ParserValidationErrorTest, Proto3JsonConflictError) {
   ExpectHasValidationErrors(
       "syntax = 'proto3';\n"
       "message TestMessage {\n"
-      "  uint32 foo = 1;\n"
+      "  uint32 _foo = 1;\n"
       "  uint32 Foo = 2;\n"
       "}\n",
-      "3:9: The JSON camel-case name of field \"Foo\" conflicts with field "
-      "\"foo\". This is not allowed in proto3.\n");
+      "3:9: The default JSON name of field \"Foo\" (\"Foo\") conflicts "
+      "with the default JSON name of field \"_foo\".\n");
+}
+
+TEST_F(ParserValidationErrorTest, Proto2JsonConflictError) {
+  ExpectParsesTo(
+      "syntax = 'proto2';\n"
+      "message TestMessage {\n"
+      "  optional uint32 _foo = 1;\n"
+      "  optional uint32 Foo = 2;\n"
+      "}\n",
+      "syntax: 'proto2'\n"
+      "message_type {\n"
+      "  name: 'TestMessage'\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: '_foo' number: 1\n"
+      "  }\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'Foo' number: 2\n"
+      "  }\n"
+      "}\n");
+}
+
+TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictWithDefaultError) {
+  ExpectHasValidationErrors(
+      "syntax = 'proto3';\n"
+      "message TestMessage {\n"
+      "  uint32 foo = 1 [json_name='bar'];\n"
+      "  uint32 bar = 2;\n"
+      "}\n",
+      "3:9: The default JSON name of field \"bar\" (\"bar\") conflicts "
+      "with the custom JSON name of field \"foo\".\n");
+}
+
+TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictWithDefaultError) {
+  ExpectParsesTo(
+      "syntax = 'proto2';\n"
+      "message TestMessage {\n"
+      "  optional uint32 foo = 1 [json_name='bar'];\n"
+      "  optional uint32 bar = 2;\n"
+      "}\n",
+      "syntax: 'proto2'\n"
+      "message_type {\n"
+      "  name: 'TestMessage'\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'foo' number: 1 "
+      "json_name: 'bar'\n"
+      "  }\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'bar' number: 2\n"
+      "  }\n"
+      "}\n");
+}
+
+TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictError) {
+  ExpectHasValidationErrors(
+      "syntax = 'proto3';\n"
+      "message TestMessage {\n"
+      "  uint32 foo = 1 [json_name='baz'];\n"
+      "  uint32 bar = 2 [json_name='baz'];\n"
+      "}\n",
+      "3:9: The custom JSON name of field \"bar\" (\"baz\") conflicts "
+      "with the custom JSON name of field \"foo\".\n");
+}
+
+TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictError) {
+  ExpectHasValidationErrors(
+      "syntax = 'proto2';\n"
+      "message TestMessage {\n"
+      "  optional uint32 foo = 1 [json_name='baz'];\n"
+      "  optional uint32 bar = 2 [json_name='baz'];\n"
+      "}\n",
+      "3:18: The custom JSON name of field \"bar\" (\"baz\") conflicts "
+      "with the custom JSON name of field \"foo\".\n");
+}
+
+TEST_F(ParserValidationErrorTest, Proto3JsonConflictLegacy) {
+  ExpectHasValidationErrors(
+      "syntax = 'proto3';\n"
+      "message TestMessage {\n"
+      "  option deprecated_legacy_json_field_conflicts = true;\n"
+      "  uint32 fooBar = 1;\n"
+      "  uint32 foo_bar = 2;\n"
+      "}\n",
+      "4:9: The default JSON name of field \"foo_bar\" (\"fooBar\") conflicts "
+      "with the default JSON name of field \"fooBar\".\n");
+}
+
+TEST_F(ParserValidationErrorTest, Proto2JsonConflictLegacy) {
+  ExpectParsesTo(
+      "syntax = 'proto2';\n"
+      "message TestMessage {\n"
+      "  option deprecated_legacy_json_field_conflicts = true;\n"
+      "  optional uint32 fooBar = 1;\n"
+      "  optional uint32 foo_bar = 2;\n"
+      "}\n",
+      "syntax: 'proto2'\n"
+      "message_type {\n"
+      "  name: 'TestMessage'\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'fooBar' number: 1\n"
+      "  }\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'foo_bar' number: 2\n"
+      "  }\n"
+      "  options {\n"
+      "    uninterpreted_option {\n"
+      "      name {\n"
+      "        name_part: 'deprecated_legacy_json_field_conflicts'\n"
+      "        is_extension: false\n"
+      "      }\n"
+      "      identifier_value: 'true'\n"
+      "    }\n"
+      "  }\n"
+      "}\n");
 }
 
 TEST_F(ParserValidationErrorTest, EnumNameError) {
@@ -2855,14 +2969,14 @@ class SourceInfoTest : public ParserTest {
     while (*text != '\0') {
       if (*text == '$') {
         ++text;
-        GOOGLE_CHECK_NE('\0', *text);
+        GOOGLE_ABSL_CHECK_NE('\0', *text);
         if (*text == '$') {
           text_without_markers_ += '$';
           ++column;
         } else {
           markers_[*text] = std::make_pair(line, column);
           ++text;
-          GOOGLE_CHECK_EQ('$', *text);
+          GOOGLE_ABSL_CHECK_EQ('$', *text);
         }
       } else if (*text == '\n') {
         ++line;

@@ -39,7 +39,7 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -402,7 +402,7 @@ bool WireFormat::ParseAndMergeMessageSetField(uint32_t field_number,
              field->type() != FieldDescriptor::TYPE_MESSAGE) {
     // This shouldn't happen as we only allow optional message extensions to
     // MessageSet.
-    GOOGLE_LOG(ERROR) << "Extensions of MessageSets must be optional messages.";
+    GOOGLE_ABSL_LOG(ERROR) << "Extensions of MessageSets must be optional messages.";
     return false;
   } else {
     Message* sub_message = message_reflection->MutableMessage(
@@ -790,8 +790,8 @@ const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
                                        internal::ParseContext* ctx) {
   const Descriptor* descriptor = msg->GetDescriptor();
   const Reflection* reflection = msg->GetReflection();
-  GOOGLE_DCHECK(descriptor);
-  GOOGLE_DCHECK(reflection);
+  GOOGLE_ABSL_DCHECK(descriptor);
+  GOOGLE_ABSL_DCHECK(reflection);
   if (descriptor->options().message_set_wire_format()) {
     MessageSetParser message_set{msg, descriptor, reflection};
     return message_set.ParseMessageSet(ptr, ctx);
@@ -890,7 +890,7 @@ const char* WireFormat::_InternalParseAndMergeField(
         case FieldDescriptor::TYPE_GROUP:
         case FieldDescriptor::TYPE_MESSAGE:
         case FieldDescriptor::TYPE_BYTES:
-          GOOGLE_LOG(FATAL) << "Can't reach";
+          GOOGLE_ABSL_LOG(FATAL) << "Can't reach";
           return nullptr;
       }
     } else {
@@ -1081,7 +1081,7 @@ uint8_t* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_ENUM:
-      GOOGLE_LOG(FATAL) << "Unsupported";
+      GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
       break;
 #define CASE_TYPE(FieldType, CamelFieldType, CamelCppType)   \
   case FieldDescriptor::TYPE_##FieldType:                    \
@@ -1170,7 +1170,7 @@ class MapKeySorter {
   class MapKeyComparator {
    public:
     bool operator()(const MapKey& a, const MapKey& b) const {
-      GOOGLE_DCHECK(a.type() == b.type());
+      GOOGLE_ABSL_DCHECK(a.type() == b.type());
       switch (a.type()) {
 #define CASE_TYPE(CppType, CamelCppType)                                \
   case FieldDescriptor::CPPTYPE_##CppType: {                            \
@@ -1185,7 +1185,7 @@ class MapKeySorter {
 #undef CASE_TYPE
 
         default:
-          GOOGLE_LOG(DFATAL) << "Invalid key for map field.";
+          GOOGLE_ABSL_LOG(DFATAL) << "Invalid key for map field.";
           return true;
       }
     }
@@ -1327,7 +1327,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       HANDLE_PRIMITIVE_TYPE(BOOL, bool, Bool, Bool)
 #undef HANDLE_PRIMITIVE_TYPE
       default:
-        GOOGLE_LOG(FATAL) << "Invalid descriptor";
+        GOOGLE_ABSL_LOG(FATAL) << "Invalid descriptor";
     }
     return target;
   }
@@ -1543,7 +1543,7 @@ size_t WireFormat::FieldByteSize(const FieldDescriptor* field,
 
 size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
                               const MapKey& value) {
-  GOOGLE_DCHECK_EQ(FieldDescriptor::TypeToCppType(field->type()), value.type());
+  GOOGLE_ABSL_DCHECK_EQ(FieldDescriptor::TypeToCppType(field->type()), value.type());
   switch (field->type()) {
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
@@ -1551,7 +1551,7 @@ size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_ENUM:
-      GOOGLE_LOG(FATAL) << "Unsupported";
+      GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
       return 0;
 #define CASE_TYPE(FieldType, CamelFieldType, CamelCppType) \
   case FieldDescriptor::TYPE_##FieldType:                  \
@@ -1578,7 +1578,7 @@ size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
 #undef CASE_TYPE
 #undef FIXED_CASE_TYPE
   }
-  GOOGLE_LOG(FATAL) << "Cannot get here";
+  GOOGLE_ABSL_LOG(FATAL) << "Cannot get here";
   return 0;
 }
 
@@ -1586,7 +1586,7 @@ static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
                                           const MapValueConstRef& value) {
   switch (field->type()) {
     case FieldDescriptor::TYPE_GROUP:
-      GOOGLE_LOG(FATAL) << "Unsupported";
+      GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
       return 0;
 #define CASE_TYPE(FieldType, CamelFieldType, CamelCppType) \
   case FieldDescriptor::TYPE_##FieldType:                  \
@@ -1618,7 +1618,7 @@ static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
 #undef CASE_TYPE
 #undef FIXED_CASE_TYPE
   }
-  GOOGLE_LOG(FATAL) << "Cannot get here";
+  GOOGLE_ABSL_LOG(FATAL) << "Cannot get here";
   return 0;
 }
 

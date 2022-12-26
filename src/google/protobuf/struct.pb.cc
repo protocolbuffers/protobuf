@@ -228,11 +228,10 @@ class Struct::_Internal {
  public:
 };
 
-Struct::Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
-  if (arena != nullptr && !is_message_owned) {
+Struct::Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
+  if (arena != nullptr) {
     arena->OwnCustomDestructor(this, &Struct::ArenaDtor);
   }
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Struct)
@@ -249,10 +248,8 @@ Struct::Struct(const Struct& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Struct)
 }
 
-inline void Struct::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Struct::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_.fields_)*/{::_pbi::ArenaInitialized(), arena}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -270,7 +267,7 @@ Struct::~Struct() {
 }
 
 inline void Struct::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fields_.Destruct();
   _impl_.fields_.~MapField();
 }
@@ -294,7 +291,6 @@ void Struct::Clear() {
 }
 
 const char* Struct::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -339,7 +335,6 @@ failure:
 
 ::uint8_t* Struct::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Struct)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -379,7 +374,6 @@ failure:
 }
 
 ::size_t Struct::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Struct)
   ::size_t total_size = 0;
 
@@ -409,9 +403,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Struct::GetClassData() const {
 void Struct::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Struct*>(&to_msg);
   auto& from = static_cast<const Struct&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -437,7 +430,6 @@ void Struct::InternalSwap(Struct* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Struct::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[1]);
@@ -490,10 +482,9 @@ void Value::set_allocated_list_value(::PROTOBUF_NAMESPACE_ID::ListValue* list_va
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.list_value)
 }
-Value::Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Value::Value(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Value)
 }
 Value::Value(const Value& from)
@@ -540,10 +531,8 @@ Value::Value(const Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Value)
 }
 
-inline void Value::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.kind_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -562,7 +551,7 @@ Value::~Value() {
 }
 
 inline void Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (has_kind()) {
     clear_kind();
   }
@@ -622,7 +611,6 @@ void Value::Clear() {
 }
 
 const char* Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -710,26 +698,25 @@ failure:
 
 ::uint8_t* Value::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Value)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   // .google.protobuf.NullValue null_value = 1;
-  if (_internal_has_null_value()) {
+  if (kind_case() == kNullValue) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
       1, this->_internal_null_value(), target);
   }
 
   // double number_value = 2;
-  if (_internal_has_number_value()) {
+  if (kind_case() == kNumberValue) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteDoubleToArray(2, this->_internal_number_value(), target);
   }
 
   // string string_value = 3;
-  if (_internal_has_string_value()) {
+  if (kind_case() == kStringValue) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_string_value().data(), static_cast<int>(this->_internal_string_value().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
@@ -739,20 +726,20 @@ failure:
   }
 
   // bool bool_value = 4;
-  if (_internal_has_bool_value()) {
+  if (kind_case() == kBoolValue) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(4, this->_internal_bool_value(), target);
   }
 
   // .google.protobuf.Struct struct_value = 5;
-  if (_internal_has_struct_value()) {
+  if (kind_case() == kStructValue) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessage(5, _Internal::struct_value(this),
         _Internal::struct_value(this).GetCachedSize(), target, stream);
   }
 
   // .google.protobuf.ListValue list_value = 6;
-  if (_internal_has_list_value()) {
+  if (kind_case() == kListValue) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessage(6, _Internal::list_value(this),
         _Internal::list_value(this).GetCachedSize(), target, stream);
@@ -767,7 +754,6 @@ failure:
 }
 
 ::size_t Value::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Value)
   ::size_t total_size = 0;
 
@@ -830,9 +816,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Value::GetClassData() const { 
 void Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Value*>(&to_msg);
   auto& from = static_cast<const Value&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -889,7 +874,6 @@ void Value::InternalSwap(Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Value::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[2]);
@@ -900,10 +884,9 @@ class ListValue::_Internal {
  public:
 };
 
-ListValue::ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+ListValue::ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ListValue)
 }
 ListValue::ListValue(const ListValue& from)
@@ -917,10 +900,8 @@ ListValue::ListValue(const ListValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ListValue)
 }
 
-inline void ListValue::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void ListValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.values_){arena}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -937,7 +918,7 @@ ListValue::~ListValue() {
 }
 
 inline void ListValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.values_.~RepeatedPtrField();
 }
 
@@ -956,7 +937,6 @@ void ListValue::Clear() {
 }
 
 const char* ListValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1001,7 +981,6 @@ failure:
 
 ::uint8_t* ListValue::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ListValue)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1023,7 +1002,6 @@ failure:
 }
 
 ::size_t ListValue::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ListValue)
   ::size_t total_size = 0;
 
@@ -1051,9 +1029,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ListValue::GetClassData() cons
 void ListValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<ListValue*>(&to_msg);
   auto& from = static_cast<const ListValue&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1079,7 +1056,6 @@ void ListValue::InternalSwap(ListValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ListValue::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[3]);

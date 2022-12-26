@@ -35,9 +35,8 @@
 #include <limits>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/algorithm/container.h"
+#include "google/protobuf/stubs/logging.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -149,7 +148,7 @@ struct Utf8Scalar {
 // Returns U+FFFD on failure, and consumes an unspecified number of bytes in
 // doing so.
 static Utf8Scalar ConsumeUtf8Scalar(absl::string_view& str) {
-  GOOGLE_DCHECK(!str.empty());
+  GOOGLE_ABSL_DCHECK(!str.empty());
   uint32_t scalar = static_cast<uint8_t>(str[0]);
   const char* start = str.data();
   size_t len = 1;

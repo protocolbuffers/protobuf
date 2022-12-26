@@ -44,9 +44,9 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -146,6 +146,9 @@ uint8_t CodedStreamTest::buffer_[CodedStreamTest::kBufferSize] = {};
 // checks.
 const int kBlockSizes[] = {1, 2, 3, 5, 7, 13, 32, 1024};
 
+// In several ReadCord test functions, we either clear the Cord before ReadCord
+// calls or not.
+const bool kResetCords[] = {false, true};
 
 // -------------------------------------------------------------------
 // Varint tests.
@@ -235,9 +238,11 @@ TEST_F(CodedStreamTest, EmptyInputBeforeEos) {
       *size = 0;
       return count_++ < 2;
     }
-    void BackUp(int count) override { GOOGLE_LOG(FATAL) << "Tests never call this."; }
+    void BackUp(int count) override {
+      GOOGLE_ABSL_LOG(FATAL) << "Tests never call this.";
+    }
     bool Skip(int count) override {
-      GOOGLE_LOG(FATAL) << "Tests never call this.";
+      GOOGLE_ABSL_LOG(FATAL) << "Tests never call this.";
       return false;
     }
     int64_t ByteCount() const override { return 0; }
@@ -928,6 +933,186 @@ TEST_F(CodedStreamTest,
 
 
 // -------------------------------------------------------------------
+// Cord reads and writes
+
+TEST_1D(CodedStreamTest, ReadCord, kBlockSizes) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  ArrayInputStream input(buffer_, sizeof(buffer_), kBlockSizes_case);
+
+  {
+    CodedInputStream coded_input(&input);
+
+    absl::Cord cord;
+    EXPECT_TRUE(coded_input.ReadCord(&cord, strlen(kRawBytes)));
+    EXPECT_EQ(absl::Cord(kRawBytes), cord);
+  }
+
+  EXPECT_EQ(strlen(kRawBytes), input.ByteCount());
+}
+
+TEST_1D(CodedStreamTest, ReadCordReuseCord, kBlockSizes) {
+  ASSERT_GT(sizeof(buffer_), 1362 * sizeof(kRawBytes));
+  for (size_t i = 0; i < 1362; i++) {
+    memcpy(buffer_ + i * sizeof(kRawBytes), kRawBytes, sizeof(kRawBytes));
+  }
+  ArrayInputStream input(buffer_, sizeof(buffer_), kBlockSizes_case);
+
+  int total_read = 0;
+  {
+    const char* buffer_str = reinterpret_cast<const char*>(buffer_);
+    CodedInputStream coded_input(&input);
+    static const int kSizes[] = {0,  1,  2,  3,   4,    5,    6,    7,
+                                 8,  9,  10, 11,  12,   13,   14,   15,
+                                 16, 17, 50, 100, 1023, 1024, 8000, 16000};
+    int total_size = 0;
+    std::vector<int> sizes;
+    for (size_t i = 0; i < ABSL_ARRAYSIZE(kSizes); ++i) {
+      sizes.push_back(kSizes[i]);
+      total_size += kSizes[i];
+    }
+    ASSERT_GE(1362 * sizeof(kRawBytes), total_size * 2);
+
+    absl::Cord reused_cord;
+    for (int pass = 0; pass < 2; ++pass) {
+      for (size_t i = 0; i < sizes.size(); ++i) {
+        const int size = sizes[i];
+        EXPECT_TRUE(coded_input.ReadCord(&reused_cord, size));
+        EXPECT_EQ(size, reused_cord.size());
+        EXPECT_EQ(
+            std::string(buffer_str + total_read, static_cast<size_t>(size)),
+            std::string(reused_cord));
+        total_read += size;
+      }
+      std::reverse(sizes.begin(), sizes.end());  // Second pass is in reverse.
+    }
+  }
+  EXPECT_EQ(total_read, input.ByteCount());
+}
+
+TEST_2D(CodedStreamTest, ReadCordWithLimit, kBlockSizes, kResetCords) {
+  memcpy(buffer_, kRawBytes, strlen(kRawBytes));
+  ArrayInputStream input(buffer_, strlen(kRawBytes), kBlockSizes_case);
+  CodedInputStream coded_input(&input);
+
+  CodedInputStream::Limit limit = coded_input.PushLimit(10);
+  absl::Cord cord;
+  EXPECT_TRUE(coded_input.ReadCord(&cord, 5));
+  EXPECT_EQ(5, coded_input.BytesUntilLimit());
+  if (kResetCords_case) cord.Clear();
+  EXPECT_TRUE(coded_input.ReadCord(&cord, 4));
+  EXPECT_EQ(1, coded_input.BytesUntilLimit());
+  if (kResetCords_case) cord.Clear();
+  EXPECT_FALSE(coded_input.ReadCord(&cord, 2));
+  EXPECT_EQ(0, coded_input.BytesUntilLimit());
+  EXPECT_EQ(1, cord.size());
+
+  coded_input.PopLimit(limit);
+
+  if (kResetCords_case) cord.Clear();
+  EXPECT_TRUE(coded_input.ReadCord(&cord, strlen(kRawBytes) - 10));
+  EXPECT_EQ(std::string(kRawBytes + 10), std::string(cord));
+}
+
+TEST_1D(CodedStreamTest, ReadLargeCord, kResetCords) {
+  absl::Cord large_cord;
+  for (int i = 0; i < 1024; i++) {
+    large_cord.Append(kRawBytes);
+  }
+  CordInputStream input(&large_cord);
+
+  {
+    CodedInputStream coded_input(&input);
+
+    absl::Cord cord;
+    if (!kResetCords_case) cord.Append(absl::string_view("value"));
+    EXPECT_TRUE(
+        coded_input.ReadCord(&cord, static_cast<int>(large_cord.size())));
+    EXPECT_EQ(large_cord, cord);
+  }
+
+  EXPECT_EQ(large_cord.size(), input.ByteCount());
+}
+
+// Check to make sure ReadString doesn't crash on impossibly large strings.
+TEST_2D(CodedStreamTest, ReadCordImpossiblyLarge, kBlockSizes, kResetCords) {
+  ArrayInputStream input(buffer_, sizeof(buffer_), kBlockSizes_case);
+
+  {
+    CodedInputStream coded_input(&input);
+
+    absl::Cord cord;
+    if (!kResetCords_case) cord.Append(absl::string_view("value"));
+    // Try to read a gigabyte.  This should fail because the input is only
+    // sizeof(buffer_) bytes.
+    EXPECT_FALSE(coded_input.ReadCord(&cord, 1 << 30));
+  }
+}
+
+TEST_1D(CodedStreamTest, WriteCord, kBlockSizes) {
+  ArrayOutputStream output(buffer_, sizeof(buffer_), kBlockSizes_case);
+
+  {
+    CodedOutputStream coded_output(&output);
+
+    absl::Cord cord(kRawBytes);
+    coded_output.WriteCord(cord);
+    EXPECT_FALSE(coded_output.HadError());
+
+    EXPECT_EQ(strlen(kRawBytes), coded_output.ByteCount());
+  }
+
+  EXPECT_EQ(strlen(kRawBytes), output.ByteCount());
+  EXPECT_EQ(0, memcmp(buffer_, kRawBytes, strlen(kRawBytes)));
+}
+
+TEST_F(CodedStreamTest, WriteLargeCord) {
+  absl::Cord large_cord;
+  for (int i = 0; i < 1024; i++) {
+    large_cord.Append(kRawBytes);
+  }
+
+  CordOutputStream output;
+  {
+    CodedOutputStream coded_output(&output);
+
+    coded_output.WriteCord(large_cord);
+    EXPECT_FALSE(coded_output.HadError());
+
+    EXPECT_EQ(large_cord.size(), coded_output.ByteCount());
+    EXPECT_EQ(large_cord.size(), output.ByteCount());
+  }
+  absl::Cord output_cord = output.Consume();
+  EXPECT_EQ(large_cord, output_cord);
+}
+
+TEST_F(CodedStreamTest, Trim) {
+  CordOutputStream cord_output;
+  CodedOutputStream coded_output(&cord_output);
+
+  // Verify that any initially reserved output buffers created when the output
+  // streams were created are trimmed on an initial Trim call.
+  coded_output.Trim();
+  EXPECT_EQ(0, coded_output.ByteCount());
+
+  // Write a single byte to the coded stream, ensure the cord stream has been
+  // advanced, and then verify Trim() does the right thing.
+  const char kTestData[] = "abcdef";
+  coded_output.WriteRaw(kTestData, 1);
+  coded_output.Trim();
+  EXPECT_EQ(1, coded_output.ByteCount());
+
+  // Write some more data to the coded stream, Trim() it, and verify
+  // everything behaves as expected.
+  coded_output.WriteRaw(kTestData, sizeof(kTestData));
+  coded_output.Trim();
+  EXPECT_EQ(1 + sizeof(kTestData), coded_output.ByteCount());
+
+  absl::Cord cord = cord_output.Consume();
+  EXPECT_EQ(1 + sizeof(kTestData), cord.size());
+}
+
+
+// -------------------------------------------------------------------
 // Skip
 
 const char kSkipTestBytes[] =
@@ -1308,11 +1493,11 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
   void BackUp(int count) override { backup_amount_ = count; }
 
   bool Skip(int count) override {
-    GOOGLE_LOG(FATAL) << "Not implemented.";
+    GOOGLE_ABSL_LOG(FATAL) << "Not implemented.";
     return false;
   }
   int64_t ByteCount() const override {
-    GOOGLE_LOG(FATAL) << "Not implemented.";
+    GOOGLE_ABSL_LOG(FATAL) << "Not implemented.";
     return 0;
   }
 

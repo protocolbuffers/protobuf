@@ -811,7 +811,7 @@ static VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
     rb_raise(rb_eArgError, "does not track presence");
   }
 
-  return upb_Message_Has(msg, self->fielddef) ? Qtrue : Qfalse;
+  return upb_Message_HasFieldByDef(msg, self->fielddef) ? Qtrue : Qfalse;
 }
 
 /*
@@ -829,7 +829,7 @@ static VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
     rb_raise(cTypeError, "has method called on wrong message type");
   }
 
-  upb_Message_ClearField(msg, self->fielddef);
+  upb_Message_ClearFieldByDef(msg, self->fielddef);
   return Qnil;
 }
 
@@ -854,7 +854,7 @@ static VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
 
   msgval = Convert_RubyToUpb(value, upb_FieldDef_Name(self->fielddef),
                              TypeInfo_get(self->fielddef), arena);
-  upb_Message_Set(msg, self->fielddef, msgval, arena);
+  upb_Message_SetFieldByDef(msg, self->fielddef, msgval, arena);
   return Qnil;
 }
 

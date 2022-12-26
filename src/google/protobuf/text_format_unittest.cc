@@ -42,8 +42,6 @@
 #include <memory>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
@@ -93,7 +91,7 @@ const std::string kEscapeTestStringEscaped =
 class TextFormatTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
-    GOOGLE_CHECK_OK(File::GetContents(
+    GOOGLE_ABSL_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath(
             "third_party/protobuf/"
             "testdata/text_format_unittest_data_oneof_implemented.txt"),
@@ -115,7 +113,7 @@ std::string TextFormatTest::static_proto_text_format_;
 class TextFormatExtensionsTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
-    GOOGLE_CHECK_OK(File::GetContents(
+    GOOGLE_ABSL_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath("third_party/protobuf/testdata/"
                                   "text_format_unittest_extensions_data.txt"),
         &static_proto_text_format_, true));
@@ -780,15 +778,24 @@ class CustomNestedMessagePrinter : public TextFormat::MessagePrinter {
   ~CustomNestedMessagePrinter() override {}
   void Print(const Message& message, bool single_line_mode,
              TextFormat::BaseTextGenerator* generator) const override {
-    generator->PrintLiteral("custom");
+    generator->PrintLiteral("// custom\n");
+    if (printer_ != nullptr) {
+      printer_->PrintMessage(message, generator);
+    }
   }
+
+  void SetPrinter(TextFormat::Printer* printer) { printer_ = printer; }
+
+ private:
+  TextFormat::Printer* printer_ = nullptr;
 };
 
 TEST_F(TextFormatTest, CustomMessagePrinter) {
   TextFormat::Printer printer;
+  auto* custom_printer = new CustomNestedMessagePrinter;
   printer.RegisterMessagePrinter(
       unittest::TestAllTypes::NestedMessage::default_instance().descriptor(),
-      new CustomNestedMessagePrinter);
+      custom_printer);
 
   unittest::TestAllTypes message;
   std::string text;
@@ -797,7 +804,11 @@ TEST_F(TextFormatTest, CustomMessagePrinter) {
 
   message.mutable_optional_nested_message()->set_bb(1);
   EXPECT_TRUE(printer.PrintToString(message, &text));
-  EXPECT_EQ("optional_nested_message {\n  custom}\n", text);
+  EXPECT_EQ("optional_nested_message {\n  // custom\n}\n", text);
+
+  custom_printer->SetPrinter(&printer);
+  EXPECT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ("optional_nested_message {\n  // custom\n  bb: 1\n}\n", text);
 }
 
 TEST_F(TextFormatTest, ParseBasic) {
@@ -2268,6 +2279,59 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
   EXPECT_TRUE(parser.ParseFromString(message_with_ext, &proto));
   // Unknown fields are still not accepted.
   EXPECT_FALSE(parser.ParseFromString("unknown_field: 1", &proto));
+}
+
+template <bool silent, bool redact, bool randomize>
+class TextFormatBaseMarkerTest : public testing::Test {
+ public:
+  void SetUp() override {
+    saved_enable_debug_text_format_marker_ =
+        internal::enable_debug_text_format_marker;
+    saved_enable_debug_text_redaction_marker_ =
+        internal::enable_debug_text_redaction_marker;
+    saved_enable_debug_text_random_marker_ =
+        internal::enable_debug_text_random_marker;
+
+    internal::enable_debug_text_format_marker = silent;
+    internal::enable_debug_text_redaction_marker = redact;
+    internal::enable_debug_text_random_marker = randomize;
+  }
+
+  void TearDown() override {
+    internal::enable_debug_text_format_marker =
+        saved_enable_debug_text_format_marker_;
+    internal::enable_debug_text_redaction_marker =
+        saved_enable_debug_text_redaction_marker_;
+    internal::enable_debug_text_random_marker =
+        saved_enable_debug_text_random_marker_;
+  }
+
+ private:
+  bool saved_enable_debug_text_format_marker_;
+  bool saved_enable_debug_text_redaction_marker_;
+  bool saved_enable_debug_text_random_marker_;
+};
+
+using TextFormatRedactionTest = TextFormatBaseMarkerTest<false, true, false>;
+
+TEST_F(TextFormatRedactionTest, TestRedactedField) {
+  unittest::RedactedFields proto;
+  proto.set_optional_redacted_string("foo");
+  EXPECT_THAT(
+      proto.DebugString(),
+      testing::MatchesRegex("optional_redacted_string: \\[REDACTED\\]\n"));
+  EXPECT_THAT(
+      proto.ShortDebugString(),
+      testing::MatchesRegex("optional_redacted_string: \\[REDACTED\\]"));
+}
+
+TEST_F(TextFormatRedactionTest, TestTextFormatIsNotRedacted) {
+  unittest::RedactedFields proto;
+  proto.set_optional_redacted_string("foo");
+
+  std::string text;
+  ASSERT_TRUE(TextFormat::PrintToString(proto, &text));
+  EXPECT_EQ("optional_redacted_string: \"foo\"\n", text);
 }
 
 TEST(TextFormatFloatingPointTest, PreservesNegative0) {

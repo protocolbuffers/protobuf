@@ -505,11 +505,12 @@ bool Convert_PhpToUpbAutoWrap(zval *val, upb_MessageValue *upb_val, TypeInfo typ
     // Assigning a scalar to a wrapper-typed value. We will automatically wrap
     // the value, so the user doesn't need to create a FooWrapper(['value': X])
     // message manually.
-    upb_Message *wrapper = upb_Message_New(subm, arena);
+    upb_MiniTable *t = upb_MessageDef_MiniTable(subm);
+    upb_Message *wrapper = upb_Message_New(t, arena);
     const upb_FieldDef *val_f = upb_MessageDef_FindFieldByNumber(subm, 1);
     upb_MessageValue msgval;
     if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(val_f), arena)) return false;
-    upb_Message_Set(wrapper, val_f, msgval, arena);
+    upb_Message_SetFieldByDef(wrapper, val_f, msgval, arena);
     upb_val->msg_val = wrapper;
     return true;
   } else {

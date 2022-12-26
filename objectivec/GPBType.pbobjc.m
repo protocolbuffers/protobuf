@@ -63,7 +63,8 @@ GPBEnumDescriptor *GPBSyntax_EnumDescriptor(void) {
                                        valueNames:valueNames
                                            values:values
                                             count:(uint32_t)(sizeof(values) / sizeof(int32_t))
-                                     enumVerifier:GPBSyntax_IsValidValue];
+                                     enumVerifier:GPBSyntax_IsValidValue
+                                            flags:GPBEnumDescriptorInitializationFlag_None];
     GPBEnumDescriptor *expected = nil;
     if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
       [worker release];
@@ -76,6 +77,122 @@ BOOL GPBSyntax_IsValidValue(int32_t value__) {
   switch (value__) {
     case GPBSyntax_SyntaxProto2:
     case GPBSyntax_SyntaxProto3:
+      return YES;
+    default:
+      return NO;
+  }
+}
+
+#pragma mark - Enum GPBField_Kind
+
+GPBEnumDescriptor *GPBField_Kind_EnumDescriptor(void) {
+  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
+  if (!descriptor) {
+    static const char *valueNames =
+        "TypeUnknown\000TypeDouble\000TypeFloat\000TypeInt"
+        "64\000TypeUint64\000TypeInt32\000TypeFixed64\000Type"
+        "Fixed32\000TypeBool\000TypeString\000TypeGroup\000Ty"
+        "peMessage\000TypeBytes\000TypeUint32\000TypeEnum\000"
+        "TypeSfixed32\000TypeSfixed64\000TypeSint32\000Typ"
+        "eSint64\000";
+    static const int32_t values[] = {
+        GPBField_Kind_TypeUnknown,
+        GPBField_Kind_TypeDouble,
+        GPBField_Kind_TypeFloat,
+        GPBField_Kind_TypeInt64,
+        GPBField_Kind_TypeUint64,
+        GPBField_Kind_TypeInt32,
+        GPBField_Kind_TypeFixed64,
+        GPBField_Kind_TypeFixed32,
+        GPBField_Kind_TypeBool,
+        GPBField_Kind_TypeString,
+        GPBField_Kind_TypeGroup,
+        GPBField_Kind_TypeMessage,
+        GPBField_Kind_TypeBytes,
+        GPBField_Kind_TypeUint32,
+        GPBField_Kind_TypeEnum,
+        GPBField_Kind_TypeSfixed32,
+        GPBField_Kind_TypeSfixed64,
+        GPBField_Kind_TypeSint32,
+        GPBField_Kind_TypeSint64,
+    };
+    GPBEnumDescriptor *worker =
+        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol(GPBField_Kind)
+                                       valueNames:valueNames
+                                           values:values
+                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))
+                                     enumVerifier:GPBField_Kind_IsValidValue
+                                            flags:GPBEnumDescriptorInitializationFlag_None];
+    GPBEnumDescriptor *expected = nil;
+    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
+      [worker release];
+    }
+  }
+  return descriptor;
+}
+
+BOOL GPBField_Kind_IsValidValue(int32_t value__) {
+  switch (value__) {
+    case GPBField_Kind_TypeUnknown:
+    case GPBField_Kind_TypeDouble:
+    case GPBField_Kind_TypeFloat:
+    case GPBField_Kind_TypeInt64:
+    case GPBField_Kind_TypeUint64:
+    case GPBField_Kind_TypeInt32:
+    case GPBField_Kind_TypeFixed64:
+    case GPBField_Kind_TypeFixed32:
+    case GPBField_Kind_TypeBool:
+    case GPBField_Kind_TypeString:
+    case GPBField_Kind_TypeGroup:
+    case GPBField_Kind_TypeMessage:
+    case GPBField_Kind_TypeBytes:
+    case GPBField_Kind_TypeUint32:
+    case GPBField_Kind_TypeEnum:
+    case GPBField_Kind_TypeSfixed32:
+    case GPBField_Kind_TypeSfixed64:
+    case GPBField_Kind_TypeSint32:
+    case GPBField_Kind_TypeSint64:
+      return YES;
+    default:
+      return NO;
+  }
+}
+
+#pragma mark - Enum GPBField_Cardinality
+
+GPBEnumDescriptor *GPBField_Cardinality_EnumDescriptor(void) {
+  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
+  if (!descriptor) {
+    static const char *valueNames =
+        "CardinalityUnknown\000CardinalityOptional\000C"
+        "ardinalityRequired\000CardinalityRepeated\000";
+    static const int32_t values[] = {
+        GPBField_Cardinality_CardinalityUnknown,
+        GPBField_Cardinality_CardinalityOptional,
+        GPBField_Cardinality_CardinalityRequired,
+        GPBField_Cardinality_CardinalityRepeated,
+    };
+    GPBEnumDescriptor *worker =
+        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol(GPBField_Cardinality)
+                                       valueNames:valueNames
+                                           values:values
+                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))
+                                     enumVerifier:GPBField_Cardinality_IsValidValue
+                                            flags:GPBEnumDescriptorInitializationFlag_None];
+    GPBEnumDescriptor *expected = nil;
+    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
+      [worker release];
+    }
+  }
+  return descriptor;
+}
+
+BOOL GPBField_Cardinality_IsValidValue(int32_t value__) {
+  switch (value__) {
+    case GPBField_Cardinality_CardinalityUnknown:
+    case GPBField_Cardinality_CardinalityOptional:
+    case GPBField_Cardinality_CardinalityRequired:
+    case GPBField_Cardinality_CardinalityRepeated:
       return YES;
     default:
       return NO;
@@ -171,7 +288,7 @@ typedef struct GPBType__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBType__storage_)
-                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown | GPBDescriptorInitializationFlag_ClosedEnumSupportKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -326,7 +443,7 @@ typedef struct GPBField__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBField__storage_)
-                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown | GPBDescriptorInitializationFlag_ClosedEnumSupportKnown)];
 #if !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
     static const char *extraTextFormatInfo =
         "\001\006\004\241!!\000";
@@ -364,120 +481,6 @@ void SetGPBField_Cardinality_RawValue(GPBField *message, int32_t value) {
   GPBDescriptor *descriptor = [GPBField descriptor];
   GPBFieldDescriptor *field = [descriptor fieldWithNumber:GPBField_FieldNumber_Cardinality];
   GPBSetMessageRawEnumField(message, field, value);
-}
-
-#pragma mark - Enum GPBField_Kind
-
-GPBEnumDescriptor *GPBField_Kind_EnumDescriptor(void) {
-  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
-  if (!descriptor) {
-    static const char *valueNames =
-        "TypeUnknown\000TypeDouble\000TypeFloat\000TypeInt"
-        "64\000TypeUint64\000TypeInt32\000TypeFixed64\000Type"
-        "Fixed32\000TypeBool\000TypeString\000TypeGroup\000Ty"
-        "peMessage\000TypeBytes\000TypeUint32\000TypeEnum\000"
-        "TypeSfixed32\000TypeSfixed64\000TypeSint32\000Typ"
-        "eSint64\000";
-    static const int32_t values[] = {
-        GPBField_Kind_TypeUnknown,
-        GPBField_Kind_TypeDouble,
-        GPBField_Kind_TypeFloat,
-        GPBField_Kind_TypeInt64,
-        GPBField_Kind_TypeUint64,
-        GPBField_Kind_TypeInt32,
-        GPBField_Kind_TypeFixed64,
-        GPBField_Kind_TypeFixed32,
-        GPBField_Kind_TypeBool,
-        GPBField_Kind_TypeString,
-        GPBField_Kind_TypeGroup,
-        GPBField_Kind_TypeMessage,
-        GPBField_Kind_TypeBytes,
-        GPBField_Kind_TypeUint32,
-        GPBField_Kind_TypeEnum,
-        GPBField_Kind_TypeSfixed32,
-        GPBField_Kind_TypeSfixed64,
-        GPBField_Kind_TypeSint32,
-        GPBField_Kind_TypeSint64,
-    };
-    GPBEnumDescriptor *worker =
-        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol(GPBField_Kind)
-                                       valueNames:valueNames
-                                           values:values
-                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))
-                                     enumVerifier:GPBField_Kind_IsValidValue];
-    GPBEnumDescriptor *expected = nil;
-    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
-      [worker release];
-    }
-  }
-  return descriptor;
-}
-
-BOOL GPBField_Kind_IsValidValue(int32_t value__) {
-  switch (value__) {
-    case GPBField_Kind_TypeUnknown:
-    case GPBField_Kind_TypeDouble:
-    case GPBField_Kind_TypeFloat:
-    case GPBField_Kind_TypeInt64:
-    case GPBField_Kind_TypeUint64:
-    case GPBField_Kind_TypeInt32:
-    case GPBField_Kind_TypeFixed64:
-    case GPBField_Kind_TypeFixed32:
-    case GPBField_Kind_TypeBool:
-    case GPBField_Kind_TypeString:
-    case GPBField_Kind_TypeGroup:
-    case GPBField_Kind_TypeMessage:
-    case GPBField_Kind_TypeBytes:
-    case GPBField_Kind_TypeUint32:
-    case GPBField_Kind_TypeEnum:
-    case GPBField_Kind_TypeSfixed32:
-    case GPBField_Kind_TypeSfixed64:
-    case GPBField_Kind_TypeSint32:
-    case GPBField_Kind_TypeSint64:
-      return YES;
-    default:
-      return NO;
-  }
-}
-
-#pragma mark - Enum GPBField_Cardinality
-
-GPBEnumDescriptor *GPBField_Cardinality_EnumDescriptor(void) {
-  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
-  if (!descriptor) {
-    static const char *valueNames =
-        "CardinalityUnknown\000CardinalityOptional\000C"
-        "ardinalityRequired\000CardinalityRepeated\000";
-    static const int32_t values[] = {
-        GPBField_Cardinality_CardinalityUnknown,
-        GPBField_Cardinality_CardinalityOptional,
-        GPBField_Cardinality_CardinalityRequired,
-        GPBField_Cardinality_CardinalityRepeated,
-    };
-    GPBEnumDescriptor *worker =
-        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol(GPBField_Cardinality)
-                                       valueNames:valueNames
-                                           values:values
-                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))
-                                     enumVerifier:GPBField_Cardinality_IsValidValue];
-    GPBEnumDescriptor *expected = nil;
-    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
-      [worker release];
-    }
-  }
-  return descriptor;
-}
-
-BOOL GPBField_Cardinality_IsValidValue(int32_t value__) {
-  switch (value__) {
-    case GPBField_Cardinality_CardinalityUnknown:
-    case GPBField_Cardinality_CardinalityOptional:
-    case GPBField_Cardinality_CardinalityRequired:
-    case GPBField_Cardinality_CardinalityRepeated:
-      return YES;
-    default:
-      return NO;
-  }
 }
 
 #pragma mark - GPBEnum
@@ -558,7 +561,7 @@ typedef struct GPBEnum__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBEnum__storage_)
-                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown | GPBDescriptorInitializationFlag_ClosedEnumSupportKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -637,7 +640,7 @@ typedef struct GPBEnumValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBEnumValue__storage_)
-                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown | GPBDescriptorInitializationFlag_ClosedEnumSupportKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -693,7 +696,7 @@ typedef struct GPBOption__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBOption__storage_)
-                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown | GPBDescriptorInitializationFlag_ClosedEnumSupportKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG

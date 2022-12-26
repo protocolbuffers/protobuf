@@ -51,9 +51,9 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -78,7 +78,7 @@ namespace python {
 namespace {
 // Returns the alias we assign to the module of the given .proto filename
 // when importing. See testPackageInitializationImport in
-// net/proto2/python/internal/reflection_test.py
+// third_party/py/google/protobuf/internal/reflection_test.py
 // to see why we need the alias.
 std::string ModuleAlias(const std::string& filename) {
   std::string module_name = ModuleName(filename);
@@ -168,7 +168,7 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
   }
   // (We could add a default case above but then we wouldn't get the nice
   // compiler warning when a new type is added.)
-  GOOGLE_LOG(FATAL) << "Not reached.";
+  GOOGLE_ABSL_LOG(FATAL) << "Not reached.";
   return "";
 }
 
@@ -180,8 +180,9 @@ std::string StringifySyntax(FileDescriptor::Syntax syntax) {
       return "proto3";
     case FileDescriptor::SYNTAX_UNKNOWN:
     default:
-      GOOGLE_LOG(FATAL) << "Unsupported syntax; this generator only supports proto2 "
-                    "and proto3 syntax.";
+      GOOGLE_ABSL_LOG(FATAL)
+          << "Unsupported syntax; this generator only supports proto2 "
+             "and proto3 syntax.";
       return "";
   }
 }
@@ -291,13 +292,14 @@ bool Generator::Generate(const FileDescriptor* file,
   }
 
   std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
-  GOOGLE_CHECK(output.get());
+  GOOGLE_ABSL_CHECK(output.get());
   io::Printer printer(output.get(), '$');
   printer_ = &printer;
 
   PrintTopBoilerplate();
   PrintImports();
   PrintFileDescriptor();
+  printer_->Print("_globals = globals()\n");
   if (GeneratingDescriptorProto()) {
     printer_->Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
     printer_->Indent();
@@ -312,7 +314,7 @@ bool Generator::Generate(const FileDescriptor* file,
   // Find the message descriptors first and then use the message
   // descriptor to find enums.
   printer_->Print(
-      "_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())\n");
+      "_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)\n");
   if (GeneratingDescriptorProto()) {
     printer_->Outdent();
   }
@@ -323,7 +325,7 @@ bool Generator::Generate(const FileDescriptor* file,
   }
   printer_->Print(
       "_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, '$module_name$', "
-      "globals())\n",
+      "_globals)\n",
       "module_name", module_name);
   printer.Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
   printer_->Indent();
@@ -345,7 +347,7 @@ bool Generator::Generate(const FileDescriptor* file,
   printer_->Outdent();
   if (HasGenericServices(file)) {
     printer_->Print(
-        "_builder.BuildServices(DESCRIPTOR, '$module_name$', globals())\n",
+        "_builder.BuildServices(DESCRIPTOR, '$module_name$', _globals)\n",
         "module_name", module_name);
   }
 
@@ -947,7 +949,7 @@ std::string Generator::FieldReferencingExpression(
     const std::string& python_dict_name) const {
   // We should only ever be looking up fields in the current file.
   // The only things we refer to from other files are message descriptors.
-  GOOGLE_CHECK_EQ(field.file(), file_)
+  GOOGLE_ABSL_CHECK_EQ(field.file(), file_)
       << field.file()->name() << " vs. " << file_->name();
   if (!containing_type) {
     return ResolveKeyword(field.name());
@@ -1013,7 +1015,7 @@ void Generator::FixForeignFieldsInExtensions() const {
 
 void Generator::FixForeignFieldsInExtension(
     const FieldDescriptor& extension_field) const {
-  GOOGLE_CHECK(extension_field.is_extension());
+  GOOGLE_ABSL_CHECK(extension_field.is_extension());
 
   absl::flat_hash_map<absl::string_view, std::string> m;
   // Confusingly, for FieldDescriptors that happen to be extensions,
@@ -1228,11 +1230,11 @@ void Generator::PrintSerializedPbInterval(const DescriptorT& descriptor,
   std::string sp;
   proto.SerializeToString(&sp);
   int offset = file_descriptor_serialized_.find(sp);
-  GOOGLE_CHECK_GE(offset, 0);
+  GOOGLE_ABSL_CHECK_GE(offset, 0);
 
   printer_->Print(
-      "$name$._serialized_start=$serialized_start$\n"
-      "$name$._serialized_end=$serialized_end$\n",
+      "_globals['$name$']._serialized_start=$serialized_start$\n"
+      "_globals['$name$']._serialized_end=$serialized_end$\n",
       "name", name, "serialized_start", absl::StrCat(offset), "serialized_end",
       absl::StrCat(offset + sp.size()));
 }

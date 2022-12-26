@@ -52,5 +52,5 @@ message TestMissingEnumValues {
 }
 
 message JustString {
-  required string dummy = 1;
+  optional string dummy = 1;
 }

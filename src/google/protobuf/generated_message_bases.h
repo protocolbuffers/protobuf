@@ -63,8 +63,7 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
 
  protected:
   constexpr ZeroFieldsBase() {}
-  explicit ZeroFieldsBase(Arena* arena, bool is_message_owned)
-      : Message(arena, is_message_owned) {}
+  explicit ZeroFieldsBase(Arena* arena) : Message(arena) {}
   ZeroFieldsBase(const ZeroFieldsBase&) = delete;
   ZeroFieldsBase& operator=(const ZeroFieldsBase&) = delete;
   ~ZeroFieldsBase() override;

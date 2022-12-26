@@ -28,7 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Test for google.protobuf.internal.well_known_types."""
+"""Test for google3.net.proto2.python.internal.well_known_types."""
 
 import unittest
 

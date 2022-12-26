@@ -51,11 +51,11 @@ class ExtensionGenerator {
   ExtensionGenerator(const ExtensionGenerator&) = delete;
   ExtensionGenerator& operator=(const ExtensionGenerator&) = delete;
 
-  void GenerateMembersHeader(io::Printer* printer);
-  void GenerateStaticVariablesInitialization(io::Printer* printer);
-  void GenerateRegistrationSource(io::Printer* printer);
+  void GenerateMembersHeader(io::Printer* printer) const;
+  void GenerateStaticVariablesInitialization(io::Printer* printer) const;
+  void GenerateRegistrationSource(io::Printer* printer) const;
   void DetermineObjectiveCClassDefinitions(
-      absl::btree_set<std::string>* fwd_decls);
+      absl::btree_set<std::string>* fwd_decls) const;
 
  private:
   std::string method_name_;

@@ -33,6 +33,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/io/printer.h"
@@ -73,7 +74,7 @@ const char* PrimitiveTypeName(const FieldDescriptor* descriptor) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
@@ -107,7 +108,7 @@ const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 

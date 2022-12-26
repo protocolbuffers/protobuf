@@ -34,7 +34,6 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_DELIMITED_MESSAGE_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_DELIMITED_MESSAGE_UTIL_H__
 
-
 #include <ostream>
 
 #include "google/protobuf/message_lite.h"
@@ -48,7 +47,7 @@ namespace google {
 namespace protobuf {
 namespace util {
 
-// Write a single size-delimited message from the given stream. Delimited
+// Write a single size-delimited message to the given stream. Delimited
 // format allows a single file or stream to contain multiple messages,
 // whereas normally writing multiple non-delimited messages to the same
 // stream would cause them to be merged. A delimited message is a varint

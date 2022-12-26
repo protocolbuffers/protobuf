@@ -158,6 +158,12 @@ internal_ruby_proto_library(
 # Protocol Buffers Compiler
 ################################################################################
 
+alias(
+    name = "protoc_lib",
+    actual = "//src/google/protobuf/compiler:protoc_lib",
+    visibility = ["//visibility:public"],
+)
+
 cc_binary(
     name = "protoc",
     copts = COPTS,
@@ -300,8 +306,8 @@ alias(
 proto_lang_toolchain(
     name = "cc_toolchain",
     blacklisted_protos = [
-        "@com_google_protobuf//:compiler_plugin_proto",
-        "@com_google_protobuf//:descriptor_proto",
+        "//:compiler_plugin_proto",
+        "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
     runtime = ":protobuf",
