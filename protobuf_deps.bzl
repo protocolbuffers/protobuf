@@ -13,7 +13,6 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.truth:truth:1.1.2",
     "junit:junit:4.13.2",
     "org.mockito:mockito-core:4.3.1",
-    "org.jruby:jruby-complete:9.2.20.1"
 ]
 
 def _github_archive(repo, commit, **kwargs):
@@ -111,8 +110,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_ruby",
             repo = "https://github.com/protocolbuffers/rules_ruby",
-            commit = "b8f651f80a5fad90d4db6e486b0ae047a8a46640",
-            sha256 = "87c566c9c703e95e0a945a99d0c16c721a10be05cde671a8112182b00ae26c62",
+            commit = "59732544ce3a4bc4e8e4d4e8c8f318c931c17eae",
+            sha256 = "4fc45adf1056c824afde9a52b743b915eeada3633539eb1dbd641a66dc9f4c4f",
         )
 
     if not native.existing_rule("rules_jvm_external"):

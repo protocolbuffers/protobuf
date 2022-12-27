@@ -41,8 +41,8 @@ conformance_test(
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_jruby": ["@platforms//:incompatible"],
-        "//conditions:default": [],
+        "@rules_ruby//ruby/runtime:config_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
 

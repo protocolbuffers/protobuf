@@ -77,7 +77,6 @@ register_toolchains("@system_ruby//:toolchain")
 load("@system_ruby//:bundle.bzl", "ruby_bundle")
 ruby_bundle(
     name = "protobuf_bundle",
-    bundler_version = "2.3.17",
     srcs = ["//ruby:google-protobuf.gemspec"],
     gemfile = "//ruby:Gemfile",
 )
