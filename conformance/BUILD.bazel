@@ -1,6 +1,7 @@
 # Conformance testing for Protobuf.
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "objc_library")
+load("@rules_ruby//ruby:defs.bzl", "ruby_binary")
 load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load(
@@ -317,19 +318,16 @@ cc_binary(
     deps = [":conformance_objc_lib"],
 )
 
-inline_sh_binary(
+ruby_binary(
     name = "conformance_ruby",
-    testonly = 1,
+    testonly = True,
     srcs = ["conformance_ruby.rb"],
-    cmd = "RUBYLIB=ruby/lib:conformance:src $(rootpath conformance_ruby.rb)",
-    visibility = ["//ruby:__subpackages__"],
     deps = [
         ":conformance_ruby_proto",
         "//:test_messages_proto2_ruby_proto",
-        "//:test_messages_proto3_ruby_proto",
-        "//:well_known_ruby_protos",
-        "//ruby:protobuf",
+        "//:test_messages_proto3_ruby_proto",        
     ],
+    visibility = ["//ruby:__subpackages__"],
 )
 
 ################################################################################
