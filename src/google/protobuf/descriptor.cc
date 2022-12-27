@@ -5860,9 +5860,13 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              absl::Substitute(
                  "Field numbers $0 through $1 are reserved for the protocol "
-                 "buffer library implementation.",
+                 "buffer library implementation$2.",
                  FieldDescriptor::kFirstReservedNumber,
-                 FieldDescriptor::kLastReservedNumber));
+                 FieldDescriptor::kLastReservedNumber,
+                 absl::StartsWith(proto.type_name(), ".")
+                     ? ""
+                     : ", and the type name must be fully qualified with a `.` "
+                       "prefix"));
   }
 
   if (is_extension) {
