@@ -40,9 +40,9 @@ TEST(CppGeneratedCode, InternalMoveMessage) {
   upb_Arena* source_arena = upb_Arena_New();
   protos_generator_test_TestModel* message =
       protos_generator_test_TestModel_new(source_arena);
-  ASSERT_NE(message, nullptr);
   protos_generator_test_TestModel_set_int_value_with_default(message, 123);
 
+  EXPECT_NE(message, nullptr);
   // Move ownership.
   TestModel model =
       protos::internal::MoveMessage<TestModel>(message, source_arena);

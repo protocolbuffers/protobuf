@@ -75,8 +75,6 @@ typedef enum {
   kUpb_FieldRep_StringView = 2,
   kUpb_FieldRep_8Byte = 3,
 
-  kUpb_FieldRep_NativePointer =
-      UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte),
   kUpb_FieldRep_Max = kUpb_FieldRep_8Byte,
 } upb_FieldRep;
 
@@ -93,20 +91,6 @@ extern "C" {
 
 UPB_INLINE upb_FieldMode upb_FieldMode_Get(const upb_MiniTableField* field) {
   return (upb_FieldMode)(field->mode & 3);
-}
-
-UPB_INLINE void _upb_MiniTableField_CheckIsArray(
-    const upb_MiniTableField* field) {
-  UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_NativePointer);
-  UPB_ASSUME(upb_FieldMode_Get(field) == kUpb_FieldMode_Array);
-  UPB_ASSUME(field->presence == 0);
-}
-
-UPB_INLINE void _upb_MiniTableField_CheckIsMap(
-    const upb_MiniTableField* field) {
-  UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_NativePointer);
-  UPB_ASSUME(upb_FieldMode_Get(field) == kUpb_FieldMode_Map);
-  UPB_ASSUME(field->presence == 0);
 }
 
 UPB_INLINE bool upb_IsRepeatedOrMap(const upb_MiniTableField* field) {

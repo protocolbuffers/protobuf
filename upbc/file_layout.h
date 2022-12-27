@@ -180,6 +180,23 @@ class FileLayout {
     return layout64_.GetEnumTable(d);
   }
 
+  std::string GetFieldOffset(const protobuf::FieldDescriptor* f) const {
+    const upb_MiniTableField* f_32 = upb_MiniTable_FindFieldByNumber(
+        GetMiniTable32(f->containing_type()), f->number());
+    const upb_MiniTableField* f_64 = upb_MiniTable_FindFieldByNumber(
+        GetMiniTable64(f->containing_type()), f->number());
+    return UpbSize(f_32->offset, f_64->offset);
+  }
+
+  std::string GetOneofCaseOffset(const protobuf::OneofDescriptor* o) const {
+    const protobuf::FieldDescriptor* f = o->field(0);
+    const upb_MiniTableField* f_32 = upb_MiniTable_FindFieldByNumber(
+        GetMiniTable32(f->containing_type()), f->number());
+    const upb_MiniTableField* f_64 = upb_MiniTable_FindFieldByNumber(
+        GetMiniTable64(f->containing_type()), f->number());
+    return UpbSize(~f_32->presence, ~f_64->presence);
+  }
+
   std::string GetMessageSize(const protobuf::Descriptor* d) const {
     return UpbSize(GetMiniTable32(d)->size, GetMiniTable64(d)->size);
   }

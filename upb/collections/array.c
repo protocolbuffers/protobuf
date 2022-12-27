@@ -32,22 +32,23 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const char _upb_Array_CTypeSizeLg2Table[] = {
-    [kUpb_CType_Bool] = 0,
-    [kUpb_CType_Float] = 2,
-    [kUpb_CType_Int32] = 2,
-    [kUpb_CType_UInt32] = 2,
-    [kUpb_CType_Enum] = 2,
-    [kUpb_CType_Message] = UPB_SIZE(2, 3),
-    [kUpb_CType_Double] = 3,
-    [kUpb_CType_Int64] = 3,
-    [kUpb_CType_UInt64] = 3,
-    [kUpb_CType_String] = UPB_SIZE(3, 4),
-    [kUpb_CType_Bytes] = UPB_SIZE(3, 4),
+static const char _upb_CTypeo_sizelg2[12] = {
+    0,
+    0,              /* kUpb_CType_Bool */
+    2,              /* kUpb_CType_Float */
+    2,              /* kUpb_CType_Int32 */
+    2,              /* kUpb_CType_UInt32 */
+    2,              /* kUpb_CType_Enum */
+    UPB_SIZE(2, 3), /* kUpb_CType_Message */
+    3,              /* kUpb_CType_Double */
+    3,              /* kUpb_CType_Int64 */
+    3,              /* kUpb_CType_UInt64 */
+    UPB_SIZE(3, 4), /* kUpb_CType_String */
+    UPB_SIZE(3, 4), /* kUpb_CType_Bytes */
 };
 
 upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
-  return _upb_Array_New(a, 4, _upb_Array_CTypeSizeLg2(type));
+  return _upb_Array_New(a, 4, _upb_CTypeo_sizelg2[type]);
 }
 
 size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
@@ -139,5 +140,37 @@ bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
 
   arr->data = _upb_tag_arrptr(ptr, elem_size_lg2);
   arr->capacity = new_capacity;
+  return true;
+}
+
+static upb_Array* getorcreate_array(upb_Array** arr_ptr, int elem_size_lg2,
+                                    upb_Arena* arena) {
+  upb_Array* arr = *arr_ptr;
+  if (!arr) {
+    arr = _upb_Array_New(arena, 4, elem_size_lg2);
+    if (!arr) return NULL;
+    *arr_ptr = arr;
+  }
+  return arr;
+}
+
+void* _upb_Array_Resize_fallback(upb_Array** arr_ptr, size_t size,
+                                 int elem_size_lg2, upb_Arena* arena) {
+  upb_Array* arr = getorcreate_array(arr_ptr, elem_size_lg2, arena);
+  return arr && _upb_Array_ResizeUninitialized(arr, size, arena)
+             ? _upb_array_ptr(arr)
+             : NULL;
+}
+
+bool _upb_Array_Append_fallback(upb_Array** arr_ptr, const void* value,
+                                int elem_size_lg2, upb_Arena* arena) {
+  upb_Array* arr = getorcreate_array(arr_ptr, elem_size_lg2, arena);
+  if (!arr) return false;
+
+  size_t elems = arr->size;
+  if (!_upb_Array_ResizeUninitialized(arr, elems + 1, arena)) return false;
+
+  char* data = _upb_array_ptr(arr);
+  memcpy(data + (elems << elem_size_lg2), value, 1 << elem_size_lg2);
   return true;
 }
