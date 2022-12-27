@@ -582,7 +582,7 @@ UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
   return (upb_Array*)upb_Message_GetArray(msg, field);
 }
 
-UPB_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
+UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
     upb_Message* msg, const upb_MiniTableField* field, upb_Arena* arena) {
   _upb_MiniTableField_CheckIsArray(field);
   upb_Array* array = upb_Message_GetMutableArray(msg, field);
