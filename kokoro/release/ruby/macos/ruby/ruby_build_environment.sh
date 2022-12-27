@@ -21,7 +21,7 @@ set -e  # rvm commands are very verbose
 time rvm install 2.5.0
 rvm use 2.5.0
 gem install rake-compiler --no-document
-gem install bundler --no-document
+gem install bundler -v 2.3.26 --no-document
 time rvm install 3.1.0
 rvm use 3.1.0
 gem install rake-compiler --no-document
