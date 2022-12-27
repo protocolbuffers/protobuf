@@ -38,38 +38,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-// Maps descriptor type to elem_size_lg2.
-static int _upb_MiniTableField_CTypeLg2Size(const upb_MiniTableField* f) {
-  static const uint8_t sizes[] = {
-      -1,             /* invalid descriptor type */
-      3,              /* DOUBLE */
-      2,              /* FLOAT */
-      3,              /* INT64 */
-      3,              /* UINT64 */
-      2,              /* INT32 */
-      3,              /* FIXED64 */
-      2,              /* FIXED32 */
-      0,              /* BOOL */
-      UPB_SIZE(3, 4), /* STRING */
-      UPB_SIZE(2, 3), /* GROUP */
-      UPB_SIZE(2, 3), /* MESSAGE */
-      UPB_SIZE(3, 4), /* BYTES */
-      2,              /* UINT32 */
-      2,              /* ENUM */
-      2,              /* SFIXED32 */
-      3,              /* SFIXED64 */
-      2,              /* SINT32 */
-      3,              /* SINT64 */
-  };
-  return sizes[f->descriptortype];
-}
-
-void* upb_Message_ResizeArray(upb_Message* msg, const upb_MiniTableField* field,
-                              size_t len, upb_Arena* arena) {
-  return _upb_Array_Resize_accessor2(
-      msg, field->offset, len, _upb_MiniTableField_CTypeLg2Size(field), arena);
-}
-
 typedef struct {
   const char* ptr;
   uint64_t val;

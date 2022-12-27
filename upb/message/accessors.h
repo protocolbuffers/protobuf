@@ -30,6 +30,7 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/collections/array.h"
+#include "upb/collections/array_internal.h"
 #include "upb/collections/map.h"
 #include "upb/collections/map_internal.h"
 #include "upb/message/extension_internal.h"
@@ -40,6 +41,22 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+
+#if defined(__GNUC__) && !defined(__clang__)
+// GCC raises incorrect warnings in these functions.  It thinks that we are
+// overrunning buffers, but we carefully write the functions in this file to
+// guarantee that this is impossible.  GCC gets this wrong due it its failure
+// to perform constant propagation as we expect:
+//   - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108217
+//   - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108226
+//
+// Unfortunately this also indicates that GCC is not optimizing away the
+// switch() in cases where it should be, compromising the performance.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#pragma GCC diagnostic ignored "-Wstringop-overread"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,9 +88,6 @@ UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
 UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
                                               const upb_MiniTableField* field) {
   char zero[16] = {0};
-  if (upb_IsRepeatedOrMap(field)) {
-    return memcmp(&zero, default_val, sizeof(void*));
-  }
   switch (_upb_MiniTableField_GetRep(field)) {
     case kUpb_FieldRep_1Byte:
       return memcmp(&zero, default_val, 1) != 0;
@@ -91,10 +105,6 @@ UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
 
 UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
                                              const upb_MiniTableField* field) {
-  if (upb_IsRepeatedOrMap(field)) {
-    memcpy(to, from, sizeof(void*));
-    return;
-  }
   switch (_upb_MiniTableField_GetRep(field)) {
     case kUpb_FieldRep_1Byte:
       memcpy(to, from, 1);
@@ -111,6 +121,32 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
     }
   }
   UPB_UNREACHABLE();
+}
+
+UPB_INLINE size_t
+_upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
+  const unsigned char table[] = {
+      0,
+      3,               // kUpb_FieldType_Double = 1,
+      2,               // kUpb_FieldType_Float = 2,
+      3,               // kUpb_FieldType_Int64 = 3,
+      3,               // kUpb_FieldType_UInt64 = 4,
+      2,               // kUpb_FieldType_Int32 = 5,
+      3,               // kUpb_FieldType_Fixed64 = 6,
+      2,               // kUpb_FieldType_Fixed32 = 7,
+      0,               // kUpb_FieldType_Bool = 8,
+      UPB_SIZE(3, 4),  // kUpb_FieldType_String = 9,
+      UPB_SIZE(2, 3),  // kUpb_FieldType_Group = 10,
+      UPB_SIZE(2, 3),  // kUpb_FieldType_Message = 11,
+      UPB_SIZE(3, 4),  // kUpb_FieldType_Bytes = 12,
+      2,               // kUpb_FieldType_UInt32 = 13,
+      2,               // kUpb_FieldType_Enum = 14,
+      2,               // kUpb_FieldType_SFixed32 = 15,
+      3,               // kUpb_FieldType_SFixed64 = 16,
+      2,               // kUpb_FieldType_SInt32 = 17,
+      3,               // kUpb_FieldType_SInt64 = 18,
+  };
+  return table[field->descriptortype];
 }
 
 // Here we define universal getter/setter functions for message fields.
@@ -261,12 +297,14 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
 UPB_INLINE upb_Map* _upb_MiniTable_GetOrCreateMutableMap(
     upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
-  UPB_ASSUME(upb_IsRepeatedOrMap(field));
+  _upb_MiniTableField_CheckIsMap(field);
   upb_Map* map = NULL;
   upb_Map* default_map_value = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
   if (!map) {
     map = _upb_Map_New(arena, key_size, val_size);
+    // Check again due to: https://godbolt.org/z/7WfaoKG1r
+    _upb_MiniTableField_CheckIsMap(field);
     _upb_Message_SetNonExtensionField(msg, field, &map);
   }
   return map;
@@ -531,6 +569,7 @@ UPB_API_INLINE upb_Message* upb_MiniTable_GetMutableMessage(
 
 UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const upb_Message* msg, const upb_MiniTableField* field) {
+  _upb_MiniTableField_CheckIsArray(field);
   const upb_Array* ret;
   const upb_Array* default_val = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
@@ -539,22 +578,43 @@ UPB_API_INLINE const upb_Array* upb_Message_GetArray(
 
 UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
     upb_Message* msg, const upb_MiniTableField* field) {
+  _upb_MiniTableField_CheckIsArray(field);
   return (upb_Array*)upb_Message_GetArray(msg, field);
 }
 
-UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
-    upb_Message* msg, const upb_MiniTableField* field, upb_CType ctype,
-    upb_Arena* arena) {
+UPB_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
+    upb_Message* msg, const upb_MiniTableField* field, upb_Arena* arena) {
+  _upb_MiniTableField_CheckIsArray(field);
   upb_Array* array = upb_Message_GetMutableArray(msg, field);
   if (!array) {
-    array = upb_Array_New(arena, ctype);
+    array = _upb_Array_New(arena, 4, _upb_MiniTable_ElementSizeLg2(field));
+    // Check again due to: https://godbolt.org/z/7WfaoKG1r
+    _upb_MiniTableField_CheckIsArray(field);
     _upb_Message_SetField(msg, field, &array, arena);
   }
   return array;
 }
 
-void* upb_Message_ResizeArray(upb_Message* msg, const upb_MiniTableField* field,
-                              size_t len, upb_Arena* arena);
+UPB_INLINE upb_Array* upb_Message_ResizeArrayUninitialized(
+    upb_Message* msg, const upb_MiniTableField* field, size_t size,
+    upb_Arena* arena) {
+  _upb_MiniTableField_CheckIsArray(field);
+  upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, field, arena);
+  if (!arr || !_upb_Array_ResizeUninitialized(arr, size, arena)) return NULL;
+  return arr;
+}
+
+// TODO: remove, migrate users to upb_Message_ResizeArrayUninitialized(), which
+// has the same semantics but a clearer name. Alternatively, if users want an
+// initialized variant, we can also offer that.
+UPB_API_INLINE void* upb_Message_ResizeArray(upb_Message* msg,
+                                             const upb_MiniTableField* field,
+                                             size_t size, upb_Arena* arena) {
+  _upb_MiniTableField_CheckIsArray(field);
+  upb_Array* arr =
+      upb_Message_ResizeArrayUninitialized(msg, field, size, arena);
+  return _upb_array_ptr(arr);
+}
 
 UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
     const upb_MiniTableField* field) {
@@ -563,7 +623,7 @@ UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
 
 UPB_API_INLINE const upb_Map* upb_Message_GetMap(
     const upb_Message* msg, const upb_MiniTableField* field) {
-  UPB_ASSUME(upb_FieldMode_Get(field) == kUpb_FieldMode_Map);
+  _upb_MiniTableField_CheckIsMap(field);
   const upb_Map* ret;
   const upb_Map* default_val = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
@@ -687,6 +747,10 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
 
 #ifdef __cplusplus
 } /* extern "C" */
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 
 #include "upb/port/undef.inc"
