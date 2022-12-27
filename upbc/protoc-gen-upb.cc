@@ -137,34 +137,6 @@ std::string CTypeInternal(const protobuf::FieldDescriptor* field,
   }
 }
 
-std::string SizeLg2(const protobuf::FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-      return "UPB_SIZE(2, 3)";
-    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
-      return std::to_string(2);
-    case protobuf::FieldDescriptor::CPPTYPE_BOOL:
-      return std::to_string(0);
-    case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-      return std::to_string(2);
-    case protobuf::FieldDescriptor::CPPTYPE_INT32:
-      return std::to_string(2);
-    case protobuf::FieldDescriptor::CPPTYPE_UINT32:
-      return std::to_string(2);
-    case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-      return std::to_string(3);
-    case protobuf::FieldDescriptor::CPPTYPE_INT64:
-      return std::to_string(3);
-    case protobuf::FieldDescriptor::CPPTYPE_UINT64:
-      return std::to_string(3);
-    case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return "UPB_SIZE(3, 4)";
-    default:
-      fprintf(stderr, "Unexpected type");
-      abort();
-  }
-}
-
 std::string FloatToCLiteral(float value) {
   if (value == std::numeric_limits<float>::infinity()) {
     return "kUpb_FltInfinity";
@@ -518,12 +490,20 @@ void GenerateRepeatedGetters(const protobuf::FieldDescriptor* field,
                              Output& output) {
   output(
       R"cc(
-        UPB_INLINE $0 const* $1_$2(const $1* msg, size_t* len) {
-          return ($0 const*)_upb_array_accessor(msg, $3, len);
+        UPB_INLINE $0 const* $1_$2(const $1* msg, size_t* size) {
+          const upb_MiniTableField field = $3;
+          const upb_Array* arr = upb_Message_GetArray(msg, &field);
+          if (arr) {
+            if (size) *size = arr->size;
+            return ($0 const*)_upb_array_constptr(arr);
+          } else {
+            if (size) *size = 0;
+            return NULL;
+          }
         }
       )cc",
       CTypeConst(field), msg_name, ResolveFieldName(field, field_names),
-      layout.GetFieldOffset(field));
+      FieldInitializer(layout, field));
 }
 
 void GenerateScalarGetters(const protobuf::FieldDescriptor* field,
@@ -618,41 +598,58 @@ void GenerateRepeatedSetters(const protobuf::FieldDescriptor* field,
   std::string resolved_name = ResolveFieldName(field, field_names);
   output(
       R"cc(
-        UPB_INLINE $0* $1_mutable_$2($1* msg, size_t* len) {
-          return ($0*)_upb_array_mutable_accessor(msg, $3, len);
+        UPB_INLINE $0* $1_mutable_$2($1* msg, size_t* size) {
+          upb_MiniTableField field = $3;
+          upb_Array* arr = upb_Message_GetMutableArray(msg, &field);
+          if (arr) {
+            if (size) *size = arr->size;
+            return ($0*)_upb_array_ptr(arr);
+          } else {
+            if (size) *size = 0;
+            return NULL;
+          }
         }
       )cc",
-      CType(field), msg_name, resolved_name, layout.GetFieldOffset(field));
+      CType(field), msg_name, resolved_name, FieldInitializer(layout, field));
   output(
       R"cc(
-        UPB_INLINE $0* $1_resize_$2($1* msg, size_t len, upb_Arena* arena) {
-          return ($0*)_upb_Array_Resize_accessor2(msg, $3, len, $4, arena);
+        UPB_INLINE $0* $1_resize_$2($1* msg, size_t size, upb_Arena* arena) {
+          upb_MiniTableField field = $3;
+          return ($0*)upb_Message_ResizeArray(msg, &field, size, arena);
         }
       )cc",
-      CType(field), msg_name, resolved_name, layout.GetFieldOffset(field),
-      SizeLg2(field));
+      CType(field), msg_name, resolved_name, FieldInitializer(layout, field));
   if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
     output(
         R"cc(
           UPB_INLINE struct $0* $1_add_$2($1* msg, upb_Arena* arena) {
+            upb_MiniTableField field = $4;
+            upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, &field, arena);
+            if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
+              return NULL;
+            }
             struct $0* sub = (struct $0*)_upb_Message_New(&$3, arena);
-            bool ok = _upb_Array_Append_accessor2(msg, $4, $5, &sub, arena);
-            if (!ok) return NULL;
+            if (!arr || !sub) return NULL;
+            _upb_Array_Set(arr, arr->size - 1, &sub, sizeof(sub));
             return sub;
           }
         )cc",
         MessageName(field->message_type()), msg_name, resolved_name,
-        MessageInit(field->message_type()), layout.GetFieldOffset(field),
-        SizeLg2(field));
+        MessageInit(field->message_type()), FieldInitializer(layout, field));
   } else {
     output(
         R"cc(
           UPB_INLINE bool $1_add_$2($1* msg, $0 val, upb_Arena* arena) {
-            return _upb_Array_Append_accessor2(msg, $3, $4, &val, arena);
+            upb_MiniTableField field = $3;
+            upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, &field, arena);
+            if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
+              return false;
+            }
+            _upb_Array_Set(arr, arr->size - 1, &val, sizeof(val));
+            return true;
           }
         )cc",
-        CType(field), msg_name, resolved_name, layout.GetFieldOffset(field),
-        SizeLg2(field));
+        CType(field), msg_name, resolved_name, FieldInitializer(layout, field));
   }
 }
 
