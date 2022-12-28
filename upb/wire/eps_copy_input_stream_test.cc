@@ -91,18 +91,27 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //   // Returns false at EOF or error.
 //   int ReadData(int n, std::string* data) {
 //     EXPECT_LE(n, kUpb_EpsCopyInputStream_SlopBytes);
+//     if (enable_aliasing_) {
+//       EXPECT_TRUE(upb_EpsCopyInputStream_AliasingAvailable(&eps_, ptr_, n));
+//     }
 //     // We want to verify that we can read kUpb_EpsCopyInputStream_SlopBytes
 //     // safely, even if we haven't actually been requested to read that much.
 //     // We copy to a global buffer so the copy can't be optimized away.
 //     memcpy(&tmp_buf, ptr_, kUpb_EpsCopyInputStream_SlopBytes);
 //     data->assign(tmp_buf, n);
 //     ptr_ += n;
+//     if (enable_aliasing_) {
+//       EXPECT_TRUE(upb_EpsCopyInputStream_AliasingAvailable(&eps_, ptr_, 0));
+//     }
 //     return PopLimits();
 //   }
 //
 //   int ReadString(int n, std::string* data) {
 //     if (!upb_EpsCopyInputStream_CheckSize(&eps_, ptr_, n)) return -1;
 //     const char* str_data = ptr_;
+//     if (enable_aliasing_) {
+//       EXPECT_TRUE(upb_EpsCopyInputStream_AliasingAvailable(&eps_, ptr_, n));
+//     }
 //     ptr_ = upb_EpsCopyInputStream_ReadString(&eps_, &str_data, n, arena_.ptr());
 //     if (!ptr_) return -1;
 //     if (enable_aliasing_ && n) {
@@ -110,6 +119,7 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //                 reinterpret_cast<uintptr_t>(data_.data()));
 //       EXPECT_LT(reinterpret_cast<uintptr_t>(str_data),
 //                 reinterpret_cast<uintptr_t>(data_.data() + data_.size()));
+//       EXPECT_TRUE(upb_EpsCopyInputStream_AliasingAvailable(&eps_, ptr_, 0));
 //     }
 //     data->assign(str_data, n);
 //     return PopLimits();

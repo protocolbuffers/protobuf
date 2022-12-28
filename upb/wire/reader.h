@@ -29,6 +29,7 @@
 #define UPB_WIRE_READER_H_
 
 #include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/swap_internal.h"
 #include "upb/wire/types.h"
 
 // Must be last.
@@ -39,6 +40,9 @@
 // upb_EpsCopyInputStream for buffering, and all parsing routines in this file
 // assume that at least kUpb_EpsCopyInputStream_SlopBytes worth of data is
 // available to read without any bounds checks.
+
+#define kUpb_WireReader_WireTypeMask 7
+#define kUpb_WireReader_WireTypeBits 3
 
 typedef struct {
   const char* ptr;
@@ -85,11 +89,13 @@ static UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
 
 // Given a tag, returns the field number.
 UPB_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag) {
-  return tag >> 3;
+  return tag >> kUpb_WireReader_WireTypeBits;
 }
 
 // Given a tag, returns the wire type.
-UPB_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag) { return tag & 3; }
+UPB_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag) {
+  return tag & kUpb_WireReader_WireTypeMask;
+}
 
 UPB_INLINE const char* upb_WireReader_ReadVarint(const char* ptr,
                                                  uint64_t* val) {
@@ -119,6 +125,32 @@ UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size) {
   if (!ptr || size64 >= INT32_MAX) return NULL;
   *size = size64;
   return ptr;
+}
+
+// Reads a fixed32 field, performing byte swapping if necessary.
+//
+// REQUIRES: there must be at least 4 bytes of data available at `ptr`.
+// Bounds checks must be performed before calling this function, preferably
+// by calling upb_EpsCopyInputStream_IsDone().
+UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
+  uint32_t uval;
+  memcpy(&uval, ptr, 4);
+  uval = _upb_BigEndian_Swap32(uval);
+  memcpy(val, &uval, 4);
+  return ptr + 4;
+}
+
+// Reads a fixed64 field, performing byte swapping if necessary.
+//
+// REQUIRES: there must be at least 4 bytes of data available at `ptr`.
+// Bounds checks must be performed before calling this function, preferably
+// by calling upb_EpsCopyInputStream_IsDone().
+UPB_INLINE const char* upb_WireReader_ReadFixed64(const char* ptr, void* val) {
+  uint64_t uval;
+  memcpy(&uval, ptr, 8);
+  uval = _upb_BigEndian_Swap64(uval);
+  memcpy(val, &uval, 8);
+  return ptr + 8;
 }
 
 // Skips data for a group, returning a pointer past the end of the group, or

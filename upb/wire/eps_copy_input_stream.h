@@ -58,6 +58,13 @@ typedef struct {
   char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
 } upb_EpsCopyInputStream;
 
+// Returns true if the stream is in the error state. A stream enters the error
+// state when the user reads past a limit (caught in IsDone()) or the
+// ZeroCopyInputStream returns an error.
+UPB_INLINE bool upb_EpsCopyInputStream_IsError(upb_EpsCopyInputStream* e) {
+  return e->error;
+}
+
 typedef const char* upb_EpsCopyInputStream_BufferFlipCallback(
     upb_EpsCopyInputStream* e, const char* old_end, const char* new_start);
 
@@ -242,15 +249,42 @@ UPB_INLINE bool upb_EpsCopyInputStream_AliasingAvailable(
          e->aliasing >= kUpb_EpsCopyInputStream_NoDelta;
 }
 
+// Returns a pointer into an input buffer that corresponds to the parsing
+// pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
+// be different if we are currently parsing out of the patch buffer.
+//
+// REQUIRES: Aliasing must be available for the given pointer. If the input is a
+// flat buffer and aliasing is enabled, then aliasing will always be available.
+UPB_INLINE const char* upb_EpsCopyInputStream_GetAliasedPtr(
+    upb_EpsCopyInputStream* e, const char* ptr) {
+  UPB_ASSUME(upb_EpsCopyInputStream_AliasingAvailable(e, ptr, 0));
+  uintptr_t delta =
+      e->aliasing == kUpb_EpsCopyInputStream_NoDelta ? 0 : e->aliasing;
+  return (const char*)((uintptr_t)ptr + delta);
+}
+
+// Reads string data from the input, aliasing into the input buffer instead of
+// copying. The parsing pointer is passed in `*ptr`, and will be updated if
+// necessary to point to the actual input buffer. Returns the new parsing
+// pointer, which will be advanced past the string data.
+//
+// REQUIRES: Aliasing must be available for this data region (test with
+// upb_EpsCopyInputStream_AliasingAvailable().
 UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
     upb_EpsCopyInputStream* e, const char** ptr, size_t size) {
   UPB_ASSUME(upb_EpsCopyInputStream_AliasingAvailable(e, *ptr, size));
-  uintptr_t delta =
-      e->aliasing == kUpb_EpsCopyInputStream_NoDelta ? 0 : e->aliasing;
   const char* ret = *ptr + size;
-  *ptr = (const char*)((uintptr_t)*ptr + delta);
+  *ptr = upb_EpsCopyInputStream_GetAliasedPtr(e, *ptr);
   UPB_ASSUME(ret != NULL);
   return ret;
+}
+
+// Skips `size` bytes of string data from the input and returns a pointer past
+// the end.  Returns NULL on end of stream or error.
+UPB_INLINE const char* upb_EpsCopyInputStream_Skip(upb_EpsCopyInputStream* e,
+                                                   const char* ptr, int size) {
+  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  return ptr + size;
 }
 
 // Reads string data from the stream and advances the pointer accordingly.
@@ -270,6 +304,7 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
     if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, *ptr, size)) {
       return NULL;
     }
+    UPB_ASSERT(arena);
     char* data = (char*)upb_Arena_Malloc(arena, size);
     if (!data) return NULL;
     memcpy(data, *ptr, size);
@@ -335,6 +370,7 @@ UPB_INLINE const char* _upb_EpsCopyInputStream_IsDoneFallbackInline(
     }
     return callback(e, old_end, new_start);
   } else {
+    UPB_ASSERT(overrun > e->limit);
     e->error = true;
     return callback(e, NULL, NULL);
   }

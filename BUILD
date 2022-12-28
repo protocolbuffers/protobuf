@@ -578,10 +578,12 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":collections_internal",
+        ":eps_copy_input_stream",
         ":lex",
         ":port",
         ":reflection",
         ":wire",
+        ":wire_reader",
         ":wire_types",
     ],
 )
@@ -973,7 +975,10 @@ cc_library(
 
 cc_library(
     name = "wire_reader",
-    srcs = ["upb/wire/reader.c"],
+    srcs = [
+        "upb/wire/reader.c",
+        "upb/wire/swap_internal.h",
+    ],
     hdrs = ["upb/wire/reader.h"],
     visibility = ["//visibility:public"],
     deps = [
