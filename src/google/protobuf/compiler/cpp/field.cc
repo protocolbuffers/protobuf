@@ -210,12 +210,13 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
 
 void HasBitVars(const FieldDescriptor* field, const Options& opts,
                 absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
-  if (!internal::cpp::HasHasbit(field)) {
-    GOOGLE_ABSL_CHECK(!idx.has_value());
+  if (!idx.has_value()) {
     vars.emplace_back("set_hasbit", "");
     vars.emplace_back("clear_hasbit", "");
     return;
   }
+
+  GOOGLE_ABSL_CHECK(internal::cpp::HasHasbit(field));
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
