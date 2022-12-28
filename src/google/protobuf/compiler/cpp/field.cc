@@ -217,8 +217,8 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
     return;
   }
 
-  int32_t index = *idx / 32;
-  std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+  int32_t index = idx.value_or(0) / 32;
+  std::string mask = absl::StrFormat("0x%08xu", 1u << (idx.value_or(0) % 32));
 
   absl::string_view has_bits = IsMapEntryMessage(field->containing_type())
                                    ? "_has_bits_"
