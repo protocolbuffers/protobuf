@@ -16,7 +16,7 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
   upb_EpsCopyInputStream stream;
   const char* ptr = NULL;
   upb_EpsCopyInputStream_Init(&stream, &ptr, 0, false);
-  EXPECT_TRUE(upb_EpsCopyInputStream_IsDone(&stream, &ptr, NULL));
+  EXPECT_TRUE(upb_EpsCopyInputStream_IsDoneWithCallback(&stream, &ptr, NULL));
 }
 
 // begin:google_only
@@ -141,8 +141,8 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //   }
 //
 //   bool IsAtLimit() {
-//     return upb_EpsCopyInputStream_IsDone(&eps_, &ptr_,
-//                                          &EpsStream::IsDoneFallback);
+//     return upb_EpsCopyInputStream_IsDoneWithCallback(
+//         &eps_, &ptr_, &EpsStream::IsDoneFallback);
 //   }
 //
 //   // Return false on EOF.

@@ -124,6 +124,7 @@ cc_test(
     deps = [
         ":compare",
         "//:wire_internal",
+        "//:wire_types",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],

@@ -54,6 +54,7 @@ typedef struct {
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
   uintptr_t aliasing;
   int limit;              // Submessage limit relative to end
+  bool error;             // To distinguish between EOF and error.
   char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
 } upb_EpsCopyInputStream;
 
@@ -87,6 +88,7 @@ UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
     ret = false;
   }
   e->limit_ptr = e->end;
+  e->error = false;
 }
 
 typedef enum {
@@ -122,7 +124,7 @@ UPB_INLINE upb_IsDoneStatus upb_EpsCopyInputStream_IsDoneStatus(
 //
 // Postcondition: if the function returns false, there are at least
 // kUpb_EpsCopyInputStream_SlopBytes of data available to read at *ptr.
-UPB_INLINE bool upb_EpsCopyInputStream_IsDone(
+UPB_INLINE bool upb_EpsCopyInputStream_IsDoneWithCallback(
     upb_EpsCopyInputStream* e, const char** ptr,
     upb_EpsCopyInputStream_IsDoneFallbackFunc* func) {
   int overrun;
@@ -135,6 +137,21 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsDone(
       *ptr = func(e, *ptr, overrun);
       return *ptr == NULL;
   }
+}
+
+const char* _upb_EpsCopyInputStream_IsDoneFallbackNoCallback(
+    upb_EpsCopyInputStream* e, const char* ptr, int overrun);
+
+// A simpler version of IsDoneWithCallback() that does not support a buffer flip
+// callback. Useful in cases where we do not need to insert custom logic at
+// every buffer flip.
+//
+// If this returns true, the user must call upb_EpsCopyInputStream_IsError()
+// to distinguish between EOF and error.
+UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
+                                              const char** ptr) {
+  return upb_EpsCopyInputStream_IsDoneWithCallback(
+      e, ptr, _upb_EpsCopyInputStream_IsDoneFallbackNoCallback);
 }
 
 // Returns the total number of bytes that are safe to read from the current
@@ -318,6 +335,7 @@ UPB_INLINE const char* _upb_EpsCopyInputStream_IsDoneFallbackInline(
     }
     return callback(e, old_end, new_start);
   } else {
+    e->error = true;
     return callback(e, NULL, NULL);
   }
 }
