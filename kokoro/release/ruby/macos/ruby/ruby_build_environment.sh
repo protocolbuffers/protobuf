@@ -12,7 +12,8 @@ set -e  # rvm commands are very verbose
 time rvm install 2.5.0
 rvm use 2.5.0
 gem install rake-compiler --no-document
-gem install bundler --no-document
+# Pin to bundler with ruby 2.5 support
+gem install bundler -v 2.3.26 --no-document
 time rvm install 2.7.0
 rvm use 2.7.0 --default
 gem install rake-compiler --no-document
