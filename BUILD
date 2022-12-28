@@ -582,6 +582,7 @@ cc_library(
         ":port",
         ":reflection",
         ":wire",
+        ":wire_types",
     ],
 )
 
@@ -910,7 +911,6 @@ cc_library(
     hdrs = [
         "upb/wire/decode.h",
         "upb/wire/encode.h",
-        "upb/wire/types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],

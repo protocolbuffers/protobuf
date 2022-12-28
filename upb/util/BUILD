@@ -110,6 +110,7 @@ cc_library(
         "//:port",
         "//:reflection",
         "//:wire",
+        "//:wire_types",
     ],
 )
 

@@ -227,6 +227,7 @@ py_extension(
         "//:textformat",
         "//:upb",
         "//:wire",
+        "//:wire_types",
         "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
