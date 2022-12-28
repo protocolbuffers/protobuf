@@ -13,7 +13,8 @@ test_version() {
       "rvm install $version && rvm use $version && rvm get head && \
        which ruby && \
        git clean -f && \
-       gem install --no-document bundler && bundle && \
+       gem install --no-document bundler -v 2.3.26 && \ # Pin to bundler with ruby 2.5 support
+       bundle && \
        rake test && \
        rake gc_test && \
        cd ../conformance && make test_jruby && \
