@@ -426,7 +426,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
 
     template <typename U>
-    static Arena* GetOwningArena(Rank1, const U* p) {
+    static Arena* GetOwningArena(Rank1, const U*) {
       return nullptr;
     }
 
@@ -456,7 +456,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
 
     template <typename U>
-    static Arena* GetArenaForAllocation(Rank2, const U* p) {
+    static Arena* GetArenaForAllocation(Rank2, const U*) {
       return nullptr;
     }
 
