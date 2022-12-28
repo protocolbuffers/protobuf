@@ -221,16 +221,12 @@ static upb_Message* _upb_Decoder_NewSubMessage(
 
 static const char* _upb_Decoder_ReadString(upb_Decoder* d, const char* ptr,
                                            int size, upb_StringView* str) {
-  if (d->options & kUpb_DecodeOption_AliasString) {
-    str->data = ptr;
-  } else {
-    char* data = upb_Arena_Malloc(&d->arena, size);
-    if (!data) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
-    memcpy(data, ptr, size);
-    str->data = data;
-  }
+  const char* str_ptr = ptr;
+  ptr = upb_EpsCopyInputStream_ReadString(&d->input, &str_ptr, size, &d->arena);
+  if (!ptr) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+  str->data = str_ptr;
   str->size = size;
-  return ptr + size;
+  return ptr;
 }
 
 UPB_FORCEINLINE
@@ -1264,9 +1260,8 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
   upb_Decoder state;
   unsigned depth = (unsigned)options >> 16;
 
-  if (upb_EpsCopyInputStream_Init(&state.input, &buf, size)) {
-    options &= ~kUpb_DecodeOption_AliasString;  // Can't alias patch buf.
-  }
+  upb_EpsCopyInputStream_Init(&state.input, &buf, size,
+                              options & kUpb_DecodeOption_AliasString);
 
   state.extreg = extreg;
   state.unknown = NULL;

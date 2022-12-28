@@ -5,6 +5,7 @@
 #include <string>
 
 #include "gtest/gtest.h"
+#include "upb/upb.hpp"
 // begin:google_only
 // #include "testing/fuzzing/fuzztest.h"
 // end:google_only
@@ -14,7 +15,7 @@ namespace {
 TEST(EpsCopyInputStreamTest, ZeroSize) {
   upb_EpsCopyInputStream stream;
   const char* ptr = NULL;
-  upb_EpsCopyInputStream_Init(&stream, &ptr, 0);
+  upb_EpsCopyInputStream_Init(&stream, &ptr, 0, false);
   EXPECT_TRUE(upb_EpsCopyInputStream_IsDone(&stream, &ptr, NULL));
 }
 
@@ -81,20 +82,49 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //
 // class EpsStream {
 //  public:
-//   EpsStream(const std::string& data) : data_(data) {
+//   EpsStream(const std::string& data, bool enable_aliasing)
+//       : data_(data), enable_aliasing_(enable_aliasing) {
 //     ptr_ = data_.data();
-//     upb_EpsCopyInputStream_Init(&eps_, &ptr_, data_.size());
+//     upb_EpsCopyInputStream_Init(&eps_, &ptr_, data_.size(), enable_aliasing);
 //   }
 //
 //   // Returns false at EOF or error.
 //   int ReadData(int n, std::string* data) {
+//     EXPECT_LE(n, kUpb_EpsCopyInputStream_SlopBytes);
 //     // We want to verify that we can read kUpb_EpsCopyInputStream_SlopBytes
 //     // safely, even if we haven't actually been requested to read that much.
 //     // We copy to a global buffer so the copy can't be optimized away.
 //     memcpy(&tmp_buf, ptr_, kUpb_EpsCopyInputStream_SlopBytes);
 //     data->assign(tmp_buf, n);
 //     ptr_ += n;
+//     return PopLimits();
+//   }
 //
+//   int ReadString(int n, std::string* data) {
+//     if (!upb_EpsCopyInputStream_CheckSize(&eps_, ptr_, n)) return -1;
+//     const char* str_data = ptr_;
+//     ptr_ = upb_EpsCopyInputStream_ReadString(&eps_, &str_data, n, arena_.ptr());
+//     if (!ptr_) return -1;
+//     if (enable_aliasing_ && n) {
+//       EXPECT_GE(reinterpret_cast<uintptr_t>(str_data),
+//                 reinterpret_cast<uintptr_t>(data_.data()));
+//       EXPECT_LT(reinterpret_cast<uintptr_t>(str_data),
+//                 reinterpret_cast<uintptr_t>(data_.data() + data_.size()));
+//     }
+//     data->assign(str_data, n);
+//     return PopLimits();
+//   }
+//
+//   bool TryPushLimit(int limit) {
+//     if (!upb_EpsCopyInputStream_CheckSize(&eps_, ptr_, limit)) return false;
+//     deltas_.push_back(upb_EpsCopyInputStream_PushLimit(&eps_, ptr_, limit));
+//     return true;
+//   }
+//
+//   bool IsEof() const { return eof_; }
+//
+//  private:
+//   int PopLimits() {
 //     int end_limit_count = 0;
 //
 //     while (IsAtLimit()) {
@@ -110,15 +140,6 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //     return error_ ? -1 : end_limit_count;
 //   }
 //
-//   bool TryPushLimit(int limit) {
-//     if (!upb_EpsCopyInputStream_CheckSize(&eps_, ptr_, limit)) return false;
-//     deltas_.push_back(upb_EpsCopyInputStream_PushLimit(&eps_, ptr_, limit));
-//     return true;
-//   }
-//
-//   bool IsEof() const { return eof_; }
-//
-//  private:
 //   bool IsAtLimit() {
 //     return upb_EpsCopyInputStream_IsDone(&eps_, &ptr_,
 //                                          &EpsStream::IsDoneFallback);
@@ -150,12 +171,18 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //   std::string data_;
 //   const char* ptr_;
 //   std::vector<int> deltas_;
+//   upb::Arena arena_;
 //   bool error_ = false;
 //   bool eof_ = false;
+//   bool enable_aliasing_;
 // };
 //
 // // Reads N bytes from the given position.
 // struct ReadOp {
+//   int bytes;  // Must be <= kUpb_EpsCopyInputStream_SlopBytes.
+// };
+//
+// struct ReadStringOp {
 //   int bytes;
 // };
 //
@@ -164,14 +191,16 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //   int bytes;
 // };
 //
-// typedef std::variant<ReadOp, PushLimitOp> Op;
+// typedef std::variant<ReadOp, ReadStringOp, PushLimitOp> Op;
 //
 // struct EpsCopyTestScript {
 //   int data_size;
+//   bool enable_aliasing;
 //   std::vector<Op> ops;
 // };
 //
 // auto ArbitraryEpsCopyTestScript() {
+//   using ::fuzztest::Arbitrary;
 //   using ::fuzztest::InRange;
 //   using ::fuzztest::NonNegative;
 //   using ::fuzztest::StructOf;
@@ -182,9 +211,12 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //
 //   return StructOf<EpsCopyTestScript>(
 //       InRange(0, max_data_size),  // data_size
+//       Arbitrary<bool>(),          // enable_aliasing
 //       VectorOf(VariantOf(
 //           // ReadOp
 //           StructOf<ReadOp>(InRange(0, kUpb_EpsCopyInputStream_SlopBytes)),
+//           // ReadStringOp
+//           StructOf<ReadStringOp>(NonNegative<int>()),
 //           // PushLimitOp
 //           StructOf<PushLimitOp>(NonNegative<int>()))));
 // }
@@ -198,7 +230,7 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //   }
 //
 //   FakeStream fake_stream(data);
-//   EpsStream eps_stream(data);
+//   EpsStream eps_stream(data, script.enable_aliasing);
 //
 //   for (const auto& op : script.ops) {
 //     if (const ReadOp* read_op = std::get_if<ReadOp>(&op)) {
@@ -211,22 +243,80 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //       EXPECT_EQ(data_fake, data_eps);
 //       EXPECT_EQ(fake_stream.IsEof(), eps_stream.IsEof());
 //       if (fake_stream.IsEof()) break;
+//     } else if (const ReadStringOp* read_op = std::get_if<ReadStringOp>(&op)) {
+//       std::string data_fake;
+//       std::string data_eps;
+//       int fake_result = fake_stream.ReadData(read_op->bytes, &data_fake);
+//       int eps_result = eps_stream.ReadString(read_op->bytes, &data_eps);
+//       EXPECT_EQ(fake_result, eps_result);
+//       if (fake_result == -1) break;  // Error
+//       EXPECT_EQ(data_fake, data_eps);
+//       EXPECT_EQ(fake_stream.IsEof(), eps_stream.IsEof());
+//       if (fake_stream.IsEof()) break;
 //     } else if (const PushLimitOp* push = std::get_if<PushLimitOp>(&op)) {
 //       EXPECT_EQ(fake_stream.TryPushLimit(push->bytes),
 //                 eps_stream.TryPushLimit(push->bytes));
+//     } else {
+//       EXPECT_TRUE(false);  // Unknown op.
 //     }
 //   }
 // }
 //
+// // Test with:
+// //  $ blaze run --config=fuzztest third_party/upb:eps_copy_input_stream_test \
+// //   -- --gunit_fuzz=
 // FUZZ_TEST(EpsCopyFuzzTest, TestAgainstFakeStream)
 //     .WithDomains(ArbitraryEpsCopyTestScript());
 //
 // TEST(EpsCopyFuzzTest, TestAgainstFakeStreamRegression) {
 //   TestAgainstFakeStream({299,
+//                          false,
 //                          {
 //                              PushLimitOp{2},
 //                              ReadOp{14},
 //                          }});
+// }
+//
+// TEST(EpsCopyFuzzTest, AliasingEnabledZeroSizeReadString) {
+//   TestAgainstFakeStream({510, true, {ReadStringOp{0}}});
+// }
+//
+// TEST(EpsCopyFuzzTest, AliasingDisabledZeroSizeReadString) {
+//   TestAgainstFakeStream({510, false, {ReadStringOp{0}}});
+// }
+//
+// TEST(EpsCopyFuzzTest, ReadStringZero) {
+//   TestAgainstFakeStream({0, true, {ReadStringOp{0}}});
+// }
+//
+// TEST(EpsCopyFuzzTest, ReadZero) {
+//   TestAgainstFakeStream({0, true, {ReadOp{0}}});
+// }
+//
+// TEST(EpsCopyFuzzTest, ReadZeroTwice) {
+//   TestAgainstFakeStream({0, true, {ReadOp{0}, ReadOp{0}}});
+// }
+//
+// TEST(EpsCopyFuzzTest, ReadStringZeroThenRead) {
+//   TestAgainstFakeStream({0, true, {ReadStringOp{0}, ReadOp{0}}});
+// }
+//
+// TEST(EpsCopyFuzzTest, ReadStringOverflowsBufferButNotLimit) {
+//   TestAgainstFakeStream({351,
+//                          false,
+//                          {
+//                              ReadOp{7},
+//                              PushLimitOp{2147483647},
+//                              ReadStringOp{344},
+//                          }});
+// }
+//
+// TEST(EpsCopyFuzzTest, LastBufferAliasing) {
+//   TestAgainstFakeStream({27, true, {ReadOp{12}, ReadStringOp{3}}});
+// }
+//
+// TEST(EpsCopyFuzzTest, FirstBufferAliasing) {
+//   TestAgainstFakeStream({7, true, {ReadStringOp{3}}});
 // }
 //
 // end:google_only

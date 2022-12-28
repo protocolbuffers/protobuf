@@ -956,6 +956,7 @@ cc_test(
     name = "eps_copy_input_stream_test",
     srcs = ["upb/wire/eps_copy_input_stream_test.cc"],
     deps = [
+        ":upb",
         ":wire_internal",
         "@com_google_googletest//:gtest_main",
     ],

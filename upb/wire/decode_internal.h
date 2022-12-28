@@ -131,8 +131,6 @@ UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
     }
     d->unknown = new_start;
   }
-
-  d->options &= ~kUpb_DecodeOption_AliasString;
   return new_start;
 }
 

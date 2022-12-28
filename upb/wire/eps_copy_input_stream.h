@@ -30,6 +30,8 @@
 
 #include <string.h>
 
+#include "upb/mem/arena.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -41,9 +43,16 @@
 // this invariant.
 #define kUpb_EpsCopyInputStream_SlopBytes 16
 
+enum {
+  kUpb_EpsCopyInputStream_NoAliasing = 0,
+  kUpb_EpsCopyInputStream_OnPatch = 1,
+  kUpb_EpsCopyInputStream_NoDelta = 2
+};
+
 typedef struct {
   const char* end;        // Can read up to SlopBytes bytes beyond this.
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
+  uintptr_t aliasing;
   int limit;              // Submessage limit relative to end
   char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
 } upb_EpsCopyInputStream;
@@ -56,14 +65,16 @@ typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
 
 // Initializes a upb_EpsCopyInputStream using the contents of the buffer
 // [*ptr, size].  Updates `*ptr` as necessary to guarantee that at least
-// kUpb_EpsCopyInputStream_SlopBytes, and returns true if the pointer has been
-// updated.
-UPB_INLINE bool upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
-                                            const char** ptr, size_t size) {
+// kUpb_EpsCopyInputStream_SlopBytes are available to read.
+UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
+                                            const char** ptr, size_t size,
+                                            bool enable_aliasing) {
   bool ret;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
     memset(&e->patch, 0, 32);
     if (size) memcpy(&e->patch, *ptr, size);
+    e->aliasing = enable_aliasing ? (uintptr_t)*ptr - (uintptr_t)e->patch
+                                  : kUpb_EpsCopyInputStream_NoAliasing;
     *ptr = e->patch;
     e->end = *ptr + size;
     e->limit = 0;
@@ -71,10 +82,11 @@ UPB_INLINE bool upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
   } else {
     e->end = *ptr + size - kUpb_EpsCopyInputStream_SlopBytes;
     e->limit = kUpb_EpsCopyInputStream_SlopBytes;
+    e->aliasing = enable_aliasing ? kUpb_EpsCopyInputStream_NoDelta
+                                  : kUpb_EpsCopyInputStream_NoAliasing;
     ret = false;
   }
   e->limit_ptr = e->end;
-  return ret;
 }
 
 typedef enum {
@@ -195,6 +207,62 @@ UPB_INLINE bool upb_EpsCopyInputStream_CheckSubMessageSizeAvailable(
   return _upb_EpsCopyInputStream_CheckSizeAvailable(e, ptr, size, true);
 }
 
+// Returns true if aliasing_enabled=true was passed to
+// upb_EpsCopyInputStream_Init() when this stream was initialized.
+UPB_INLINE bool upb_EpsCopyInputStream_AliasingEnabled(
+    upb_EpsCopyInputStream* e) {
+  return e->aliasing != kUpb_EpsCopyInputStream_NoAliasing;
+}
+
+// Returns true if aliasing_enabled=true was passed to
+// upb_EpsCopyInputStream_Init() when this stream was initialized *and* we can
+// alias into the region [ptr, size] in an input buffer.
+UPB_INLINE bool upb_EpsCopyInputStream_AliasingAvailable(
+    upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
+  // When EpsCopyInputStream supports streaming, this will need to become a
+  // runtime check.
+  return upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size) &&
+         e->aliasing >= kUpb_EpsCopyInputStream_NoDelta;
+}
+
+UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
+    upb_EpsCopyInputStream* e, const char** ptr, size_t size) {
+  UPB_ASSUME(upb_EpsCopyInputStream_AliasingAvailable(e, *ptr, size));
+  uintptr_t delta =
+      e->aliasing == kUpb_EpsCopyInputStream_NoDelta ? 0 : e->aliasing;
+  const char* ret = *ptr + size;
+  *ptr = (const char*)((uintptr_t)*ptr + delta);
+  UPB_ASSUME(ret != NULL);
+  return ret;
+}
+
+// Reads string data from the stream and advances the pointer accordingly.
+// If aliasing was enabled when the stream was initialized, then the returned
+// pointer will point into the input buffer if possible, otherwise new data
+// will be allocated from arena and copied into. We may be forced to copy even
+// if aliasing was enabled if the input data spans input buffers.
+//
+// Returns NULL if memory allocation failed, or we reached a premature EOF.
+UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
+    upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_Arena* arena) {
+  if (upb_EpsCopyInputStream_AliasingAvailable(e, *ptr, size)) {
+    return upb_EpsCopyInputStream_ReadStringAliased(e, ptr, size);
+  } else {
+    // We need to allocate and copy.
+    if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, *ptr, size)) {
+      return NULL;
+    }
+    char* data = (char*)upb_Arena_Malloc(arena, size);
+    if (!data) return NULL;
+    memcpy(data, *ptr, size);
+    const char* ret = *ptr + size;
+    *ptr = data;
+    UPB_ASSUME(ret != NULL);
+    return ret;
+  }
+}
+
 UPB_INLINE void _upb_EpsCopyInputStream_CheckLimit(upb_EpsCopyInputStream* e) {
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
 }
@@ -245,6 +313,9 @@ UPB_INLINE const char* _upb_EpsCopyInputStream_IsDoneFallbackInline(
     e->limit -= kUpb_EpsCopyInputStream_SlopBytes;
     e->limit_ptr = e->end + e->limit;
     UPB_ASSERT(ptr < e->limit_ptr);
+    if (e->aliasing != kUpb_EpsCopyInputStream_NoAliasing) {
+      e->aliasing = (uintptr_t)old_end - (uintptr_t)new_start;
+    }
     return callback(e, old_end, new_start);
   } else {
     return callback(e, NULL, NULL);
