@@ -33,6 +33,7 @@ This code is used by test scripts generated from staleness_test() rules.
 from __future__ import absolute_import
 from __future__ import print_function
 
+import difflib
 import sys
 import os
 from shutil import copyfile
@@ -171,7 +172,10 @@ def CheckFilesMatch(config):
     continue
 
   for pair in stale_files:
-    diff_errors.append("File %s is out of date" % pair.target)
+    with open(pair.generated) as g, open(pair.target) as t:
+        diff = ''.join(difflib.unified_diff(g.read().splitlines(keepends=True),
+                                            t.read().splitlines(keepends=True)))
+        diff_errors.append("File %s is out of date:\n%s" % (pair.target, diff))
 
   if diff_errors:
     error_msg = "Files out of date!\n\n"
