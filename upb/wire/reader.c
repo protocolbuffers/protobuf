@@ -27,10 +27,11 @@
 
 #include "upb/wire/reader.h"
 
-// Must be last.
-#include "upb/port/def.inc"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/types.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 UPB_NOINLINE _upb_WireReader_ReadLongVarintRet
 _upb_WireReader_ReadLongVarint(const char* ptr, uint64_t val) {

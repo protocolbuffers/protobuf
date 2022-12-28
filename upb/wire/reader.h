@@ -35,6 +35,10 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // The upb_WireReader interface is suitable for general-purpose parsing of
 // protobuf binary wire format.  It is designed to be used along with
 // upb_EpsCopyInputStream for buffering, and all parsing routines in this file
@@ -197,6 +201,10 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
       return NULL;  // Unknown wire type.
   }
 }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #include "upb/port/undef.inc"
 

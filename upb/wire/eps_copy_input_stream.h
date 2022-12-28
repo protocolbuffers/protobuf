@@ -35,6 +35,10 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // The maximum number of bytes a single protobuf field can take up in the
 // wire format.  We only want to do one bounds check per field, so the input
 // stream guarantees that after upb_EpsCopyInputStream_IsDone() is called,
@@ -404,6 +408,10 @@ static UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
   return true;
 }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #include "upb/port/undef.inc"
 
