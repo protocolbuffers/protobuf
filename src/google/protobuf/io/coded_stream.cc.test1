@@ -1,4 +1,3 @@
-#define LOGGING3 false
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -39,7 +38,7 @@
 // will not cross the end of the buffer, since we can avoid a lot
 // of branching in this case.
 
-#include "google/protobuf/io/coded_stream.h"
+#include "third_party/protobuf/io/coded_stream.h"
 
 #include <limits.h>
 
@@ -49,22 +48,26 @@
 #include <cstring>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
-#include "absl/strings/cord.h"
-#include "absl/strings/internal/resize_uninitialized.h"
-#include "absl/strings/string_view.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "google/protobuf/port.h"
+#include "third_party/absl/log/absl_check.h"
+#include "third_party/absl/log/absl_log.h"
+#include "third_party/absl/strings/cord.h"
+#include "third_party/absl/strings/internal/resize_uninitialized.h"
+#include "third_party/absl/strings/string_view.h"
+#include "third_party/protobuf/arena.h"
+#include "third_party/protobuf/io/zero_copy_stream.h"
+#include "third_party/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "third_party/protobuf/port.h"
 
+#ifndef PROTO2_OPENSOURCE
+#include "base/examine_stack.h"
+#include "base/integral_types.h"
+#include "third_party/absl/base/dynamic_annotations.h"
+#endif  // !PROTO2_OPENSOURCE
 
 // Must be included last.
-#include "google/protobuf/port_def.inc"
+#include "third_party/protobuf/port_def.inc"
 
-namespace google {
-namespace protobuf {
+namespace proto2 {
 namespace io {
 
 namespace {
@@ -86,17 +89,19 @@ inline bool NextNonEmpty(ZeroCopyInputStream* input, const void** data,
 }
 
 inline uint8_t* CopyCordToArray(const absl::Cord& cord, uint8_t* target) {
-  LOGGING2;
-  LOGGING2;
+#ifdef PROTO2_OPENSOURCE
   for (absl::string_view sv : cord.Chunks()) {
-    if (LOGGING3)
-      std::cerr << __FUNCTION__ << " " << __LINE__ << " "
-                << (uint64_t)*sv.data() << " " << sv.data() << " " << sv.size()
-                << " " << (uint64_t*)target << " " << std::endl;
     memcpy(target, sv.data(), sv.size());
     target += sv.size();
   }
   return target;
+#else   // PROTO2_OPENSOURCE
+  // Cord::CopyToArray() is more efficient than the code above.
+  // This is confirmed by %10-20% difference in Union benchmarks:
+  // http://google3/indexing/union/common/encoding_benchmark.cc
+  cord.CopyToArray(reinterpret_cast<char*>(target));
+  return target + cord.size();
+#endif  // PROTO2_OPENSOURCE
 }
 
 }  // namespace
@@ -112,6 +117,30 @@ CodedInputStream::~CodedInputStream() {
 // Static.
 int CodedInputStream::default_recursion_limit_ = 100;
 
+#ifndef PROTO2_OPENSOURCE
+void CodedInputStream::SetDefaultRecursionLimit(int limit) {
+  ABSL_ANNOTATE_BENIGN_RACE(&default_recursion_limit_,
+                            "The value should only be set as part of global "
+                            "initialization.");
+
+  default_recursion_limit_ = limit;
+}
+
+void CodedInputStream::MakeDefaultRecursionLimitAtLeast(int limit) {
+  ABSL_ANNOTATE_BENIGN_RACE(&default_recursion_limit_,
+                            "The value should only be set as part of global "
+                            "initialization.");
+
+  if (default_recursion_limit_ < limit) {
+    SetDefaultRecursionLimit(limit);
+  }
+}
+
+void CodedInputStream::EnableAliasing(bool enabled) {
+  aliasing_enabled_ = enabled && (input_ == NULL || input_->AllowsAliasing());
+}
+
+#endif  // !PROTO2_OPENSOURCE
 
 void CodedInputStream::BackUpInputToCurrentPosition() {
   int backup_bytes = BufferSize() + buffer_size_after_limit_ + overflow_bytes_;
@@ -182,7 +211,7 @@ CodedInputStream::Limit CodedInputStream::ReadLengthAndPushLimit() {
 bool CodedInputStream::DecrementRecursionDepthAndPopLimit(Limit limit) {
   bool result = ConsumedEntireMessage();
   PopLimit(limit);
-  GOOGLE_ABSL_DCHECK_LT(recursion_budget_, recursion_limit_);
+  ABSL_DCHECK_LT(recursion_budget_, recursion_limit_);
   ++recursion_budget_;
   return result;
 }
@@ -214,7 +243,7 @@ int CodedInputStream::BytesUntilTotalBytesLimit() const {
 }
 
 void CodedInputStream::PrintTotalBytesLimitError() {
-  GOOGLE_ABSL_LOG(ERROR) << "A protocol message was rejected because it was too "
+  ABSL_LOG(ERROR) << "A protocol message was rejected because it was too "
                      "big (more than "
                   << total_bytes_limit_
                   << " bytes).  To increase the limit (or to disable these "
@@ -287,7 +316,7 @@ bool CodedInputStream::ReadString(std::string* buffer, int size) {
     if (z.second) {
       // Oddly enough, memcpy() requires its first two args to be non-NULL even
       // if we copy 0 bytes.  So, we have ensured that z.first is non-NULL here.
-      GOOGLE_ABSL_DCHECK(z.first != NULL);
+      ABSL_DCHECK(z.first != NULL);
       memcpy(z.first, buffer_, size);
       Advance(size);
     }
@@ -331,8 +360,7 @@ bool CodedInputStream::ReadStringFallback(std::string* buffer, int size) {
 }
 
 bool CodedInputStream::ReadCord(absl::Cord* output, int size) {
-  LOGGING2;
-  GOOGLE_ABSL_DCHECK_NE(output, nullptr);
+  ABSL_DCHECK_NE(output, nullptr);
 
   // security: size is often user-supplied
   if (size < 0) {
@@ -371,6 +399,186 @@ bool CodedInputStream::ReadCord(absl::Cord* output, int size) {
   return input_->ReadCord(output, size);
 }
 
+#ifndef PROTO2_OPENSOURCE
+
+bool CodedInputStream::CopyToByteSink(strings::ByteSink* output, int size) {
+  if (size < 0) return false;  // security: size is often user-supplied
+
+  if (input_ == NULL || size < kMaxCordBytesToCopy) {
+    const int bytes_from_buffer = std::min(size, BufferSize());
+    // Just copy the current buffer into the output rather than backing up.
+    output->Append(reinterpret_cast<const char*>(buffer_), bytes_from_buffer);
+    Advance(bytes_from_buffer);
+    size -= bytes_from_buffer;
+    if (size == 0) return true;
+    if (input_ == NULL || buffer_size_after_limit_ + overflow_bytes_ > 0) {
+      // We hit a limit.
+      return false;
+    }
+  } else {
+    BackUpInputToCurrentPosition();
+  }
+
+  // OK, now read the rest with a call to CopyToByteSink().
+  int closest_limit = std::min(current_limit_, total_bytes_limit_);
+  if (total_bytes_read_ > closest_limit - size) {
+    // The read crosses a limit set by PushLimit() or SetTotalBytesLimit().
+    // Read up to the limit and then return false.
+    input_->CopyToByteSink(output, closest_limit - total_bytes_read_);
+    total_bytes_read_ = closest_limit;
+    return false;
+  } else {
+    total_bytes_read_ += size;
+    return input_->CopyToByteSink(output, size);
+  }
+}
+
+bool CodedInputStream::ReadStringPiece(absl::string_view* output, int size,
+                                       std::string* scratch) {
+  if (size < 0) return false;  // security: size is often user-supplied
+
+  if (aliasing_enabled_ && size <= BufferSize()) {
+    *output = absl::string_view(reinterpret_cast<const char*>(buffer_), size);
+    Advance(size);
+    return true;
+  } else {
+    if (!ReadString(scratch, size)) return false;
+    *output = *scratch;
+    return true;
+  }
+}
+
+bool CodedInputStream::ReadAliasedArray(const char** output, int size,
+                                        char** scratch, int* scratch_size,
+                                        Arena* arena) {
+  if (size < 0) return false;  // security: size is often user-supplied
+
+  if (aliasing_enabled_ && BufferSize() >= size) {
+    *output = reinterpret_cast<const char*>(buffer_);
+    Advance(size);
+    return true;
+  } else if (*scratch_size >= size) {
+    if (!ReadRaw(*scratch, size)) return false;
+    *output = *scratch;
+    return true;
+  } else if (BufferSize() >= size) {
+    if (arena == NULL) {
+      std::allocator<char>().deallocate(*scratch, *scratch_size);
+      *scratch = std::allocator<char>().allocate(size);
+    } else {
+      *scratch = ::proto2::Arena::CreateArray<char>(arena, size);
+    }
+    *scratch_size = size;
+    *output = *scratch;
+    memcpy(*scratch, buffer_, size);
+    Advance(size);
+    return true;
+  } else {
+    // Read into a string first for security, then copy.  This ensures that we
+    // do not allocate a gigantic buffer unless we actually receive data to
+    // fill it.
+    std::string scratch_string;
+    if (!ReadString(&scratch_string, size)) return false;
+    if (arena == NULL) {
+      std::allocator<char>().deallocate(*scratch, *scratch_size);
+      *scratch = std::allocator<char>().allocate(size);
+    } else {
+      *scratch =
+          ::proto2::Arena::CreateArray<char>(arena, scratch_string.size());
+    }
+    *scratch_size = scratch_string.size();
+    *output = *scratch;
+    memcpy(*scratch, scratch_string.data(), scratch_string.size());
+    return true;
+  }
+}
+
+absl::string_view CodedInputStream::ReadStringPiece(int size,
+                                                    std::string* scratch) {
+  absl::string_view result;
+  // Security: size is often user-supplied.
+  if (size < 0) return absl::string_view(NULL, 0);
+
+  if (aliasing_enabled_ && size <= BufferSize()) {
+    result = absl::string_view(reinterpret_cast<const char*>(buffer_), size);
+    Advance(size);
+    return result;
+  } else {
+    return ReadString(scratch, size) ? absl::string_view(*scratch)
+                                     : absl::string_view(NULL, 0);
+  }
+}
+
+// See below; we need an address that isn't null, but we'll never use.
+static const char* non_null_never_used_address() {
+#ifdef NDEBUG
+  return "";
+#else
+  // For debug builds, we return the address of some memory that once was
+  // allocated, so that things like sanitizers can catch any actual use.
+  // Allocate 4K to allow some systems to map out the resulting page, hence
+  // preventing access even if a sanitizer isn't being used.
+  static auto* never_used = [] {
+    auto* ptr = new char[4096];
+    delete[] ptr;
+    return ptr;
+  }();
+  return never_used;
+#endif
+}
+
+std::pair<const char*, bool> CodedInputStream::ReadAliasedArray(
+    int size, char** scratch, int* scratch_size, Arena* arena) {
+  const char* result = nullptr;
+  // Security: size is often user-supplied.  Also, ensure size == 0 is
+  // handled here because the subsequent code assumes size > 0.
+  if (size <= 0) {
+    // If we succeed we cannot return nullptr as the first part of the result.
+    return size == 0 ? std::make_pair(non_null_never_used_address(), true)
+                     : std::make_pair(result, false);
+  }
+  if (aliasing_enabled_ && BufferSize() >= size) {
+    result = reinterpret_cast<const char*>(buffer_);
+    Advance(size);
+    return std::make_pair(result, true);
+  } else if (*scratch_size >= size) {
+    char* data = *scratch;
+    bool success = ReadRaw(data, size);
+    return std::make_pair(success ? data : nullptr, success);
+  } else if (BufferSize() >= size) {
+    if (arena == nullptr) {
+      std::allocator<char>().deallocate(*scratch, *scratch_size);
+      *scratch = std::allocator<char>().allocate(size);
+    } else {
+      *scratch = ::proto2::Arena::CreateArray<char>(arena, size);
+    }
+    *scratch_size = size;
+    char* data = *scratch;
+    memcpy(data, buffer_, size);
+    Advance(size);
+    return std::make_pair(data, false);
+  } else {
+    // Read into a string first for security, then copy.  This ensures that we
+    // do not allocate a gigantic buffer unless we actually receive data to
+    // fill it.
+    std::string scratch_string;
+    if (!ReadString(&scratch_string, size))
+      return std::make_pair(result, false);
+    if (arena == nullptr) {
+      std::allocator<char>().deallocate(*scratch, *scratch_size);
+      *scratch = std::allocator<char>().allocate(size);
+    } else {
+      *scratch =
+          ::proto2::Arena::CreateArray<char>(arena, scratch_string.size());
+    }
+    *scratch_size = scratch_string.size();
+    char* data = *scratch;
+    memcpy(data, scratch_string.data(), scratch_string.size());
+    return std::make_pair(data, false);
+  }
+}
+
+#endif  // !PROTO2_OPENSOURCE
 
 bool CodedInputStream::ReadLittleEndian32Fallback(uint32_t* value) {
   uint8_t bytes[sizeof(*value)];
@@ -413,7 +621,7 @@ namespace {
 // subtracting 0x80 at each iteration, it subtracts properly shifted mask once.
 template <size_t N>
 const uint8_t* DecodeVarint64KnownSize(const uint8_t* buffer, uint64_t* value) {
-  GOOGLE_ABSL_DCHECK_GT(N, 0);
+  ABSL_DCHECK_GT(N, 0);
   uint64_t result = static_cast<uint64_t>(buffer[N - 1]) << (7 * (N - 1));
   for (size_t i = 0, offset = 0; i < N - 1; i++, offset += 7) {
     result += static_cast<uint64_t>(buffer[i] - 0x80) << offset;
@@ -434,8 +642,8 @@ inline ::std::pair<bool, const uint8_t*> ReadVarint32FromArray(
     uint32_t first_byte, const uint8_t* buffer, uint32_t* value) {
   // Fast path:  We have enough bytes left in the buffer to guarantee that
   // this read won't cross the end, so we can skip the checks.
-  GOOGLE_ABSL_DCHECK_EQ(*buffer, first_byte);
-  GOOGLE_ABSL_DCHECK_EQ(first_byte & 0x80, 0x80) << first_byte;
+  ABSL_DCHECK_EQ(*buffer, first_byte);
+  ABSL_DCHECK_EQ(first_byte & 0x80, 0x80) << first_byte;
   const uint8_t* ptr = buffer;
   uint32_t b;
   uint32_t result = first_byte - 0x80;
@@ -478,7 +686,7 @@ PROTOBUF_ALWAYS_INLINE::std::pair<bool, const uint8_t*> ReadVarint64FromArray(
 inline ::std::pair<bool, const uint8_t*> ReadVarint64FromArray(
     const uint8_t* buffer, uint64_t* value) {
   // Assumes varint64 is at least 2 bytes.
-  GOOGLE_ABSL_DCHECK_GE(buffer[0], 128);
+  ABSL_DCHECK_GE(buffer[0], 128);
 
   const uint8_t* next;
   if (buffer[1] < 128) {
@@ -524,7 +732,7 @@ int64_t CodedInputStream::ReadVarint32Fallback(uint32_t first_byte_or_zero) {
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
       (buffer_end_ > buffer_ && !(buffer_end_[-1] & 0x80))) {
-    GOOGLE_ABSL_DCHECK_NE(first_byte_or_zero, 0)
+    ABSL_DCHECK_NE(first_byte_or_zero, 0)
         << "Caller should provide us with *buffer_ when buffer is non-empty";
     uint32_t temp;
     ::std::pair<bool, const uint8_t*> p =
@@ -602,7 +810,7 @@ uint32_t CodedInputStream::ReadTagFallback(uint32_t first_byte_or_zero) {
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
       (buf_size > 0 && !(buffer_end_[-1] & 0x80))) {
-    GOOGLE_ABSL_DCHECK_EQ(first_byte_or_zero, buffer_[0]);
+    ABSL_DCHECK_EQ(first_byte_or_zero, buffer_[0]);
     if (first_byte_or_zero == 0) {
       ++buffer_;
       return 0;
@@ -684,7 +892,7 @@ std::pair<uint64_t, bool> CodedInputStream::ReadVarint64Fallback() {
 }
 
 bool CodedInputStream::Refresh() {
-  GOOGLE_ABSL_DCHECK_EQ(0, BufferSize());
+  ABSL_DCHECK_EQ(0, BufferSize());
 
   if (buffer_size_after_limit_ > 0 || overflow_bytes_ > 0 ||
       total_bytes_read_ == current_limit_) {
@@ -706,7 +914,7 @@ bool CodedInputStream::Refresh() {
     LOGGING2;
     buffer_ = reinterpret_cast<const uint8_t*>(void_buffer);
     buffer_end_ = buffer_ + buffer_size;
-    GOOGLE_ABSL_CHECK_GE(buffer_size, 0);
+    ABSL_CHECK_GE(buffer_size, 0);
 
     if (total_bytes_read_ <= INT_MAX - buffer_size) {
       total_bytes_read_ += buffer_size;
@@ -738,12 +946,10 @@ bool CodedInputStream::Refresh() {
 // CodedOutputStream =================================================
 
 void EpsCopyOutputStream::EnableAliasing(bool enabled) {
-  LOGGING2;
   aliasing_enabled_ = enabled && stream_->AllowsAliasing();
 }
 
 int64_t EpsCopyOutputStream::ByteCount(uint8_t* ptr) const {
-  LOGGING2;
   // Calculate the current offset relative to the end of the stream buffer.
   int delta = (end_ - ptr) + (buffer_end_ ? 0 : kSlopBytes);
   return stream_->ByteCount() - delta;
@@ -753,11 +959,10 @@ int64_t EpsCopyOutputStream::ByteCount(uint8_t* ptr) const {
 // Returns the size remaining in the buffer and sets buffer_end_ to the start
 // of the remaining buffer, ie. [buffer_end_, buffer_end_ + return value)
 int EpsCopyOutputStream::Flush(uint8_t* ptr) {
-  LOGGING2;
   while (buffer_end_ && ptr > end_) {
     int overrun = ptr - end_;
-    GOOGLE_ABSL_DCHECK(!had_error_);
-    GOOGLE_ABSL_DCHECK(overrun <= kSlopBytes);  // NOLINT
+    ABSL_DCHECK(!had_error_);
+    ABSL_DCHECK(overrun <= kSlopBytes);  // NOLINT
     ptr = Next() + overrun;
     if (had_error_) return 0;
   }
@@ -771,7 +976,7 @@ int EpsCopyOutputStream::Flush(uint8_t* ptr) {
     s = end_ + kSlopBytes - ptr;
     buffer_end_ = ptr;
   }
-  GOOGLE_ABSL_DCHECK(s >= 0);  // NOLINT
+  ABSL_DCHECK(s >= 0);  // NOLINT
   return s;
 }
 
@@ -781,23 +986,12 @@ uint8_t* EpsCopyOutputStream::FlushArray(uint8_t* ptr) {
   if (PROTOBUF_PREDICT_FALSE(had_error_)) return ptr;
   if (buffer_end_ != nullptr) {
     LOGGING2;
-    if (LOGGING3) {
-      std::cerr << __FUNCTION__ << " " << __LINE__ << " " << (uint64_t*)buffer_
-                << " " << (uint64_t*)buffer_end_ << " " << (uint64_t*)ptr << " "
-                << (uint64_t*)end_ << " " << (uint64_t*)array_end_ << std::endl;
-    }
     const ptrdiff_t bytes = ptr - buffer_;
     DCHECK_GE(bytes, 0);
     DCHECK_LE(bytes, array_end_ - buffer_end_);
     memcpy(buffer_end_, buffer_, static_cast<size_t>(bytes));
     ptr = buffer_end_ + bytes;
     buffer_end_ = nullptr;
-    end_ = ptr;
-    if (LOGGING3) {
-      std::cerr << __FUNCTION__ << " " << __LINE__ << " " << (uint64_t*)buffer_
-                << " " << (uint64_t*)buffer_end_ << " " << (uint64_t*)ptr << " "
-                << (uint64_t*)end_ << " " << (uint64_t*)array_end_ << std::endl;
-    }
   }
   return ptr;
 }
@@ -808,10 +1002,10 @@ std::pair<uint8_t*, uint8_t*> EpsCopyOutputStream::ConsumeArray(uint8_t* ptr,
   DCHECK(array_end_ != nullptr);
 
   if (buffer_end_ == nullptr) {
-    LOGGING2;
+  LOGGING2;
     int avail = array_end_ - ptr;
     if (size > avail) return {nullptr, nullptr};
-    LOGGING2;
+  LOGGING2;
     return {ptr, ptr + size};
   }
   LOGGING2;
@@ -822,10 +1016,6 @@ std::pair<uint8_t*, uint8_t*> EpsCopyOutputStream::ConsumeArray(uint8_t* ptr,
   if (size > avail) return {nullptr, nullptr};
   LOGGING2;
 
-  if (LOGGING3)
-    std::cerr << __FUNCTION__ << " " << __LINE__ << " " << (uint64_t*)buffer_
-              << " " << (uint64_t*)buffer_end_ << " " << (uint64_t*)ptr << " "
-              << (uint64_t*)end_ << std::endl;
   memcpy(buffer_end_, buffer_, bytes);
   LOGGING2;
   ptr = buffer_end_ + bytes;
@@ -848,9 +1038,23 @@ uint8_t* EpsCopyOutputStream::Trim(uint8_t* ptr) {
   return buffer_;
 }
 
+#ifndef PROTO2_OPENSOURCE
+DataBuffer* EpsCopyOutputStream::InternalGetDestinationDataBuffer(int amount,
+                                                                  uint8_t** pp) {
+  if (had_error_) return nullptr;
+  int backup = Flush(*pp);
+  // Reset to initial state (expecting new buffer)
+  buffer_end_ = end_ = buffer_;
+  *pp = buffer_;
+  auto res = stream_->InternalGetDestinationDataBuffer(backup, amount);
+  if (res) return res;
+  // Maintain invariants if not a databuffer
+  if (backup > 0) stream_->BackUp(backup);
+  return nullptr;
+}
+#endif  // PROTO2_OPENSOURCE
 
 uint8_t* EpsCopyOutputStream::FlushAndResetBuffer(uint8_t* ptr) {
-  LOGGING2;
   if (had_error_) return buffer_;
   int s = Flush(ptr);
   if (had_error_) return buffer_;
@@ -858,7 +1062,6 @@ uint8_t* EpsCopyOutputStream::FlushAndResetBuffer(uint8_t* ptr) {
 }
 
 bool EpsCopyOutputStream::Skip(int count, uint8_t** pp) {
-  LOGGING2;
   if (count < 0) return false;
   if (had_error_) {
     *pp = buffer_;
@@ -883,7 +1086,6 @@ bool EpsCopyOutputStream::Skip(int count, uint8_t** pp) {
 
 bool EpsCopyOutputStream::GetDirectBufferPointer(void** data, int* size,
                                                  uint8_t** pp) {
-  LOGGING2;
   if (had_error_) {
     *pp = buffer_;
     return false;
@@ -906,7 +1108,6 @@ bool EpsCopyOutputStream::GetDirectBufferPointer(void** data, int* size,
 
 uint8_t* EpsCopyOutputStream::GetDirectBufferForNBytesAndAdvance(int size,
                                                                uint8_t** pp) {
-  LOGGING2;
   if (had_error_) {
     *pp = buffer_;
     return nullptr;
@@ -928,7 +1129,7 @@ uint8_t* EpsCopyOutputStream::GetDirectBufferForNBytesAndAdvance(int size,
 
 uint8_t* EpsCopyOutputStream::Next() {
   LOGGING2;
-  GOOGLE_ABSL_DCHECK(!had_error_);  // NOLINT
+  ABSL_DCHECK(!had_error_);  // NOLINT
   if (PROTOBUF_PREDICT_FALSE(stream_ == nullptr)) return Error();
   if (buffer_end_) {
     // We're in the patch buffer and need to fill up the previous buffer.
@@ -950,7 +1151,7 @@ uint8_t* EpsCopyOutputStream::Next() {
       buffer_end_ = nullptr;
       return ptr;
     } else {
-      GOOGLE_ABSL_DCHECK(size > 0);  // NOLINT
+      ABSL_DCHECK(size > 0);  // NOLINT
       // Buffer to small
       std::memmove(buffer_, end_, kSlopBytes);
       buffer_end_ = ptr;
@@ -975,36 +1176,31 @@ uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
       buffer_end_ = ptr;
       LOGGING2;
       if (LOGGING3)
-        if (LOGGING3)
-          std::cerr << "end_1 " << (uint64_t*)end_ << " "
-                    << (uint64_t*)buffer_end_ << " " << (uint64_t*)buffer_
-                    << " "
-                    << " " << (uint64_t*)ptr << " " << bytes << std::endl;
+        std::cerr << "end_1 " << (uint64_t*)end_ << " "
+                  << (uint64_t*)buffer_end_ << " " << (uint64_t*)buffer_ << " "
+                  << " " << (uint64_t*)ptr << " " << bytes << std::endl;
       end_ = buffer_ + kSlopBytes;
-      if (LOGGING3)
-        if (LOGGING3) std::cerr << "end_2 " << (uint64_t*)end_ << std::endl;
+      if (LOGGING3) std::cerr << "end_2 " << (uint64_t*)end_ << std::endl;
     } else {
       DCHECK(ptr >= buffer_ && ptr <= buffer_ + kSlopBytes);
       memcpy(buffer_end_, buffer_, bytes);
       buffer_end_ += bytes;
       LOGGING2;
       if (LOGGING3)
-        if (LOGGING3)
-          std::cerr << "end_1 " << (uint64_t*)end_ << " " << bytes << std::endl;
+        std::cerr << "end_1 " << (uint64_t*)end_ << " " << bytes << std::endl;
       end_ = buffer_ + kSlopBytes;
-      if (LOGGING3)
-        if (LOGGING3) std::cerr << "end_2 " << (uint64_t*)end_ << std::endl;
+      if (LOGGING3) std::cerr << "end_2 " << (uint64_t*)end_ << std::endl;
     }
     return buffer_;
   }
   do {
     if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
     int overrun = ptr - end_;
-    GOOGLE_ABSL_DCHECK(overrun >= 0);           // NOLINT
-    GOOGLE_ABSL_DCHECK(overrun <= kSlopBytes);  // NOLINT
+    ABSL_DCHECK(overrun >= 0);           // NOLINT
+    ABSL_DCHECK(overrun <= kSlopBytes);  // NOLINT
     ptr = Next() + overrun;
   } while (ptr >= end_);
-  GOOGLE_ABSL_DCHECK(ptr < end_);  // NOLINT
+  ABSL_DCHECK(ptr < end_);  // NOLINT
   return ptr;
 }
 
@@ -1033,8 +1229,10 @@ uint8_t* EpsCopyOutputStream::WriteRawFallback(const void* data, int size,
 
 uint8_t* EpsCopyOutputStream::WriteAliasedRaw(const void* data, int size,
                                             uint8_t* ptr) {
-  LOGGING2;
   if (size < GetSize(ptr)
+#ifndef PROTO2_OPENSOURCE
+      && size < kMaxCordBytesToCopy
+#endif  // !PROTO2_OPENSOURCE
   ) {
     return WriteRaw(data, size, ptr);
   } else {
@@ -1093,22 +1291,15 @@ uint8_t* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
 #endif
 
 uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
-  if (LOGGING3)
-    std::cerr << "JDCSTRING " << __FUNCTION__ << " " << (uint64_t)*ptr << " "
-              << (uint64_t*)ptr << std::endl;
   LOGGING2;
   if (stream_ == nullptr) {
-    LOGGING2;
+  LOGGING2;
     auto ptrs = ConsumeArray(ptr, static_cast<int>(cord.size()));
     if (PROTOBUF_PREDICT_FALSE(ptrs.first == nullptr)) return Error();
-    LOGGING2;
+  LOGGING2;
     // Just copy it to the current buffer.
-    if (LOGGING3)
-      std::cerr << "JDCPTR " << (uint64_t*)ptrs.first << " "
-                << (uint64_t*)ptrs.second << " " << (uint64_t*)ptr << " "
-                << std::endl;
-    CopyCordToArray(cord, ptrs.first);
-    LOGGING2;
+    CopyCordToArray(cord, ptr);
+  LOGGING2;
     return ptrs.second;
   }
   LOGGING2;
@@ -1117,10 +1308,10 @@ uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
   if (static_cast<int64_t>(cord.size()) <= s &&
       static_cast<int64_t>(cord.size()) < kMaxCordBytesToCopy) {
     // Just copy it to the current buffer.
-    LOGGING2;
+  LOGGING2;
     return CopyCordToArray(cord, ptr);
   } else {
-    LOGGING2;
+  LOGGING2;
     // Back up to the position where the Cord should start.
     ptr = Trim(ptr);
     if (!stream_->WriteCord(cord)) return Error();
@@ -1141,7 +1332,6 @@ uint8_t* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32_t num,
 
 uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, const std::string& s,
                                                uint8_t* ptr) {
-  LOGGING2;
   ptr = EnsureSpace(ptr);
   uint32_t size = s.size();
   ptr = WriteLengthDelim(num, size, ptr);
@@ -1157,10 +1347,9 @@ uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, absl::string_view
 }
 
 uint8_t* EpsCopyOutputStream::WriteCordOutline(const absl::Cord& c, uint8_t* ptr) {
-  LOGGING2;
   uint32_t size = c.size();
   ptr = UnsafeWriteSize(size, ptr);
-  return Finalize(WriteCord(c, ptr));
+  return WriteCord(c, ptr);
 }
 
 std::atomic<bool> CodedOutputStream::default_serialization_deterministic_{
@@ -1170,20 +1359,25 @@ CodedOutputStream::~CodedOutputStream() { Trim(); }
 
 uint8_t* CodedOutputStream::WriteCordToArray(const absl::Cord& cord,
                                              uint8_t* target) {
-  LOGGING2;
   return CopyCordToArray(cord, target);
 }
 
+#ifndef PROTO2_OPENSOURCE
+DataBuffer* CodedOutputStream::InternalGetDestinationDataBuffer(
+    int amount_to_append) {
+  start_count_ -= amount_to_append;
+  return impl_.InternalGetDestinationDataBuffer(amount_to_append, &cur_);
+}
+#endif  // !PROTO2_OPENSOURCE
 
 uint8_t* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
                                                      uint8_t* target) {
-  GOOGLE_ABSL_DCHECK_LE(str.size(), std::numeric_limits<uint32_t>::max());
+  ABSL_DCHECK_LE(str.size(), std::numeric_limits<uint32_t>::max());
   target = WriteVarint32ToArray(str.size(), target);
   return WriteStringToArray(str, target);
 }
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+}  // namespace proto2
 
-#include "google/protobuf/port_undef.inc"
+#include "third_party/protobuf/port_undef.inc"

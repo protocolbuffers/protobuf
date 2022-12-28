@@ -606,34 +606,56 @@ class SimpleErrorCollector : public io::ErrorCollector {
 // the original descriptors.
 TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
   absl::flat_hash_set<std::string> visited;
+  std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
   std::vector<std::pair<std::string, std::string>> debug_strings;
+  std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
   ExtractDebugString(protobuf_unittest::TestAllTypes::descriptor()->file(),
                      &visited, &debug_strings);
+  std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
   ExtractDebugString(
       protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file(),
       &visited, &debug_strings);
+  std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
   ExtractDebugString(proto3_arena_unittest::TestAllTypes::descriptor()->file(),
                      &visited, &debug_strings);
+  std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
   ASSERT_GE(debug_strings.size(), 3);
+  std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
 
   DescriptorPool pool;
+  std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
   for (int i = 0; i < debug_strings.size(); ++i) {
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     const std::string& name = debug_strings[i].first;
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     const std::string& content = debug_strings[i].second;
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     io::ArrayInputStream input_stream(content.data(), content.size());
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     SimpleErrorCollector error_collector;
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     io::Tokenizer tokenizer(&input_stream, &error_collector);
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     compiler::Parser parser;
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     parser.RecordErrorsTo(&error_collector);
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     FileDescriptorProto proto;
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
         << error_collector.last_error() << "\n"
         << content;
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     ASSERT_EQ("", error_collector.last_error());
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     proto.set_name(name);
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     const FileDescriptor* descriptor = pool.BuildFile(proto);
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     ASSERT_TRUE(descriptor != nullptr) << proto.DebugString();
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
     EXPECT_EQ(content, descriptor->DebugString());
+    std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
   }
 }
 

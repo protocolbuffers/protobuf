@@ -548,10 +548,11 @@ TEST(ExtensionSetTest, SerializationToArray) {
   TestUtil::SetAllExtensions(&source);
   size_t size = source.ByteSizeLong();
   std::string data;
-  data.resize(size);
+  data.resize(size + 16);
   uint8_t* target = reinterpret_cast<uint8_t*>(&data[0]);
   uint8_t* end = source.SerializeWithCachedSizesToArray(target);
   EXPECT_EQ(size, end - target);
+  data.resize(size);
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectAllFieldsSet(destination);
 }
@@ -569,13 +570,14 @@ TEST(ExtensionSetTest, SerializationToStream) {
   TestUtil::SetAllExtensions(&source);
   size_t size = source.ByteSizeLong();
   std::string data;
-  data.resize(size);
+  data.resize(size + 16);
   {
     io::ArrayOutputStream array_stream(&data[0], size, 1);
     io::CodedOutputStream output_stream(&array_stream);
     source.SerializeWithCachedSizes(&output_stream);
     ASSERT_FALSE(output_stream.HadError());
   }
+  data.resize(size);
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectAllFieldsSet(destination);
 }
@@ -592,10 +594,11 @@ TEST(ExtensionSetTest, PackedSerializationToArray) {
   TestUtil::SetPackedExtensions(&source);
   size_t size = source.ByteSizeLong();
   std::string data;
-  data.resize(size);
+  data.resize(size + 16);
   uint8_t* target = reinterpret_cast<uint8_t*>(&data[0]);
   uint8_t* end = source.SerializeWithCachedSizesToArray(target);
   EXPECT_EQ(size, end - target);
+  data.resize(size);
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectPackedFieldsSet(destination);
 }
@@ -613,13 +616,14 @@ TEST(ExtensionSetTest, PackedSerializationToStream) {
   TestUtil::SetPackedExtensions(&source);
   size_t size = source.ByteSizeLong();
   std::string data;
-  data.resize(size);
+  data.resize(size + 16);
   {
     io::ArrayOutputStream array_stream(&data[0], size, 1);
     io::CodedOutputStream output_stream(&array_stream);
     source.SerializeWithCachedSizes(&output_stream);
     ASSERT_FALSE(output_stream.HadError());
   }
+  data.resize(size);
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectPackedFieldsSet(destination);
 }

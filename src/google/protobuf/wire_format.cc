@@ -1219,10 +1219,12 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
                                             io::EpsCopyOutputStream* stream) {
   const Reflection* message_reflection = message.GetReflection();
 
+  LOGGING2;
   if (field->is_extension() &&
       field->containing_type()->options().message_set_wire_format() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       !field->is_repeated()) {
+    LOGGING2;
     return InternalSerializeMessageSetItem(field, message, target, stream);
   }
 
@@ -1240,36 +1242,45 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
   // map is valid. In this way, the serialization doesn't change map field's
   // internal state and existing references that came from map reflection remain
   // valid for both reading and writing.
+  LOGGING2;
   if (field->is_map()) {
     const MapFieldBase* map_field =
         message_reflection->GetMapData(message, field);
+    LOGGING2;
     if (map_field->IsMapValid()) {
+      LOGGING2;
       if (stream->IsSerializationDeterministic()) {
+        LOGGING2;
         std::vector<MapKey> sorted_key_list =
             MapKeySorter::SortKey(message, message_reflection, field);
         for (std::vector<MapKey>::iterator it = sorted_key_list.begin();
              it != sorted_key_list.end(); ++it) {
+          LOGGING2;
           MapValueConstRef map_value;
           message_reflection->LookupMapValue(message, field, *it, &map_value);
           target =
               InternalSerializeMapEntry(field, *it, map_value, target, stream);
         }
       } else {
+        LOGGING2;
         for (MapIterator it = message_reflection->MapBegin(
                  const_cast<Message*>(&message), field);
              it !=
              message_reflection->MapEnd(const_cast<Message*>(&message), field);
              ++it) {
+          LOGGING2;
           target = InternalSerializeMapEntry(field, it.GetKey(),
                                              it.GetValueRef(), target, stream);
         }
       }
 
+      LOGGING2;
       return target;
     }
   }
   int count = 0;
 
+  LOGGING2;
   if (field->is_repeated()) {
     count = message_reflection->FieldSize(message, field);
   } else if (field->containing_type()->options().map_entry()) {
@@ -1279,6 +1290,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     count = 1;
   }
 
+  LOGGING2;
   // map_entries is for maps that'll be deterministically serialized.
   std::vector<const Message*> map_entries;
   if (count > 1 && field->is_map() && stream->IsSerializationDeterministic()) {
@@ -1286,9 +1298,12 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
         DynamicMapSorter::Sort(message, count, message_reflection, field);
   }
 
+  LOGGING2;
   if (field->is_packed()) {
+    LOGGING2;
     if (count == 0) return target;
     target = stream->EnsureSpace(target);
+    LOGGING2;
     switch (field->type()) {
 #define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)      \
   case FieldDescriptor::TYPE_##TYPE: {                                         \
@@ -1331,22 +1346,29 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     }
     return target;
   }
+  LOGGING2;
 
   auto get_message_from_field = [&message, &map_entries, message_reflection](
                                     const FieldDescriptor* field, int j) {
+    LOGGING2;
     if (!field->is_repeated()) {
+      LOGGING2;
       return &message_reflection->GetMessage(message, field);
     }
     if (!map_entries.empty()) {
+      LOGGING2;
       return map_entries[j];
     }
+    LOGGING2;
     return &message_reflection->GetRepeatedMessage(message, field, j);
   };
   for (int j = 0; j < count; j++) {
+    LOGGING2;
     target = stream->EnsureSpace(target);
     switch (field->type()) {
 #define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)     \
   case FieldDescriptor::TYPE_##TYPE: {                                        \
+    LOGGING2;                                                                 \
     const CPPTYPE value =                                                     \
         field->is_repeated()                                                  \
             ? message_reflection->GetRepeated##CPPTYPE_METHOD(message, field, \
@@ -1376,18 +1398,21 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
 #undef HANDLE_PRIMITIVE_TYPE
 
       case FieldDescriptor::TYPE_GROUP: {
+        LOGGING2;
         auto* msg = get_message_from_field(field, j);
         target = WireFormatLite::InternalWriteGroup(field->number(), *msg,
                                                     target, stream);
       } break;
 
       case FieldDescriptor::TYPE_MESSAGE: {
+        LOGGING2;
         auto* msg = get_message_from_field(field, j);
         target = WireFormatLite::InternalWriteMessage(
             field->number(), *msg, msg->GetCachedSize(), target, stream);
       } break;
 
       case FieldDescriptor::TYPE_ENUM: {
+        LOGGING2;
         const EnumValueDescriptor* value =
             field->is_repeated()
                 ? message_reflection->GetRepeatedEnum(message, field, j)
@@ -1400,7 +1425,9 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       // Handle strings separately so that we can get string references
       // instead of copying.
       case FieldDescriptor::TYPE_STRING: {
+        LOGGING2;
         bool strict_utf8_check = StrictUtf8Check(field);
+        LOGGING2;
         std::string scratch;
         const std::string& value =
             field->is_repeated()
@@ -1421,6 +1448,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       }
 
       case FieldDescriptor::TYPE_BYTES: {
+        LOGGING2;
         std::string scratch;
         const std::string& value =
             field->is_repeated()
@@ -1441,22 +1469,30 @@ uint8_t* WireFormat::InternalSerializeMessageSetItem(
     io::EpsCopyOutputStream* stream) {
   const Reflection* message_reflection = message.GetReflection();
 
+  LOGGING2;
   target = stream->EnsureSpace(target);
   // Start group.
+  LOGGING2;
   target = io::CodedOutputStream::WriteTagToArray(
       WireFormatLite::kMessageSetItemStartTag, target);
   // Write type ID.
+  LOGGING2;
   target = WireFormatLite::WriteUInt32ToArray(
       WireFormatLite::kMessageSetTypeIdNumber, field->number(), target);
   // Write message.
+  LOGGING2;
   auto& msg = message_reflection->GetMessage(message, field);
+  LOGGING2;
   target = WireFormatLite::InternalWriteMessage(
       WireFormatLite::kMessageSetMessageNumber, msg, msg.GetCachedSize(),
       target, stream);
+  LOGGING2;
   // End group.
   target = stream->EnsureSpace(target);
+  LOGGING2;
   target = io::CodedOutputStream::WriteTagToArray(
       WireFormatLite::kMessageSetItemEndTag, target);
+  LOGGING2;
   return target;
 }
 
