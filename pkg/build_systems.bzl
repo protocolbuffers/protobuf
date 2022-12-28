@@ -212,9 +212,10 @@ def _create_file_list_impl(ctx, fragment_generator):
                 ),
             )
 
+    generator_label = "@//%s:%s" % (ctx.label.package, ctx.label.name)
     ctx.actions.write(
         output = out,
-        content = (ctx.attr._header % ctx.label) + "\n".join(fragments),
+        content = (ctx.attr._header % generator_label) + "\n".join(fragments),
     )
 
     return [DefaultInfo(files = depset([out]))]
