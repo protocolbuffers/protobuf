@@ -1369,25 +1369,6 @@ TEST(ArenaTest, MessageLiteOnArena) {
 }
 #endif  // PROTOBUF_RTTI
 
-// RepeatedField should support non-POD types, and invoke constructors and
-// destructors appropriately, because it's used this way by lots of other code
-// (even if this was not its original intent).
-TEST(ArenaTest, RepeatedFieldWithNonPODType) {
-  {
-    RepeatedField<std::string> field_on_heap;
-    for (int i = 0; i < 100; i++) {
-      *field_on_heap.Add() = "test string long enough to exceed inline buffer";
-    }
-  }
-  {
-    Arena arena;
-    RepeatedField<std::string> field_on_arena(&arena);
-    for (int i = 0; i < 100; i++) {
-      *field_on_arena.Add() = "test string long enough to exceed inline buffer";
-    }
-  }
-}
-
 // Align n to next multiple of 8
 uint64_t Align8(uint64_t n) { return (n + 7) & -8; }
 

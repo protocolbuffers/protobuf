@@ -55,6 +55,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -158,6 +159,16 @@ class RepeatedField final {
   static_assert(!std::is_reference<Element>::value,
                 "We do not support reference value types.");
 #endif  // !PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
+  static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
+#ifdef PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
+    static_assert(
+        absl::disjunction<internal::is_supported_integral_type<Element>,
+                          internal::is_supported_floating_point_type<Element>,
+                          std::is_same<absl::Cord, Element>,
+                          is_proto_enum<Element>>::value,
+        "We only support non-string scalars in RepeatedField.");
+#endif  // PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
+  }
 
  public:
   constexpr RepeatedField();
@@ -534,15 +545,20 @@ struct ElementCopier {
 
 template <typename Element>
 constexpr RepeatedField<Element>::RepeatedField()
-    : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {}
+    : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {
+  StaticValidityCheck();
+}
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(Arena* arena)
-    : current_size_(0), total_size_(0), arena_or_elements_(arena) {}
+    : current_size_(0), total_size_(0), arena_or_elements_(arena) {
+  StaticValidityCheck();
+}
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(const RepeatedField& other)
     : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {
+  StaticValidityCheck();
   if (other.current_size_ != 0) {
     Reserve(other.size());
     AddNAlreadyReserved(other.size());
@@ -554,11 +570,15 @@ template <typename Element>
 template <typename Iter, typename>
 RepeatedField<Element>::RepeatedField(Iter begin, Iter end)
     : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {
+  StaticValidityCheck();
   Add(begin, end);
 }
 
 template <typename Element>
 RepeatedField<Element>::~RepeatedField() {
+  // Fail-safe in case we miss calling this in a constructor.  Note: this one
+  // won't trigger for leaked maps that never get destructed.
+  StaticValidityCheck();
 #ifndef NDEBUG
   // Try to trigger segfault / asan failure in non-opt builds if arena_
   // lifetime has ended before the destructor.
