@@ -182,7 +182,7 @@ int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
     if (!PyUpb_PyToUpb(val, val_f, &u_val, arena)) return -1;
     if (!PyUpb_MapContainer_Set(self, map, u_key, u_val, arena)) return -1;
   } else {
-    if (!upb_Map_Delete2(map, u_key, NULL)) {
+    if (!upb_Map_Delete(map, u_key, NULL)) {
       PyErr_Format(PyExc_KeyError, "Key not present in map");
       return -1;
     }

@@ -579,7 +579,7 @@ static int lupb_Map_Newindex(lua_State* L) {
   upb_MessageValue key = lupb_tomsgval(L, lmap->key_type, 2, 1, LUPB_REF);
 
   if (lua_isnil(L, 3)) {
-    upb_Map_Delete2(map, key, NULL);
+    upb_Map_Delete(map, key, NULL);
   } else {
     upb_MessageValue val = lupb_tomsgval(L, lmap->value_type, 3, 1, LUPB_COPY);
     upb_Map_Set(map, key, val, lupb_Arenaget(L, 1));
