@@ -465,7 +465,7 @@ static VALUE Map_delete(VALUE _self, VALUE key) {
       Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
   upb_MessageValue val_upb;
 
-  if (upb_Map_Delete2(self->map, key_upb, &val_upb)) {
+  if (upb_Map_Delete(self->map, key_upb, &val_upb)) {
     return Convert_UpbToRuby(val_upb, self->value_type_info, self->arena);
   } else {
     return Qnil;
