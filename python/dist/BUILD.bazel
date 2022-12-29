@@ -216,6 +216,7 @@ pkg_tar(
         ":generated_wkt",
         ":generated_wkt_compiler",
         "setup.py",
+        "MANIFEST.in",
         "//:LICENSE",
         "//python:message_extension",
         "@com_google_protobuf//python:python_source_files",
