@@ -79,6 +79,6 @@ setup(
     namespace_packages=['google'],
     packages=find_packages(),
     install_requires=install_requires,
-    ext_modules= [Extension('google.protobuf.pyext._message', glob.glob('google/protobuf/pyext/*.c'))],
+    ext_modules= [Extension('google._upb._message', glob.glob('python/*.c'))],
     python_requires='>=3.7',
 )
