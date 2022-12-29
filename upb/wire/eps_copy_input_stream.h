@@ -81,7 +81,6 @@ typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
 UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
                                             const char** ptr, size_t size,
                                             bool enable_aliasing) {
-  bool ret;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
     memset(&e->patch, 0, 32);
     if (size) memcpy(&e->patch, *ptr, size);
@@ -90,13 +89,11 @@ UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
     *ptr = e->patch;
     e->end = *ptr + size;
     e->limit = 0;
-    ret = true;
   } else {
     e->end = *ptr + size - kUpb_EpsCopyInputStream_SlopBytes;
     e->limit = kUpb_EpsCopyInputStream_SlopBytes;
     e->aliasing = enable_aliasing ? kUpb_EpsCopyInputStream_NoDelta
                                   : kUpb_EpsCopyInputStream_NoAliasing;
-    ret = false;
   }
   e->limit_ptr = e->end;
   e->error = false;
@@ -148,6 +145,7 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsDoneWithCallback(
       *ptr = func(e, *ptr, overrun);
       return *ptr == NULL;
   }
+  UPB_UNREACHABLE();
 }
 
 const char* _upb_EpsCopyInputStream_IsDoneFallbackNoCallback(
