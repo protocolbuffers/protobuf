@@ -297,15 +297,15 @@ class ArrayTest extends TestBase
 
         // Test append.
         $arr[] = 1;
-        $this->assertFloatEquals(1.0, $arr[0], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.0, $arr[0], MAX_FLOAT_DIFF);
 
         $arr[] = 1.1;
-        $this->assertFloatEquals(1.1, $arr[1], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.1, $arr[1], MAX_FLOAT_DIFF);
 
         $arr[] = '2';
-        $this->assertFloatEquals(2.0, $arr[2], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(2.0, $arr[2], MAX_FLOAT_DIFF);
         $arr[] = '3.1';
-        $this->assertFloatEquals(3.1, $arr[3], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(3.1, $arr[3], MAX_FLOAT_DIFF);
 
         $this->assertEquals(4, count($arr));
 
@@ -316,15 +316,15 @@ class ArrayTest extends TestBase
 
         // Test set.
         $arr[0] = 1;
-        $this->assertFloatEquals(1.0, $arr[0], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.0, $arr[0], MAX_FLOAT_DIFF);
 
         $arr[1] = 1.1;
-        $this->assertFloatEquals(1.1, $arr[1], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.1, $arr[1], MAX_FLOAT_DIFF);
 
         $arr[2] = '2';
-        $this->assertFloatEquals(2.0, $arr[2], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(2.0, $arr[2], MAX_FLOAT_DIFF);
         $arr[3] = '3.1';
-        $this->assertFloatEquals(3.1, $arr[3], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(3.1, $arr[3], MAX_FLOAT_DIFF);
     }
 
     #########################################################
@@ -654,5 +654,32 @@ class ArrayTest extends TestBase
         $arr[] = new TestMessage;
         $arr2 = clone $arr;
         $this->assertSame($arr[0], $arr2[0]);
+    }
+
+    #########################################################
+    # Test offsetUnset
+    #########################################################
+
+    public function testOffsetUnset()
+    {
+        $arr = new RepeatedField(GPBType::INT32);
+        $arr[] = 0;
+        $arr[] = 1;
+        $arr[] = 2;
+
+        $this->assertSame(3, count($arr));
+        $this->assertSame(0, $arr[0]);
+        $this->assertSame(1, $arr[1]);
+        $this->assertSame(2, $arr[2]);
+
+        $arr->offsetUnset(1);
+        $this->assertSame(0, $arr[0]);
+        $this->assertSame(2, $arr[1]);
+
+        $arr->offsetUnset(0);
+        $this->assertSame(2, $arr[0]);
+
+        $arr->offsetUnset(0);
+        $this->assertCount(0, $arr);
     }
 }
