@@ -79,6 +79,6 @@ setup(
     namespace_packages=['google'],
     packages=find_packages(),
     install_requires=install_requires,
-    ext_modules= [Extension('google._upb._message', glob.glob('python/*.c'))],
+    ext_modules= [Extension('google._upb._message', glob.glob('python/*.c'), include_dirs=['python'])],
     python_requires='>=3.7',
 )
