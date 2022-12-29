@@ -1825,7 +1825,8 @@ DescriptorPool::DescriptorPool()
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      disallow_enforce_utf8_(false) {}
+      disallow_enforce_utf8_(false),
+      deprecated_legacy_json_field_conflicts_(false) {}
 
 DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
                                ErrorCollector* error_collector)
@@ -1838,7 +1839,8 @@ DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      disallow_enforce_utf8_(false) {}
+      disallow_enforce_utf8_(false),
+      deprecated_legacy_json_field_conflicts_(false) {}
 
 DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
     : mutex_(nullptr),
@@ -1850,7 +1852,8 @@ DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      disallow_enforce_utf8_(false) {}
+      disallow_enforce_utf8_(false),
+      deprecated_legacy_json_field_conflicts_(false) {}
 
 DescriptorPool::~DescriptorPool() {
   if (mutex_ != nullptr) delete mutex_;
@@ -5527,7 +5530,8 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const DescriptorProto& proto, const Descriptor* result) {
   FileDescriptor::Syntax syntax = result->file()->syntax();
   std::string message_name = result->full_name();
-  if (IsLegacyJsonFieldConflictEnabled(result->options())) {
+  if (pool_->deprecated_legacy_json_field_conflicts_ ||
+      IsLegacyJsonFieldConflictEnabled(result->options())) {
     if (syntax == FileDescriptor::SYNTAX_PROTO3) {
       // Only check default JSON names for conflicts in proto3.  This is legacy
       // behavior that will be removed in a later version.
@@ -6061,7 +6065,8 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
           value->name(), insert_result.first->second->name());
       // There are proto2 enums out there with conflicting names, so to preserve
       // compatibility we issue only a warning for proto2.
-      if (IsLegacyJsonFieldConflictEnabled(result->options()) &&
+      if ((pool_->deprecated_legacy_json_field_conflicts_ ||
+           IsLegacyJsonFieldConflictEnabled(result->options())) &&
           result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
         AddWarning(value->full_name(), proto.value(i),
                    DescriptorPool::ErrorCollector::NAME, error_message);
