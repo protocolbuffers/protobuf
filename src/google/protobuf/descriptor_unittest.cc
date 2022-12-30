@@ -4585,21 +4585,42 @@ TEST_F(ValidationErrorTest, HugeFieldNumber) {
 
 TEST_F(ValidationErrorTest, ReservedFieldNumber) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field {name:\"foo\" number: 18999 label:LABEL_OPTIONAL "
-      "type:TYPE_INT32 }"
-      "  field {name:\"bar\" number: 19000 label:LABEL_OPTIONAL "
-      "type:TYPE_INT32 }"
-      "  field {name:\"baz\" number: 19999 label:LABEL_OPTIONAL "
-      "type:TYPE_INT32 }"
-      "  field {name:\"moo\" number: 20000 label:LABEL_OPTIONAL "
-      "type:TYPE_INT32 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 18999
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          field {
+            name: "bar"
+            number: 19000
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+          }
+          field {
+            name: "baz"
+            number: 19999
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: ".Foo"
+          }
+          field {
+            name: "moo"
+            number: 20000
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.bar: NUMBER: Field numbers 19000 through 19999 are "
-      "reserved for the protocol buffer library implementation.\n"
+      "reserved for the protocol buffer library implementation, and the type "
+      "name must be fully qualified with a `.` prefix.\n"
       "foo.proto: Foo.baz: NUMBER: Field numbers 19000 through 19999 are "
       "reserved for the protocol buffer library implementation.\n"
       "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1, 2\n");

@@ -35,8 +35,9 @@
 #include "google/protobuf/compiler/parser.h"
 
 #include <algorithm>
-#include <map>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/any.pb.h"
@@ -46,6 +47,7 @@
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/test_util2.h"
@@ -85,7 +87,7 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
                                io::ErrorCollector* wrapped_collector)
       : source_locations_(source_locations),
         wrapped_collector_(wrapped_collector) {}
-  ~MockValidationErrorCollector() override {}
+  ~MockValidationErrorCollector() override = default;
 
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, const std::string& element_name,
@@ -111,9 +113,10 @@ class ParserTest : public testing::Test {
 
   // Set up the parser to parse the given text.
   void SetupParser(const char* text) {
-    raw_input_.reset(new io::ArrayInputStream(text, strlen(text)));
-    input_.reset(new io::Tokenizer(raw_input_.get(), &error_collector_));
-    parser_.reset(new Parser());
+    raw_input_ = absl::make_unique<io::ArrayInputStream>(text, strlen(text));
+    input_ =
+        absl::make_unique<io::Tokenizer>(raw_input_.get(), &error_collector_);
+    parser_ = absl::make_unique<Parser>();
     parser_->RecordErrorsTo(&error_collector_);
     parser_->SetRequireSyntaxIdentifier(require_syntax_identifier_);
   }
@@ -2798,16 +2801,18 @@ class SourceInfoTest : public ParserTest {
         return false;
       }
 
-      spans_.insert(
-          std::make_pair(SpanKey(*descriptor_proto, field, index), &location));
+      spans_[SpanKey(*descriptor_proto, field, index)].push_back(&location);
     }
 
     return true;
   }
 
   void TearDown() override {
-    EXPECT_TRUE(spans_.empty()) << "Forgot to call HasSpan() for:\n"
-                                << spans_.begin()->second->DebugString();
+    for (auto& kv : spans_) {
+      EXPECT_TRUE(kv.second.empty())
+          << "Forgot to call HasSpan() for "
+          << (*kv.second.begin())->DebugString() << " spans.";
+    }
   }
 
   // -----------------------------------------------------------------
@@ -2879,59 +2884,52 @@ class SourceInfoTest : public ParserTest {
                           const char* expected_leading_comments,
                           const char* expected_trailing_comments,
                           const char* expected_leading_detached_comments) {
-    std::pair<SpanMap::iterator, SpanMap::iterator> range =
-        spans_.equal_range(SpanKey(descriptor_proto, field, index));
-
+    SpanKey key(descriptor_proto, field, index);
     if (start_marker == '\0') {
-      if (range.first == range.second) {
-        return false;
-      } else {
-        spans_.erase(range.first);
+      auto old = spans_.extract(key);
+      // Return true if we actually removed something.
+      return !(old.empty() || old.mapped().empty());
+    }
+
+    std::vector<const SourceCodeInfo::Location*>& range = spans_[key];
+    std::pair<int, int> start_pos = markers_.at(start_marker);
+    std::pair<int, int> end_pos = markers_.at(end_marker);
+
+    RepeatedField<int> expected_span;
+    expected_span.Add(start_pos.first);
+    expected_span.Add(start_pos.second);
+    if (end_pos.first != start_pos.first) {
+      expected_span.Add(end_pos.first);
+    }
+    expected_span.Add(end_pos.second);
+
+    for (auto iter = range.begin(); iter != range.end(); ++iter) {
+      const SourceCodeInfo::Location* location = *iter;
+      if (CompareSpans(expected_span, location->span())) {
+        if (expected_leading_comments == nullptr) {
+          EXPECT_FALSE(location->has_leading_comments());
+        } else {
+          EXPECT_TRUE(location->has_leading_comments());
+          EXPECT_EQ(expected_leading_comments, location->leading_comments());
+        }
+        if (expected_trailing_comments == nullptr) {
+          EXPECT_FALSE(location->has_trailing_comments());
+        } else {
+          EXPECT_TRUE(location->has_trailing_comments());
+          EXPECT_EQ(expected_trailing_comments, location->trailing_comments());
+        }
+        if (expected_leading_detached_comments == nullptr) {
+          EXPECT_EQ(0, location->leading_detached_comments_size());
+        } else {
+          EXPECT_EQ(expected_leading_detached_comments,
+                    absl::StrJoin(location->leading_detached_comments(), "\n"));
+        }
+        range.erase(iter);
         return true;
       }
-    } else {
-      std::pair<int, int> start_pos = markers_.at(start_marker);
-      std::pair<int, int> end_pos = markers_.at(end_marker);
-
-      RepeatedField<int> expected_span;
-      expected_span.Add(start_pos.first);
-      expected_span.Add(start_pos.second);
-      if (end_pos.first != start_pos.first) {
-        expected_span.Add(end_pos.first);
-      }
-      expected_span.Add(end_pos.second);
-
-      for (SpanMap::iterator iter = range.first; iter != range.second; ++iter) {
-        if (CompareSpans(expected_span, iter->second->span())) {
-          if (expected_leading_comments == nullptr) {
-            EXPECT_FALSE(iter->second->has_leading_comments());
-          } else {
-            EXPECT_TRUE(iter->second->has_leading_comments());
-            EXPECT_EQ(expected_leading_comments,
-                      iter->second->leading_comments());
-          }
-          if (expected_trailing_comments == nullptr) {
-            EXPECT_FALSE(iter->second->has_trailing_comments());
-          } else {
-            EXPECT_TRUE(iter->second->has_trailing_comments());
-            EXPECT_EQ(expected_trailing_comments,
-                      iter->second->trailing_comments());
-          }
-          if (expected_leading_detached_comments == nullptr) {
-            EXPECT_EQ(0, iter->second->leading_detached_comments_size());
-          } else {
-            EXPECT_EQ(
-                expected_leading_detached_comments,
-                absl::StrJoin(iter->second->leading_detached_comments(), "\n"));
-          }
-
-          spans_.erase(iter);
-          return true;
-        }
-      }
+    }
 
       return false;
-    }
   }
 
  private:
@@ -2940,24 +2938,28 @@ class SourceInfoTest : public ParserTest {
     const FieldDescriptor* field;
     int index;
 
-    inline SpanKey() {}
+    inline SpanKey() = default;
     inline SpanKey(const Message& descriptor_proto_param,
                    const FieldDescriptor* field_param, int index_param)
         : descriptor_proto(&descriptor_proto_param),
           field(field_param),
           index(index_param) {}
 
-    inline bool operator<(const SpanKey& other) const {
-      if (descriptor_proto < other.descriptor_proto) return true;
-      if (descriptor_proto > other.descriptor_proto) return false;
-      if (field < other.field) return true;
-      if (field > other.field) return false;
-      return index < other.index;
+    template <typename H>
+    friend H AbslHashValue(H h, const SpanKey& key) {
+      return H::combine(std::move(h), key.descriptor_proto, key.field,
+                        key.index);
+    }
+
+    friend bool operator==(const SpanKey& lhs, const SpanKey& rhs) {
+      return lhs.descriptor_proto == rhs.descriptor_proto &&  //
+             lhs.field == rhs.field &&                        //
+             lhs.index == rhs.index;
     }
   };
 
-  typedef std::multimap<SpanKey, const SourceCodeInfo::Location*> SpanMap;
-  SpanMap spans_;
+  absl::flat_hash_map<SpanKey, std::vector<const SourceCodeInfo::Location*>>
+      spans_;
   absl::flat_hash_map<char, std::pair<int, int>> markers_;
   std::string text_without_markers_;
 

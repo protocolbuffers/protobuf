@@ -14,8 +14,8 @@ sudo chown -R $(whoami) /Library/Ruby/
 
 source $HOME/.rvm/scripts/rvm
 set -e  # rvm commands are very verbose
-time rvm install 2.5.0
-rvm use 2.5.0
+time rvm install 2.6.0
+rvm use 2.6.0
 gem install rake-compiler --no-document
 gem install bundler --no-document
 time rvm install 3.1.0
@@ -106,10 +106,10 @@ for v in 3.0.0 2.7.0 ; do
   # rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=aarch64-darwin MAKE="$MAKE"
 done
 set +x
-rvm use 2.5.0
+rvm use 2.6.0
 set -x
-ruby --version | grep 'ruby 2.5.0'
-for v in 2.6.0 2.5.1; do
+ruby --version | grep 'ruby 2.6.0'
+for v in 2.6.0 ; do
   ccache -c
   rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=x86_64-darwin MAKE="$MAKE"
   # Disabled until it can be fixed: https://github.com/protocolbuffers/protobuf/issues/9804

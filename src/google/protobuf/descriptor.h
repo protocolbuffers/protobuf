@@ -63,6 +63,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/port.h"
+#include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
@@ -1991,6 +1992,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Disallow [enforce_utf8 = false] in .proto files.
   void DisallowEnforceUtf8() { disallow_enforce_utf8_ = true; }
 
+  // Use the deprecated legacy behavior for handling JSON field name conflicts.
+  ABSL_DEPRECATED("Deprecated treatment of field name conflicts is enabled.")
+  void UseDeprecatedLegacyJsonFieldConflicts() {
+    deprecated_legacy_json_field_conflicts_ = true;
+  }
+
 
   // For internal use only:  Gets a non-const pointer to the generated pool.
   // This is called at static-initialization time only, so thread-safety is
@@ -2119,6 +2126,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool allow_unknown_;
   bool enforce_weak_;
   bool disallow_enforce_utf8_;
+  bool deprecated_legacy_json_field_conflicts_;
 
   // Set of files to track for unused imports. The bool value when true means
   // unused imports are treated as errors (and as warnings when false).

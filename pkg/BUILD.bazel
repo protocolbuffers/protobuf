@@ -91,7 +91,6 @@ pkg_filegroup(
         "//build_defs:dist_files",
         "//conformance:all_dist_files",
         "//src:all_dist_files",
-        "@utf8_range//:dist_files",
         "@com_google_protobuf_examples//:dist_files",
     ],
 )
