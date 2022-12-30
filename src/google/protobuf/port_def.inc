@@ -971,6 +971,9 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 //   char* p = strchr(s, '\n');
 //   return p ? p - s : -1;
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
+// Turn on -Wdeprecated-enum-enum-conversion. This deprecation comes in C++20
+// via http://wg21.link/p1120r0.
+#pragma clang diagnostic error "-Wdeprecated-enum-enum-conversion"
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
