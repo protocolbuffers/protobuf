@@ -61,7 +61,8 @@ cc_library(
         "@bazel_tools//src/conditions:windows": [],
         "//conditions:default": [
             "-Wno-unused-variable",
-            "-Wno-implicit-function-declaration",
+            "-Wno-implicit-function-declaration", 
+            "-Wno-deprecated-non-prototype",
         ],
     }),
     includes = ["zlib/include/"],
