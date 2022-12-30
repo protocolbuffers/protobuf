@@ -60,8 +60,8 @@ inline std::string TranslatePathToOpensource(absl::string_view google3_path) {
   return absl::StrCat("google/protobuf/", google3_path);
 }
 
-inline std::string MaybeTranslatePath(const std::string& google3_path) {
-  std::string path = google3_path;
+inline std::string MaybeTranslatePath(absl::string_view google3_path) {
+  std::string path(google3_path);
   path = TranslatePathToOpensource(path);
   return path;
 }
@@ -70,8 +70,8 @@ inline std::string TestSourceDir() {
   return google::protobuf::TestSourceDir();
 }
 
-inline std::string GetTestDataPath(const std::string& google3_path) {
-  return TestSourceDir() + "/" + MaybeTranslatePath(google3_path);
+inline std::string GetTestDataPath(absl::string_view google3_path) {
+  return absl::StrCat(TestSourceDir(), "/", MaybeTranslatePath(google3_path));
 }
 
 // Checks the equality of "message" and serialized proto of type "ProtoType".

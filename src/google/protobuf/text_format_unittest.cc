@@ -79,12 +79,12 @@ using ::testing::AllOf;
 using ::testing::HasSubstr;
 
 // A basic string with different escapable characters for testing.
-const std::string kEscapeTestString =
+constexpr absl::string_view kEscapeTestString =
     "\"A string with ' characters \n and \r newlines and \t tabs and \001 "
     "slashes \\ and  multiple   spaces";
 
 // A representation of the above string with all the characters escaped.
-const std::string kEscapeTestStringEscaped =
+constexpr absl::string_view kEscapeTestStringEscaped =
     "\"\\\"A string with \\' characters \\n and \\r newlines "
     "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
@@ -879,7 +879,7 @@ TEST_F(TextFormatTest, ParseUnknownEnumFieldProto3) {
 TEST_F(TextFormatTest, ParseStringEscape) {
   // Create a parse string with escaped characters in it.
   std::string parse_string =
-      "optional_string: " + kEscapeTestStringEscaped + "\n";
+      absl::StrCat("optional_string: ", kEscapeTestStringEscaped, "\n");
 
   io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
   TextFormat::Parse(&input_stream, &proto_);
@@ -1469,7 +1469,7 @@ class TextFormatParserTest : public testing::Test {
     }
 
     void AddWarning(int line, int column, const std::string& message) override {
-      AddError(line, column, "WARNING:" + message);
+      AddError(line, column, absl::StrCat("WARNING:", message));
     }
   };
 
