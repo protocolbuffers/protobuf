@@ -951,6 +951,7 @@ cc_library(
         ":message_internal",
         ":mini_table_internal",
         ":port",
+        ":wire_reader",
         ":wire_types",
         "@utf8_range",
     ],

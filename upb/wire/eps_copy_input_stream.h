@@ -281,11 +281,21 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
   return ret;
 }
 
-// Skips `size` bytes of string data from the input and returns a pointer past
-// the end.  Returns NULL on end of stream or error.
+// Skips `size` bytes of data from the input and returns a pointer past the end.
+// Returns NULL on end of stream or error.
 UPB_INLINE const char* upb_EpsCopyInputStream_Skip(upb_EpsCopyInputStream* e,
                                                    const char* ptr, int size) {
   if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  return ptr + size;
+}
+
+// Copies `size` bytes of data from the input `ptr` into the buffer `to`, and
+// returns a pointer past the end. Returns NULL on end of stream or error.
+UPB_INLINE const char* upb_EpsCopyInputStream_Copy(upb_EpsCopyInputStream* e,
+                                                   const char* ptr, void* to,
+                                                   int size) {
+  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  memcpy(to, ptr, size);
   return ptr + size;
 }
 
@@ -309,10 +319,8 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
     UPB_ASSERT(arena);
     char* data = (char*)upb_Arena_Malloc(arena, size);
     if (!data) return NULL;
-    memcpy(data, *ptr, size);
-    const char* ret = *ptr + size;
+    const char* ret = upb_EpsCopyInputStream_Copy(e, *ptr, data, size);
     *ptr = data;
-    UPB_ASSUME(ret != NULL);
     return ret;
   }
 }

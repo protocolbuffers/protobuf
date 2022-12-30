@@ -50,9 +50,9 @@ _upb_WireReader_ReadLongVarint(const char* ptr, uint64_t val) {
   return ret;
 }
 
-const char* upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
-                                     int depth_limit,
-                                     upb_EpsCopyInputStream* stream) {
+const char* _upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
+                                      int depth_limit,
+                                      upb_EpsCopyInputStream* stream) {
   if (--depth_limit == 0) return NULL;
   uint32_t end_group_tag = (tag & ~7ULL) | kUpb_WireType_EndGroup;
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
@@ -60,7 +60,7 @@ const char* upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
     ptr = upb_WireReader_ReadTag(ptr, &tag);
     if (!ptr) return NULL;
     if (tag == end_group_tag) return ptr;
-    ptr = upb_WireReader_SkipValue(ptr, tag, depth_limit, stream);
+    ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, stream);
     if (!ptr) return NULL;
   }
   return ptr;

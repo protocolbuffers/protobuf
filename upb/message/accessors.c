@@ -169,14 +169,14 @@ upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
     if (field_number == upb_WireReader_GetFieldNumber(tag)) {
       ret.status = kUpb_FindUnknown_Ok;
       ret.ptr = upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
-      ptr = upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+      ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
       // Because we know that the input is a flat buffer, it is safe to perform
       // pointer arithmetic on aliased pointers.
       ret.len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - ret.ptr;
       return ret;
     }
 
-    ptr = upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+    ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
     if (!ptr) return upb_FindUnknownRet_ParseError();
   }
   ret.status = kUpb_FindUnknown_NotPresent;

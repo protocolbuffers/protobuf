@@ -157,26 +157,25 @@ UPB_INLINE const char* upb_WireReader_ReadFixed64(const char* ptr, void* val) {
   return ptr + 8;
 }
 
+const char* _upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
+                                      int depth_limit,
+                                      upb_EpsCopyInputStream* stream);
+
 // Skips data for a group, returning a pointer past the end of the group, or
 // NULL if there was an error parsing the group.  The `tag` argument should be
 // the start group tag that begins the group.  The `depth_limit` argument
 // indicates how many levels of recursion the group is allowed to have before
 // reporting a parse error (this limit exists to protect against stack
 // overflow).
-const char* upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
-                                     int depth_limit,
-                                     upb_EpsCopyInputStream* stream);
-
-// Skips data for a wire value of any type, returning a pointer past the end of
-// the data, or NULL if there was an error parsing the group. The `tag` argument
-// should be the tag that was just parsed. The `depth_limit` argument indicates
-// how many levels of recursion a group is allowed to have before reporting a
-// parse error (this limit exists to protect against stack overflow).
 //
-// REQUIRES: there must be at least 10 bytes of data available at `ptr`.
-// Bounds checks must be performed before calling this function, preferably
-// by calling upb_EpsCopyInputStream_IsDone().
-UPB_INLINE const char* upb_WireReader_SkipValue(
+// TODO: evaluate how the depth_limit should be specified. Do users need
+// control over this?
+UPB_INLINE const char* upb_WireReader_SkipGroup(
+    const char* ptr, uint32_t tag, upb_EpsCopyInputStream* stream) {
+  return _upb_WireReader_SkipGroup(ptr, tag, 100, stream);
+}
+
+UPB_INLINE const char* _upb_WireReader_SkipValue(
     const char* ptr, uint32_t tag, int depth_limit,
     upb_EpsCopyInputStream* stream) {
   switch (upb_WireReader_GetWireType(tag)) {
@@ -194,12 +193,29 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
       return ptr;
     }
     case kUpb_WireType_StartGroup:
-      return upb_WireReader_SkipGroup(ptr, tag, depth_limit, stream);
+      return _upb_WireReader_SkipGroup(ptr, tag, depth_limit, stream);
     case kUpb_WireType_EndGroup:
       return NULL;  // Should be handled before now.
     default:
       return NULL;  // Unknown wire type.
   }
+}
+
+// Skips data for a wire value of any type, returning a pointer past the end of
+// the data, or NULL if there was an error parsing the group. The `tag` argument
+// should be the tag that was just parsed. The `depth_limit` argument indicates
+// how many levels of recursion a group is allowed to have before reporting a
+// parse error (this limit exists to protect against stack overflow).
+//
+// REQUIRES: there must be at least 10 bytes of data available at `ptr`.
+// Bounds checks must be performed before calling this function, preferably
+// by calling upb_EpsCopyInputStream_IsDone().
+//
+// TODO: evaluate how the depth_limit should be specified. Do users need
+// control over this?
+UPB_INLINE const char* upb_WireReader_SkipValue(
+    const char* ptr, uint32_t tag, upb_EpsCopyInputStream* stream) {
+  return _upb_WireReader_SkipValue(ptr, tag, 100, stream);
 }
 
 #ifdef __cplusplus
