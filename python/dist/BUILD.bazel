@@ -197,6 +197,8 @@ pkg_files(
     name = "generated_wkt",
     srcs = [
         ":well_known_proto_py_pb2",
+        "//:descriptor_upb_proto",
+        "//:descriptor_upb_proto_reflection",
     ],
     prefix = "google/protobuf",
 )
@@ -209,6 +211,12 @@ pkg_files(
     prefix = "google/protobuf/compiler",
 )
 
+pkg_files(
+    name = "utf8_range_source_files",
+    srcs = ["@utf8_range//:utf8_range_srcs"],
+    prefix = "utf8_range",
+)
+
 pkg_tar(
     name = "source_wheel",
     extension = "tar.gz",
@@ -216,8 +224,11 @@ pkg_tar(
         ":generated_wkt",
         ":generated_wkt_compiler",
         "setup.py",
+        ":utf8_range_source_files",
         "MANIFEST.in",
         "//:LICENSE",
+        "//:upb_source_files",
+        "//upb/util:util_source_files",
         "//python:message_extension",
         "@com_google_protobuf//python:python_source_files",
     ],

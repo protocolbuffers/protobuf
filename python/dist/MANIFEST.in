@@ -1,1 +1,4 @@
 include python/*.h
+include upb/*.h
+include upb/**/*.h
+include utf8_range/*.h

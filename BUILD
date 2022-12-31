@@ -36,6 +36,7 @@ load(
     "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
 # begin:google_only
 # load(
@@ -1127,6 +1128,19 @@ filegroup(
         "third_party/**/*",
     ]),
     visibility = ["//cmake:__pkg__"],
+)
+
+pkg_files(
+    name = "upb_source_files",
+    srcs = glob(
+        [
+            "upb/**/*.c",
+            "upb/**/*.h",
+            "upb/**/*.hpp",
+            "upb/**/*.inc",
+        ], exclude = ["upb/conformance_upb.c"]),
+    visibility = ["//python/dist:__pkg__"],
+    strip_prefix = "",
 )
 
 # end:github_only

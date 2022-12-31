@@ -1,3 +1,4 @@
+load("@rules_pkg//:mappings.bzl", "pkg_files")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
@@ -127,4 +128,18 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+pkg_files(
+    name = "util_source_files",
+    srcs = [
+        "compare.c",
+        "compare.h",
+        "def_to_proto.c",
+        "def_to_proto.h",
+        "required_fields.c",
+        "required_fields.h",
+    ],
+    visibility = ["//visibility:public"],
+    prefix = "upb/util",
 )

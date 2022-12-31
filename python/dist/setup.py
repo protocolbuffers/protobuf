@@ -33,6 +33,7 @@
 
 import glob
 import os
+import sysconfig
 
 # We must use setuptools, not distutils, because we need to use the
 # namespace_packages option for the "google" package.
@@ -52,8 +53,7 @@ def GetVersion():
     exec(version_file.read(), globals())  # pylint:disable=exec-used
     return __version__  # pylint:disable=undefined-variable
 
-# Keep this list of dependencies in sync with tox.ini.
-install_requires = []
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name='protobuf',
@@ -68,6 +68,7 @@ setup(
     maintainer='protobuf@googlegroups.com',
     maintainer_email='protobuf@googlegroups.com',
     license='BSD-3-Clause',
+    package_data = {'protobuf': ['python/*.h']},
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
@@ -78,7 +79,8 @@ setup(
     ],
     namespace_packages=['google'],
     packages=find_packages(),
-    install_requires=install_requires,
-    ext_modules= [Extension('google._upb._message', glob.glob('python/*.c'), include_dirs=['python'])],
+    install_requires=[],
+    ext_modules= [Extension('google._upb._message', glob.glob('google/protobuf/*.c') + glob.glob('python/*.c') + glob.glob('upb/*.c') + glob.glob('upb/**/*.c') + glob.glob('utf8_range/*.c'), include_dirs=[current_dir, os.path.join(current_dir, 'utf8_range')])],
     python_requires='>=3.7',
+    headers = ['python/*.h', 'upb/*.h', 'upb/**/*.h', 'utf8_range/*.h', 'google/protobuf/*.h'],
 )
