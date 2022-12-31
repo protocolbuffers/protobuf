@@ -41,6 +41,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -70,9 +71,9 @@ class DescriptorCapturingGenerator : public CodeGenerator {
 };
 }  // namespace
 
-void AddFile(const std::string& filename, const std::string& data) {
-  GOOGLE_ABSL_CHECK_OK(File::SetContents(TestTempDir() + "/" + filename, data,
-                                  true));
+void AddFile(absl::string_view filename, absl::string_view data) {
+  GOOGLE_ABSL_CHECK_OK(File::SetContents(
+      absl::StrCat(TestTempDir(), "/", filename), data, true));
 }
 
 bool RunProtoCompiler(const std::string& filename,
@@ -83,8 +84,8 @@ bool RunProtoCompiler(const std::string& filename,
   DescriptorCapturingGenerator capturing_generator(file);
   cli->RegisterGenerator("--capture_out", &capturing_generator, "");
 
-  std::string proto_path = "-I" + TestTempDir();
-  std::string capture_out = "--capture_out=" + TestTempDir();
+  std::string proto_path = absl::StrCat("-I", TestTempDir());
+  std::string capture_out = absl::StrCat("--capture_out=", TestTempDir());
 
   const char* argv[] = {"protoc", proto_path.c_str(),
                         plugin_specific_args.c_str(), capture_out.c_str(),

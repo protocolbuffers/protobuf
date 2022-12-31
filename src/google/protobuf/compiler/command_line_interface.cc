@@ -238,9 +238,10 @@ bool GetProtocAbsolutePath(std::string* path) {
 
 // Whether a path is where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
-bool IsInstalledProtoPath(const std::string& path) {
+bool IsInstalledProtoPath(absl::string_view path) {
   // Checking the descriptor.proto file should be good enough.
-  std::string file_path = path + "/google/protobuf/descriptor.proto";
+  std::string file_path =
+      absl::StrCat(path, "/google/protobuf/descriptor.proto");
   return access(file_path.c_str(), F_OK) != -1;
 }
 
@@ -251,25 +252,26 @@ void AddDefaultProtoPaths(
   // TODO(xiaofeng): The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
-  std::string path;
-  if (!GetProtocAbsolutePath(&path)) {
+  std::string path_str;
+  if (!GetProtocAbsolutePath(&path_str)) {
     return;
   }
+  absl::string_view path(path_str);
   // Strip the binary name.
   size_t pos = path.find_last_of("/\\");
-  if (pos == std::string::npos || pos == 0) {
+  if (pos == path.npos || pos == 0) {
     return;
   }
   path = path.substr(0, pos);
   // Check the binary's directory.
   if (IsInstalledProtoPath(path)) {
-    paths->push_back(std::pair<std::string, std::string>("", path));
+    paths->emplace_back("", path);
     return;
   }
   // Check if there is an include subdirectory.
-  if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(
-        std::pair<std::string, std::string>("", path + "/include"));
+  std::string include_path = absl::StrCat(path, "/include");
+  if (IsInstalledProtoPath(include_path)) {
+    paths->emplace_back("", std::move(include_path));
     return;
   }
   // Check if the upper level directory has an "include" subdirectory.
@@ -278,18 +280,19 @@ void AddDefaultProtoPaths(
     return;
   }
   path = path.substr(0, pos);
-  if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(
-        std::pair<std::string, std::string>("", path + "/include"));
+  include_path = absl::StrCat(path, "/include");
+  if (IsInstalledProtoPath(include_path)) {
+    paths->emplace_back("", std::move(include_path));
     return;
   }
 }
 
-std::string PluginName(const std::string& plugin_prefix,
-                       const std::string& directive) {
+std::string PluginName(absl::string_view plugin_prefix,
+                       absl::string_view directive) {
   // Assuming the directive starts with "--" and ends with "_out" or "_opt",
   // strip the "--" and "_out/_opt" and add the plugin prefix.
-  return plugin_prefix + "gen-" + directive.substr(2, directive.size() - 6);
+  return absl::StrCat(plugin_prefix, "gen-",
+                      directive.substr(2, directive.size() - 6));
 }
 
 }  // namespace
@@ -721,7 +724,7 @@ void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
 void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
     const std::string& insertion_content, size_t insertion_offset,
     size_t insertion_length, size_t indent_length) {
-  auto it = directory_->files_.find(filename_ + ".pb.meta");
+  auto it = directory_->files_.find(absl::StrCat(filename_, ".pb.meta"));
   if (it == directory_->files_.end() && info_to_insert_.annotation().empty()) {
     // No metadata was recorded for this file.
     return;
@@ -751,7 +754,8 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
   } else {
     // Create a new file to store the new metadata in info_to_insert_.
     encoded_data =
-        &directory_->files_.insert({filename_ + ".pb.meta", ""}).first->second;
+        &directory_->files_.try_emplace(absl::StrCat(filename_, ".pb.meta"), "")
+             .first->second;
   }
   GeneratedCodeInfo new_metadata;
   bool crossed_offset = false;
@@ -1516,7 +1520,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     if (!foundImplicitPlugin) {
       std::cerr << "Unknown flag: "
                 // strip prefix + "gen-" and add back "_opt"
-                << "--" + kv.first.substr(plugin_prefix_.size() + 4) + "_opt"
+                << "--" << kv.first.substr(plugin_prefix_.size() + 4) << "_opt"
                 << std::endl;
       foundUnknownPluginOption = true;
     }
