@@ -14,16 +14,12 @@ namespace Google.Protobuf.Reflection
         private readonly MessageParser<DynamicMessage> _parser = null;
         private FieldSet _fieldSet = FieldSet.CreateInstance();
         private UnknownFieldSet _unknownFields = new UnknownFieldSet();
+        private readonly MessageDescriptor _descriptor = null;
 
         /// <summary>
         /// Properties for parsing
         /// </summary> 
         public MessageParser<DynamicMessage> Parser { get { return _parser; } }
-
-        /// <summary>
-        /// Holds the descriptor information. This can't be static, as every DynamicMessage can have a separate descriptor.
-        /// </summary>
-        MessageDescriptor Descriptor { get; }
 
         /// <summary>
         /// The default const being replaced with this one.
@@ -32,7 +28,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="descriptor"></param>
         public DynamicMessage(MessageDescriptor descriptor)
         {
-            this.Descriptor = descriptor;
+            _descriptor = descriptor;
             _parser = new MessageParser<DynamicMessage>(() => new DynamicMessage(descriptor));
             OnConstruction();
         }
@@ -47,7 +43,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Descriptor for this message.
         /// </summary>
-        MessageDescriptor IMessage.Descriptor { get; }
+        MessageDescriptor IMessage.Descriptor { get { return _descriptor; } }
 
         /// <summary>
         /// Used to calculate the size of the serialized message.
@@ -73,7 +69,7 @@ namespace Google.Protobuf.Reflection
             while ((tag = input.ReadTag()) != 0)
             {
                 int fieldNumber = WireFormat.GetTagFieldNumber(tag);
-                FieldDescriptor fd = Descriptor.FindFieldByNumber(fieldNumber);
+                FieldDescriptor fd = _descriptor.FindFieldByNumber(fieldNumber);
 
                 if (fd == null)
                 {
@@ -137,7 +133,7 @@ namespace Google.Protobuf.Reflection
         /// <returns></returns>
         public DynamicMessage Clone()
         {
-            return new DynamicMessage(Descriptor)
+            return new DynamicMessage(_descriptor)
             {
                 _fieldSet = this._fieldSet.Clone(),
                 _unknownFields = UnknownFieldSet.Clone(this._unknownFields)
@@ -152,7 +148,7 @@ namespace Google.Protobuf.Reflection
         /// <exception cref="Exception"></exception>
         public void Add(String fieldName, object v)
         {
-            FieldDescriptor fieldDescriptor = Descriptor.FindFieldByName(fieldName);
+            FieldDescriptor fieldDescriptor = _descriptor.FindFieldByName(fieldName);
             if (fieldDescriptor == null)
             {
                 throw new Exception("unknown field not supported by this version of the method");
