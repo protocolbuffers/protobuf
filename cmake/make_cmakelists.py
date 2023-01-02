@@ -128,6 +128,9 @@ class BuildFileFunctions(object):
   def cc_fuzz_test(self, **kwargs):
     pass
 
+  def pkg_files(self, **kwargs):
+    pass
+
   def py_library(self, **kwargs):
     pass
 
