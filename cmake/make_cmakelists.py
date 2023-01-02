@@ -185,7 +185,7 @@ class BuildFileFunctions(object):
   def select(self, arg_dict):
     return []
 
-  def glob(self, *args):
+  def glob(self, *args, **kwargs):
     return []
 
   def licenses(self, *args):
