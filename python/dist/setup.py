@@ -80,6 +80,6 @@ setup(
     namespace_packages=['google'],
     packages=find_packages(),
     install_requires=[],
-    ext_modules= [Extension('google._upb._message', glob.glob('google/protobuf/*.c') + glob.glob('python/*.c') + glob.glob('upb/*.c') + glob.glob('upb/**/*.c') + glob.glob('utf8_range/*.c'), include_dirs=[current_dir, os.path.join(current_dir, 'utf8_range')])],
+    ext_modules= [Extension('google._upb._message', glob.glob('google/protobuf/*.c') + glob.glob('python/*.c') + glob.glob('upb/*.c') + glob.glob('upb/**/*.c') + glob.glob('utf8_range/*.c'), include_dirs=[current_dir, os.path.join(current_dir, 'utf8_range')], language = 'c')],
     python_requires='>=3.7',
 )
