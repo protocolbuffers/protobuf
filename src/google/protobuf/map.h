@@ -931,7 +931,8 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   template <typename K>
-  size_type BucketNumber(const K& k) const {
+  size_type PROTOBUF_NO_SANITIZE("unsigned-integer-overflow")
+      BucketNumber(const K& k) const {
     // We xor the hash value against the random seed so that we effectively
     // have a random hash function.
     uint64_t h = hash_function()(k) ^ seed_;

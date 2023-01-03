@@ -856,6 +856,12 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #define PROTOBUF_UNUSED
 #endif
 
+#if __has_attribute(no_sanitize)
+#define PROTOBUF_NO_SANITIZE(...) __attribute__((no_sanitize(__VA_ARGS__)))
+#else
+#define PROTOBUF_NO_SANITIZE(...)
+#endif
+
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
 // autoheader defines this in some circumstances
