@@ -225,7 +225,6 @@ pkg_tar(
         ":generated_wkt_compiler",
         "setup.py",
         ":utf8_range_source_files",
-        "MANIFEST.in",
         "//:LICENSE",
         "//:upb_source_files",
         "//upb/util:util_source_files",
