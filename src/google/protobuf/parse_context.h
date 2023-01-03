@@ -413,6 +413,8 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   void TrackCorrectEnding() { group_depth_ = 0; }
 
+  // Done should only be called when the parsing pointer is pointing to the
+  // beginning of field data - that is, at a tag.  Or if it is NULL.
   bool Done(const char** ptr) { return DoneWithCheck(ptr, group_depth_); }
 
   int depth() const { return depth_; }
