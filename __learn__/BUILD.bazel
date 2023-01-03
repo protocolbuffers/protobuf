@@ -288,3 +288,40 @@ alias(
   actual = "//src/google/protobuf:lite_test_protos", # proto_library
   visibility = ["//:__subpackages__"],
 )
+
+alias(
+  name = "test_proto_srcs",
+  actual = "//src/google/protobuf:test_proto_srcs", # filegroup
+  visibility = ["//:__subpackages__"],
+)
+
+alias(
+  name = "test_protos",
+  actual = "//src/google/protobuf:test_protos", # proto_library
+  visibility = ["//:__subpackages__"],
+)
+
+# generated proto source input validation
+genrule(
+  name = "generated_protos",
+  testonly = 1,
+  srcs = ["//src/google/protobuf:test_proto_srcs"],
+  outs = ["unittest_gen_import.proto"],
+  cmd = "cat src/google/protobuf/unittest_import.proto > $@",
+)
+
+proto_library(
+  name = "generated_protos_proto",
+  testonly = 1,
+  srcs = [":generated_protos"],
+  deps = ["//src/google/protobuf:generic_test_protos"],
+)
+
+internal_py_proto_library(
+  name = "generated_protos_py",
+  testonly = 1,
+  srcs = [":generated_protos"],
+  default_runtime = "",
+  protoc = ":protoc",
+  deps = ["//python:python_common_test_protos"],
+)
