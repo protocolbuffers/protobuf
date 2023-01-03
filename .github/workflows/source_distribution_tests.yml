@@ -90,7 +90,7 @@ jobs:
       - name: Install Protobuf Test wheel
         run: pip install -vvv --no-index --find-links . protobuftests
       - name: Install python source
-        run: cd protobuf-*/ && python setup.py install
+        run: cd protobuf-*/ && pip install .
       - name: Print installs for debugging
         run: pip list -v
       - name: Test that module is importable
