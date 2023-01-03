@@ -91,11 +91,11 @@ jobs:
         run: pip install -vvv --no-index --find-links . protobuftests
       - name: Install python source
         run: cd protobuf-*/ && python setup.py install
+      - name: [Debug] Print installs
+        run: pip list -v
       - name: Test that module is importable
         run: python -v -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
         if: ${{ !matrix.pure_python }}
-      - name: [Debug] Print installs
-        run: pip list -v
       - name: Run the unit tests
         run: |
           TESTS=$(pip show -f protobuftests | grep pb_unit_tests.*py$ | sed 's,/,.,g' | sed 's,\\,.,g' | sed -E 's,.py$,,g')
