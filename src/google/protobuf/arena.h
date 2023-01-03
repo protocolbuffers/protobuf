@@ -47,7 +47,7 @@ using type_info = ::type_info;
 #include <typeinfo>
 #endif
 
-#include <type_traits>
+#include "absl/meta/type_traits.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_config.h"
 #include "google/protobuf/port.h"
