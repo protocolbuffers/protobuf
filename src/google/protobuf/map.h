@@ -810,7 +810,11 @@ class KeyMapBase {
   }
 
   template <typename K>
-  size_type BucketNumber(const K& k) const {
+  size_type
+  #if defined(__clang__)
+  __attribute__((no_sanitize("unsigned-integer-overflow")))
+  #endif
+  BucketNumber(const K& k) const {
     // We xor the hash value against the random seed so that we effectively
     // have a random hash function.
     uint64_t h = hash_function()(k) ^ seed_;
