@@ -45,7 +45,7 @@ typedef struct {
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
 } PyUpb_DescriptorPool;
 
-PyObject* PyUpb_DescriptorPool_GetDefaultPool() {
+PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   return s->default_pool;
 }
