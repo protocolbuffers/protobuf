@@ -90,6 +90,91 @@ void MapTestForceDeterministic() {
   io::CodedOutputStream::SetDefaultSerializationDeterministic();
 }
 
+struct MoveTestKey {
+  MoveTestKey(int data, int* copies) : data(data), copies(copies) {}
+
+  MoveTestKey(const MoveTestKey& other)
+      : data(other.data), copies(other.copies) {
+    ++*copies;
+  }
+
+  MoveTestKey(MoveTestKey&& other) noexcept
+      : data(other.data), copies(other.copies) {}
+
+  friend bool operator==(const MoveTestKey& lhs, const MoveTestKey& rhs) {
+    return lhs.data == rhs.data;
+  }
+  friend bool operator<(const MoveTestKey& lhs, const MoveTestKey& rhs) {
+    return lhs.data < rhs.data;
+  }
+
+  int data;
+  int* copies;
+};
+
+enum class ConstructorType {
+  kDefault,
+  kCopy,
+  kMove,
+};
+
+struct ConstructorTag {
+  ConstructorTag() : invoked_constructor(ConstructorType::kDefault) {}
+  ConstructorTag(const ConstructorTag&)
+      : invoked_constructor(ConstructorType::kCopy) {}
+  ConstructorTag(ConstructorTag&&)
+      : invoked_constructor(ConstructorType::kMove) {}
+
+  ConstructorType invoked_constructor;
+};
+
+struct CountedInstance {
+  CountedInstance() { ++num_created; }
+  CountedInstance(const CountedInstance&) : CountedInstance() {}
+  CountedInstance(CountedInstance&&) : CountedInstance() {}
+
+  CountedInstance& operator=(const CountedInstance&) {
+    ++num_assigned;
+    return *this;
+  }
+
+  explicit CountedInstance(int x) : CountedInstance() {}
+
+  static int num_created;
+  static int num_assigned;
+};
+
+int CountedInstance::num_created = 0;
+int CountedInstance::num_assigned = 0;
+
+struct ArenaConstructible {
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  ArenaConstructible() = default;
+  ArenaConstructible(const ArenaConstructible&) = default;
+  ArenaConstructible(Arena*) : ArenaConstructible() {}
+
+  ArenaConstructible& operator=(const ArenaConstructible&) = default;
+
+  explicit ArenaConstructible(int) : ArenaConstructible() {}
+
+  Arena* arena() const { return nullptr; }
+
+  CountedInstance unused;
+};
+
+template <>
+struct is_internal_map_key_type<MoveTestKey> : std::true_type {};
+template <>
+struct is_internal_map_key_type<ConstructorTag> : std::true_type {};
+template <>
+struct is_internal_map_value_type<ConstructorTag> : std::true_type {};
+template <>
+struct is_internal_map_value_type<ArenaConstructible> : std::true_type {};
+template <>
+struct is_internal_map_value_type<CountedInstance> : std::true_type {};
+
 namespace {
 using internal::DownCast;
 
@@ -187,28 +272,6 @@ TEST_F(MapImplTest, OperatorBracket) {
   map_[key] = value2;
   ExpectSingleElement(key, value2);
 }
-
-struct MoveTestKey {
-  MoveTestKey(int data, int* copies) : data(data), copies(copies) {}
-
-  MoveTestKey(const MoveTestKey& other)
-      : data(other.data), copies(other.copies) {
-    ++*copies;
-  }
-
-  MoveTestKey(MoveTestKey&& other) noexcept
-      : data(other.data), copies(other.copies) {}
-
-  friend bool operator==(const MoveTestKey& lhs, const MoveTestKey& rhs) {
-    return lhs.data == rhs.data;
-  }
-  friend bool operator<(const MoveTestKey& lhs, const MoveTestKey& rhs) {
-    return lhs.data < rhs.data;
-  }
-
-  int data;
-  int* copies;
-};
 
 }  // namespace
 }  // namespace internal
@@ -768,29 +831,6 @@ TEST_F(MapImplTest, EmplaceKeyOnly) {
 
 #else
 
-TEST_F(MapImplTest, ValueTypeNoImplicitConversion) {
-  using vt = typename Map<const char*, int>::value_type;
-
-  EXPECT_FALSE((std::is_convertible<
-                vt, std::pair<std::string, std::vector<std::string>>>::value));
-}
-
-enum class ConstructorType {
-  kDefault,
-  kCopy,
-  kMove,
-};
-
-struct ConstructorTag {
-  ConstructorTag() : invoked_constructor(ConstructorType::kDefault) {}
-  ConstructorTag(const ConstructorTag&)
-      : invoked_constructor(ConstructorType::kCopy) {}
-  ConstructorTag(ConstructorTag&&)
-      : invoked_constructor(ConstructorType::kMove) {}
-
-  ConstructorType invoked_constructor;
-};
-
 TEST_F(MapImplTest, ValueTypeHasMoveConstructor) {
   using vt = typename Map<ConstructorTag, ConstructorTag>::value_type;
   ConstructorTag l, r;
@@ -802,25 +842,6 @@ TEST_F(MapImplTest, ValueTypeHasMoveConstructor) {
 }
 
 #endif  // !PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
-
-struct CountedInstance {
-  CountedInstance() { ++num_created; }
-  CountedInstance(const CountedInstance&) : CountedInstance() {}
-  CountedInstance(CountedInstance&&) : CountedInstance() {}
-
-  CountedInstance& operator=(const CountedInstance&) {
-    ++num_assigned;
-    return *this;
-  }
-
-  explicit CountedInstance(int x) : CountedInstance() {}
-
-  static int num_created;
-  static int num_assigned;
-};
-
-int CountedInstance::num_created = 0;
-int CountedInstance::num_assigned = 0;
 
 TEST_F(MapImplTest, TryEmplaceExisting) {
   Map<int32_t, CountedInstance> m;
@@ -835,23 +856,6 @@ TEST_F(MapImplTest, TryEmplaceExisting) {
   EXPECT_EQ(CountedInstance::num_created, 0);
   EXPECT_EQ(CountedInstance::num_assigned, 0);
 }
-
-struct ArenaConstructible {
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-
-  ArenaConstructible() = default;
-  ArenaConstructible(const ArenaConstructible&) = default;
-  ArenaConstructible(Arena*) : ArenaConstructible() {}
-
-  ArenaConstructible& operator=(const ArenaConstructible&) = default;
-
-  explicit ArenaConstructible(int) : ArenaConstructible() {}
-
-  Arena* arena() const { return nullptr; }
-
-  CountedInstance unused;
-};
 
 TEST_F(MapImplTest, TryEmplaceArenaConstructible) {
   ASSERT_TRUE(Arena::is_arena_constructable<ArenaConstructible>::value);

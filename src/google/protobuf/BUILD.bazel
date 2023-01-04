@@ -178,6 +178,9 @@ cc_library(
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
     ],
+    deps = [
+        "@com_google_absl//absl/meta:type_traits",
+    ],
 )
 
 cc_library(
@@ -334,6 +337,7 @@ cc_library(
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/meta:type_traits",
         "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/synchronization",
