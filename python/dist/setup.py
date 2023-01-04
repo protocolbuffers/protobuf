@@ -33,6 +33,7 @@
 
 import glob
 import os
+import sys
 import sysconfig
 
 # We must use setuptools, not distutils, because we need to use the
@@ -54,6 +55,10 @@ def GetVersion():
     return __version__  # pylint:disable=undefined-variable
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+extra_link_args = []
+
+if sys.platform.startswith('win'):
+  extra_link_args = ["-static"]
 
 setup(
     name='protobuf',
@@ -80,6 +85,6 @@ setup(
     namespace_packages=['google'],
     packages=find_packages(),
     install_requires=[],
-    ext_modules= [Extension('google._upb._message', glob.glob('google/protobuf/*.c') + glob.glob('python/*.c') + glob.glob('upb/*.c') + glob.glob('upb/**/*.c') + glob.glob('utf8_range/*.c'), include_dirs=[current_dir, os.path.join(current_dir, 'utf8_range')], language = 'c')],
+    ext_modules= [Extension('google._upb._message', glob.glob('google/protobuf/*.c') + glob.glob('python/*.c') + glob.glob('upb/*.c') + glob.glob('upb/**/*.c') + glob.glob('utf8_range/*.c'), include_dirs=[current_dir, os.path.join(current_dir, 'utf8_range')], language = 'c', extra_link_args=extra_link_args)],
     python_requires='>=3.7',
 )
