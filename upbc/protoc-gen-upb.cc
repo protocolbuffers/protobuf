@@ -1182,7 +1182,7 @@ void WriteMessageField(const upb_MiniTableField* field64,
 
 // Writes a single message into a .upb.c source file.
 void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
-                  Output& output, bool fasttable_enabled) {
+                  Output& output) {
   std::string msg_name = ToCIdent(message->full_name());
   std::string fields_array_ref = "NULL";
   std::string submsgs_array_ref = "NULL";
@@ -1225,9 +1225,7 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
   std::vector<TableEntry> table;
   uint8_t table_mask = -1;
 
-  if (fasttable_enabled) {
-    table = FastDecodeTable(message, layout);
-  }
+  table = FastDecodeTable(message, layout);
 
   if (table.size() > 1) {
     assert((table.size() & (table.size() - 1)) == 0);
@@ -1256,7 +1254,7 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
       output("    {0x$1, &$0},\n", ent.first,
              absl::StrCat(absl::Hex(ent.second, absl::kZeroPad16)));
     }
-    output("  }),\n");
+    output("  })\n");
   }
   output("};\n\n");
 }
@@ -1310,15 +1308,14 @@ int WriteEnums(const FileLayout& layout, Output& output) {
   return this_file_enums.size();
 }
 
-int WriteMessages(const FileLayout& layout, Output& output,
-                  bool fasttable_enabled) {
+int WriteMessages(const FileLayout& layout, Output& output) {
   const protobuf::FileDescriptor* file = layout.descriptor();
   std::vector<const protobuf::Descriptor*> file_messages = SortedMessages(file);
 
   if (file_messages.empty()) return 0;
 
   for (auto message : file_messages) {
-    WriteMessage(message, layout, output, fasttable_enabled);
+    WriteMessage(message, layout, output);
   }
 
   output("static const upb_MiniTable *$0[$1] = {\n", kMessagesInit,
@@ -1383,8 +1380,7 @@ int WriteExtensions(const FileLayout& layout, Output& output) {
 }
 
 // Writes a .upb.cc source file.
-void WriteSource(const FileLayout& layout, Output& output,
-                 bool fasttable_enabled) {
+void WriteSource(const FileLayout& layout, Output& output) {
   const protobuf::FileDescriptor* file = layout.descriptor();
   EmitFileWarning(file, output);
 
@@ -1405,7 +1401,7 @@ void WriteSource(const FileLayout& layout, Output& output,
       "#include \"upb/port/def.inc\"\n"
       "\n");
 
-  int msg_count = WriteMessages(layout, output, fasttable_enabled);
+  int msg_count = WriteMessages(layout, output);
   int ext_count = WriteExtensions(layout, output);
   int enum_count = WriteEnums(layout, output);
 
@@ -1436,17 +1432,12 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
                          const std::string& parameter,
                          protoc::GeneratorContext* context,
                          std::string* error) const {
-  bool fasttable_enabled = false;
   std::vector<std::pair<std::string, std::string>> params;
   google::protobuf::compiler::ParseGeneratorParameter(parameter, &params);
 
   for (const auto& pair : params) {
-    if (pair.first == "fasttable") {
-      fasttable_enabled = true;
-    } else {
-      *error = "Unknown parameter: " + pair.first;
-      return false;
-    }
+    *error = "Unknown parameter: " + pair.first;
+    return false;
   }
 
   FileLayout layout(file);
@@ -1459,7 +1450,7 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   std::unique_ptr<protobuf::io::ZeroCopyOutputStream> c_output_stream(
       context->Open(SourceFilename(file)));
   Output c_output(c_output_stream.get());
-  WriteSource(layout, c_output, fasttable_enabled);
+  WriteSource(layout, c_output);
 
   return true;
 }

@@ -31,11 +31,11 @@ load(
 )
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_fasttable_enabled",
     "upb_proto_library",
     "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 # begin:google_only
 # load(
@@ -69,7 +69,7 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-upb_fasttable_enabled(
+bool_flag(
     name = "fasttable_enabled",
     build_setting_default = False,
     visibility = ["//visibility:public"],

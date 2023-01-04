@@ -197,6 +197,9 @@ class BuildFileFunctions(object):
   def package_group(self, **kwargs):
     pass
 
+  def bool_flag(self, **kwargs):
+    pass
+
 
 class WorkspaceFileFunctions(object):
   def __init__(self, converter):
