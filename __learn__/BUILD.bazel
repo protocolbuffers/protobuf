@@ -143,7 +143,6 @@ internal_ruby_proto_library(
 )
 
 # Compiler
-
 alias(
   name = "protoc_lib",
   actual = "//src/google/protobuf/compiler:protoc_lib",
