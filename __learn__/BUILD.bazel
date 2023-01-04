@@ -376,6 +376,15 @@ java_proto_library(
     "//conformance:__pkg__",
     "//java:__subpackages__",
   ],
+  deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+)
+
+java_proto_library(
+  name = "test_messages_proto3_java_proto",
+  visibility = [
+    "//conformance:__pkg__",
+    "//java:__subpackages__",
+  ],
   deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
@@ -395,4 +404,15 @@ java_lite_proto_library(
     "//java:__subpackages__",
   ],
   deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+internal_objc_proto_library(
+  name = "test_messages_proto2_objc_proto",
+  testonly = 1,
+  srcs = ["//src/google/protobuf:test_messages_proto2.proto"],
+  includes = ["src/google/protobuf"],
+  visibility = [
+    "//conformance:__pkg__",
+    "//objectivec:__subpackages__",
+  ],
 )
