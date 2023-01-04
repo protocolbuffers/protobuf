@@ -559,7 +559,7 @@ void GenerateMapSetters(const protobuf::FieldDescriptor* field,
       R"cc(
         UPB_INLINE bool $0_$1_set($0* msg, $2 key, $3 val, upb_Arena* a) {
           const upb_MiniTableField field = $4;
-          upb_Map* map = _upb_MiniTable_GetOrCreateMutableMap(msg, &field, $5, $6, a);
+          upb_Map* map = _upb_Message_GetOrCreateMutableMap(msg, &field, $5, $6, a);
           return _upb_Map_Insert(map, &key, $5, &val, $6, a) !=
                  kUpb_MapInsertStatus_OutOfMemory;
         }

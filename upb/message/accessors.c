@@ -313,8 +313,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
         /* base_message= */ NULL, decode_options, arena);
     if (ret.status != kUpb_UnknownToMessage_Ok) return ret.status;
     // Allocate map on demand before append.
-    upb_Map* map =
-        upb_MiniTable_GetMutableMap(msg, map_entry_mini_table, field, arena);
+    upb_Map* map = upb_Message_GetOrCreateMutableMap(msg, map_entry_mini_table,
+                                                     field, arena);
     upb_Message* map_entry_message = ret.message;
     upb_MapInsertStatus insert_status = upb_Message_InsertMapEntry(
         map, mini_table, field, map_entry_message, arena);

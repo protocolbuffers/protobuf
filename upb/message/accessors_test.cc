@@ -756,8 +756,8 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
                                         decode_options, arena);
   EXPECT_EQ(promote_result, kUpb_UnknownToMessage_Ok);
 
-  upb_Map* map = upb_MiniTable_GetMutableMap(msg, map_entry_mini_table,
-                                             &mini_table->fields[1], arena);
+  upb_Map* map = upb_Message_GetOrCreateMutableMap(
+      msg, map_entry_mini_table, &mini_table->fields[1], arena);
   EXPECT_NE(map, nullptr);
   // Lookup in map.
   upb_MessageValue key;

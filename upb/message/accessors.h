@@ -294,7 +294,7 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
                                field);
 }
 
-UPB_INLINE upb_Map* _upb_MiniTable_GetOrCreateMutableMap(
+UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
     upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
   _upb_MiniTableField_CheckIsMap(field);
@@ -630,8 +630,7 @@ UPB_API_INLINE const upb_Map* upb_Message_GetMap(
   return ret;
 }
 
-// TODO: rename to GetOrCreateMutableMap
-UPB_API_INLINE upb_Map* upb_MiniTable_GetMutableMap(
+UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
     upb_Message* msg, const upb_MiniTable* map_entry_mini_table,
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
@@ -640,7 +639,7 @@ UPB_API_INLINE upb_Map* upb_MiniTable_GetMutableMap(
       &map_entry_mini_table->fields[0];
   const upb_MiniTableField* map_entry_value_field =
       &map_entry_mini_table->fields[1];
-  return _upb_MiniTable_GetOrCreateMutableMap(
+  return _upb_Message_GetOrCreateMutableMap(
       msg, field,
       _upb_Map_CTypeSize(upb_MiniTableField_CType(map_entry_key_field)),
       _upb_Map_CTypeSize(upb_MiniTableField_CType(map_entry_value_field)),
