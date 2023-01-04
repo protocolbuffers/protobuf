@@ -217,6 +217,8 @@ pkg_files(
     prefix = "utf8_range",
 )
 
+# NOTE: This package currently only works for macos and ubuntu, MSVC users
+# should use a binary wheel.
 pkg_tar(
     name = "source_wheel",
     extension = "tar.gz",

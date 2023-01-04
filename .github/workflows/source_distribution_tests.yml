@@ -54,10 +54,6 @@ jobs:
           - { os: ubuntu-20.04, python-version: "3.10", architecture: x64 }
           - { os: macos-11, python-version: "3.7", architecture: x64 }
           - { os: macos-12, python-version: "3.10", architecture: x64 }
-          - { os: windows-2019, python-version: "3.7", architecture: x86 }
-          - { os: windows-2019, python-version: "3.10", architecture: x86 }
-          - { os: windows-2019, python-version: "3.7", architecture: x64 }
-          - { os: windows-2019, python-version: "3.10", architecture: x64 }
     runs-on: ${{ matrix.os }}
     defaults:
       run:
