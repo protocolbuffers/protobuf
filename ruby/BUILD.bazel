@@ -8,7 +8,6 @@ load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
 load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
-load(":internal.bzl", "internal_ruby_extension")
 
 ################################################################################
 # Ruby Runtime
@@ -26,7 +25,7 @@ java_export(
     name = "protobuf_java_release",
     maven_coordinates = "com.google.protobuf:protobuf-jruby:%s" % PROTOBUF_RUBY_VERSION,
     srcs = glob(["src/main/java/com/google/protobuf/jruby/*"]),
-    deps = [
+    runtime_deps = [
         "@maven//:org_jruby_jruby_complete",
         "@com_google_protobuf//java/util",
     ],
@@ -37,6 +36,7 @@ filegroup(
   srcs = [":protobuf_java_release-project"],
 )
 
+# Run with the flag: --define=ruby_platform=c
 sh_binary(
     name = "jruby_release",
     data = [
@@ -48,6 +48,7 @@ sh_binary(
     ],
 )
 
+# Run with the flag: --define=ruby_platform=java
 sh_binary(
     name = "release",
     data = [
