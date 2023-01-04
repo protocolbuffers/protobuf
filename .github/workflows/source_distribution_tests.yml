@@ -78,6 +78,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m venv env
+          pip install --upgrade setuptools
           # Windows uses 'Scripts' instead of 'bin'
           source env/bin/activate || source env/Scripts/activate
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
