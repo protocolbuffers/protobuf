@@ -408,12 +408,6 @@ inline bool IsFieldUsed(const FieldDescriptor* /* field */,
   return true;
 }
 
-// Returns true if "field" is stripped.
-inline bool IsFieldStripped(const FieldDescriptor* /*field*/,
-                            const Options& /*options*/) {
-  return false;
-}
-
 // Does the file contain any definitions that need extension_set.h?
 bool HasExtensionsOrExtendableMessage(const FileDescriptor* file);
 

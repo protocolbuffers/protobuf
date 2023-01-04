@@ -331,8 +331,6 @@ void MapFieldGenerator::GenerateAggregateInitializer(
 }
 
 void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (ShouldSplit(descriptor_, options_)) {
     format("$cached_split_ptr$->$name$_.Destruct();\n");
