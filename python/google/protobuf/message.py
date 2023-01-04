@@ -312,13 +312,13 @@ class Message(object):
     """
     raise NotImplementedError
 
-  def HasExtension(self, extension_handle):
+  def HasExtension(self, field_descriptor):
     """Checks if a certain extension is present for this message.
 
     Extensions are retrieved using the :attr:`Extensions` mapping (if present).
 
     Args:
-      extension_handle: The handle for the extension to check.
+      field_descriptor: The field descriptor for the extension to check.
 
     Returns:
       bool: Whether the extension is present for this message.
@@ -330,11 +330,11 @@ class Message(object):
     """
     raise NotImplementedError
 
-  def ClearExtension(self, extension_handle):
+  def ClearExtension(self, field_descriptor):
     """Clears the contents of a given extension.
 
     Args:
-      extension_handle: The handle for the extension to clear.
+      field_descriptor: The field descriptor for the extension to clear.
     """
     raise NotImplementedError
 
@@ -368,7 +368,7 @@ class Message(object):
     raise NotImplementedError
 
   @staticmethod
-  def RegisterExtension(extension_handle):
+  def RegisterExtension(field_descriptor):
     raise NotImplementedError
 
   def _SetListener(self, message_listener):
