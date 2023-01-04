@@ -54,6 +54,7 @@ typedef struct upb_Decoder {
   uint16_t options;
   bool missing_required;
   upb_Arena arena;
+  upb_DecodeStatus status;
   jmp_buf err;
 
 #ifndef NDEBUG

@@ -88,12 +88,14 @@ static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
 UPB_NORETURN static void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
                                                 upb_DecodeStatus status) {
   assert(status != kUpb_DecodeStatus_Ok);
-  UPB_LONGJMP(d->err, status);
+  d->status = status;
+  UPB_LONGJMP(d->err, 1);
 }
 
 const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, int status) {
   assert(status != kUpb_DecodeStatus_Ok);
-  UPB_LONGJMP(d->err, status);
+  d->status = status;
+  UPB_LONGJMP(d->err, 1);
   return NULL;
 }
 
@@ -1264,16 +1266,18 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
   state.arena.last_size = arena->last_size;
   state.arena.cleanup_metadata = arena->cleanup_metadata;
   state.arena.parent = arena;
+  state.status = kUpb_DecodeStatus_Ok;
 
-  upb_DecodeStatus status = UPB_SETJMP(state.err);
-  if (UPB_LIKELY(status == kUpb_DecodeStatus_Ok)) {
-    status = _upb_Decoder_DecodeTop(&state, buf, msg, l);
+  if (UPB_SETJMP(state.err) == 0) {
+    state.status = _upb_Decoder_DecodeTop(&state, buf, msg, l);
+  } else {
+    UPB_ASSERT(state.status != kUpb_DecodeStatus_Ok);
   }
 
   arena->head.ptr = state.arena.head.ptr;
   arena->head.end = state.arena.head.end;
   arena->cleanup_metadata = state.arena.cleanup_metadata;
-  return status;
+  return state.status;
 }
 
 #undef OP_FIXPCK_LG2

@@ -64,6 +64,7 @@ static uint64_t encode_zz64(int64_t n) {
 }
 
 typedef struct {
+  upb_EncodeStatus status;
   jmp_buf err;
   upb_Arena* arena;
   char *buf, *ptr, *limit;
@@ -81,7 +82,9 @@ static size_t upb_roundup_pow2(size_t bytes) {
 }
 
 UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
-  UPB_LONGJMP(e->err, s);
+  UPB_ASSERT(s != kUpb_EncodeStatus_Ok);
+  e->status = s;
+  UPB_LONGJMP(e->err, 1);
 }
 
 UPB_NOINLINE
@@ -571,6 +574,7 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
   upb_encstate e;
   unsigned depth = (unsigned)options >> 16;
 
+  e.status = kUpb_EncodeStatus_Ok;
   e.arena = arena;
   e.buf = NULL;
   e.limit = NULL;
@@ -579,13 +583,11 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
   e.options = options;
   _upb_mapsorter_init(&e.sorter);
 
-  upb_EncodeStatus status = UPB_SETJMP(e.err);
-
   // Unfortunately we must continue to perform hackery here because there are
   // code paths which blindly copy the returned pointer without bothering to
   // check for errors until much later (b/235839510). So we still set *buf to
   // NULL on error and we still set it to non-NULL on a successful empty result.
-  if (status == kUpb_EncodeStatus_Ok) {
+  if (UPB_SETJMP(e.err) == 0) {
     encode_message(&e, msg, l, size);
     *size = e.limit - e.ptr;
     if (*size == 0) {
@@ -596,10 +598,11 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
       *buf = e.ptr;
     }
   } else {
+    UPB_ASSERT(e.status != kUpb_EncodeStatus_Ok);
     *buf = NULL;
     *size = 0;
   }
 
   _upb_mapsorter_destroy(&e.sorter);
-  return status;
+  return e.status;
 }

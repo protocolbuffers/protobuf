@@ -60,8 +60,15 @@ typedef struct {
   upb_UnknownField* tmp;
   size_t tmp_size;
   int depth;
+  upb_UnknownCompareResult status;
   jmp_buf err;
 } upb_UnknownField_Context;
+
+UPB_NORETURN static void upb_UnknownFields_OutOfMemory(
+    upb_UnknownField_Context* ctx) {
+  ctx->status = kUpb_UnknownCompareResult_OutOfMemory;
+  UPB_LONGJMP(ctx->err, 1);
+}
 
 static void upb_UnknownFields_Grow(upb_UnknownField_Context* ctx,
                                    upb_UnknownField** base,
@@ -72,7 +79,7 @@ static void upb_UnknownFields_Grow(upb_UnknownField_Context* ctx,
 
   *base = upb_Arena_Realloc(ctx->arena, *base, old * sizeof(**base),
                             new * sizeof(**base));
-  if (!*base) UPB_LONGJMP(ctx->err, kUpb_UnknownCompareResult_OutOfMemory);
+  if (!*base) upb_UnknownFields_OutOfMemory(ctx);
 
   *ptr = *base + old;
   *end = *base + new;
@@ -172,7 +179,8 @@ static upb_UnknownFields* upb_UnknownFields_DoBuild(
       }
       case kUpb_WireType_StartGroup:
         if (--ctx->depth == 0) {
-          UPB_LONGJMP(ctx->err, kUpb_UnknownCompareResult_MaxDepthExceeded);
+          ctx->status = kUpb_UnknownCompareResult_MaxDepthExceeded;
+          UPB_LONGJMP(ctx->err, 1);
         }
         field->data.group = upb_UnknownFields_DoBuild(ctx, &ptr);
         ctx->depth++;
@@ -184,7 +192,7 @@ static upb_UnknownFields* upb_UnknownFields_DoBuild(
 
   *buf = ptr;
   upb_UnknownFields* ret = upb_Arena_Malloc(ctx->arena, sizeof(*ret));
-  if (!ret) UPB_LONGJMP(ctx->err, kUpb_UnknownCompareResult_OutOfMemory);
+  if (!ret) upb_UnknownFields_OutOfMemory(ctx);
   ret->fields = arr_base;
   ret->size = arr_ptr - arr_base;
   ret->capacity = arr_end - arr_base;
@@ -255,13 +263,13 @@ upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(const char* buf1,
       .depth = max_depth,
       .tmp = NULL,
       .tmp_size = 0,
+      .status = kUpb_UnknownCompareResult_Equal,
   };
 
   if (!ctx.arena) return kUpb_UnknownCompareResult_OutOfMemory;
 
-  int ret = UPB_SETJMP(ctx.err);
-
-  if (UPB_LIKELY(ret == 0)) {
+  upb_UnknownCompareResult ret;
+  if (UPB_SETJMP(ctx.err) == 0) {
     // First build both unknown fields into a sorted data structure (similar
     // to the UnknownFieldSet in C++).
     upb_UnknownFields* uf1 = upb_UnknownFields_Build(&ctx, buf1, size1);
@@ -273,6 +281,9 @@ upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(const char* buf1,
     } else {
       ret = kUpb_UnknownCompareResult_NotEqual;
     }
+  } else {
+    ret = ctx.status;
+    UPB_ASSERT(ret != kUpb_UnknownCompareResult_Equal);
   }
 
   upb_Arena_Free(ctx.arena);
