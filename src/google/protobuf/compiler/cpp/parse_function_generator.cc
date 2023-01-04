@@ -69,9 +69,7 @@ std::vector<const FieldDescriptor*> GetOrderedFields(
     const Descriptor* descriptor, const Options& options) {
   std::vector<const FieldDescriptor*> ordered_fields;
   for (auto field : FieldRange(descriptor)) {
-    if (!IsFieldStripped(field, options)) {
-      ordered_fields.push_back(field);
-    }
+    ordered_fields.push_back(field);
   }
   std::sort(ordered_fields.begin(), ordered_fields.end(),
             [](const FieldDescriptor* a, const FieldDescriptor* b) {

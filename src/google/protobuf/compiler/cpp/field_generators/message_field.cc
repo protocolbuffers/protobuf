@@ -199,41 +199,18 @@ void MessageFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
 void MessageFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (IsFieldStripped(descriptor_, options_)) {
-    format(
-        "$deprecated_attr$const $type$& ${1$$name$$}$() const { "
-        "__builtin_trap(); }\n"
-        "PROTOBUF_NODISCARD $deprecated_attr$$type$* "
-        "${1$$release_name$$}$() { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$$type$* ${1$mutable_$name$$}$() { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$void ${1$set_allocated_$name$$}$"
-        "($type$* $name$) { __builtin_trap(); }\n"
-        "$deprecated_attr$void "
-        "${1$unsafe_arena_set_allocated_$name$$}$(\n"
-        "    $type$* $name$) { __builtin_trap(); }\n"
-        "$deprecated_attr$$type$* ${1$unsafe_arena_release_$name$$}$() { "
-        "__builtin_trap(); }\n",
-        descriptor_);
-    return;
-  }
   format(
       "$deprecated_attr$const $type$& ${1$$name$$}$() const;\n"
       "PROTOBUF_NODISCARD $deprecated_attr$$type$* "
       "${1$$release_name$$}$();\n"
       "$deprecated_attr$$type$* ${1$mutable_$name$$}$();\n"
       "$deprecated_attr$void ${1$set_allocated_$name$$}$"
-      "($type$* $name$);\n",
+      "($type$* $name$);\n"
+      "private:\n"
+      "const $type$& ${1$_internal_$name$$}$() const;\n"
+      "$type$* ${1$_internal_mutable_$name$$}$();\n"
+      "public:\n",
       descriptor_);
-  if (!IsFieldStripped(descriptor_, options_)) {
-    format(
-        "private:\n"
-        "const $type$& ${1$_internal_$name$$}$() const;\n"
-        "$type$* ${1$_internal_mutable_$name$$}$();\n"
-        "public:\n",
-        descriptor_);
-  }
   format(
       "$deprecated_attr$void "
       "${1$unsafe_arena_set_allocated_$name$$}$(\n"
@@ -461,8 +438,6 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
 }
 
 void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (!internal::cpp::HasHasbit(descriptor_)) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
@@ -479,8 +454,6 @@ void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 
 void MessageFieldGenerator::GenerateMessageClearingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (!internal::cpp::HasHasbit(descriptor_)) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
@@ -498,8 +471,6 @@ void MessageFieldGenerator::GenerateMessageClearingCode(
 }
 
 void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
     format(
@@ -513,15 +484,11 @@ void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format("swap($field$, other->$field$);\n");
 }
 
 void MessageFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (options_.opensource_runtime) {
     // TODO(gerbens) Remove this when we don't need to destruct default
@@ -542,8 +509,6 @@ using internal::cpp::HasHasbit;
 
 void MessageFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (HasHasbit(descriptor_)) {
     format(
@@ -560,8 +525,6 @@ void MessageFieldGenerator::GenerateCopyConstructorCode(
 
 void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     format(
@@ -578,8 +541,6 @@ void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 }
 
 void MessageFieldGenerator::GenerateByteSize(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format(
       "total_size += $tag_size$ +\n"
@@ -588,8 +549,6 @@ void MessageFieldGenerator::GenerateByteSize(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::GenerateIsInitialized(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   if (!has_required_fields_) return;
 
   Formatter format(printer, variables_);
@@ -768,8 +727,6 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void MessageOneofFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format(
       "if (GetArenaForAllocation() == nullptr) {\n"
@@ -836,34 +793,15 @@ void RepeatedMessageFieldGenerator::GeneratePrivateMembers(
 void RepeatedMessageFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (IsFieldStripped(descriptor_, options_)) {
-    format(
-        "$deprecated_attr$$type$* ${1$mutable_$name$$}$(int index) { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$::$proto_ns$::RepeatedPtrField< $type$ >*\n"
-        "    ${1$mutable_$name$$}$() { __builtin_trap(); }\n"
-        "$deprecated_attr$const $type$& ${1$$name$$}$(int index) const { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$$type$* ${1$add_$name$$}$() { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$const ::$proto_ns$::RepeatedPtrField< $type$ >&\n"
-        "    ${1$$name$$}$() const { __builtin_trap(); }\n",
-        descriptor_);
-    return;
-  }
   format(
       "$deprecated_attr$$type$* ${1$mutable_$name$$}$(int index);\n"
       "$deprecated_attr$::$proto_ns$::RepeatedPtrField< $type$ >*\n"
-      "    ${1$mutable_$name$$}$();\n",
+      "    ${1$mutable_$name$$}$();\n"
+      "private:\n"
+      "const $type$& ${1$_internal_$name$$}$(int index) const;\n"
+      "$type$* ${1$_internal_add_$name$$}$();\n"
+      "public:\n",
       descriptor_);
-  if (!IsFieldStripped(descriptor_, options_)) {
-    format(
-        "private:\n"
-        "const $type$& ${1$_internal_$name$$}$(int index) const;\n"
-        "$type$* ${1$_internal_add_$name$$}$();\n"
-        "public:\n",
-        descriptor_);
-  }
   format(
       "$deprecated_attr$const $type$& ${1$$name$$}$(int index) const;\n"
       "$deprecated_attr$$type$* ${1$add_$name$$}$();\n"
@@ -937,24 +875,18 @@ void RepeatedMessageFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void RepeatedMessageFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format("$field$.Clear();\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format("_this->$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSwappingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format("$field$.InternalSwap(&other->$field$);\n");
 }
@@ -966,8 +898,6 @@ void RepeatedMessageFieldGenerator::GenerateConstructorCode(
 
 void RepeatedMessageFieldGenerator::GenerateDestructorCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
     format("$field$.~WeakRepeatedPtrField();\n");
@@ -978,8 +908,6 @@ void RepeatedMessageFieldGenerator::GenerateDestructorCode(
 
 void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
     format(
@@ -1023,8 +951,6 @@ void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 
 void RepeatedMessageFieldGenerator::GenerateByteSize(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format(
       "total_size += $tag_size$UL * this->_internal_$name$_size();\n"
@@ -1036,8 +962,6 @@ void RepeatedMessageFieldGenerator::GenerateByteSize(
 
 void RepeatedMessageFieldGenerator::GenerateIsInitialized(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   if (!has_required_fields_) return;
 
   Formatter format(printer, variables_);
