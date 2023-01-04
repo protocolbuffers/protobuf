@@ -35,25 +35,24 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-/* Strings/bytes are special-cased in maps. */
-static char _upb_CTypeo_mapsize[12] = {
-    0,
-    1,             /* kUpb_CType_Bool */
-    4,             /* kUpb_CType_Float */
-    4,             /* kUpb_CType_Int32 */
-    4,             /* kUpb_CType_UInt32 */
-    4,             /* kUpb_CType_Enum */
-    sizeof(void*), /* kUpb_CType_Message */
-    8,             /* kUpb_CType_Double */
-    8,             /* kUpb_CType_Int64 */
-    8,             /* kUpb_CType_UInt64 */
-    0,             /* kUpb_CType_String */
-    0,             /* kUpb_CType_Bytes */
+// Strings/bytes are special-cased in maps.
+char _upb_Map_CTypeSizeTable[12] = {
+    [kUpb_CType_Bool] = 1,
+    [kUpb_CType_Float] = 4,
+    [kUpb_CType_Int32] = 4,
+    [kUpb_CType_UInt32] = 4,
+    [kUpb_CType_Enum] = 4,
+    [kUpb_CType_Message] = sizeof(void*),
+    [kUpb_CType_Double] = 8,
+    [kUpb_CType_Int64] = 8,
+    [kUpb_CType_UInt64] = 8,
+    [kUpb_CType_String] = UPB_MAPTYPE_STRING,
+    [kUpb_CType_Bytes] = UPB_MAPTYPE_STRING,
 };
 
 upb_Map* upb_Map_New(upb_Arena* a, upb_CType key_type, upb_CType value_type) {
-  return _upb_Map_New(a, _upb_CTypeo_mapsize[key_type],
-                      _upb_CTypeo_mapsize[value_type]);
+  return _upb_Map_New(a, _upb_Map_CTypeSize(key_type),
+                      _upb_Map_CTypeSize(value_type));
 }
 
 size_t upb_Map_Size(const upb_Map* map) { return _upb_Map_Size(map); }
@@ -71,8 +70,11 @@ upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
                                               map->val_size, arena);
 }
 
-bool upb_Map_Delete(upb_Map* map, upb_MessageValue key) {
-  return _upb_Map_Delete(map, &key, map->key_size);
+bool upb_Map_Delete(upb_Map* map, upb_MessageValue key, upb_MessageValue* val) {
+  upb_value v;
+  const bool ok = _upb_Map_Delete(map, &key, map->key_size, &v);
+  if (val) val->uint64_val = v.val;
+  return ok;
 }
 
 bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,

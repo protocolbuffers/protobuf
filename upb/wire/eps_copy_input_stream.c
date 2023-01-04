@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,18 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This disables inlining and forces all public functions to be exported to the
-// linker. It is used to generate bindings for FFIs from other languages.
-#ifndef UPB_BUILD_API
-#define UPB_BUILD_API
-#endif
+#include "upb/wire/eps_copy_input_stream.h"
 
-#include "upb/collections/array.h"
-#include "upb/collections/map.h"
-#include "upb/message/accessors.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/decode.h"
-#include "upbc/upbdev.h"
+static const char* _upb_EpsCopyInputStream_NoOpCallback(
+    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
+  return new_start;
+}
 
-// Must be last.
-#include "upb/port/def.inc"
+const char* _upb_EpsCopyInputStream_IsDoneFallbackNoCallback(
+    upb_EpsCopyInputStream* e, const char* ptr, int overrun) {
+  return _upb_EpsCopyInputStream_IsDoneFallbackInline(
+      e, ptr, overrun, _upb_EpsCopyInputStream_NoOpCallback);
+}

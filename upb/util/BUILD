@@ -108,9 +108,11 @@ cc_library(
     hdrs = ["compare.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//:eps_copy_input_stream",
         "//:port",
         "//:reflection",
-        "//:wire",
+        "//:wire_reader",
+        "//:wire_types",
     ],
 )
 
@@ -125,6 +127,7 @@ cc_test(
     deps = [
         ":compare",
         "//:wire_internal",
+        "//:wire_types",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],

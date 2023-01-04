@@ -115,8 +115,8 @@ const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
                                         const char* ptr, int overrun);
 
 UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  return upb_EpsCopyInputStream_IsDone(&d->input, ptr,
-                                       &_upb_Decoder_IsDoneFallback);
+  return upb_EpsCopyInputStream_IsDoneWithCallback(
+      &d->input, ptr, &_upb_Decoder_IsDoneFallback);
 }
 
 UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
@@ -131,8 +131,6 @@ UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
     }
     d->unknown = new_start;
   }
-
-  d->options &= ~kUpb_DecodeOption_AliasString;
   return new_start;
 }
 

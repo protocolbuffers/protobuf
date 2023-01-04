@@ -35,6 +35,7 @@
 #include "upb/wire/common_internal.h"
 #include "upb/wire/decode_internal.h"
 #include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/reader.h"
 #include "upb/wire/swap_internal.h"
 #include "upb/wire/types.h"
 
@@ -221,16 +222,12 @@ static upb_Message* _upb_Decoder_NewSubMessage(
 
 static const char* _upb_Decoder_ReadString(upb_Decoder* d, const char* ptr,
                                            int size, upb_StringView* str) {
-  if (d->options & kUpb_DecodeOption_AliasString) {
-    str->data = ptr;
-  } else {
-    char* data = upb_Arena_Malloc(&d->arena, size);
-    if (!data) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
-    memcpy(data, ptr, size);
-    str->data = data;
-  }
+  const char* str_ptr = ptr;
+  ptr = upb_EpsCopyInputStream_ReadString(&d->input, &str_ptr, size, &d->arena);
+  if (!ptr) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+  str->data = str_ptr;
   str->size = size;
-  return ptr + size;
+  return ptr;
 }
 
 UPB_FORCEINLINE
@@ -374,27 +371,21 @@ static const char* _upb_Decoder_DecodeFixedPacked(
   // Note: if/when the decoder supports multi-buffer input, we will need to
   // handle buffer seams here.
   if (_upb_IsLittleEndian()) {
-    memcpy(mem, ptr, val->size);
-    ptr += val->size;
+    ptr = upb_EpsCopyInputStream_Copy(&d->input, ptr, mem, val->size);
   } else {
-    const char* end = ptr + val->size;
+    int delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
     char* dst = mem;
-    while (ptr < end) {
+    while (!_upb_Decoder_IsDone(d, &ptr)) {
       if (lg2 == 2) {
-        uint32_t val;
-        memcpy(&val, ptr, sizeof(val));
-        val = _upb_BigEndian_Swap32(val);
-        memcpy(dst, &val, sizeof(val));
+        ptr = upb_WireReader_ReadFixed32(ptr, dst);
+        dst += 4;
       } else {
         UPB_ASSERT(lg2 == 3);
-        uint64_t val;
-        memcpy(&val, ptr, sizeof(val));
-        val = _upb_BigEndian_Swap64(val);
-        memcpy(dst, &val, sizeof(val));
+        ptr = upb_WireReader_ReadFixed64(ptr, dst);
+        dst += 8;
       }
-      ptr += 1 << lg2;
-      dst += 1 << lg2;
     }
+    upb_EpsCopyInputStream_PopLimit(&d->input, ptr, delta);
   }
 
   return ptr;
@@ -1031,21 +1022,17 @@ static const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
       _upb_Decoder_Munge(field->descriptortype, val);
       return ptr;
     case kUpb_WireType_32Bit:
-      memcpy(&val->uint32_val, ptr, 4);
-      val->uint32_val = _upb_BigEndian_Swap32(val->uint32_val);
       *op = kUpb_DecodeOp_Scalar4Byte;
       if (((1 << field->descriptortype) & kFixed32OkMask) == 0) {
         *op = kUpb_DecodeOp_UnknownField;
       }
-      return ptr + 4;
+      return upb_WireReader_ReadFixed32(ptr, &val->uint32_val);
     case kUpb_WireType_64Bit:
-      memcpy(&val->uint64_val, ptr, 8);
-      val->uint64_val = _upb_BigEndian_Swap64(val->uint64_val);
       *op = kUpb_DecodeOp_Scalar8Byte;
       if (((1 << field->descriptortype) & kFixed64OkMask) == 0) {
         *op = kUpb_DecodeOp_UnknownField;
       }
-      return ptr + 8;
+      return upb_WireReader_ReadFixed64(ptr, &val->uint64_val);
     case kUpb_WireType_Delimited:
       ptr = upb_Decoder_DecodeSize(d, ptr, &val->size);
       *op = _upb_Decoder_GetDelimitedOp(mt, field);
@@ -1264,9 +1251,8 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
   upb_Decoder state;
   unsigned depth = (unsigned)options >> 16;
 
-  if (upb_EpsCopyInputStream_Init(&state.input, &buf, size)) {
-    options &= ~kUpb_DecodeOption_AliasString;  // Can't alias patch buf.
-  }
+  upb_EpsCopyInputStream_Init(&state.input, &buf, size,
+                              options & kUpb_DecodeOption_AliasString);
 
   state.extreg = extreg;
   state.unknown = NULL;

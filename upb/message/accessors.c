@@ -33,95 +33,11 @@
 #include "upb/message/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
-#include "upb/wire/types.h"
+#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/reader.h"
 
 // Must be last.
 #include "upb/port/def.inc"
-
-// Maps descriptor type to elem_size_lg2.
-static int _upb_MiniTableField_CTypeLg2Size(const upb_MiniTableField* f) {
-  static const uint8_t sizes[] = {
-      -1,             /* invalid descriptor type */
-      3,              /* DOUBLE */
-      2,              /* FLOAT */
-      3,              /* INT64 */
-      3,              /* UINT64 */
-      2,              /* INT32 */
-      3,              /* FIXED64 */
-      2,              /* FIXED32 */
-      0,              /* BOOL */
-      UPB_SIZE(3, 4), /* STRING */
-      UPB_SIZE(2, 3), /* GROUP */
-      UPB_SIZE(2, 3), /* MESSAGE */
-      UPB_SIZE(3, 4), /* BYTES */
-      2,              /* UINT32 */
-      2,              /* ENUM */
-      2,              /* SFIXED32 */
-      3,              /* SFIXED64 */
-      2,              /* SINT32 */
-      3,              /* SINT64 */
-  };
-  return sizes[f->descriptortype];
-}
-
-void* upb_Message_ResizeArray(upb_Message* msg, const upb_MiniTableField* field,
-                              size_t len, upb_Arena* arena) {
-  return _upb_Array_Resize_accessor2(
-      msg, field->offset, len, _upb_MiniTableField_CTypeLg2Size(field), arena);
-}
-
-typedef struct {
-  const char* ptr;
-  uint64_t val;
-} decode_vret;
-
-UPB_NOINLINE
-static decode_vret decode_longvarint64(const char* ptr, uint64_t val) {
-  decode_vret ret = {NULL, 0};
-  uint64_t byte;
-  int i;
-  for (i = 1; i < 10; i++) {
-    byte = (uint8_t)ptr[i];
-    val += (byte - 1) << (i * 7);
-    if (!(byte & 0x80)) {
-      ret.ptr = ptr + i + 1;
-      ret.val = val;
-      return ret;
-    }
-  }
-  return ret;
-}
-
-UPB_FORCEINLINE
-static const char* decode_varint64(const char* ptr, uint64_t* val) {
-  uint64_t byte = (uint8_t)*ptr;
-  if (UPB_LIKELY((byte & 0x80) == 0)) {
-    *val = byte;
-    return ptr + 1;
-  } else {
-    decode_vret res = decode_longvarint64(ptr, byte);
-    if (!res.ptr) return NULL;
-    *val = res.val;
-    return res.ptr;
-  }
-}
-
-UPB_FORCEINLINE
-static const char* decode_tag(const char* ptr, uint32_t* val) {
-  uint64_t byte = (uint8_t)*ptr;
-  if (UPB_LIKELY((byte & 0x80) == 0)) {
-    *val = (uint32_t)byte;
-    return ptr + 1;
-  } else {
-    const char* start = ptr;
-    decode_vret res = decode_longvarint64(ptr, byte);
-    if (!res.ptr || res.ptr - start > 5 || res.val > UINT32_MAX) {
-      return NULL;  // Malformed.
-    }
-    *val = (uint32_t)res.val;
-    return res.ptr;
-  }
-}
 
 // Parses unknown data by merging into existing base_message or creating a
 // new message usingg mini_table.
@@ -140,8 +56,8 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
   const char* data = unknown_data;
   uint32_t tag;
   uint64_t message_len = 0;
-  data = decode_tag(data, &tag);
-  data = decode_varint64(data, &message_len);
+  data = upb_WireReader_ReadTag(data, &tag);
+  data = upb_WireReader_ReadVarint(data, &message_len);
   upb_DecodeStatus status = upb_Decode(data, message_len, ret.message,
                                        mini_table, NULL, decode_options, arena);
   if (status == kUpb_DecodeStatus_OutOfMemory) {
@@ -224,133 +140,44 @@ upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
   const char* data = result.ptr;
   uint32_t tag;
   uint64_t message_len = 0;
-  data = decode_tag(data, &tag);
-  data = decode_varint64(data, &message_len);
+  data = upb_WireReader_ReadTag(data, &tag);
+  data = upb_WireReader_ReadVarint(data, &message_len);
   *extension_data = data;
   *len = message_len;
   return kUpb_GetExtensionAsBytes_Ok;
 }
 
-static const char* UnknownFieldSet_SkipGroup(const char* ptr, const char* end,
-                                             int group_number);
-
-static const char* UnknownFieldSet_SkipField(const char* ptr, const char* end,
-                                             uint32_t tag) {
-  int field_number = tag >> 3;
-  int wire_type = tag & 7;
-  switch (wire_type) {
-    case kUpb_WireType_Varint: {
-      uint64_t val;
-      return decode_varint64(ptr, &val);
-    }
-    case kUpb_WireType_64Bit:
-      if (end - ptr < 8) return NULL;
-      return ptr + 8;
-    case kUpb_WireType_32Bit:
-      if (end - ptr < 4) return NULL;
-      return ptr + 4;
-    case kUpb_WireType_Delimited: {
-      uint64_t size;
-      ptr = decode_varint64(ptr, &size);
-      if (!ptr || end - ptr < size) return NULL;
-      return ptr + size;
-    }
-    case kUpb_WireType_StartGroup:
-      return UnknownFieldSet_SkipGroup(ptr, end, field_number);
-    case kUpb_WireType_EndGroup:
-      return NULL;
-    default:
-      assert(0);
-      return NULL;
-  }
+upb_FindUnknownRet upb_FindUnknownRet_ParseError() {
+  return (upb_FindUnknownRet){.status = kUpb_FindUnknown_ParseError};
 }
-
-static const char* UnknownFieldSet_SkipGroup(const char* ptr, const char* end,
-                                             int group_number) {
-  uint32_t end_tag = (group_number << 3) | kUpb_WireType_EndGroup;
-  while (true) {
-    if (ptr == end) return NULL;
-    uint64_t tag;
-    ptr = decode_varint64(ptr, &tag);
-    if (!ptr) return NULL;
-    if (tag == end_tag) return ptr;
-    ptr = UnknownFieldSet_SkipField(ptr, end, (uint32_t)tag);
-    if (!ptr) return NULL;
-  }
-  return ptr;
-}
-
-enum {
-  kUpb_MessageSet_StartItemTag = (1 << 3) | kUpb_WireType_StartGroup,
-  kUpb_MessageSet_EndItemTag = (1 << 3) | kUpb_WireType_EndGroup,
-  kUpb_MessageSet_TypeIdTag = (2 << 3) | kUpb_WireType_Varint,
-  kUpb_MessageSet_MessageTag = (3 << 3) | kUpb_WireType_Delimited,
-};
 
 upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
                                              uint32_t field_number) {
+  const int depth_limit = 100;  // TODO: this should be a parameter
   size_t size;
   upb_FindUnknownRet ret;
 
   const char* ptr = upb_Message_GetUnknown(msg, &size);
-  if (size == 0) {
-    ret.status = kUpb_FindUnknown_NotPresent;
-    ret.ptr = NULL;
-    ret.len = 0;
-    return ret;
-  }
-  const char* end = ptr + size;
-  uint64_t uint64_val;
+  upb_EpsCopyInputStream stream;
+  upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
 
-  while (ptr < end) {
-    uint32_t tag = 0;
-    int field;
-    int wire_type;
+  while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
+    uint32_t tag;
     const char* unknown_begin = ptr;
-    ptr = decode_tag(ptr, &tag);
-    field = tag >> 3;
-    wire_type = tag & 7;
-    switch (wire_type) {
-      case kUpb_WireType_EndGroup:
-        ret.status = kUpb_FindUnknown_ParseError;
-        return ret;
-      case kUpb_WireType_Varint:
-        ptr = decode_varint64(ptr, &uint64_val);
-        if (!ptr) {
-          ret.status = kUpb_FindUnknown_ParseError;
-          return ret;
-        }
-        break;
-      case kUpb_WireType_32Bit:
-        ptr += 4;
-        break;
-      case kUpb_WireType_64Bit:
-        ptr += 8;
-        break;
-      case kUpb_WireType_Delimited:
-        // Read size.
-        ptr = decode_varint64(ptr, &uint64_val);
-        if (uint64_val >= INT32_MAX || !ptr) {
-          ret.status = kUpb_FindUnknown_ParseError;
-          return ret;
-        }
-        ptr += uint64_val;
-        break;
-      case kUpb_WireType_StartGroup:
-        // tag >> 3 specifies the group number, recurse and skip
-        // until we see group end tag.
-        ptr = UnknownFieldSet_SkipGroup(ptr, end, field_number);
-        break;
-      default:
-        ret.status = kUpb_FindUnknown_ParseError;
-        return ret;
-    }
-    if (field_number == field) {
+    ptr = upb_WireReader_ReadTag(ptr, &tag);
+    if (!ptr) return upb_FindUnknownRet_ParseError();
+    if (field_number == upb_WireReader_GetFieldNumber(tag)) {
       ret.status = kUpb_FindUnknown_Ok;
-      ret.ptr = unknown_begin;
-      ret.len = ptr - unknown_begin;
+      ret.ptr = upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
+      ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+      // Because we know that the input is a flat buffer, it is safe to perform
+      // pointer arithmetic on aliased pointers.
+      ret.len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - ret.ptr;
       return ret;
     }
+
+    ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+    if (!ptr) return upb_FindUnknownRet_ParseError();
   }
   ret.status = kUpb_FindUnknown_NotPresent;
   ret.ptr = NULL;
@@ -486,8 +313,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
         /* base_message= */ NULL, decode_options, arena);
     if (ret.status != kUpb_UnknownToMessage_Ok) return ret.status;
     // Allocate map on demand before append.
-    upb_Map* map =
-        upb_MiniTable_GetMutableMap(msg, map_entry_mini_table, field, arena);
+    upb_Map* map = upb_Message_GetOrCreateMutableMap(msg, map_entry_mini_table,
+                                                     field, arena);
     upb_Message* map_entry_message = ret.message;
     upb_MapInsertStatus insert_status = upb_Message_InsertMapEntry(
         map, mini_table, field, map_entry_message, arena);

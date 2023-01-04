@@ -29,20 +29,9 @@
 
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/reader.h"
 #include "upb/wire/types.h"
-
-static const char* PyUpb_DecodeVarint(const char* ptr, const char* end,
-                                      uint64_t* val) {
-  *val = 0;
-  for (int i = 0; ptr < end && i < 10; i++, ptr++) {
-    uint64_t byte = (uint8_t)*ptr;
-    *val |= (byte & 0x7f) << (i * 7);
-    if ((byte & 0x80) == 0) {
-      return ptr + 1;
-    }
-  }
-  return NULL;
-}
 
 // -----------------------------------------------------------------------------
 // UnknownFieldSet
@@ -64,60 +53,6 @@ PyUpb_UnknownFieldSet* PyUpb_UnknownFieldSet_NewBare(void) {
   PyUpb_UnknownFieldSet* self =
       (void*)PyType_GenericAlloc(s->unknown_fields_type, 0);
   return self;
-}
-
-// Generic functions to skip a value or group.
-
-static const char* PyUpb_UnknownFieldSet_SkipGroup(const char* ptr,
-                                                   const char* end,
-                                                   int group_number);
-
-static const char* PyUpb_UnknownFieldSet_SkipField(const char* ptr,
-                                                   const char* end,
-                                                   uint32_t tag) {
-  int field_number = tag >> 3;
-  int wire_type = tag & 7;
-  switch (wire_type) {
-    case kUpb_WireType_Varint: {
-      uint64_t val;
-      return PyUpb_DecodeVarint(ptr, end, &val);
-    }
-    case kUpb_WireType_64Bit:
-      if (end - ptr < 8) return NULL;
-      return ptr + 8;
-    case kUpb_WireType_32Bit:
-      if (end - ptr < 4) return NULL;
-      return ptr + 4;
-    case kUpb_WireType_Delimited: {
-      uint64_t size;
-      ptr = PyUpb_DecodeVarint(ptr, end, &size);
-      if (!ptr || end - ptr < size) return NULL;
-      return ptr + size;
-    }
-    case kUpb_WireType_StartGroup:
-      return PyUpb_UnknownFieldSet_SkipGroup(ptr, end, field_number);
-    case kUpb_WireType_EndGroup:
-      return NULL;
-    default:
-      assert(0);
-      return NULL;
-  }
-}
-
-static const char* PyUpb_UnknownFieldSet_SkipGroup(const char* ptr,
-                                                   const char* end,
-                                                   int group_number) {
-  uint32_t end_tag = (group_number << 3) | kUpb_WireType_EndGroup;
-  while (true) {
-    if (ptr == end) return NULL;
-    uint64_t tag;
-    ptr = PyUpb_DecodeVarint(ptr, end, &tag);
-    if (!ptr) return NULL;
-    if (tag == end_tag) return ptr;
-    ptr = PyUpb_UnknownFieldSet_SkipField(ptr, end, tag);
-    if (!ptr) return NULL;
-  }
-  return ptr;
 }
 
 // For MessageSet the established behavior is for UnknownFieldSet to interpret
@@ -143,40 +78,43 @@ enum {
 };
 
 static const char* PyUpb_UnknownFieldSet_BuildMessageSetItem(
-    PyUpb_UnknownFieldSet* self, const char* ptr, const char* end) {
+    PyUpb_UnknownFieldSet* self, upb_EpsCopyInputStream* stream,
+    const char* ptr) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   int type_id = 0;
   PyObject* msg = NULL;
-  while (true) {
-    if (ptr == end) goto err;
-    uint64_t tag;
-    ptr = PyUpb_DecodeVarint(ptr, end, &tag);
+  while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
+    uint32_t tag;
+    ptr = upb_WireReader_ReadTag(ptr, &tag);
     if (!ptr) goto err;
     switch (tag) {
       case kUpb_MessageSet_EndItemTag:
         goto done;
       case kUpb_MessageSet_TypeIdTag: {
         uint64_t tmp;
-        ptr = PyUpb_DecodeVarint(ptr, end, &tmp);
+        ptr = upb_WireReader_ReadVarint(ptr, &tmp);
         if (!ptr) goto err;
         if (!type_id) type_id = tmp;
         break;
       }
       case kUpb_MessageSet_MessageTag: {
-        uint64_t size;
-        ptr = PyUpb_DecodeVarint(ptr, end, &size);
-        if (!ptr || end - ptr < size) goto err;
+        int size;
+        ptr = upb_WireReader_ReadSize(ptr, &size);
+        if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(stream, ptr, size)) {
+          goto err;
+        }
+        const char* str = ptr;
+        ptr = upb_EpsCopyInputStream_ReadStringAliased(stream, &str, size);
         if (!msg) {
-          msg = PyBytes_FromStringAndSize(ptr, size);
+          msg = PyBytes_FromStringAndSize(str, size);
           if (!msg) goto err;
         } else {
           // already saw a message here so deliberately skipping the duplicate
         }
-        ptr += size;
         break;
       }
       default:
-        ptr = PyUpb_UnknownFieldSet_SkipField(ptr, end, tag);
+        ptr = upb_WireReader_SkipValue(ptr, tag, stream);
         if (!ptr) goto err;
     }
   }
@@ -198,19 +136,21 @@ err:
 }
 
 static const char* PyUpb_UnknownFieldSet_BuildMessageSet(
-    PyUpb_UnknownFieldSet* self, const char* ptr, const char* end) {
+    PyUpb_UnknownFieldSet* self, upb_EpsCopyInputStream* stream,
+    const char* ptr) {
   self->fields = PyList_New(0);
-  while (ptr < end) {
-    uint64_t tag;
-    ptr = PyUpb_DecodeVarint(ptr, end, &tag);
+  while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
+    uint32_t tag;
+    ptr = upb_WireReader_ReadTag(ptr, &tag);
     if (!ptr) goto err;
     if (tag == kUpb_MessageSet_StartItemTag) {
-      ptr = PyUpb_UnknownFieldSet_BuildMessageSetItem(self, ptr, end);
+      ptr = PyUpb_UnknownFieldSet_BuildMessageSetItem(self, stream, ptr);
     } else {
-      ptr = PyUpb_UnknownFieldSet_SkipField(ptr, end, tag);
+      ptr = upb_WireReader_SkipValue(ptr, tag, stream);
     }
     if (!ptr) goto err;
   }
+  if (upb_EpsCopyInputStream_IsError(stream)) goto err;
   return ptr;
 
 err:
@@ -220,46 +160,50 @@ err:
 }
 
 static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
-                                               const char* ptr, const char* end,
+                                               upb_EpsCopyInputStream* stream,
+                                               const char* ptr,
                                                int group_number);
 
 static const char* PyUpb_UnknownFieldSet_BuildValue(
-    PyUpb_UnknownFieldSet* self, const char* ptr, const char* end,
-    int field_number, int wire_type, int group_number, PyObject** data) {
+    PyUpb_UnknownFieldSet* self, upb_EpsCopyInputStream* stream,
+    const char* ptr, int field_number, int wire_type, int group_number,
+    PyObject** data) {
   switch (wire_type) {
     case kUpb_WireType_Varint: {
       uint64_t val;
-      ptr = PyUpb_DecodeVarint(ptr, end, &val);
+      ptr = upb_WireReader_ReadVarint(ptr, &val);
       if (!ptr) return NULL;
       *data = PyLong_FromUnsignedLongLong(val);
       return ptr;
     }
     case kUpb_WireType_64Bit: {
-      if (end - ptr < 8) return NULL;
       uint64_t val;
-      memcpy(&val, ptr, 8);
+      ptr = upb_WireReader_ReadFixed64(ptr, &val);
       *data = PyLong_FromUnsignedLongLong(val);
-      return ptr + 8;
+      return ptr;
     }
     case kUpb_WireType_32Bit: {
-      if (end - ptr < 4) return NULL;
       uint32_t val;
-      memcpy(&val, ptr, 4);
+      ptr = upb_WireReader_ReadFixed32(ptr, &val);
       *data = PyLong_FromUnsignedLongLong(val);
-      return ptr + 4;
+      return ptr;
     }
     case kUpb_WireType_Delimited: {
-      uint64_t size;
-      ptr = PyUpb_DecodeVarint(ptr, end, &size);
-      if (!ptr || end - ptr < size) return NULL;
-      *data = PyBytes_FromStringAndSize(ptr, size);
-      return ptr + size;
+      int size;
+      ptr = upb_WireReader_ReadSize(ptr, &size);
+      if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(stream, ptr, size)) {
+        return NULL;
+      }
+      const char* str = ptr;
+      ptr = upb_EpsCopyInputStream_ReadStringAliased(stream, &str, size);
+      *data = PyBytes_FromStringAndSize(str, size);
+      return ptr;
     }
     case kUpb_WireType_StartGroup: {
       PyUpb_UnknownFieldSet* sub = PyUpb_UnknownFieldSet_NewBare();
       if (!sub) return NULL;
       *data = &sub->ob_base;
-      return PyUpb_UnknownFieldSet_Build(sub, ptr, end, field_number);
+      return PyUpb_UnknownFieldSet_Build(sub, stream, ptr, field_number);
     }
     default:
       assert(0);
@@ -271,22 +215,23 @@ static const char* PyUpb_UnknownFieldSet_BuildValue(
 // For non-MessageSet we just build the unknown fields exactly as they exist on
 // the wire.
 static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
-                                               const char* ptr, const char* end,
+                                               upb_EpsCopyInputStream* stream,
+                                               const char* ptr,
                                                int group_number) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   self->fields = PyList_New(0);
-  while (ptr < end) {
-    uint64_t tag;
-    ptr = PyUpb_DecodeVarint(ptr, end, &tag);
+  while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
+    uint32_t tag;
+    ptr = upb_WireReader_ReadTag(ptr, &tag);
     if (!ptr) goto err;
     PyObject* data = NULL;
-    int field_number = tag >> 3;
-    int wire_type = tag & 7;
+    int field_number = upb_WireReader_GetFieldNumber(tag);
+    int wire_type = upb_WireReader_GetWireType(tag);
     if (wire_type == kUpb_WireType_EndGroup) {
       if (field_number != group_number) return NULL;
       return ptr;
     }
-    ptr = PyUpb_UnknownFieldSet_BuildValue(self, ptr, end, field_number,
+    ptr = PyUpb_UnknownFieldSet_BuildValue(self, stream, ptr, field_number,
                                            wire_type, group_number, &data);
     if (!ptr) {
       Py_XDECREF(data);
@@ -298,6 +243,7 @@ static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
     PyList_Append(self->fields, field);
     Py_DECREF(field);
   }
+  if (upb_EpsCopyInputStream_IsError(stream)) goto err;
   return ptr;
 
 err:
@@ -324,14 +270,15 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
   const char* ptr = upb_Message_GetUnknown(msg, &size);
   if (size == 0) return &self->ob_base;
 
-  const char* end = ptr + size;
+  upb_EpsCopyInputStream stream;
+  upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
   const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef(py_msg);
 
   bool ok;
   if (upb_MessageDef_IsMessageSet(msgdef)) {
-    ok = PyUpb_UnknownFieldSet_BuildMessageSet(self, ptr, end) == end;
+    ok = PyUpb_UnknownFieldSet_BuildMessageSet(self, &stream, ptr) != NULL;
   } else {
-    ok = PyUpb_UnknownFieldSet_Build(self, ptr, end, -1) == end;
+    ok = PyUpb_UnknownFieldSet_Build(self, &stream, ptr, -1) != NULL;
   }
 
   if (!ok) {

@@ -425,7 +425,9 @@ TEST(CppGeneratedCode, MessageMapStringKeyAndInt32Value) {
   test_model.clear_str_to_int_map();
   EXPECT_EQ(0, test_model.str_to_int_map_size());
   test_model.set_str_to_int_map("first", 10);
+  EXPECT_EQ(1, test_model.str_to_int_map_size());
   test_model.set_str_to_int_map("second", 20);
+  EXPECT_EQ(2, test_model.str_to_int_map_size());
   auto result = test_model.get_str_to_int_map("second");
   EXPECT_EQ(true, result.ok());
   EXPECT_EQ(20, result.value());

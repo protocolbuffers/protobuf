@@ -41,50 +41,6 @@ extern "C" {
 
 // Message map operations, these get the map from the message first.
 
-UPB_INLINE size_t _upb_msg_map_size(const upb_Message* msg, size_t ofs) {
-  upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
-  return map ? _upb_Map_Size(map) : 0;
-}
-
-UPB_INLINE bool _upb_msg_map_get(const upb_Message* msg, size_t ofs,
-                                 const void* key, size_t key_size, void* val,
-                                 size_t val_size) {
-  upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
-  if (!map) return false;
-  return _upb_Map_Get(map, key, key_size, val, val_size);
-}
-
-UPB_INLINE void* _upb_msg_map_next(const upb_Message* msg, size_t ofs,
-                                   size_t* iter) {
-  upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
-  if (!map) return NULL;
-  return _upb_map_next(map, iter);
-}
-
-UPB_INLINE bool _upb_msg_map_set(upb_Message* msg, size_t ofs, const void* key,
-                                 size_t key_size, void* val, size_t val_size,
-                                 upb_Arena* arena) {
-  upb_Map** map = UPB_PTR_AT(msg, ofs, upb_Map*);
-  if (!*map) {
-    *map = _upb_Map_New(arena, key_size, val_size);
-  }
-  return _upb_Map_Insert(*map, key, key_size, val, val_size, arena) !=
-         kUpb_MapInsertStatus_OutOfMemory;
-}
-
-UPB_INLINE bool _upb_msg_map_delete(upb_Message* msg, size_t ofs,
-                                    const void* key, size_t key_size) {
-  upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
-  if (!map) return false;
-  return _upb_Map_Delete(map, key, key_size);
-}
-
-UPB_INLINE void _upb_msg_map_clear(upb_Message* msg, size_t ofs) {
-  upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
-  if (!map) return;
-  _upb_Map_Clear(map);
-}
-
 UPB_INLINE void _upb_msg_map_key(const void* msg, void* key, size_t size) {
   const upb_tabent* ent = (const upb_tabent*)msg;
   uint32_t u32len;

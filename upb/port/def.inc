@@ -243,8 +243,8 @@
 #endif
 
 /* UPB_FASTTABLE_INIT() allows protos compiled for fasttable to gracefully
- * degrade to non-fasttable if we are using UPB_TRY_ENABLE_FASTTABLE. */
-#if !UPB_FASTTABLE && defined(UPB_TRY_ENABLE_FASTTABLE)
+ * degrade to non-fasttable if the runtime or platform do not support it. */
+#if !UPB_FASTTABLE
 #define UPB_FASTTABLE_INIT(...)
 #else
 #define UPB_FASTTABLE_INIT(...) __VA_ARGS__
