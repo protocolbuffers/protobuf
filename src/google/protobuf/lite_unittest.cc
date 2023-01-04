@@ -39,6 +39,7 @@
 #include <gtest/gtest.h>
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -1170,6 +1171,7 @@ TYPED_TEST(LiteTest, DebugString) {
   // later without breaking any code.
   EXPECT_NE(message1.DebugString(), message2.DebugString());
 }
+
 
 TYPED_TEST(LiteTest, EnumValueToName) {
   EXPECT_EQ("FOREIGN_LITE_FOO", protobuf_unittest::ForeignEnumLite_Name(

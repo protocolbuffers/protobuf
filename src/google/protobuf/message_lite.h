@@ -222,6 +222,13 @@ class PROTOBUF_EXPORT MessageLite {
   // with Message.
   std::string Utf8DebugString() const { return DebugString(); }
 
+  // Implementation of the `AbslStringify` interface. This adds `DebugString()`
+  // to the sink. Do not rely on exact format.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const google::protobuf::MessageLite& msg) {
+    sink.Append(msg.DebugString());
+  }
+
   // Parsing ---------------------------------------------------------
   // Methods for parsing in protocol buffer format.  Most of these are
   // just simple wrappers around MergeFromCodedStream().  Clear() will be
