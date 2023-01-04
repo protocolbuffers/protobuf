@@ -7,7 +7,7 @@ load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library
 
 licenses(["notice"])
 
-exports_files(["LICENCE"])
+exports_files(["LICENSE"])
 
 # Well Known Types Proto Library rules
 # https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
@@ -81,32 +81,32 @@ alias(
 # Source files - aliases to a filegroup, not a 'proto_library' - internal stuff
 alias(
   name = "lite_well_known_protos",
-  actual = "//src/google/protobuf:well_known_type_protos", # filegroup
+  actual = "//src/google/protobuf:well_known_type_protos",  # filegroup
   visibility = ["//visibility:public"],
 )
 
 alias(
   name = "well_known_type_protos",
-  actual = "//src/google/protobuf:well_known_type_protos", # filegroup
+  actual = "//src/google/protobuf:well_known_type_protos",  # filegroup
   visibility = ["//visibility:public"],
 )
 
 # internal runtime protos - they're not well-known types
 alias(
   name = "descriptor_proto",
-  actual = "//src/google/protobuf:descriptor_proto", # proto_library
+  actual = "//src/google/protobuf:descriptor_proto",  # proto_library
   visibility = ["//visibility:public"],
 )
 
 alias(
   name = "descriptor_proto_srcs",
-  actual = "//src/google/protobuf:descriptor_proto_srcs", # filegroup
+  actual = "//src/google/protobuf:descriptor_proto_srcs",  # filegroup
   visibility = ["//visibility:public"],
 )
 
 alias(
   name = "compiler_plugin_proto",
-  actual = "//src/google/protobuf/compiler:plugin_proto", # proto_library
+  actual = "//src/google/protobuf/compiler:plugin_proto",  # proto_library
   visibility = ["//visibility:public"],
 )
 
@@ -366,6 +366,33 @@ cc_proto_library(
   visibility = [
     "//conformance:__pkg__",
     "//src:__subpackages__",
+  ],
+  deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+java_proto_library(
+  name = "test_messages_proto2_java_proto",
+  visibility = [
+    "//conformance:__pkg__",
+    "//java:__subpackages__",
+  ],
+  deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+java_lite_proto_library(
+  name = "test_messages_proto2_java_proto_lite",
+  visibility = [
+    "//conformance:__pkg__",
+    "//java:__subpackages__",
+  ],
+  deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+)
+
+java_lite_proto_library(
+  name = "test_messages_proto3_java_proto_lite",
+  visibility = [
+    "//conformance:__pkg__",
+    "//java:__subpackages__",
   ],
   deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
