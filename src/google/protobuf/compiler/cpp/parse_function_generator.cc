@@ -265,7 +265,7 @@ void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
   format.Set("has_bits", "typed_msg->_impl_._has_bits_");
   format.Set("next_tag", "goto next_tag");
   GenerateParseIterationBody(format, descriptor_,
-                             tc_table_info_->fallback_fields);
+                             tc_table_info_->fallback_fields, false);
 
   format.Outdent();
   format(
@@ -375,7 +375,7 @@ void ParseFunctionGenerator::GenerateLoopingParseFunction(Formatter& format) {
   format(
       "::uint32_t tag;\n"
       "ptr = ::_pbi::ReadTag(ptr, &tag);\n");
-  GenerateParseIterationBody(format, descriptor_, ordered_fields_);
+  GenerateParseIterationBody(format, descriptor_, ordered_fields_, true);
 
   format.Outdent();
   format("}  // while\n");
@@ -642,12 +642,12 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
         format("}}, {{\n");
       }
     }  // ordered_fields_.empty()
-      {
-        // field_names[]
-        auto field_name_scope = format.ScopedIndent();
-        GenerateFieldNames(format);
-      }
-      format("}},\n");
+    {
+      // field_names[]
+      auto field_name_scope = format.ScopedIndent();
+      GenerateFieldNames(format);
+    }
+    format("}},\n");
   }
   format("};\n\n");  // _table_
 }
@@ -1278,9 +1278,9 @@ static uint32_t ExpectedTag(const FieldDescriptor* field,
 // parse the next tag in the stream.
 void ParseFunctionGenerator::GenerateParseIterationBody(
     Formatter& format, const Descriptor* descriptor,
-    const std::vector<const FieldDescriptor*>& fields) {
+    const std::vector<const FieldDescriptor*>& fields, bool shortcut) {
   if (!fields.empty()) {
-    GenerateFieldSwitch(format, fields);
+    GenerateFieldSwitch(format, fields, shortcut);
     // Each field `case` only considers field number. Field numbers that are
     // not defined in the message, or tags with an incompatible wire type, are
     // considered "unusual" cases. They will be handled by the logic below.
@@ -1336,11 +1336,13 @@ void ParseFunctionGenerator::GenerateParseIterationBody(
 }
 
 void ParseFunctionGenerator::GenerateFieldSwitch(
-    Formatter& format, const std::vector<const FieldDescriptor*>& fields) {
+    Formatter& format, const std::vector<const FieldDescriptor*>& fields,
+    bool shortcut) {
   format("switch (tag >> 3) {\n");
   format.Indent();
 
-  for (const auto* field : fields) {
+  for (int i = 0; i < fields.size(); i++) {
+    const auto* field = fields[i];
     bool cold = ShouldSplit(field, options_);
     format.Set("field", FieldMemberName(field, cold));
     PrintFieldComment(format, field);
@@ -1366,6 +1368,9 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
           tag_size);
       format.Indent();
     }
+    if (shortcut && i > 0 && field->number() < 16 * 128) {
+      format("body_$1$:\n", field->number());
+    }
     GenerateFieldBody(format, wiretype, field);
     if (is_repeat) {
       format.Outdent();
@@ -1386,8 +1391,24 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
     format(
         "} else {\n"
         "  goto handle_unusual;\n"
-        "}\n"
-        "$next_tag$;\n");
+        "}\n");
+    if (shortcut && i + 1 < fields.size()) {
+      const auto* next_field = fields[i + 1];
+      if (next_field->number() < 16 * 128) {
+        uint32_t discard;
+        uint32_t next_expected_tag = ExpectedTag(next_field, &discard);
+        int next_tag_size =
+            io::CodedOutputStream::VarintSize32(next_expected_tag);
+        format(
+            "if (ctx->DataAvailable(ptr) && "
+            "::$proto_ns$::internal::ExpectTag<$1$>(ptr)) {\n"
+            "  ptr += $2$;\n"
+            "  goto body_$3$;\n"
+            "}\n",
+            next_expected_tag, next_tag_size, next_field->number());
+      }
+    }
+    format("$next_tag$;\n");
     format.Outdent();
   }  // for loop over ordered fields
 

@@ -117,11 +117,12 @@ class ParseFunctionGenerator {
   // Generates code to parse the next field from the input stream.
   void GenerateParseIterationBody(
       Formatter& format, const Descriptor* descriptor,
-      const std::vector<const FieldDescriptor*>& fields);
+      const std::vector<const FieldDescriptor*>& fields, bool shortcut);
 
   // Generates a `switch` statement to parse each of `fields`.
   void GenerateFieldSwitch(Formatter& format,
-                           const std::vector<const FieldDescriptor*>& fields);
+                           const std::vector<const FieldDescriptor*>& fields,
+                           bool shortcut);
 
   const Descriptor* descriptor_;
   MessageSCCAnalyzer* scc_analyzer_;
