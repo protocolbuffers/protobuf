@@ -33,6 +33,7 @@
 
 #include <atomic>
 #include <functional>
+#include <type_traits>
 
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
@@ -273,6 +274,11 @@ class PROTOBUF_EXPORT MapKey {
   // Use "CppType()" to indicate zero.
   FieldDescriptor::CppType type_;
 };
+
+namespace internal {
+template <>
+struct is_internal_map_key_type<MapKey> : std::true_type {};
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google
@@ -936,6 +942,13 @@ class PROTOBUF_EXPORT MapIterator {
   MapKey key_;
   MapValueRef value_;
 };
+
+namespace internal {
+template <>
+struct is_internal_map_value_type<class MapValueConstRef> : std::true_type {};
+template <>
+struct is_internal_map_value_type<class MapValueRef> : std::true_type {};
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

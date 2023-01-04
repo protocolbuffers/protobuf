@@ -2,6 +2,7 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
@@ -485,6 +486,63 @@ def internal_objc_proto_library(
         **kwargs
     )
 
+def internal_ruby_proto_library(
+        name,
+        srcs = [],
+        deps = [],
+        includes = ["."],
+        default_runtime = "@com_google_protobuf//ruby:protobuf",
+        protoc = "@com_google_protobuf//:protoc",
+        testonly = None,
+        visibility = ["//visibility:public"],
+        **kwargs):
+    """Bazel rule to create a Ruby protobuf library from proto source files
+
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+
+    Args:
+      name: the name of the ruby_proto_library.
+      srcs: the .proto files to compile.
+      deps: a list of dependency labels; must be a internal_ruby_proto_library.
+      includes: a string indicating the include path of the .proto files.
+      default_runtime: the RubyProtobuf runtime
+      protoc: the label of the protocol compiler to generate the sources.
+      testonly: common rule attribute (see:
+          https://bazel.build/reference/be/common-definitions#common-attributes)
+      visibility: the visibility of the generated files.
+      **kwargs: other keyword arguments that are passed to ruby_library.
+
+    """
+
+    # Note: we need to run the protoc build twice to get separate targets for
+    # the generated header and the source files.
+    _proto_gen(
+        name = name + "_genproto",
+        srcs = srcs,
+        deps = [s + "_genproto" for s in deps],
+        langs = ["ruby"],
+        includes = includes,
+        protoc = protoc,
+        testonly = testonly,
+        visibility = visibility,
+        tags = ["manual"],
+    )
+
+    deps = []
+    if default_runtime:
+        deps.append(default_runtime)
+    ruby_library(
+        name = name,
+        srcs = [name + "_genproto"],
+        deps = deps,
+        testonly = testonly,
+        visibility = visibility,
+        includes = includes,
+        **kwargs
+    )
+
 # When canonical labels are in use, use additional "@" prefix
 _canonical_label_prefix = "@" if str(Label("//:protoc")).startswith("@@") else ""
 
@@ -696,23 +754,6 @@ def internal_php_proto_library(**kwargs):
 
     _source_proto_library(
         lang = "php",
-        **kwargs
-    )
-
-def internal_ruby_proto_library(**kwargs):
-    """Bazel rule to create a Ruby protobuf library from proto source files
-
-    NOTE: the rule is only an internal workaround to generate protos. The
-    interface may change and the rule may be removed when bazel has introduced
-    the native rule.
-
-    Args:
-      **kwargs: arguments that are passed to unsupported_proto_library.
-
-    """
-
-    _source_proto_library(
-        lang = "ruby",
         **kwargs
     )
 

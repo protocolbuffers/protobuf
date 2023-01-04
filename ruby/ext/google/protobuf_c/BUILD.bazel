@@ -1,0 +1,72 @@
+load("@build_bazel_rules_apple//apple:apple_binary.bzl", "apple_binary")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@upb//cmake:build_defs.bzl", "staleness_test")
+
+package(default_visibility = ["//ruby:__subpackages__"])
+
+cc_library(
+    name = "protobuf_c",
+    srcs = glob([
+        "*.h",
+        "*.c",
+    ]),
+    deps = [
+        "@rules_ruby//ruby/runtime:headers",
+        "@utf8_range//:utf8_range",
+    ],
+    target_compatible_with = select({
+        "@rules_ruby//ruby/runtime:config_jruby": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    linkstatic = True,
+    alwayslink = True,
+)
+
+apple_binary(
+    name = "bundle",
+    binary_type = "loadable_bundle",
+    linkopts = [
+        "-undefined,dynamic_lookup",
+        "-multiply_defined,suppress",
+    ],
+    platform_type = "macos",
+    minimum_os_version = "10.11",
+    tags = ["manual"],
+    deps = [
+        ":protobuf_c",
+    ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "*.h",
+        "*.c",
+        "*.rb",
+    ]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//ruby:__pkg__"],
+)
+
+genrule(
+    name = "copy_ruby_amalgamation_h",
+    srcs = ["@upb//:ruby-upb.h"],
+    outs = ["generated-in/ruby-upb.h"],
+    cmd = "cp $< $@",
+)
+
+genrule(
+    name = "copy_ruby_amalgamation_c",
+    srcs = ["@upb//:ruby-upb.c"],
+    outs = ["generated-in/ruby-upb.c"],
+    cmd = "cp $< $@",
+)
+
+staleness_test(
+    name = "test_amalgamation_staleness",
+    outs = [
+        "ruby-upb.h",
+        "ruby-upb.c",
+    ],
+    generated_pattern = "generated-in/%s",
+)

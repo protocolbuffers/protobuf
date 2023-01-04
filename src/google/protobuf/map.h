@@ -55,8 +55,9 @@
 #endif
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/arena.h"
 #include "absl/container/btree_map.h"
+#include "absl/meta/type_traits.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/port.h"
@@ -97,6 +98,14 @@ class TypeDefinedMapFieldBase;
 class DynamicMapField;
 
 class GeneratedMessageReflection;
+
+// Internal type traits that can be used to define custom key/value types. These
+// are only be specialized by protobuf internals, and never by users.
+template <typename T, typename VoidT = void>
+struct is_internal_map_key_type : std::false_type {};
+
+template <typename T, typename VoidT = void>
+struct is_internal_map_value_type : std::false_type {};
 
 // re-implement std::allocator to use arena allocator for memory allocation.
 // Used for Map implementation. Users should not use this class
@@ -987,8 +996,8 @@ class Map {
   using size_type = size_t;
   using hasher = typename internal::TransparentSupport<Key>::hash;
 
-  constexpr Map() : elements_(nullptr) {}
-  explicit Map(Arena* arena) : elements_(arena) {}
+  constexpr Map() : elements_(nullptr) { StaticValidityCheck(); }
+  explicit Map(Arena* arena) : elements_(arena) { StaticValidityCheck(); }
 
   Map(const Map& other) : Map() { insert(other.begin(), other.end()); }
 
@@ -1016,9 +1025,47 @@ class Map {
     insert(first, last);
   }
 
-  ~Map() {}
+  ~Map() {
+    // Fail-safe in case we miss calling this in a constructor.  Note: this one
+    // won't trigger for leaked maps that never get destructed.
+    StaticValidityCheck();
+  }
 
  private:
+#ifdef PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
+  static_assert(!std::is_const<mapped_type>::value &&
+                    !std::is_const<key_type>::value,
+                "We do not support const types.");
+  static_assert(!std::is_volatile<mapped_type>::value &&
+                    !std::is_volatile<key_type>::value,
+                "We do not support volatile types.");
+  static_assert(!std::is_pointer<mapped_type>::value &&
+                    !std::is_pointer<key_type>::value,
+                "We do not support pointer types.");
+  static_assert(!std::is_reference<mapped_type>::value &&
+                    !std::is_reference<key_type>::value,
+                "We do not support reference types.");
+#endif  // PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
+  static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
+#ifdef PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
+    static_assert(alignof(internal::NodeBase) >= alignof(mapped_type),
+                  "Alignment of mapped type is too high.");
+    static_assert(
+        absl::disjunction<internal::is_supported_integral_type<key_type>,
+                          internal::is_supported_string_type<key_type>,
+                          internal::is_internal_map_key_type<key_type>>::value,
+        "We only support integer, string, or designated internal key "
+        "types.");
+    static_assert(absl::disjunction<
+                      internal::is_supported_scalar_type<mapped_type>,
+                      is_proto_enum<mapped_type>,
+                      internal::is_supported_message_type<mapped_type>,
+                      internal::is_internal_map_value_type<mapped_type>>::value,
+                  "We only support scalar, Message, and designated internal "
+                  "mapped types.");
+#endif  // PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
+  }
+
   template <typename P>
   struct SameAsElementReference
       : std::is_same<typename std::remove_cv<

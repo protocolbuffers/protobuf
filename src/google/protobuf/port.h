@@ -39,8 +39,11 @@
 #include <cassert>
 #include <cstddef>
 #include <new>
+#include <string>
 #include <type_traits>
 
+
+#include "absl/meta/type_traits.h"
 
 // must be last
 #include "google/protobuf/port_def.inc"
@@ -48,6 +51,9 @@
 
 namespace google {
 namespace protobuf {
+
+class MessageLite;
+
 namespace internal {
 
 
@@ -109,6 +115,33 @@ inline ToRef DownCast(From& f) {
 #endif
   return *static_cast<To*>(&f);
 }
+
+// Helpers for identifying our supported types.
+template <typename T>
+struct is_supported_integral_type
+    : absl::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
+                        std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
+                        std::is_same<T, bool>> {};
+
+template <typename T>
+struct is_supported_floating_point_type
+    : absl::disjunction<std::is_same<T, float>, std::is_same<T, double>> {};
+
+template <typename T>
+struct is_supported_string_type
+    : absl::disjunction<std::is_same<T, std::string>> {};
+
+template <typename T>
+struct is_supported_scalar_type
+    : absl::disjunction<is_supported_integral_type<T>,
+                        is_supported_floating_point_type<T>,
+                        is_supported_string_type<T>> {};
+
+template <typename T>
+struct is_supported_message_type
+    : absl::disjunction<std::is_base_of<MessageLite, T>> {
+  static constexpr auto force_complete_type = sizeof(T);
+};
 
 // To prevent sharing cache lines between threads
 #ifdef __cpp_aligned_new
