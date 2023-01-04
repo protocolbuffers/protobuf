@@ -147,7 +147,7 @@ upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
   return kUpb_GetExtensionAsBytes_Ok;
 }
 
-upb_FindUnknownRet upb_FindUnknownRet_ParseError() {
+static upb_FindUnknownRet upb_FindUnknownRet_ParseError() {
   return (upb_FindUnknownRet){.status = kUpb_FindUnknown_ParseError};
 }
 
