@@ -544,7 +544,7 @@ class Message
 
     /**
      * Clear all containing fields.
-     * @return null.
+     * @return null
      */
     public function clear()
     {
@@ -654,7 +654,7 @@ class Message
 
     /**
      * Clear all unknown fields previously parsed.
-     * @return null.
+     * @return null
      */
     public function discardUnknownFields()
     {
@@ -700,7 +700,7 @@ class Message
      * sub-messages are deep-copied.
      *
      * @param object $msg Protobuf message to be merged from.
-     * @return null.
+     * @return null
      */
     public function mergeFrom($msg)
     {
@@ -767,7 +767,7 @@ class Message
      * specified message.
      *
      * @param string $data Binary protobuf data.
-     * @return null.
+     * @return null
      * @throws \Exception Invalid data.
      */
     public function mergeFromString($data)
@@ -785,7 +785,8 @@ class Message
      * specified message.
      *
      * @param string $data Json protobuf data.
-     * @return null.
+     * @param bool $ignore_unknown
+     * @return null
      * @throws \Exception Invalid data.
      */
     public function mergeFromJsonString($data, $ignore_unknown = false)
@@ -1053,7 +1054,7 @@ class Message
      * must receive data that is either a string or a StringValue object.
      *
      * @param array $array An array containing message properties and values.
-     * @return null.
+     * @return null
      */
     protected function mergeFromArray(array $array)
     {
