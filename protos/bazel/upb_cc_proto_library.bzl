@@ -145,29 +145,6 @@ def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
         linking_context = linking_context,
     )
 
-# Build setting for whether fasttable code generation is enabled ###############
-
-FastTableEnabledInfo = provider(
-    "Provides fasttable configuration to compiler",
-    fields = {
-        "enabled": "whether fasttable is enabled",
-    },
-)
-
-def fasttable_enabled_impl(ctx):
-    raw_setting = ctx.build_setting_value
-
-    if raw_setting:
-        # TODO(haberman): check that the target CPU supports fasttable.
-        pass
-
-    return FastTableEnabledInfo(enabled = raw_setting)
-
-upb_fasttable_enabled = rule(
-    implementation = fasttable_enabled_impl,
-    build_setting = config.bool(flag = True),
-)
-
 # Dummy rule to expose select() copts to aspects  ##############################
 
 UpbCcProtoLibraryCoptsInfo = provider(
@@ -197,9 +174,16 @@ def _compile_upb_cc_protos(ctx, generator, proto_info, proto_sources):
     hdrs = [_generate_output_file(ctx, name, ".upb.proto.h") for name in proto_sources]
     hdrs += [_generate_output_file(ctx, name, ".upb.fwd.h") for name in proto_sources]
     transitive_sets = proto_info.transitive_descriptor_sets.to_list()
-    fasttable_enabled = (hasattr(ctx.attr, "_fasttable_enabled") and
-                         ctx.attr._fasttable_enabled[FastTableEnabledInfo].enabled)
-    codegen_params = "fasttable:" if fasttable_enabled else ""
+
+    args = ctx.actions.args()
+    args.use_param_file(param_file_arg = "@%s")
+    args.set_param_file_format("multiline")
+
+    args.add("--" + generator + "_out=" + _get_real_root(srcs[0]))
+    args.add("--plugin=protoc-gen-" + generator + "=" + tool.path)
+    args.add("--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]))
+    args.add_all(proto_sources, map_each = _get_real_short_path)
+
     ctx.actions.run(
         inputs = depset(
             direct = [proto_info.direct_descriptor_set],
@@ -208,12 +192,7 @@ def _compile_upb_cc_protos(ctx, generator, proto_info, proto_sources):
         tools = [tool],
         outputs = srcs + hdrs,
         executable = ctx.executable._protoc,
-        arguments = [
-                        "--" + generator + "_out=" + codegen_params + _get_real_root(srcs[0]),
-                        "--plugin=protoc-gen-" + generator + "=" + tool.path,
-                        "--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]),
-                    ] +
-                    [_get_real_short_path(file) for file in proto_sources],
+        arguments = [args],
         progress_message = "Generating upb cc protos for :" + ctx.label.name,
     )
     return GeneratedSrcsInfo(srcs = srcs, hdrs = hdrs)

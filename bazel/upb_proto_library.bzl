@@ -212,6 +212,16 @@ def _compile_upb_protos(ctx, generator, proto_info, proto_sources):
     srcs = [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
     hdrs = [_generate_output_file(ctx, name, ext + ".h") for name in proto_sources]
     transitive_sets = proto_info.transitive_descriptor_sets.to_list()
+
+    args = ctx.actions.args()
+    args.use_param_file(param_file_arg = "@%s")
+    args.set_param_file_format("multiline")
+
+    args.add("--" + generator + "_out=" + _get_real_root(ctx, srcs[0]))
+    args.add("--plugin=protoc-gen-" + generator + "=" + tool.path)
+    args.add("--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]))
+    args.add_all(proto_sources, map_each = _get_real_short_path)
+
     ctx.actions.run(
         inputs = depset(
             direct = [proto_info.direct_descriptor_set],
@@ -220,12 +230,7 @@ def _compile_upb_protos(ctx, generator, proto_info, proto_sources):
         tools = [tool],
         outputs = srcs + hdrs,
         executable = ctx.executable._protoc,
-        arguments = [
-                        "--" + generator + "_out=" + _get_real_root(ctx, srcs[0]),
-                        "--plugin=protoc-gen-" + generator + "=" + tool.path,
-                        "--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]),
-                    ] +
-                    [_get_real_short_path(file) for file in proto_sources],
+        arguments = [args],
         progress_message = "Generating upb protos for :" + ctx.label.name,
         mnemonic = "GenUpbProtos",
     )
