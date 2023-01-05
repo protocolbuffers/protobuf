@@ -91,11 +91,13 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_proto"):
-        _github_archive(
+        http_archive(
             name = "rules_proto",
-            repo = "https://github.com/bazelbuild/rules_proto",
-            commit = "f7a30f6f80006b591fa7c437fe5a951eb10bcbcf",
-            sha256 = "a4382f78723af788f0bc19fd4c8411f44ffe0a72723670a34692ffad56ada3ac",
+            sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
+            strip_prefix = "rules_proto-5.3.0-21.7",
+            urls = [
+                "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
+            ],
         )
 
     if not native.existing_rule("rules_python"):
