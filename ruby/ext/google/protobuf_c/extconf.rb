@@ -7,7 +7,7 @@ ext_name = "google/protobuf_c"
 dir_config(ext_name)
 
 if RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/ || RUBY_PLATFORM =~ /freebsd/
-  $CFLAGS += " -std=gnu99 -O3 -DNDEBUG -fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
+  $CFLAGS += " -std=gnu99 -O3 -DNDEBUG -fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement -I$(srcdir)/third_party/utf8_range"
 else
   $CFLAGS += " -std=gnu99 -O3 -DNDEBUG"
 end
