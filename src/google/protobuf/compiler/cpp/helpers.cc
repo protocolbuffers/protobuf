@@ -1422,6 +1422,8 @@ bool GetBootstrapBasename(const Options& options, const std::string& basename,
            "net/proto2/compiler/proto/plugin"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
+          {"third_party/protobuf/extension_declaration",
+           "third_party/protobuf/extension_declaration_bootstrap"},
       };
   auto iter = bootstrap_mapping->find(basename);
   if (iter == bootstrap_mapping->end()) {
