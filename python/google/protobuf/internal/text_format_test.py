@@ -787,6 +787,12 @@ class TextFormatParserTests(TextFormatBase):
 
   def testParseInvalidUtf8(self, message_module):
     message = message_module.TestAllTypes()
+    text = b'invalid<\xc3\xc3>'
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse(text, message)
+
+  def testParseInvalidUtf8Value(self, message_module):
+    message = message_module.TestAllTypes()
     text = 'repeated_string: "\\xc3\\xc3"'
     with self.assertRaises(text_format.ParseError) as e:
       text_format.Parse(text, message)

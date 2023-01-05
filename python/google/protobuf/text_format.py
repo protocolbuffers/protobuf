@@ -859,9 +859,9 @@ class _Parser(object):
       str_lines = (
           line if isinstance(line, str) else line.decode('utf-8')
           for line in lines)
+      tokenizer = Tokenizer(str_lines)
     except UnicodeDecodeError as e:
-      raise self._StringParseError(e)
-    tokenizer = Tokenizer(str_lines)
+      raise ParseError from e
     if message:
       self.root_type = message.DESCRIPTOR.full_name
     while not tokenizer.AtEnd():
