@@ -107,25 +107,6 @@ PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::CopyArray(
   }
 }
 
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<bool>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int32_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint32_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int64_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint64_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<float>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<double>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<absl::Cord>;
-
-namespace internal {
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<bool>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<int32_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<uint32_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<int64_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<uint64_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<float>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<double>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<absl::Cord>;
-}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

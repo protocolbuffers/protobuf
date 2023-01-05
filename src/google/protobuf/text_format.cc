@@ -2252,10 +2252,7 @@ void TextFormat::Printer::PrintMessage(const Message& message,
     fields.push_back(descriptor->field(0));
     fields.push_back(descriptor->field(1));
   } else {
-    reflection->ListFieldsOmitStripped(message, &fields);
-    if (reflection->IsMessageStripped(message.GetDescriptor())) {
-      generator->Print(kDoNotParse, std::strlen(kDoNotParse));
-    }
+    reflection->ListFields(message, &fields);
   }
 
   if (print_message_fields_in_index_order_) {
