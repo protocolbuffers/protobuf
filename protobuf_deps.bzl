@@ -12,7 +12,6 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.guava:guava-testlib:31.1-jre",
     "com.google.truth:truth:1.1.2",
     "junit:junit:4.13.2",
-    "org.jruby:jruby-complete:9.2.20.1",
     "org.mockito:mockito-core:4.3.1",
 ]
 
