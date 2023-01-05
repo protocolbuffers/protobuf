@@ -757,6 +757,44 @@ int EpsCopyOutputStream::Flush(uint8_t* ptr) {
   return s;
 }
 
+uint8_t* EpsCopyOutputStream::FlushArray(uint8_t* ptr) {
+  DCHECK(stream_ == nullptr);
+  if (PROTOBUF_PREDICT_FALSE(had_error_)) return ptr;
+  if (buffer_end_ != nullptr) {
+    const ptrdiff_t bytes = ptr - buffer_;
+    DCHECK_GE(bytes, 0);
+    DCHECK_LE(bytes, array_end_ - buffer_end_);
+    memcpy(buffer_end_, buffer_, static_cast<size_t>(bytes));
+    ptr = buffer_end_ + bytes;
+    buffer_end_ = nullptr;
+    end_ = ptr - kSlopBytes;
+  }
+  return ptr;
+}
+
+std::pair<uint8_t*, uint8_t*> EpsCopyOutputStream::ConsumeArray(uint8_t* ptr,
+                                                                int size) {
+  DCHECK(array_end_ != nullptr);
+
+  if (buffer_end_ == nullptr) {
+    int avail = array_end_ - ptr;
+    if (size > avail) return {nullptr, nullptr};
+    return {ptr, ptr + size};
+  }
+  DCHECK(ptr >= buffer_ && ptr <= buffer_ + kSlopBytes);
+
+  int bytes = ptr - buffer_;
+  int avail = array_end_ - buffer_end_ - bytes;
+  if (size > avail) return {nullptr, nullptr};
+
+  memcpy(buffer_end_, buffer_, bytes);
+  ptr = buffer_end_ + bytes;
+  buffer_end_ += bytes + size;
+  end_ = ptr - kSlopBytes;
+
+  return {ptr, buffer_};
+}
+
 uint8_t* EpsCopyOutputStream::Trim(uint8_t* ptr) {
   if (had_error_) return ptr;
   int s = Flush(ptr);
@@ -879,6 +917,19 @@ uint8_t* EpsCopyOutputStream::Next() {
 }
 
 uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
+  if (array_end_) {
+    if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
+    if (buffer_end_ == nullptr) {
+      buffer_end_ = ptr;
+    } else {
+      DCHECK(ptr >= buffer_ && ptr <= buffer_ + kSlopBytes);
+      int bytes = ptr - buffer_;
+      memcpy(buffer_end_, buffer_, bytes);
+      buffer_end_ += bytes;
+    }
+    end_ = buffer_end_ - kSlopBytes;
+    return buffer_;
+  }
   do {
     if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
     int overrun = ptr - end_;
@@ -892,6 +943,13 @@ uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
 
 uint8_t* EpsCopyOutputStream::WriteRawFallback(const void* data, int size,
                                              uint8_t* ptr) {
+  if (array_end_) {
+    auto ptrs = ConsumeArray(ptr, size);
+    if (PROTOBUF_PREDICT_FALSE(ptrs.first == nullptr)) return Error();
+    memcpy(ptrs.first, data, size);
+    return ptrs.second;
+  }
+
   int s = GetSize(ptr);
   while (s < size) {
     std::memcpy(ptr, data, s);
@@ -965,16 +1023,16 @@ uint8_t* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
 #endif
 
 uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
-  int s = GetSize(ptr);
   if (stream_ == nullptr) {
-    if (static_cast<int64_t>(cord.size()) <= s) {
-      // Just copy it to the current buffer.
-      return CopyCordToArray(cord, ptr);
-    } else {
-      return Error();
-    }
-  } else if (static_cast<int64_t>(cord.size()) <= s &&
-             static_cast<int64_t>(cord.size()) < kMaxCordBytesToCopy) {
+    auto ptrs = ConsumeArray(ptr, static_cast<int>(cord.size()));
+    if (PROTOBUF_PREDICT_FALSE(ptrs.first == nullptr)) return Error();
+    // Just copy it to the current buffer.
+    CopyCordToArray(cord, ptrs.first);
+    return ptrs.second;
+  }
+  int s = GetSize(ptr);
+  if (static_cast<int64_t>(cord.size()) <= s &&
+      static_cast<int64_t>(cord.size()) < kMaxCordBytesToCopy) {
     // Just copy it to the current buffer.
     return CopyCordToArray(cord, ptr);
   } else {
@@ -1013,7 +1071,7 @@ uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, absl::string_view
 uint8_t* EpsCopyOutputStream::WriteCordOutline(const absl::Cord& c, uint8_t* ptr) {
   uint32_t size = c.size();
   ptr = UnsafeWriteSize(size, ptr);
-  return WriteCord(c, ptr);
+  return Finalize(WriteCord(c, ptr));
 }
 
 std::atomic<bool> CodedOutputStream::default_serialization_deterministic_{

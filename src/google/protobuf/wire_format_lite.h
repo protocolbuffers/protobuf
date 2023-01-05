@@ -657,7 +657,8 @@ class PROTOBUF_EXPORT WireFormatLite {
             static_cast<int>(2 * io::CodedOutputStream::VarintSize32(
                                      static_cast<uint32_t>(field_number) << 3)),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    return InternalWriteGroup(field_number, value, target, &stream);
+    target = InternalWriteGroup(field_number, value, target, &stream);
+    return stream.Finalize(target);
   }
   PROTOBUF_NDEBUG_INLINE static uint8_t* WriteMessageToArray(
       int field_number, const MessageLite& value, uint8_t* target) {
@@ -668,8 +669,9 @@ class PROTOBUF_EXPORT WireFormatLite {
                                     static_cast<uint32_t>(field_number) << 3) +
                                 io::CodedOutputStream::VarintSize32(size)),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    return InternalWriteMessage(field_number, value, value.GetCachedSize(),
-                                target, &stream);
+    target = InternalWriteMessage(field_number, value, value.GetCachedSize(),
+                                  target, &stream);
+    return stream.Finalize(target);
   }
 
   // Compute the byte size of a field.  The XxSize() functions do NOT include
