@@ -2696,6 +2696,221 @@ TEST_F(CommandLineInterfaceTest, PrintFreeFieldNumbers) {
 #endif
 }
 
+TEST_F(CommandLineInterfaceTest, TargetTypeEnforcement) {
+  // The target option on a field indicates what kind of entity it may apply to
+  // when it is used as an option. This test verifies that the enforcement
+  // works correctly on all entity types.
+  CreateTempFile("net/proto2/proto/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+      syntax = "proto2";
+      package protobuf_unittest;
+      import "net/proto2/proto/descriptor.proto";
+      message MyOptions {
+        optional string file_option = 1 [targets = TARGET_TYPE_FILE];
+        optional string extension_range_option = 2 [targets =
+      TARGET_TYPE_EXTENSION_RANGE];
+        optional string message_option = 3 [targets = TARGET_TYPE_MESSAGE];
+        optional string field_option = 4 [targets = TARGET_TYPE_FIELD];
+        optional string oneof_option = 5 [targets = TARGET_TYPE_ONEOF];
+        optional string enum_option = 6 [targets = TARGET_TYPE_ENUM];
+        optional string enum_value_option = 7 [targets =
+      TARGET_TYPE_ENUM_ENTRY];
+        optional string service_option = 8 [targets = TARGET_TYPE_SERVICE];
+        optional string method_option = 9 [targets = TARGET_TYPE_METHOD];
+      }
+      extend google.protobuf.FileOptions {
+        optional MyOptions file_options = 5000;
+      }
+      extend google.protobuf.ExtensionRangeOptions {
+        optional MyOptions extension_range_options = 5000;
+      }
+      extend google.protobuf.MessageOptions {
+        optional MyOptions message_options = 5000;
+      }
+      extend google.protobuf.FieldOptions {
+        optional MyOptions field_options = 5000;
+      }
+      extend google.protobuf.OneofOptions {
+        optional MyOptions oneof_options = 5000;
+      }
+      extend google.protobuf.EnumOptions {
+        optional MyOptions enum_options = 5000;
+      }
+      extend google.protobuf.EnumValueOptions {
+        optional MyOptions enum_value_options = 5000;
+      }
+      extend google.protobuf.ServiceOptions {
+        optional MyOptions service_options = 5000;
+      }
+      extend google.protobuf.MethodOptions {
+        optional MyOptions method_options = 5000;
+      }
+      option (file_options).enum_option = "x";
+      message MyMessage {
+        option (message_options).enum_option = "x";
+        optional int32 i = 1 [(field_options).enum_option = "x"];
+        extensions 2 [(extension_range_options).enum_option = "x"];
+        oneof o {
+          option (oneof_options).enum_option = "x";
+          bool oneof_field = 3;
+        }
+      }
+      enum MyEnum {
+        option (enum_options).file_option = "x";
+        UNKNOWN_MY_ENUM = 0 [(enum_value_options).enum_option = "x"];
+      }
+      service MyService {
+        option (service_options).enum_option = "x";
+        rpc MyMethod(MyMessage) returns (MyMessage) {
+          option (method_options).enum_option = "x";
+        }
+      }
+      )schema");
+
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.enum_option "
+      "cannot be set on an entity of type `file`.");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.enum_option "
+      "cannot be set on an entity of type `extension range`.");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.enum_option "
+      "cannot be set on an entity of type `message`.");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.enum_option "
+      "cannot be set on an entity of type `field`.");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.enum_option "
+      "cannot be set on an entity of type `oneof`.");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.file_option "
+      "cannot be set on an entity of type `enum`.");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.enum_option "
+      "cannot be set on an entity of type `enum entry`.");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.enum_option "
+      "cannot be set on an entity of type `service`.");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.enum_option "
+      "cannot be set on an entity of type `method`.");
+}
+
+TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsValid) {
+  CreateTempFile("net/proto2/proto/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+      syntax = "proto2";
+      package protobuf_unittest;
+      import "net/proto2/proto/descriptor.proto";
+      message MyOptions {
+        optional string message_or_file_option = 1 [
+            targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE];
+      }
+      extend google.protobuf.FileOptions {
+        optional MyOptions file_options = 5000;
+      }
+      extend google.protobuf.MessageOptions {
+        optional MyOptions message_options = 5000;
+      }
+      option (file_options).message_or_file_option = "x";
+      message MyMessage {
+        option (message_options).message_or_file_option = "y";
+      }
+      )schema");
+
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsInvalid) {
+  CreateTempFile("net/proto2/proto/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+      syntax = "proto2";
+      package protobuf_unittest;
+      import "net/proto2/proto/descriptor.proto";
+      message MyOptions {
+        optional string message_or_file_option = 1 [
+            targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE];
+      }
+      extend google.protobuf.EnumOptions {
+        optional MyOptions enum_options = 5000;
+      }
+      enum MyEnum {
+        MY_ENUM_UNSPECIFIED = 0;
+        option (enum_options).message_or_file_option = "y";
+      }
+      )schema");
+
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.MyOptions.message_or_file_option cannot be set "
+      "on an entity of type `enum`.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       TargetTypeEnforcementMultipleEdgesWithConstraintsValid) {
+  CreateTempFile("net/proto2/proto/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+      syntax = "proto2";
+      package protobuf_unittest;
+      import "net/proto2/proto/descriptor.proto";
+      message A {
+        optional B b = 1 [targets = TARGET_TYPE_FILE,
+                          targets = TARGET_TYPE_ENUM];
+      }
+      message B {
+        optional int32 i = 1 [targets = TARGET_TYPE_ONEOF,
+                              targets = TARGET_TYPE_FILE];
+      }
+      extend google.protobuf.FileOptions {
+        optional A file_options = 5000;
+      }
+      option (file_options).b.i = 42;
+      )schema");
+
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       TargetTypeEnforcementMultipleEdgesWithConstraintsInvalid) {
+  CreateTempFile("net/proto2/proto/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+      syntax = "proto2";
+      package protobuf_unittest;
+      import "net/proto2/proto/descriptor.proto";
+      message A {
+        optional B b = 1 [targets = TARGET_TYPE_ENUM];
+      }
+      message B {
+        optional int32 i = 1 [targets = TARGET_TYPE_ONEOF];
+      }
+      extend google.protobuf.FileOptions {
+        optional A file_options = 5000;
+      }
+      option (file_options).b.i = 42;
+      )schema");
+
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  // We have target constraint violations at two different edges in the file
+  // options, so let's make sure both are caught.
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.A.b cannot be set on an entity of type `file`.");
+  ExpectErrorSubstring(
+      "Option protobuf_unittest.B.i cannot be set on an entity of type `file`.");
+}
+
 // ===================================================================
 
 // Test for --encode and --decode.  Note that it would be easier to do this
