@@ -533,12 +533,6 @@ static void jsonenc_value(jsonenc* e, const upb_Message* msg,
       jsonenc_putstr(e, "null");
       break;
     case 2:
-      if (upb_JsonEncode_HandleSpecialDoubles(e, val.double_val)) {
-        jsonenc_err(
-            e,
-            "google.protobuf.Value cannot encode double values for "
-            "infinity or nan, because they would be parsed as a string");
-      }
       upb_JsonEncode_Double(e, val.double_val);
       break;
     case 3:
