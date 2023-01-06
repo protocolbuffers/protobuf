@@ -5,7 +5,7 @@ set -ex
 
 WORKING_DIR=$(dirname $(readlink $BASH_SOURCE))
 
-rvm use ruby-3.0
+# rvm use ruby-3.0
 # Move all files to the correct directory
 cp src/google/protobuf/*.rb $WORKING_DIR/lib/google/protobuf
 UTF8_DIR=$WORKING_DIR/ext/google/protobuf_c/third_party/utf8_range
