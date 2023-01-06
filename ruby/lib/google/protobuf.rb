@@ -60,10 +60,10 @@ module Google
         require 'google/protobuf_native'
        :NATIVE
       when 'ffi'
-        require 'google/protobuf_native'
+        require 'google/protobuf_ffi'
        :FFI
       else
-        raise RuntimeError("Unsupport value of PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION environment variable `#{ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']}`. Must be one of `native` or `ffi`. Defaults to `native`.")
+        raise RuntimeError("Unsupported value of PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION environment variable `#{ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']}`. Must be one of `native` or `ffi`. Defaults to `native`.")
     end
   end
 end
