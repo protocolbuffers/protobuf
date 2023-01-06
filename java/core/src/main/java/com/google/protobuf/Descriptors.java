@@ -2567,8 +2567,8 @@ public final class Descriptors {
               "The descriptor for message type \""
                   + name
                   + "\" cannot be found and a placeholder is created for it");
-          // We create a dummy message descriptor here regardless of the
-          // expected type. If the type should be message, this dummy
+          // We create a placeholder message descriptor here regardless of the
+          // expected type. If the type should be message, this placeholder
           // descriptor will work well and if the type should be enum, a
           // DescriptorValidationException will be thrown later. In either
           // case, the code works as expected: we allow unknown message types
