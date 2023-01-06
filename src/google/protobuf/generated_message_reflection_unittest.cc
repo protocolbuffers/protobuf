@@ -1273,7 +1273,7 @@ TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
   EXPECT_TRUE(released == nullptr);
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {
   unittest::TestAllTypes message;

@@ -689,7 +689,7 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
                          test_all_types_pointer_nullptr));
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.
+#if PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.
 
 TEST(MESSAGE_TEST_NAME, SerializeFailsIfNotInitialized) {
   UNITTEST::TestRequired message;
