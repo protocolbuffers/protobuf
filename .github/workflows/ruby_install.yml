@@ -15,8 +15,9 @@ jobs:
   test_ruby_gems:
     name: Test ruby gems
     runs-on: ubuntu-latest
-    matrix:
-      ruby-version: [2.6, 2.7, 3.0, 3.1, jruby92, jruby93]
+    strategy:
+      matrix:
+        ruby-version: [2.6, 2.7, 3.0, 3.1, jruby92, jruby93]
 
     steps:
       - name: Install bazel
