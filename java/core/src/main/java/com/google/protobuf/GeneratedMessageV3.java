@@ -43,6 +43,7 @@ import com.google.protobuf.Internal.DoubleList;
 import com.google.protobuf.Internal.FloatList;
 import com.google.protobuf.Internal.IntList;
 import com.google.protobuf.Internal.LongList;
+import com.google.protobuf.Internal.ProtobufList;
 // In opensource protobuf, we have versioned this GeneratedMessageV3 class to GeneratedMessageV3 and
 // in the future may have GeneratedMessageV4 etc. This allows us to change some aspects of this
 // class without breaking binary compatibility with old generated code that still subclasses
@@ -417,10 +418,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new IntArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static IntList mutableCopy(IntList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return makeMutableCopy(list);
   }
 
   protected static LongList emptyLongList() {
@@ -432,10 +432,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new LongArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static LongList mutableCopy(LongList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return makeMutableCopy(list);
   }
 
   protected static FloatList emptyFloatList() {
@@ -447,10 +446,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new FloatArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static FloatList mutableCopy(FloatList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return makeMutableCopy(list);
   }
 
   protected static DoubleList emptyDoubleList() {
@@ -462,10 +460,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new DoubleArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static DoubleList mutableCopy(DoubleList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return makeMutableCopy(list);
   }
 
   protected static BooleanList emptyBooleanList() {
@@ -477,10 +474,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new BooleanArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static BooleanList mutableCopy(BooleanList list) {
+    return makeMutableCopy(list);
+  }
+
+  @SuppressWarnings("unchecked") // Guaranteed by proto runtime.
+  protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(ListT list) {
     int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return (ListT)
+        list.mutableCopyWithCapacity(size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
   }
 
   @Override
