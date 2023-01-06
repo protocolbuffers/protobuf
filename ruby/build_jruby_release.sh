@@ -7,8 +7,8 @@ WORKING_DIR=$(dirname $(readlink $BASH_SOURCE))
 
 # rvm use jruby
 # Move all files to the correct directory
-cp src/google/protobuf/*.rb $WORKING_DIR/lib/google/protobuf
-cp ruby/protobuf_java_release-project.jar $WORKING_DIR/lib/google/protobuf_java.jar
+cp $WORKING_DIR/src/google/protobuf/*.rb $WORKING_DIR/lib/google/protobuf
+cp $WORKING_DIR/ruby/protobuf_java_release-project.jar $WORKING_DIR/lib/google/protobuf_java.jar
 
 # Make all files global readable/writable/executable
 cd $WORKING_DIR

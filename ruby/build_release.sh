@@ -7,14 +7,14 @@ WORKING_DIR=$(dirname $(readlink $BASH_SOURCE))
 
 # rvm use ruby-3.0
 # Move all files to the correct directory
-cp src/google/protobuf/*.rb $WORKING_DIR/lib/google/protobuf
+cp $WORKING_DIR/src/google/protobuf/*.rb $WORKING_DIR/lib/google/protobuf
 UTF8_DIR=$WORKING_DIR/ext/google/protobuf_c/third_party/utf8_range
 mkdir -p $UTF8_DIR
-cp external/utf8_range/LICENSE $UTF8_DIR/LICENSE
-cp external/utf8_range/naive.c $UTF8_DIR
-cp external/utf8_range/range2-neon.c $UTF8_DIR
-cp external/utf8_range/range2-sse.c $UTF8_DIR
-cp external/utf8_range/utf8_range.h $UTF8_DIR
+cp $WORKING_DIR/external/utf8_range/LICENSE $UTF8_DIR/LICENSE
+cp $WORKING_DIR/external/utf8_range/naive.c $UTF8_DIR
+cp $WORKING_DIR/external/utf8_range/range2-neon.c $UTF8_DIR
+cp $WORKING_DIR/external/utf8_range/range2-sse.c $UTF8_DIR
+cp $WORKING_DIR/external/utf8_range/utf8_range.h $UTF8_DIR
 
 # Make all files global readable/writable/executable
 cd $WORKING_DIR
