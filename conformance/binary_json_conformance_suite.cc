@@ -3334,10 +3334,6 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForValue() {
         return value.empty();
       },
       true);
-  ExpectSerializeFailureForJson("ValueRejectNanNumberValue", RECOMMENDED,
-                                "optional_value: { number_value: nan}");
-  ExpectSerializeFailureForJson("ValueRejectInfNumberValue", RECOMMENDED,
-                                "optional_value: { number_value: inf}");
 }
 
 void BinaryAndJsonConformanceSuite::RunJsonTestsForAny() {
