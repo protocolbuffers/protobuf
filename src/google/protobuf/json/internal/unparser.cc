@@ -34,6 +34,7 @@
 #include <complex>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -489,6 +490,17 @@ absl::Status WriteValue(JsonWriter& writer, const Msg<Traits>& msg,
   if (Traits::GetSize(number_field, msg) > 0) {
     auto x = Traits::GetDouble(number_field, msg);
     RETURN_IF_ERROR(x.status());
+    if (std::isnan(*x)) {
+      return absl::InvalidArgumentError(
+          "google.protobuf.Value cannot encode double values for nan, "
+          "because it would be parsed as a string");
+    }
+    if (*x == std::numeric_limits<double>::infinity() |
+        *x == -std::numeric_limits<double>::infinity()) {
+      return absl::InvalidArgumentError(
+          "google.protobuf.Value cannot encode double values for "
+          "infinity, because it would be parsed as a string");
+    }
     writer.Write(*x);
     return absl::OkStatus();
   }
