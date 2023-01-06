@@ -651,6 +651,43 @@ TEST(RepeatedField, AddRange5) {
   ASSERT_EQ(me.Get(2), 2);
 }
 
+// Add contents of container with a quirky iterator like std::vector<bool>
+TEST(RepeatedField, AddRange6) {
+  RepeatedField<bool> me;
+  me.Add(true);
+  me.Add(false);
+
+  std::vector<bool> values;
+  values.push_back(true);
+  values.push_back(true);
+  values.push_back(false);
+
+  me.Add(values.begin(), values.end());
+  ASSERT_EQ(me.size(), 5);
+  ASSERT_EQ(me.Get(0), true);
+  ASSERT_EQ(me.Get(1), false);
+  ASSERT_EQ(me.Get(2), true);
+  ASSERT_EQ(me.Get(3), true);
+  ASSERT_EQ(me.Get(4), false);
+}
+
+// Add contents of absl::Span which evaluates to const T on access.
+TEST(RepeatedField, AddRange7) {
+  int ints[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  absl::Span<const int> span(ints);
+  const int* p = span.begin();
+  auto x = span.begin();
+  static_assert(std::is_convertible<decltype(x), const int*>::value, "");
+  (void)p;
+  RepeatedField<int> me;
+  me.Add(span.begin(), span.end());
+
+  ASSERT_EQ(me.size(), 10);
+  for (int i = 0; i < 10; ++i) {
+    ASSERT_EQ(me.Get(i), i);
+  }
+}
+
 TEST(RepeatedField, AddAndAssignRanges) {
   RepeatedField<int> field;
 
@@ -953,6 +990,23 @@ TEST(RepeatedField, Truncate) {
 #endif
 }
 
+TEST(RepeatedCordField, AddRemoveLast) {
+  RepeatedField<absl::Cord> field;
+  field.Add(absl::Cord("foo"));
+  field.RemoveLast();
+}
+
+TEST(RepeatedCordField, AddClear) {
+  RepeatedField<absl::Cord> field;
+  field.Add(absl::Cord("foo"));
+  field.Clear();
+}
+
+TEST(RepeatedCordField, Resize) {
+  RepeatedField<absl::Cord> field;
+  field.Resize(10, absl::Cord("foo"));
+}
+
 TEST(RepeatedField, Cords) {
   RepeatedField<absl::Cord> field;
 
@@ -1007,8 +1061,8 @@ TEST(RepeatedField, TruncateCords) {
   // Truncating to the current size should be fine (no-op), but truncating
   // to a larger size should crash.
   field.Truncate(field.size());
-#if PROTOBUF_HAS_DEATH_TEST
-  EXPECT_DEBUG_DEATH(field.Truncate(field.size() + 1), "new_size");
+#if defined(PROTOBUF_HAS_DEATH_TEST) && !defined(NDEBUG)
+  EXPECT_DEATH(field.Truncate(field.size() + 1), "new_size");
 #endif
 }
 
@@ -1064,6 +1118,25 @@ TEST(RepeatedField, TestSAddFromSelf) {
   field.Add(0);
   for (int i = 0; i < 1000; i++) {
     field.Add(field[0]);
+  }
+}
+
+// We have, or at least had bad callers that never triggered our DCHECKS
+// Here we check we DO fail on bad Truncate calls under debug, and do nothing
+// under opt compiles.
+TEST(RepeatedField, HardenAgainstBadTruncate) {
+  RepeatedField<int> field;
+  for (int size = 0; size < 10; ++size) {
+    field.Truncate(size);
+#if PROTOBUF_HAS_DEATH_TEST
+    EXPECT_DEBUG_DEATH(field.Truncate(size + 1), "new_size <= current_size_");
+    EXPECT_DEBUG_DEATH(field.Truncate(size + 2), "new_size <= current_size_");
+#elif !defined(NDEBUG)
+    field.Truncate(size + 1);
+    field.Truncate(size + 1);
+#endif
+    EXPECT_EQ(field.size(), size);
+    field.Add(1);
   }
 }
 
