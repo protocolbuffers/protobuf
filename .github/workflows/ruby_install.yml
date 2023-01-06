@@ -1,0 +1,48 @@
+name: Ruby Install Tests
+
+on:
+  push:
+    branches:
+      - main
+      - '[0-9]+.x'
+  pull_request:
+    branches:
+      - main
+      - '[0-9]+.x'
+  workflow_dispatch:
+
+jobs:
+  test_ruby_gems:
+    name: Test ruby gems
+    runs-on: ubuntu-latest
+    matrix:
+      ruby-version: [2.6, 2.7, 3.0, 3.1, jruby92, jruby93]
+
+    steps:
+      - name: Install bazel
+        run: |
+          apt-get install -qy wget
+          mkdir $HOME/bin
+          wget -O $HOME/bin/bazel https://github.com/bazelbuild/bazel/releases/download/5.3.2/bazel-5.3.2-linux-x86_64
+          chmod a+x $HOME/bin/bazel
+      - name: Install git
+        run: |
+          apt-get install -qy --no-install-recommends git
+      - name: Install ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Build cruby gem
+        run: $HOME/bin/bazel run ruby:release
+        if: ${{ !contains(matrix.ruby, 'jruby') }}
+      - name: Build jruby gem
+        run: $HOME/bin/bazel run ruby:jruby_release
+        if: ${{ contains(matrix.ruby, 'jruby') }}
+      - name: Install gem
+        run: gem install google-protobuf-*.gem
+      - name: Test installation
+        run: bundle exec rubocop && bundle exec rspec
