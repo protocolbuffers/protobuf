@@ -1032,36 +1032,40 @@ struct ElementCopier<Element, true> {
 // some specializations for them.  Some definitions are in the .cc file.
 
 template <>
-inline void RepeatedField<absl::Cord>::RemoveLast() {
+PROTOBUF_EXPORT inline void RepeatedField<absl::Cord>::RemoveLast() {
   GOOGLE_ABSL_DCHECK_GT(current_size_, 0);
   Mutable(size() - 1)->Clear();
   ExchangeCurrentSize(current_size_ - 1);
 }
 
 template <>
-void RepeatedField<absl::Cord>::Clear();
+PROTOBUF_EXPORT void RepeatedField<absl::Cord>::Clear();
 
 template <>
-inline void RepeatedField<absl::Cord>::SwapElements(int index1, int index2) {
+PROTOBUF_EXPORT inline void RepeatedField<absl::Cord>::SwapElements(
+    int index1, int index2) {
   Mutable(index1)->swap(*Mutable(index2));
 }
 
 template <>
-size_t RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const;
+PROTOBUF_EXPORT size_t
+RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const;
 
 template <>
-void RepeatedField<absl::Cord>::Truncate(int new_size);
+PROTOBUF_EXPORT void RepeatedField<absl::Cord>::Truncate(int new_size);
 
 template <>
-void RepeatedField<absl::Cord>::Resize(int new_size, const absl::Cord& value);
+PROTOBUF_EXPORT void RepeatedField<absl::Cord>::Resize(int new_size,
+                                                       const absl::Cord& value);
 
 template <>
-void RepeatedField<absl::Cord>::MoveArray(absl::Cord* to, absl::Cord* from,
-                                          int size);
+PROTOBUF_EXPORT void RepeatedField<absl::Cord>::MoveArray(absl::Cord* to,
+                                                          absl::Cord* from,
+                                                          int size);
 
 template <>
-void RepeatedField<absl::Cord>::CopyArray(absl::Cord* to,
-                                          const absl::Cord* from, int size);
+PROTOBUF_EXPORT void RepeatedField<absl::Cord>::CopyArray(
+    absl::Cord* to, const absl::Cord* from, int size);
 
 // -------------------------------------------------------------------
 
@@ -1236,32 +1240,6 @@ internal::RepeatedFieldBackInsertIterator<T> RepeatedFieldBackInserter(
   return internal::RepeatedFieldBackInsertIterator<T>(mutable_field);
 }
 
-// Extern declarations of common instantiations to reduce library bloat.
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<bool>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int32_t>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint32_t>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int64_t>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint64_t>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<float>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<double>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
-    RepeatedField<absl::Cord>;
-
-namespace internal {
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<bool>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
-    RepeatedIterator<int32_t>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
-    RepeatedIterator<uint32_t>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
-    RepeatedIterator<int64_t>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
-    RepeatedIterator<uint64_t>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<float>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<double>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
-    RepeatedIterator<absl::Cord>;
-}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google
