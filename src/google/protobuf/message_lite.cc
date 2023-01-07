@@ -204,6 +204,7 @@ class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
   bool aliasing_enabled() { return cis_->aliasing_enabled_; }
 
   bool ReadCord(absl::Cord* cord, int count) final {
+    GOOGLE_ABSL_LOG(FATAL) << "Bad ReadCord";
     return cis_->ReadCord(cord, count);
   }
  private:
