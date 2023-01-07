@@ -204,7 +204,14 @@ class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
   bool aliasing_enabled() { return cis_->aliasing_enabled_; }
 
   bool ReadCord(absl::Cord* cord, int count) final {
-    return cis_->ReadCord(cord, count);
+    // Fast path: tail call into ReadCord reading new value.
+    if (PROTOBUF_PREDICT_TRUE(cord->empty())) {
+      return cis_->ReadCord(cord, count);
+    }
+    absl::Cord tmp;
+    bool res = cis_->ReadCord(&tmp, count);
+    cord->Append(std::move(tmp));
+    return res;
   }
  private:
   io::CodedInputStream* cis_;
