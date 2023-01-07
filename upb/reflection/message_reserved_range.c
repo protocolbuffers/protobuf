@@ -53,14 +53,15 @@ int32_t upb_MessageReservedRange_End(const upb_MessageReservedRange* r) {
 
 upb_MessageReservedRange* _upb_MessageReservedRanges_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_DescriptorProto_ReservedRange* const* protos,
+    const UPB_DESC(DescriptorProto_ReservedRange) * const* protos,
     const upb_MessageDef* m) {
   upb_MessageReservedRange* r =
       _upb_DefBuilder_Alloc(ctx, sizeof(upb_MessageReservedRange) * n);
 
   for (int i = 0; i < n; i++) {
-    const int32_t start = google_protobuf_DescriptorProto_ReservedRange_start(protos[i]);
-    const int32_t end = google_protobuf_DescriptorProto_ReservedRange_end(protos[i]);
+    const int32_t start =
+        UPB_DESC(DescriptorProto_ReservedRange_start)(protos[i]);
+    const int32_t end = UPB_DESC(DescriptorProto_ReservedRange_end)(protos[i]);
     const int32_t max = kUpb_MaxFieldNumber + 1;
 
     // A full validation would also check that each range is disjoint, and that

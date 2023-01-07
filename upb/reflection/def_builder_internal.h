@@ -37,17 +37,17 @@
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
-#define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)          \
-  if (google_protobuf_##desc_type##_has_options(proto)) {                             \
-    size_t size;                                                             \
-    char* pb = google_protobuf_##options_type##_serialize(                            \
-        google_protobuf_##desc_type##_options(proto), ctx->tmp_arena, &size);         \
-    if (!pb) _upb_DefBuilder_OomErr(ctx);                                    \
-    target =                                                                 \
-        google_protobuf_##options_type##_parse(pb, size, _upb_DefBuilder_Arena(ctx)); \
-    if (!target) _upb_DefBuilder_OomErr(ctx);                                \
-  } else {                                                                   \
-    target = (const google_protobuf_##options_type*)kUpbDefOptDefault;                \
+#define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)           \
+  if (UPB_DESC(desc_type##_has_options)(proto)) {                             \
+    size_t size;                                                              \
+    char* pb = UPB_DESC(options_type##_serialize)(                            \
+        UPB_DESC(desc_type##_options)(proto), ctx->tmp_arena, &size);         \
+    if (!pb) _upb_DefBuilder_OomErr(ctx);                                     \
+    target =                                                                  \
+        UPB_DESC(options_type##_parse)(pb, size, _upb_DefBuilder_Arena(ctx)); \
+    if (!target) _upb_DefBuilder_OomErr(ctx);                                 \
+  } else {                                                                    \
+    target = (const UPB_DESC(options_type)*)kUpbDefOptDefault;                \
   }
 
 #ifdef __cplusplus

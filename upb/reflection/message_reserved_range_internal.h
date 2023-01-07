@@ -43,7 +43,7 @@ upb_MessageReservedRange* _upb_MessageReservedRange_At(
 // Allocate and initialize an array of |n| reserved ranges owned by |m|.
 upb_MessageReservedRange* _upb_MessageReservedRanges_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_DescriptorProto_ReservedRange* const* protos,
+    const UPB_DESC(DescriptorProto_ReservedRange) * const* protos,
     const upb_MessageDef* m);
 
 #ifdef __cplusplus

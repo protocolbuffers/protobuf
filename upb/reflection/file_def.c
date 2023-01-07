@@ -37,7 +37,7 @@
 #include "upb/port/def.inc"
 
 struct upb_FileDef {
-  const google_protobuf_FileOptions* opts;
+  const UPB_DESC(FileOptions) * opts;
   const char* name;
   const char* package;
 
@@ -62,7 +62,7 @@ struct upb_FileDef {
   upb_Syntax syntax;
 };
 
-const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f) {
+const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f) {
   return f->opts;
 }
 
@@ -164,13 +164,13 @@ static bool streql_view(upb_StringView view, const char* b) {
   return view.size == strlen(b) && memcmp(view.data, b, view.size) == 0;
 }
 
-static int count_exts_in_msg(const google_protobuf_DescriptorProto* msg_proto) {
+static int count_exts_in_msg(const UPB_DESC(DescriptorProto) * msg_proto) {
   size_t n;
-  google_protobuf_DescriptorProto_extension(msg_proto, &n);
+  UPB_DESC(DescriptorProto_extension)(msg_proto, &n);
   int ext_count = n;
 
-  const google_protobuf_DescriptorProto* const* nested_msgs =
-      google_protobuf_DescriptorProto_nested_type(msg_proto, &n);
+  const UPB_DESC(DescriptorProto)* const* nested_msgs =
+      UPB_DESC(DescriptorProto_nested_type)(msg_proto, &n);
   for (size_t i = 0; i < n; i++) {
     ext_count += count_exts_in_msg(nested_msgs[i]);
   }
@@ -180,14 +180,14 @@ static int count_exts_in_msg(const google_protobuf_DescriptorProto* msg_proto) {
 
 // Allocate and initialize one file def, and add it to the context object.
 void _upb_FileDef_Create(upb_DefBuilder* ctx,
-                         const google_protobuf_FileDescriptorProto* file_proto) {
+                         const UPB_DESC(FileDescriptorProto) * file_proto) {
   upb_FileDef* file = _upb_DefBuilder_Alloc(ctx, sizeof(upb_FileDef));
   ctx->file = file;
 
-  const google_protobuf_DescriptorProto* const* msgs;
-  const google_protobuf_EnumDescriptorProto* const* enums;
-  const google_protobuf_FieldDescriptorProto* const* exts;
-  const google_protobuf_ServiceDescriptorProto* const* services;
+  const UPB_DESC(DescriptorProto)* const* msgs;
+  const UPB_DESC(EnumDescriptorProto)* const* enums;
+  const UPB_DESC(FieldDescriptorProto)* const* exts;
+  const UPB_DESC(ServiceDescriptorProto)* const* services;
   const upb_StringView* strs;
   const int32_t* public_deps;
   const int32_t* weak_deps;
@@ -196,9 +196,9 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->symtab = ctx->symtab;
 
   // Count all extensions in the file, to build a flat array of layouts.
-  google_protobuf_FileDescriptorProto_extension(file_proto, &n);
+  UPB_DESC(FileDescriptorProto_extension)(file_proto, &n);
   int ext_count = n;
-  msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
+  msgs = UPB_DESC(FileDescriptorProto_message_type)(file_proto, &n);
   for (int i = 0; i < n; i++) {
     ext_count += count_exts_in_msg(msgs[i]);
   }
@@ -223,13 +223,13 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     }
   }
 
-  if (!google_protobuf_FileDescriptorProto_has_name(file_proto)) {
+  if (!UPB_DESC(FileDescriptorProto_has_name)(file_proto)) {
     _upb_DefBuilder_Errf(ctx, "File has no name");
   }
 
-  file->name = strviewdup(ctx, google_protobuf_FileDescriptorProto_name(file_proto));
+  file->name = strviewdup(ctx, UPB_DESC(FileDescriptorProto_name)(file_proto));
 
-  upb_StringView package = google_protobuf_FileDescriptorProto_package(file_proto);
+  upb_StringView package = UPB_DESC(FileDescriptorProto_package)(file_proto);
   if (package.size) {
     _upb_DefBuilder_CheckIdentFull(ctx, package);
     file->package = strviewdup(ctx, package);
@@ -237,8 +237,8 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     file->package = NULL;
   }
 
-  if (google_protobuf_FileDescriptorProto_has_syntax(file_proto)) {
-    upb_StringView syntax = google_protobuf_FileDescriptorProto_syntax(file_proto);
+  if (UPB_DESC(FileDescriptorProto_has_syntax)(file_proto)) {
+    upb_StringView syntax = UPB_DESC(FileDescriptorProto_syntax)(file_proto);
 
     if (streql_view(syntax, "proto2")) {
       file->syntax = kUpb_Syntax_Proto2;
@@ -256,7 +256,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   UPB_DEF_SET_OPTIONS(file->opts, FileDescriptorProto, FileOptions, file_proto);
 
   // Verify dependencies.
-  strs = google_protobuf_FileDescriptorProto_dependency(file_proto, &n);
+  strs = UPB_DESC(FileDescriptorProto_dependency)(file_proto, &n);
   file->dep_count = n;
   file->deps = _upb_DefBuilder_Alloc(ctx, sizeof(*file->deps) * n);
 
@@ -272,7 +272,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     }
   }
 
-  public_deps = google_protobuf_FileDescriptorProto_public_dependency(file_proto, &n);
+  public_deps = UPB_DESC(FileDescriptorProto_public_dependency)(file_proto, &n);
   file->public_dep_count = n;
   file->public_deps =
       _upb_DefBuilder_Alloc(ctx, sizeof(*file->public_deps) * n);
@@ -285,7 +285,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     mutable_public_deps[i] = public_deps[i];
   }
 
-  weak_deps = google_protobuf_FileDescriptorProto_weak_dependency(file_proto, &n);
+  weak_deps = UPB_DESC(FileDescriptorProto_weak_dependency)(file_proto, &n);
   file->weak_dep_count = n;
   file->weak_deps = _upb_DefBuilder_Alloc(ctx, sizeof(*file->weak_deps) * n);
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
@@ -298,23 +298,23 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   // Create enums.
-  enums = google_protobuf_FileDescriptorProto_enum_type(file_proto, &n);
+  enums = UPB_DESC(FileDescriptorProto_enum_type)(file_proto, &n);
   file->top_lvl_enum_count = n;
   file->top_lvl_enums = _upb_EnumDefs_New(ctx, n, enums, NULL);
 
   // Create extensions.
-  exts = google_protobuf_FileDescriptorProto_extension(file_proto, &n);
+  exts = UPB_DESC(FileDescriptorProto_extension)(file_proto, &n);
   file->top_lvl_ext_count = n;
   file->top_lvl_exts =
       _upb_FieldDefs_New(ctx, n, exts, file->package, NULL, NULL);
 
   // Create messages.
-  msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
+  msgs = UPB_DESC(FileDescriptorProto_message_type)(file_proto, &n);
   file->top_lvl_msg_count = n;
   file->top_lvl_msgs = _upb_MessageDefs_New(ctx, n, msgs, NULL);
 
   // Create services.
-  services = google_protobuf_FileDescriptorProto_service(file_proto, &n);
+  services = UPB_DESC(FileDescriptorProto_service)(file_proto, &n);
   file->service_count = n;
   file->services = _upb_ServiceDefs_New(ctx, n, services);
 

@@ -44,7 +44,7 @@ bool _upb_OneofDef_Insert(upb_OneofDef* o, const upb_FieldDef* f,
 // Allocate and initialize an array of |n| oneof defs owned by |m|.
 upb_OneofDef* _upb_OneofDefs_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_OneofDescriptorProto* const* protos, upb_MessageDef* m);
+    const UPB_DESC(OneofDescriptorProto) * const* protos, upb_MessageDef* m);
 
 size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m);
 

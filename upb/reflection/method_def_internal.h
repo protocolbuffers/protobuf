@@ -42,7 +42,7 @@ upb_MethodDef* _upb_MethodDef_At(const upb_MethodDef* m, int i);
 // Allocate and initialize an array of |n| method defs owned by |s|.
 upb_MethodDef* _upb_MethodDefs_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_MethodDescriptorProto* const* protos, upb_ServiceDef* s);
+    const UPB_DESC(MethodDescriptorProto) * const* protos, upb_ServiceDef* s);
 
 #ifdef __cplusplus
 } /* extern "C" */

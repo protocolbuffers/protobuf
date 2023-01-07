@@ -59,7 +59,7 @@ bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
                                       upb_StringView* out);
 
 const char* upb_EnumDef_Name(const upb_EnumDef* e);
-const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e);
+const UPB_DESC(EnumOptions) * upb_EnumDef_Options(const upb_EnumDef* e);
 
 upb_StringView upb_EnumDef_ReservedName(const upb_EnumDef* e, int i);
 int upb_EnumDef_ReservedNameCount(const upb_EnumDef* e);

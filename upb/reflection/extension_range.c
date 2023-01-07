@@ -34,7 +34,7 @@
 #include "upb/port/def.inc"
 
 struct upb_ExtensionRange {
-  const google_protobuf_ExtensionRangeOptions* opts;
+  const UPB_DESC(ExtensionRangeOptions) * opts;
   int32_t start;
   int32_t end;
 };
@@ -43,8 +43,8 @@ upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i) {
   return (upb_ExtensionRange*)&r[i];
 }
 
-const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
-    const upb_ExtensionRange* r) {
+const UPB_DESC(ExtensionRangeOptions) *
+    upb_ExtensionRange_Options(const upb_ExtensionRange* r) {
   return r->opts;
 }
 
@@ -60,19 +60,19 @@ int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r) { return r->end; }
 
 upb_ExtensionRange* _upb_ExtensionRanges_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_DescriptorProto_ExtensionRange* const* protos,
+    const UPB_DESC(DescriptorProto_ExtensionRange) * const* protos,
     const upb_MessageDef* m) {
   upb_ExtensionRange* r =
       _upb_DefBuilder_Alloc(ctx, sizeof(upb_ExtensionRange) * n);
 
   for (int i = 0; i < n; i++) {
     const int32_t start =
-        google_protobuf_DescriptorProto_ExtensionRange_start(protos[i]);
-    const int32_t end = google_protobuf_DescriptorProto_ExtensionRange_end(protos[i]);
-    const int32_t max =
-        google_protobuf_MessageOptions_message_set_wire_format(upb_MessageDef_Options(m))
-            ? INT32_MAX
-            : kUpb_MaxFieldNumber + 1;
+        UPB_DESC(DescriptorProto_ExtensionRange_start)(protos[i]);
+    const int32_t end = UPB_DESC(DescriptorProto_ExtensionRange_end)(protos[i]);
+    const int32_t max = UPB_DESC(MessageOptions_message_set_wire_format)(
+                            upb_MessageDef_Options(m))
+                            ? INT32_MAX
+                            : kUpb_MaxFieldNumber + 1;
 
     // A full validation would also check that each range is disjoint, and that
     // none of the fields overlap with the extension ranges, but we are just

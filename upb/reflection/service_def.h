@@ -48,7 +48,8 @@ int upb_ServiceDef_Index(const upb_ServiceDef* s);
 const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i);
 int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
 const char* upb_ServiceDef_Name(const upb_ServiceDef* s);
-const google_protobuf_ServiceOptions* upb_ServiceDef_Options(const upb_ServiceDef* s);
+const UPB_DESC(ServiceOptions) *
+    upb_ServiceDef_Options(const upb_ServiceDef* s);
 
 #ifdef __cplusplus
 } /* extern "C" */

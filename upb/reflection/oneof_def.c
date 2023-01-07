@@ -41,7 +41,7 @@
 #include "upb/port/def.inc"
 
 struct upb_OneofDef {
-  const google_protobuf_OneofOptions* opts;
+  const UPB_DESC(OneofOptions) * opts;
   const upb_MessageDef* parent;
   const char* full_name;
   int field_count;
@@ -58,7 +58,7 @@ upb_OneofDef* _upb_OneofDef_At(const upb_OneofDef* o, int i) {
   return (upb_OneofDef*)&o[i];
 }
 
-const google_protobuf_OneofOptions* upb_OneofDef_Options(const upb_OneofDef* o) {
+const UPB_DESC(OneofOptions) * upb_OneofDef_Options(const upb_OneofDef* o) {
   return o->opts;
 }
 
@@ -164,10 +164,10 @@ size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m) {
 }
 
 static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
-                            const google_protobuf_OneofDescriptorProto* oneof_proto,
+                            const UPB_DESC(OneofDescriptorProto) * oneof_proto,
                             const upb_OneofDef* _o) {
   upb_OneofDef* o = (upb_OneofDef*)_o;
-  upb_StringView name = google_protobuf_OneofDescriptorProto_name(oneof_proto);
+  upb_StringView name = UPB_DESC(OneofDescriptorProto_name)(oneof_proto);
 
   o->parent = m;
   o->full_name =
@@ -195,7 +195,7 @@ static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
 // Allocate and initialize an array of |n| oneof defs.
 upb_OneofDef* _upb_OneofDefs_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_OneofDescriptorProto* const* protos, upb_MessageDef* m) {
+    const UPB_DESC(OneofDescriptorProto) * const* protos, upb_MessageDef* m) {
   _upb_DefType_CheckPadding(sizeof(upb_OneofDef));
 
   upb_OneofDef* o = _upb_DefBuilder_Alloc(ctx, sizeof(upb_OneofDef) * n);

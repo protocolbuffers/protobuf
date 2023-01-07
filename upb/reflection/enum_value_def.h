@@ -45,8 +45,8 @@ bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* v);
 uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v);
 const char* upb_EnumValueDef_Name(const upb_EnumValueDef* v);
 int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v);
-const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
-    const upb_EnumValueDef* v);
+const UPB_DESC(EnumValueOptions) *
+    upb_EnumValueDef_Options(const upb_EnumValueDef* v);
 
 #ifdef __cplusplus
 } /* extern "C" */

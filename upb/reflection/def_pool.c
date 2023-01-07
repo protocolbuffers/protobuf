@@ -281,9 +281,9 @@ static void remove_filedef(upb_DefPool* s, upb_FileDef* file) {
 }
 
 static const upb_FileDef* _upb_DefPool_AddFile(
-    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
+    upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
     const upb_MiniTableFile* layout, upb_Status* status) {
-  const upb_StringView name = google_protobuf_FileDescriptorProto_name(file_proto);
+  const upb_StringView name = UPB_DESC(FileDescriptorProto_name)(file_proto);
 
   if (name.size == 0) {
     upb_Status_SetErrorFormat(status,
@@ -335,9 +335,10 @@ static const upb_FileDef* _upb_DefPool_AddFile(
   return ctx.file;
 }
 
-const upb_FileDef* upb_DefPool_AddFile(
-    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
-    upb_Status* status) {
+const upb_FileDef* upb_DefPool_AddFile(upb_DefPool* s,
+                                       const UPB_DESC(FileDescriptorProto) *
+                                           file_proto,
+                                       upb_Status* status) {
   return _upb_DefPool_AddFile(s, file_proto, NULL, status);
 }
 
@@ -346,7 +347,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
   /* Since this function should never fail (it would indicate a bug in upb) we
    * print errors to stderr instead of returning error status to the user. */
   _upb_DefPool_Init** deps = init->deps;
-  google_protobuf_FileDescriptorProto* file;
+  UPB_DESC(FileDescriptorProto) * file;
   upb_Arena* arena;
   upb_Status status;
 
@@ -362,7 +363,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
     if (!_upb_DefPool_LoadDefInitEx(s, *deps, rebuild_minitable)) goto err;
   }
 
-  file = google_protobuf_FileDescriptorProto_parse_ex(
+  file = UPB_DESC(FileDescriptorProto_parse_ex)(
       init->descriptor.data, init->descriptor.size, NULL,
       kUpb_DecodeOption_AliasString, arena);
   s->bytes_loaded += init->descriptor.size;

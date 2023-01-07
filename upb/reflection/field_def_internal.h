@@ -51,7 +51,7 @@ void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
 // Allocate and initialize an array of |n| field defs.
 upb_FieldDef* _upb_FieldDefs_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_FieldDescriptorProto* const* protos, const char* prefix,
+    const UPB_DESC(FieldDescriptorProto) * const* protos, const char* prefix,
     upb_MessageDef* m, bool* is_sorted);
 
 // Allocate and return a list of pointers to the |n| field defs in |ff|,

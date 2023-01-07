@@ -302,3 +302,13 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #else
 #define UPB_DEPRECATED
 #endif
+
+// begin:google_only
+// #define UPB_IS_GOOGLE3
+// end:google_only
+
+#if defined(UPB_IS_GOOGLE3)
+#define UPB_DESC(sym) proto2_##sym
+#else
+#define UPB_DESC(sym) google_protobuf_##sym
+#endif

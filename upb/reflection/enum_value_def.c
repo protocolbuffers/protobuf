@@ -35,7 +35,7 @@
 #include "upb/port/def.inc"
 
 struct upb_EnumValueDef {
-  const google_protobuf_EnumValueOptions* opts;
+  const UPB_DESC(EnumValueOptions) * opts;
   const upb_EnumDef* parent;
   const char* full_name;
   int32_t number;
@@ -66,8 +66,8 @@ const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
   return (const upb_EnumValueDef**)out;
 }
 
-const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
-    const upb_EnumValueDef* v) {
+const UPB_DESC(EnumValueOptions) *
+    upb_EnumValueDef_Options(const upb_EnumValueDef* v) {
   return v->opts;
 }
 
@@ -95,13 +95,14 @@ uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v) {
 }
 
 static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
-                              const google_protobuf_EnumValueDescriptorProto* val_proto,
+                              const UPB_DESC(EnumValueDescriptorProto) *
+                                  val_proto,
                               upb_EnumDef* e, upb_EnumValueDef* v) {
-  upb_StringView name = google_protobuf_EnumValueDescriptorProto_name(val_proto);
+  upb_StringView name = UPB_DESC(EnumValueDescriptorProto_name)(val_proto);
 
   v->parent = e;  // Must happen prior to _upb_DefBuilder_Add()
   v->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
-  v->number = google_protobuf_EnumValueDescriptorProto_number(val_proto);
+  v->number = UPB_DESC(EnumValueDescriptorProto_number)(val_proto);
   _upb_DefBuilder_Add(ctx, v->full_name,
                       _upb_DefType_Pack(v, UPB_DEFTYPE_ENUMVAL));
 
@@ -115,7 +116,7 @@ static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
 // Allocate and initialize an array of |n| enum value defs owned by |e|.
 upb_EnumValueDef* _upb_EnumValueDefs_New(
     upb_DefBuilder* ctx, const char* prefix, int n,
-    const google_protobuf_EnumValueDescriptorProto* const* protos, upb_EnumDef* e,
+    const UPB_DESC(EnumValueDescriptorProto) * const* protos, upb_EnumDef* e,
     bool* is_sorted) {
   _upb_DefType_CheckPadding(sizeof(upb_EnumValueDef));
 

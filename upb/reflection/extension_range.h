@@ -43,8 +43,8 @@ int32_t upb_ExtensionRange_Start(const upb_ExtensionRange* r);
 int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r);
 
 bool upb_ExtensionRange_HasOptions(const upb_ExtensionRange* r);
-const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
-    const upb_ExtensionRange* r);
+const UPB_DESC(ExtensionRangeOptions) *
+    upb_ExtensionRange_Options(const upb_ExtensionRange* r);
 
 #ifdef __cplusplus
 } /* extern "C" */

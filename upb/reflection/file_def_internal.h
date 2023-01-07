@@ -46,7 +46,7 @@ const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
 
 void _upb_FileDef_Create(upb_DefBuilder* ctx,
-                         const google_protobuf_FileDescriptorProto* file_proto);
+                         const UPB_DESC(FileDescriptorProto) * file_proto);
 
 #ifdef __cplusplus
 } /* extern "C" */

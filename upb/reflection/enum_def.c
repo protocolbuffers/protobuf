@@ -41,7 +41,7 @@
 #include "upb/port/def.inc"
 
 struct upb_EnumDef {
-  const google_protobuf_EnumOptions* opts;
+  const UPB_DESC(EnumOptions) * opts;
   const upb_MiniTableEnum* layout;  // Only for proto2.
   const upb_FileDef* file;
   const upb_MessageDef* containing_type;  // Could be merged with "file".
@@ -89,7 +89,7 @@ bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a) {
   return true;
 }
 
-const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e) {
+const UPB_DESC(EnumOptions) * upb_EnumDef_Options(const upb_EnumDef* e) {
   return e->opts;
 }
 
@@ -237,10 +237,10 @@ static upb_StringView* _upb_EnumReservedNames_New(
 }
 
 static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
-                           const google_protobuf_EnumDescriptorProto* enum_proto,
+                           const UPB_DESC(EnumDescriptorProto) * enum_proto,
                            upb_EnumDef* e) {
-  const google_protobuf_EnumValueDescriptorProto* const* values;
-  const google_protobuf_EnumDescriptorProto_EnumReservedRange* const* res_ranges;
+  const UPB_DESC(EnumValueDescriptorProto)* const* values;
+  const UPB_DESC(EnumDescriptorProto_EnumReservedRange)* const* res_ranges;
   const upb_StringView* res_names;
   upb_StringView name;
   size_t n_value, n_res_range, n_res_name;
@@ -248,14 +248,14 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   // Must happen before _upb_DefBuilder_Add()
   e->file = _upb_DefBuilder_File(ctx);
 
-  name = google_protobuf_EnumDescriptorProto_name(enum_proto);
+  name = UPB_DESC(EnumDescriptorProto_name)(enum_proto);
   _upb_DefBuilder_CheckIdentNotFull(ctx, name);
 
   e->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
   _upb_DefBuilder_Add(ctx, e->full_name,
                       _upb_DefType_Pack(e, UPB_DEFTYPE_ENUM));
 
-  values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n_value);
+  values = UPB_DESC(EnumDescriptorProto_value)(enum_proto, &n_value);
 
   bool ok = upb_strtable_init(&e->ntoi, n_value, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
@@ -274,11 +274,12 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   }
 
   res_ranges =
-      google_protobuf_EnumDescriptorProto_reserved_range(enum_proto, &n_res_range);
+      UPB_DESC(EnumDescriptorProto_reserved_range)(enum_proto, &n_res_range);
   e->res_range_count = n_res_range;
   e->res_ranges = _upb_EnumReservedRanges_New(ctx, n_res_range, res_ranges, e);
 
-  res_names = google_protobuf_EnumDescriptorProto_reserved_name(enum_proto, &n_res_name);
+  res_names =
+      UPB_DESC(EnumDescriptorProto_reserved_name)(enum_proto, &n_res_name);
   e->res_name_count = n_res_name;
   e->res_names = _upb_EnumReservedNames_New(ctx, n_res_name, res_names);
 
@@ -298,9 +299,10 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   }
 }
 
-upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
-                               const google_protobuf_EnumDescriptorProto* const* protos,
-                               const upb_MessageDef* containing_type) {
+upb_EnumDef* _upb_EnumDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const UPB_DESC(EnumDescriptorProto) * const* protos,
+    const upb_MessageDef* containing_type) {
   _upb_DefType_CheckPadding(sizeof(upb_EnumDef));
 
   // If a containing type is defined then get the full name from that.

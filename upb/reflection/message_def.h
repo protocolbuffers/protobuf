@@ -150,8 +150,10 @@ int upb_MessageDef_NestedMessageCount(const upb_MessageDef* m);
 
 const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m, int i);
 int upb_MessageDef_OneofCount(const upb_MessageDef* m);
+int upb_MessageDef_RealOneofCount(const upb_MessageDef* m);
 
-const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDef* m);
+const UPB_DESC(MessageOptions) *
+    upb_MessageDef_Options(const upb_MessageDef* m);
 
 upb_StringView upb_MessageDef_ReservedName(const upb_MessageDef* m, int i);
 int upb_MessageDef_ReservedNameCount(const upb_MessageDef* m);

@@ -52,7 +52,7 @@ typedef struct {
 } str_t;
 
 struct upb_FieldDef {
-  const google_protobuf_FieldOptions* opts;
+  const UPB_DESC(FieldOptions) * opts;
   const upb_FileDef* file;
   const upb_MessageDef* msgdef;
   const char* full_name;
@@ -73,7 +73,7 @@ struct upb_FieldDef {
   union {
     const upb_MessageDef* msgdef;
     const upb_EnumDef* enumdef;
-    const google_protobuf_FieldDescriptorProto* unresolved;
+    const UPB_DESC(FieldDescriptorProto) * unresolved;
   } sub;
   uint32_t number_;
   uint16_t index_;
@@ -94,7 +94,7 @@ upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i) {
   return (upb_FieldDef*)&f[i];
 }
 
-const google_protobuf_FieldOptions* upb_FieldDef_Options(const upb_FieldDef* f) {
+const UPB_DESC(FieldOptions) * upb_FieldDef_Options(const upb_FieldDef* f) {
   return f->opts;
 }
 
@@ -549,22 +549,23 @@ static void set_default_default(upb_DefBuilder* ctx, upb_FieldDef* f) {
 }
 
 static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
-                                 const google_protobuf_FieldDescriptorProto* field_proto,
+                                 const UPB_DESC(FieldDescriptorProto) *
+                                     field_proto,
                                  upb_MessageDef* m, upb_FieldDef* f) {
   // Must happen before _upb_DefBuilder_Add()
   f->file = _upb_DefBuilder_File(ctx);
 
-  if (!google_protobuf_FieldDescriptorProto_has_name(field_proto)) {
+  if (!UPB_DESC(FieldDescriptorProto_has_name)(field_proto)) {
     _upb_DefBuilder_Errf(ctx, "field has no name");
   }
 
-  const upb_StringView name = google_protobuf_FieldDescriptorProto_name(field_proto);
+  const upb_StringView name = UPB_DESC(FieldDescriptorProto_name)(field_proto);
   _upb_DefBuilder_CheckIdentNotFull(ctx, name);
 
-  f->has_json_name_ = google_protobuf_FieldDescriptorProto_has_json_name(field_proto);
+  f->has_json_name_ = UPB_DESC(FieldDescriptorProto_has_json_name)(field_proto);
   if (f->has_json_name_) {
     const upb_StringView sv =
-        google_protobuf_FieldDescriptorProto_json_name(field_proto);
+        UPB_DESC(FieldDescriptorProto_json_name)(field_proto);
     f->json_name = upb_strdup2(sv.data, sv.size, ctx->arena);
   } else {
     f->json_name = make_json_name(name.data, name.size, ctx->arena);
@@ -572,18 +573,18 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   if (!f->json_name) _upb_DefBuilder_OomErr(ctx);
 
   f->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
-  f->label_ = (int)google_protobuf_FieldDescriptorProto_label(field_proto);
-  f->number_ = google_protobuf_FieldDescriptorProto_number(field_proto);
+  f->label_ = (int)UPB_DESC(FieldDescriptorProto_label)(field_proto);
+  f->number_ = UPB_DESC(FieldDescriptorProto_number)(field_proto);
   f->proto3_optional_ =
-      google_protobuf_FieldDescriptorProto_proto3_optional(field_proto);
+      UPB_DESC(FieldDescriptorProto_proto3_optional)(field_proto);
   f->msgdef = m;
   f->scope.oneof = NULL;
 
-  const bool has_type = google_protobuf_FieldDescriptorProto_has_type(field_proto);
+  const bool has_type = UPB_DESC(FieldDescriptorProto_has_type)(field_proto);
   const bool has_type_name =
-      google_protobuf_FieldDescriptorProto_has_type_name(field_proto);
+      UPB_DESC(FieldDescriptorProto_has_type_name)(field_proto);
 
-  f->type_ = (int)google_protobuf_FieldDescriptorProto_type(field_proto);
+  f->type_ = (int)UPB_DESC(FieldDescriptorProto_type)(field_proto);
 
   if (has_type) {
     switch (f->type_) {
@@ -628,8 +629,9 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
                          f->full_name);
   }
 
-  if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
-    uint32_t oneof_index = google_protobuf_FieldDescriptorProto_oneof_index(field_proto);
+  if (UPB_DESC(FieldDescriptorProto_has_oneof_index)(field_proto)) {
+    uint32_t oneof_index =
+        UPB_DESC(FieldDescriptorProto_oneof_index)(field_proto);
 
     if (upb_FieldDef_Label(f) != kUpb_Label_Optional) {
       _upb_DefBuilder_Errf(ctx, "fields in oneof must have OPTIONAL label (%s)",
@@ -654,8 +656,8 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   UPB_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);
 
-  if (google_protobuf_FieldOptions_has_packed(f->opts)) {
-    f->is_packed_ = google_protobuf_FieldOptions_packed(f->opts);
+  if (UPB_DESC(FieldOptions_has_packed)(f->opts)) {
+    f->is_packed_ = UPB_DESC(FieldOptions_packed)(f->opts);
   } else {
     // Repeated fields default to packed for proto3 only.
     f->is_packed_ = upb_FieldDef_IsPrimitive(f) &&
@@ -664,14 +666,14 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   }
 }
 
-static void _upb_FieldDef_CreateExt(
-    upb_DefBuilder* ctx, const char* prefix,
-    const google_protobuf_FieldDescriptorProto* field_proto, upb_MessageDef* m,
-    upb_FieldDef* f) {
+static void _upb_FieldDef_CreateExt(upb_DefBuilder* ctx, const char* prefix,
+                                    const UPB_DESC(FieldDescriptorProto) *
+                                        field_proto,
+                                    upb_MessageDef* m, upb_FieldDef* f) {
   _upb_FieldDef_Create(ctx, prefix, field_proto, m, f);
   f->is_extension_ = true;
 
-  if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
+  if (UPB_DESC(FieldDescriptorProto_has_oneof_index)(field_proto)) {
     _upb_DefBuilder_Errf(ctx, "oneof_index provided for extension field (%s)",
                          f->full_name);
   }
@@ -685,14 +687,14 @@ static void _upb_FieldDef_CreateExt(
   }
 }
 
-static void _upb_FieldDef_CreateNotExt(
-    upb_DefBuilder* ctx, const char* prefix,
-    const google_protobuf_FieldDescriptorProto* field_proto, upb_MessageDef* m,
-    upb_FieldDef* f) {
+static void _upb_FieldDef_CreateNotExt(upb_DefBuilder* ctx, const char* prefix,
+                                       const UPB_DESC(FieldDescriptorProto) *
+                                           field_proto,
+                                       upb_MessageDef* m, upb_FieldDef* f) {
   _upb_FieldDef_Create(ctx, prefix, field_proto, m, f);
   f->is_extension_ = false;
 
-  if (!google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
+  if (!UPB_DESC(FieldDescriptorProto_has_oneof_index)(field_proto)) {
     if (f->proto3_optional_) {
       _upb_DefBuilder_Errf(
           ctx,
@@ -719,7 +721,7 @@ static void _upb_FieldDef_CreateNotExt(
 
 upb_FieldDef* _upb_FieldDefs_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_FieldDescriptorProto* const* protos, const char* prefix,
+    const UPB_DESC(FieldDescriptorProto) * const* protos, const char* prefix,
     upb_MessageDef* m, bool* is_sorted) {
   _upb_DefType_CheckPadding(sizeof(upb_FieldDef));
   upb_FieldDef* defs =
@@ -754,11 +756,9 @@ upb_FieldDef* _upb_FieldDefs_New(
 
 static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
                            upb_FieldDef* f) {
-  const google_protobuf_FieldDescriptorProto* field_proto = f->sub.unresolved;
-  upb_StringView name =
-      google_protobuf_FieldDescriptorProto_type_name(field_proto);
-  bool has_name =
-      google_protobuf_FieldDescriptorProto_has_type_name(field_proto);
+  const UPB_DESC(FieldDescriptorProto)* field_proto = f->sub.unresolved;
+  upb_StringView name = UPB_DESC(FieldDescriptorProto_type_name)(field_proto);
+  bool has_name = UPB_DESC(FieldDescriptorProto_has_type_name)(field_proto);
   switch ((int)f->type_) {
     case UPB_FIELD_TYPE_UNSPECIFIED: {
       // Type was not specified and must be inferred.
@@ -843,13 +843,14 @@ bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
 
 static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
                               upb_FieldDef* f,
-                              const google_protobuf_FieldDescriptorProto* field_proto) {
-  if (!google_protobuf_FieldDescriptorProto_has_extendee(field_proto)) {
+                              const UPB_DESC(FieldDescriptorProto) *
+                                  field_proto) {
+  if (!UPB_DESC(FieldDescriptorProto_has_extendee)(field_proto)) {
     _upb_DefBuilder_Errf(ctx, "extension for field '%s' had no extendee",
                          f->full_name);
   }
 
-  upb_StringView name = google_protobuf_FieldDescriptorProto_extendee(field_proto);
+  upb_StringView name = UPB_DESC(FieldDescriptorProto_extendee)(field_proto);
   const upb_MessageDef* m =
       _upb_DefBuilder_Resolve(ctx, f->full_name, prefix, name, UPB_DEFTYPE_MSG);
   f->msgdef = m;
@@ -889,12 +890,13 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
 }
 
 static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
-                            const google_protobuf_FieldDescriptorProto* field_proto) {
+                            const UPB_DESC(FieldDescriptorProto) *
+                                field_proto) {
   // Have to delay resolving of the default value until now because of the enum
   // case, since enum defaults are specified with a label.
-  if (google_protobuf_FieldDescriptorProto_has_default_value(field_proto)) {
+  if (UPB_DESC(FieldDescriptorProto_has_default_value)(field_proto)) {
     upb_StringView defaultval =
-        google_protobuf_FieldDescriptorProto_default_value(field_proto);
+        UPB_DESC(FieldDescriptorProto_default_value)(field_proto);
 
     if (upb_FileDef_Syntax(f->file) == kUpb_Syntax_Proto3) {
       _upb_DefBuilder_Errf(ctx,
@@ -919,7 +921,7 @@ static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
 void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
                            upb_FieldDef* f) {
   // We have to stash this away since resolve_subdef() may overwrite it.
-  const google_protobuf_FieldDescriptorProto* field_proto = f->sub.unresolved;
+  const UPB_DESC(FieldDescriptorProto)* field_proto = f->sub.unresolved;
 
   resolve_subdef(ctx, prefix, f);
   resolve_default(ctx, f, field_proto);

@@ -34,7 +34,7 @@
 #include "upb/port/def.inc"
 
 struct upb_MethodDef {
-  const google_protobuf_MethodOptions* opts;
+  const UPB_DESC(MethodOptions) * opts;
   upb_ServiceDef* service;
   const char* full_name;
   const upb_MessageDef* input_type;
@@ -52,7 +52,7 @@ const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m) {
   return m->service;
 }
 
-const google_protobuf_MethodOptions* upb_MethodDef_Options(const upb_MethodDef* m) {
+const UPB_DESC(MethodOptions) * upb_MethodDef_Options(const upb_MethodDef* m) {
   return m->opts;
 }
 
@@ -87,23 +87,25 @@ bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m) {
 }
 
 static void create_method(upb_DefBuilder* ctx,
-                          const google_protobuf_MethodDescriptorProto* method_proto,
+                          const UPB_DESC(MethodDescriptorProto) * method_proto,
                           upb_ServiceDef* s, upb_MethodDef* m) {
-  upb_StringView name = google_protobuf_MethodDescriptorProto_name(method_proto);
+  upb_StringView name = UPB_DESC(MethodDescriptorProto_name)(method_proto);
 
   m->service = s;
   m->full_name =
       _upb_DefBuilder_MakeFullName(ctx, upb_ServiceDef_FullName(s), name);
   m->client_streaming =
-      google_protobuf_MethodDescriptorProto_client_streaming(method_proto);
+      UPB_DESC(MethodDescriptorProto_client_streaming)(method_proto);
   m->server_streaming =
-      google_protobuf_MethodDescriptorProto_server_streaming(method_proto);
+      UPB_DESC(MethodDescriptorProto_server_streaming)(method_proto);
   m->input_type = _upb_DefBuilder_Resolve(
       ctx, m->full_name, m->full_name,
-      google_protobuf_MethodDescriptorProto_input_type(method_proto), UPB_DEFTYPE_MSG);
+      UPB_DESC(MethodDescriptorProto_input_type)(method_proto),
+      UPB_DEFTYPE_MSG);
   m->output_type = _upb_DefBuilder_Resolve(
       ctx, m->full_name, m->full_name,
-      google_protobuf_MethodDescriptorProto_output_type(method_proto), UPB_DEFTYPE_MSG);
+      UPB_DESC(MethodDescriptorProto_output_type)(method_proto),
+      UPB_DEFTYPE_MSG);
 
   UPB_DEF_SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions,
                       method_proto);
@@ -112,7 +114,7 @@ static void create_method(upb_DefBuilder* ctx,
 // Allocate and initialize an array of |n| method defs belonging to |s|.
 upb_MethodDef* _upb_MethodDefs_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_MethodDescriptorProto* const* protos, upb_ServiceDef* s) {
+    const UPB_DESC(MethodDescriptorProto) * const* protos, upb_ServiceDef* s) {
   upb_MethodDef* m = _upb_DefBuilder_Alloc(ctx, sizeof(upb_MethodDef) * n);
   for (int i = 0; i < n; i++) {
     create_method(ctx, protos[i], s, &m[i]);

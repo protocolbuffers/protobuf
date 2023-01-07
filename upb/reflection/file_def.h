@@ -43,7 +43,7 @@ const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
 bool upb_FileDef_HasOptions(const upb_FileDef* f);
 const char* upb_FileDef_Name(const upb_FileDef* f);
-const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f);
+const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f);
 const char* upb_FileDef_Package(const upb_FileDef* f);
 const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
 
