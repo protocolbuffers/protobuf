@@ -56,10 +56,14 @@ sh_binary(
       "@utf8_range//:utf8_range_srcs",
       "@utf8_range//:LICENSE",
       "//:well_known_ruby_protos",
+      "//ruby/ext/google/protobuf_c:dist_files",
+      "//ruby/lib/google:dist_files",
+      "google-protobuf.gemspec",
     ],
     srcs = [
       "build_release.sh",
     ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
 ################################################################################
