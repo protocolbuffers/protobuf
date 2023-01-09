@@ -1545,7 +1545,8 @@ public final class TextFormat {
      * the current token is part of the field value, so the silent marker is indicated by
      * containsSilentMarkerAfterPrevToken.
      */
-    private void detectSilentMarker(Tokenizer tokenizer, String fieldName) {
+    private void detectSilentMarker(
+        Tokenizer tokenizer, Descriptor immediateMessageType, String fieldName) {
     }
 
     /**
@@ -1892,24 +1893,14 @@ public final class TextFormat {
 
       // Skips unknown fields.
       if (field == null) {
-        // Try to guess the type of this field.
-        // If this field is not a message, there should be a ":" between the
-        // field name and the field value and also the field value should not
-        // start with "{" or "<" which indicates the beginning of a message body.
-        // If there is no ":" or there is a "{" or "<" after ":", this field has
-        // to be a message or the input is ill-formed.
-        detectSilentMarker(tokenizer, name);
-        if (tokenizer.tryConsume(":") && !tokenizer.lookingAt("{") && !tokenizer.lookingAt("<")) {
-          skipFieldValue(tokenizer);
-        } else {
-          skipFieldMessage(tokenizer);
-        }
+        detectSilentMarker(tokenizer, type, name);
+        guessFieldTypeAndSkip(tokenizer, type);
         return;
       }
 
       // Handle potential ':'.
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        detectSilentMarker(tokenizer, field.getFullName());
+        detectSilentMarker(tokenizer, type, field.getFullName());
         tokenizer.tryConsume(":"); // optional
         if (parseTreeBuilder != null) {
           TextFormatParseInfoTree.Builder childParseTreeBuilder =
@@ -1933,7 +1924,7 @@ public final class TextFormat {
               unknownFields);
         }
       } else {
-        detectSilentMarker(tokenizer, field.getFullName());
+        detectSilentMarker(tokenizer, type, field.getFullName());
         tokenizer.consume(":"); // required
         consumeFieldValues(
             tokenizer,
@@ -2223,7 +2214,7 @@ public final class TextFormat {
           throw tokenizer.parseExceptionPreviousToken("Expected a valid type URL.");
         }
       }
-      detectSilentMarker(tokenizer, typeUrlBuilder.toString());
+      detectSilentMarker(tokenizer, anyDescriptor, typeUrlBuilder.toString());
       tokenizer.tryConsume(":");
       final String anyEndToken;
       if (tokenizer.tryConsume("<")) {
@@ -2260,21 +2251,11 @@ public final class TextFormat {
     }
 
     /** Skips the next field including the field's name and value. */
-    private void skipField(Tokenizer tokenizer) throws ParseException {
+    private void skipField(Tokenizer tokenizer, Descriptor type) throws ParseException {
       String name = consumeFullTypeName(tokenizer);
+      detectSilentMarker(tokenizer, type, name);
+      guessFieldTypeAndSkip(tokenizer, type);
 
-      // Try to guess the type of this field.
-      // If this field is not a message, there should be a ":" between the
-      // field name and the field value and also the field value should not
-      // start with "{" or "<" which indicates the beginning of a message body.
-      // If there is no ":" or there is a "{" or "<" after ":", this field has
-      // to be a message or the input is ill-formed.
-      detectSilentMarker(tokenizer, name);
-      if (tokenizer.tryConsume(":") && !tokenizer.lookingAt("<") && !tokenizer.lookingAt("{")) {
-        skipFieldValue(tokenizer);
-      } else {
-        skipFieldMessage(tokenizer);
-      }
       // For historical reasons, fields may optionally be separated by commas or
       // semicolons.
       if (!tokenizer.tryConsume(";")) {
@@ -2285,7 +2266,7 @@ public final class TextFormat {
     /**
      * Skips the whole body of a message including the beginning delimiter and the ending delimiter.
      */
-    private void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
+    private void skipFieldMessage(Tokenizer tokenizer, Descriptor type) throws ParseException {
       final String delimiter;
       if (tokenizer.tryConsume("<")) {
         delimiter = ">";
@@ -2294,7 +2275,7 @@ public final class TextFormat {
         delimiter = "}";
       }
       while (!tokenizer.lookingAt(">") && !tokenizer.lookingAt("}")) {
-        skipField(tokenizer);
+        skipField(tokenizer, type);
       }
       tokenizer.consume(delimiter);
     }
@@ -2311,6 +2292,58 @@ public final class TextFormat {
           && !tokenizer.tryConsumeDouble()
           && !tokenizer.tryConsumeFloat()) {
         throw tokenizer.parseException("Invalid field value: " + tokenizer.currentToken);
+      }
+    }
+
+    /**
+     * Tries to guess the type of this field and skip it.
+     *
+     * <p>If this field is not a message, there should be a ":" between the field name and the field
+     * value and also the field value should not start with "{" or "<" which indicates the beginning
+     * of a message body. If there is no ":" or there is a "{" or "<" after ":", this field has to
+     * be a message or the input is ill-formed. For short-formed repeated fields (i.e. with "[]"),
+     * if it is repeated scalar, there must be a ":" between the field name and the starting "[" .
+     */
+    private void guessFieldTypeAndSkip(Tokenizer tokenizer, Descriptor type) throws ParseException {
+      boolean semicolonConsumed = tokenizer.tryConsume(":");
+      if (tokenizer.lookingAt("[")) {
+        // Short repeated field form. If a semicolon was consumed, it could be repeated scalar or
+        // repeated message. If not, it must be repeated message.
+        skipFieldShortFormedRepeated(tokenizer, semicolonConsumed, type);
+      } else if (semicolonConsumed && !tokenizer.lookingAt("{") && !tokenizer.lookingAt("<")) {
+        skipFieldValue(tokenizer);
+      } else {
+        skipFieldMessage(tokenizer, type);
+      }
+    }
+
+    /**
+     * Skips a short-formed repeated field value.
+     *
+     * <p>Reports an error if scalar type is not allowed but showing up inside "[]".
+     */
+    private void skipFieldShortFormedRepeated(
+        Tokenizer tokenizer, boolean scalarAllowed, Descriptor type) throws ParseException {
+      if (!tokenizer.tryConsume("[") || tokenizer.tryConsume("]")) {
+        // Try skipping "[]".
+        return;
+      }
+
+      while (true) {
+        if (tokenizer.lookingAt("{") || tokenizer.lookingAt("<")) {
+          // Try skipping message field inside "[]"
+          skipFieldMessage(tokenizer, type);
+        } else if (scalarAllowed) {
+          // Try skipping scalar field inside "[]".
+          skipFieldValue(tokenizer);
+        } else {
+          throw tokenizer.parseException(
+              "Invalid repeated scalar field: missing \":\" before \"[\".");
+        }
+        if (tokenizer.tryConsume("]")) {
+          break;
+        }
+        tokenizer.consume(",");
       }
     }
   }

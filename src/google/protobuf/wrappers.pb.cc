@@ -317,10 +317,9 @@ class DoubleValue::_Internal {
  public:
 };
 
-DoubleValue::DoubleValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+DoubleValue::DoubleValue(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DoubleValue)
 }
 DoubleValue::DoubleValue(const DoubleValue& from)
@@ -330,10 +329,8 @@ DoubleValue::DoubleValue(const DoubleValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DoubleValue)
 }
 
-inline void DoubleValue::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void DoubleValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){0}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -350,7 +347,7 @@ DoubleValue::~DoubleValue() {
 }
 
 inline void DoubleValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void DoubleValue::SetCachedSize(int size) const {
@@ -368,7 +365,6 @@ void DoubleValue::Clear() {
 }
 
 const char* DoubleValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -408,7 +404,6 @@ failure:
 
 ::uint8_t* DoubleValue::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DoubleValue)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -432,7 +427,6 @@ failure:
 }
 
 ::size_t DoubleValue::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DoubleValue)
   ::size_t total_size = 0;
 
@@ -462,9 +456,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DoubleValue::GetClassData() co
 void DoubleValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<DoubleValue*>(&to_msg);
   auto& from = static_cast<const DoubleValue&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -496,7 +489,6 @@ void DoubleValue::InternalSwap(DoubleValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DoubleValue::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[0]);
@@ -507,10 +499,9 @@ class FloatValue::_Internal {
  public:
 };
 
-FloatValue::FloatValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+FloatValue::FloatValue(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FloatValue)
 }
 FloatValue::FloatValue(const FloatValue& from)
@@ -520,10 +511,8 @@ FloatValue::FloatValue(const FloatValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FloatValue)
 }
 
-inline void FloatValue::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void FloatValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){0}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -540,7 +529,7 @@ FloatValue::~FloatValue() {
 }
 
 inline void FloatValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void FloatValue::SetCachedSize(int size) const {
@@ -558,7 +547,6 @@ void FloatValue::Clear() {
 }
 
 const char* FloatValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -598,7 +586,6 @@ failure:
 
 ::uint8_t* FloatValue::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FloatValue)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -622,7 +609,6 @@ failure:
 }
 
 ::size_t FloatValue::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FloatValue)
   ::size_t total_size = 0;
 
@@ -652,9 +638,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FloatValue::GetClassData() con
 void FloatValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FloatValue*>(&to_msg);
   auto& from = static_cast<const FloatValue&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -686,7 +671,6 @@ void FloatValue::InternalSwap(FloatValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FloatValue::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[1]);
@@ -697,10 +681,9 @@ class Int64Value::_Internal {
  public:
 };
 
-Int64Value::Int64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Int64Value::Int64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int64Value)
 }
 Int64Value::Int64Value(const Int64Value& from)
@@ -710,10 +693,8 @@ Int64Value::Int64Value(const Int64Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int64Value)
 }
 
-inline void Int64Value::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Int64Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){::int64_t{0}}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -730,7 +711,7 @@ Int64Value::~Int64Value() {
 }
 
 inline void Int64Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Int64Value::SetCachedSize(int size) const {
@@ -748,7 +729,6 @@ void Int64Value::Clear() {
 }
 
 const char* Int64Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -788,7 +768,6 @@ failure:
 
 ::uint8_t* Int64Value::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int64Value)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -808,7 +787,6 @@ failure:
 }
 
 ::size_t Int64Value::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int64Value)
   ::size_t total_size = 0;
 
@@ -834,9 +812,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Int64Value::GetClassData() con
 void Int64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Int64Value*>(&to_msg);
   auto& from = static_cast<const Int64Value&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -864,7 +841,6 @@ void Int64Value::InternalSwap(Int64Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Int64Value::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[2]);
@@ -875,10 +851,9 @@ class UInt64Value::_Internal {
  public:
 };
 
-UInt64Value::UInt64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+UInt64Value::UInt64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt64Value)
 }
 UInt64Value::UInt64Value(const UInt64Value& from)
@@ -888,10 +863,8 @@ UInt64Value::UInt64Value(const UInt64Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt64Value)
 }
 
-inline void UInt64Value::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void UInt64Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){::uint64_t{0u}}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -908,7 +881,7 @@ UInt64Value::~UInt64Value() {
 }
 
 inline void UInt64Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void UInt64Value::SetCachedSize(int size) const {
@@ -926,7 +899,6 @@ void UInt64Value::Clear() {
 }
 
 const char* UInt64Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -966,7 +938,6 @@ failure:
 
 ::uint8_t* UInt64Value::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt64Value)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -986,7 +957,6 @@ failure:
 }
 
 ::size_t UInt64Value::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt64Value)
   ::size_t total_size = 0;
 
@@ -1012,9 +982,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UInt64Value::GetClassData() co
 void UInt64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<UInt64Value*>(&to_msg);
   auto& from = static_cast<const UInt64Value&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1042,7 +1011,6 @@ void UInt64Value::InternalSwap(UInt64Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UInt64Value::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[3]);
@@ -1053,10 +1021,9 @@ class Int32Value::_Internal {
  public:
 };
 
-Int32Value::Int32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Int32Value::Int32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int32Value)
 }
 Int32Value::Int32Value(const Int32Value& from)
@@ -1066,10 +1033,8 @@ Int32Value::Int32Value(const Int32Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int32Value)
 }
 
-inline void Int32Value::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Int32Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){0}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1086,7 +1051,7 @@ Int32Value::~Int32Value() {
 }
 
 inline void Int32Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Int32Value::SetCachedSize(int size) const {
@@ -1104,7 +1069,6 @@ void Int32Value::Clear() {
 }
 
 const char* Int32Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1144,7 +1108,6 @@ failure:
 
 ::uint8_t* Int32Value::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int32Value)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1164,7 +1127,6 @@ failure:
 }
 
 ::size_t Int32Value::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int32Value)
   ::size_t total_size = 0;
 
@@ -1190,9 +1152,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Int32Value::GetClassData() con
 void Int32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Int32Value*>(&to_msg);
   auto& from = static_cast<const Int32Value&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1220,7 +1181,6 @@ void Int32Value::InternalSwap(Int32Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Int32Value::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[4]);
@@ -1231,10 +1191,9 @@ class UInt32Value::_Internal {
  public:
 };
 
-UInt32Value::UInt32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+UInt32Value::UInt32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt32Value)
 }
 UInt32Value::UInt32Value(const UInt32Value& from)
@@ -1244,10 +1203,8 @@ UInt32Value::UInt32Value(const UInt32Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt32Value)
 }
 
-inline void UInt32Value::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void UInt32Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){0u}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1264,7 +1221,7 @@ UInt32Value::~UInt32Value() {
 }
 
 inline void UInt32Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void UInt32Value::SetCachedSize(int size) const {
@@ -1282,7 +1239,6 @@ void UInt32Value::Clear() {
 }
 
 const char* UInt32Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1322,7 +1278,6 @@ failure:
 
 ::uint8_t* UInt32Value::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt32Value)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1342,7 +1297,6 @@ failure:
 }
 
 ::size_t UInt32Value::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt32Value)
   ::size_t total_size = 0;
 
@@ -1368,9 +1322,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UInt32Value::GetClassData() co
 void UInt32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<UInt32Value*>(&to_msg);
   auto& from = static_cast<const UInt32Value&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1398,7 +1351,6 @@ void UInt32Value::InternalSwap(UInt32Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UInt32Value::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[5]);
@@ -1409,10 +1361,9 @@ class BoolValue::_Internal {
  public:
 };
 
-BoolValue::BoolValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+BoolValue::BoolValue(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BoolValue)
 }
 BoolValue::BoolValue(const BoolValue& from)
@@ -1422,10 +1373,8 @@ BoolValue::BoolValue(const BoolValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BoolValue)
 }
 
-inline void BoolValue::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void BoolValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){false}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1442,7 +1391,7 @@ BoolValue::~BoolValue() {
 }
 
 inline void BoolValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void BoolValue::SetCachedSize(int size) const {
@@ -1460,7 +1409,6 @@ void BoolValue::Clear() {
 }
 
 const char* BoolValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1500,7 +1448,6 @@ failure:
 
 ::uint8_t* BoolValue::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BoolValue)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1520,7 +1467,6 @@ failure:
 }
 
 ::size_t BoolValue::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.BoolValue)
   ::size_t total_size = 0;
 
@@ -1546,9 +1492,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BoolValue::GetClassData() cons
 void BoolValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<BoolValue*>(&to_msg);
   auto& from = static_cast<const BoolValue&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1576,7 +1521,6 @@ void BoolValue::InternalSwap(BoolValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BoolValue::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[6]);
@@ -1587,10 +1531,9 @@ class StringValue::_Internal {
  public:
 };
 
-StringValue::StringValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+StringValue::StringValue(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.StringValue)
 }
 StringValue::StringValue(const StringValue& from)
@@ -1612,10 +1555,8 @@ StringValue::StringValue(const StringValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
 
-inline void StringValue::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void StringValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1636,7 +1577,7 @@ StringValue::~StringValue() {
 }
 
 inline void StringValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.Destroy();
 }
 
@@ -1655,7 +1596,6 @@ void StringValue::Clear() {
 }
 
 const char* StringValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1697,7 +1637,6 @@ failure:
 
 ::uint8_t* StringValue::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.StringValue)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1721,7 +1660,6 @@ failure:
 }
 
 ::size_t StringValue::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.StringValue)
   ::size_t total_size = 0;
 
@@ -1749,9 +1687,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*StringValue::GetClassData() co
 void StringValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<StringValue*>(&to_msg);
   auto& from = static_cast<const StringValue&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1784,7 +1721,6 @@ void StringValue::InternalSwap(StringValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata StringValue::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[7]);
@@ -1795,10 +1731,9 @@ class BytesValue::_Internal {
  public:
 };
 
-BytesValue::BytesValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+BytesValue::BytesValue(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BytesValue)
 }
 BytesValue::BytesValue(const BytesValue& from)
@@ -1820,10 +1755,8 @@ BytesValue::BytesValue(const BytesValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }
 
-inline void BytesValue::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void BytesValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1844,7 +1777,7 @@ BytesValue::~BytesValue() {
 }
 
 inline void BytesValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.Destroy();
 }
 
@@ -1863,7 +1796,6 @@ void BytesValue::Clear() {
 }
 
 const char* BytesValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1904,7 +1836,6 @@ failure:
 
 ::uint8_t* BytesValue::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BytesValue)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1924,7 +1855,6 @@ failure:
 }
 
 ::size_t BytesValue::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.BytesValue)
   ::size_t total_size = 0;
 
@@ -1952,9 +1882,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BytesValue::GetClassData() con
 void BytesValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<BytesValue*>(&to_msg);
   auto& from = static_cast<const BytesValue&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1987,7 +1916,6 @@ void BytesValue::InternalSwap(BytesValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BytesValue::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[8]);

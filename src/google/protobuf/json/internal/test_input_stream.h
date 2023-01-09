@@ -37,7 +37,6 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/stubs/status_macros.h"
@@ -74,13 +73,13 @@ class TestInputStream final : public io::ZeroCopyInputStream {
   }
 
   // TestInputStream currently does not support these members.
-  void BackUp(int) override { GOOGLE_CHECK(false); }
+  void BackUp(int) override { GOOGLE_ABSL_CHECK(false); }
   bool Skip(int) override {
-    GOOGLE_CHECK(false);
+    GOOGLE_ABSL_CHECK(false);
     return false;
   }
   int64_t ByteCount() const override {
-    GOOGLE_CHECK(false);
+    GOOGLE_ABSL_CHECK(false);
     return 0;
   }
 

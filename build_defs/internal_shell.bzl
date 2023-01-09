@@ -9,7 +9,6 @@ def inline_sh_binary(
         tools = [],
         deps = [],
         cmd = "",
-        testonly = None,
         **kwargs):
     """Bazel rule to wrap up an inline bash script in a binary.
 
@@ -28,8 +27,6 @@ def inline_sh_binary(
       deps: a list of dependency labels that are required to run this binary.
       cmd: the inline sh command to run.
       **kwargs: other keyword arguments that are passed to sh_binary.
-      testonly: common rule attribute (see:
-          https://bazel.build/reference/be/common-definitions#common-attributes)
     """
 
     native.genrule(
@@ -38,15 +35,16 @@ def inline_sh_binary(
         exec_tools = tools,
         outs = [name + ".sh"],
         cmd = "cat <<'EOF' >$(OUTS)\n#!/bin/bash -exu\n%s\nEOF\n" % cmd,
-        testonly = testonly,
         visibility = ["//visibility:private"],
+        tags = kwargs["tags"] if "tags" in kwargs else None,
+        target_compatible_with = kwargs["target_compatible_with"] if "target_compatible_with" in kwargs else None,
+        testonly = kwargs["testonly"] if "testonly" in kwargs else None,
     )
 
     native.sh_binary(
         name = name,
         srcs = [name + "_genrule"],
         data = srcs + tools + deps,
-        testonly = testonly,
         **kwargs
     )
 
@@ -83,6 +81,9 @@ def inline_sh_test(
         outs = [name + ".sh"],
         cmd = "cat <<'EOF' >$(OUTS)\n#!/bin/bash -exu\n%s\nEOF\n" % cmd,
         visibility = ["//visibility:private"],
+        tags = kwargs["tags"] if "tags" in kwargs else None,
+        target_compatible_with = kwargs["target_compatible_with"] if "target_compatible_with" in kwargs else None,
+        testonly = kwargs["testonly"] if "testonly" in kwargs else None,
     )
 
     native.sh_test(

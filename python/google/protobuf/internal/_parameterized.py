@@ -37,8 +37,8 @@ argument tuples.
 
 A simple example:
 
-  class AdditionExample(parameterized.TestCase):
-    @parameterized.parameters(
+  class AdditionExample(_parameterized.TestCase):
+    @_parameterized.parameters(
        (1, 2, 3),
        (4, 5, 9),
        (1, 1, 3))
@@ -54,8 +54,8 @@ fail due to an assertion error (1 + 1 != 3).
 Parameters for individual test cases can be tuples (with positional parameters)
 or dictionaries (with named parameters):
 
-  class AdditionExample(parameterized.TestCase):
-    @parameterized.parameters(
+  class AdditionExample(_parameterized.TestCase):
+    @_parameterized.parameters(
        {'op1': 1, 'op2': 2, 'result': 3},
        {'op1': 4, 'op2': 5, 'result': 9},
     )
@@ -82,8 +82,8 @@ this case, only tuples are supported, and the first parameters has to
 be a string (or an object that returns an apt name when converted via
 str()):
 
-  class NamedExample(parameterized.TestCase):
-    @parameterized.named_parameters(
+  class NamedExample(_parameterized.TestCase):
+    @_parameterized.named_parameters(
        ('Normal', 'aa', 'aaa', True),
        ('EmptyPrefix', '', 'abc', True),
        ('BothEmpty', '', '', True))
@@ -106,10 +106,10 @@ If invocation arguments are shared across test methods in a single
 TestCase class, instead of decorating all test methods
 individually, the class itself can be decorated:
 
-  @parameterized.parameters(
+  @_parameterized.parameters(
     (1, 2, 3)
     (4, 5, 9))
-  class ArithmeticTest(parameterized.TestCase):
+  class ArithmeticTest(_parameterized.TestCase):
     def testAdd(self, arg1, arg2, result):
       self.assertEqual(arg1 + arg2, result)
 
@@ -122,8 +122,8 @@ If parameters should be shared across several test cases, or are dynamically
 created from other sources, a single non-tuple iterable can be passed into
 the decorator. This iterable will be used to obtain the test cases:
 
-  class AdditionExample(parameterized.TestCase):
-    @parameterized.parameters(
+  class AdditionExample(_parameterized.TestCase):
+    @_parameterized.parameters(
       c.op1, c.op2, c.result for c in testcases
     )
     def testAddition(self, op1, op2, result):
@@ -135,8 +135,8 @@ Single-Argument Test Methods
 If a test method takes only one argument, the single argument does not need to
 be wrapped into a tuple:
 
-  class NegativeNumberExample(parameterized.TestCase):
-    @parameterized.parameters(
+  class NegativeNumberExample(_parameterized.TestCase):
+    @_parameterized.parameters(
        -1, -3, -4, -5
     )
     def testIsNegative(self, arg):
@@ -423,7 +423,7 @@ def CoopTestCase(other_base_class):
     import google3
     import mox
 
-    from google3.testing.pybase import parameterized
+    from google.protobuf.internal import _parameterized
 
     class ExampleTest(parameterized.CoopTestCase(mox.MoxTestBase)):
       ...

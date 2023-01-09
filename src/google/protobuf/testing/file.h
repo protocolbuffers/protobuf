@@ -34,6 +34,7 @@
 #ifndef GOOGLE_PROTOBUF_TESTING_FILE_H__
 #define GOOGLE_PROTOBUF_TESTING_FILE_H__
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/stubs/common.h"
 
 namespace google {
@@ -61,11 +62,11 @@ class File {
                                     std::string* output);
 
   // Create a file and write a string to it.
-  static bool WriteStringToFile(const std::string& contents,
+  static bool WriteStringToFile(absl::string_view contents,
                                 const std::string& name);
 
   // Same as above, but crash on failure.
-  static void WriteStringToFileOrDie(const std::string& contents,
+  static void WriteStringToFileOrDie(absl::string_view contents,
                                      const std::string& name);
 
   // Create a directory.
@@ -95,7 +96,7 @@ class File {
     return ReadFileToString(name, output, true);
   }
 
-  static bool SetContents(const std::string& name, const std::string& contents,
+  static bool SetContents(const std::string& name, absl::string_view contents,
                           bool /*is_default*/) {
     return WriteStringToFile(contents, name);
   }

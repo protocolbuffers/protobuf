@@ -43,6 +43,7 @@ import com.google.protobuf.Internal.DoubleList;
 import com.google.protobuf.Internal.FloatList;
 import com.google.protobuf.Internal.IntList;
 import com.google.protobuf.Internal.LongList;
+import com.google.protobuf.Internal.ProtobufList;
 // In opensource protobuf, we have versioned this GeneratedMessageV3 class to GeneratedMessageV3 and
 // in the future may have GeneratedMessageV4 etc. This allows us to change some aspects of this
 // class without breaking binary compatibility with old generated code that still subclasses
@@ -417,10 +418,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new IntArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static IntList mutableCopy(IntList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return makeMutableCopy(list);
   }
 
   protected static LongList emptyLongList() {
@@ -432,10 +432,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new LongArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static LongList mutableCopy(LongList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return makeMutableCopy(list);
   }
 
   protected static FloatList emptyFloatList() {
@@ -447,10 +446,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new FloatArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static FloatList mutableCopy(FloatList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return makeMutableCopy(list);
   }
 
   protected static DoubleList emptyDoubleList() {
@@ -462,10 +460,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new DoubleArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static DoubleList mutableCopy(DoubleList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return makeMutableCopy(list);
   }
 
   protected static BooleanList emptyBooleanList() {
@@ -477,10 +474,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new BooleanArrayList();
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
   protected static BooleanList mutableCopy(BooleanList list) {
+    return makeMutableCopy(list);
+  }
+
+  @SuppressWarnings("unchecked") // Guaranteed by proto runtime.
+  protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(ListT list) {
     int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return (ListT)
+        list.mutableCopyWithCapacity(size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
   }
 
   @Override
@@ -728,7 +731,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       if (field.isRepeated()) {
         // The underlying list object is still modifiable at this point.
         // Make sure not to expose the modifiable list to the caller.
-        return Collections.unmodifiableList((List<?>) object);
+        return Collections.unmodifiableList((List) object);
       } else {
         return object;
       }
@@ -953,7 +956,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   // Extensions-related stuff
 
   /** Extends {@link MessageOrBuilder} with extension-related functions. */
-  public interface ExtendableMessageOrBuilder<MessageT extends ExtendableMessage<MessageT>>
+  public interface ExtendableMessageOrBuilder<MessageT extends ExtendableMessage>
       extends MessageOrBuilder {
     // Re-define for return type covariance.
     @Override
@@ -1055,7 +1058,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    *
    * <p>See also {@link ExtendableBuilder}.
    */
-  public abstract static class ExtendableMessage<MessageT extends ExtendableMessage<MessageT>>
+  public abstract static class ExtendableMessage<MessageT extends ExtendableMessage>
       extends GeneratedMessageV3 implements ExtendableMessageOrBuilder<MessageT> {
 
     private static final long serialVersionUID = 1L;
@@ -1085,6 +1088,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     /** Check if a singular extension is present. */
     @Override
+    @SuppressWarnings("unchecked")
     public final <T> boolean hasExtension(final ExtensionLite<MessageT, T> extensionLite) {
       Extension<MessageT, T> extension = checkNotLite(extensionLite);
 
@@ -1094,6 +1098,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     /** Get the number of elements in a repeated extension. */
     @Override
+    @SuppressWarnings("unchecked")
     public final <T> int getExtensionCount(final ExtensionLite<MessageT, List<T>> extensionLite) {
       Extension<MessageT, List<T>> extension = checkNotLite(extensionLite);
 
@@ -1450,7 +1455,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    */
   @SuppressWarnings("unchecked")
   public abstract static class ExtendableBuilder<
-          MessageT extends ExtendableMessage<MessageT>,
+          MessageT extends ExtendableMessage,
           BuilderT extends ExtendableBuilder<MessageT, BuilderT>>
       extends Builder<BuilderT> implements ExtendableMessageOrBuilder<MessageT> {
 
@@ -1586,8 +1591,8 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
 
     /** Clear an extension. */
-    public final <T> BuilderT clearExtension(final ExtensionLite<MessageT, T> extensionLite) {
-      Extension<MessageT, T> extension = checkNotLite(extensionLite);
+    public final BuilderT clearExtension(final ExtensionLite<MessageT, ?> extensionLite) {
+      Extension<MessageT, ?> extension = checkNotLite(extensionLite);
 
       verifyExtensionContainingType(extension);
       ensureExtensionsIsMutable();
@@ -1720,16 +1725,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
      * <p>TODO(b/258340024): handled by ExtensionLite version
      */
     public final <T> BuilderT clearExtension(
-        final Extension<MessageT, T> extension) {
-      return clearExtension((ExtensionLite<MessageT, T>) extension);
+        final Extension<MessageT, ?> extension) {
+      return clearExtension((ExtensionLite<MessageT, ?>) extension);
     }
     /**
-     * Clears an extension.
+     * Clear an extension.
      * <p>TODO(b/258340024): handled by ExtensionLite version
      */
     public <T> BuilderT clearExtension(
-        final GeneratedExtension<MessageT, T> extension) {
-      return clearExtension((ExtensionLite<MessageT, T>) extension);
+        final GeneratedExtension<MessageT, ?> extension) {
+      return clearExtension((ExtensionLite<MessageT, ?>) extension);
     }
 
     /** Called by subclasses to check if all extensions are initialized. */
@@ -1938,7 +1943,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
     }
 
-    protected final void mergeExtensionFields(final ExtendableMessage<?> other) {
+    protected final void mergeExtensionFields(final ExtendableMessage other) {
       if (other.extensions != null) {
         ensureExtensionsIsMutable();
         extensions.mergeFrom(other.extensions);
@@ -1973,15 +1978,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    * Gets the descriptor for an extension. The implementation depends on whether the extension is
    * scoped in the top level of a file or scoped in a Message.
    */
-  static interface ExtensionDescriptorRetriever {
+  interface ExtensionDescriptorRetriever {
     FieldDescriptor getDescriptor();
   }
 
   // =================================================================
 
   /** Calls Class.getMethod and throws a RuntimeException if it fails. */
+  @SuppressWarnings("unchecked")
   private static Method getMethodOrDie(
-      final Class<?> clazz, final String name, final Class<?>... params) {
+      final Class clazz, final String name, final Class... params) {
     try {
       return clazz.getMethod(name, params);
     } catch (NoSuchMethodException e) {
@@ -2049,7 +2055,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         final Descriptor descriptor,
         final String[] camelCaseNames,
         final Class<? extends GeneratedMessageV3> messageClass,
-        final Class<? extends Builder<?>> builderClass) {
+        final Class<? extends Builder> builderClass) {
       this(descriptor, camelCaseNames);
       ensureFieldAccessorsInitialized(messageClass, builderClass);
     }
@@ -2074,7 +2080,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
      * @return this
      */
     public FieldAccessorTable ensureFieldAccessorsInitialized(
-        Class<? extends GeneratedMessageV3> messageClass, Class<? extends Builder<?>> builderClass) {
+        Class<? extends GeneratedMessageV3> messageClass, Class<? extends Builder> builderClass) {
       if (initialized) {
         return this;
       }
@@ -2189,35 +2195,35 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     private interface FieldAccessor {
       Object get(GeneratedMessageV3 message);
 
-      Object get(GeneratedMessageV3.Builder<?> builder);
+      Object get(GeneratedMessageV3.Builder builder);
 
       Object getRaw(GeneratedMessageV3 message);
 
-      Object getRaw(GeneratedMessageV3.Builder<?> builder);
+      Object getRaw(GeneratedMessageV3.Builder builder);
 
-      void set(Builder<?> builder, Object value);
+      void set(Builder builder, Object value);
 
       Object getRepeated(GeneratedMessageV3 message, int index);
 
-      Object getRepeated(GeneratedMessageV3.Builder<?> builder, int index);
+      Object getRepeated(GeneratedMessageV3.Builder builder, int index);
 
       Object getRepeatedRaw(GeneratedMessageV3 message, int index);
 
-      Object getRepeatedRaw(GeneratedMessageV3.Builder<?> builder, int index);
+      Object getRepeatedRaw(GeneratedMessageV3.Builder builder, int index);
 
-      void setRepeated(Builder<?> builder, int index, Object value);
+      void setRepeated(Builder builder, int index, Object value);
 
-      void addRepeated(Builder<?> builder, Object value);
+      void addRepeated(Builder builder, Object value);
 
       boolean has(GeneratedMessageV3 message);
 
-      boolean has(GeneratedMessageV3.Builder<?> builder);
+      boolean has(GeneratedMessageV3.Builder builder);
 
       int getRepeatedCount(GeneratedMessageV3 message);
 
-      int getRepeatedCount(GeneratedMessageV3.Builder<?> builder);
+      int getRepeatedCount(GeneratedMessageV3.Builder builder);
 
-      void clear(Builder<?> builder);
+      void clear(Builder builder);
 
       Message.Builder newBuilder();
 
@@ -2233,7 +2239,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final int oneofIndex,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
-          final Class<? extends Builder<?>> builderClass) {
+          final Class<? extends Builder> builderClass) {
         this.descriptor = descriptor;
         OneofDescriptor oneofDescriptor = descriptor.getOneofs().get(oneofIndex);
         if (oneofDescriptor.isSynthetic()) {
@@ -2262,7 +2268,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         }
       }
 
-      public boolean has(GeneratedMessageV3.Builder<?> builder) {
+      public boolean has(GeneratedMessageV3.Builder builder) {
         if (fieldDescriptor != null) {
           return builder.hasField(fieldDescriptor);
         } else {
@@ -2282,7 +2288,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         return null;
       }
 
-      public FieldDescriptor get(GeneratedMessageV3.Builder<?> builder) {
+      public FieldDescriptor get(GeneratedMessageV3.Builder builder) {
         if (fieldDescriptor != null) {
           return builder.hasField(fieldDescriptor) ? fieldDescriptor : null;
         } else {
@@ -2295,7 +2301,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         return null;
       }
 
-      public void clear(final Builder<?> builder) {
+      public void clear(final Builder builder) {
         // TODO(b/230609037): remove the unused variable
         Object unused = invokeOrDie(clearMethod, builder);
       }
@@ -2323,20 +2329,20 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       private static final class ReflectionInvoker implements MethodInvoker {
-        protected final Method getMethod;
-        protected final Method getMethodBuilder;
-        protected final Method setMethod;
-        protected final Method hasMethod;
-        protected final Method hasMethodBuilder;
-        protected final Method clearMethod;
-        protected final Method caseMethod;
-        protected final Method caseMethodBuilder;
+        private final Method getMethod;
+        private final Method getMethodBuilder;
+        private final Method setMethod;
+        private final Method hasMethod;
+        private final Method hasMethodBuilder;
+        private final Method clearMethod;
+        private final Method caseMethod;
+        private final Method caseMethodBuilder;
 
         ReflectionInvoker(
             final FieldDescriptor descriptor,
             final String camelCaseName,
             final Class<? extends GeneratedMessageV3> messageClass,
-            final Class<? extends Builder<?>> builderClass,
+            final Class<? extends Builder> builderClass,
             final String containingOneofCamelCaseName,
             boolean isOneofField,
             boolean hasHasMethod) {
@@ -2405,7 +2411,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
-          final Class<? extends Builder<?>> builderClass,
+          final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
         isOneofField =
             descriptor.getContainingOneof() != null
@@ -2447,7 +2453,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object get(GeneratedMessageV3.Builder<?> builder) {
+      public Object get(GeneratedMessageV3.Builder builder) {
         return invoker.get(builder);
       }
 
@@ -2457,22 +2463,17 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRaw(GeneratedMessageV3.Builder<?> builder) {
+      public Object getRaw(GeneratedMessageV3.Builder builder) {
         return get(builder);
       }
 
       @Override
-      public void set(final Builder<?> builder, final Object value) {
+      public void set(final Builder builder, final Object value) {
         invoker.set(builder, value);
       }
 
       @Override
       public Object getRepeated(final GeneratedMessageV3 message, final int index) {
-        throw new UnsupportedOperationException("getRepeatedField() called on a singular field.");
-      }
-
-      @Override
-      public Object getRepeated(GeneratedMessageV3.Builder<?> builder, int index) {
         throw new UnsupportedOperationException("getRepeatedField() called on a singular field.");
       }
 
@@ -2483,18 +2484,23 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRepeatedRaw(GeneratedMessageV3.Builder<?> builder, int index) {
+      public Object getRepeated(GeneratedMessageV3.Builder builder, int index) {
+        throw new UnsupportedOperationException("getRepeatedField() called on a singular field.");
+      }
+
+      @Override
+      public Object getRepeatedRaw(GeneratedMessageV3.Builder builder, int index) {
         throw new UnsupportedOperationException(
             "getRepeatedFieldRaw() called on a singular field.");
       }
 
       @Override
-      public void setRepeated(final Builder<?> builder, final int index, final Object value) {
+      public void setRepeated(final Builder builder, final int index, final Object value) {
         throw new UnsupportedOperationException("setRepeatedField() called on a singular field.");
       }
 
       @Override
-      public void addRepeated(final Builder<?> builder, final Object value) {
+      public void addRepeated(final Builder builder, final Object value) {
         throw new UnsupportedOperationException("addRepeatedField() called on a singular field.");
       }
 
@@ -2510,7 +2516,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public boolean has(GeneratedMessageV3.Builder<?> builder) {
+      public boolean has(GeneratedMessageV3.Builder builder) {
         if (!hasHasMethod) {
           if (isOneofField) {
             return invoker.getOneofFieldNumber(builder) == field.getNumber();
@@ -2527,13 +2533,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public int getRepeatedCount(GeneratedMessageV3.Builder<?> builder) {
+      public int getRepeatedCount(GeneratedMessageV3.Builder builder) {
         throw new UnsupportedOperationException(
             "getRepeatedFieldSize() called on a singular field.");
       }
 
       @Override
-      public void clear(final Builder<?> builder) {
+      public void clear(final Builder builder) {
         invoker.clear(builder);
       }
 
@@ -2592,7 +2598,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
             final FieldDescriptor descriptor,
             final String camelCaseName,
             final Class<? extends GeneratedMessageV3> messageClass,
-            final Class<? extends Builder<?>> builderClass) {
+            final Class<? extends Builder> builderClass) {
           getMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "List");
           getMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "List");
           getRepeatedMethod = getMethodOrDie(messageClass, "get" + camelCaseName, Integer.TYPE);
@@ -2657,14 +2663,14 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         }
       }
 
-      protected final Class<?> type;
+      protected final Class type;
       protected final MethodInvoker invoker;
 
       RepeatedFieldAccessor(
           final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
-          final Class<? extends Builder<?>> builderClass) {
+          final Class<? extends Builder> builderClass) {
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(descriptor, camelCaseName, messageClass, builderClass);
         type = reflectionInvoker.getRepeatedMethod.getReturnType();
@@ -2681,7 +2687,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object get(GeneratedMessageV3.Builder<?> builder) {
+      public Object get(GeneratedMessageV3.Builder builder) {
         return invoker.get(builder);
       }
 
@@ -2691,12 +2697,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRaw(GeneratedMessageV3.Builder<?> builder) {
+      public Object getRaw(GeneratedMessageV3.Builder builder) {
         return get(builder);
       }
 
       @Override
-      public void set(final Builder<?> builder, final Object value) {
+      public void set(final Builder builder, final Object value) {
         // Add all the elements individually.  This serves two purposes:
         // 1) Verifies that each element has the correct type.
         // 2) Insures that the caller cannot modify the list later on and
@@ -2713,7 +2719,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRepeated(GeneratedMessageV3.Builder<?> builder, int index) {
+      public Object getRepeated(GeneratedMessageV3.Builder builder, int index) {
         return invoker.getRepeated(builder, index);
       }
 
@@ -2723,17 +2729,17 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRepeatedRaw(GeneratedMessageV3.Builder<?> builder, int index) {
+      public Object getRepeatedRaw(GeneratedMessageV3.Builder builder, int index) {
         return getRepeated(builder, index);
       }
 
       @Override
-      public void setRepeated(final Builder<?> builder, final int index, final Object value) {
+      public void setRepeated(final Builder builder, final int index, final Object value) {
         invoker.setRepeated(builder, index, value);
       }
 
       @Override
-      public void addRepeated(final Builder<?> builder, final Object value) {
+      public void addRepeated(final Builder builder, final Object value) {
         invoker.addRepeated(builder, value);
       }
 
@@ -2743,7 +2749,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public boolean has(GeneratedMessageV3.Builder<?> builder) {
+      public boolean has(GeneratedMessageV3.Builder builder) {
         throw new UnsupportedOperationException("hasField() called on a repeated field.");
       }
 
@@ -2753,12 +2759,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public int getRepeatedCount(GeneratedMessageV3.Builder<?> builder) {
+      public int getRepeatedCount(GeneratedMessageV3.Builder builder) {
         return invoker.getRepeatedCount(builder);
       }
 
       @Override
-      public void clear(final Builder<?> builder) {
+      public void clear(final Builder builder) {
         invoker.clear(builder);
       }
 
@@ -2797,11 +2803,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         return (MapField<?, ?>) message.internalGetMapField(field.getNumber());
       }
 
-      private MapField<?, ?> getMapField(GeneratedMessageV3.Builder<?> builder) {
+      private MapField<?, ?> getMapField(GeneratedMessageV3.Builder builder) {
         return (MapField<?, ?>) builder.internalGetMapField(field.getNumber());
       }
 
-      private MapField<?, ?> getMutableMapField(GeneratedMessageV3.Builder<?> builder) {
+      private MapField<?, ?> getMutableMapField(GeneratedMessageV3.Builder builder) {
         return (MapField<?, ?>) builder.internalGetMutableMapField(field.getNumber());
       }
 
@@ -2820,8 +2826,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
+      @SuppressWarnings("unchecked")
       public Object get(GeneratedMessageV3 message) {
-        List<Object> result = new ArrayList<>();
+        List result = new ArrayList<>();
         for (int i = 0; i < getRepeatedCount(message); i++) {
           result.add(getRepeated(message, i));
         }
@@ -2829,8 +2836,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object get(Builder<?> builder) {
-        List<Object> result = new ArrayList<>();
+      @SuppressWarnings("unchecked")
+      public Object get(Builder builder) {
+        List result = new ArrayList<>();
         for (int i = 0; i < getRepeatedCount(builder); i++) {
           result.add(getRepeated(builder, i));
         }
@@ -2843,14 +2851,14 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRaw(GeneratedMessageV3.Builder<?> builder) {
+      public Object getRaw(GeneratedMessageV3.Builder builder) {
         return get(builder);
       }
 
       @Override
-      public void set(Builder<?> builder, Object value) {
+      public void set(Builder builder, Object value) {
         clear(builder);
-        for (Object entry : (List<?>) value) {
+        for (Object entry : (List) value) {
           addRepeated(builder, entry);
         }
       }
@@ -2861,7 +2869,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRepeated(Builder<?> builder, int index) {
+      public Object getRepeated(Builder builder, int index) {
         return getMapField(builder).getList().get(index);
       }
 
@@ -2871,17 +2879,17 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRepeatedRaw(Builder<?> builder, int index) {
+      public Object getRepeatedRaw(Builder builder, int index) {
         return getRepeated(builder, index);
       }
 
       @Override
-      public void setRepeated(Builder<?> builder, int index, Object value) {
+      public void setRepeated(Builder builder, int index, Object value) {
         getMutableMapField(builder).getMutableList().set(index, coerceType((Message) value));
       }
 
       @Override
-      public void addRepeated(Builder<?> builder, Object value) {
+      public void addRepeated(Builder builder, Object value) {
         getMutableMapField(builder).getMutableList().add(coerceType((Message) value));
       }
 
@@ -2891,7 +2899,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public boolean has(Builder<?> builder) {
+      public boolean has(Builder builder) {
         throw new UnsupportedOperationException("hasField() is not supported for repeated fields.");
       }
 
@@ -2901,12 +2909,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public int getRepeatedCount(Builder<?> builder) {
+      public int getRepeatedCount(Builder builder) {
         return getMapField(builder).getList().size();
       }
 
       @Override
-      public void clear(Builder<?> builder) {
+      public void clear(Builder builder) {
         getMutableMapField(builder).getMutableList().clear();
       }
 
@@ -2933,7 +2941,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
-          final Class<? extends Builder<?>> builderClass,
+          final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
         super(descriptor, camelCaseName, messageClass, builderClass, containingOneofCamelCaseName);
 
@@ -2970,7 +2978,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object get(final GeneratedMessageV3.Builder<?> builder) {
+      public Object get(final GeneratedMessageV3.Builder builder) {
         if (supportUnknownEnumValue) {
           int value = (Integer) invokeOrDie(getValueMethodBuilder, builder);
           return enumDescriptor.findValueByNumberCreatingIfUnknown(value);
@@ -2979,7 +2987,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public void set(final Builder<?> builder, final Object value) {
+      public void set(final Builder builder, final Object value) {
         if (supportUnknownEnumValue) {
           // TODO(b/230609037): remove the unused variable
           Object unused =
@@ -2995,7 +3003,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
-          final Class<? extends Builder<?>> builderClass) {
+          final Class<? extends Builder> builderClass) {
         super(descriptor, camelCaseName, messageClass, builderClass);
 
         enumDescriptor = descriptor.getEnumType();
@@ -3039,7 +3047,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object get(final GeneratedMessageV3.Builder<?> builder) {
+      public Object get(final GeneratedMessageV3.Builder builder) {
         final List<Object> newList = new ArrayList<>();
         final int size = getRepeatedCount(builder);
         for (int i = 0; i < size; i++) {
@@ -3058,7 +3066,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRepeated(final GeneratedMessageV3.Builder<?> builder, final int index) {
+      public Object getRepeated(final GeneratedMessageV3.Builder builder, final int index) {
         if (supportUnknownEnumValue) {
           int value = (Integer) invokeOrDie(getRepeatedValueMethodBuilder, builder, index);
           return enumDescriptor.findValueByNumberCreatingIfUnknown(value);
@@ -3067,7 +3075,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public void setRepeated(final Builder<?> builder, final int index, final Object value) {
+      public void setRepeated(final Builder builder, final int index, final Object value) {
         if (supportUnknownEnumValue) {
           // TODO(b/230609037): remove the unused variable
           Object unused =
@@ -3082,7 +3090,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public void addRepeated(final Builder<?> builder, final Object value) {
+      public void addRepeated(final Builder builder, final Object value) {
         if (supportUnknownEnumValue) {
           // TODO(b/230609037): remove the unused variable
           Object unused =
@@ -3111,17 +3119,15 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
-          final Class<? extends Builder<?>> builderClass,
+          final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
         super(descriptor, camelCaseName, messageClass, builderClass, containingOneofCamelCaseName);
         getBytesMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Bytes");
-        getBytesMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Bytes");
         setBytesMethodBuilder =
             getMethodOrDie(builderClass, "set" + camelCaseName + "Bytes", ByteString.class);
       }
 
       private final Method getBytesMethod;
-      private final Method getBytesMethodBuilder;
       private final Method setBytesMethodBuilder;
 
       @Override
@@ -3130,12 +3136,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRaw(GeneratedMessageV3.Builder<?> builder) {
-        return invokeOrDie(getBytesMethodBuilder, builder);
-      }
-
-      @Override
-      public void set(GeneratedMessageV3.Builder<?> builder, Object value) {
+      public void set(GeneratedMessageV3.Builder builder, Object value) {
         if (value instanceof ByteString) {
           // TODO(b/230609037): remove the unused variable
           Object unused = invokeOrDie(setBytesMethodBuilder, builder, value);
@@ -3152,7 +3153,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
-          final Class<? extends Builder<?>> builderClass,
+          final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
         super(descriptor, camelCaseName, messageClass, builderClass, containingOneofCamelCaseName);
 
@@ -3178,7 +3179,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public void set(final Builder<?> builder, final Object value) {
+      public void set(final Builder builder, final Object value) {
         super.set(builder, coerceType(value));
       }
 
@@ -3198,7 +3199,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
-          final Class<? extends Builder<?>> builderClass) {
+          final Class<? extends Builder> builderClass) {
         super(descriptor, camelCaseName, messageClass, builderClass);
 
         newBuilderMethod = getMethodOrDie(type, "newBuilder");
@@ -3224,12 +3225,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public void setRepeated(final Builder<?> builder, final int index, final Object value) {
+      public void setRepeated(final Builder builder, final int index, final Object value) {
         super.setRepeated(builder, index, coerceType(value));
       }
 
       @Override
-      public void addRepeated(final Builder<?> builder, final Object value) {
+      public void addRepeated(final Builder builder, final Object value) {
         super.addRepeated(builder, coerceType(value));
       }
 

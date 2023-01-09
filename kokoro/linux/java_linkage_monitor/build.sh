@@ -6,11 +6,14 @@
 # This script selects a specific Dockerfile (for building a Docker image) and
 # a script to run inside that image.
 
+set -eux
+
 use_bazel.sh 4.2.2
 
 # Change to repo root
 cd $(dirname $0)/../../..
 
+sudo ./kokoro/common/setup_kokoro_environment.sh
 bazel build //:protoc
 
 # The java build setup expects protoc in the root directory.

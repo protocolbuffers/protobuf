@@ -32,8 +32,8 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/arena.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/arena.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
 
 using proto3_arena_unittest::TestAllTypes;

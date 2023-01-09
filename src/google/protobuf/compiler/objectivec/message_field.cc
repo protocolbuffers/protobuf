@@ -77,7 +77,7 @@ void MessageFieldGenerator::DetermineForwardDeclarations(
                                      descriptor_->message_type()->file())) ||
       descriptor_->file() == descriptor_->message_type()->file()) {
     // Class name is already in "storage_type".
-    fwd_decls->insert("@class " + variable("storage_type"));
+    fwd_decls->insert(absl::StrCat("@class ", variable("storage_type"), ";"));
   }
 }
 
@@ -107,7 +107,7 @@ void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
                                      descriptor_->message_type()->file())) ||
       descriptor_->file() == descriptor_->message_type()->file()) {
     // Class name is already in "storage_type".
-    fwd_decls->insert("@class " + variable("storage_type"));
+    fwd_decls->insert(absl::StrCat("@class ", variable("storage_type"), ";"));
   }
 }
 

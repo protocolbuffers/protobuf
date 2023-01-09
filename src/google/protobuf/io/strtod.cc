@@ -41,7 +41,6 @@
 #include <system_error>  // NOLINT(build/c++11)
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/strings/charconv.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
@@ -209,7 +208,7 @@ char *FloatToBuffer(float value, char *buffer) {
 
   // The snprintf should never overflow because the buffer is significantly
   // larger than the precision we asked for.
-  GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
+  GOOGLE_ABSL_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
 
   float parsed_value;
   if (!safe_strtof(buffer, &parsed_value) || parsed_value != value) {
@@ -217,7 +216,7 @@ char *FloatToBuffer(float value, char *buffer) {
         absl::SNPrintF(buffer, kFloatToBufferSize, "%.*g", FLT_DIG + 3, value);
 
     // Should never overflow; see above.
-    GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
+    GOOGLE_ABSL_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
   }
 
   DelocalizeRadix(buffer);
@@ -247,7 +246,7 @@ char *DoubleToBuffer(double value, char *buffer) {
 
   // The snprintf should never overflow because the buffer is significantly
   // larger than the precision we asked for.
-  GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kDoubleToBufferSize);
+  GOOGLE_ABSL_DCHECK(snprintf_result > 0 && snprintf_result < kDoubleToBufferSize);
 
   // We need to make parsed_value volatile in order to force the compiler to
   // write it out to the stack.  Otherwise, it may keep the value in a
@@ -261,7 +260,7 @@ char *DoubleToBuffer(double value, char *buffer) {
         absl::SNPrintF(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG + 2, value);
 
     // Should never overflow; see above.
-    GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kDoubleToBufferSize);
+    GOOGLE_ABSL_DCHECK(snprintf_result > 0 && snprintf_result < kDoubleToBufferSize);
   }
 
   DelocalizeRadix(buffer);

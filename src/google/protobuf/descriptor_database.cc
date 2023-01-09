@@ -35,12 +35,15 @@
 #include "google/protobuf/descriptor_database.h"
 
 #include <algorithm>
-#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.pb.h"
 
 
@@ -49,9 +52,9 @@ namespace protobuf {
 
 namespace {
 void RecordMessageNames(const DescriptorProto& desc_proto,
-                        const std::string& prefix,
-                        std::set<std::string>* output) {
-  GOOGLE_CHECK(desc_proto.has_name());
+                        absl::string_view prefix,
+                        absl::btree_set<std::string>* output) {
+  GOOGLE_ABSL_CHECK(desc_proto.has_name());
   std::string full_name = prefix.empty()
                               ? desc_proto.name()
                               : absl::StrCat(prefix, ".", desc_proto.name());
@@ -63,7 +66,7 @@ void RecordMessageNames(const DescriptorProto& desc_proto,
 }
 
 void RecordMessageNames(const FileDescriptorProto& file_proto,
-                        std::set<std::string>* output) {
+                        absl::btree_set<std::string>* output) {
   for (const auto& d : file_proto.message_type()) {
     RecordMessageNames(d, file_proto.package(), output);
   }
@@ -76,12 +79,12 @@ bool ForAllFileProtos(DescriptorDatabase* db, Fn callback,
   if (!db->FindAllFileNames(&file_names)) {
     return false;
   }
-  std::set<std::string> set;
+  absl::btree_set<std::string> set;
   FileDescriptorProto file_proto;
   for (const auto& f : file_names) {
     file_proto.Clear();
     if (!db->FindFileByName(f, &file_proto)) {
-      GOOGLE_LOG(ERROR) << "File not found in database (unexpected): " << f;
+      GOOGLE_ABSL_LOG(ERROR) << "File not found in database (unexpected): " << f;
       return false;
     }
     callback(file_proto, &set);
@@ -91,12 +94,13 @@ bool ForAllFileProtos(DescriptorDatabase* db, Fn callback,
 }
 }  // namespace
 
-DescriptorDatabase::~DescriptorDatabase() {}
+DescriptorDatabase::~DescriptorDatabase() = default;
 
 bool DescriptorDatabase::FindAllPackageNames(std::vector<std::string>* output) {
   return ForAllFileProtos(
       this,
-      [](const FileDescriptorProto& file_proto, std::set<std::string>* set) {
+      [](const FileDescriptorProto& file_proto,
+         absl::btree_set<std::string>* set) {
         set->insert(file_proto.package());
       },
       output);
@@ -105,7 +109,8 @@ bool DescriptorDatabase::FindAllPackageNames(std::vector<std::string>* output) {
 bool DescriptorDatabase::FindAllMessageNames(std::vector<std::string>* output) {
   return ForAllFileProtos(
       this,
-      [](const FileDescriptorProto& file_proto, std::set<std::string>* set) {
+      [](const FileDescriptorProto& file_proto,
+         absl::btree_set<std::string>* set) {
         RecordMessageNames(file_proto, set);
       },
       output);
@@ -119,8 +124,8 @@ SimpleDescriptorDatabase::~SimpleDescriptorDatabase() {}
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
     const FileDescriptorProto& file, Value value) {
-  if (!by_name_.insert({file.name(), value}).second) {
-    GOOGLE_LOG(ERROR) << "File already exists in database: " << file.name();
+  if (!by_name_.emplace(file.name(), value).second) {
+    GOOGLE_ABSL_LOG(ERROR) << "File already exists in database: " << file.name();
     return false;
   }
 
@@ -197,14 +202,14 @@ bool IsSubSymbol(absl::string_view sub_symbol, absl::string_view super_symbol) {
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
-    const std::string& name, Value value) {
+    absl::string_view name, Value value) {
   // We need to make sure not to violate our map invariant.
 
   // If the symbol name is invalid it could break our lookup algorithm (which
   // relies on the fact that '.' sorts before all other characters that are
   // valid in symbol names).
   if (!ValidateSymbolName(name)) {
-    GOOGLE_LOG(ERROR) << "Invalid symbol name: " << name;
+    GOOGLE_ABSL_LOG(ERROR) << "Invalid symbol name: " << name;
     return false;
   }
 
@@ -214,16 +219,15 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
   if (iter == by_symbol_.end()) {
     // Apparently the map is currently empty.  Just insert and be done with it.
-    by_symbol_.insert(
-        typename std::map<std::string, Value>::value_type(name, value));
+    by_symbol_.try_emplace(name, value);
     return true;
   }
 
   if (IsSubSymbol(iter->first, name)) {
-    GOOGLE_LOG(ERROR) << "Symbol name \"" << name
-               << "\" conflicts with the existing "
-                  "symbol \""
-               << iter->first << "\".";
+    GOOGLE_ABSL_LOG(ERROR) << "Symbol name \"" << name
+                    << "\" conflicts with the existing "
+                       "symbol \""
+                    << iter->first << "\".";
     return false;
   }
 
@@ -235,10 +239,10 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
   ++iter;
 
   if (iter != by_symbol_.end() && IsSubSymbol(name, iter->first)) {
-    GOOGLE_LOG(ERROR) << "Symbol name \"" << name
-               << "\" conflicts with the existing "
-                  "symbol \""
-               << iter->first << "\".";
+    GOOGLE_ABSL_LOG(ERROR) << "Symbol name \"" << name
+                    << "\" conflicts with the existing "
+                       "symbol \""
+                    << iter->first << "\".";
     return false;
   }
 
@@ -246,8 +250,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
   // Insert the new symbol using the iterator as a hint, the new entry will
   // appear immediately before the one the iterator is pointing at.
-  by_symbol_.insert(
-      iter, typename std::map<std::string, Value>::value_type(name, value));
+  by_symbol_.insert(iter, {std::string(name), value});
 
   return true;
 }
@@ -274,14 +277,15 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
     // The extension is fully-qualified.  We can use it as a lookup key in
     // the by_symbol_ table.
     if (!by_extension_
-             .insert(
-                 {std::make_pair(field.extendee().substr(1), field.number()),
-                  value})
+             .emplace(
+                 std::make_pair(field.extendee().substr(1), field.number()),
+                 value)
              .second) {
-      GOOGLE_LOG(ERROR) << "Extension conflicts with extension already in database: "
-                    "extend "
-                 << field.extendee() << " { " << field.name() << " = "
-                 << field.number() << " } from:" << filename;
+      GOOGLE_ABSL_LOG(ERROR)
+          << "Extension conflicts with extension already in database: "
+             "extend "
+          << field.extendee() << " { " << field.name() << " = "
+          << field.number() << " } from:" << filename;
       return false;
     }
   } else {
@@ -321,8 +325,7 @@ Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindExtension(
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
     const std::string& containing_type, std::vector<int>* output) {
-  typename std::map<std::pair<std::string, int>, Value>::const_iterator it =
-      by_extension_.lower_bound(std::make_pair(containing_type, 0));
+  auto it = by_extension_.lower_bound(std::make_pair(containing_type, 0));
   bool success = false;
 
   for (; it != by_extension_.end() && it->first.first == containing_type;
@@ -427,7 +430,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
   bool AddExtension(absl::string_view filename, const FieldProto& field);
 
   // All the maps below have two representations:
-  //  - a std::set<> where we insert initially.
+  //  - a absl::btree_set<> where we insert initially.
   //  - a std::vector<> where we flatten the structure on demand.
   // The initial tree helps avoid O(N) behavior of inserting into a sorted
   // vector, while the vector reduces the heap requirements of the data
@@ -472,7 +475,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       return a < b.name(index);
     }
   };
-  std::set<FileEntry, FileCompare> by_name_{FileCompare{*this}};
+  absl::btree_set<FileEntry, FileCompare> by_name_{FileCompare{*this}};
   std::vector<FileEntry> by_name_flat_;
 
   struct SymbolEntry {
@@ -529,7 +532,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       return AsString(lhs) < AsString(rhs);
     }
   };
-  std::set<SymbolEntry, SymbolCompare> by_symbol_{SymbolCompare{*this}};
+  absl::btree_set<SymbolEntry, SymbolCompare> by_symbol_{SymbolCompare{*this}};
   std::vector<SymbolEntry> by_symbol_flat_;
 
   struct ExtensionEntry {
@@ -556,7 +559,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       return a < std::make_tuple(b.extendee(index), b.extension_number);
     }
   };
-  std::set<ExtensionEntry, ExtensionCompare> by_extension_{
+  absl::btree_set<ExtensionEntry, ExtensionCompare> by_extension_{
       ExtensionCompare{*this}};
   std::vector<ExtensionEntry> by_extension_flat_;
 };
@@ -567,8 +570,8 @@ bool EncodedDescriptorDatabase::Add(const void* encoded_file_descriptor,
   if (file.ParseFromArray(encoded_file_descriptor, size)) {
     return index_->AddFile(file, std::make_pair(encoded_file_descriptor, size));
   } else {
-    GOOGLE_LOG(ERROR) << "Invalid file descriptor data passed to "
-                  "EncodedDescriptorDatabase::Add().";
+    GOOGLE_ABSL_LOG(ERROR) << "Invalid file descriptor data passed to "
+                       "EncodedDescriptorDatabase::Add().";
     return false;
   }
 }
@@ -639,7 +642,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
   all_values_.push_back({value.first, value.second, {}});
 
   if (!ValidateSymbolName(file.package())) {
-    GOOGLE_LOG(ERROR) << "Invalid package name: " << file.package();
+    GOOGLE_ABSL_LOG(ERROR) << "Invalid package name: " << file.package();
     return false;
   }
   all_values_.back().encoded_package = EncodeString(file.package());
@@ -650,7 +653,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
            .second ||
       std::binary_search(by_name_flat_.begin(), by_name_flat_.end(),
                          file.name(), by_name_.key_comp())) {
-    GOOGLE_LOG(ERROR) << "File already exists in database: " << file.name();
+    GOOGLE_ABSL_LOG(ERROR) << "File already exists in database: " << file.name();
     return false;
   }
 
@@ -677,9 +680,9 @@ static bool CheckForMutualSubsymbols(absl::string_view symbol_name, Iter* iter,
                                      Iter2 end, const Index& index) {
   if (*iter != end) {
     if (IsSubSymbol((*iter)->AsString(index), symbol_name)) {
-      GOOGLE_LOG(ERROR) << "Symbol name \"" << symbol_name
-                 << "\" conflicts with the existing symbol \""
-                 << (*iter)->AsString(index) << "\".";
+      GOOGLE_ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
+                      << "\" conflicts with the existing symbol \""
+                      << (*iter)->AsString(index) << "\".";
       return false;
     }
 
@@ -691,9 +694,9 @@ static bool CheckForMutualSubsymbols(absl::string_view symbol_name, Iter* iter,
     ++*iter;
 
     if (*iter != end && IsSubSymbol(symbol_name, (*iter)->AsString(index))) {
-      GOOGLE_LOG(ERROR) << "Symbol name \"" << symbol_name
-                 << "\" conflicts with the existing symbol \""
-                 << (*iter)->AsString(index) << "\".";
+      GOOGLE_ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
+                      << "\" conflicts with the existing symbol \""
+                      << (*iter)->AsString(index) << "\".";
       return false;
     }
   }
@@ -712,7 +715,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
   // relies on the fact that '.' sorts before all other characters that are
   // valid in symbol names).
   if (!ValidateSymbolName(symbol)) {
-    GOOGLE_LOG(ERROR) << "Invalid symbol name: " << entry_as_string;
+    GOOGLE_ABSL_LOG(ERROR) << "Invalid symbol name: " << entry_as_string;
     return false;
   }
 
@@ -765,10 +768,11 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddExtension(
             by_extension_flat_.begin(), by_extension_flat_.end(),
             std::make_pair(field.extendee().substr(1), field.number()),
             by_extension_.key_comp())) {
-      GOOGLE_LOG(ERROR) << "Extension conflicts with extension already in database: "
-                    "extend "
-                 << field.extendee() << " { " << field.name() << " = "
-                 << field.number() << " } from:" << filename;
+      GOOGLE_ABSL_LOG(ERROR)
+          << "Extension conflicts with extension already in database: "
+             "extend "
+          << field.extendee() << " { " << field.name() << " = "
+          << field.number() << " } from:" << filename;
       return false;
     }
   } else {
@@ -813,7 +817,7 @@ EncodedDescriptorDatabase::DescriptorIndex::FindExtension(
 }
 
 template <typename T, typename Less>
-static void MergeIntoFlat(std::set<T, Less>* s, std::vector<T>* flat) {
+static void MergeIntoFlat(absl::btree_set<T, Less>* s, std::vector<T>* flat) {
   if (s->empty()) return;
   std::vector<T> new_flat(s->size() + flat->size());
   std::merge(s->begin(), s->end(), flat->begin(), flat->end(), &new_flat[0],
@@ -1018,15 +1022,15 @@ bool MergedDescriptorDatabase::FindFileContainingExtension(
 
 bool MergedDescriptorDatabase::FindAllExtensionNumbers(
     const std::string& extendee_type, std::vector<int>* output) {
-  std::set<int> merged_results;
+  absl::btree_set<int> merged_results;
   std::vector<int> results;
   bool success = false;
 
   for (DescriptorDatabase* source : sources_) {
     if (source->FindAllExtensionNumbers(extendee_type, &results)) {
       std::copy(results.begin(), results.end(),
-                std::insert_iterator<std::set<int> >(merged_results,
-                                                     merged_results.begin()));
+                std::insert_iterator<absl::btree_set<int> >(
+                    merged_results, merged_results.begin()));
       success = true;
     }
     results.clear();

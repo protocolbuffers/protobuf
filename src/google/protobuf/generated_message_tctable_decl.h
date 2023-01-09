@@ -122,20 +122,6 @@ struct TcFieldData {
   uint32_t tag() const { return static_cast<uint32_t>(data); }
   uint32_t entry_offset() const { return static_cast<uint32_t>(data >> 32); }
 
-  // Fields used for passing unknown enum values to the generic fallback:
-  //     Bit:
-  //     +-----------+-------------------+
-  //     |63    ..     32|31     ..     0|
-  //     +---------------+---------------+
-  //     :   .   :   .   |===============| [32] tag() (decoded)
-  //     |===============|   .   :   .   : [32] unknown_enum_value()
-  //     +-----------+-------------------+
-  //     |63    ..     32|31     ..     0|
-  //     +---------------+---------------+
-  int32_t unknown_enum_value() const {
-    return static_cast<int32_t>(data >> 32);
-  }
-
   uint64_t data;
 };
 
@@ -289,8 +275,6 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
         : message_default_p(msg) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
-    constexpr FieldAux(LazyEagerVerifyFnType verify_func)
-        : verify_func(verify_func) {}
     bool (*enum_validator)(int);
     struct {
       int16_t start;    // minimum enum number (if it fits)
@@ -299,7 +283,6 @@ struct alignas(uint64_t) TcParseTableBase {
     uint32_t offset;
     const void* message_default_p;
     const TcParseTableBase* table;
-    LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
       return static_cast<const MessageLite*>(message_default_p);

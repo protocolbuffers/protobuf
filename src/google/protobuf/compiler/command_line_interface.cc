@@ -74,6 +74,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "absl/container/flat_hash_set.h"
@@ -141,7 +142,7 @@ void SetFdToTextMode(int fd) {
 #ifdef _WIN32
   if (setmode(fd, _O_TEXT) == -1) {
     // This should never happen, I think.
-    GOOGLE_LOG(WARNING) << "setmode(" << fd << ", _O_TEXT): " << strerror(errno);
+    GOOGLE_ABSL_LOG(WARNING) << "setmode(" << fd << ", _O_TEXT): " << strerror(errno);
   }
 #endif
   // (Text and binary are the same on non-Windows platforms.)
@@ -151,7 +152,8 @@ void SetFdToBinaryMode(int fd) {
 #ifdef _WIN32
   if (setmode(fd, _O_BINARY) == -1) {
     // This should never happen, I think.
-    GOOGLE_LOG(WARNING) << "setmode(" << fd << ", _O_BINARY): " << strerror(errno);
+    GOOGLE_ABSL_LOG(WARNING) << "setmode(" << fd
+                      << ", _O_BINARY): " << strerror(errno);
   }
 #endif
   // (Text and binary are the same on non-Windows platforms.)
@@ -236,9 +238,10 @@ bool GetProtocAbsolutePath(std::string* path) {
 
 // Whether a path is where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
-bool IsInstalledProtoPath(const std::string& path) {
+bool IsInstalledProtoPath(absl::string_view path) {
   // Checking the descriptor.proto file should be good enough.
-  std::string file_path = path + "/google/protobuf/descriptor.proto";
+  std::string file_path =
+      absl::StrCat(path, "/google/protobuf/descriptor.proto");
   return access(file_path.c_str(), F_OK) != -1;
 }
 
@@ -249,25 +252,26 @@ void AddDefaultProtoPaths(
   // TODO(xiaofeng): The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
-  std::string path;
-  if (!GetProtocAbsolutePath(&path)) {
+  std::string path_str;
+  if (!GetProtocAbsolutePath(&path_str)) {
     return;
   }
+  absl::string_view path(path_str);
   // Strip the binary name.
   size_t pos = path.find_last_of("/\\");
-  if (pos == std::string::npos || pos == 0) {
+  if (pos == path.npos || pos == 0) {
     return;
   }
   path = path.substr(0, pos);
   // Check the binary's directory.
   if (IsInstalledProtoPath(path)) {
-    paths->push_back(std::pair<std::string, std::string>("", path));
+    paths->emplace_back("", path);
     return;
   }
   // Check if there is an include subdirectory.
-  if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(
-        std::pair<std::string, std::string>("", path + "/include"));
+  std::string include_path = absl::StrCat(path, "/include");
+  if (IsInstalledProtoPath(include_path)) {
+    paths->emplace_back("", std::move(include_path));
     return;
   }
   // Check if the upper level directory has an "include" subdirectory.
@@ -276,18 +280,19 @@ void AddDefaultProtoPaths(
     return;
   }
   path = path.substr(0, pos);
-  if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(
-        std::pair<std::string, std::string>("", path + "/include"));
+  include_path = absl::StrCat(path, "/include");
+  if (IsInstalledProtoPath(include_path)) {
+    paths->emplace_back("", std::move(include_path));
     return;
   }
 }
 
-std::string PluginName(const std::string& plugin_prefix,
-                       const std::string& directive) {
+std::string PluginName(absl::string_view plugin_prefix,
+                       absl::string_view directive) {
   // Assuming the directive starts with "--" and ends with "_out" or "_opt",
   // strip the "--" and "_out/_opt" and add the plugin prefix.
-  return plugin_prefix + "gen-" + directive.substr(2, directive.size() - 6);
+  return absl::StrCat(plugin_prefix, "gen-",
+                      directive.substr(2, directive.size() - 6));
 }
 
 }  // namespace
@@ -719,7 +724,7 @@ void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
 void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
     const std::string& insertion_content, size_t insertion_offset,
     size_t insertion_length, size_t indent_length) {
-  auto it = directory_->files_.find(filename_ + ".pb.meta");
+  auto it = directory_->files_.find(absl::StrCat(filename_, ".pb.meta"));
   if (it == directory_->files_.end() && info_to_insert_.annotation().empty()) {
     // No metadata was recorded for this file.
     return;
@@ -749,7 +754,8 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
   } else {
     // Create a new file to store the new metadata in info_to_insert_.
     encoded_data =
-        &directory_->files_.insert({filename_ + ".pb.meta", ""}).first->second;
+        &directory_->files_.try_emplace(absl::StrCat(filename_, ".pb.meta"), "")
+             .first->second;
   }
   GeneratedCodeInfo new_metadata;
   bool crossed_offset = false;
@@ -892,7 +898,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
     data_pos += line_length;
   }
 
-  GOOGLE_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
+  GOOGLE_ABSL_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
 
   UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
 }
@@ -1106,7 +1112,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   if (!dependency_out_name_.empty()) {
-    GOOGLE_DCHECK(disk_source_tree.get());
+    GOOGLE_ABSL_DCHECK(disk_source_tree.get());
     if (!GenerateDependencyManifestFile(parsed_files, output_directories,
                                         disk_source_tree.get())) {
       return 1;
@@ -1126,7 +1132,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       FileDescriptorProto file;
       file.set_name("empty_message.proto");
       file.add_message_type()->set_name("EmptyMessage");
-      GOOGLE_CHECK(pool.BuildFile(file) != nullptr);
+      GOOGLE_ABSL_CHECK(pool.BuildFile(file) != nullptr);
       codec_type_ = "EmptyMessage";
       if (!EncodeOrDecode(&pool)) {
         return 1;
@@ -1154,8 +1160,9 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         }
         break;
       case PRINT_NONE:
-        GOOGLE_LOG(ERROR) << "If the code reaches here, it usually means a bug of "
-                      "flag parsing in the CommandLineInterface.";
+        GOOGLE_ABSL_LOG(ERROR)
+            << "If the code reaches here, it usually means a bug of "
+               "flag parsing in the CommandLineInterface.";
         return 1;
 
         // Do not add a default case.
@@ -1513,7 +1520,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     if (!foundImplicitPlugin) {
       std::cerr << "Unknown flag: "
                 // strip prefix + "gen-" and add back "_opt"
-                << "--" + kv.first.substr(plugin_prefix_.size() + 4) + "_opt"
+                << "--" << kv.first.substr(plugin_prefix_.size() + 4) << "_opt"
                 << std::endl;
       foundUnknownPluginOption = true;
     }
@@ -1558,7 +1565,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
           input_files_.empty() && descriptor_set_in_names_.empty();
       break;
     default:
-      GOOGLE_LOG(FATAL) << "Unexpected mode: " << mode_;
+      GOOGLE_ABSL_LOG(FATAL) << "Unexpected mode: " << mode_;
   }
   if (missing_proto_definitions) {
     std::cerr << "Missing input file." << std::endl;
@@ -1763,7 +1770,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     direct_dependencies_explicitly_set_ = true;
     std::vector<std::string> direct =
         absl::StrSplit(value, ":", absl::SkipEmpty());
-    GOOGLE_DCHECK(direct_dependencies_.empty());
+    GOOGLE_ABSL_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
 
   } else if (name == "--direct_dependencies_violation_msg") {
@@ -2163,8 +2170,8 @@ bool CommandLineInterface::GenerateOutput(
   std::string error;
   if (output_directive.generator == nullptr) {
     // This is a plugin.
-    GOOGLE_CHECK(absl::StartsWith(output_directive.name, "--") &&
-          absl::EndsWith(output_directive.name, "_out"))
+    GOOGLE_ABSL_CHECK(absl::StartsWith(output_directive.name, "--") &&
+               absl::EndsWith(output_directive.name, "_out"))
         << "Bad name for plugin generator: " << output_directive.name;
 
     std::string plugin_name = PluginName(plugin_prefix_, output_directive.name);

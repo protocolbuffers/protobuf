@@ -3,83 +3,19 @@
 # See also code generation logic under /src/google/protobuf/compiler/ruby.
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@upb//cmake:build_defs.bzl", "staleness_test")
-load("//build_defs:internal_shell.bzl", "inline_sh_test")
-load("//conformance:defs.bzl", "conformance_test")
+load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
-load(":internal.bzl", "internal_ruby_extension")
+load("//conformance:defs.bzl", "conformance_test")
 
 ################################################################################
 # Ruby Runtime
 ################################################################################
 
-config_setting(
-    name = "java_ruby",
-    values = {"define": "ruby_platform=java"},
-)
-
-config_setting(
-    name = "c_ruby",
-    values = {"define": "ruby_platform=c"},
-)
-
-filegroup(
-    name = "srcs",
-    srcs = glob([
-        "lib/**/*.rb",
-        "src/**/*.proto",
-    ]) + [
-        "Gemfile",
-        "Rakefile",
-        "google-protobuf.gemspec",
-        "pom.xml",
-    ],
-)
-
-internal_ruby_extension(
-    name = "protobuf_c_mac",
-    extension = "lib/google/protobuf_c.bundle",
-    deps = glob(["ext/google/protobuf_c/*"]),
-    target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
-        "//conditions:default": ["@platforms//os:osx"],
-    }),
-)
-
-internal_ruby_extension(
-    name = "protobuf_c",
-    extension = "lib/google/protobuf_c.so",
-    deps = glob(["ext/google/protobuf_c/*"]),
-    target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
-        "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
-)
-
-internal_ruby_extension(
-    name = "protobuf_java",
-    extension = "lib/google/protobuf_java.jar",
-    deps = glob(["src/**/*.java"]),
-    target_compatible_with = select({
-        ":java_ruby": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
-)
-
-filegroup(
+ruby_library(
     name = "protobuf",
-    srcs = [
-        ":srcs",
-        "@utf8_range//:utf8_range_srcs",
-    ] + select({
-        ":java_ruby": [":protobuf_java"],
-        "@bazel_tools//src/conditions:darwin": [":protobuf_c_mac"],
-        "//conditions:default": [":protobuf_c"],
-    }),
+    deps = ["//ruby/lib/google:protobuf_lib"],
     visibility = [
-        "//conformance:__subpackages__",
-        "//ruby:__subpackages__",
+        "//visibility:public",
     ],
 )
 
@@ -87,58 +23,17 @@ filegroup(
 # Tests
 ################################################################################
 
-filegroup(
-  name = "tests",
-  srcs = glob(["tests/*.rb"]),
-)
-
-filegroup(
-  name = "test_protos",
-  srcs = glob(["tests/*.proto"]),
-)
-
+# Define this here so the descriptor paths match what we get in Rake tests.
 internal_ruby_proto_library(
     name = "test_ruby_protos",
-    srcs = [":test_protos"],
-    proto_deps = ["//:well_known_protos"],
+    srcs = ["//ruby/tests:test_protos"],
+    deps = ["//:well_known_ruby_protos"],
     includes = [".", "src", "ruby/tests"],
+    visibility = [
+        "//ruby:__subpackages__",
+    ],
 )
 
-inline_sh_test(
-    name = "test",
-    srcs = [
-        "Rakefile",
-    ],
-    deps = [
-        ":protobuf",
-        ":test_ruby_protos",
-        ":tests",
-        "//:well_known_ruby_protos",
-    ],
-    cmd = """
-        pushd `dirname $(location Rakefile)`
-        RUBYLIB=../src:tests:. BAZEL=true rake test
-        popd
-    """,
-)
-
-inline_sh_test(
-    name = "gc_test",
-    srcs = [
-        "Rakefile",
-    ],
-    deps = [
-        ":protobuf",
-        ":test_ruby_protos",
-        ":tests",
-        "//:well_known_ruby_protos",
-    ],
-    cmd = """
-        pushd `dirname $(location Rakefile)`
-        RUBYLIB=../src:tests:. BAZEL=true rake gc_test
-        popd
-    """,
-)
 
 conformance_test(
     name = "conformance_test",
@@ -146,8 +41,8 @@ conformance_test(
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
     target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
-        "//conditions:default": [],
+        "@rules_ruby//ruby/runtime:config_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
 
@@ -157,32 +52,9 @@ conformance_test(
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
     target_compatible_with = select({
-        ":java_ruby": [],
+        "@rules_ruby//ruby/runtime:config_jruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-)
-
-genrule(
-    name = "copy_ruby_amalgamation_h",
-    srcs = ["@upb//:ruby-upb.h"],
-    outs = ["generated-in/ext/google/protobuf_c/ruby-upb.h"],
-    cmd = "cp $< $@",
-)
-
-genrule(
-    name = "copy_ruby_amalgamation_c",
-    srcs = ["@upb//:ruby-upb.c"],
-    outs = ["generated-in/ext/google/protobuf_c/ruby-upb.c"],
-    cmd = "cp $< $@",
-)
-
-staleness_test(
-    name = "test_amalgamation_staleness",
-    outs = [
-        "ext/google/protobuf_c/ruby-upb.h",
-        "ext/google/protobuf_c/ruby-upb.c",
-    ],
-    generated_pattern = "generated-in/%s",
 )
 
 ################################################################################
@@ -191,17 +63,16 @@ staleness_test(
 
 pkg_files(
     name = "dist_files",
-    srcs = glob([
-        "tests/*.proto",
-        "tests/*.rb",
-    ]) + [
-        ":srcs",
+    srcs = [
+        "//ruby/ext/google/protobuf_c:dist_files",
+        "//ruby/lib/google:dist_files",
+        "//ruby/src/main/java:dist_files",
+        "//ruby/tests:dist_files",
         ".gitignore",
         "BUILD.bazel",
-        "internal.bzl",
         "Gemfile",
+        "Rakefile",
         "README.md",
-        "travis-test.sh",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],

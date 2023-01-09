@@ -131,10 +131,9 @@ class Any::_Internal {
  public:
 };
 
-Any::Any(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Any::Any(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
 Any::Any(const Any& from)
@@ -166,10 +165,8 @@ Any::Any(const Any& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
 
-inline void Any::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Any::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.type_url_){}
     , decltype(_impl_.value_){}
@@ -196,7 +193,7 @@ Any::~Any() {
 }
 
 inline void Any::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.type_url_.Destroy();
   _impl_.value_.Destroy();
   _impl_._any_metadata_.~AnyMetadata();
@@ -218,7 +215,6 @@ void Any::Clear() {
 }
 
 const char* Any::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -270,7 +266,6 @@ failure:
 
 ::uint8_t* Any::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -300,7 +295,6 @@ failure:
 }
 
 ::size_t Any::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Any)
   ::size_t total_size = 0;
 
@@ -335,9 +329,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Any::GetClassData() const { re
 void Any::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Any*>(&to_msg);
   auto& from = static_cast<const Any&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Any)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -377,7 +370,6 @@ void Any::InternalSwap(Any* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Any::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fany_2eproto_getter, &descriptor_table_google_2fprotobuf_2fany_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fany_2eproto[0]);

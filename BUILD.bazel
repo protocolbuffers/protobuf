@@ -148,6 +148,7 @@ internal_ruby_proto_library(
     name = "well_known_ruby_protos",
     srcs = [":well_known_protos"],
     includes = ["src"],
+    default_runtime = "",
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",
@@ -157,6 +158,12 @@ internal_ruby_proto_library(
 ################################################################################
 # Protocol Buffers Compiler
 ################################################################################
+
+alias(
+    name = "protoc_lib",
+    actual = "//src/google/protobuf/compiler:protoc_lib",
+    visibility = ["//visibility:public"],
+)
 
 cc_binary(
     name = "protoc",
@@ -300,8 +307,8 @@ alias(
 proto_lang_toolchain(
     name = "cc_toolchain",
     blacklisted_protos = [
-        "@com_google_protobuf//:compiler_plugin_proto",
-        "@com_google_protobuf//:descriptor_proto",
+        "//:compiler_plugin_proto",
+        "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
     runtime = ":protobuf",
@@ -513,7 +520,7 @@ internal_ruby_proto_library(
         # The above must come first.
         "src",
     ],
-    proto_deps = [":well_known_protos"],
+    deps = [":well_known_ruby_protos"],
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",

@@ -37,7 +37,6 @@
 #include <utility>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
 #include "absl/strings/string_view.h"
@@ -198,11 +197,11 @@ class TaggedStringPtr {
 
  private:
   static inline void assert_aligned(const void* p) {
-    GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(p) & kMask, 0UL);
+    GOOGLE_ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(p) & kMask, 0UL);
   }
 
   inline std::string* TagAs(Type type, std::string* p) {
-    GOOGLE_DCHECK(p != nullptr);
+    GOOGLE_ABSL_DCHECK(p != nullptr);
     assert_aligned(p);
     ptr_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) | type);
     return p;
@@ -479,8 +478,8 @@ inline void ArenaStringPtr::ClearNonDefaultToEmpty() {
 }
 
 inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
-  GOOGLE_DCHECK(tagged_ptr_.IsMutable());
-  GOOGLE_DCHECK(tagged_ptr_.Get() != nullptr);
+  GOOGLE_ABSL_DCHECK(tagged_ptr_.IsMutable());
+  GOOGLE_ABSL_DCHECK(tagged_ptr_.Get() != nullptr);
   return tagged_ptr_.Get();
 }
 

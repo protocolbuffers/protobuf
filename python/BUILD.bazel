@@ -10,9 +10,10 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@pip_deps//:requirements.bzl", "requirement")
 load("//:protobuf.bzl", "internal_py_proto_library")
+load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
-load(":internal.bzl", "internal_copy_files")
+load(":internal.bzl", "internal_copy_files", "internal_py_test")
 
 py_library(
     name = "protobuf_python",
@@ -116,6 +117,22 @@ cc_binary(
         "//conditions:default": [],
         ":use_fast_cpp_protos": ["//external:python_headers"],
     }),
+)
+
+aarch64_test(
+    name = "aarch64_test",
+    bazel_binaries = [
+        "google/protobuf/internal/_api_implementation.so",
+        "google/protobuf/pyext/_message.so",
+    ],
+)
+
+x86_64_test(
+    name = "x86_64_test",
+    bazel_binaries = [
+        "google/protobuf/internal/_api_implementation.so",
+        "google/protobuf/pyext/_message.so",
+    ],
 )
 
 py_library(
@@ -256,149 +273,111 @@ py_library(
     ],
 )
 
-py_test(
+internal_py_test(
     name = "descriptor_database_test",
     srcs = ["google/protobuf/internal/descriptor_database_test.py"],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "descriptor_pool_test",
     srcs = ["google/protobuf/internal/descriptor_pool_test.py"],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "descriptor_test",
     srcs = ["google/protobuf/internal/descriptor_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "field_mask_test",
     srcs = ["google/protobuf/internal/field_mask_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "generator_test",
     srcs = ["google/protobuf/internal/generator_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "import_test",
     srcs = ["google/protobuf/internal/import_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "json_format_test",
     srcs = ["google/protobuf/internal/json_format_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "keywords_test",
     srcs = ["google/protobuf/internal/keywords_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "message_factory_test",
     srcs = ["google/protobuf/internal/message_factory_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "message_test",
     srcs = ["google/protobuf/internal/message_test.py"],
     data = glob(["testdata/golden_pickle_*"]) + [
         "//src/google/protobuf:testdata",
     ],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "numpy_test",
     srcs = ["google/protobuf/internal/numpy_test.py"],
-    imports = ["."],
     deps = [
-        ":python_test_lib",
         requirement("numpy"),
     ],
 )
 
-py_test(
+internal_py_test(
     name = "proto_builder_test",
     srcs = ["google/protobuf/internal/proto_builder_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "reflection_test",
     srcs = ["google/protobuf/internal/reflection_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "service_reflection_test",
     srcs = ["google/protobuf/internal/service_reflection_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "symbol_database_test",
     srcs = ["google/protobuf/internal/symbol_database_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "text_encoding_test",
     srcs = ["google/protobuf/internal/text_encoding_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "text_format_test",
     srcs = ["google/protobuf/internal/text_format_test.py"],
     data = ["//src/google/protobuf:testdata"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "unknown_fields_test",
     srcs = ["google/protobuf/internal/unknown_fields_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "well_known_types_test",
     srcs = ["google/protobuf/internal/well_known_types_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
-py_test(
+internal_py_test(
     name = "wire_format_test",
     srcs = ["google/protobuf/internal/wire_format_test.py"],
-    imports = ["."],
-    deps = [":python_test_lib"],
 )
 
 cc_library(
@@ -410,7 +389,7 @@ cc_library(
     ],
 )
 
-py_test(
+internal_py_test(
     name = "python_version",
     srcs = ["python_version.py"],
 )
@@ -420,6 +399,7 @@ conformance_test(
     env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
     failure_list = "//conformance:failure_list_python.txt",
     target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
         ":use_fast_cpp_protos": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
@@ -433,6 +413,7 @@ conformance_test(
     env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
     failure_list = "//conformance:failure_list_python.txt",
     target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
         ":use_fast_cpp_protos": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
@@ -443,6 +424,27 @@ conformance_test(
 ################################################################################
 # Distribution files
 ################################################################################
+
+pkg_files(
+    name = "python_source_files",
+    srcs = glob(
+        [
+            "google/protobuf/**/*.py",
+        ],
+        exclude = [
+            "google/protobuf/internal/*_test.py",
+            "google/protobuf/internal/test_util.py",
+            "google/protobuf/internal/import_test_package/__init__.py",
+        ],
+    ) + [
+      "README.md",
+      "google/__init__.py",
+      "setup.cfg",
+      "tox.ini",
+    ],
+    visibility = ["@upb//:__subpackages__"],
+    strip_prefix = "",
+)
 
 pkg_files(
     name = "dist_files",

@@ -50,7 +50,7 @@ class AnyBase extends \Google\Protobuf\Internal\Message
     /**
      * The type_url will be created according to the given message’s type and
      * the value is encoded data from the given message..
-     * @param message: A proto message.
+     * @param Message $msg A proto message.
      */
     public function pack($msg)
     {
@@ -73,7 +73,7 @@ class AnyBase extends \Google\Protobuf\Internal\Message
     /**
      * This method returns whether the type_url in any_message is corresponded
      * to the given class.
-     * @param klass: The fully qualified PHP class name of a proto message type.
+     * @param string $klass The fully qualified PHP class name of a proto message type.
      */
     public function is($klass)
     {

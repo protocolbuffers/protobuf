@@ -36,9 +36,9 @@
 
 #include <algorithm>
 #include <memory>
-#include <set>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
@@ -70,7 +70,7 @@ namespace {
 std::string MapValueImmutableClassdName(const Descriptor* descriptor,
                                         ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->map_value();
-  GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
+  GOOGLE_ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
 }
 }  // namespace
@@ -81,13 +81,13 @@ MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
       context_(context),
       name_resolver_(context->GetNameResolver()),
       field_generators_(descriptor, context_) {
-  GOOGLE_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
+  GOOGLE_ABSL_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A non-lite message generator is used to "
          "generate lite messages.";
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
       const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
-      GOOGLE_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
+      GOOGLE_ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -418,6 +418,79 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
 
   GenerateBuildPartial(printer);
 
+  if (context_->options().opensource_runtime) {
+    // Override methods declared in GeneratedMessage to return the concrete
+    // generated type so callsites won't depend on GeneratedMessage. This
+    // is needed to keep binary compatibility when we change generated code
+    // to subclass a different GeneratedMessage class (e.g., in v3.0.0 release
+    // we changed all generated code to subclass GeneratedMessageV3).
+    printer->Print(
+        "@java.lang.Override\n"
+        "public Builder clone() {\n"
+        "  return super.clone();\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder setField(\n"
+        "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+        "    java.lang.Object value) {\n"
+        "  return super.setField(field, value);\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder clearField(\n"
+        "    com.google.protobuf.Descriptors.FieldDescriptor field) {\n"
+        "  return super.clearField(field);\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder clearOneof(\n"
+        "    com.google.protobuf.Descriptors.OneofDescriptor oneof) {\n"
+        "  return super.clearOneof(oneof);\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder setRepeatedField(\n"
+        "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+        "    int index, java.lang.Object value) {\n"
+        "  return super.setRepeatedField(field, index, value);\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder addRepeatedField(\n"
+        "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+        "    java.lang.Object value) {\n"
+        "  return super.addRepeatedField(field, value);\n"
+        "}\n");
+
+    if (descriptor_->extension_range_count() > 0) {
+      printer->Print(
+          "@java.lang.Override\n"
+          "public <Type> Builder setExtension(\n"
+          "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "        $classname$, Type> extension,\n"
+          "    Type value) {\n"
+          "  return super.setExtension(extension, value);\n"
+          "}\n"
+          "@java.lang.Override\n"
+          "public <Type> Builder setExtension(\n"
+          "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "        $classname$, java.util.List<Type>> extension,\n"
+          "    int index, Type value) {\n"
+          "  return super.setExtension(extension, index, value);\n"
+          "}\n"
+          "@java.lang.Override\n"
+          "public <Type> Builder addExtension(\n"
+          "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "        $classname$, java.util.List<Type>> extension,\n"
+          "    Type value) {\n"
+          "  return super.addExtension(extension, value);\n"
+          "}\n"
+          "@java.lang.Override\n"
+          "public <Type> Builder clearExtension(\n"
+          "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "        $classname$, ?> extension) {\n"
+          "  return super.clearExtension(extension);\n"
+          "}\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_));
+    }
+  }
+
   // -----------------------------------------------------------------
 
   if (context_->HasGeneratedMethods(descriptor_)) {
@@ -594,7 +667,7 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "piece",
       absl::StrCat(piece), "bit_field_name", GetBitFieldName(piece));
   printer->Indent();
-  std::set<int> declared_to_bitfields;
+  absl::btree_set<int> declared_to_bitfields;
 
   int bit = 0;
   int next = first_field;

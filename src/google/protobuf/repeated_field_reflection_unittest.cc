@@ -166,7 +166,7 @@ TEST(RepeatedFieldReflectionTest, ExtensionFields) {
 
   const FieldDescriptor* fd_repeated_int64_extension =
       desc->file()->FindExtensionByName("repeated_int64_extension");
-  GOOGLE_CHECK(fd_repeated_int64_extension != nullptr);
+  GOOGLE_ABSL_CHECK(fd_repeated_int64_extension != nullptr);
 
   const RepeatedField<int64_t>& rf_int64_extension =
       refl->GetRepeatedField<int64_t>(extended_message,
@@ -539,7 +539,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForExtensionFields) {
 
   const FieldDescriptor* fd_repeated_int64_extension =
       desc->file()->FindExtensionByName("repeated_int64_extension");
-  GOOGLE_CHECK(fd_repeated_int64_extension != nullptr);
+  GOOGLE_ABSL_CHECK(fd_repeated_int64_extension != nullptr);
 
   const RepeatedFieldRef<int64_t> rf_int64_extension =
       refl->GetRepeatedFieldRef<int64_t>(extended_message,

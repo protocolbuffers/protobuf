@@ -409,7 +409,7 @@ PHP_METHOD(MapField, offsetUnset) {
     return;
   }
 
-  upb_Map_Delete(intern->map, upb_key);
+  upb_Map_Delete(intern->map, upb_key, NULL);
 }
 
 /**

@@ -81,10 +81,8 @@ struct Options {
   bool bootstrap = false;
   bool opensource_runtime = false;
   bool annotate_accessor = false;
-  bool unused_field_stripping = false;
   bool unverified_lazy_message_sets = false;
   bool profile_driven_inline_string = true;
-  bool message_owned_arena_trial = false;
   bool force_split = false;
   bool profile_driven_split = true;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS

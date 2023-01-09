@@ -44,6 +44,7 @@
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -341,7 +342,7 @@ inline bool UseUnknownFieldSet(const FileDescriptor* file,
 
 inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   if (field->options().weak()) {
-    GOOGLE_CHECK(!options.opensource_runtime);
+    GOOGLE_ABSL_CHECK(!options.opensource_runtime);
     return true;
   }
   return false;
@@ -405,12 +406,6 @@ bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
 inline bool IsFieldUsed(const FieldDescriptor* /* field */,
                         const Options& /* options */) {
   return true;
-}
-
-// Returns true if "field" is stripped.
-inline bool IsFieldStripped(const FieldDescriptor* /*field*/,
-                            const Options& /*options*/) {
-  return false;
 }
 
 // Does the file contain any definitions that need extension_set.h?
@@ -991,7 +986,7 @@ struct OneOfRangeImpl {
     value_type operator*() { return descriptor->oneof_decl(idx); }
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
-      GOOGLE_DCHECK(a.descriptor == b.descriptor);
+      GOOGLE_ABSL_DCHECK(a.descriptor == b.descriptor);
       return a.idx == b.idx;
     }
     friend bool operator!=(const Iterator& a, const Iterator& b) {
@@ -1018,11 +1013,6 @@ struct OneOfRangeImpl {
 inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 
 PROTOC_EXPORT std::string StripProto(const std::string& filename);
-
-bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options);
-
-bool EnableMessageOwnedArenaTrial(const Descriptor* desc,
-                                  const Options& options);
 
 bool ShouldVerify(const Descriptor* descriptor, const Options& options,
                   MessageSCCAnalyzer* scc_analyzer);

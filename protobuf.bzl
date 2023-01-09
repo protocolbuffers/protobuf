@@ -2,6 +2,7 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
@@ -328,7 +329,7 @@ internal_gen_well_known_protos_java = rule(
         "_protoc": attr.label(
             executable = True,
             cfg = "exec",
-            default = "@com_google_protobuf//:protoc",
+            default = "//:protoc",
         ),
     },
 )
@@ -402,8 +403,8 @@ def internal_objc_proto_library(
         outs = [],
         proto_deps = [],
         includes = ["."],
-        default_runtime = "@com_google_protobuf//:protobuf_objc",
-        protoc = "@com_google_protobuf//:protoc",
+        default_runtime = Label("//:protobuf_objc"),
+        protoc = Label("//:protoc"),
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
@@ -485,6 +486,72 @@ def internal_objc_proto_library(
         **kwargs
     )
 
+def internal_ruby_proto_library(
+        name,
+        srcs = [],
+        deps = [],
+        includes = ["."],
+        default_runtime = "@com_google_protobuf//ruby:protobuf",
+        protoc = "@com_google_protobuf//:protoc",
+        testonly = None,
+        visibility = ["//visibility:public"],
+        **kwargs):
+    """Bazel rule to create a Ruby protobuf library from proto source files
+
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+
+    Args:
+      name: the name of the ruby_proto_library.
+      srcs: the .proto files to compile.
+      deps: a list of dependency labels; must be a internal_ruby_proto_library.
+      includes: a string indicating the include path of the .proto files.
+      default_runtime: the RubyProtobuf runtime
+      protoc: the label of the protocol compiler to generate the sources.
+      testonly: common rule attribute (see:
+          https://bazel.build/reference/be/common-definitions#common-attributes)
+      visibility: the visibility of the generated files.
+      **kwargs: other keyword arguments that are passed to ruby_library.
+
+    """
+
+    # Note: we need to run the protoc build twice to get separate targets for
+    # the generated header and the source files.
+    _proto_gen(
+        name = name + "_genproto",
+        srcs = srcs,
+        deps = [s + "_genproto" for s in deps],
+        langs = ["ruby"],
+        includes = includes,
+        protoc = protoc,
+        testonly = testonly,
+        visibility = visibility,
+        tags = ["manual"],
+    )
+
+    deps = []
+    if default_runtime:
+        deps.append(default_runtime)
+    ruby_library(
+        name = name,
+        srcs = [name + "_genproto"],
+        deps = deps,
+        testonly = testonly,
+        visibility = visibility,
+        includes = includes,
+        **kwargs
+    )
+
+# When canonical labels are in use, use additional "@" prefix
+_canonical_label_prefix = "@" if str(Label("//:protoc")).startswith("@@") else ""
+
+def _to_label(label_str):
+    """Converts a string to a label using the repository of the calling thread"""
+    if type(label_str) == type(Label("//:foo")):
+        return label_str
+    return Label(_canonical_label_prefix + native.repository_name() + "//" + native.package_name() + ":foo").relative(label_str)
+
 def internal_py_proto_library(
         name,
         srcs = [],
@@ -492,8 +559,8 @@ def internal_py_proto_library(
         py_libs = [],
         py_extra_srcs = [],
         include = None,
-        default_runtime = "@com_google_protobuf//:protobuf_python",
-        protoc = "@com_google_protobuf//:protoc",
+        default_runtime = Label("//:protobuf_python"),
+        protoc = Label("//:protoc"),
         use_grpc_plugin = False,
         testonly = None,
         **kargs):
@@ -546,8 +613,12 @@ def internal_py_proto_library(
         plugin_language = "grpc",
     )
 
-    if default_runtime and not default_runtime in py_libs + deps:
-        py_libs = py_libs + [default_runtime]
+    if default_runtime:
+        # Resolve non-local labels
+        labels = [_to_label(lib) for lib in py_libs + deps]
+        if not _to_label(default_runtime) in labels:
+            py_libs = py_libs + [default_runtime]
+
     py_library(
         name = name,
         testonly = testonly,
@@ -580,7 +651,7 @@ def _source_proto_library(
         outs = [],
         lang = None,
         includes = ["."],
-        protoc = "@com_google_protobuf//:protoc",
+        protoc = Label("//:protoc"),
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
@@ -683,23 +754,6 @@ def internal_php_proto_library(**kwargs):
 
     _source_proto_library(
         lang = "php",
-        **kwargs
-    )
-
-def internal_ruby_proto_library(**kwargs):
-    """Bazel rule to create a Ruby protobuf library from proto source files
-
-    NOTE: the rule is only an internal workaround to generate protos. The
-    interface may change and the rule may be removed when bazel has introduced
-    the native rule.
-
-    Args:
-      **kwargs: arguments that are passed to unsupported_proto_library.
-
-    """
-
-    _source_proto_library(
-        lang = "ruby",
         **kwargs
     )
 

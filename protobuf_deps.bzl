@@ -48,7 +48,7 @@ def protobuf_deps():
     if not native.existing_rule("zlib"):
         http_archive(
             name = "zlib",
-            build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
+            build_file = Label("//:third_party/zlib.BUILD"),
             sha256 = "d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98",
             strip_prefix = "zlib-1.2.13",
             urls = [
@@ -60,7 +60,7 @@ def protobuf_deps():
     if not native.existing_rule("jsoncpp"):
         http_archive(
             name = "jsoncpp",
-            build_file = "@com_google_protobuf//:third_party/jsoncpp.BUILD",
+            build_file = Label("//:third_party/jsoncpp.BUILD"),
             sha256 = "e34a628a8142643b976c7233ef381457efad79468c67cb1ae0b83a33d7493999",
             strip_prefix = "jsoncpp-1.9.4",
             urls = ["https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/1.9.4.tar.gz"],
@@ -106,6 +106,14 @@ def protobuf_deps():
             url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.14.0.tar.gz",
         )
 
+    if not native.existing_rule("rules_ruby"):
+        _github_archive(
+            name = "rules_ruby",
+            repo = "https://github.com/protocolbuffers/rules_ruby",
+            commit = "59732544ce3a4bc4e8e4d4e8c8f318c931c17eae",
+            sha256 = "4fc45adf1056c824afde9a52b743b915eeada3633539eb1dbd641a66dc9f4c4f",
+        )
+
     if not native.existing_rule("rules_jvm_external"):
         _github_archive(
             name = "rules_jvm_external",
@@ -124,6 +132,13 @@ def protobuf_deps():
             sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
         )
 
+    if not native.existing_rule("build_bazel_rules_apple"):
+        http_archive(
+            name = "build_bazel_rules_apple",
+            sha256 = "f94e6dddf74739ef5cb30f000e13a2a613f6ebfa5e63588305a71fce8a8a9911",
+            url = "https://github.com/bazelbuild/rules_apple/releases/download/1.1.3/rules_apple.1.1.3.tar.gz",
+        )
+
     if not native.existing_rule("io_bazel_rules_kotlin"):
         http_archive(
             name = "io_bazel_rules_kotlin",
@@ -135,6 +150,6 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "efb166b3b0b427052ac0b40d01b8dd078f6d3e3b",
-            sha256 = "75f3589154114a6e7c521b61784530dcf9347fb8f1fb103f72db4cb373064a33",
+            commit = "0c6b72dbf891eafc91050ad60733ea3022fac2b3",
+            sha256 = "9c8cdfa013450548c9f03fac8e1390aeb21a75413f443790815b71d475c9af49",
         )

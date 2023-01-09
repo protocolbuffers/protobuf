@@ -33,7 +33,6 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_H__
 #define GOOGLE_PROTOBUF_REFLECTION_H__
 
-
 #include <memory>
 
 #include "google/protobuf/message.h"

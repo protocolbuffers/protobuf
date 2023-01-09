@@ -18,6 +18,9 @@ on:
     - '!objectivec/ProtocolBuffers_*.xcodeproj/**'
     - '!objectivec/Tests/**'
 
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
 jobs:
   pod-lib-lint:
     runs-on: macos-latest

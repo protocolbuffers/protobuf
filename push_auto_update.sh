@@ -19,9 +19,7 @@ if (echo "$previous_commit_title" | grep -q "^Auto-generate files"); then
   exit 0
 fi
 
-# Run the staleness tests and use them to update any stale files.
-bazel test //src:cmake_lists_staleness_test || ./bazel-bin/src/cmake_lists_staleness_test --fix
-bazel test //src/google/protobuf:well_known_types_staleness_test || ./bazel-bin/src/google/protobuf/well_known_types_staleness_test --fix
+./regenerate_stale_files.sh
 
 # Try to determine the most recent CL or pull request.
 pr_from_merge=$(echo "$previous_commit_title" | sed -n 's/^Merge pull request #\([0-9]\+\).*/\1/p')

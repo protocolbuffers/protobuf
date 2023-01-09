@@ -76,7 +76,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       case WireFormatLite::TYPE_BYTES:
       case WireFormatLite::TYPE_GROUP:
       case WireFormatLite::TYPE_MESSAGE:
-        GOOGLE_LOG(FATAL) << "Non-primitive types can't be packed.";
+        GOOGLE_ABSL_LOG(FATAL) << "Non-primitive types can't be packed.";
         break;
     }
   } else {

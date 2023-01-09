@@ -64,6 +64,7 @@ else()
     absl::strings
     absl::synchronization
     absl::time
+    absl::type_traits
     absl::utility
     absl::variant
   )
