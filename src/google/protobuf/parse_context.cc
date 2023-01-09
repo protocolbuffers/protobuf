@@ -81,7 +81,7 @@ bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth) {
         depth++;
         break;
       }
-      case 4: {                    // end group
+      case 4: {                        // end group
         if (--depth < 0) return true;  // We exit early
         break;
       }
@@ -113,8 +113,8 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   // Note we must use memmove because the previous buffer could be part of
   // buffer_.
   std::memmove(buffer_, buffer_end_, kSlopBytes);
-  if (overall_limit_ > 0 &&
-      (depth < 0 || !ParseEndsInSlopRegion(buffer_, overrun, depth))) {
+  if (overall_limit_ > 0) {
+    //    (depth < 0 || !ParseEndsInSlopRegion(buffer_, overrun, depth))) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
