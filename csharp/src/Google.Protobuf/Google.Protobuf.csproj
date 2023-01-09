@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!-- If you update this, update the .csproj in the Docker file as well -->
+  <!-- If you update this, update the .csproj in the Docker file as well. -->
 
   <PropertyGroup>
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>

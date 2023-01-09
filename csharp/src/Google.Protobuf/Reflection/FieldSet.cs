@@ -131,7 +131,7 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <summary>
-        /// Iterates all the fields and writes them to CodedOutputStream.
+        /// Iterates all the fields and writes them to  CodedOutputStream.
         /// </summary>
         /// <param name="output"></param>
         internal void WriteTo(CodedOutputStream output)

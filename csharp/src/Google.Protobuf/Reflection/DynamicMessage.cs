@@ -17,7 +17,7 @@ namespace Google.Protobuf.Reflection
         private readonly MessageDescriptor _descriptor = null;
 
         /// <summary>
-        /// Properties for parsing
+        /// Properties for parsing.
         /// </summary> 
         public MessageParser<DynamicMessage> Parser { get { return _parser; } }
 

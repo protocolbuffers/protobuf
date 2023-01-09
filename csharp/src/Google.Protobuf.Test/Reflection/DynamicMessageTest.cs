@@ -21,14 +21,12 @@ namespace Google.Protobuf.Reflection
             //create 
             DynamicMessage dm = new DynamicMessage(desc);
             dm.Add("single_string", "sss");
-
             //serialize
             //Stream output = WriteTo(dm);
             using (var output = File.Create(fileName))
             {
                 dm.WriteTo(output);
             }
-
             //deserialize
             DynamicMessage deserializedDm;
             DynamicMessage tempdm = new DynamicMessage(desc);
