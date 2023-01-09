@@ -195,7 +195,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   // Callers should check that message is not set first before calling
   // PromotoUnknownToMessage.
   UPB_ASSERT(mini_table->subs[field->submsg_index].submsg == sub_mini_table);
-  UPB_ASSERT(upb_MiniTable_GetMessage(msg, field, NULL) == NULL);
+  UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;
   do {
@@ -223,7 +223,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     }
   } while (unknown.status == kUpb_FindUnknown_Ok);
   if (message) {
-    upb_MiniTable_SetMessage(msg, mini_table, field, message);
+    upb_Message_SetMessage(msg, mini_table, field, message);
     ret.message = message;
   }
   return ret;

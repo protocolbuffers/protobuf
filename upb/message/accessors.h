@@ -405,7 +405,7 @@ UPB_API_INLINE bool upb_Message_SetUInt32(upb_Message* msg,
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
-UPB_API_INLINE void upb_MiniTable_SetEnumProto2(
+UPB_API_INLINE void upb_Message_SetEnumProto2(
     upb_Message* msg, const upb_MiniTable* msg_mini_table,
     const upb_MiniTableField* field, int32_t value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Enum);
@@ -524,7 +524,7 @@ UPB_API_INLINE bool upb_Message_SetString(upb_Message* msg,
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
-UPB_API_INLINE const upb_Message* upb_MiniTable_GetMessage(
+UPB_API_INLINE const upb_Message* upb_Message_GetMessage(
     const upb_Message* msg, const upb_MiniTableField* field,
     upb_Message* default_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
@@ -537,10 +537,10 @@ UPB_API_INLINE const upb_Message* upb_MiniTable_GetMessage(
   return ret;
 }
 
-UPB_API_INLINE void upb_MiniTable_SetMessage(upb_Message* msg,
-                                             const upb_MiniTable* mini_table,
-                                             const upb_MiniTableField* field,
-                                             upb_Message* sub_message) {
+UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
+                                           const upb_MiniTable* mini_table,
+                                           const upb_MiniTableField* field,
+                                           upb_Message* sub_message) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
              field->descriptortype == kUpb_FieldType_Group);
   UPB_ASSUME(!upb_IsRepeatedOrMap(field));
@@ -550,7 +550,7 @@ UPB_API_INLINE void upb_MiniTable_SetMessage(upb_Message* msg,
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
 }
 
-UPB_API_INLINE upb_Message* upb_MiniTable_GetMutableMessage(
+UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
@@ -719,7 +719,7 @@ typedef struct {
 // Promotes unknown data inside message to a upb_Message parsing the unknown.
 //
 // The unknown data is removed from message after field value is set
-// using upb_MiniTable_SetMessage.
+// using upb_Message_SetMessage.
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,

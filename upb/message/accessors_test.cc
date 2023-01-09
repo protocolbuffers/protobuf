@@ -261,7 +261,7 @@ TEST(GeneratedCode, SubMessage) {
       find_proto2_field(kFieldOptionalNestedMessage);
 
   const upb_Message* test_message =
-      upb_MiniTable_GetMessage(msg, optional_message_field, NULL);
+      upb_Message_GetMessage(msg, optional_message_field, NULL);
   EXPECT_EQ(NULL, test_message);
 
   EXPECT_EQ(false, upb_Message_HasField(msg, optional_message_field));
@@ -277,7 +277,7 @@ TEST(GeneratedCode, SubMessage) {
 
   // Read back using mini table API.
   const upb_Message* sub_message =
-      upb_MiniTable_GetMessage(msg, optional_message_field, NULL);
+      upb_Message_GetMessage(msg, optional_message_field, NULL);
   EXPECT_EQ(true, sub_message != NULL);
 
   const upb_MiniTableField* nested_message_a_field =
@@ -296,11 +296,11 @@ TEST(GeneratedCode, SubMessage) {
   upb_Message* new_nested_message =
       protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(arena);
   upb_Message_SetInt32(new_nested_message, nested_message_a_field, 123, NULL);
-  upb_MiniTable_SetMessage(
+  upb_Message_SetMessage(
       msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
       optional_message_field, new_nested_message);
 
-  upb_Message* mutable_message = upb_MiniTable_GetMutableMessage(
+  upb_Message* mutable_message = upb_Message_GetOrCreateMutableMessage(
       msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
       optional_message_field, arena);
   EXPECT_EQ(
@@ -373,10 +373,10 @@ TEST(GeneratedCode, GetMutableMessage) {
   // Message.
   const upb_MiniTableField* optional_message_field =
       find_proto2_field(kFieldOptionalNestedMessage);
-  upb_Message* msg1 = upb_MiniTable_GetMutableMessage(
+  upb_Message* msg1 = upb_Message_GetOrCreateMutableMessage(
       msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
       optional_message_field, arena);
-  upb_Message* msg2 = upb_MiniTable_GetMutableMessage(
+  upb_Message* msg2 = upb_Message_GetOrCreateMutableMessage(
       msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
       optional_message_field, arena);
   // Verify that newly constructed sub message is stored in msg.
@@ -653,7 +653,7 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
           &upb_test_ModelWithExtensions_msg_init, decode_options, arena);
   EXPECT_EQ(promote_result.status, kUpb_UnknownToMessage_Ok);
   const upb_Message* promoted_message =
-      upb_MiniTable_GetMessage(msg, &mini_table->fields[1], NULL);
+      upb_Message_GetMessage(msg, &mini_table->fields[1], NULL);
   EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
                 (upb_test_ModelWithExtensions*)promoted_message),
             12);
