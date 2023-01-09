@@ -46,6 +46,7 @@ struct GenerationOptions {
   // TODO(thomasvl): Eventually flip this default to false for better interop
   // with Swift if proto usages span modules made from ObjC sources.
   bool headers_use_forward_declarations = true;
+  bool experimental_multi_source_generation = false;
 };
 
 }  // namespace objectivec

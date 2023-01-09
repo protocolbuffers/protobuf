@@ -36,6 +36,7 @@
 #include <cstdint>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 
 namespace google {
@@ -77,7 +78,7 @@ namespace compiler {
 //     that can later be verified with CheckGeneratedAnnotations.
 class MockCodeGenerator : public CodeGenerator {
  public:
-  MockCodeGenerator(const std::string& name);
+  explicit MockCodeGenerator(absl::string_view name);
   ~MockCodeGenerator() override;
 
   // Expect (via gTest) that a MockCodeGenerator with the given name was called
@@ -87,25 +88,25 @@ class MockCodeGenerator : public CodeGenerator {
   // should have inserted lines into this file.
   // |parsed_file_list| is a comma-separated list of names of the files
   // that are being compiled together in this run.
-  static void ExpectGenerated(const std::string& name,
-                              const std::string& parameter,
-                              const std::string& insertions,
-                              const std::string& file,
-                              const std::string& first_message_name,
-                              const std::string& parsed_file_list,
-                              const std::string& output_directory);
+  static void ExpectGenerated(absl::string_view name,
+                              absl::string_view parameter,
+                              absl::string_view insertions,
+                              absl::string_view file,
+                              absl::string_view first_message_name,
+                              absl::string_view first_parsed_file_name,
+                              absl::string_view output_directory);
 
   // Checks that the correct text ranges were annotated by the
   // MockCodeGenerator_Annotate directive.
-  static void CheckGeneratedAnnotations(const std::string& name,
-                                        const std::string& file,
-                                        const std::string& output_directory);
+  static void CheckGeneratedAnnotations(absl::string_view name,
+                                        absl::string_view file,
+                                        absl::string_view output_directory);
 
   // Get the name of the file which would be written by the given generator.
-  static std::string GetOutputFileName(const std::string& generator_name,
+  static std::string GetOutputFileName(absl::string_view generator_name,
                                        const FileDescriptor* file);
-  static std::string GetOutputFileName(const std::string& generator_name,
-                                       const std::string& file);
+  static std::string GetOutputFileName(absl::string_view generator_name,
+                                       absl::string_view file);
 
   // implements CodeGenerator ----------------------------------------
 
@@ -119,14 +120,15 @@ class MockCodeGenerator : public CodeGenerator {
   std::string name_;
   uint64_t suppressed_features_ = 0;
 
-  static std::string GetOutputFileContent(const std::string& generator_name,
-                                          const std::string& parameter,
+  static std::string GetOutputFileContent(absl::string_view generator_name,
+                                          absl::string_view parameter,
                                           const FileDescriptor* file,
                                           GeneratorContext* context);
-  static std::string GetOutputFileContent(
-      const std::string& generator_name, const std::string& parameter,
-      const std::string& file, const std::string& parsed_file_list,
-      const std::string& first_message_name);
+  static std::string GetOutputFileContent(absl::string_view generator_name,
+                                          absl::string_view parameter,
+                                          absl::string_view file,
+                                          absl::string_view parsed_file_list,
+                                          absl::string_view first_message_name);
 };
 
 }  // namespace compiler

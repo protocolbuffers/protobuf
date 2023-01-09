@@ -38,7 +38,7 @@
 #include <string>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -449,7 +449,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateEqualsCode(
     case JAVATYPE_ENUM:
     case JAVATYPE_MESSAGE:
     default:
-      GOOGLE_LOG(FATAL) << "Can't get here.";
+      GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
       break;
   }
 }
@@ -500,7 +500,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateHashCode(
     case JAVATYPE_ENUM:
     case JAVATYPE_MESSAGE:
     default:
-      GOOGLE_LOG(FATAL) << "Can't get here.";
+      GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
       break;
   }
 }
@@ -527,7 +527,7 @@ ImmutablePrimitiveOneofFieldGenerator::
 void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  GOOGLE_DCHECK(HasHazzer(descriptor_));
+  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -550,7 +550,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  GOOGLE_DCHECK(HasHazzer(descriptor_));
+  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"

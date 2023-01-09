@@ -892,7 +892,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   const char *nameAsCStr = [name UTF8String];
   nameAsCStr += prefixLen;
 
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+  [self calcValueNameOffsets];
   if (nameOffsets_ == NULL) return NO;
 
   // Find it.
@@ -909,7 +909,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (BOOL)getValue:(int32_t *)outValue forEnumTextFormatName:(NSString *)textFormatName {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+  [self calcValueNameOffsets];
   if (nameOffsets_ == NULL) return NO;
 
   for (uint32_t i = 0; i < valueCount_; ++i) {
@@ -946,7 +946,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)getEnumNameForIndex:(uint32_t)index {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+  [self calcValueNameOffsets];
   if (nameOffsets_ == NULL) return nil;
 
   if (index >= valueCount_) {
@@ -958,7 +958,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)getEnumTextFormatNameForIndex:(uint32_t)index {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+  [self calcValueNameOffsets];
   if (nameOffsets_ == NULL) return nil;
 
   if (index >= valueCount_) {

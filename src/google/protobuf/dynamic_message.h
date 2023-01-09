@@ -38,7 +38,6 @@
 #ifndef GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 #define GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 
-
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -163,9 +162,9 @@ class PROTOBUF_EXPORT DynamicMapSorter {
 #ifndef NDEBUG
     for (size_t j = 1; j < static_cast<size_t>(map_size); j++) {
       if (!comparator(result[j - 1], result[j])) {
-        GOOGLE_LOG(ERROR) << (comparator(result[j], result[j - 1])
-                           ? "internal error in map key sorting"
-                           : "map keys are not unique");
+        GOOGLE_ABSL_LOG(ERROR) << (comparator(result[j], result[j - 1])
+                                ? "internal error in map key sorting"
+                                : "map keys are not unique");
       }
     }
 #endif
@@ -212,7 +211,7 @@ class PROTOBUF_EXPORT DynamicMapSorter {
           return first < second;
         }
         default:
-          GOOGLE_LOG(DFATAL) << "Invalid key for map field.";
+          GOOGLE_ABSL_LOG(DFATAL) << "Invalid key for map field.";
           return true;
       }
     }

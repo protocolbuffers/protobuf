@@ -65,6 +65,7 @@
 #include <future>
 #include <vector>
 
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
@@ -76,7 +77,7 @@ using std::vector;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-#define GOOGLE_CHECK_SYSCALL(call)                            \
+#define CHECK_SYSCALL(call)                            \
   if (call < 0) {                                      \
     perror(#call " " __FILE__ ":" TOSTRING(__LINE__)); \
     exit(1);                                           \
@@ -160,7 +161,7 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
 
   if (!TryRead(read_fd_, &len, sizeof(uint32_t))) {
     // We failed to read from the child, assume a crash and try to reap.
-    GOOGLE_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
+    GOOGLE_ABSL_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
 
     int status = 0;
     waitpid(child_pid_, &status, WEXITED);
@@ -182,7 +183,7 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
       absl::StrAppendFormat(&error_msg, "child killed by signal %d",
                             WTERMSIG(status));
     }
-    GOOGLE_LOG(INFO) << error_msg;
+    GOOGLE_ABSL_LOG(INFO) << error_msg;
     child_pid_ = -1;
 
     response_obj.SerializeToString(response);
@@ -288,22 +289,22 @@ void ForkPipeRunner::SpawnTestProgram() {
 
   if (pid) {
     // Parent.
-    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
     write_fd_ = toproc_pipe_fd[1];
     read_fd_ = fromproc_pipe_fd[0];
     child_pid_ = pid;
   } else {
     // Child.
-    GOOGLE_CHECK_SYSCALL(close(STDIN_FILENO));
-    GOOGLE_CHECK_SYSCALL(close(STDOUT_FILENO));
-    GOOGLE_CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
-    GOOGLE_CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
+    CHECK_SYSCALL(close(STDIN_FILENO));
+    CHECK_SYSCALL(close(STDOUT_FILENO));
+    CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
+    CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
 
-    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[1]));
-    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
+    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    CHECK_SYSCALL(close(toproc_pipe_fd[1]));
+    CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
 
     std::unique_ptr<char[]> executable(new char[executable_.size() + 1]);
     memcpy(executable.get(), executable_.c_str(), executable_.size());
@@ -311,21 +312,21 @@ void ForkPipeRunner::SpawnTestProgram() {
 
     std::vector<const char *> argv;
     argv.push_back(executable.get());
-    GOOGLE_LOG(INFO) << argv[0];
+    GOOGLE_ABSL_LOG(INFO) << argv[0];
     for (size_t i = 0; i < executable_args_.size(); ++i) {
       argv.push_back(executable_args_[i].c_str());
-      GOOGLE_LOG(INFO) << executable_args_[i];
+      GOOGLE_ABSL_LOG(INFO) << executable_args_[i];
     }
     argv.push_back(nullptr);
     // Never returns.
-    GOOGLE_CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
+    CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
   }
 }
 
 void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
   if (static_cast<size_t>(write(fd, buf, len)) != len) {
-    GOOGLE_LOG(FATAL) << current_test_name_
-               << ": error writing to test program: " << strerror(errno);
+    GOOGLE_ABSL_LOG(FATAL) << current_test_name_
+                    << ": error writing to test program: " << strerror(errno);
   }
 }
 
@@ -342,7 +343,7 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
     if (performance_) {
       status = future.wait_for(std::chrono::seconds(5));
       if (status == std::future_status::timeout) {
-        GOOGLE_LOG(ERROR) << current_test_name_ << ": timeout from test program";
+        GOOGLE_ABSL_LOG(ERROR) << current_test_name_ << ": timeout from test program";
         kill(child_pid_, SIGQUIT);
         // TODO(sandyzhang): Only log in flag-guarded mode, since reading output
         // from SIGQUIT is slow and verbose.
@@ -355,7 +356,8 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
               read(fd, (void *)&err[err_ofs], err.size() - err_ofs);
           err_ofs += err_bytes_read;
         } while (err_bytes_read > 0 && err_ofs < err.size());
-        GOOGLE_LOG(ERROR) << "child_pid_=" << child_pid_ << " SIGQUIT: \n" << &err[0];
+        GOOGLE_ABSL_LOG(ERROR) << "child_pid_=" << child_pid_ << " SIGQUIT: \n"
+                        << &err[0];
         return false;
       }
     } else {
@@ -363,11 +365,13 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
     }
     ssize_t bytes_read = future.get();
     if (bytes_read == 0) {
-      GOOGLE_LOG(ERROR) << current_test_name_ << ": unexpected EOF from test program";
+      GOOGLE_ABSL_LOG(ERROR) << current_test_name_
+                      << ": unexpected EOF from test program";
       return false;
     } else if (bytes_read < 0) {
-      GOOGLE_LOG(ERROR) << current_test_name_
-                 << ": error reading from test program: " << strerror(errno);
+      GOOGLE_ABSL_LOG(ERROR) << current_test_name_
+                      << ": error reading from test program: "
+                      << strerror(errno);
       return false;
     }
 
@@ -380,8 +384,8 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
 
 void ForkPipeRunner::CheckedRead(int fd, void *buf, size_t len) {
   if (!TryRead(fd, buf, len)) {
-    GOOGLE_LOG(FATAL) << current_test_name_
-               << ": error reading from test program: " << strerror(errno);
+    GOOGLE_ABSL_LOG(FATAL) << current_test_name_
+                    << ": error reading from test program: " << strerror(errno);
   }
 }
 

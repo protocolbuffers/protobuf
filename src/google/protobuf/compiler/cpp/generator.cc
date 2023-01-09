@@ -61,6 +61,9 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
   bool is_oss = options.opensource_runtime;
   return {
       {"proto_ns", ProtobufNamespace(options)},
+      {"pb", absl::StrCat("::", ProtobufNamespace(options))},
+      {"pbi", absl::StrCat("::", ProtobufNamespace(options), "::internal")},
+
       {"string", "std::string"},
       {"int8", "::int8_t"},
       {"int32", "::int32_t"},
@@ -75,7 +78,7 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
       // Warning: there is some clever naming/splitting here to avoid extract
       // script rewrites.  The names of these variables must not be things that
       // the extract script will rewrite.  That's why we use "CHK" (for example)
-      // instead of "GOOGLE_CHECK".
+      // instead of "GOOGLE_ABSL_CHECK".
       //
       // These values are things the extract script would rewrite if we did not
       // split them.  It might not strictly matter since we don't generate
@@ -84,11 +87,11 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
       {"GOOGLE_PROTOBUF", is_oss ? "GOOGLE_PROTOBUF"
                                  : "GOOGLE3_PROTOBU"
                                    "F"},
-      {"CHK", is_oss ? "GOOGLE_CHECK"
-                     : "CHEC"
+      {"CHK", is_oss ? "GOOGLE_ABSL_CHECK"
+                     : "ABSL_CHEC"
                        "K"},
-      {"DCHK", is_oss ? "GOOGLE_DCHECK"
-                      : "DCHEC"
+      {"DCHK", is_oss ? "GOOGLE_ABSL_DCHECK"
+                      : "ABSL_DCHEC"
                         "K"},
   };
 }
@@ -174,8 +177,6 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       } while (pos < value.size());
     } else if (key == "unverified_lazy_message_sets") {
       file_options.unverified_lazy_message_sets = true;
-    } else if (key == "message_owned_arena_trial") {
-      file_options.message_owned_arena_trial = true;
     } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
     } else if (key == "experimental_tail_call_table_mode") {
@@ -299,7 +300,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     // pb.cc file. If we have more files than messages, then some files will
     // be generated as empty placeholders.
     if (file_options.num_cc_files > 0) {
-      GOOGLE_CHECK_LE(num_cc_files, file_options.num_cc_files)
+      GOOGLE_ABSL_CHECK_LE(num_cc_files, file_options.num_cc_files)
           << "There must be at least as many numbered .cc files as messages "
              "and extensions.";
       num_cc_files = file_options.num_cc_files;

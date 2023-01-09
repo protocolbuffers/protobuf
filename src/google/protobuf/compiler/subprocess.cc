@@ -44,8 +44,9 @@
 #endif
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/message.h"
@@ -58,8 +59,8 @@ namespace compiler {
 
 static void CloseHandleOrDie(HANDLE handle) {
   if (!CloseHandle(handle)) {
-    GOOGLE_LOG(FATAL) << "CloseHandle: "
-                      << Subprocess::Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "CloseHandle: "
+                    << Subprocess::Win32ErrorMessage(GetLastError());
   }
 }
 
@@ -86,22 +87,22 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   HANDLE stdout_pipe_write;
 
   if (!CreatePipe(&stdin_pipe_read, &stdin_pipe_write, nullptr, 0)) {
-    GOOGLE_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
   }
   if (!CreatePipe(&stdout_pipe_read, &stdout_pipe_write, nullptr, 0)) {
-    GOOGLE_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
   }
 
   // Make child side of the pipes inheritable.
   if (!SetHandleInformation(stdin_pipe_read, HANDLE_FLAG_INHERIT,
                             HANDLE_FLAG_INHERIT)) {
-    GOOGLE_LOG(FATAL) << "SetHandleInformation: "
-                      << Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "SetHandleInformation: "
+                    << Win32ErrorMessage(GetLastError());
   }
   if (!SetHandleInformation(stdout_pipe_write, HANDLE_FLAG_INHERIT,
                             HANDLE_FLAG_INHERIT)) {
-    GOOGLE_LOG(FATAL) << "SetHandleInformation: "
-                      << Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "SetHandleInformation: "
+                    << Win32ErrorMessage(GetLastError());
   }
 
   // Setup STARTUPINFO to redirect handles.
@@ -114,22 +115,22 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   startup_info.hStdError = GetStdHandle(STD_ERROR_HANDLE);
 
   if (startup_info.hStdError == INVALID_HANDLE_VALUE) {
-    GOOGLE_LOG(FATAL) << "GetStdHandle: " << Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "GetStdHandle: " << Win32ErrorMessage(GetLastError());
   }
 
   // get wide string version of program as the path may contain non-ascii characters
   std::wstring wprogram;
   if (!io::win32::strings::utf8_to_wcs(program.c_str(), &wprogram)) {
-    GOOGLE_LOG(FATAL) << "utf8_to_wcs: " << Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "utf8_to_wcs: " << Win32ErrorMessage(GetLastError());
   }
 
   // Invoking cmd.exe allows for '.bat' files from the path as well as '.exe'.
-  std::string command_line = "cmd.exe /c \"" + program + "\"";
+  std::string command_line = absl::StrCat("cmd.exe /c \"", program, "\"");
 
   // get wide string version of command line as the path may contain non-ascii characters
   std::wstring wcommand_line;
   if (!io::win32::strings::utf8_to_wcs(command_line.c_str(), &wcommand_line)) {
-    GOOGLE_LOG(FATAL) << "utf8_to_wcs: " << Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "utf8_to_wcs: " << Win32ErrorMessage(GetLastError());
   }
 
   // Using a malloc'ed string because CreateProcess() can mutate its second
@@ -170,7 +171,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
     return false;
   }
 
-  GOOGLE_CHECK(child_handle_ != nullptr) << "Must call Start() first.";
+  GOOGLE_ABSL_CHECK(child_handle_ != nullptr) << "Must call Start() first.";
 
   std::string input_data;
   if (!input.SerializeToString(&input_data)) {
@@ -200,11 +201,11 @@ bool Subprocess::Communicate(const Message& input, Message* output,
         wait_result < WAIT_OBJECT_0 + handle_count) {
       signaled_handle = handles[wait_result - WAIT_OBJECT_0];
     } else if (wait_result == WAIT_FAILED) {
-      GOOGLE_LOG(FATAL) << "WaitForMultipleObjects: "
-                        << Win32ErrorMessage(GetLastError());
+      GOOGLE_ABSL_LOG(FATAL) << "WaitForMultipleObjects: "
+                      << Win32ErrorMessage(GetLastError());
     } else {
-      GOOGLE_LOG(FATAL) << "WaitForMultipleObjects: Unexpected return code: "
-                        << wait_result;
+      GOOGLE_ABSL_LOG(FATAL) << "WaitForMultipleObjects: Unexpected return code: "
+                      << wait_result;
     }
 
     if (signaled_handle == child_stdin_) {
@@ -247,17 +248,17 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   DWORD wait_result = WaitForSingleObject(child_handle_, INFINITE);
 
   if (wait_result == WAIT_FAILED) {
-    GOOGLE_LOG(FATAL) << "WaitForSingleObject: "
-                      << Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "WaitForSingleObject: "
+                    << Win32ErrorMessage(GetLastError());
   } else if (wait_result != WAIT_OBJECT_0) {
-    GOOGLE_LOG(FATAL) << "WaitForSingleObject: Unexpected return code: "
-                      << wait_result;
+    GOOGLE_ABSL_LOG(FATAL) << "WaitForSingleObject: Unexpected return code: "
+                    << wait_result;
   }
 
   DWORD exit_code;
   if (!GetExitCodeProcess(child_handle_, &exit_code)) {
-    GOOGLE_LOG(FATAL) << "GetExitCodeProcess: "
-                      << Win32ErrorMessage(GetLastError());
+    GOOGLE_ABSL_LOG(FATAL) << "GetExitCodeProcess: "
+                    << Win32ErrorMessage(GetLastError());
   }
 
   CloseHandleOrDie(child_handle_);
@@ -269,7 +270,8 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   }
 
   if (!output->ParseFromString(output_data)) {
-    *error = "Plugin output is unparseable: " + absl::CEscape(output_data);
+    *error = absl::StrCat("Plugin output is unparseable: ",
+                          absl::CEscape(output_data));
     return false;
   }
 
@@ -326,14 +328,14 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   int stdin_pipe[2];
   int stdout_pipe[2];
 
-  GOOGLE_CHECK(pipe(stdin_pipe) != -1);
-  GOOGLE_CHECK(pipe(stdout_pipe) != -1);
+  GOOGLE_ABSL_CHECK(pipe(stdin_pipe) != -1);
+  GOOGLE_ABSL_CHECK(pipe(stdout_pipe) != -1);
 
   char* argv[2] = {portable_strdup(program.c_str()), nullptr};
 
   child_pid_ = fork();
   if (child_pid_ == -1) {
-    GOOGLE_LOG(FATAL) << "fork: " << strerror(errno);
+    GOOGLE_ABSL_LOG(FATAL) << "fork: " << strerror(errno);
   } else if (child_pid_ == 0) {
     // We are the child.
     dup2(stdin_pipe[0], STDIN_FILENO);
@@ -380,7 +382,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
 
 bool Subprocess::Communicate(const Message& input, Message* output,
                              std::string* error) {
-  GOOGLE_CHECK_NE(child_stdin_, -1) << "Must call Start() first.";
+  GOOGLE_ABSL_CHECK_NE(child_stdin_, -1) << "Must call Start() first.";
 
   // The "sighandler_t" typedef is GNU-specific, so define our own.
   typedef void SignalHandler(int);
@@ -415,7 +417,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
         // Interrupted by signal.  Try again.
         continue;
       } else {
-        GOOGLE_LOG(FATAL) << "select: " << strerror(errno);
+        GOOGLE_ABSL_LOG(FATAL) << "select: " << strerror(errno);
       }
     }
 
@@ -461,7 +463,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   int status;
   while (waitpid(child_pid_, &status, 0) == -1) {
     if (errno != EINTR) {
-      GOOGLE_LOG(FATAL) << "waitpid: " << strerror(errno);
+      GOOGLE_ABSL_LOG(FATAL) << "waitpid: " << strerror(errno);
     }
   }
 
@@ -485,7 +487,8 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   }
 
   if (!output->ParseFromString(output_data)) {
-    *error = "Plugin output is unparseable: " + absl::CEscape(output_data);
+    *error = absl::StrCat("Plugin output is unparseable: ",
+                          absl::CEscape(output_data));
     return false;
   }
 

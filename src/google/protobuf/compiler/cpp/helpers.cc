@@ -45,12 +45,13 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -197,11 +198,6 @@ std::string IntTypeName(const Options& options, const std::string& type) {
   return absl::StrCat("::", type, "_t");
 }
 
-// Returns true if the message can potentially allocate memory for its field.
-// This is used to determine if message-owned arena will be useful.
-bool AllocExpected(const Descriptor* descriptor) {
-  return false;
-}
 
 
 }  // namespace
@@ -443,7 +439,7 @@ std::string ExtensionName(const FieldDescriptor* d) {
 
 std::string QualifiedExtensionName(const FieldDescriptor* d,
                                    const Options& options) {
-  GOOGLE_DCHECK(d->is_extension());
+  GOOGLE_ABSL_DCHECK(d->is_extension());
   return QualifiedFileLevelSymbol(d->file(), ExtensionName(d), options);
 }
 
@@ -561,19 +557,19 @@ std::string FieldMemberName(const FieldDescriptor* field, bool split) {
     return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
   }
   // Oneof fields are never split.
-  GOOGLE_CHECK(!split);
+  GOOGLE_ABSL_CHECK(!split);
   return absl::StrCat(prefix, field->containing_oneof()->name(), "_.",
                       FieldName(field), "_");
 }
 
 std::string OneofCaseConstantName(const FieldDescriptor* field) {
-  GOOGLE_DCHECK(field->containing_oneof());
+  GOOGLE_ABSL_DCHECK(field->containing_oneof());
   std::string field_name = UnderscoresToCamelCase(field->name(), true);
   return "k" + field_name;
 }
 
 std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
-  GOOGLE_DCHECK(field->containing_oneof());
+  GOOGLE_ABSL_DCHECK(field->containing_oneof());
   const std::string qualification =
       QualifiedClassName(field->containing_type());
   return absl::StrCat(qualification, "::", OneofCaseConstantName(field));
@@ -607,7 +603,7 @@ int EstimateAlignmentSize(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return 8;
   }
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return -1;  // Make compiler happy.
 }
 
@@ -669,7 +665,7 @@ const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
       // CppTypes are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
@@ -701,7 +697,7 @@ std::string PrimitiveTypeName(const Options& options,
       // CppTypes are added.
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
@@ -749,7 +745,7 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
       // No default because we want the compiler to complain if any new
       // types are added.
   }
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
@@ -840,7 +836,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
   // Can't actually get here; make compiler happy.  (We could add a default
   // case above but then we wouldn't get the nice compiler warning when a
   // new type is added.)
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
@@ -1119,13 +1115,13 @@ bool IsStringOrMessage(const FieldDescriptor* field) {
       return true;
   }
 
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return false;
 }
 
 FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
                                          const Options& options) {
-  GOOGLE_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  GOOGLE_ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
   if (options.opensource_runtime) {
     // Open-source protobuf release only supports STRING ctype.
     return FieldOptions::STRING;
@@ -1426,6 +1422,8 @@ bool GetBootstrapBasename(const Options& options, const std::string& basename,
            "net/proto2/compiler/proto/plugin"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
+          {"third_party/protobuf/extension_declaration",
+           "third_party/protobuf/extension_declaration_bootstrap"},
       };
   auto iter = bootstrap_mapping->find(basename);
   if (iter == bootstrap_mapping->end()) {
@@ -1636,36 +1634,19 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
     case EnforceOptimizeMode::kNoEnforcement:
       if (file->options().optimize_for() == FileOptions::CODE_SIZE) {
         if (HasBootstrapProblem(file, options, has_opt_codesize_extension)) {
-          GOOGLE_LOG(WARNING) << "Proto states optimize_for = CODE_SIZE, but we "
-                          "cannot honor that because it contains custom option "
-                          "extensions defined in the same proto.";
+          GOOGLE_ABSL_LOG(WARNING)
+              << "Proto states optimize_for = CODE_SIZE, but we "
+                 "cannot honor that because it contains custom option "
+                 "extensions defined in the same proto.";
           return FileOptions::SPEED;
         }
       }
       return file->options().optimize_for();
   }
 
-  GOOGLE_LOG(FATAL) << "Unknown optimization enforcement requested.";
+  GOOGLE_ABSL_LOG(FATAL) << "Unknown optimization enforcement requested.";
   // The phony return below serves to silence a warning from GCC 8.
   return FileOptions::SPEED;
-}
-
-inline bool IsMessageOwnedArenaEligible(const Descriptor* desc,
-                                        const Options& options) {
-  return GetOptimizeFor(desc->file(), options) != FileOptions::LITE_RUNTIME &&
-         !options.bootstrap && !options.opensource_runtime &&
-         AllocExpected(desc);
-}
-
-bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options) {
-  (void)desc;
-  (void)options;
-  return false;
-}
-
-bool EnableMessageOwnedArenaTrial(const Descriptor* desc,
-                                  const Options& options) {
-  return false;
 }
 
 bool HasMessageFieldOrExtension(const Descriptor* desc) {

@@ -307,7 +307,8 @@ PROTOBUF_CONSTEXPR MessageOptions::MessageOptions(
   , /*decltype(_impl_.message_set_wire_format_)*/false
   , /*decltype(_impl_.no_standard_descriptor_accessor_)*/false
   , /*decltype(_impl_.deprecated_)*/false
-  , /*decltype(_impl_.map_entry_)*/false} {}
+  , /*decltype(_impl_.map_entry_)*/false
+  , /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/false} {}
 struct MessageOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MessageOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MessageOptionsDefaultTypeInternal() {}
@@ -330,7 +331,8 @@ PROTOBUF_CONSTEXPR FieldOptions::FieldOptions(
   , /*decltype(_impl_.lazy_)*/false
   , /*decltype(_impl_.unverified_lazy_)*/false
   , /*decltype(_impl_.deprecated_)*/false
-  , /*decltype(_impl_.weak_)*/false} {}
+  , /*decltype(_impl_.weak_)*/false
+  , /*decltype(_impl_.debug_redact_)*/false} {}
 struct FieldOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldOptionsDefaultTypeInternal() {}
@@ -363,7 +365,8 @@ PROTOBUF_CONSTEXPR EnumOptions::EnumOptions(
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.uninterpreted_option_)*/{}
   , /*decltype(_impl_.allow_alias_)*/false
-  , /*decltype(_impl_.deprecated_)*/false} {}
+  , /*decltype(_impl_.deprecated_)*/false
+  , /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/false} {}
 struct EnumOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EnumOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EnumOptionsDefaultTypeInternal() {}
@@ -827,11 +830,13 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] P
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MessageOptions, _impl_.no_standard_descriptor_accessor_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MessageOptions, _impl_.deprecated_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MessageOptions, _impl_.map_entry_),
+    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MessageOptions, _impl_.deprecated_legacy_json_field_conflicts_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MessageOptions, _impl_.uninterpreted_option_),
     0,
     1,
     2,
     3,
+    4,
     ~0u,
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _internal_metadata_),
@@ -848,6 +853,7 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] P
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _impl_.unverified_lazy_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _impl_.deprecated_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _impl_.weak_),
+    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _impl_.debug_redact_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _impl_.uninterpreted_option_),
     0,
     2,
@@ -856,6 +862,7 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] P
     4,
     5,
     6,
+    7,
     ~0u,
     ~0u,  // no _has_bits_
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::OneofOptions, _internal_metadata_),
@@ -876,9 +883,11 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] P
     ~0u,  // no sizeof(Split)
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumOptions, _impl_.allow_alias_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumOptions, _impl_.deprecated_),
+    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumOptions, _impl_.deprecated_legacy_json_field_conflicts_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumOptions, _impl_.uninterpreted_option_),
     0,
     1,
+    2,
     ~0u,
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumValueOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumValueOptions, _internal_metadata_),
@@ -1024,19 +1033,19 @@ static const ::_pbi::MigrationSchema
         { 192, 203, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto)},
         { 206, 220, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto)},
         { 226, 255, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileOptions)},
-        { 276, 289, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MessageOptions)},
-        { 294, 310, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldOptions)},
-        { 318, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofOptions)},
-        { 327, 338, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumOptions)},
-        { 341, 351, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueOptions)},
-        { 353, 363, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceOptions)},
-        { 365, 376, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodOptions)},
-        { 379, 389, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart)},
-        { 391, 406, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption)},
-        { 413, 426, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location)},
-        { 431, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo)},
-        { 440, 453, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
-        { 458, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
+        { 276, 290, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MessageOptions)},
+        { 296, 313, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldOptions)},
+        { 322, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofOptions)},
+        { 331, 343, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumOptions)},
+        { 347, 357, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueOptions)},
+        { 359, 369, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceOptions)},
+        { 371, 382, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodOptions)},
+        { 385, 395, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart)},
+        { 397, 412, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption)},
+        { 419, 432, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location)},
+        { 437, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo)},
+        { 446, 459, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
+        { 464, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -1163,74 +1172,77 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
     "terpreted_option\030\347\007 \003(\0132$.google.protobu"
     "f.UninterpretedOption\":\n\014OptimizeMode\022\t\n"
     "\005SPEED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_RUNTIME\020"
-    "\003*\t\010\350\007\020\200\200\200\200\002J\004\010&\020\'\"\204\002\n\016MessageOptions\022&\n"
+    "\003*\t\010\350\007\020\200\200\200\200\002J\004\010&\020\'\"\270\002\n\016MessageOptions\022&\n"
     "\027message_set_wire_format\030\001 \001(\010:\005false\022.\n"
     "\037no_standard_descriptor_accessor\030\002 \001(\010:\005"
     "false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022\021\n\tmap_"
-    "entry\030\007 \001(\010\022C\n\024uninterpreted_option\030\347\007 \003"
-    "(\0132$.google.protobuf.UninterpretedOption"
-    "*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005J\004\010\005\020\006J\004\010\006\020\007J\004\010\010\020\tJ\004\010\t\020"
-    "\n\"\276\003\n\014FieldOptions\022:\n\005ctype\030\001 \001(\0162#.goog"
-    "le.protobuf.FieldOptions.CType:\006STRING\022\016"
-    "\n\006packed\030\002 \001(\010\022\?\n\006jstype\030\006 \001(\0162$.google."
-    "protobuf.FieldOptions.JSType:\tJS_NORMAL\022"
-    "\023\n\004lazy\030\005 \001(\010:\005false\022\036\n\017unverified_lazy\030"
-    "\017 \001(\010:\005false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022"
-    "\023\n\004weak\030\n \001(\010:\005false\022C\n\024uninterpreted_op"
-    "tion\030\347\007 \003(\0132$.google.protobuf.Uninterpre"
-    "tedOption\"/\n\005CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001"
-    "\022\020\n\014STRING_PIECE\020\002\"5\n\006JSType\022\r\n\tJS_NORMA"
-    "L\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_NUMBER\020\002*\t\010\350\007\020\200"
-    "\200\200\200\002J\004\010\004\020\005\"^\n\014OneofOptions\022C\n\024uninterpre"
-    "ted_option\030\347\007 \003(\0132$.google.protobuf.Unin"
-    "terpretedOption*\t\010\350\007\020\200\200\200\200\002\"\223\001\n\013EnumOptio"
-    "ns\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\ndeprecated\030\003 "
-    "\001(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003("
-    "\0132$.google.protobuf.UninterpretedOption*"
-    "\t\010\350\007\020\200\200\200\200\002J\004\010\005\020\006\"}\n\020EnumValueOptions\022\031\n\n"
-    "deprecated\030\001 \001(\010:\005false\022C\n\024uninterpreted"
+    "entry\030\007 \001(\010\0222\n&deprecated_legacy_json_fi"
+    "eld_conflicts\030\013 \001(\010B\002\030\001\022C\n\024uninterpreted"
     "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
-    "pretedOption*\t\010\350\007\020\200\200\200\200\002\"{\n\016ServiceOption"
-    "s\022\031\n\ndeprecated\030! \001(\010:\005false\022C\n\024uninterp"
-    "reted_option\030\347\007 \003(\0132$.google.protobuf.Un"
-    "interpretedOption*\t\010\350\007\020\200\200\200\200\002\"\255\002\n\rMethodO"
-    "ptions\022\031\n\ndeprecated\030! \001(\010:\005false\022_\n\021ide"
-    "mpotency_level\030\" \001(\0162/.google.protobuf.M"
-    "ethodOptions.IdempotencyLevel:\023IDEMPOTEN"
-    "CY_UNKNOWN\022C\n\024uninterpreted_option\030\347\007 \003("
-    "\0132$.google.protobuf.UninterpretedOption\""
-    "P\n\020IdempotencyLevel\022\027\n\023IDEMPOTENCY_UNKNO"
-    "WN\020\000\022\023\n\017NO_SIDE_EFFECTS\020\001\022\016\n\nIDEMPOTENT\020"
-    "\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOption\022;\n\004"
-    "name\030\002 \003(\0132-.google.protobuf.Uninterpret"
-    "edOption.NamePart\022\030\n\020identifier_value\030\003 "
-    "\001(\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032\n\022negat"
-    "ive_int_value\030\005 \001(\003\022\024\n\014double_value\030\006 \001("
-    "\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_val"
-    "ue\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002(\t\022"
-    "\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016SourceCodeInfo"
-    "\022:\n\010location\030\001 \003(\0132(.google.protobuf.Sou"
-    "rceCodeInfo.Location\032\206\001\n\010Location\022\020\n\004pat"
-    "h\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leading"
-    "_comments\030\003 \001(\t\022\031\n\021trailing_comments\030\004 \001"
-    "(\t\022!\n\031leading_detached_comments\030\006 \003(\t\"\234\002"
-    "\n\021GeneratedCodeInfo\022A\n\nannotation\030\001 \003(\0132"
-    "-.google.protobuf.GeneratedCodeInfo.Anno"
-    "tation\032\303\001\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022"
-    "\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003e"
-    "nd\030\004 \001(\005\022H\n\010semantic\030\005 \001(\01626.google.prot"
-    "obuf.GeneratedCodeInfo.Annotation.Semant"
-    "ic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n\005ALI"
-    "AS\020\002B~\n\023com.google.protobufB\020DescriptorP"
-    "rotosH\001Z-google.golang.org/protobuf/type"
-    "s/descriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Protobu"
-    "f.Reflection"
+    "pretedOption*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005J\004\010\005\020\006J\004\010\006\020"
+    "\007J\004\010\010\020\tJ\004\010\t\020\n\"\333\003\n\014FieldOptions\022:\n\005ctype\030"
+    "\001 \001(\0162#.google.protobuf.FieldOptions.CTy"
+    "pe:\006STRING\022\016\n\006packed\030\002 \001(\010\022\?\n\006jstype\030\006 \001"
+    "(\0162$.google.protobuf.FieldOptions.JSType"
+    ":\tJS_NORMAL\022\023\n\004lazy\030\005 \001(\010:\005false\022\036\n\017unve"
+    "rified_lazy\030\017 \001(\010:\005false\022\031\n\ndeprecated\030\003"
+    " \001(\010:\005false\022\023\n\004weak\030\n \001(\010:\005false\022\033\n\014debu"
+    "g_redact\030\020 \001(\010:\005false\022C\n\024uninterpreted_o"
+    "ption\030\347\007 \003(\0132$.google.protobuf.Uninterpr"
+    "etedOption\"/\n\005CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020"
+    "\001\022\020\n\014STRING_PIECE\020\002\"5\n\006JSType\022\r\n\tJS_NORM"
+    "AL\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_NUMBER\020\002*\t\010\350\007\020"
+    "\200\200\200\200\002J\004\010\004\020\005\"^\n\014OneofOptions\022C\n\024uninterpr"
+    "eted_option\030\347\007 \003(\0132$.google.protobuf.Uni"
+    "nterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\307\001\n\013EnumOpti"
+    "ons\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\ndeprecated\030\003"
+    " \001(\010:\005false\0222\n&deprecated_legacy_json_fi"
+    "eld_conflicts\030\006 \001(\010B\002\030\001\022C\n\024uninterpreted"
+    "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
+    "pretedOption*\t\010\350\007\020\200\200\200\200\002J\004\010\005\020\006\"}\n\020EnumVal"
+    "ueOptions\022\031\n\ndeprecated\030\001 \001(\010:\005false\022C\n\024"
+    "uninterpreted_option\030\347\007 \003(\0132$.google.pro"
+    "tobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"{\n\016"
+    "ServiceOptions\022\031\n\ndeprecated\030! \001(\010:\005fals"
+    "e\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.googl"
+    "e.protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200"
+    "\002\"\255\002\n\rMethodOptions\022\031\n\ndeprecated\030! \001(\010:"
+    "\005false\022_\n\021idempotency_level\030\" \001(\0162/.goog"
+    "le.protobuf.MethodOptions.IdempotencyLev"
+    "el:\023IDEMPOTENCY_UNKNOWN\022C\n\024uninterpreted"
+    "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
+    "pretedOption\"P\n\020IdempotencyLevel\022\027\n\023IDEM"
+    "POTENCY_UNKNOWN\020\000\022\023\n\017NO_SIDE_EFFECTS\020\001\022\016"
+    "\n\nIDEMPOTENT\020\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023Uninterpre"
+    "tedOption\022;\n\004name\030\002 \003(\0132-.google.protobu"
+    "f.UninterpretedOption.NamePart\022\030\n\020identi"
+    "fier_value\030\003 \001(\t\022\032\n\022positive_int_value\030\004"
+    " \001(\004\022\032\n\022negative_int_value\030\005 \001(\003\022\024\n\014doub"
+    "le_value\030\006 \001(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017"
+    "aggregate_value\030\010 \001(\t\0323\n\010NamePart\022\021\n\tnam"
+    "e_part\030\001 \002(\t\022\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016S"
+    "ourceCodeInfo\022:\n\010location\030\001 \003(\0132(.google"
+    ".protobuf.SourceCodeInfo.Location\032\206\001\n\010Lo"
+    "cation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002"
+    "\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021trailing"
+    "_comments\030\004 \001(\t\022!\n\031leading_detached_comm"
+    "ents\030\006 \003(\t\"\234\002\n\021GeneratedCodeInfo\022A\n\nanno"
+    "tation\030\001 \003(\0132-.google.protobuf.Generated"
+    "CodeInfo.Annotation\032\303\001\n\nAnnotation\022\020\n\004pa"
+    "th\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005beg"
+    "in\030\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\0162"
+    "6.google.protobuf.GeneratedCodeInfo.Anno"
+    "tation.Semantic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n"
+    "\003SET\020\001\022\t\n\005ALIAS\020\002B~\n\023com.google.protobuf"
+    "B\020DescriptorProtosH\001Z-google.golang.org/"
+    "protobuf/types/descriptorpb\370\001\001\242\002\003GPB\252\002\032G"
+    "oogle.Protobuf.Reflection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    6212,
+    6345,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
@@ -1481,10 +1493,9 @@ class FileDescriptorSet::_Internal {
  public:
 };
 
-FileDescriptorSet::FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+FileDescriptorSet::FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorSet)
 }
 FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from)
@@ -1498,10 +1509,8 @@ FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorSet)
 }
 
-inline void FileDescriptorSet::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void FileDescriptorSet::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.file_){arena}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1518,7 +1527,7 @@ FileDescriptorSet::~FileDescriptorSet() {
 }
 
 inline void FileDescriptorSet::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_.~RepeatedPtrField();
 }
 
@@ -1537,7 +1546,6 @@ void FileDescriptorSet::Clear() {
 }
 
 const char* FileDescriptorSet::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1582,7 +1590,6 @@ failure:
 
 ::uint8_t* FileDescriptorSet::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileDescriptorSet)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1604,7 +1611,6 @@ failure:
 }
 
 ::size_t FileDescriptorSet::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorSet)
   ::size_t total_size = 0;
 
@@ -1632,9 +1638,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FileDescriptorSet::GetClassDat
 void FileDescriptorSet::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FileDescriptorSet*>(&to_msg);
   auto& from = static_cast<const FileDescriptorSet&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorSet)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1662,7 +1667,6 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileDescriptorSet::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[0]);
@@ -1704,10 +1708,9 @@ const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo&
 FileDescriptorProto::_Internal::source_code_info(const FileDescriptorProto* msg) {
   return *msg->_impl_.source_code_info_;
 }
-FileDescriptorProto::FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+FileDescriptorProto::FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorProto)
 }
 FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
@@ -1772,10 +1775,8 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
 }
 
-inline void FileDescriptorProto::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void FileDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1821,7 +1822,7 @@ FileDescriptorProto::~FileDescriptorProto() {
 }
 
 inline void FileDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.dependency_.~RepeatedPtrField();
   _impl_.message_type_.~RepeatedPtrField();
   _impl_.enum_type_.~RepeatedPtrField();
@@ -1869,11 +1870,11 @@ void FileDescriptorProto::Clear() {
       _impl_.edition_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000010u) {
-      GOOGLE_DCHECK(_impl_.options_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
     if (cached_has_bits & 0x00000020u) {
-      GOOGLE_DCHECK(_impl_.source_code_info_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.source_code_info_ != nullptr);
       _impl_.source_code_info_->Clear();
     }
   }
@@ -1882,7 +1883,6 @@ void FileDescriptorProto::Clear() {
 }
 
 const char* FileDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -2093,7 +2093,6 @@ failure:
 
 ::uint8_t* FileDescriptorProto::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2216,7 +2215,6 @@ failure:
 }
 
 ::size_t FileDescriptorProto::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorProto)
   ::size_t total_size = 0;
 
@@ -2336,9 +2334,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FileDescriptorProto::GetClassD
 void FileDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FileDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FileDescriptorProto&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorProto)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2435,7 +2432,6 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileDescriptorProto::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[1]);
@@ -2463,10 +2459,9 @@ const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions&
 DescriptorProto_ExtensionRange::_Internal::options(const DescriptorProto_ExtensionRange* msg) {
   return *msg->_impl_.options_;
 }
-DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ExtensionRange)
 }
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from)
@@ -2489,10 +2484,8 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorP
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ExtensionRange)
 }
 
-inline void DescriptorProto_ExtensionRange::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -2512,7 +2505,7 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
 }
 
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete _impl_.options_;
 }
 
@@ -2528,7 +2521,7 @@ void DescriptorProto_ExtensionRange::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    GOOGLE_DCHECK(_impl_.options_ != nullptr);
+    GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
     _impl_.options_->Clear();
   }
   if (cached_has_bits & 0x00000006u) {
@@ -2541,7 +2534,6 @@ void DescriptorProto_ExtensionRange::Clear() {
 }
 
 const char* DescriptorProto_ExtensionRange::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -2603,7 +2595,6 @@ failure:
 
 ::uint8_t* DescriptorProto_ExtensionRange::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto.ExtensionRange)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2637,7 +2628,6 @@ failure:
 }
 
 ::size_t DescriptorProto_ExtensionRange::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ExtensionRange)
   ::size_t total_size = 0;
 
@@ -2678,9 +2668,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DescriptorProto_ExtensionRange
 void DescriptorProto_ExtensionRange::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto_ExtensionRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ExtensionRange&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ExtensionRange)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2728,7 +2717,6 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DescriptorProto_ExtensionRange::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[2]);
@@ -2748,10 +2736,9 @@ class DescriptorProto_ReservedRange::_Internal {
   }
 };
 
-DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from)
@@ -2761,10 +2748,8 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(const DescriptorPro
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
 
-inline void DescriptorProto_ReservedRange::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -2783,7 +2768,7 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
 }
 
 inline void DescriptorProto_ReservedRange::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void DescriptorProto_ReservedRange::SetCachedSize(int size) const {
@@ -2807,7 +2792,6 @@ void DescriptorProto_ReservedRange::Clear() {
 }
 
 const char* DescriptorProto_ReservedRange::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -2860,7 +2844,6 @@ failure:
 
 ::uint8_t* DescriptorProto_ReservedRange::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto.ReservedRange)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2887,7 +2870,6 @@ failure:
 }
 
 ::size_t DescriptorProto_ReservedRange::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ReservedRange)
   ::size_t total_size = 0;
 
@@ -2921,9 +2903,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DescriptorProto_ReservedRange:
 void DescriptorProto_ReservedRange::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto_ReservedRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ReservedRange&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ReservedRange)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2964,7 +2945,6 @@ void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* 
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DescriptorProto_ReservedRange::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[3]);
@@ -2989,10 +2969,9 @@ const ::PROTOBUF_NAMESPACE_ID::MessageOptions&
 DescriptorProto::_Internal::options(const DescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
-DescriptorProto::DescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+DescriptorProto::DescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto)
 }
 DescriptorProto::DescriptorProto(const DescriptorProto& from)
@@ -3027,10 +3006,8 @@ DescriptorProto::DescriptorProto(const DescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
 }
 
-inline void DescriptorProto::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void DescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -3061,7 +3038,7 @@ DescriptorProto::~DescriptorProto() {
 }
 
 inline void DescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.field_.~RepeatedPtrField();
   _impl_.nested_type_.~RepeatedPtrField();
   _impl_.enum_type_.~RepeatedPtrField();
@@ -3098,7 +3075,7 @@ void DescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(_impl_.options_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -3107,7 +3084,6 @@ void DescriptorProto::Clear() {
 }
 
 const char* DescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -3278,7 +3254,6 @@ failure:
 
 ::uint8_t* DescriptorProto::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -3376,7 +3351,6 @@ failure:
 }
 
 ::size_t DescriptorProto::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto)
   ::size_t total_size = 0;
 
@@ -3471,9 +3445,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DescriptorProto::GetClassData(
 void DescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto*>(&to_msg);
   auto& from = static_cast<const DescriptorProto&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3546,7 +3519,6 @@ void DescriptorProto::InternalSwap(DescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DescriptorProto::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[4]);
@@ -3557,10 +3529,9 @@ class ExtensionRangeOptions::_Internal {
  public:
 };
 
-ExtensionRangeOptions::ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+ExtensionRangeOptions::ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions)
 }
 ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from)
@@ -3576,10 +3547,8 @@ ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
 }
 
-inline void ExtensionRangeOptions::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void ExtensionRangeOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_._extensions_)*/{::_pbi::ArenaInitialized(), arena}
     , decltype(_impl_.uninterpreted_option_){arena}
@@ -3597,7 +3566,7 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
 }
 
 inline void ExtensionRangeOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -3618,7 +3587,6 @@ void ExtensionRangeOptions::Clear() {
 }
 
 const char* ExtensionRangeOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -3668,7 +3636,6 @@ failure:
 
 ::uint8_t* ExtensionRangeOptions::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ExtensionRangeOptions)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -3694,7 +3661,6 @@ failure:
 }
 
 ::size_t ExtensionRangeOptions::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ExtensionRangeOptions)
   ::size_t total_size = 0;
 
@@ -3724,9 +3690,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ExtensionRangeOptions::GetClas
 void ExtensionRangeOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<ExtensionRangeOptions*>(&to_msg);
   auto& from = static_cast<const ExtensionRangeOptions&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3760,7 +3725,6 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ExtensionRangeOptions::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[5]);
@@ -3812,10 +3776,9 @@ const ::PROTOBUF_NAMESPACE_ID::FieldOptions&
 FieldDescriptorProto::_Internal::options(const FieldDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
-FieldDescriptorProto::FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+FieldDescriptorProto::FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldDescriptorProto)
 }
 FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
@@ -3886,10 +3849,8 @@ FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldDescriptorProto)
 }
 
-inline void FieldDescriptorProto::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -3937,7 +3898,7 @@ FieldDescriptorProto::~FieldDescriptorProto() {
 }
 
 inline void FieldDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   _impl_.extendee_.Destroy();
   _impl_.type_name_.Destroy();
@@ -3974,7 +3935,7 @@ void FieldDescriptorProto::Clear() {
       _impl_.json_name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000020u) {
-      GOOGLE_DCHECK(_impl_.options_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -3993,7 +3954,6 @@ void FieldDescriptorProto::Clear() {
 }
 
 const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -4158,7 +4118,6 @@ failure:
 
 ::uint8_t* FieldDescriptorProto::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -4262,7 +4221,6 @@ failure:
 }
 
 ::size_t FieldDescriptorProto::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldDescriptorProto)
   ::size_t total_size = 0;
 
@@ -4357,9 +4315,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FieldDescriptorProto::GetClass
 void FieldDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FieldDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FieldDescriptorProto&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldDescriptorProto)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -4456,7 +4413,6 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldDescriptorProto::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[6]);
@@ -4481,10 +4437,9 @@ const ::PROTOBUF_NAMESPACE_ID::OneofOptions&
 OneofDescriptorProto::_Internal::options(const OneofDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
-OneofDescriptorProto::OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+OneofDescriptorProto::OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofDescriptorProto)
 }
 OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from)
@@ -4511,10 +4466,8 @@ OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
 }
 
-inline void OneofDescriptorProto::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void OneofDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -4537,7 +4490,7 @@ OneofDescriptorProto::~OneofDescriptorProto() {
 }
 
 inline void OneofDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
@@ -4558,7 +4511,7 @@ void OneofDescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(_impl_.options_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -4567,7 +4520,6 @@ void OneofDescriptorProto::Clear() {
 }
 
 const char* OneofDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -4622,7 +4574,6 @@ failure:
 
 ::uint8_t* OneofDescriptorProto::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.OneofDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -4654,7 +4605,6 @@ failure:
 }
 
 ::size_t OneofDescriptorProto::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofDescriptorProto)
   ::size_t total_size = 0;
 
@@ -4692,9 +4642,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*OneofDescriptorProto::GetClass
 void OneofDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<OneofDescriptorProto*>(&to_msg);
   auto& from = static_cast<const OneofDescriptorProto&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofDescriptorProto)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -4739,7 +4688,6 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata OneofDescriptorProto::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[7]);
@@ -4759,10 +4707,9 @@ class EnumDescriptorProto_EnumReservedRange::_Internal {
   }
 };
 
-EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from)
@@ -4772,10 +4719,8 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(con
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
 
-inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -4794,7 +4739,7 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
 }
 
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void EnumDescriptorProto_EnumReservedRange::SetCachedSize(int size) const {
@@ -4818,7 +4763,6 @@ void EnumDescriptorProto_EnumReservedRange::Clear() {
 }
 
 const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -4871,7 +4815,6 @@ failure:
 
 ::uint8_t* EnumDescriptorProto_EnumReservedRange::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -4898,7 +4841,6 @@ failure:
 }
 
 ::size_t EnumDescriptorProto_EnumReservedRange::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   ::size_t total_size = 0;
 
@@ -4932,9 +4874,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumDescriptorProto_EnumReserv
 void EnumDescriptorProto_EnumReservedRange::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumDescriptorProto_EnumReservedRange*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto_EnumReservedRange&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -4975,7 +4916,6 @@ void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_Enu
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumDescriptorProto_EnumReservedRange::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[8]);
@@ -5000,10 +4940,9 @@ const ::PROTOBUF_NAMESPACE_ID::EnumOptions&
 EnumDescriptorProto::_Internal::options(const EnumDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
-EnumDescriptorProto::EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+EnumDescriptorProto::EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto)
 }
 EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
@@ -5033,10 +4972,8 @@ EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
 }
 
-inline void EnumDescriptorProto::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void EnumDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -5062,7 +4999,7 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 }
 
 inline void EnumDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.~RepeatedPtrField();
   _impl_.reserved_range_.~RepeatedPtrField();
   _impl_.reserved_name_.~RepeatedPtrField();
@@ -5089,7 +5026,7 @@ void EnumDescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(_impl_.options_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -5098,7 +5035,6 @@ void EnumDescriptorProto::Clear() {
 }
 
 const char* EnumDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -5199,7 +5135,6 @@ failure:
 
 ::uint8_t* EnumDescriptorProto::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -5257,7 +5192,6 @@ failure:
 }
 
 ::size_t EnumDescriptorProto::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto)
   ::size_t total_size = 0;
 
@@ -5317,9 +5251,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumDescriptorProto::GetClassD
 void EnumDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -5372,7 +5305,6 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumDescriptorProto::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[9]);
@@ -5400,10 +5332,9 @@ const ::PROTOBUF_NAMESPACE_ID::EnumValueOptions&
 EnumValueDescriptorProto::_Internal::options(const EnumValueDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
-EnumValueDescriptorProto::EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+EnumValueDescriptorProto::EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueDescriptorProto)
 }
 EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProto& from)
@@ -5432,10 +5363,8 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProt
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
 }
 
-inline void EnumValueDescriptorProto::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -5459,7 +5388,7 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 }
 
 inline void EnumValueDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
@@ -5480,7 +5409,7 @@ void EnumValueDescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(_impl_.options_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -5490,7 +5419,6 @@ void EnumValueDescriptorProto::Clear() {
 }
 
 const char* EnumValueDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -5555,7 +5483,6 @@ failure:
 
 ::uint8_t* EnumValueDescriptorProto::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValueDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -5593,7 +5520,6 @@ failure:
 }
 
 ::size_t EnumValueDescriptorProto::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueDescriptorProto)
   ::size_t total_size = 0;
 
@@ -5636,9 +5562,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumValueDescriptorProto::GetC
 void EnumValueDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumValueDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumValueDescriptorProto&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueDescriptorProto)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -5692,7 +5617,6 @@ void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumValueDescriptorProto::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[10]);
@@ -5717,10 +5641,9 @@ const ::PROTOBUF_NAMESPACE_ID::ServiceOptions&
 ServiceDescriptorProto::_Internal::options(const ServiceDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
-ServiceDescriptorProto::ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+ServiceDescriptorProto::ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceDescriptorProto)
 }
 ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& from)
@@ -5748,10 +5671,8 @@ ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& fro
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
 }
 
-inline void ServiceDescriptorProto::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void ServiceDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -5775,7 +5696,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 }
 
 inline void ServiceDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.method_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
@@ -5798,7 +5719,7 @@ void ServiceDescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(_impl_.options_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -5807,7 +5728,6 @@ void ServiceDescriptorProto::Clear() {
 }
 
 const char* ServiceDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -5876,7 +5796,6 @@ failure:
 
 ::uint8_t* ServiceDescriptorProto::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ServiceDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -5916,7 +5835,6 @@ failure:
 }
 
 ::size_t ServiceDescriptorProto::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceDescriptorProto)
   ::size_t total_size = 0;
 
@@ -5961,9 +5879,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ServiceDescriptorProto::GetCla
 void ServiceDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<ServiceDescriptorProto*>(&to_msg);
   auto& from = static_cast<const ServiceDescriptorProto&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceDescriptorProto)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -6012,7 +5929,6 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ServiceDescriptorProto::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[11]);
@@ -6049,10 +5965,9 @@ const ::PROTOBUF_NAMESPACE_ID::MethodOptions&
 MethodDescriptorProto::_Internal::options(const MethodDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
-MethodDescriptorProto::MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+MethodDescriptorProto::MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodDescriptorProto)
 }
 MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
@@ -6102,10 +6017,8 @@ MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodDescriptorProto)
 }
 
-inline void MethodDescriptorProto::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -6140,7 +6053,7 @@ MethodDescriptorProto::~MethodDescriptorProto() {
 }
 
 inline void MethodDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   _impl_.input_type_.Destroy();
   _impl_.output_type_.Destroy();
@@ -6169,7 +6082,7 @@ void MethodDescriptorProto::Clear() {
       _impl_.output_type_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000008u) {
-      GOOGLE_DCHECK(_impl_.options_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -6181,7 +6094,6 @@ void MethodDescriptorProto::Clear() {
 }
 
 const char* MethodDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -6282,7 +6194,6 @@ failure:
 
 ::uint8_t* MethodDescriptorProto::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MethodDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -6346,7 +6257,6 @@ failure:
 }
 
 ::size_t MethodDescriptorProto::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodDescriptorProto)
   ::size_t total_size = 0;
 
@@ -6408,9 +6318,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*MethodDescriptorProto::GetClas
 void MethodDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<MethodDescriptorProto*>(&to_msg);
   auto& from = static_cast<const MethodDescriptorProto&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodDescriptorProto)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -6481,7 +6390,6 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MethodDescriptorProto::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[12]);
@@ -6555,10 +6463,9 @@ class FileOptions::_Internal {
   }
 };
 
-FileOptions::FileOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+FileOptions::FileOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileOptions)
 }
 FileOptions::FileOptions(const FileOptions& from)
@@ -6678,10 +6585,8 @@ FileOptions::FileOptions(const FileOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileOptions)
 }
 
-inline void FileOptions::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void FileOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_._extensions_)*/{::_pbi::ArenaInitialized(), arena}
     , decltype(_impl_._has_bits_){}
@@ -6760,7 +6665,7 @@ FileOptions::~FileOptions() {
 }
 
 inline void FileOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   _impl_.java_package_.Destroy();
@@ -6839,7 +6744,6 @@ void FileOptions::Clear() {
 }
 
 const char* FileOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -7125,7 +7029,6 @@ failure:
 
 ::uint8_t* FileOptions::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileOptions)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -7313,7 +7216,6 @@ failure:
 }
 
 ::size_t FileOptions::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileOptions)
   ::size_t total_size = 0;
 
@@ -7471,9 +7373,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FileOptions::GetClassData() co
 void FileOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FileOptions*>(&to_msg);
   auto& from = static_cast<const FileOptions&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileOptions)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7625,7 +7526,6 @@ void FileOptions::InternalSwap(FileOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileOptions::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[13]);
@@ -7649,12 +7549,14 @@ class MessageOptions::_Internal {
   static void set_has_map_entry(HasBits* has_bits) {
     (*has_bits)[0] |= 8u;
   }
+  static void set_has_deprecated_legacy_json_field_conflicts(HasBits* has_bits) {
+    (*has_bits)[0] |= 16u;
+  }
 };
 
-MessageOptions::MessageOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+MessageOptions::MessageOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MessageOptions)
 }
 MessageOptions::MessageOptions(const MessageOptions& from)
@@ -7668,20 +7570,19 @@ MessageOptions::MessageOptions(const MessageOptions& from)
     , decltype(_impl_.message_set_wire_format_){}
     , decltype(_impl_.no_standard_descriptor_accessor_){}
     , decltype(_impl_.deprecated_){}
-    , decltype(_impl_.map_entry_){}};
+    , decltype(_impl_.map_entry_){}
+    , decltype(_impl_.deprecated_legacy_json_field_conflicts_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   ::memcpy(&_impl_.message_set_wire_format_, &from._impl_.message_set_wire_format_,
-    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.map_entry_) -
-    reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.map_entry_));
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+    reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MessageOptions)
 }
 
-inline void MessageOptions::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void MessageOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_._extensions_)*/{::_pbi::ArenaInitialized(), arena}
     , decltype(_impl_._has_bits_){}
@@ -7691,6 +7592,7 @@ inline void MessageOptions::SharedCtor(
     , decltype(_impl_.no_standard_descriptor_accessor_){false}
     , decltype(_impl_.deprecated_){false}
     , decltype(_impl_.map_entry_){false}
+    , decltype(_impl_.deprecated_legacy_json_field_conflicts_){false}
   };
 }
 
@@ -7704,7 +7606,7 @@ MessageOptions::~MessageOptions() {
 }
 
 inline void MessageOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -7721,15 +7623,17 @@ void MessageOptions::Clear() {
 
   _impl_._extensions_.Clear();
   _impl_.uninterpreted_option_.Clear();
-  ::memset(&_impl_.message_set_wire_format_, 0, static_cast<::size_t>(
-      reinterpret_cast<char*>(&_impl_.map_entry_) -
-      reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.map_entry_));
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000001fu) {
+    ::memset(&_impl_.message_set_wire_format_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+        reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
+  }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* MessageOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -7771,6 +7675,16 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext
         if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 56)) {
           _Internal::set_has_map_entry(&has_bits);
           _impl_.map_entry_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else {
+          goto handle_unusual;
+        }
+        continue;
+      // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
+      case 11:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 88)) {
+          _Internal::set_has_deprecated_legacy_json_field_conflicts(&has_bits);
+          _impl_.deprecated_legacy_json_field_conflicts_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else {
           goto handle_unusual;
@@ -7821,7 +7735,6 @@ failure:
 
 ::uint8_t* MessageOptions::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MessageOptions)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -7851,6 +7764,12 @@ failure:
     target = ::_pbi::WireFormatLite::WriteBoolToArray(7, this->_internal_map_entry(), target);
   }
 
+  // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
+  if (cached_has_bits & 0x00000010u) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(11, this->_internal_deprecated_legacy_json_field_conflicts(), target);
+  }
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
@@ -7872,7 +7791,6 @@ failure:
 }
 
 ::size_t MessageOptions::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MessageOptions)
   ::size_t total_size = 0;
 
@@ -7890,7 +7808,7 @@ failure:
   }
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (cached_has_bits & 0x0000001fu) {
     // optional bool message_set_wire_format = 1 [default = false];
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 + 1;
@@ -7911,6 +7829,11 @@ failure:
       total_size += 1 + 1;
     }
 
+    // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
+    if (cached_has_bits & 0x00000010u) {
+      total_size += 1 + 1;
+    }
+
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
@@ -7925,15 +7848,14 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*MessageOptions::GetClassData()
 void MessageOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<MessageOptions*>(&to_msg);
   auto& from = static_cast<const MessageOptions&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MessageOptions)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (cached_has_bits & 0x0000001fu) {
     if (cached_has_bits & 0x00000001u) {
       _this->_impl_.message_set_wire_format_ = from._impl_.message_set_wire_format_;
     }
@@ -7945,6 +7867,9 @@ void MessageOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const :
     }
     if (cached_has_bits & 0x00000008u) {
       _this->_impl_.map_entry_ = from._impl_.map_entry_;
+    }
+    if (cached_has_bits & 0x00000010u) {
+      _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
     _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
@@ -7976,15 +7901,14 @@ void MessageOptions::InternalSwap(MessageOptions* other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.map_entry_)
-      + sizeof(MessageOptions::_impl_.map_entry_)
+      PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.deprecated_legacy_json_field_conflicts_)
+      + sizeof(MessageOptions::_impl_.deprecated_legacy_json_field_conflicts_)
       - PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.message_set_wire_format_)>(
           reinterpret_cast<char*>(&_impl_.message_set_wire_format_),
           reinterpret_cast<char*>(&other->_impl_.message_set_wire_format_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MessageOptions::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[14]);
@@ -8017,12 +7941,14 @@ class FieldOptions::_Internal {
   static void set_has_weak(HasBits* has_bits) {
     (*has_bits)[0] |= 64u;
   }
+  static void set_has_debug_redact(HasBits* has_bits) {
+    (*has_bits)[0] |= 128u;
+  }
 };
 
-FieldOptions::FieldOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+FieldOptions::FieldOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions)
 }
 FieldOptions::FieldOptions(const FieldOptions& from)
@@ -8039,20 +7965,19 @@ FieldOptions::FieldOptions(const FieldOptions& from)
     , decltype(_impl_.lazy_){}
     , decltype(_impl_.unverified_lazy_){}
     , decltype(_impl_.deprecated_){}
-    , decltype(_impl_.weak_){}};
+    , decltype(_impl_.weak_){}
+    , decltype(_impl_.debug_redact_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   ::memcpy(&_impl_.ctype_, &from._impl_.ctype_,
-    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.weak_) -
-    reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.weak_));
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.debug_redact_) -
+    reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.debug_redact_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions)
 }
 
-inline void FieldOptions::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void FieldOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_._extensions_)*/{::_pbi::ArenaInitialized(), arena}
     , decltype(_impl_._has_bits_){}
@@ -8065,6 +7990,7 @@ inline void FieldOptions::SharedCtor(
     , decltype(_impl_.unverified_lazy_){false}
     , decltype(_impl_.deprecated_){false}
     , decltype(_impl_.weak_){false}
+    , decltype(_impl_.debug_redact_){false}
   };
 }
 
@@ -8078,7 +8004,7 @@ FieldOptions::~FieldOptions() {
 }
 
 inline void FieldOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -8096,17 +8022,16 @@ void FieldOptions::Clear() {
   _impl_._extensions_.Clear();
   _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000007fu) {
+  if (cached_has_bits & 0x000000ffu) {
     ::memset(&_impl_.ctype_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.weak_) -
-        reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.weak_));
+        reinterpret_cast<char*>(&_impl_.debug_redact_) -
+        reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.debug_redact_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* FieldOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -8191,6 +8116,16 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* 
           goto handle_unusual;
         }
         continue;
+      // optional bool debug_redact = 16 [default = false];
+      case 16:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 128)) {
+          _Internal::set_has_debug_redact(&has_bits);
+          _impl_.debug_redact_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else {
+          goto handle_unusual;
+        }
+        continue;
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 58)) {
@@ -8236,7 +8171,6 @@ failure:
 
 ::uint8_t* FieldOptions::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldOptions)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -8286,6 +8220,12 @@ failure:
     target = ::_pbi::WireFormatLite::WriteBoolToArray(15, this->_internal_unverified_lazy(), target);
   }
 
+  // optional bool debug_redact = 16 [default = false];
+  if (cached_has_bits & 0x00000080u) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(16, this->_internal_debug_redact(), target);
+  }
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
@@ -8307,7 +8247,6 @@ failure:
 }
 
 ::size_t FieldOptions::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldOptions)
   ::size_t total_size = 0;
 
@@ -8325,7 +8264,7 @@ failure:
   }
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000007fu) {
+  if (cached_has_bits & 0x000000ffu) {
     // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
@@ -8363,6 +8302,11 @@ failure:
       total_size += 1 + 1;
     }
 
+    // optional bool debug_redact = 16 [default = false];
+    if (cached_has_bits & 0x00000080u) {
+      total_size += 2 + 1;
+    }
+
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
@@ -8377,15 +8321,14 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FieldOptions::GetClassData() c
 void FieldOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FieldOptions*>(&to_msg);
   auto& from = static_cast<const FieldOptions&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000007fu) {
+  if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
       _this->_impl_.ctype_ = from._impl_.ctype_;
     }
@@ -8406,6 +8349,9 @@ void FieldOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::P
     }
     if (cached_has_bits & 0x00000040u) {
       _this->_impl_.weak_ = from._impl_.weak_;
+    }
+    if (cached_has_bits & 0x00000080u) {
+      _this->_impl_.debug_redact_ = from._impl_.debug_redact_;
     }
     _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
@@ -8437,15 +8383,14 @@ void FieldOptions::InternalSwap(FieldOptions* other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_)
-      + sizeof(FieldOptions::_impl_.weak_)
+      PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.debug_redact_)
+      + sizeof(FieldOptions::_impl_.debug_redact_)
       - PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.ctype_)>(
           reinterpret_cast<char*>(&_impl_.ctype_),
           reinterpret_cast<char*>(&other->_impl_.ctype_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldOptions::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[15]);
@@ -8456,10 +8401,9 @@ class OneofOptions::_Internal {
  public:
 };
 
-OneofOptions::OneofOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+OneofOptions::OneofOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofOptions)
 }
 OneofOptions::OneofOptions(const OneofOptions& from)
@@ -8475,10 +8419,8 @@ OneofOptions::OneofOptions(const OneofOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
 }
 
-inline void OneofOptions::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void OneofOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_._extensions_)*/{::_pbi::ArenaInitialized(), arena}
     , decltype(_impl_.uninterpreted_option_){arena}
@@ -8496,7 +8438,7 @@ OneofOptions::~OneofOptions() {
 }
 
 inline void OneofOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -8517,7 +8459,6 @@ void OneofOptions::Clear() {
 }
 
 const char* OneofOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -8567,7 +8508,6 @@ failure:
 
 ::uint8_t* OneofOptions::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.OneofOptions)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -8593,7 +8533,6 @@ failure:
 }
 
 ::size_t OneofOptions::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofOptions)
   ::size_t total_size = 0;
 
@@ -8623,9 +8562,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*OneofOptions::GetClassData() c
 void OneofOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<OneofOptions*>(&to_msg);
   auto& from = static_cast<const OneofOptions&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofOptions)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -8659,7 +8597,6 @@ void OneofOptions::InternalSwap(OneofOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata OneofOptions::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[16]);
@@ -8677,12 +8614,14 @@ class EnumOptions::_Internal {
   static void set_has_deprecated(HasBits* has_bits) {
     (*has_bits)[0] |= 2u;
   }
+  static void set_has_deprecated_legacy_json_field_conflicts(HasBits* has_bits) {
+    (*has_bits)[0] |= 4u;
+  }
 };
 
-EnumOptions::EnumOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+EnumOptions::EnumOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumOptions)
 }
 EnumOptions::EnumOptions(const EnumOptions& from)
@@ -8694,20 +8633,19 @@ EnumOptions::EnumOptions(const EnumOptions& from)
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
     , decltype(_impl_.allow_alias_){}
-    , decltype(_impl_.deprecated_){}};
+    , decltype(_impl_.deprecated_){}
+    , decltype(_impl_.deprecated_legacy_json_field_conflicts_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   ::memcpy(&_impl_.allow_alias_, &from._impl_.allow_alias_,
-    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.deprecated_) -
-    reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_));
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+    reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumOptions)
 }
 
-inline void EnumOptions::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void EnumOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_._extensions_)*/{::_pbi::ArenaInitialized(), arena}
     , decltype(_impl_._has_bits_){}
@@ -8715,6 +8653,7 @@ inline void EnumOptions::SharedCtor(
     , decltype(_impl_.uninterpreted_option_){arena}
     , decltype(_impl_.allow_alias_){false}
     , decltype(_impl_.deprecated_){false}
+    , decltype(_impl_.deprecated_legacy_json_field_conflicts_){false}
   };
 }
 
@@ -8728,7 +8667,7 @@ EnumOptions::~EnumOptions() {
 }
 
 inline void EnumOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -8746,14 +8685,13 @@ void EnumOptions::Clear() {
   _impl_._extensions_.Clear();
   _impl_.uninterpreted_option_.Clear();
   ::memset(&_impl_.allow_alias_, 0, static_cast<::size_t>(
-      reinterpret_cast<char*>(&_impl_.deprecated_) -
-      reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_));
+      reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+      reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* EnumOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -8775,6 +8713,16 @@ const char* EnumOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
         if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 24)) {
           _Internal::set_has_deprecated(&has_bits);
           _impl_.deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else {
+          goto handle_unusual;
+        }
+        continue;
+      // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 48)) {
+          _Internal::set_has_deprecated_legacy_json_field_conflicts(&has_bits);
+          _impl_.deprecated_legacy_json_field_conflicts_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else {
           goto handle_unusual;
@@ -8825,7 +8773,6 @@ failure:
 
 ::uint8_t* EnumOptions::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumOptions)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -8841,6 +8788,12 @@ failure:
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(3, this->_internal_deprecated(), target);
+  }
+
+  // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
+  if (cached_has_bits & 0x00000004u) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(6, this->_internal_deprecated_legacy_json_field_conflicts(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -8864,7 +8817,6 @@ failure:
 }
 
 ::size_t EnumOptions::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumOptions)
   ::size_t total_size = 0;
 
@@ -8882,7 +8834,7 @@ failure:
   }
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 0x00000007u) {
     // optional bool allow_alias = 2;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 + 1;
@@ -8890,6 +8842,11 @@ failure:
 
     // optional bool deprecated = 3 [default = false];
     if (cached_has_bits & 0x00000002u) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
+    if (cached_has_bits & 0x00000004u) {
       total_size += 1 + 1;
     }
 
@@ -8907,20 +8864,22 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumOptions::GetClassData() co
 void EnumOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumOptions*>(&to_msg);
   auto& from = static_cast<const EnumOptions&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumOptions)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
       _this->_impl_.allow_alias_ = from._impl_.allow_alias_;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.deprecated_ = from._impl_.deprecated_;
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
     _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
@@ -8952,15 +8911,14 @@ void EnumOptions::InternalSwap(EnumOptions* other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.deprecated_)
-      + sizeof(EnumOptions::_impl_.deprecated_)
+      PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.deprecated_legacy_json_field_conflicts_)
+      + sizeof(EnumOptions::_impl_.deprecated_legacy_json_field_conflicts_)
       - PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.allow_alias_)>(
           reinterpret_cast<char*>(&_impl_.allow_alias_),
           reinterpret_cast<char*>(&other->_impl_.allow_alias_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumOptions::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[17]);
@@ -8977,10 +8935,9 @@ class EnumValueOptions::_Internal {
   }
 };
 
-EnumValueOptions::EnumValueOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+EnumValueOptions::EnumValueOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueOptions)
 }
 EnumValueOptions::EnumValueOptions(const EnumValueOptions& from)
@@ -8999,10 +8956,8 @@ EnumValueOptions::EnumValueOptions(const EnumValueOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueOptions)
 }
 
-inline void EnumValueOptions::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void EnumValueOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_._extensions_)*/{::_pbi::ArenaInitialized(), arena}
     , decltype(_impl_._has_bits_){}
@@ -9022,7 +8977,7 @@ EnumValueOptions::~EnumValueOptions() {
 }
 
 inline void EnumValueOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -9045,7 +9000,6 @@ void EnumValueOptions::Clear() {
 }
 
 const char* EnumValueOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -9107,7 +9061,6 @@ failure:
 
 ::uint8_t* EnumValueOptions::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValueOptions)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -9140,7 +9093,6 @@ failure:
 }
 
 ::size_t EnumValueOptions::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueOptions)
   ::size_t total_size = 0;
 
@@ -9176,9 +9128,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumValueOptions::GetClassData
 void EnumValueOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumValueOptions*>(&to_msg);
   auto& from = static_cast<const EnumValueOptions&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueOptions)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -9217,7 +9168,6 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumValueOptions::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[18]);
@@ -9234,10 +9184,9 @@ class ServiceOptions::_Internal {
   }
 };
 
-ServiceOptions::ServiceOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+ServiceOptions::ServiceOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceOptions)
 }
 ServiceOptions::ServiceOptions(const ServiceOptions& from)
@@ -9256,10 +9205,8 @@ ServiceOptions::ServiceOptions(const ServiceOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
 }
 
-inline void ServiceOptions::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void ServiceOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_._extensions_)*/{::_pbi::ArenaInitialized(), arena}
     , decltype(_impl_._has_bits_){}
@@ -9279,7 +9226,7 @@ ServiceOptions::~ServiceOptions() {
 }
 
 inline void ServiceOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -9302,7 +9249,6 @@ void ServiceOptions::Clear() {
 }
 
 const char* ServiceOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -9364,7 +9310,6 @@ failure:
 
 ::uint8_t* ServiceOptions::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ServiceOptions)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -9397,7 +9342,6 @@ failure:
 }
 
 ::size_t ServiceOptions::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceOptions)
   ::size_t total_size = 0;
 
@@ -9433,9 +9377,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ServiceOptions::GetClassData()
 void ServiceOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<ServiceOptions*>(&to_msg);
   auto& from = static_cast<const ServiceOptions&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceOptions)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -9474,7 +9417,6 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ServiceOptions::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[19]);
@@ -9494,10 +9436,9 @@ class MethodOptions::_Internal {
   }
 };
 
-MethodOptions::MethodOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+MethodOptions::MethodOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodOptions)
 }
 MethodOptions::MethodOptions(const MethodOptions& from)
@@ -9519,10 +9460,8 @@ MethodOptions::MethodOptions(const MethodOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodOptions)
 }
 
-inline void MethodOptions::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void MethodOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_._extensions_)*/{::_pbi::ArenaInitialized(), arena}
     , decltype(_impl_._has_bits_){}
@@ -9543,7 +9482,7 @@ MethodOptions::~MethodOptions() {
 }
 
 inline void MethodOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -9571,7 +9510,6 @@ void MethodOptions::Clear() {
 }
 
 const char* MethodOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -9647,7 +9585,6 @@ failure:
 
 ::uint8_t* MethodOptions::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MethodOptions)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -9687,7 +9624,6 @@ failure:
 }
 
 ::size_t MethodOptions::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodOptions)
   ::size_t total_size = 0;
 
@@ -9731,9 +9667,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*MethodOptions::GetClassData() 
 void MethodOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<MethodOptions*>(&to_msg);
   auto& from = static_cast<const MethodOptions&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodOptions)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -9784,7 +9719,6 @@ void MethodOptions::InternalSwap(MethodOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MethodOptions::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[20]);
@@ -9807,10 +9741,9 @@ class UninterpretedOption_NamePart::_Internal {
   }
 };
 
-UninterpretedOption_NamePart::UninterpretedOption_NamePart(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+UninterpretedOption_NamePart::UninterpretedOption_NamePart(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption.NamePart)
 }
 UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from)
@@ -9835,10 +9768,8 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOp
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption.NamePart)
 }
 
-inline void UninterpretedOption_NamePart::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void UninterpretedOption_NamePart::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -9861,7 +9792,7 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
 }
 
 inline void UninterpretedOption_NamePart::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_part_.Destroy();
 }
 
@@ -9885,7 +9816,6 @@ void UninterpretedOption_NamePart::Clear() {
 }
 
 const char* UninterpretedOption_NamePart::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -9941,7 +9871,6 @@ failure:
 
 ::uint8_t* UninterpretedOption_NamePart::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UninterpretedOption.NamePart)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -9990,7 +9919,6 @@ failure:
   return total_size;
 }
 ::size_t UninterpretedOption_NamePart::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption.NamePart)
   ::size_t total_size = 0;
 
@@ -10023,9 +9951,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UninterpretedOption_NamePart::
 void UninterpretedOption_NamePart::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<UninterpretedOption_NamePart*>(&to_msg);
   auto& from = static_cast<const UninterpretedOption_NamePart&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption.NamePart)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10068,7 +9995,6 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* ot
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UninterpretedOption_NamePart::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[21]);
@@ -10100,10 +10026,9 @@ class UninterpretedOption::_Internal {
   }
 };
 
-UninterpretedOption::UninterpretedOption(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+UninterpretedOption::UninterpretedOption(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption)
 }
 UninterpretedOption::UninterpretedOption(const UninterpretedOption& from)
@@ -10151,10 +10076,8 @@ UninterpretedOption::UninterpretedOption(const UninterpretedOption& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption)
 }
 
-inline void UninterpretedOption::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void UninterpretedOption::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -10190,7 +10113,7 @@ UninterpretedOption::~UninterpretedOption() {
 }
 
 inline void UninterpretedOption::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.~RepeatedPtrField();
   _impl_.identifier_value_.Destroy();
   _impl_.string_value_.Destroy();
@@ -10230,7 +10153,6 @@ void UninterpretedOption::Clear() {
 }
 
 const char* UninterpretedOption::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -10343,7 +10265,6 @@ failure:
 
 ::uint8_t* UninterpretedOption::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UninterpretedOption)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -10410,7 +10331,6 @@ failure:
 }
 
 ::size_t UninterpretedOption::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption)
   ::size_t total_size = 0;
 
@@ -10477,9 +10397,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UninterpretedOption::GetClassD
 void UninterpretedOption::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<UninterpretedOption*>(&to_msg);
   auto& from = static_cast<const UninterpretedOption&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10550,7 +10469,6 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UninterpretedOption::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[22]);
@@ -10570,10 +10488,9 @@ class SourceCodeInfo_Location::_Internal {
   }
 };
 
-SourceCodeInfo_Location::SourceCodeInfo_Location(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+SourceCodeInfo_Location::SourceCodeInfo_Location(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo.Location)
 }
 SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& from)
@@ -10610,10 +10527,8 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo.Location)
 }
 
-inline void SourceCodeInfo_Location::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void SourceCodeInfo_Location::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -10645,7 +10560,7 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
 }
 
 inline void SourceCodeInfo_Location::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.path_.~RepeatedField();
   _impl_.span_.~RepeatedField();
   _impl_.leading_detached_comments_.~RepeatedPtrField();
@@ -10680,7 +10595,6 @@ void SourceCodeInfo_Location::Clear() {
 }
 
 const char* SourceCodeInfo_Location::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -10781,7 +10695,6 @@ failure:
 
 ::uint8_t* SourceCodeInfo_Location::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceCodeInfo.Location)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -10844,7 +10757,6 @@ failure:
 }
 
 ::size_t SourceCodeInfo_Location::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo.Location)
   ::size_t total_size = 0;
 
@@ -10916,9 +10828,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SourceCodeInfo_Location::GetCl
 void SourceCodeInfo_Location::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<SourceCodeInfo_Location*>(&to_msg);
   auto& from = static_cast<const SourceCodeInfo_Location&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo.Location)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10968,7 +10879,6 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceCodeInfo_Location::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[23]);
@@ -10979,10 +10889,9 @@ class SourceCodeInfo::_Internal {
  public:
 };
 
-SourceCodeInfo::SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+SourceCodeInfo::SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo)
 }
 SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& from)
@@ -10996,10 +10905,8 @@ SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo)
 }
 
-inline void SourceCodeInfo::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void SourceCodeInfo::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.location_){arena}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -11016,7 +10923,7 @@ SourceCodeInfo::~SourceCodeInfo() {
 }
 
 inline void SourceCodeInfo::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.location_.~RepeatedPtrField();
 }
 
@@ -11035,7 +10942,6 @@ void SourceCodeInfo::Clear() {
 }
 
 const char* SourceCodeInfo::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -11080,7 +10986,6 @@ failure:
 
 ::uint8_t* SourceCodeInfo::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceCodeInfo)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -11102,7 +11007,6 @@ failure:
 }
 
 ::size_t SourceCodeInfo::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo)
   ::size_t total_size = 0;
 
@@ -11130,9 +11034,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SourceCodeInfo::GetClassData()
 void SourceCodeInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<SourceCodeInfo*>(&to_msg);
   auto& from = static_cast<const SourceCodeInfo&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11158,7 +11061,6 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceCodeInfo::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[24]);
@@ -11184,10 +11086,9 @@ class GeneratedCodeInfo_Annotation::_Internal {
   }
 };
 
-GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
 }
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from)
@@ -11218,10 +11119,8 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeIn
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
 }
 
-inline void GeneratedCodeInfo_Annotation::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -11248,7 +11147,7 @@ GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
 }
 
 inline void GeneratedCodeInfo_Annotation::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.path_.~RepeatedField();
   _impl_.source_file_.Destroy();
 }
@@ -11278,7 +11177,6 @@ void GeneratedCodeInfo_Annotation::Clear() {
 }
 
 const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -11370,7 +11268,6 @@ failure:
 
 ::uint8_t* GeneratedCodeInfo_Annotation::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.GeneratedCodeInfo.Annotation)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -11423,7 +11320,6 @@ failure:
 }
 
 ::size_t GeneratedCodeInfo_Annotation::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo.Annotation)
   ::size_t total_size = 0;
 
@@ -11483,9 +11379,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GeneratedCodeInfo_Annotation::
 void GeneratedCodeInfo_Annotation::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<GeneratedCodeInfo_Annotation*>(&to_msg);
   auto& from = static_cast<const GeneratedCodeInfo_Annotation&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11540,7 +11435,6 @@ void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* ot
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata GeneratedCodeInfo_Annotation::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[25]);
@@ -11551,10 +11445,9 @@ class GeneratedCodeInfo::_Internal {
  public:
 };
 
-GeneratedCodeInfo::GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+GeneratedCodeInfo::GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo)
 }
 GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& from)
@@ -11568,10 +11461,8 @@ GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo)
 }
 
-inline void GeneratedCodeInfo::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void GeneratedCodeInfo::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.annotation_){arena}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -11588,7 +11479,7 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
 }
 
 inline void GeneratedCodeInfo::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.annotation_.~RepeatedPtrField();
 }
 
@@ -11607,7 +11498,6 @@ void GeneratedCodeInfo::Clear() {
 }
 
 const char* GeneratedCodeInfo::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -11652,7 +11542,6 @@ failure:
 
 ::uint8_t* GeneratedCodeInfo::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.GeneratedCodeInfo)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -11674,7 +11563,6 @@ failure:
 }
 
 ::size_t GeneratedCodeInfo::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo)
   ::size_t total_size = 0;
 
@@ -11702,9 +11590,8 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GeneratedCodeInfo::GetClassDat
 void GeneratedCodeInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<GeneratedCodeInfo*>(&to_msg);
   auto& from = static_cast<const GeneratedCodeInfo&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11730,7 +11617,6 @@ void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata GeneratedCodeInfo::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[26]);

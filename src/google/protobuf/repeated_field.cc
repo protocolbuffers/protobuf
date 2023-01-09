@@ -38,7 +38,7 @@
 #include <string>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 
 // Must be included last.
@@ -48,23 +48,65 @@ namespace google {
 namespace protobuf {
 
 
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<bool>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int32_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint32_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int64_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint64_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<float>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<double>;
+template <>
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::Clear() {
+  for (int i = 0; i < current_size_; i++) {
+    Mutable(i)->Clear();
+  }
+  ExchangeCurrentSize(0);
+}
 
-namespace internal {
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<bool>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<int32_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<uint32_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<int64_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<uint64_t>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<float>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<double>;
-}  // namespace internal
+template <>
+PROTOBUF_EXPORT_TEMPLATE_DEFINE size_t
+RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const {
+  size_t result = current_size_ * sizeof(absl::Cord);
+  for (int i = 0; i < current_size_; i++) {
+    // Estimate only.
+    result += Get(i).size();
+  }
+  return result;
+}
+
+template <>
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::Truncate(
+    int new_size) {
+  GOOGLE_ABSL_DCHECK_LE(new_size, current_size_);
+  while (current_size_ > new_size) {
+    RemoveLast();
+  }
+}
+
+template <>
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::Resize(
+    int new_size, const absl::Cord& value) {
+  GOOGLE_ABSL_DCHECK_GE(new_size, 0);
+  if (new_size > current_size_) {
+    Reserve(new_size);
+    std::fill(&rep()->elements()[ExchangeCurrentSize(new_size)],
+              &rep()->elements()[new_size], value);
+  } else {
+    while (current_size_ > new_size) {
+      RemoveLast();
+    }
+  }
+}
+
+template <>
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::MoveArray(
+    absl::Cord* to, absl::Cord* from, int size) {
+  for (int i = 0; i < size; i++) {
+    swap(to[i], from[i]);
+  }
+}
+
+template <>
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::CopyArray(
+    absl::Cord* to, const absl::Cord* from, int size) {
+  for (int i = 0; i < size; i++) {
+    to[i] = from[i];
+  }
+}
+
 
 }  // namespace protobuf
 }  // namespace google

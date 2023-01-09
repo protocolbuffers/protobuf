@@ -212,9 +212,10 @@ def _create_file_list_impl(ctx, fragment_generator):
                 ),
             )
 
+    generator_label = "@//%s:%s" % (ctx.label.package, ctx.label.name)
     ctx.actions.write(
         output = out,
-        content = (ctx.attr._header % ctx.label) + "\n".join(fragments),
+        content = (ctx.attr._header % generator_label) + "\n".join(fragments),
     )
 
     return [DefaultInfo(files = depset([out]))]
@@ -274,12 +275,13 @@ def _cmake_var_fragment(owner, varname, prefix, entries):
       A string.
     """
     return (
-        "# {owner}\n" +
+        "# @//{package}:{name}\n" +
         "set({varname}\n" +
         "{entries}\n" +
         ")\n"
     ).format(
-        owner = owner,
+        package = owner.package,
+        name = owner.name,
         varname = varname,
         # Strip out "wkt/google/protobuf/" from the well-known type file paths.
         # This is currently necessary to allow checked-in and generated

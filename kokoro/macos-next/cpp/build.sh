@@ -19,9 +19,10 @@ export CTEST_PARALLEL_LEVEL
 cd $(dirname $0)/../../..
 
 #
-# Update submodules
+# Update submodules and regenerate files
 #
 git submodule update --init --recursive
+./regenerate_stale_files.sh
 
 #
 # Run build

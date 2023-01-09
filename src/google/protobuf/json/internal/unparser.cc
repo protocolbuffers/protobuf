@@ -39,11 +39,10 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -417,7 +416,7 @@ absl::Status WriteField(JsonWriter& writer, const Msg<Traits>& msg,
     return WriteRepeated<Traits>(writer, msg, field);
   } else if (Traits::GetSize(field, msg) == 0) {
     // We can only get here if always_print_primitive_fields is true.
-    GOOGLE_DCHECK(writer.options().always_print_primitive_fields);
+    GOOGLE_ABSL_DCHECK(writer.options().always_print_primitive_fields);
 
     if (Traits::FieldType(field) == FieldDescriptor::TYPE_GROUP) {
       // We do not yet have full group support, but this is required so that we
@@ -528,9 +527,10 @@ absl::Status WriteValue(JsonWriter& writer, const Msg<Traits>& msg,
     });
   }
 
-  GOOGLE_CHECK(is_top_level) << "empty, non-top-level Value must be handled one layer "
-                         "up, since it prints an empty string; reaching this "
-                         "statement is always a bug";
+  GOOGLE_ABSL_CHECK(is_top_level)
+      << "empty, non-top-level Value must be handled one layer "
+         "up, since it prints an empty string; reaching this "
+         "statement is always a bug";
   return absl::OkStatus();
 }
 
@@ -822,14 +822,14 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
                                 io::ZeroCopyOutputStream* json_output,
                                 json_internal::WriterOptions options) {
   // NOTE: Most of the contortions in this function are to allow for capture of
-  // input and output of the parser in GOOGLE_DLOG mode. Destruction order is very
+  // input and output of the parser in GOOGLE_ABSL_DLOG mode. Destruction order is very
   // critical in this function, because io::ZeroCopy*Stream types usually only
   // flush on destruction.
 
-  // For GOOGLE_DLOG, we would like to print out the input and output, which requires
-  // buffering both instead of doing "zero copy". This block, and the one at
-  // the end of the function, set up and tear down interception of the input
-  // and output streams.
+  // For GOOGLE_ABSL_DLOG, we would like to print out the input and output, which
+  // requires buffering both instead of doing "zero copy". This block, and the
+  // one at the end of the function, set up and tear down interception of the
+  // input and output streams.
   std::string copy;
   std::string out;
   absl::optional<io::ArrayInputStream> tee_input;

@@ -1,3 +1,4 @@
+#include "google/protobuf/stubs/logging.h"
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -220,8 +221,8 @@ class UntypedMessage final {
     } else if (auto* vec = absl::get_if<std::vector<T>>(&it->second)) {
       return *vec;
     } else {
-      GOOGLE_CHECK(false) << "wrong type for UntypedMessage::Get(" << field_number
-                   << ")";
+      GOOGLE_ABSL_CHECK(false) << "wrong type for UntypedMessage::Get(" << field_number
+                        << ")";
       return {};  // avoid compiler warning.
     }
   }

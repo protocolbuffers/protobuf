@@ -55,21 +55,13 @@ pinned_maven_install()
 # For `cc_proto_blacklist_test` and `build_test`.
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
-load("@rules_python//python:pip.bzl", "pip_parse")
-
-pip_parse(
-    name="pip_deps",
-    requirements = "//python:requirements.txt"
-)
-
-load("@pip_deps//:requirements.bzl", "install_deps")
-
-install_deps()
-
 bazel_skylib_workspace()
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
+
+load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
+apple_rules_dependencies()
 
 # For `kt_jvm_library`
 load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
@@ -78,16 +70,42 @@ kotlin_repositories()
 load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 kt_register_toolchains()
 
+load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
+ruby_runtime("system_ruby")
+register_toolchains("@system_ruby//:toolchain")
+
+load("@system_ruby//:bundle.bzl", "ruby_bundle")
+ruby_bundle(
+    name = "protobuf_bundle",
+    srcs = ["//ruby:google-protobuf.gemspec"],
+    gemfile = "//ruby:Gemfile",
+)
+
 load("@upb//bazel:workspace_deps.bzl", "upb_deps")
 upb_deps()
 
 load("@upb//bazel:system_python.bzl", "system_python")
-system_python(name = "local_config_python")
+system_python(
+    name = "system_python",
+    minimum_python_version = "3.7",
+)
+
+load("@system_python//:pip.bzl", "pip_parse")
+pip_parse(
+    name="pip_deps",
+    requirements = "@upb//python:requirements.txt",
+    requirements_overrides = {
+        "3.11": "@upb//python:requirements_311.txt",
+    },
+)
+
+load("@pip_deps//:requirements.bzl", "install_deps")
+install_deps()
 
 load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
 utf8_range_deps()
 
 bind(
     name = "python_headers",
-    actual = "@local_config_python//:python_headers",
+    actual = "@system_python//:python_headers",
 )

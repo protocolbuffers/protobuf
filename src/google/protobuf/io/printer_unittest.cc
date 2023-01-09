@@ -39,17 +39,14 @@
 #include <tuple>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace google {
@@ -57,7 +54,6 @@ namespace protobuf {
 namespace io {
 using ::testing::AllOf;
 using ::testing::ElementsAre;
-using ::testing::ExplainMatchResult;
 using ::testing::Field;
 using ::testing::IsEmpty;
 using ::testing::MatchesRegex;
@@ -65,7 +61,7 @@ using ::testing::MatchesRegex;
 class PrinterTest : public testing::Test {
  protected:
   ZeroCopyOutputStream* output() {
-    GOOGLE_CHECK(stream_.has_value());
+    GOOGLE_ABSL_CHECK(stream_.has_value());
     return &*stream_;
   }
   absl::string_view written() {
@@ -548,34 +544,6 @@ TEST_F(PrinterTest, Emit) {
             "}\n");
 }
 
-TEST_F(PrinterTest, EmitKeepsExtraLine) {
-  {
-    Printer printer(output());
-    printer.Emit(R"cc(
-
-      class Foo {
-        int x, y, z;
-      };
-    )cc");
-    printer.Emit(R"java(
-
-      public final class Bar {
-        Bar() {}
-      }
-    )java");
-  }
-
-  EXPECT_EQ(written(),
-            "\n"
-            "class Foo {\n"
-            "  int x, y, z;\n"
-            "};\n"
-            "\n"
-            "public final class Bar {\n"
-            "  Bar() {}\n"
-            "}\n");
-}
-
 TEST_F(PrinterTest, EmitWithSubs) {
   {
     Printer printer(output());
@@ -592,6 +560,19 @@ TEST_F(PrinterTest, EmitWithSubs) {
             "class Foo {\n"
             "  int x, y, z = 42;\n"
             "};\n");
+}
+
+TEST_F(PrinterTest, EmitComments) {
+  {
+    Printer printer(output());
+    printer.Emit(R"cc(
+      // Yes.
+      //~ No.
+    )cc");
+    printer.Emit("//~ Not a raw string.");
+  }
+
+  EXPECT_EQ(written(), "// Yes.\n//~ Not a raw string.");
 }
 
 TEST_F(PrinterTest, EmitWithVars) {
@@ -614,6 +595,27 @@ TEST_F(PrinterTest, EmitWithVars) {
   EXPECT_EQ(written(),
             "class Foo {\n"
             "  int x, y, z = 42;\n"
+            "};\n");
+}
+
+TEST_F(PrinterTest, EmitConsumeAfter) {
+  {
+    Printer printer(output());
+    printer.Emit(
+        {
+            {"class", "Foo"},
+            Printer::Sub{"var", "int x;"}.WithSuffix(";"),
+        },
+        R"cc(
+          class $class$ {
+            $var$;
+          };
+        )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x;\n"
             "};\n");
 }
 
@@ -715,7 +717,9 @@ TEST_F(PrinterTest, EmitThreeArgWithVars) {
   FakeAnnotationCollector collector;
   {
     Printer printer(output(), '$', &collector);
-    auto v = printer.WithVars({{"class", "Foo", "file.proto"}});
+    auto v = printer.WithVars({
+        Printer::Sub("class", "Foo").AnnotatedAs("file.proto"),
+    });
 
     printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
       class $class$ {
@@ -804,6 +808,42 @@ TEST_F(PrinterTest, EmitCallbacks) {
             " private:\n"
             "  int bar_;\n"
             "};\n");
+}
+
+TEST_F(PrinterTest, PreserveNewlinesThroughEmits) {
+  {
+    Printer printer(output());
+    const std::vector<std::string> insertion_lines = {"// line 1", "// line 2"};
+    printer.Emit(
+        {
+            {"insert_lines",
+             [&] {
+               for (const auto& line : insertion_lines) {
+                 printer.Emit({{"line", line}}, R"cc(
+                   $line$
+                 )cc");
+               }
+             }},
+        },
+        R"cc(
+          // one
+          // two
+
+          $insert_lines$;
+
+          // three
+          // four
+        )cc");
+  }
+  EXPECT_EQ(written(),
+            "// one\n"
+            "// two\n"
+            "\n"
+            "// line 1\n"
+            "// line 2\n"
+            "\n"
+            "// three\n"
+            "// four\n");
 }
 
 }  // namespace io

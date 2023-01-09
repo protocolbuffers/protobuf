@@ -51,15 +51,15 @@ const char* TcParser::GenericFallback(PROTOBUF_TC_PARAM_DECL) {
 }
 
 const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(MustFallbackToGeneric(PROTOBUF_TC_PARAM_PASS))) {
+    PROTOBUF_MUSTTAIL return GenericFallback(PROTOBUF_TC_PARAM_PASS);
+  }
+
   SyncHasbits(msg, hasbits, table);
   uint32_t tag = data.tag();
   if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
     ctx->SetLastTag(tag);
     return ptr;
-  }
-
-  if (MustFallbackToGeneric(PROTOBUF_TC_PARAM_PASS)) {
-    PROTOBUF_MUSTTAIL return GenericFallback(PROTOBUF_TC_PARAM_PASS);
   }
 
   auto* full_msg = DownCast<Message*>(msg);

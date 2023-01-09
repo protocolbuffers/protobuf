@@ -34,10 +34,10 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/stubs/logging.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/strip.h"
 
@@ -63,7 +63,7 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
           "description.";
     }
     if (error && !error->empty()) {
-      *error = file->name() + ": " + *error;
+      *error = absl::StrCat(file->name(), ": ", *error);
       break;
     }
     if (!succeeded) {
@@ -82,7 +82,7 @@ io::ZeroCopyOutputStream* GeneratorContext::OpenForAppend(
 
 io::ZeroCopyOutputStream* GeneratorContext::OpenForInsert(
     const std::string& filename, const std::string& insertion_point) {
-  GOOGLE_LOG(FATAL) << "This GeneratorContext does not support insertion.";
+  GOOGLE_ABSL_LOG(FATAL) << "This GeneratorContext does not support insertion.";
   return nullptr;  // make compiler happy
 }
 
@@ -94,7 +94,7 @@ io::ZeroCopyOutputStream* GeneratorContext::OpenForInsertWithGeneratedCodeInfo(
 
 void GeneratorContext::ListParsedFiles(
     std::vector<const FileDescriptor*>* output) {
-  GOOGLE_LOG(FATAL) << "This GeneratorContext does not support ListParsedFiles";
+  GOOGLE_ABSL_LOG(FATAL) << "This GeneratorContext does not support ListParsedFiles";
 }
 
 void GeneratorContext::GetCompilerVersion(Version* version) const {

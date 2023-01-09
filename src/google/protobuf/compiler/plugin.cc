@@ -39,8 +39,6 @@
 #include <unistd.h>
 #endif
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
@@ -126,10 +124,10 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   for (int i = 0; i < request.file_to_generate_size(); i++) {
     parsed_files.push_back(pool.FindFileByName(request.file_to_generate(i)));
     if (parsed_files.back() == nullptr) {
-      *error_msg =
+      *error_msg = absl::StrCat(
           "protoc asked plugin to generate a file but "
-          "did not provide a descriptor for the file: " +
-          request.file_to_generate(i);
+          "did not provide a descriptor for the file: ",
+          request.file_to_generate(i));
       return false;
     }
   }
