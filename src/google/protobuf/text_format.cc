@@ -2020,9 +2020,6 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
 
 }  // namespace
 
-const char* const TextFormat::Printer::kDoNotParse =
-    "DO NOT PARSE: fields may be stripped and missing.\n";
-
 TextFormat::Printer::Printer()
     : initial_indent_level_(0),
       single_line_mode_(false),

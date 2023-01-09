@@ -450,8 +450,6 @@ class PROTOBUF_EXPORT TextFormat {
     // strings (see text_format.cc for implementation).
     class FastFieldValuePrinterUtf8Escaping;
 
-    static const char* const kDoNotParse;
-
     // Internal Print method, used for writing to the OutputStream via
     // the TextGenerator class.
     void Print(const Message& message, BaseTextGenerator* generator) const;
