@@ -131,5 +131,6 @@ cc_test(
         ":test_model_upb_proto",
         "@com_google_googletest//:gtest_main",
         "//:upb",
+        "//protos",
     ],
 )

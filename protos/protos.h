@@ -359,6 +359,15 @@ bool Parse(T& message, absl::string_view bytes) {
 }
 
 template <typename T>
+bool Parse(Ptr<T>& message, absl::string_view bytes) {
+  _upb_Message_Clear(message->msg(), T::minitable());
+  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
+                    /* extreg= */ nullptr, /* options= */ 0,
+                    arena) == kUpb_DecodeStatus_Ok;
+}
+
+template <typename T>
 bool Parse(std::unique_ptr<T>& message, absl::string_view bytes) {
   _upb_Message_Clear(message->msg(), T::minitable());
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
@@ -430,8 +439,7 @@ absl::StatusOr<absl::string_view> Serialize(std::shared_ptr<T>& message,
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(Ptr<const T> message,
-                                            upb::Arena& arena,
+absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, upb::Arena& arena,
                                             int options = 0) {
   return ::protos::internal::Serialize(message->msg(), T::minitable(),
                                        arena.ptr(), options);

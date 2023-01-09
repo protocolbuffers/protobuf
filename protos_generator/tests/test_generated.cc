@@ -26,10 +26,10 @@
 #include <limits>
 
 #include "gtest/gtest.h"
+#include "protos/protos.h"
 #include "protos_generator/tests/child_model.upb.proto.h"
 #include "protos_generator/tests/no_package.upb.proto.h"
 #include "protos_generator/tests/test_model.upb.proto.h"
-#include "upb/string_view.h"
 
 using ::protos_generator::test::protos::ChildModel1;
 using ::protos_generator::test::protos::other_ext;
@@ -555,6 +555,23 @@ TEST(CppGeneratedCode, Parse) {
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::protos::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Test123", parsed_model.str1());
+  // Should not return an extension since we did not pass ExtensionRegistry.
+  EXPECT_EQ(false, ::protos::GetExtension(parsed_model, theme).ok());
+}
+
+TEST(CppGeneratedCode, ParseIntoPtrToModel) {
+  TestModel model;
+  model.set_str1("Test123");
+  ThemeExtension extension1;
+  extension1.set_ext_name("Hello World");
+  EXPECT_EQ(true, ::protos::SetExtension(model, theme, extension1).ok());
+  ::upb::Arena arena;
+  auto bytes = ::protos::Serialize(model, arena);
+  EXPECT_EQ(true, bytes.ok());
+  ::protos::Ptr<TestModel> parsed_model =
+      ::protos::CreateMessage<TestModel>(arena);
+  EXPECT_TRUE(::protos::Parse(parsed_model, bytes.value()));
+  EXPECT_EQ("Test123", parsed_model->str1());
   // Should not return an extension since we did not pass ExtensionRegistry.
   EXPECT_EQ(false, ::protos::GetExtension(parsed_model, theme).ok());
 }
