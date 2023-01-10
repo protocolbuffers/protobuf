@@ -1316,52 +1316,23 @@ const char* TcParser::PackedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
     }
   }
+
+  // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
+  // pending hasbits now:
+  SyncHasbits(msg, hasbits, table);
+
   const auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
   auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
   const uint8_t max = data.aux_idx();
 
-  int size = static_cast<int>(ReadSize(&ptr));
-  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
-    return Error(PROTOBUF_TC_PARAM_PASS);
-  }
-
-  while (size > 0) {
-    uint8_t v = *ptr;
+  return ctx->ReadPackedVarint(ptr, [=](int32_t v) {
     if (PROTOBUF_PREDICT_FALSE(min > v || v > max)) {
-      // If it is out of range it might be because it is a non-canonical varint
-      // with a small value (ie the continuation bit is on).
-      // Do the full varint parse just in case.
-      uint64_t tmp;
-      const char* const old_ptr = ptr;
-      ptr = ParseVarint(ptr, &tmp);
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
-        return Error(PROTOBUF_TC_PARAM_PASS);
-      }
-      size -= static_cast<int>(ptr - old_ptr);
-      if (PROTOBUF_PREDICT_FALSE(size < 0)) {
-        return Error(PROTOBUF_TC_PARAM_PASS);
-      }
-      int32_t v32 = static_cast<int32_t>(tmp);
-      if (PROTOBUF_PREDICT_FALSE(min > v32 || v32 > max)) {
-        UnknownPackedEnum(msg, table, FastDecodeTag(saved_tag), v32);
-      } else {
-        field->Add(v32);
-      }
+      UnknownPackedEnum(msg, table, FastDecodeTag(saved_tag), v);
     } else {
-      ptr += 1;
-      size -= 1;
       field->Add(v);
     }
-
-    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
-      if (ctx->Done(&ptr) && size != 0) {
-        return Error(PROTOBUF_TC_PARAM_PASS);
-      }
-    }
-  }
-
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
+  });
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0P1(PROTOBUF_TC_PARAM_DECL) {
