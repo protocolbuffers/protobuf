@@ -95,7 +95,7 @@ class FakeAnnotationCollector : public AnnotationCollector {
   }
 };
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
 TEST_F(PrinterTest, Death) {
   Printer printer(output(), '$');
 

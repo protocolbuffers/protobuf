@@ -1186,7 +1186,7 @@ TEST(ExtensionSetTest, AbsentExtension) {
                 .bb());
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
 
 TEST(ExtensionSetTest, InvalidEnumDeath) {
   unittest::TestAllExtensions message;

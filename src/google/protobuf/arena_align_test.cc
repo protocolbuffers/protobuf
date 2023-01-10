@@ -72,7 +72,7 @@ TEST(ArenaAlignDefault, Padded) {
   EXPECT_THAT(align_default.Padded(0), Eq(0));
   EXPECT_THAT(align_default.Padded(8), Eq(8));
   EXPECT_THAT(align_default.Padded(64), Eq(64));
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(align_default.Padded(1), ".*");
 #endif  // PROTOBUF_HAS_DEATH_TEST
 }
@@ -95,7 +95,7 @@ TEST(ArenaAlignDefault, CheckAligned) {
   EXPECT_THAT(align_default.CheckAligned(p + 0), Eq(p + 0));
   EXPECT_THAT(align_default.CheckAligned(p + 8), Eq(p + 8));
   EXPECT_THAT(align_default.CheckAligned(p + 16), Eq(p + 16));
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(align_default.CheckAligned(p + 1), ".*");
   EXPECT_DEBUG_DEATH(align_default.CheckAligned(p + 7), ".*");
   EXPECT_DEBUG_DEATH(align_default.CheckAligned(p + 9), ".*");
@@ -110,7 +110,7 @@ TEST(ArenaAlignDefault, CeilDefaultAligned) {
   EXPECT_THAT(align_default.CeilDefaultAligned(p + 0), Eq(p + 0));
   EXPECT_THAT(align_default.CeilDefaultAligned(p + 8), Eq(p + 8));
   EXPECT_THAT(align_default.CeilDefaultAligned(p + 16), Eq(p + 16));
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(align_default.CeilDefaultAligned(p + 1), ".*");
   EXPECT_DEBUG_DEATH(align_default.CeilDefaultAligned(p + 7), ".*");
   EXPECT_DEBUG_DEATH(align_default.CeilDefaultAligned(p + 9), ".*");
@@ -161,7 +161,7 @@ TEST(ArenaAlign, Padded) {
   auto align_64 = ArenaAlignAs(64);
   EXPECT_THAT(align_64.Padded(64), Eq(64 + 64 - ArenaAlignDefault::align));
   EXPECT_THAT(align_64.Padded(128), Eq(128 + 64 - ArenaAlignDefault::align));
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
   // TODO(mvels): there are direct callers of AllocateAligned() that violate
   // `size` being a multiple of `align`: that should be an error / assert.
   //  EXPECT_DEBUG_DEATH(align_64.Padded(16), ".*");
@@ -187,7 +187,7 @@ TEST(ArenaAlign, CheckAligned) {
   EXPECT_THAT(align_64.CheckAligned(p + 0), Eq(p));
   EXPECT_THAT(align_64.CheckAligned(p + 64), Eq(p + 64));
   EXPECT_THAT(align_64.CheckAligned(p + 128), Eq(p + 128));
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(align_64.CheckAligned(p + 1), ".*");
   EXPECT_DEBUG_DEATH(align_64.CheckAligned(p + 7), ".*");
   EXPECT_DEBUG_DEATH(align_64.CheckAligned(p + 8), ".*");
@@ -210,7 +210,7 @@ TEST(ArenaAlign, CeilDefaultAligned) {
   EXPECT_THAT(align_64.CeilDefaultAligned(p + 72), Eq(p + 128));
   EXPECT_THAT(align_64.CeilDefaultAligned(p + 120), Eq(p + 128));
   EXPECT_THAT(align_64.CeilDefaultAligned(p + 128), Eq(p + 128));
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(align_64.CeilDefaultAligned(p + 1), ".*");
   EXPECT_DEBUG_DEATH(align_64.CeilDefaultAligned(p + 7), ".*");
   EXPECT_DEBUG_DEATH(align_64.CeilDefaultAligned(p + 63), ".*");

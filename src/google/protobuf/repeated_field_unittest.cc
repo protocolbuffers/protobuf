@@ -951,7 +951,7 @@ TEST(RepeatedField, Truncate) {
   // Truncations that don't change the size are allowed, but growing is not
   // allowed.
   field.Truncate(field.size());
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(field.Truncate(field.size() + 1), "new_size");
 #endif
 }
@@ -1010,7 +1010,7 @@ TEST(RepeatedField, TruncateCords) {
   // Truncating to the current size should be fine (no-op), but truncating
   // to a larger size should crash.
   field.Truncate(field.size());
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(field.Truncate(field.size() + 1), "new_size");
 #endif
 }
