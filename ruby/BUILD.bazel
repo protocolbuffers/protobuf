@@ -2,6 +2,8 @@
 #
 # See also code generation logic under /src/google/protobuf/compiler/ruby.
 
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
@@ -12,6 +14,29 @@ load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
 ################################################################################
 # Ruby Runtime
 ################################################################################
+
+string_flag(
+    name = "ffi",
+    build_setting_default = "disabled",
+    values = [
+        "enabled",
+        "disabled",
+    ],
+)
+
+config_setting(
+    name = "ffi_enabled",
+    flag_values = {
+        "ffi": "enabled"
+    },
+)
+
+config_setting(
+    name = "ffi_disabled",
+    flag_values = {
+        "ffi": "disabled"
+    },
+)
 
 ruby_library(
     name = "protobuf",

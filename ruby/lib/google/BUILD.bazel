@@ -46,7 +46,13 @@ ruby_library(
     srcs = glob([
         "**/*.rb",
     ]),
-    deps = ["//:well_known_ruby_protos"],
+    deps = ["//:well_known_ruby_protos"] + select({
+        "//ruby:ffi_enabled": [
+            "@protobuf_bundle//:ffi",
+            "@protobuf_bundle//:ffi-compiler",
+        ],
+        "//conditions:default": [],
+    }),
     includes = ["ruby/lib"],
     data = select({
         "@rules_ruby//ruby/runtime:config_jruby": ["protobuf_java.jar"],
