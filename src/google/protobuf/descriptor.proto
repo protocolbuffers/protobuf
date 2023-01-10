@@ -631,6 +631,32 @@ message FieldOptions {
   // formats, e.g. when the field contains sensitive credentials.
   optional bool debug_redact = 16 [default = false];
 
+  // If set to RETENTION_SOURCE, the option will be omitted from the binary.
+  // Note: as of January 2023, support for this is in progress and does not yet
+  // have an effect (b/264593489).
+  enum OptionRetention {
+    RETENTION_UNKNOWN = 0;
+    RETENTION_RUNTIME = 1;
+    RETENTION_SOURCE = 2;
+  }
+
+  // This indicates the types of entities that the field may apply to when used
+  // as an option. If it is unset, then the field may be freely used as an
+  // option on any kind of entity. Note: as of January 2023, support for this is
+  // in progress and does not yet have an effect (b/264593489).
+  enum OptionTargetType {
+    TARGET_TYPE_UNKNOWN = 0;
+    TARGET_TYPE_FILE = 1;
+    TARGET_TYPE_EXTENSION_RANGE = 2;
+    TARGET_TYPE_MESSAGE = 3;
+    TARGET_TYPE_FIELD = 4;
+    TARGET_TYPE_ONEOF = 5;
+    TARGET_TYPE_ENUM = 6;
+    TARGET_TYPE_ENUM_ENTRY = 7;
+    TARGET_TYPE_SERVICE = 8;
+    TARGET_TYPE_METHOD = 9;
+  }
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
