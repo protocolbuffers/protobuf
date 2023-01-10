@@ -221,6 +221,10 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
 
+// Used for descriptor proto extension declarations.
+// Owner: shaod@, gberg@
+#define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
+
 #else
 #define PROTOBUF_FUTURE_FINAL
 #endif
