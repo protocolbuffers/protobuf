@@ -139,7 +139,7 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
     EXPECT_EQ(message.repeated_foreign_message(i).c(), Func(i, 7));
   }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
   // Make sure types are checked correctly at runtime.
   const FieldDescriptor* fd_optional_int32 =
       desc->FindFieldByName("optional_int32");
@@ -421,7 +421,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   EXPECT_TRUE(rf_message.empty());
   EXPECT_TRUE(mrf_message.empty());
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
 
   // Make sure types are checked correctly at runtime.
   const FieldDescriptor* fd_optional_int32 =

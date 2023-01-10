@@ -2020,9 +2020,6 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
 
 }  // namespace
 
-const char* const TextFormat::Printer::kDoNotParse =
-    "DO NOT PARSE: fields may be stripped and missing.\n";
-
 TextFormat::Printer::Printer()
     : initial_indent_level_(0),
       single_line_mode_(false),
@@ -2252,10 +2249,7 @@ void TextFormat::Printer::PrintMessage(const Message& message,
     fields.push_back(descriptor->field(0));
     fields.push_back(descriptor->field(1));
   } else {
-    reflection->ListFieldsOmitStripped(message, &fields);
-    if (reflection->IsMessageStripped(message.GetDescriptor())) {
-      generator->Print(kDoNotParse, std::strlen(kDoNotParse));
-    }
+    reflection->ListFields(message, &fields);
   }
 
   if (print_message_fields_in_index_order_) {

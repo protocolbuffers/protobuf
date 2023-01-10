@@ -1020,7 +1020,7 @@ TEST_F(TokenizerTest, ParseFloat) {
   EXPECT_EQ(0.0, Tokenizer::ParseFloat("1e-9999999999999999999999999999"));
   EXPECT_EQ(HUGE_VAL, Tokenizer::ParseFloat("1e+9999999999999999999999999999"));
 
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
   // Test invalid integers that will never be tokenized as integers.
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseFloat("zxy"),
@@ -1075,7 +1075,7 @@ TEST_F(TokenizerTest, ParseString) {
   EXPECT_EQ("\\U00110000\\U00200000\\Uffffffff", output);
 
   // Test invalid strings that will never be tokenized as strings.
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseString("", &output),
       "passed text that could not have been tokenized as a string");

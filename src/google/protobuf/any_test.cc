@@ -178,7 +178,7 @@ TEST(AnyTest, MoveAssignment) {
   EXPECT_EQ(12345, payload.int32_value());
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if PROTOBUF_HAS_DEATH_TEST
 #ifndef NDEBUG
 TEST(AnyTest, PackSelfDeath) {
   google::protobuf::Any any;

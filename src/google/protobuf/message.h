@@ -1024,22 +1024,6 @@ class PROTOBUF_EXPORT Reflection final {
   const internal::RepeatedFieldAccessor* RepeatedFieldAccessor(
       const FieldDescriptor* field) const;
 
-  // Lists all fields of the message which are currently set, except for unknown
-  // fields and stripped fields. See ListFields for details.
-  void ListFieldsOmitStripped(
-      const Message& message,
-      std::vector<const FieldDescriptor*>* output) const;
-
-  bool IsMessageStripped(const Descriptor* descriptor) const {
-    return schema_.IsMessageStripped(descriptor);
-  }
-
-  friend class TextFormat;
-
-  void ListFieldsMayFailOnStripped(
-      const Message& message, bool should_fail,
-      std::vector<const FieldDescriptor*>* output) const;
-
   // Returns true if the message field is backed by a LazyField.
   //
   // A message field may be backed by a LazyField without the user annotation
