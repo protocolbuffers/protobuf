@@ -32,6 +32,7 @@
 
 #include <cstddef>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
@@ -281,10 +282,53 @@ void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
   }
 }
 
+    return ptr;
+  }
+
+  if (str == nullptr) {
+    // Create arena donated string.
+    ABSL_DCHECK_LE(size, kSafeStringSize);
+    TaggedStringPtr res = CreateUninitializedArenaString(*arena, size);
+    str = res.Get();
+    s->UnsafeSetTaggedPointer(res);
+  }
+  ABSL_DCHECK_NE(str, nullptr);
+
+  char* target = &(*str)[0];
+  if (size <= buffer_end_ + kSlopBytes - ptr) {
+    memcpy(target, ptr, size);
+    ptr += size;
+  } else {
+    ptr = AppendSize(ptr, size, [&target](const char* p, int s) {
+      memcpy(target, p, s);
+      target += s;
+    });
+  }
+  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+  return ptr;
+}
+
+
 const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
                                                 ArenaStringPtr* s,
                                                 Arena* arena) {
   ScopedCheckPtrInvariants check(&s->tagged_ptr_);
+      return ptr + size;
+    }
+
+    void* mem;
+    if (arena->impl_.MaybeAllocateAligned(sizeof(std::string), &mem)) {
+      // "size" is read from *ptr. Increment ptr before copying.
+      ptr += 1;
+      str = robber::FastConstructSmallString(ptr, size, mem);
+      SetStrWithArenaBuffer(str, s);
+      return ptr + size;
+    }
+  }
+#endif  // GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
+  return ReadArenaStringFallback(ptr, s, arena, is_default);
+#include "google/protobuf/stubs/common.h"
+
   ABSL_DCHECK(arena != nullptr);
 
   int size = ReadSize(&ptr);
@@ -294,6 +338,7 @@ const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
   ptr = ReadString(ptr, size, str);
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   return ptr;
+
 }
 
 }  // namespace internal
