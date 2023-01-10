@@ -50,6 +50,11 @@ class MapFieldIter implements \Iterator
     private $container;
 
     /**
+     * @ignore
+     */
+    private $key_type;
+
+    /**
      * Create iterator instance for MapField.
      *
      * @param array $container
