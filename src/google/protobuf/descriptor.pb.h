@@ -350,71 +350,6 @@ inline bool FieldOptions_JSType_Parse(absl::string_view name, FieldOptions_JSTyp
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_JSType>(
       FieldOptions_JSType_descriptor(), name, value);
 }
-enum FieldOptions_OptionRetention : int {
-  FieldOptions_OptionRetention_RETENTION_UNKNOWN = 0,
-  FieldOptions_OptionRetention_RETENTION_RUNTIME = 1,
-  FieldOptions_OptionRetention_RETENTION_SOURCE = 2,
-};
-
-PROTOBUF_EXPORT bool FieldOptions_OptionRetention_IsValid(int value);
-constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MIN = static_cast<FieldOptions_OptionRetention>(0);
-constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MAX = static_cast<FieldOptions_OptionRetention>(2);
-constexpr int FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor*
-FieldOptions_OptionRetention_descriptor();
-template <typename T>
-const std::string& FieldOptions_OptionRetention_Name(T value) {
-  static_assert(std::is_same<T, FieldOptions_OptionRetention>::value ||
-                    std::is_integral<T>::value,
-                "Incorrect type passed to OptionRetention_Name().");
-  return FieldOptions_OptionRetention_Name(static_cast<FieldOptions_OptionRetention>(value));
-}
-template <>
-inline const std::string& FieldOptions_OptionRetention_Name(FieldOptions_OptionRetention value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum<FieldOptions_OptionRetention_descriptor,
-                                                 0, 2>(
-      static_cast<int>(value));
-}
-inline bool FieldOptions_OptionRetention_Parse(absl::string_view name, FieldOptions_OptionRetention* value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_OptionRetention>(
-      FieldOptions_OptionRetention_descriptor(), name, value);
-}
-enum FieldOptions_OptionTargetType : int {
-  FieldOptions_OptionTargetType_TARGET_TYPE_UNKNOWN = 0,
-  FieldOptions_OptionTargetType_TARGET_TYPE_FILE = 1,
-  FieldOptions_OptionTargetType_TARGET_TYPE_EXTENSION_RANGE = 2,
-  FieldOptions_OptionTargetType_TARGET_TYPE_MESSAGE = 3,
-  FieldOptions_OptionTargetType_TARGET_TYPE_FIELD = 4,
-  FieldOptions_OptionTargetType_TARGET_TYPE_ONEOF = 5,
-  FieldOptions_OptionTargetType_TARGET_TYPE_ENUM = 6,
-  FieldOptions_OptionTargetType_TARGET_TYPE_ENUM_ENTRY = 7,
-  FieldOptions_OptionTargetType_TARGET_TYPE_SERVICE = 8,
-  FieldOptions_OptionTargetType_TARGET_TYPE_METHOD = 9,
-};
-
-PROTOBUF_EXPORT bool FieldOptions_OptionTargetType_IsValid(int value);
-constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MIN = static_cast<FieldOptions_OptionTargetType>(0);
-constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MAX = static_cast<FieldOptions_OptionTargetType>(9);
-constexpr int FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE = 9 + 1;
-PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor*
-FieldOptions_OptionTargetType_descriptor();
-template <typename T>
-const std::string& FieldOptions_OptionTargetType_Name(T value) {
-  static_assert(std::is_same<T, FieldOptions_OptionTargetType>::value ||
-                    std::is_integral<T>::value,
-                "Incorrect type passed to OptionTargetType_Name().");
-  return FieldOptions_OptionTargetType_Name(static_cast<FieldOptions_OptionTargetType>(value));
-}
-template <>
-inline const std::string& FieldOptions_OptionTargetType_Name(FieldOptions_OptionTargetType value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum<FieldOptions_OptionTargetType_descriptor,
-                                                 0, 9>(
-      static_cast<int>(value));
-}
-inline bool FieldOptions_OptionTargetType_Parse(absl::string_view name, FieldOptions_OptionTargetType* value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_OptionTargetType>(
-      FieldOptions_OptionTargetType_descriptor(), name, value);
-}
 enum MethodOptions_IdempotencyLevel : int {
   MethodOptions_IdempotencyLevel_IDEMPOTENCY_UNKNOWN = 0,
   MethodOptions_IdempotencyLevel_NO_SIDE_EFFECTS = 1,
@@ -4725,55 +4660,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   }
   static inline bool JSType_Parse(absl::string_view name, JSType* value) {
     return FieldOptions_JSType_Parse(name, value);
-  }
-
-  using OptionRetention = FieldOptions_OptionRetention;
-  static constexpr OptionRetention RETENTION_UNKNOWN = FieldOptions_OptionRetention_RETENTION_UNKNOWN;
-  static constexpr OptionRetention RETENTION_RUNTIME = FieldOptions_OptionRetention_RETENTION_RUNTIME;
-  static constexpr OptionRetention RETENTION_SOURCE = FieldOptions_OptionRetention_RETENTION_SOURCE;
-  static inline bool OptionRetention_IsValid(int value) {
-    return FieldOptions_OptionRetention_IsValid(value);
-  }
-  static constexpr OptionRetention OptionRetention_MIN = FieldOptions_OptionRetention_OptionRetention_MIN;
-  static constexpr OptionRetention OptionRetention_MAX = FieldOptions_OptionRetention_OptionRetention_MAX;
-  static constexpr int OptionRetention_ARRAYSIZE = FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE;
-  static inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* OptionRetention_descriptor() {
-    return FieldOptions_OptionRetention_descriptor();
-  }
-  template <typename T>
-  static inline const std::string& OptionRetention_Name(T value) {
-    return FieldOptions_OptionRetention_Name(value);
-  }
-  static inline bool OptionRetention_Parse(absl::string_view name, OptionRetention* value) {
-    return FieldOptions_OptionRetention_Parse(name, value);
-  }
-
-  using OptionTargetType = FieldOptions_OptionTargetType;
-  static constexpr OptionTargetType TARGET_TYPE_UNKNOWN = FieldOptions_OptionTargetType_TARGET_TYPE_UNKNOWN;
-  static constexpr OptionTargetType TARGET_TYPE_FILE = FieldOptions_OptionTargetType_TARGET_TYPE_FILE;
-  static constexpr OptionTargetType TARGET_TYPE_EXTENSION_RANGE = FieldOptions_OptionTargetType_TARGET_TYPE_EXTENSION_RANGE;
-  static constexpr OptionTargetType TARGET_TYPE_MESSAGE = FieldOptions_OptionTargetType_TARGET_TYPE_MESSAGE;
-  static constexpr OptionTargetType TARGET_TYPE_FIELD = FieldOptions_OptionTargetType_TARGET_TYPE_FIELD;
-  static constexpr OptionTargetType TARGET_TYPE_ONEOF = FieldOptions_OptionTargetType_TARGET_TYPE_ONEOF;
-  static constexpr OptionTargetType TARGET_TYPE_ENUM = FieldOptions_OptionTargetType_TARGET_TYPE_ENUM;
-  static constexpr OptionTargetType TARGET_TYPE_ENUM_ENTRY = FieldOptions_OptionTargetType_TARGET_TYPE_ENUM_ENTRY;
-  static constexpr OptionTargetType TARGET_TYPE_SERVICE = FieldOptions_OptionTargetType_TARGET_TYPE_SERVICE;
-  static constexpr OptionTargetType TARGET_TYPE_METHOD = FieldOptions_OptionTargetType_TARGET_TYPE_METHOD;
-  static inline bool OptionTargetType_IsValid(int value) {
-    return FieldOptions_OptionTargetType_IsValid(value);
-  }
-  static constexpr OptionTargetType OptionTargetType_MIN = FieldOptions_OptionTargetType_OptionTargetType_MIN;
-  static constexpr OptionTargetType OptionTargetType_MAX = FieldOptions_OptionTargetType_OptionTargetType_MAX;
-  static constexpr int OptionTargetType_ARRAYSIZE = FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE;
-  static inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* OptionTargetType_descriptor() {
-    return FieldOptions_OptionTargetType_descriptor();
-  }
-  template <typename T>
-  static inline const std::string& OptionTargetType_Name(T value) {
-    return FieldOptions_OptionTargetType_Name(value);
-  }
-  static inline bool OptionTargetType_Parse(absl::string_view name, OptionTargetType* value) {
-    return FieldOptions_OptionTargetType_Parse(name, value);
   }
 
   // accessors -------------------------------------------------------
@@ -14029,18 +13915,6 @@ struct is_proto_enum<::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType> : std::true_t
 template <>
 inline const EnumDescriptor* GetEnumDescriptor<::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType>() {
   return ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType_descriptor();
-}
-template <>
-struct is_proto_enum<::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention> : std::true_type {};
-template <>
-inline const EnumDescriptor* GetEnumDescriptor<::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention>() {
-  return ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention_descriptor();
-}
-template <>
-struct is_proto_enum<::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType> : std::true_type {};
-template <>
-inline const EnumDescriptor* GetEnumDescriptor<::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType>() {
-  return ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType_descriptor();
 }
 template <>
 struct is_proto_enum<::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel> : std::true_type {};
