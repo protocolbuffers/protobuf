@@ -65,8 +65,7 @@ void SetPrimitiveVariables(
     Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
 
-  (*variables)["empty_list"] =
-      "com.google.protobuf.LazyStringArrayList.emptyList()";
+  (*variables)["empty_list"] = "com.google.protobuf.LazyStringArrayList.EMPTY";
 
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
@@ -121,6 +120,11 @@ void SetPrimitiveVariables(
                        absl::StrCat("!", (*variables)["isStringEmpty"], "(",
                                     (*variables)["name"], "_)")});
   }
+
+  // For repeated builders, one bit is used for whether the array is immutable.
+  (*variables)["get_mutable_bit_builder"] = GenerateGetBit(builderBitIndex);
+  (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
+  (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
 
   (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["get_has_field_bit_from_local"] =
@@ -193,7 +197,8 @@ int ImmutableStringFieldGenerator::GetNumBitsForBuilder() const { return 1; }
 // separate fields but rather use dynamic type checking.
 //
 // For single fields, the logic for this is done inside the generated code. For
-// repeated fields, the logic is done in LazyStringArrayList.
+// repeated fields, the logic is done in LazyStringArrayList and
+// UnmodifiableLazyStringList.
 void ImmutableStringFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   if (HasHazzer(descriptor_)) {
@@ -789,8 +794,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_,
                  "@SuppressWarnings(\"serial\")\n"
-                 "private com.google.protobuf.LazyStringArrayList $name$_ =\n"
-                 "    $empty_list$;\n");
+                 "private com.google.protobuf.LazyStringList $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
   printer->Print(variables_,
@@ -834,17 +838,17 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
   // memory allocations. Note, immutable is a strong guarantee here -- not
   // just that the list cannot be modified via the reference but that the
   // list can never be modified.
-  printer->Print(variables_,
-                 "private com.google.protobuf.LazyStringArrayList $name$_ =\n"
-                 "    $empty_list$;\n");
+  printer->Print(
+      variables_,
+      "private com.google.protobuf.LazyStringList $name$_ = $empty_list$;\n");
 
   printer->Print(
       variables_,
       "private void ensure$capitalized_name$IsMutable() {\n"
-      "  if (!$name$_.isModifiable()) {\n"
+      "  if (!$get_mutable_bit_builder$) {\n"
       "    $name$_ = new com.google.protobuf.LazyStringArrayList($name$_);\n"
-      "  }\n"
-      "  $set_has_field_bit_builder$\n"
+      "    $set_mutable_bit_builder$;\n"
+      "   }\n"
       "}\n");
 
   // Note:  We return an unmodifiable list because otherwise the caller
@@ -855,8 +859,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public com.google.protobuf.ProtocolStringList\n"
                  "    ${$get$capitalized_name$List$}$() {\n"
-                 "  $name$_.makeImmutable();\n"
-                 "  return $name$_;\n"
+                 "  return $name$_.getUnmodifiableView();\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
@@ -889,7 +892,6 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.set(index, value);\n"
-                 "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -902,7 +904,6 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value);\n"
-                 "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -915,7 +916,6 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
                  "      values, $name$_);\n"
-                 "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -925,9 +925,8 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  $name$_ =\n"
-      "    $empty_list$;\n"
-      "  $clear_has_field_bit_builder$;\n"
+      "  $name$_ = $empty_list$;\n"
+      "  $clear_mutable_bit_builder$;\n"
       "  $on_changed$\n"
       "  return this;\n"
       "}\n");
@@ -947,7 +946,6 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value);\n"
-                 "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -1062,16 +1060,14 @@ void RepeatedImmutableStringFieldGenerator::
 
 void RepeatedImmutableStringFieldGenerator::GenerateInitializationCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "$name$_ =\n"
-                 "    $empty_list$;\n");
+  printer->Print(variables_, "$name$_ = $empty_list$;\n");
 }
 
 void RepeatedImmutableStringFieldGenerator::GenerateBuilderClearCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "$name$_ =\n"
-                 "    $empty_list$;\n");
+                 "$name$_ = $empty_list$;\n"
+                 "$clear_mutable_bit_builder$;\n");
 }
 
 void RepeatedImmutableStringFieldGenerator::GenerateMergingCode(
@@ -1085,7 +1081,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateMergingCode(
                  "if (!other.$name$_.isEmpty()) {\n"
                  "  if ($name$_.isEmpty()) {\n"
                  "    $name$_ = other.$name$_;\n"
-                 "    $set_has_field_bit_builder$\n"
+                 "    $clear_mutable_bit_builder$;\n"
                  "  } else {\n"
                  "    ensure$capitalized_name$IsMutable();\n"
                  "    $name$_.addAll(other.$name$_);\n"
@@ -1098,11 +1094,13 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   // The code below ensures that the result has an immutable list. If our
   // list is immutable, we can just reuse it. If not, we make it immutable.
+
   printer->Print(variables_,
-                 "if ($get_has_field_bit_from_local$) {\n"
-                 "  $name$_.makeImmutable();\n"
-                 "  result.$name$_ = $name$_;\n"
-                 "}\n");
+                 "if ($get_mutable_bit_builder$) {\n"
+                 "  $name$_ = $name$_.getUnmodifiableView();\n"
+                 "  $clear_mutable_bit_builder$;\n"
+                 "}\n"
+                 "result.$name$_ = $name$_;\n");
 }
 
 void RepeatedImmutableStringFieldGenerator::GenerateBuilderParsingCode(
