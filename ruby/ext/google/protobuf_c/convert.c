@@ -327,7 +327,7 @@ uint64_t Msgval_GetHash(upb_MessageValue val, TypeInfo type_info,
                         uint64_t seed) {
   upb_Status status;
   upb_Status_Clear(&status);
-  bool return_value = shared_Msgval_GetHash(val, type_info.type, type_info.def.msgdef, seed, &status);
+  uint64_t return_value = shared_Msgval_GetHash(val, type_info.type, type_info.def.msgdef, seed, &status);
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {

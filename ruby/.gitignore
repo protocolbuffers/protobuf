@@ -7,3 +7,11 @@ target/
 pkg/
 tmp/
 tests/google/
+/ext/google/protobuf_c/shared_convert.c
+/ext/google/protobuf_c/shared_convert.h
+/ext/google/protobuf_c/utf8_range.h
+/ext/google/protobuf_c/range2-sse.c
+/ext/google/protobuf_c/range2-neon.c
+/ext/google/protobuf_c/naive.c
+/ext/google/protobuf_c/shared_message.c
+/ext/google/protobuf_c/shared_message.h
