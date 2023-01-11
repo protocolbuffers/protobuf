@@ -10,6 +10,10 @@ rescue LoadError
   USE_FFI = false
 end
 
+USE_FFI = ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION'] == 'ffi'
+
+require "ffi-compiler/compile_task" if USE_FFI
+
 spec = Gem::Specification.load("google-protobuf.gemspec")
 
 well_known_protos = %w[
@@ -186,6 +190,61 @@ else
   unless ENV['IN_DOCKER'] == 'true'
     task :build => [:copy_third_party]
   end
+end
+
+task :copy_shared do
+  FileUtils.cp(Dir.glob("ext/google/shared/*.{c,h}"), "ext/google/protobuf_c")
+end
+
+if USE_FFI
+  # FFI::CompilerTask's constructor walks the filesystem at initialization time
+  # in order to create subtasks for each source file, so the files from third_party
+  # must be copied into place before the task is defined.
+  ffi_compiler_config_block = Proc.new do |c|
+    c.cflags << "-std=gnu99 -O3 -DNDEBUG"
+    if RbConfig::CONFIG['target_os'] =~ /darwin|linux/
+      # c.cflags << "-fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
+      c.cflags << "-Wall -Wsign-compare -Wno-declaration-after-statement"
+    end
+    if RbConfig::CONFIG['target_os'] =~ /linux/
+      # Instruct the linker to point memcpy calls at our __wrap_memcpy wrapper.
+      c.ldflags << "-Wl,-wrap,memcpy"
+    end
+  end
+
+  if File.exist? 'ext/google/protobuf_c/third_party/utf8_range'
+    desc "compiler tasks"
+    namespace "ffi-compiler" do
+      FFI::Compiler::CompileTask.new('ext/google/protobuf_c', &ffi_compiler_config_block)
+    end
+  else
+    task "ffi-compiler:default" do
+      Rake::Task[:copy_third_party].invoke
+      desc "compiler tasks"
+      namespace "ffi-compiler" do
+        FFI::Compiler::CompileTask.new('ext/google/protobuf_c', &ffi_compiler_config_block)
+        Rake::Task[Rake::Task[:default].prereqs.first].invoke
+      end
+    end
+  end
+else
+  if RUBY_PLATFORM == "java"
+    task :clean => :require_mvn do
+      system("mvn --batch-mode clean")
+    end
+
+    task :compile => :require_mvn do
+      system("mvn --batch-mode package")
+    end
+
+    task :require_mvn do
+      raise ArgumentError, "maven needs to be installed" if `which mvn` == ''
+    end
+
+  else
+    unless ENV['IN_DOCKER'] == 'true'
+      task :build => [:copy_third_party, :copy_shared]
+    end
 
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     unless RUBY_PLATFORM =~ /darwin/
@@ -238,6 +297,9 @@ else
     task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
   end
 end
+end
+
+task :compile => ["ffi-compiler:default"] if USE_FFI
 
 task :compile => ["ffi-compiler:default"] if USE_FFI
 
