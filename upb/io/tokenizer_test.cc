@@ -935,7 +935,7 @@ TEST_F(TokenizerTest, ParseFloat) {
   EXPECT_EQ(0.0, upb_Parse_Float("1e-9999999999999999999999999999"));
   EXPECT_EQ(HUGE_VAL, upb_Parse_Float("1e+9999999999999999999999999999"));
 
-#ifdef GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   // Test invalid integers that will never be tokenized as integers.
   EXPECT_DEBUG_DEATH(
       upb_Parse_Float("zxy"),
@@ -1006,7 +1006,7 @@ TEST_F(TokenizerTest, ParseString) {
   }
 
   // Test invalid strings that will never be tokenized as strings.
-#ifdef GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
       upb_Parse_String("", arena.ptr()),
       "passed text that could not have been tokenized as a string");
