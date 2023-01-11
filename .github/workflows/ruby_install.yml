@@ -47,4 +47,4 @@ jobs:
       - name: Install gem
         run: gem install bazel-bin/ruby/release.runfiles/com_google_protobuf/tmp/google-protobuf-3.21.12.gem
       - name: Test installation
-        run: bundle exec rubocop && bundle exec rspec
+        run: ruby ruby/tests/basic.rb
