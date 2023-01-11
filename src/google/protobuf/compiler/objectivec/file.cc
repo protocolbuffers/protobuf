@@ -185,7 +185,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
 
   absl::flat_hash_set<const FileDescriptor*> min_deps;
   std::copy_if(min_deps_collector.begin(), min_deps_collector.end(),
-               std::inserter(min_deps, min_deps.end()),
+               std::inserter(min_deps, min_deps.begin()),
                [&](const FileDescriptor* value) {
                  return to_prune.find(value) == to_prune.end();
                });

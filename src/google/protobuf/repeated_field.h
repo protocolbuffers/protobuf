@@ -935,7 +935,7 @@ inline int CalculateReserveSize(int total_size, int new_size) {
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
 // amount of code bloat.
 template <typename Element>
-void RepeatedField<Element>::Reserve(int new_size) {
+PROTOBUF_NOINLINE void RepeatedField<Element>::Reserve(int new_size) {
   if (total_size_ >= new_size) return;
   Rep* old_rep = total_size_ > 0 ? rep() : nullptr;
   Rep* new_rep;
