@@ -553,9 +553,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 #if defined(DEBUG) && DEBUG
       NSAssert((coreDesc->flags & GPBFieldHasEnumDescriptor) != 0,
                @"Field must have GPBFieldHasEnumDescriptor set");
-      NSAssert(((decriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) != 0) ||
-                   (((coreDesc->flags & GPBFieldClosedEnum) != 0) == enumDescriptor_.isClosed),
-               @"Internal error, ClosedEnum flag doesn't agree with EnumDescriptor");
 #endif  // DEBUG
     }
 
