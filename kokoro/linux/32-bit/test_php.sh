@@ -38,7 +38,7 @@ build_php_c() {
 
 mkdir -p build
 pushd build
-cmake ..
+cmake .. -DCMAKE_CXX_STANDARD=14
 cmake --build . -- -j20
 ctest --verbose --parallel 20
 export PROTOC=$(pwd)/protoc

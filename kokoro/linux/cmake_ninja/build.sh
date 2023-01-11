@@ -8,7 +8,7 @@ set -eux
 cd $(dirname $0)/../../..
 GIT_REPO_ROOT=`pwd`
 
-CONTAINER_IMAGE=gcr.io/protobuf-build/cmake/linux@sha256:79e6ed9d7f3f8e56167a3309a521e5b7e6a212bfb19855c65ee1cbb6f9099671
+CONTAINER_IMAGE=gcr.io/protobuf-build/cmake/linux@sha256:bd17c13255c8c7af2821c6597ad96568d714c0ea9d9e27d81b108fcc195ca858
 
 # Update git submodules and regenerate files
 git submodule update --init --recursive
@@ -22,7 +22,7 @@ docker run \
   --cidfile $tmpfile \
   -v $GIT_REPO_ROOT:/workspace \
   $CONTAINER_IMAGE \
-  /test.sh -G Ninja -Dprotobuf_BUILD_CONFORMANCE=ON
+  /test.sh -G Ninja -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14
 
 # Save logs for Kokoro
 docker cp \

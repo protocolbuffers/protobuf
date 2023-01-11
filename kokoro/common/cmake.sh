@@ -60,7 +60,8 @@ mkdir -p "${BUILD_DIR}"
   caplog 01_configure \
     cmake -S "${SOURCE_DIR}" \
     ${CMAKE_BUILD_TYPE_FLAG} \
-    ${CAPLOG_CMAKE_ARGS:-}
+    ${CAPLOG_CMAKE_ARGS:-} \
+    -DCMAKE_CXX_STANDARD=14
 )
 if [[ -n ${CAPLOG_DIR:-} ]]; then
   # Save configuration logs.
