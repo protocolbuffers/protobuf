@@ -54,7 +54,7 @@ bool shared_Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
              memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) ==
                  0;
     case kUpb_CType_Message:
-      return Message_Equal(val1.msg_val, val2.msg_val, msgdef);
+      return shared_Message_Equal(val1.msg_val, val2.msg_val, msgdef, status);
     default:
       upb_Status_SetErrorMessage(status, "Internal error, unexpected type");
   }
@@ -78,7 +78,7 @@ uint64_t shared_Msgval_GetHash(upb_MessageValue val, upb_CType type, upb_Message
     case kUpb_CType_Bytes:
       return _upb_Hash(val.str_val.data, val.str_val.size, seed);
     case kUpb_CType_Message:
-      return Message_Hash(val.msg_val, msgdef, seed);
+      return shared_Message_Hash(val.msg_val, msgdef, seed, status);
     default:
       upb_Status_SetErrorMessage(status, "Internal error, unexpected type");
   }
