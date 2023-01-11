@@ -640,6 +640,8 @@ message FieldOptions {
     RETENTION_SOURCE = 2;
   }
 
+  optional OptionRetention retention = 17;
+
   // This indicates the types of entities that the field may apply to when used
   // as an option. If it is unset, then the field may be freely used as an
   // option on any kind of entity. Note: as of January 2023, support for this is
@@ -656,6 +658,8 @@ message FieldOptions {
     TARGET_TYPE_SERVICE = 8;
     TARGET_TYPE_METHOD = 9;
   }
+
+  optional OptionTargetType target = 18;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

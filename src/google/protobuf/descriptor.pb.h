@@ -4842,6 +4842,8 @@ class PROTOBUF_EXPORT FieldOptions final :
     kDeprecatedFieldNumber = 3,
     kWeakFieldNumber = 10,
     kDebugRedactFieldNumber = 16,
+    kRetentionFieldNumber = 17,
+    kTargetFieldNumber = 18,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
@@ -4944,6 +4946,24 @@ class PROTOBUF_EXPORT FieldOptions final :
   bool _internal_debug_redact() const;
   void _internal_set_debug_redact(bool value);
 
+  public:
+  // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
+  bool has_retention() const;
+  void clear_retention() ;
+  ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention retention() const;
+  void set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention _internal_retention() const;
+  void _internal_set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value);
+  public:
+  // optional .google.protobuf.FieldOptions.OptionTargetType target = 18;
+  bool has_target() const;
+  void clear_target() ;
+  ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType target() const;
+  void set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType _internal_target() const;
+  void _internal_set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
   public:
   template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
@@ -5117,6 +5137,8 @@ class PROTOBUF_EXPORT FieldOptions final :
     bool deprecated_;
     bool weak_;
     bool debug_redact_;
+    int retention_;
+    int target_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -12709,6 +12731,58 @@ inline bool FieldOptions::_internal_debug_redact() const {
 inline void FieldOptions::_internal_set_debug_redact(bool value) {
   _impl_._has_bits_[0] |= 0x00000080u;
   _impl_.debug_redact_ = value;
+}
+
+// optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
+inline bool FieldOptions::has_retention() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000100u) != 0;
+  return value;
+}
+inline void FieldOptions::clear_retention() {
+  _impl_.retention_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000100u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention FieldOptions::_internal_retention() const {
+  return static_cast< ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention >(_impl_.retention_);
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention FieldOptions::retention() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.retention)
+  return _internal_retention();
+}
+inline void FieldOptions::_internal_set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value) {
+  assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention_IsValid(value));
+  _impl_._has_bits_[0] |= 0x00000100u;
+  _impl_.retention_ = value;
+}
+inline void FieldOptions::set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value) {
+  _internal_set_retention(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.retention)
+}
+
+// optional .google.protobuf.FieldOptions.OptionTargetType target = 18;
+inline bool FieldOptions::has_target() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000200u) != 0;
+  return value;
+}
+inline void FieldOptions::clear_target() {
+  _impl_.target_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000200u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::_internal_target() const {
+  return static_cast< ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType >(_impl_.target_);
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::target() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.target)
+  return _internal_target();
+}
+inline void FieldOptions::_internal_set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
+  assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType_IsValid(value));
+  _impl_._has_bits_[0] |= 0x00000200u;
+  _impl_.target_ = value;
+}
+inline void FieldOptions::set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
+  _internal_set_target(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.target)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
