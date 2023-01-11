@@ -270,31 +270,26 @@ absl::string_view TcParser::FieldName(const TcParseTableBase* table,
 }
 
 PROTOBUF_NOINLINE const char* TcParser::Error(PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE_NO_DATA();
   (void)ctx;
   (void)ptr;
   SyncHasbits(msg, hasbits, table);
   return nullptr;
 }
 
-template <bool export_called_function>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(
-    PROTOBUF_TC_PARAM_DECL) {
-  TestMiniParseResult* test_out;
-  if (export_called_function) {
-    test_out = reinterpret_cast<TestMiniParseResult*>(
-        static_cast<uintptr_t>(data.data));
-  }
+PROTOBUF_NOINLINE const char* TcParser::MiniParse(
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE_NO_DATA();
 
   uint32_t tag;
   ptr = ReadTagInlined(ptr, &tag);
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
-    if (export_called_function) *test_out = {Error};
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
 
   auto* entry = FindFieldEntry(table, tag >> 3);
+  TcFieldData data;
   if (entry == nullptr) {
-    if (export_called_function) *test_out = {table->fallback, tag};
     data.data = tag;
     PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
@@ -356,24 +351,12 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(
     "Invalid table order");
 
   TailCallParseFunc parse_fn = kMiniParseTable[field_type];
-  if (export_called_function) *test_out = {parse_fn, tag, entry};
 
   PROTOBUF_MUSTTAIL return parse_fn(PROTOBUF_TC_PARAM_PASS);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::MiniParse(
-    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
-  PROTOBUF_MUSTTAIL return MiniParse<false>(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-}
-PROTOBUF_NOINLINE TcParser::TestMiniParseResult TcParser::TestMiniParse(
-    PROTOBUF_TC_PARAM_DECL) {
-  TestMiniParseResult result = {};
-  data.data = reinterpret_cast<uintptr_t>(&result);
-  result.ptr = MiniParse<true>(PROTOBUF_TC_PARAM_PASS);
-  return result;
-}
-
 PROTOBUF_NOINLINE const char* TcParser::MpFallback(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -388,9 +371,11 @@ const char* TcParser::FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEndG1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return FastEndGroupImpl<uint8_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEndG2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return FastEndGroupImpl<uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -446,41 +431,49 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMdS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, false, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMdS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, false, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGdS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, true, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGdS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, true, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMtS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, false, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMtS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, false, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGtS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, true, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGtS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, true, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -492,10 +485,12 @@ const char* TcParser::LazyMessage(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMlS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return LazyMessage<uint8_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMlS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return LazyMessage<uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -538,41 +533,49 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMdR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, false, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMdR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, false, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGdR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, true, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGdR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, true, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMtR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, false, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMtR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, false, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGtR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, true, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGtR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, true, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -595,18 +598,22 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularFixed(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastF32S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularFixed<uint32_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastF32S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularFixed<uint32_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastF64S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularFixed<uint64_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastF64S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularFixed<uint64_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -636,18 +643,22 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastF32R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedFixed<uint32_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastF32R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedFixed<uint32_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastF64R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedFixed<uint64_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastF64R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedFixed<uint64_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -683,18 +694,22 @@ const char* TcParser::PackedFixed(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastF32P1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedFixed<uint32_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastF32P2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedFixed<uint32_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastF64P1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedFixed<uint64_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastF64P2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedFixed<uint64_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -885,6 +900,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::FastVarintS1(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   using TagType = uint8_t;
 
   // Special case for a varint bool field with a tag of 1 byte:
@@ -915,37 +931,46 @@ PROTOBUF_NOINLINE const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularVarint<bool, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV32S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return FastVarintS1<uint32_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV32S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularVarint<uint32_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return FastVarintS1<uint64_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularVarint<uint64_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastZ32S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularVarint<int32_t, uint8_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ32S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularVarint<int32_t, uint16_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ64S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularVarint<int64_t, uint8_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ64S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularVarint<int64_t, uint16_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -980,43 +1005,53 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<bool, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV8R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<bool, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV32R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<uint32_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV32R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<uint32_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<uint64_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<uint64_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastZ32R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<int32_t, uint8_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ32R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<int32_t, uint16_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ64R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<int64_t, uint8_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ64R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedVarint<int64_t, uint16_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -1053,41 +1088,51 @@ const char* TcParser::PackedVarint(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8P1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<bool, uint8_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV8P2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<bool, uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV32P1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<uint32_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV32P2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<uint32_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64P1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<uint64_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64P2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<uint64_t, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastZ32P1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<int32_t, uint8_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ32P2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<int32_t, uint16_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ64P1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<int64_t, uint8_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ64P2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedVarint<int64_t, uint16_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -1153,18 +1198,22 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastErS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularEnum<uint8_t, field_layout::kTvRange>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastErS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularEnum<uint16_t, field_layout::kTvRange>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEvS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularEnum<uint8_t, field_layout::kTvEnum>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEvS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularEnum<uint16_t, field_layout::kTvEnum>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -1252,35 +1301,43 @@ const char* TcParser::PackedEnum(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastErR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedEnum<uint8_t, field_layout::kTvRange>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastErR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedEnum<uint16_t, field_layout::kTvRange>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEvR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedEnum<uint8_t, field_layout::kTvEnum>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEvR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedEnum<uint16_t, field_layout::kTvEnum>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastErP1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedEnum<uint8_t, field_layout::kTvRange>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastErP2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedEnum<uint16_t, field_layout::kTvRange>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEvP1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedEnum<uint8_t, field_layout::kTvEnum>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEvP2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedEnum<uint16_t, field_layout::kTvEnum>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -1304,21 +1361,25 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnumSmallRange(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularEnumSmallRange<uint8_t, 0>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularEnumSmallRange<uint16_t, 0>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr1S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularEnumSmallRange<uint8_t, 1>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr1S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularEnumSmallRange<uint16_t, 1>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -1351,19 +1412,23 @@ const char* TcParser::RepeatedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedEnumSmallRange<uint8_t, 0>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEr0R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedEnumSmallRange<uint16_t, 0>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr1R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedEnumSmallRange<uint8_t, 1>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEr1R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedEnumSmallRange<uint16_t, 1>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -1399,19 +1464,23 @@ const char* TcParser::PackedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0P1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedEnumSmallRange<uint8_t, 0>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEr0P2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedEnumSmallRange<uint16_t, 0>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr1P1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedEnumSmallRange<uint8_t, 1>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEr1P2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return PackedEnumSmallRange<uint16_t, 1>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -1501,28 +1570,34 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastBS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularString<uint8_t, ArenaStringPtr, kNoUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastBS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularString<uint16_t, ArenaStringPtr, kNoUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastSS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularString<uint8_t, ArenaStringPtr,
                                           kUtf8ValidateOnly>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastSS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularString<uint16_t, ArenaStringPtr,
                                           kUtf8ValidateOnly>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastUS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularString<uint8_t, ArenaStringPtr, kUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastUS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return SingularString<uint16_t, ArenaStringPtr, kUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -1530,41 +1605,53 @@ PROTOBUF_NOINLINE const char* TcParser::FastUS2(PROTOBUF_TC_PARAM_DECL) {
 // Inlined string variants:
 
 const char* TcParser::FastBiS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastBiS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastSiS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastSiS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastUiS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastUiS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 // Corded string variants:
 const char* TcParser::FastBcS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastBcS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastScS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastScS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastUcS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastUcS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
@@ -1624,29 +1711,35 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastBR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedString<
       uint8_t, RepeatedPtrField<std::string>, kNoUtf8>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastBR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedString<
       uint16_t, RepeatedPtrField<std::string>, kNoUtf8>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastSR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedString<
       uint8_t, RepeatedPtrField<std::string>, kUtf8ValidateOnly>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastSR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedString<
       uint16_t, RepeatedPtrField<std::string>, kUtf8ValidateOnly>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastUR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedString<uint8_t,
                                           RepeatedPtrField<std::string>, kUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastUR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   PROTOBUF_MUSTTAIL return RepeatedString<uint16_t,
                                           RepeatedPtrField<std::string>, kUtf8>(
       PROTOBUF_TC_PARAM_PASS);
@@ -1759,6 +1852,7 @@ void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
 
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
   const uint16_t card = type_card & field_layout::kFcMask;
@@ -1800,6 +1894,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
 
 PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
     PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint32_t decoded_tag = data.tag();
   const uint32_t decoded_wiretype = decoded_tag & 7;
@@ -1848,6 +1943,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::MpPackedFixed(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
   const uint32_t decoded_wiretype = data.tag() & 7;
@@ -1880,6 +1976,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedFixed(PROTOBUF_TC_PARAM_DECL) {
 
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
   const uint16_t card = type_card & field_layout::kFcMask;
@@ -1944,6 +2041,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
 
 PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
     PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   auto type_card = entry.type_card;
   const uint32_t decoded_tag = data.tag();
@@ -2029,6 +2127,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   auto type_card = entry.type_card;
   auto decoded_wiretype = data.tag() & 7;
@@ -2103,6 +2202,7 @@ bool TcParser::MpVerifyUtf8(absl::string_view wire_bytes,
 
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
   const uint16_t card = type_card & field_layout::kFcMask;
@@ -2171,6 +2271,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
 
 PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
     PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
   const uint32_t decoded_tag = data.tag();
@@ -2236,6 +2337,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
 
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
   const uint16_t card = type_card & field_layout::kFcMask;
@@ -2308,6 +2410,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
 }
 
 const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
   ABSL_DCHECK_EQ(type_card & field_layout::kFcMask,
@@ -2603,6 +2706,7 @@ const char* TcParser::ParseOneMapEntry(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_TAIL_CALL_TRACE();
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   // `aux[0]` points into a MapAuxInfo.
   // If we have a message mapped_type aux[1] points into a `create_in_arena`.
@@ -2696,6 +2800,34 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
 
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
+
+#if defined(PROTOBUF_TAIL_CALL_TRACING_ENABLED)
+ABSL_CONST_INIT thread_local absl::optional<
+    absl::FunctionRef<void(absl::string_view, PROTOBUF_TC_PARAM_DECL)>>
+    thread_trace_func;
+
+void TcParser::TraceCall(absl::string_view func_name, PROTOBUF_TC_PARAM_DECL) {
+  if (thread_trace_func.has_value()) {
+    (*thread_trace_func)(func_name, PROTOBUF_TC_PARAM_PASS);
+  }
+}
+
+void TcParser::RunWithTrace(
+    absl::FunctionRef<void(absl::string_view, PROTOBUF_TC_PARAM_DECL)> tracer,
+    absl::FunctionRef<void()> op) {
+  ABSL_CHECK(!thread_trace_func.has_value());
+  thread_trace_func.emplace(tracer);
+  op();
+  thread_trace_func.reset();
+}
+
+#else   // defined(PROTOBUF_TAIL_CALL_TRACING_ENABLED)
+void TcParser::RunWithTrace(
+    absl::FunctionRef<void(absl::string_view, PROTOBUF_TC_PARAM_DECL)> tracer,
+    absl::FunctionRef<void()> op) {
+  ABSL_LOG(FATAL) << "Not enabled.";
+}
+#endif  // defined(PROTOBUF_TAIL_CALL_TRACING_ENABLED)
 
 }  // namespace internal
 }  // namespace protobuf

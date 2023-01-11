@@ -1081,6 +1081,32 @@ PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
 }  // namespace protobuf
 }  // namespace google
 
+// Turn on tracing on the parsing when running in !NDEBUG or with fuzzing turned
+// on. This allows unittests and fuzzing tests to inspect the paths the parser
+// is taking and verify that the tested code is the one the test is expecting.
+// For example, this allows the test to verify that the right fast parse
+// function is activated instead of going to the slow fallback.
+#ifdef PROTOBUF_TAIL_CALL_TRACING_ENABLED
+#error PROTOBUF_TAIL_CALL_TRACING_ENABLED was previously defined
+#endif
+#if defined(__GNUC__) &&                                                       \
+    (!defined(NDEBUG) || defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)) && \
+    !defined(PROTOBUF_NO_THREADLOCAL)
+#define PROTOBUF_TAIL_CALL_TRACING_ENABLED 1
+#endif
+#if defined(PROTOBUF_TAIL_CALL_TRACING_ENABLED)
+#define PROTOBUF_TAIL_CALL_TRACE() \
+  ::google::protobuf::internal::TcParser::TraceCall(__func__, PROTOBUF_TC_PARAM_PASS)
+#define PROTOBUF_TAIL_CALL_TRACE_NO_DATA() \
+  do {                                     \
+    TcFieldData data{};                    \
+    PROTOBUF_TAIL_CALL_TRACE();            \
+  } while (0)
+#else
+#define PROTOBUF_TAIL_CALL_TRACE()
+#define PROTOBUF_TAIL_CALL_TRACE_NO_DATA()
+#endif
+
 // PROTOBUF_ASSUME(pred) tells the compiler that it can assume pred is true.
 // To be safe, we also validate the assumption in debug builds, printing an
 // assert style "Assumption failed: ..." message and aborting the program if

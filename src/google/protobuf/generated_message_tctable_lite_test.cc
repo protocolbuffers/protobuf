@@ -33,8 +33,15 @@
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/match.h"
+#include "absl/strings/str_split.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/generated_message_tctable_lite_test.pb.h"
 #include "google/protobuf/wire_format_lite.h"
+
+
+// Must come last:
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -42,9 +49,16 @@ namespace internal {
 
 namespace {
 
+using ::testing::AllOf;
+using ::testing::AnyOf;
+using ::testing::Contains;
+using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Ne;
 using ::testing::Not;
 using ::testing::Optional;
+using ::testing::SizeIs;
 
 // The fast parser's dispatch table Xors two bytes of incoming data with
 // the data in TcFieldData, so we reproduce that here:
@@ -85,181 +99,98 @@ T ReadAndReset(char* p) {
   return result;
 }
 
-TEST(FastVarints, NameHere) {
-  constexpr uint8_t kHasBitsOffset = 4;
-  constexpr uint8_t kHasBitIndex = 0;
-  constexpr uint8_t kFieldOffset = 24;
-
-  // clang-format on
-  const TcParseTable<0, 1, 0, 0, 2> parse_table = {
-      {
-          kHasBitsOffset,  //
-          0,               // no _extensions_
-          1, 0,            // max_field_number, fast_idx_mask
-          offsetof(decltype(parse_table), field_lookup_table),
-          0xFFFFFFFF - 1,  // skipmap
-          offsetof(decltype(parse_table), field_entries),
-          1,                                             // num_field_entries
-          0,                                             // num_aux_entries
-          offsetof(decltype(parse_table), field_names),  // no aux_entries
-          nullptr,                                       // default instance
-          FastParserGaveUp,                              // fallback
-      },
-      // Fast Table:
-      {{
-          // optional int32 field = 1;
-          {TcParser::SingularVarintNoZag1<::uint32_t, kFieldOffset,
-                                          kHasBitIndex>(),
-           {/* coded_tag= */ 8, kHasBitIndex, /* aux_idx= */ 0, kFieldOffset}},
-      }},
-      // Field Lookup Table:
-      {{65535, 65535}},
-      // Field Entries:
-      {{
-          // This is set to kFkNone to force MiniParse to call the fallback
-          {kFieldOffset, kHasBitsOffset + 0, 0, (field_layout::kFkNone)},
-      }},
-      // no aux_entries
-      {{}},
-  };
-  // clang-format on
+template <typename Proto>
+void TestFastVFunction(const absl::string_view expected_function) {
   uint8_t serialize_buffer[64];
 
-  for (int size : {8, 32, 64}) {
-    SCOPED_TRACE(size);
-    auto next_i = [](uint64_t i) {
-      // if i + 1 is a power of two, return that.
-      // (This will also match when i == -1, but for this loop we know that will
-      // not happen.)
-      if ((i & (i + 1)) == 0) return i + 1;
-      // otherwise, i is already a power of two, so advance to one less than the
-      // next power of two.
-      return i + (i - 1);
-    };
-    for (uint64_t i = 0; i + 1 != 0; i = next_i(i)) {
-      SCOPED_TRACE(i);
-      enum OverlongKind { kNotOverlong, kOverlong, kOverlongWithDroppedBits };
-      for (OverlongKind overlong :
-           {kNotOverlong, kOverlong, kOverlongWithDroppedBits}) {
-        SCOPED_TRACE(overlong);
-        alignas(16) char fake_msg[64] = {
-            kDND, kDND, kDND, kDND, kDND, kDND, kDND, kDND,  //
-            kDND, kDND, kDND, kDND, kDND, kDND, kDND, kDND,  //
-            kDND, kDND, kDND, kDND, kDND, kDND, kDND, kDND,  //
-            kDND, kDND, kDND, kDND, kDND, kDND, kDND, kDND,  //
-            kDND, kDND, kDND, kDND, kDND, kDND, kDND, kDND,  //
-            kDND, kDND, kDND, kDND, kDND, kDND, kDND, kDND,  //
-            kDND, kDND, kDND, kDND, kDND, kDND, kDND, kDND,  //
-            kDND, kDND, kDND, kDND, kDND, kDND, kDND, kDND,  //
-        };
-        memset(&fake_msg[kHasBitsOffset], 0, sizeof(uint32_t));
+  int size = 8 * sizeof(Proto{}.field());
+  auto next_i = [](uint64_t i) {
+    // if i + 1 is a power of two, return that.
+    // (This will also match when i == -1, but for this loop we know that will
+    // not happen.)
+    if ((i & (i + 1)) == 0) return i + 1;
+    // otherwise, i is already a power of two, so advance to one less than the
+    // next power of two.
+    return i + (i - 1);
+  };
+  for (uint64_t i = 0; i + 1 != 0; i = next_i(i)) {
+    auto serialize_ptr = WireFormatLite::WriteUInt64ToArray(
+        /* field_number= */ 1, i, serialize_buffer);
+    absl::string_view serialized{
+        reinterpret_cast<char*>(&serialize_buffer[0]),
+        static_cast<size_t>(serialize_ptr - serialize_buffer)};
 
-        auto serialize_ptr = WireFormatLite::WriteUInt64ToArray(
-            /* field_number= */ 1, i, serialize_buffer);
+    Proto msg;
 
-        if (overlong == kOverlong || overlong == kOverlongWithDroppedBits) {
-          // 1 for the tag plus 10 for the value
-          while (serialize_ptr - serialize_buffer < 11) {
-            serialize_ptr[-1] |= 0x80;
-            *serialize_ptr++ = 0;
+    absl::optional<char> fallback_ptr_received;
+    absl::optional<uint64_t> fallback_hasbits_received;
+    absl::optional<uint64_t> fallback_tag_received;
+
+    std::vector<absl::string_view> trace;
+    TcParser::RunWithTrace(
+        [&](auto func_name, PROTOBUF_TC_PARAM_DECL) {
+          trace.push_back(func_name);
+          if (func_name == "MpVarint") {
+            fallback_ptr_received = *ptr;
+            fallback_hasbits_received = hasbits;
+            fallback_tag_received = data.tag();
           }
-          if (overlong == kOverlongWithDroppedBits) {
-            // For this one we add some unused bits to the last byte.
-            // They should be dropped. Bits 1-6 are dropped. Bit 0 is used and
-            // bit 7 is checked for continuation.
-            serialize_ptr[-1] |= 0b0111'1110;
-          }
-        }
+        },
+        [&] { ASSERT_TRUE(msg.ParseFromString(serialized)); });
 
-        absl::string_view serialized{
-            reinterpret_cast<char*>(&serialize_buffer[0]),
-            static_cast<size_t>(serialize_ptr - serialize_buffer)};
+    SCOPED_TRACE(absl::StrCat("Trace <", testing::PrintToString(trace), ">"));
 
-        const char* ptr = nullptr;
-        const char* end_ptr = nullptr;
-        ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
-                         /* aliasing= */ false, &ptr, serialized);
-#if 0  // FOR_DEBUGGING
-      ABSL_LOG(ERROR) << "size=" << size << " i=" << i << " ptr points to "  //
-                      << +ptr[0] << "," << +ptr[1] << ","                    //
-                      << +ptr[2] << "," << +ptr[3] << ","                    //
-                      << +ptr[4] << "," << +ptr[5] << ","                    //
-                      << +ptr[6] << "," << +ptr[7] << ","                    //
-                      << +ptr[8] << "," << +ptr[9] << "," << +ptr[10] << "\n";
-#endif
-        TailCallParseFunc fn = nullptr;
-        switch (size) {
-          case 8:
-            fn = &TcParser::FastV8S1;
-            break;
-          case 32:
-            fn = &TcParser::FastV32S1;
-            break;
-          case 64:
-            fn = &TcParser::FastV64S1;
-            break;
-        }
-        fallback_ptr_received = absl::nullopt;
-        fallback_hasbits_received = absl::nullopt;
-        fallback_tag_received = absl::nullopt;
-        end_ptr = fn(reinterpret_cast<MessageLite*>(fake_msg), ptr, &ctx,
-                     Xor2SerializedBytes(parse_table.fast_entries[0].bits, ptr),
-                     &parse_table.header, /*hasbits=*/0);
-        switch (size) {
-          case 8: {
-            if (end_ptr == nullptr) {
-              // If end_ptr is nullptr, that means the FastParser gave up and
-              // tried to pass control to MiniParse.... which is expected
-              // anytime we encounter something other than 0 or 1 encodings.
-              // (Since FastV8S1 is only used for `bool` fields.)
-              if (overlong == kNotOverlong) {
-                EXPECT_NE(i, true);
-                EXPECT_NE(i, false);
-              }
-              EXPECT_THAT(fallback_hasbits_received, Optional(0));
-              // Like the mini-parser functions, and unlike the fast-parser
-              // functions, the fallback receives a ptr already incremented past
-              // the tag, and receives the actual tag in the `data` parameter.
-              EXPECT_THAT(fallback_ptr_received, Optional(ptr + 1));
-              EXPECT_THAT(fallback_tag_received, Optional(0x7F & *ptr));
-              continue;
-            }
-            ASSERT_EQ(end_ptr - ptr, serialized.size());
+    ASSERT_THAT(trace, SizeIs(Gt(0)));
 
-            auto actual_field = ReadAndReset<uint8_t>(&fake_msg[kFieldOffset]);
-            EXPECT_EQ(actual_field, static_cast<decltype(actual_field)>(i))  //
-                << " hex: " << absl::StrCat(absl::Hex(actual_field));
-          }; break;
-          case 32: {
-            ASSERT_TRUE(end_ptr);
-            ASSERT_EQ(end_ptr - ptr, serialized.size());
+    // The fast bool parser fallsback to MiniParse for non-canonical.
+    const bool is_noncanonical_bool = size == 8 && i != 0 && i != 1;
 
-            auto actual_field = ReadAndReset<uint32_t>(&fake_msg[kFieldOffset]);
-            EXPECT_EQ(actual_field, static_cast<decltype(actual_field)>(i))  //
-                << " hex: " << absl::StrCat(absl::Hex(actual_field));
-          }; break;
-          case 64: {
-            ASSERT_EQ(end_ptr - ptr, serialized.size());
+    if (is_noncanonical_bool) {
+      ASSERT_THAT(trace,
+                  ElementsAre(expected_function, "MiniParse", "MpVarint"));
 
-            auto actual_field = ReadAndReset<uint64_t>(&fake_msg[kFieldOffset]);
-            EXPECT_EQ(actual_field, static_cast<decltype(actual_field)>(i))  //
-                << " hex: " << absl::StrCat(absl::Hex(actual_field));
-          }; break;
-        }
-        EXPECT_TRUE(!fallback_ptr_received);
-        EXPECT_TRUE(!fallback_hasbits_received);
-        EXPECT_TRUE(!fallback_tag_received);
-        auto hasbits = ReadAndReset<uint32_t>(&fake_msg[kHasBitsOffset]);
-        EXPECT_EQ(hasbits, 1 << kHasBitIndex);
+      // If falled_into_miniparse the FastParser gave up and
+      // tried to pass control to MiniParse.... which is expected anytime
+      // we encounter something other than 0 or 1 encodings.  (Since
+      // FastV8S1 is only used for `bool` fields.)
+      ASSERT_THAT(fallback_hasbits_received, Optional(0));
+      // Like the mini-parser functions, and unlike the fast-parser
+      // functions, the fallback receives a ptr already incremented past
+      // the tag, and receives the actual tag in the `data` parameter.
+      ASSERT_THAT(fallback_ptr_received, Optional(serialized[1]));
+      ASSERT_THAT(fallback_tag_received, Optional(0x7F & serialized[0]));
+    } else {
+      ASSERT_THAT(trace, ElementsAre(expected_function));
 
-        int offset = 0;
-        for (char ch : fake_msg) {
-          EXPECT_EQ(ch, kDND) << " corruption of message at offset " << offset;
-          ++offset;
-        }
-      }
+      EXPECT_TRUE(!fallback_ptr_received);
+      EXPECT_TRUE(!fallback_hasbits_received);
+      EXPECT_TRUE(!fallback_tag_received);
     }
+
+    auto actual_field = msg.field();
+    EXPECT_EQ(actual_field, static_cast<decltype(actual_field)>(i))
+        << " hex: " << absl::StrCat(absl::Hex(actual_field));
+    EXPECT_TRUE(msg.has_field());
   }
+}
+
+class FastVarintTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+#if !defined(PROTOBUF_TAIL_CALL_TRACING_ENABLED)
+    GTEST_SKIP() << "Tracing disabled";
+#endif
+  }
+};
+
+TEST_F(FastVarintTest, FastV8S1) {
+  TestFastVFunction<protobuf::internal::FastV8S1Proto>("FastV8S1");
+}
+TEST_F(FastVarintTest, FastV32S1) {
+  TestFastVFunction<protobuf::internal::FastV32S1Proto>("FastV32S1");
+}
+TEST_F(FastVarintTest, FastV64S1) {
+  TestFastVFunction<protobuf::internal::FastV64S1Proto>("FastV64S1");
 }
 
 MATCHER_P3(IsEntryForFieldNum, table, field_num, field_numbers_table,

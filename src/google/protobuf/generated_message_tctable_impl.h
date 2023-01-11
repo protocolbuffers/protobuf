@@ -38,6 +38,7 @@
 #include <utility>
 
 #include "google/protobuf/port.h"
+#include "absl/functional/function_ref.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/map.h"
@@ -655,6 +656,13 @@ class PROTOBUF_EXPORT TcParser final {
     Arena::CreateInArenaStorage(static_cast<T*>(p), arena);
   }
 
+  // Test only hook.
+  // It will run `op` turning on function call tracing. Each relevant tail call
+  // will invoke the `tracer` callback.
+  static void RunWithTrace(
+      absl::FunctionRef<void(absl::string_view, PROTOBUF_TC_PARAM_DECL)> tracer,
+      absl::FunctionRef<void()> op);
+
  private:
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>
@@ -664,17 +672,7 @@ class PROTOBUF_EXPORT TcParser final {
   static void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
                                  const TcParseTableBase* table);
 
-  // Test only access to verify that the right function is being called via
-  // MiniParse.
-  struct TestMiniParseResult {
-    TailCallParseFunc called_func;
-    uint32_t tag;
-    const TcParseTableBase::FieldEntry* found_entry;
-    const char* ptr;
-  };
-  static TestMiniParseResult TestMiniParse(PROTOBUF_TC_PARAM_DECL);
-  template <bool export_called_function>
-  static const char* MiniParse(PROTOBUF_TC_PARAM_DECL);
+  static void TraceCall(absl::string_view func_name, PROTOBUF_TC_PARAM_DECL);
 
   template <typename TagType, bool group_coding, bool aux_is_table>
   static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
@@ -731,6 +729,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   template <class MessageBaseT, class UnknownFieldsT>
   static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
+    PROTOBUF_TAIL_CALL_TRACE();
     if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
       // This is the ABI used by GetUnknownFieldOps(). Return the vtable.
       static constexpr UnknownFieldOps kOps = {
