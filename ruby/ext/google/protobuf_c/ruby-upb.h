@@ -3335,6 +3335,25 @@ typedef enum {
 } google_protobuf_FieldOptions_JSType;
 
 typedef enum {
+  google_protobuf_FieldOptions_RETENTION_UNKNOWN = 0,
+  google_protobuf_FieldOptions_RETENTION_RUNTIME = 1,
+  google_protobuf_FieldOptions_RETENTION_SOURCE = 2
+} google_protobuf_FieldOptions_OptionRetention;
+
+typedef enum {
+  google_protobuf_FieldOptions_TARGET_TYPE_UNKNOWN = 0,
+  google_protobuf_FieldOptions_TARGET_TYPE_FILE = 1,
+  google_protobuf_FieldOptions_TARGET_TYPE_EXTENSION_RANGE = 2,
+  google_protobuf_FieldOptions_TARGET_TYPE_MESSAGE = 3,
+  google_protobuf_FieldOptions_TARGET_TYPE_FIELD = 4,
+  google_protobuf_FieldOptions_TARGET_TYPE_ONEOF = 5,
+  google_protobuf_FieldOptions_TARGET_TYPE_ENUM = 6,
+  google_protobuf_FieldOptions_TARGET_TYPE_ENUM_ENTRY = 7,
+  google_protobuf_FieldOptions_TARGET_TYPE_SERVICE = 8,
+  google_protobuf_FieldOptions_TARGET_TYPE_METHOD = 9
+} google_protobuf_FieldOptions_OptionTargetType;
+
+typedef enum {
   google_protobuf_MethodOptions_IDEMPOTENCY_UNKNOWN = 0,
   google_protobuf_MethodOptions_NO_SIDE_EFFECTS = 1,
   google_protobuf_MethodOptions_IDEMPOTENT = 2
@@ -3352,6 +3371,8 @@ extern const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Label_enum_i
 extern const upb_MiniTableEnum google_protobuf_FileOptions_OptimizeMode_enum_init;
 extern const upb_MiniTableEnum google_protobuf_FieldOptions_CType_enum_init;
 extern const upb_MiniTableEnum google_protobuf_FieldOptions_JSType_enum_init;
+extern const upb_MiniTableEnum google_protobuf_FieldOptions_OptionRetention_enum_init;
+extern const upb_MiniTableEnum google_protobuf_FieldOptions_OptionTargetType_enum_init;
 extern const upb_MiniTableEnum google_protobuf_MethodOptions_IdempotencyLevel_enum_init;
 extern const upb_MiniTableEnum google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init;
 
