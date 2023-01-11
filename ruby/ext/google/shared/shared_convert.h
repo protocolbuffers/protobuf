@@ -32,10 +32,16 @@
 // Ruby <-> upb data conversion functions. Strictly free of dependencies on
 // Ruby interpreter internals.
 
+#ifndef RUBY_PROTOBUF_SHARED_CONVERT_H_
+#define RUBY_PROTOBUF_SHARED_CONVERT_H_
+
 #include "ruby-upb.h"
+#include "shared_message.h"
 
 bool shared_Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
                     upb_CType type, upb_MessageDef* msgdef, upb_Status* status);
 
 uint64_t shared_Msgval_GetHash(upb_MessageValue val, upb_CType type, upb_MessageDef* msgdef,
                         uint64_t seed, upb_Status* status);
+
+#endif  // RUBY_PROTOBUF_SHARED_CONVERT_H_
