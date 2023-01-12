@@ -14,7 +14,7 @@ on:
 jobs:
   build_wheels:
     name: Build Wheels
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-large
     if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
     env:
       DOCKER_IMAGE: gcr.io/protobuf-build/bazel/linux@sha256:9dba7773926bb6dce839de098948055c9e80260d7470a7fefb94b6a4fed363ba
@@ -51,20 +51,20 @@ jobs:
           # Linux and Mac use the limited API, so all Python versions will use a single wheel.
           # As a result we can just test the oldest and newest supported Python versions and assume
           # this gives us sufficient test coverage.
-          - { os: ubuntu-18.04, python-version: "3.7", architecture: x64 }
+          - { os: ubuntu-18-large, python-version: "3.7", architecture: x64 }
           - { os: macos-11, python-version: "3.7", architecture: x64 }
-          - { os: ubuntu-20.04, python-version: "3.10", architecture: x64 }
+          - { os: ubuntu-20-large, python-version: "3.10", architecture: x64 }
           - { os: macos-12, python-version: "3.10", architecture: x64 }
           # Windows uses the full API up until Python 3.10, so each of these
           # jobs tests a distinct binary wheel.
-          - { os: windows-2019, python-version: "3.7", architecture: x86 }
-          - { os: windows-2019, python-version: "3.8", architecture: x86 }
-          - { os: windows-2019, python-version: "3.9", architecture: x86 }
-          - { os: windows-2019, python-version: "3.10", architecture: x86 }
-          - { os: windows-2019, python-version: "3.7", architecture: x64 }
-          - { os: windows-2019, python-version: "3.8", architecture: x64 }
-          - { os: windows-2019, python-version: "3.9", architecture: x64 }
-          - { os: windows-2019, python-version: "3.10", architecture: x64 }
+          - { os: windows-2019-large, python-version: "3.7", architecture: x86 }
+          - { os: windows-2019-large, python-version: "3.8", architecture: x86 }
+          - { os: windows-2019-large, python-version: "3.9", architecture: x86 }
+          - { os: windows-2019-large, python-version: "3.10", architecture: x86 }
+          - { os: windows-2019-large, python-version: "3.7", architecture: x64 }
+          - { os: windows-2019-large, python-version: "3.8", architecture: x64 }
+          - { os: windows-2019-large, python-version: "3.9", architecture: x64 }
+          - { os: windows-2019-large, python-version: "3.10", architecture: x64 }
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -111,7 +111,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         python-version: ["3.7", "3.10"]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-large
 
     steps:
       - name: Download Wheels

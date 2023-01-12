@@ -13,7 +13,7 @@ on:
 
 jobs:
   check_clang_format:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-20-large
     steps:
       - uses: actions/checkout@v2
       - name: Run ClangFormat

@@ -2,7 +2,7 @@ name: CIFuzz
 on: [pull_request]
 jobs:
  Fuzzing:
-   runs-on: ubuntu-latest
+   runs-on: ubuntu-22-large
    strategy:
      fail-fast: false
      matrix:

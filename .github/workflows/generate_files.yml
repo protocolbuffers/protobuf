@@ -10,7 +10,7 @@ on:
 jobs:
   generate:
     if: github.repository == 'protocolbuffers/upb'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22-large
 
     steps:
       - uses: actions/checkout@v3
