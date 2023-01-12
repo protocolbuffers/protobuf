@@ -2434,15 +2434,13 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
     if (ShouldSplit(field, options_)) continue;
     field_generators_.get(field).GenerateArenaDestructorCode(p);
   }
+  // Currently, no split field should need arena dtor.
   if (ShouldSplit(descriptor_, options_)) {
-    format("if (!_this->IsSplitMessageDefault()) {\n");
-    format.Indent();
     for (auto field : optimized_order_) {
       if (!ShouldSplit(field, options_)) continue;
-      field_generators_.get(field).GenerateArenaDestructorCode(p);
+      GOOGLE_ABSL_CHECK(field_generators_.get(field).NeedsArenaDestructor() ==
+                 ArenaDtorNeeds::kNone);
     }
-    format.Outdent();
-    format("}\n");
   }
 
   // Process oneof fields.
@@ -2922,100 +2920,113 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         !chunk.empty() && ShouldSplit(chunk.front(), options_);
     // All chunks after the first split chunk should also be split.
     GOOGLE_ABSL_CHECK(!first_split_chunk_processed || chunk_is_split);
-    if (chunk_is_split && !first_split_chunk_processed) {
-      // Some fields are cleared without checking has_bit. So we add the
-      // condition here to avoid writing to the default split instance.
-      format("if (!IsSplitMessageDefault()) {\n");
-      format.Indent();
-      first_split_chunk_processed = true;
-    }
-
-    for (const auto& field : chunk) {
-      if (CanClearByZeroing(field)) {
-        GOOGLE_ABSL_CHECK(!saw_non_zero_init);
-        if (!memset_start) memset_start = field;
-        memset_end = field;
-      } else {
-        saw_non_zero_init = true;
-      }
-    }
-
-    // Whether we wrap this chunk in:
-    //   if (cached_has_bits & <chunk hasbits) { /* chunk. */ }
-    // We can omit the if() for chunk size 1, or if our fields do not have
-    // hasbits. I don't understand the rationale for the last part of the
-    // condition, but it matches the old logic.
-    const bool have_outer_if = HasBitIndex(chunk.front()) != kNoHasbit &&
-                               chunk.size() > 1 &&
-                               (memset_end != chunk.back() || merge_zero_init);
-
-    if (have_outer_if) {
-      // Emit an if() that will let us skip the whole chunk if none are set.
-      uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
-      std::string chunk_mask_str =
-          absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
-
-      // Check (up to) 8 has_bits at a time if we have more than one field in
-      // this chunk.  Due to field layout ordering, we may check
-      // _has_bits_[last_chunk * 8 / 32] multiple times.
-      GOOGLE_ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-      GOOGLE_ABSL_DCHECK_GE(8, popcnt(chunk_mask));
-
-      if (cached_has_word_index != HasWordIndex(chunk.front())) {
-        cached_has_word_index = HasWordIndex(chunk.front());
-        format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
-      }
-      format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
-      format.Indent();
-    }
-
-    if (memset_start) {
-      if (memset_start == memset_end) {
-        // For clarity, do not memset a single field.
-        field_generators_.get(memset_start).GenerateMessageClearingCode(p);
-      } else {
-        GOOGLE_ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
-        GOOGLE_ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
+    if (chunk_is_split) {
+      if (!first_split_chunk_processed) {
+        first_split_chunk_processed = true;
+        format("if (!IsSplitMessageDefault()) {\n");
+        format.Indent();
         format(
-            "::memset(&$1$, 0, static_cast<::size_t>(\n"
-            "    reinterpret_cast<char*>(&$2$) -\n"
-            "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
-            FieldMemberName(memset_start, chunk_is_split),
-            FieldMemberName(memset_end, chunk_is_split));
-      }
-    }
-
-    // Clear all non-zero-initializable fields in the chunk.
-    for (const auto& field : chunk) {
-      if (CanClearByZeroing(field)) continue;
-      // It's faster to just overwrite primitive types, but we should only
-      // clear strings and messages if they were set.
-      //
-      // TODO(kenton):  Let the CppFieldGenerator decide this somehow.
-      bool have_enclosing_if =
-          HasBitIndex(field) != kNoHasbit &&
-          (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-           field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
-
-      if (have_enclosing_if) {
-        PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index);
-      }
-
-      field_generators_.get(field).GenerateMessageClearingCode(p);
-
-      if (have_enclosing_if) {
+            "auto* arena = GetArenaForAllocation();\n"
+            "if (arena == nullptr) {\n");
+        format.Indent();
+        format("auto* $cached_split_ptr$ = $split$;\n");
+        for (auto field : optimized_order_) {
+          if (ShouldSplit(field, options_)) {
+            field_generators_.get(field).GenerateDestructorCode(p);
+          }
+        }
+        format("delete $cached_split_ptr$;\n");
+        format.Outdent();
+        format("}\n");
+        format(
+            "$split$ = const_cast<Impl_::Split*>"
+            "(reinterpret_cast<const Impl_::Split*>(&$1$));\n",
+            DefaultInstanceName(descriptor_, options_, /*split=*/true));
         format.Outdent();
         format("}\n");
       }
-    }
+    } else {
+      for (const auto& field : chunk) {
+        if (CanClearByZeroing(field)) {
+          GOOGLE_ABSL_CHECK(!saw_non_zero_init);
+          if (!memset_start) memset_start = field;
+          memset_end = field;
+        } else {
+          saw_non_zero_init = true;
+        }
+      }
 
-    if (have_outer_if) {
-      format.Outdent();
-      format("}\n");
-    }
+      // Whether we wrap this chunk in:
+      //   if (cached_has_bits & <chunk hasbits) { /* chunk. */ }
+      // We can omit the if() for chunk size 1, or if our fields do not have
+      // hasbits. I don't understand the rationale for the last part of the
+      // condition, but it matches the old logic.
+      const bool have_outer_if =
+          HasBitIndex(chunk.front()) != kNoHasbit && chunk.size() > 1 &&
+          (memset_end != chunk.back() || merge_zero_init);
 
-    if (chunk_index == chunks.size() - 1) {
-      if (first_split_chunk_processed) {
+      if (have_outer_if) {
+        // Emit an if() that will let us skip the whole chunk if none are set.
+        uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
+        std::string chunk_mask_str =
+            absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
+
+        // Check (up to) 8 has_bits at a time if we have more than one field in
+        // this chunk.  Due to field layout ordering, we may check
+        // _has_bits_[last_chunk * 8 / 32] multiple times.
+        GOOGLE_ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+        GOOGLE_ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+
+        if (cached_has_word_index != HasWordIndex(chunk.front())) {
+          cached_has_word_index = HasWordIndex(chunk.front());
+          format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
+        }
+        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format.Indent();
+      }
+
+      if (memset_start) {
+        if (memset_start == memset_end) {
+          // For clarity, do not memset a single field.
+          field_generators_.get(memset_start).GenerateMessageClearingCode(p);
+        } else {
+          GOOGLE_ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
+          GOOGLE_ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
+          format(
+              "::memset(&$1$, 0, static_cast<::size_t>(\n"
+              "    reinterpret_cast<char*>(&$2$) -\n"
+              "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
+              FieldMemberName(memset_start, chunk_is_split),
+              FieldMemberName(memset_end, chunk_is_split));
+        }
+      }
+
+      // Clear all non-zero-initializable fields in the chunk.
+      for (const auto& field : chunk) {
+        if (CanClearByZeroing(field)) continue;
+        // It's faster to just overwrite primitive types, but we should only
+        // clear strings and messages if they were set.
+        //
+        // TODO(kenton):  Let the CppFieldGenerator decide this somehow.
+        bool have_enclosing_if =
+            HasBitIndex(field) != kNoHasbit &&
+            (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+             field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+
+        if (have_enclosing_if) {
+          PrintPresenceCheck(field, has_bit_indices_, p,
+                             &cached_has_word_index);
+        }
+
+        field_generators_.get(field).GenerateMessageClearingCode(p);
+
+        if (have_enclosing_if) {
+          format.Outdent();
+          format("}\n");
+        }
+      }
+
+      if (have_outer_if) {
         format.Outdent();
         format("}\n");
       }
