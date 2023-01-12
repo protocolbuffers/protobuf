@@ -597,6 +597,14 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
 const char* VarintParseSlowArm64(const char* p, uint64_t* out, uint64_t first8);
 const char* VarintParseSlowArm32(const char* p, uint32_t* out, uint64_t first8);
 
+template <class T>
+void DoNotOptimize(T& var) {
+  if (std::is_scalar<T>::value && sizeof(T) <= sizeof(intptr_t)) {
+    asm volatile("" : "+r"(var));
+  } else {
+    asm volatile("" : "+m"(var));
+  }
+}
 inline const char* VarintParseSlowArm(const char* p, uint32_t* out,
                                       uint64_t first8) {
   return VarintParseSlowArm32(p, out, first8);
@@ -632,15 +640,15 @@ PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
     *out = static_cast<uint8_t>(first8);
     return p + 1;
   }
-  if (PROTOBUF_PREDICT_TRUE((first8 & 0x8000) == 0)) {
-    uint64_t chunk1;
-    uint64_t chunk2;
-    // Extracting the two chunks this way gives a speedup for this path.
-    chunk1 = Ubfx7(first8, 0);
-    chunk2 = Ubfx7(first8, 8);
-    *out = chunk1 | (chunk2 << 7);
-    return p + 2;
-  }
+  // if (PROTOBUF_PREDICT_TRUE((first8 & 0x8000) == 0)) {
+  //   uint64_t chunk1;
+  //   uint64_t chunk2;
+  //   // Extracting the two chunks this way gives a speedup for this path.
+  //   chunk1 = Ubfx7(first8, 0);
+  //   chunk2 = Ubfx7(first8, 8);
+  //   *out = chunk1 | (chunk2 << 7);
+  //   return p + 2;
+  // }
   return VarintParseSlowArm(p, out, first8);
 #else   // __aarch64__
   auto ptr = reinterpret_cast<const uint8_t*>(p);

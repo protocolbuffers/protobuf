@@ -718,14 +718,15 @@ PROTOBUF_NOINLINE const char* VarintParseSlowArm64(const char* p, uint64_t* out,
     // Handle an invalid Varint with all 10 continuation bits set.
     info.masked_cont_bits = ValueBarrier(info.masked_cont_bits);
     if (PROTOBUF_PREDICT_FALSE(info.masked_cont_bits == 0)) {
-      *out = 0;
-      return nullptr;
+      result_mask = 0xffffffffffffffff;
+      info.p = nullptr;
     }
   }
   // Mask off invalid data bytes.
   result &= ~result_mask;
-  *out = result;
-  return info.p;
+  uint8_t sbv = first8 & 0x8000;
+  *out = sbv? result : merged_01;
+  return sbv? info.p : p + 2;
 }
 
 // See comments in VarintParseSlowArm64 for a description of the algorithm.
