@@ -305,7 +305,8 @@ class TextFormat::Parser::ParserImpl {
              bool allow_case_insensitive_field, bool allow_unknown_field,
              bool allow_unknown_extension, bool allow_unknown_enum,
              bool allow_field_number, bool allow_relaxed_whitespace,
-             bool allow_partial, int recursion_limit)
+             bool allow_partial, int recursion_limit,
+             bool error_on_no_op_fields)
       : error_collector_(error_collector),
         finder_(finder),
         parse_info_tree_(parse_info_tree),
@@ -322,7 +323,8 @@ class TextFormat::Parser::ParserImpl {
         initial_recursion_limit_(recursion_limit),
         recursion_limit_(recursion_limit),
         had_silent_marker_(false),
-        had_errors_(false) {
+        had_errors_(false),
+        error_on_no_op_fields_(error_on_no_op_fields) {
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
     // for floats.
     tokenizer_.set_allow_f_after_float(true);
@@ -798,60 +800,71 @@ class TextFormat::Parser::ParserImpl {
 // Define an easy to use macro for setting fields. This macro checks
 // to see if the field is repeated (in which case we need to use the Add
 // methods or not (in which case we need to use the Set methods).
-#define SET_FIELD(CPPTYPE, VALUE)                    \
-  if (field->is_repeated()) {                        \
-    reflection->Add##CPPTYPE(message, field, VALUE); \
-  } else {                                           \
-    reflection->Set##CPPTYPE(message, field, VALUE); \
+// When checking for no-op operations, We verify that both the existing value in
+// the message and the new value are the default. If the existing field value is
+// not the default, setting it to the default should not be treated as a no-op.
+#define SET_FIELD(CPPTYPE, CPPTYPELCASE, VALUE)                   \
+  if (field->is_repeated()) {                                     \
+    reflection->Add##CPPTYPE(message, field, VALUE);              \
+  } else {                                                        \
+    if (error_on_no_op_fields_ && !field->has_presence() &&       \
+        field->default_value_##CPPTYPELCASE() ==                  \
+            reflection->Get##CPPTYPE(*message, field) &&          \
+        field->default_value_##CPPTYPELCASE() == VALUE) {         \
+      ReportError("Input field " + field->full_name() +           \
+                  " did not change resulting proto.");            \
+    } else {                                                      \
+      reflection->Set##CPPTYPE(message, field, std::move(VALUE)); \
+    }                                                             \
   }
 
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_INT32: {
         int64_t value;
         DO(ConsumeSignedInteger(&value, kint32max));
-        SET_FIELD(Int32, static_cast<int32_t>(value));
+        SET_FIELD(Int32, int32, static_cast<int32_t>(value));
         break;
       }
 
       case FieldDescriptor::CPPTYPE_UINT32: {
         uint64_t value;
         DO(ConsumeUnsignedInteger(&value, kuint32max));
-        SET_FIELD(UInt32, static_cast<uint32_t>(value));
+        SET_FIELD(UInt32, uint32, static_cast<uint32_t>(value));
         break;
       }
 
       case FieldDescriptor::CPPTYPE_INT64: {
         int64_t value;
         DO(ConsumeSignedInteger(&value, kint64max));
-        SET_FIELD(Int64, value);
+        SET_FIELD(Int64, int64, value);
         break;
       }
 
       case FieldDescriptor::CPPTYPE_UINT64: {
         uint64_t value;
         DO(ConsumeUnsignedInteger(&value, kuint64max));
-        SET_FIELD(UInt64, value);
+        SET_FIELD(UInt64, uint64, value);
         break;
       }
 
       case FieldDescriptor::CPPTYPE_FLOAT: {
         double value;
         DO(ConsumeDouble(&value));
-        SET_FIELD(Float, io::SafeDoubleToFloat(value));
+        SET_FIELD(Float, float, io::SafeDoubleToFloat(value));
         break;
       }
 
       case FieldDescriptor::CPPTYPE_DOUBLE: {
         double value;
         DO(ConsumeDouble(&value));
-        SET_FIELD(Double, value);
+        SET_FIELD(Double, double, value);
         break;
       }
 
       case FieldDescriptor::CPPTYPE_STRING: {
         std::string value;
         DO(ConsumeString(&value));
-        SET_FIELD(String, std::move(value));
+        SET_FIELD(String, string, value);
         break;
       }
 
@@ -859,14 +872,14 @@ class TextFormat::Parser::ParserImpl {
         if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           uint64_t value;
           DO(ConsumeUnsignedInteger(&value, 1));
-          SET_FIELD(Bool, value);
+          SET_FIELD(Bool, bool, value);
         } else {
           std::string value;
           DO(ConsumeIdentifier(&value));
           if (value == "true" || value == "True" || value == "t") {
-            SET_FIELD(Bool, true);
+            SET_FIELD(Bool, bool, true);
           } else if (value == "false" || value == "False" || value == "f") {
-            SET_FIELD(Bool, false);
+            SET_FIELD(Bool, bool, false);
           } else {
             ReportError("Invalid value for boolean field \"" + field->name() +
                         "\". Value: \"" + value + "\".");
@@ -901,7 +914,7 @@ class TextFormat::Parser::ParserImpl {
         if (enum_value == nullptr) {
           if (int_value != kint64max &&
               reflection->SupportsUnknownEnumValues()) {
-            SET_FIELD(EnumValue, int_value);
+            SET_FIELD(EnumValue, int64, int_value);
             return true;
           } else if (!allow_unknown_enum_) {
             ReportError("Unknown enumeration value of \"" + value +
@@ -918,7 +931,7 @@ class TextFormat::Parser::ParserImpl {
           }
         }
 
-        SET_FIELD(Enum, enum_value);
+        SET_FIELD(Enum, enum, enum_value);
         break;
       }
 
@@ -1380,6 +1393,8 @@ class TextFormat::Parser::ParserImpl {
   int recursion_limit_;
   bool had_silent_marker_;
   bool had_errors_;
+  bool error_on_no_op_fields_;
+
 };
 
 // ===========================================================================
@@ -1676,7 +1691,7 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_extension_, allow_unknown_enum_,
                     allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_);
+                    allow_partial_, recursion_limit_, error_on_no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1694,7 +1709,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_extension_, allow_unknown_enum_,
                     allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_);
+                    allow_partial_, recursion_limit_, error_on_no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1724,12 +1739,13 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
                                                    const FieldDescriptor* field,
                                                    Message* output) {
   io::ArrayInputStream input_stream(input.data(), input.size());
-  ParserImpl parser(
-      output->GetDescriptor(), &input_stream, error_collector_, finder_,
-      parse_info_tree_, ParserImpl::ALLOW_SINGULAR_OVERWRITES,
-      allow_case_insensitive_field_, allow_unknown_field_,
-      allow_unknown_extension_, allow_unknown_enum_, allow_field_number_,
-      allow_relaxed_whitespace_, allow_partial_, recursion_limit_);
+  ParserImpl parser(output->GetDescriptor(), &input_stream, error_collector_,
+                    finder_, parse_info_tree_,
+                    ParserImpl::ALLOW_SINGULAR_OVERWRITES,
+                    allow_case_insensitive_field_, allow_unknown_field_,
+                    allow_unknown_extension_, allow_unknown_enum_,
+                    allow_field_number_, allow_relaxed_whitespace_,
+                    allow_partial_, recursion_limit_, error_on_no_op_fields_);
   return parser.ParseField(field, output);
 }
 
