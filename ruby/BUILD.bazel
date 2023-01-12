@@ -21,33 +21,17 @@ ruby_library(
     ],
 )
 
-java_export(
-    name = "protobuf_java_release",
-    maven_coordinates = "com.google.protobuf:protobuf-jruby:%s" % PROTOBUF_RUBY_VERSION,
-    srcs = glob(["src/main/java/com/google/protobuf/jruby/*"]),
-    runtime_deps = [
-        "@com_google_protobuf//java/util",
-    ],
-    target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_jruby": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
-)
-
-filegroup(
-  name = "protobuf_java_jar",
-  srcs = [":protobuf_java_release-project"],
-)
-
 sh_binary(
     name = "jruby_release",
     data = [
-      ":protobuf_java_jar",
+      "//ruby/lib/google:copy_jar",
       "//:well_known_ruby_protos",
+      "google-protobuf.gemspec",
     ],
     srcs = [
       "build_jruby_release.sh",
     ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
 sh_binary(
