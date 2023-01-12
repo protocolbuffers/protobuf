@@ -28,6 +28,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
+#include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_enums.h"
 #include "protos_generator/gen_extensions.h"
 #include "protos_generator/gen_messages.h"
@@ -41,12 +42,12 @@ namespace {
 namespace protoc = ::google::protobuf::compiler;
 namespace protobuf = ::google::protobuf;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
-using FileLayout = ::upbc::FileLayout;
 
-void WriteSource(const FileLayout& layout, Output& output,
+void WriteSource(const protobuf::FileDescriptor* file, Output& output,
                  bool fasttable_enabled);
-void WriteHeader(const FileLayout& layout, Output& output);
-void WriteForwardingHeader(const FileLayout& layout, Output& output);
+void WriteHeader(const protobuf::FileDescriptor* file, Output& output);
+void WriteForwardingHeader(const protobuf::FileDescriptor* file,
+                           Output& output);
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
                                  Output& output);
 void WriteTypedefForwardingHeader(
@@ -87,26 +88,24 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
     }
   }
 
-  FileLayout layout(file);
-
   // Write model.upb.fwd.h
   Output forwarding_header_output(
       context->Open(ForwardingHeaderFilename(file)));
-  WriteForwardingHeader(layout, forwarding_header_output);
+  WriteForwardingHeader(file, forwarding_header_output);
   // Write model.upb.proto.h
   Output header_output(context->Open(CppHeaderFilename(file)));
-  WriteHeader(layout, header_output);
+  WriteHeader(file, header_output);
   // Write model.upb.proto.cc
   Output cc_output(context->Open(CppSourceFilename(file)));
-  WriteSource(layout, cc_output, fasttable_enabled);
+  WriteSource(file, cc_output, fasttable_enabled);
   return true;
 }
 
 // The forwarding header defines Access/Proxy/CProxy for message classes
 // used to include when referencing dependencies to prevent transitive
 // dependency headers from being included.
-void WriteForwardingHeader(const FileLayout& layout, Output& output) {
-  const protobuf::FileDescriptor* file = layout.descriptor();
+void WriteForwardingHeader(const protobuf::FileDescriptor* file,
+                           Output& output) {
   EmitFileWarning(file, output);
   output(
       R"cc(
@@ -116,13 +115,12 @@ void WriteForwardingHeader(const FileLayout& layout, Output& output) {
       ToPreproc(file->name()));
   output("\n");
   const std::vector<const protobuf::Descriptor*> this_file_messages =
-      ::upbc::SortedMessages(file);
+      SortedMessages(file);
   WriteTypedefForwardingHeader(file, this_file_messages, output);
   output("#endif  /* $0_UPB_FWD_H_ */\n", ToPreproc(file->name()));
 }
 
-void WriteHeader(const FileLayout& layout, Output& output) {
-  const protobuf::FileDescriptor* file = layout.descriptor();
+void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   EmitFileWarning(file, output);
   output(
       R"cc(
@@ -153,9 +151,9 @@ void WriteHeader(const FileLayout& layout, Output& output) {
   output("#include \"upb/port/def.inc\"\n");
 
   const std::vector<const protobuf::Descriptor*> this_file_messages =
-      ::upbc::SortedMessages(file);
+      SortedMessages(file);
   const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
-      ::upbc::SortedExtensions(file);
+      SortedExtensions(file);
 
   if (!this_file_messages.empty()) {
     output("\n");
@@ -166,7 +164,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
   WriteStartNamespace(file, output);
 
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
-      ::upbc::SortedEnums(file);
+      SortedEnums(file);
 
   // Write Class and Enums.
   WriteEnumDeclarations(this_file_enums, output);
@@ -189,9 +187,8 @@ void WriteHeader(const FileLayout& layout, Output& output) {
 }
 
 // Writes a .upb.cc source file.
-void WriteSource(const FileLayout& layout, Output& output,
+void WriteSource(const protobuf::FileDescriptor* file, Output& output,
                  bool fasttable_enabled) {
-  const protobuf::FileDescriptor* file = layout.descriptor();
   EmitFileWarning(file, output);
 
   output(
@@ -212,7 +209,7 @@ void WriteSource(const FileLayout& layout, Output& output,
   WriteStartNamespace(file, output);
   WriteMessageImplementations(file, output);
   const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
-      ::upbc::SortedExtensions(file);
+      SortedExtensions(file);
   WriteExtensionIdentifiers(this_file_exts, output);
   WriteEndNamespace(file, output);
 
@@ -222,9 +219,9 @@ void WriteSource(const FileLayout& layout, Output& output,
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
                                  Output& output) {
   const std::vector<const protobuf::FieldDescriptor*> file_exts =
-      ::upbc::SortedExtensions(file);
+      SortedExtensions(file);
   const std::vector<const protobuf::Descriptor*> this_file_messages =
-      ::upbc::SortedMessages(file);
+      SortedMessages(file);
   for (auto message : this_file_messages) {
     WriteMessageImplementation(message, file_exts, output);
   }

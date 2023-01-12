@@ -36,6 +36,11 @@ load(
     "upb_proto_reflection_library",
 )
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load(
+    "//upbc:bootstrap_compiler.bzl",
+    "bootstrap_cc_library",
+    "bootstrap_upb_proto_library",
+)
 
 # begin:google_only
 # load(
@@ -415,14 +420,21 @@ cc_library(
         ":base",
         ":descriptor_upb_proto",
         ":hash",
+        ":mini_table_internal",
         ":reflection_internal",
     ],
 )
 
-upb_proto_library(
+bootstrap_upb_proto_library(
     name = "descriptor_upb_proto",
+    base_dir = "upb/reflection/",
+    google3_src_files = ["net/proto2/proto/descriptor.proto"],
+    google3_src_rules = ["//net/proto2/proto:descriptor_proto_source"],
+    oss_src_files = ["google/protobuf/descriptor.proto"],
+    oss_src_rules = ["@com_google_protobuf//:descriptor_proto_srcs"],
+    oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
+    proto_lib_deps = ["@com_google_protobuf//:descriptor_proto"],
     visibility = ["//visibility:public"],
-    deps = ["@com_google_protobuf//:descriptor_proto"],
 )
 
 upb_proto_reflection_library(
@@ -476,7 +488,7 @@ cc_library(
 
 # TODO(b/232091617): Once we can delete the deprecated forwarding headers
 # (= everything in upb/) we can move this build target down into reflection/
-cc_library(
+bootstrap_cc_library(
     name = "reflection",
     hdrs = [
         "upb/def.h",
@@ -488,17 +500,17 @@ cc_library(
         "upb/reflection/message.h",
         "upb/reflection/message.hpp",
     ],
+    bootstrap_deps = [":reflection_internal"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":collections",
         ":port",
-        ":reflection_internal",
         ":upb",
     ],
 )
 
-cc_library(
+bootstrap_cc_library(
     name = "reflection_internal",
     srcs = [
         "upb/reflection/def_builder.c",
@@ -552,11 +564,11 @@ cc_library(
         "upb/reflection/service_def.h",
         "upb/reflection/service_def_internal.h",
     ],
+    bootstrap_deps = [":descriptor_upb_proto"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":collections",
-        ":descriptor_upb_proto",
         ":hash",
         ":message_accessors",
         ":mini_table_internal",

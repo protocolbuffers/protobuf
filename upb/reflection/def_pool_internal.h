@@ -28,6 +28,7 @@
 #ifndef UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 #define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 
+#include "upb/mini_table/decode.h"
 #include "upb/reflection/def_pool.h"
 
 // Must be last.
@@ -50,6 +51,7 @@ bool _upb_DefPool_LookupSym(const upb_DefPool* s, const char* sym, size_t size,
 
 void** _upb_DefPool_ScratchData(const upb_DefPool* s);
 size_t* _upb_DefPool_ScratchSize(const upb_DefPool* s);
+void _upb_DefPool_SetPlatform(upb_DefPool* s, upb_MiniTablePlatform platform);
 
 // For generated code only: loads a generated descriptor.
 typedef struct _upb_DefPool_Init {

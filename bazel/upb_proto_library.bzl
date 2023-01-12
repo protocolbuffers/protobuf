@@ -320,7 +320,7 @@ upb_proto_library_aspect = aspect(
         "_gen_upb": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//upbc:protoc-gen-upb",
+            default = "//upbc:protoc-gen-upb_stage1",
         ),
         "_protoc": attr.label(
             executable = True,

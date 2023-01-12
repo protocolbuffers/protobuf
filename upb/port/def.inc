@@ -246,8 +246,10 @@
  * degrade to non-fasttable if the runtime or platform do not support it. */
 #if !UPB_FASTTABLE
 #define UPB_FASTTABLE_INIT(...)
+#define UPB_FASTTABLE_MASK(mask) -1
 #else
 #define UPB_FASTTABLE_INIT(...) __VA_ARGS__
+#define UPB_FASTTABLE_MASK(mask) mask
 #endif
 
 #undef UPB_FASTTABLE_SUPPORTED
@@ -307,7 +309,7 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 // #define UPB_IS_GOOGLE3
 // end:google_only
 
-#if defined(UPB_IS_GOOGLE3)
+#if defined(UPB_IS_GOOGLE3) && !defined(UPB_BOOTSTRAP_STAGE0)
 #define UPB_DESC(sym) proto2_##sym
 #else
 #define UPB_DESC(sym) google_protobuf_##sym

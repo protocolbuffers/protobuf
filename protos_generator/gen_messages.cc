@@ -313,11 +313,10 @@ void WriteMessageImplementation(
         R"cc(
           const upb_MiniTable* $0::minitable() { return &$1; }
         )cc",
-        ClassName(descriptor), ::upbc::MessageInit(descriptor));
+        ClassName(descriptor), ::upbc::MessageInit(descriptor->full_name()));
   }
 
-  ::upbc::FileLayout layout(descriptor->file());
-  WriteAccessorsInSource(descriptor, layout, output);
+  WriteAccessorsInSource(descriptor, output);
 
   if (!message_is_map_entry) {
     output(

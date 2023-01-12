@@ -200,6 +200,12 @@ class BuildFileFunctions(object):
   def bool_flag(self, **kwargs):
     pass
 
+  def bootstrap_upb_proto_library(self, **kwargs):
+    pass
+
+  def bootstrap_cc_library(self, **kwargs):
+    pass
+
 
 class WorkspaceFileFunctions(object):
   def __init__(self, converter):

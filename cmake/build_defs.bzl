@@ -25,7 +25,7 @@
 
 """Bazel support functions related to CMake support."""
 
-def staleness_test(name, outs, generated_pattern, **kwargs):
+def staleness_test(name, outs, generated_pattern, target_files = None, **kwargs):
     """Tests that checked-in file(s) match the contents of generated file(s).
 
     The resulting test will verify that all output files exist and have the
@@ -38,6 +38,9 @@ def staleness_test(name, outs, generated_pattern, **kwargs):
       generated_pattern: the pattern for transforming each "out" file into a
         generated file.  For example, if generated_pattern="generated/%s" then
         a file foo.txt will look for generated file generated/foo.txt.
+      target_files: A glob representing all of the files that should be
+      covered by this rule.  Files in this glob but not generated will
+      be deleted.  (Not currently implemented in OSS).
       **kwargs: Additional keyword arguments to pass through to py_test().
     """
 

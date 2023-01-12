@@ -46,6 +46,7 @@ struct upb_DefPool {
   upb_strtable files;  // file_name -> (upb_FileDef*)
   upb_inttable exts;   // (upb_MiniTableExtension*) -> (upb_FieldDef*)
   upb_ExtensionRegistry* extreg;
+  upb_MiniTablePlatform platform;
   void* scratch_data;
   size_t scratch_size;
   size_t bytes_loaded;
@@ -74,6 +75,8 @@ upb_DefPool* upb_DefPool_New(void) {
 
   s->extreg = upb_ExtensionRegistry_New(s->arena);
   if (!s->extreg) goto err;
+
+  s->platform = kUpb_MiniTablePlatform_Native;
 
   return s;
 
@@ -126,6 +129,11 @@ void** _upb_DefPool_ScratchData(const upb_DefPool* s) {
 
 size_t* _upb_DefPool_ScratchSize(const upb_DefPool* s) {
   return (size_t*)&s->scratch_size;
+}
+
+void _upb_DefPool_SetPlatform(upb_DefPool* s, upb_MiniTablePlatform platform) {
+  assert(upb_strtable_count(&s->files) == 0);
+  s->platform = platform;
 }
 
 const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
@@ -305,6 +313,7 @@ static const upb_FileDef* _upb_DefPool_AddFile(
   upb_DefBuilder ctx = {
       .symtab = s,
       .layout = layout,
+      .platform = s->platform,
       .msg_count = 0,
       .enum_count = 0,
       .ext_count = 0,

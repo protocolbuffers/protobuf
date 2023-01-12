@@ -31,7 +31,6 @@
 #include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/output.h"
-#include "upbc/file_layout.h"
 #include "upbc/keywords.h"
 #include "upbc/names.h"
 
@@ -39,7 +38,6 @@ namespace protos_generator {
 
 namespace protobuf = ::google::protobuf;
 
-using FileLayout = ::upbc::FileLayout;
 using NameToFieldDescriptorMap =
     absl::flat_hash_map<absl::string_view, const protobuf::FieldDescriptor*>;
 
@@ -47,12 +45,12 @@ void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
                               const protobuf::FieldDescriptor* field,
                               const absl::string_view resolved_field_name,
                               const absl::string_view resolved_upbc_name,
-                              const FileLayout& layout, Output& output);
+                              Output& output);
 void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
                              const protobuf::FieldDescriptor* field,
                              const absl::string_view resolved_field_name,
                              const absl::string_view resolved_upbc_name,
-                             const FileLayout& layout, Output& output);
+                             Output& output);
 void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
                             const protobuf::FieldDescriptor* field,
                             const absl::string_view resolved_field_name,
@@ -99,22 +97,20 @@ NameToFieldDescriptorMap CreateFieldNameMap(
 
 void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
                                  Output& output) {
-  FileLayout layout(desc->file());
-
   // Generate const methods.
   OutputIndenter i(output);
 
   auto field_names = CreateFieldNameMap(desc);
   auto upbc_field_names = upbc::CreateFieldNameMap(desc);
 
-  for (auto field : ::upbc::FieldNumberOrder(desc)) {
+  for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
     std::string resolved_upbc_name =
         upbc::ResolveFieldName(field, upbc_field_names);
     WriteFieldAccessorHazzer(desc, field, resolved_field_name,
-                             resolved_upbc_name, layout, output);
+                             resolved_upbc_name, output);
     WriteFieldAccessorClear(desc, field, resolved_field_name,
-                            resolved_upbc_name, layout, output);
+                            resolved_upbc_name, output);
 
     if (field->is_map()) {
       WriteMapFieldAccessors(desc, field, resolved_field_name,
@@ -188,9 +184,9 @@ void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
                               const protobuf::FieldDescriptor* field,
                               const absl::string_view resolved_field_name,
                               const absl::string_view resolved_upbc_name,
-                              const FileLayout& layout, Output& output) {
+                              Output& output) {
   // Generate hazzer (if any).
-  if (layout.HasHasbit(field) || field->real_containing_oneof()) {
+  if (field->has_presence()) {
     // Has presence.
     output("inline bool has_$0() const { return $1_has_$2(msg_); }\n",
            resolved_field_name, MessageName(desc), resolved_upbc_name);
@@ -201,8 +197,8 @@ void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
                              const protobuf::FieldDescriptor* field,
                              const absl::string_view resolved_field_name,
                              const absl::string_view resolved_upbc_name,
-                             const FileLayout& layout, Output& output) {
-  if (layout.HasHasbit(field) || field->real_containing_oneof()) {
+                             Output& output) {
+  if (field->has_presence()) {
     output("void clear_$0() { $2_clear_$1(msg_); }\n", resolved_field_name,
            resolved_upbc_name, MessageName(desc));
   }
@@ -245,8 +241,7 @@ void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
   }
 }
 
-void WriteAccessorsInSource(const protobuf::Descriptor* desc,
-                            const FileLayout& layout, Output& output) {
+void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
   std::string class_name = ClassName(desc);
   absl::StrAppend(&class_name, "Access");
   output("namespace internal {\n");
@@ -256,7 +251,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc,
 
   // Generate const methods.
   OutputIndenter i(output);
-  for (auto field : ::upbc::FieldNumberOrder(desc)) {
+  for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
     std::string resolved_upbc_name =
         upbc::ResolveFieldName(field, upbc_field_names);
@@ -601,7 +596,6 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
 
 void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
                                  MessageClassType handle_type, Output& output) {
-  FileLayout layout(desc->file());
   bool read_only = handle_type == MessageClassType::kMessageCProxy;
 
   // Generate const methods.
@@ -609,15 +603,11 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
   std::string class_name = ClassName(desc);
   auto field_names = CreateFieldNameMap(desc);
 
-  for (auto field : ::upbc::FieldNumberOrder(desc)) {
+  for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
     // Generate hazzer (if any).
-    if (layout.HasHasbit(field) || field->real_containing_oneof()) {
-      // Has presence.
+    if (field->has_presence()) {
       output("using $0Access::has_$1;\n", class_name, resolved_field_name);
-    }
-    // Generate clear.
-    if (layout.HasHasbit(field) || field->real_containing_oneof()) {
       output("using $0Access::clear_$1;\n", class_name, resolved_field_name);
     }
     if (field->is_map()) {

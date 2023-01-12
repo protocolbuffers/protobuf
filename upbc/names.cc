@@ -31,6 +31,7 @@
 
 #include "absl/strings/match.h"
 #include "google/protobuf/descriptor.h"
+#include "upb/reflection/def.hpp"
 
 namespace upbc {
 
@@ -80,6 +81,38 @@ NameToFieldDescriptorMap CreateFieldNameMap(
     field_names.emplace(field->name(), field);
   }
   return field_names;
+}
+
+NameToFieldDefMap CreateFieldNameMap(upb::MessageDefPtr message) {
+  NameToFieldDefMap field_names;
+  field_names.reserve(message.field_count());
+  for (const auto& field : message.fields()) {
+    field_names.emplace(field.name(), field);
+  }
+  return field_names;
+}
+
+std::string ResolveFieldName(upb::FieldDefPtr field,
+                             const NameToFieldDefMap& field_names) {
+  absl::string_view field_name(field.name());
+  for (absl::string_view prefix : kAccessorPrefixes) {
+    // If field name starts with a prefix such as clear_ and the proto
+    // contains a field name with trailing end, depending on type of field
+    // (repeated, map, message) we have a conflict to resolve.
+    if (absl::StartsWith(field_name, prefix)) {
+      auto match = field_names.find(field_name.substr(prefix.size()));
+      if (match != field_names.end()) {
+        const auto candidate = match->second;
+        if (candidate.IsSequence() || candidate.IsMap() ||
+            (candidate.ctype() == kUpb_CType_String &&
+             prefix == kClearAccessor) ||
+            prefix == kSetAccessor) {
+          return absl::StrCat(field_name, "_");
+        }
+      }
+    }
+  }
+  return std::string(field_name);
 }
 
 }  // namespace upbc

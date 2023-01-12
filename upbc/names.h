@@ -32,6 +32,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
+#include "upb/reflection/def.hpp"
 
 namespace upbc {
 
@@ -45,6 +46,17 @@ std::string ResolveFieldName(const google::protobuf::FieldDescriptor* field,
 
 // Returns field map by name to use for conflict checks.
 NameToFieldDescriptorMap CreateFieldNameMap(const google::protobuf::Descriptor* message);
+
+using NameToFieldDefMap =
+    absl::flat_hash_map<absl::string_view, upb::FieldDefPtr>;
+
+// Returns field name by resolving naming conflicts across
+// proto field names (such as clear_ prefixes).
+std::string ResolveFieldName(upb::FieldDefPtr field,
+                             const NameToFieldDefMap& field_names);
+
+// Returns field map by name to use for conflict checks.
+NameToFieldDefMap CreateFieldNameMap(upb::MessageDefPtr message);
 
 }  // namespace upbc
 

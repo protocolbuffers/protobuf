@@ -355,8 +355,8 @@ static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
   void** scratch_data = _upb_DefPool_ScratchData(ctx->symtab);
   size_t* scratch_size = _upb_DefPool_ScratchSize(ctx->symtab);
   upb_MiniTable* ret = upb_MiniTable_BuildWithBuf(
-      desc.data, desc.size, kUpb_MiniTablePlatform_Native, ctx->arena,
-      scratch_data, scratch_size, ctx->status);
+      desc.data, desc.size, ctx->platform, ctx->arena, scratch_data,
+      scratch_size, ctx->status);
   if (!ret) _upb_DefBuilder_FailJmp(ctx);
 
   return ret;

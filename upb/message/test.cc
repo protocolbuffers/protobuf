@@ -271,6 +271,7 @@ TEST(MessageTest, Proto2Enum) {
   pb = upb_test_Proto2EnumMessage_serialize(enum_msg, arena.ptr(), &size);
   upb_test_Proto2FakeEnumMessage* fake_msg2 =
       upb_test_Proto2FakeEnumMessage_parse(pb, size, arena.ptr());
+  ASSERT_TRUE(fake_msg2 != nullptr);
 
   EXPECT_EQ(true, upb_test_Proto2FakeEnumMessage_has_optional_enum(fake_msg2));
   EXPECT_EQ(999, upb_test_Proto2FakeEnumMessage_optional_enum(fake_msg2));

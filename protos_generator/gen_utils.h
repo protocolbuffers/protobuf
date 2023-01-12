@@ -77,6 +77,15 @@ std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
 std::string MessageProxyType(const protobuf::FieldDescriptor* field,
                              bool is_const);
 
+std::vector<const protobuf::EnumDescriptor*> SortedEnums(
+    const protobuf::FileDescriptor* file);
+std::vector<const protobuf::Descriptor*> SortedMessages(
+    const protobuf::FileDescriptor* file);
+std::vector<const protobuf::FieldDescriptor*> SortedExtensions(
+    const protobuf::FileDescriptor* file);
+std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
+    const protobuf::Descriptor* message);
+
 inline constexpr absl::string_view kNoPackageNamePrefix = "protos_";
 
 }  // namespace protos_generator

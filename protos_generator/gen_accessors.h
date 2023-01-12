@@ -29,7 +29,6 @@
 #include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/output.h"
-#include "upbc/file_layout.h"
 
 namespace protos_generator {
 
@@ -37,8 +36,7 @@ namespace protobuf = ::google::protobuf;
 
 void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
                                  Output& output);
-void WriteAccessorsInSource(const protobuf::Descriptor* desc,
-                            const ::upbc::FileLayout& layout, Output& output);
+void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output);
 void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
                                  MessageClassType handle_type, Output& output);
 }  // namespace protos_generator
