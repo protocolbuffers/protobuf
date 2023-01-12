@@ -8,7 +8,7 @@ set -eux
 cd $(dirname $0)/../../..
 GIT_REPO_ROOT=`pwd`
 
-CONTAINER_IMAGE=gcr.io/protobuf-build/cmake/linux@sha256:bd17c13255c8c7af2821c6597ad96568d714c0ea9d9e27d81b108fcc195ca858
+CONTAINER_IMAGE=us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:cc23dbe065668158ca2732aa305a07bd0913a175b2079d27d9c16925d23f2335
 
 # Update git submodules and regenerate files
 git submodule update --init --recursive
@@ -17,6 +17,9 @@ sudo ./kokoro/common/setup_kokoro_environment.sh
 ./regenerate_stale_files.sh
 
 tmpfile=$(mktemp -u)
+
+gcloud components update --quiet
+gcloud auth configure-docker us-docker.pkg.dev --quiet
 
 docker run \
   --cidfile $tmpfile \
