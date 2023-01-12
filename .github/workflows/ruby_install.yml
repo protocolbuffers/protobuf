@@ -49,5 +49,5 @@ jobs:
         run: gem install bazel-bin/ruby/release.runfiles/com_google_protobuf/tmp/google-protobuf-3.21.12.gem
       - name: Test installation
         run: |
-          bazel run //:protoc -- --proto-path=$GITHUB_WORKSPACE --ruby_out=ruby/tests ruby/tests/basic_test.proto
+          bazel run //:protoc -- --proto_path=$GITHUB_WORKSPACE --ruby_out=ruby/tests ruby/tests/basic_test.proto
           ruby ruby/tests/basic.rb
