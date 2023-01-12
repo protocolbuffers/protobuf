@@ -110,8 +110,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_ruby",
             repo = "https://github.com/protocolbuffers/rules_ruby",
-            commit = "59732544ce3a4bc4e8e4d4e8c8f318c931c17eae",
-            sha256 = "4fc45adf1056c824afde9a52b743b915eeada3633539eb1dbd641a66dc9f4c4f",
+            commit = "5cf6ff74161d7f985b9bf86bb3c5fb16cef6337b",
+            sha256 = "c88dd69eb50fcfd7fbc5d7db79adc6631ef0e1d80b3c94efe33ac5ee3ccc37f7",
         )
 
     if not native.existing_rule("rules_jvm_external"):

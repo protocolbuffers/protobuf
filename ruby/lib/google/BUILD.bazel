@@ -22,26 +22,12 @@ genrule(
     tags = ["manual"],
 )
 
-# This is a temporary workaround to have a jruby target
-# to add to deploy_env for protobuf_java.jar
-java_import(
-    name = "jruby_deps",
-    jars = ["@system_ruby//:jars"],
-)
-
-java_binary(
-    name = "jruby_deps_bin",
-    main_class = "org.jruby.Main",
-    runtime_deps = [":jruby_deps"],
-    visibility = ["//visibility:public"],
-)
-
 java_binary(
     name = "protobuf_java_bin",
     runtime_deps = [
         "//ruby/src/main/java:protobuf_java"
     ],
-    deploy_env = [":jruby_deps_bin"],
+    deploy_env = ["@rules_ruby//ruby/runtime:jruby_binary"],
     create_executable = False,
 )
 
