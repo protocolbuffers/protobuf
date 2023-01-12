@@ -55,7 +55,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#if __GNUC__ >= 11
 #pragma GCC diagnostic ignored "-Wstringop-overread"
+#endif
 #endif
 
 #ifdef __cplusplus
