@@ -1,11 +1,11 @@
---- bazel/build_defs.bzl
-+++ bazel/build_defs.bzl
-@@ -33,6 +33,8 @@ _DEFAULT_CPPOPTS.extend([
-     "-Wextra",
-     # "-Wshorten-64-to-32",  # not in GCC (and my Kokoro images doesn't have Clang)
-     "-Werror",
-+    # TODO(b/265232445) This is required due to https://github.com/abseil/abseil-cpp/issues/1201.
-+    "-Wno-deprecated",
-     "-Wno-unused-parameter",
-     "-Wno-long-long",
- ])
+--- upbc/bootstrap_compiler.bzl
++++ upbc/bootstrap_compiler.bzl
+@@ -20,7 +20,7 @@ _upbc_base = "//upbc:protoc-gen-upb"
+ 
+ # begin:github_only
+ _is_google3 = False
+-_extra_proto_path = "-Iexternal/com_google_protobuf/src "
++_extra_proto_path = "-Isrc "
+ # end:github_only
+ 
+ def _upbc(stage):
