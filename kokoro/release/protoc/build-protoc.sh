@@ -230,7 +230,9 @@ cd "$(dirname "$0")"
 
 WORKING_DIR="$(pwd)"
 TARGET_FILE="target/$OS/$ARCH/$BAZEL_TARGET.exe"
-DOCKER_IMAGE=gcr.io/protobuf-build/bazel/linux@sha256:2bfd061284eff8234f2fcca16d71d43c69ccf3a22206628b54c204a6a9aac277
+DOCKER_IMAGE=us-docker.pkg.dev/protobuf-build/release-containers/linux@sha256:85fd92cce31eb9446ca85d108b424b8167cea3469b58f2b9a9d30e37fc467a00
+gcloud components update --quiet
+gcloud auth configure-docker us-docker.pkg.dev --quiet
 
 tmpfile=$(mktemp -u) &&
 docker run --cidfile $tmpfile -v $WORKING_DIR/../../..:/workspace $DOCKER_IMAGE \
