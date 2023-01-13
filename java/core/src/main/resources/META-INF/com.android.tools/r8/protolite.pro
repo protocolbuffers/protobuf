@@ -3,6 +3,6 @@
 # Safe to default since proguard rules are only active on Android.
 -assumevalues class com.google.protobuf.Android { static boolean ASSUME_ANDROID return true; }
 
-# Don't strip fields which are required for serialization
+# Enable protobuf-related optimizations.
 # https://github.com/protocolbuffers/protobuf/issues/11252
 -shrinkunusedprotofields

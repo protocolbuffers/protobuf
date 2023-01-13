@@ -123,7 +123,8 @@ internal_gen_well_known_protos_java(
 java_library(
     name = "lite",
     resources = [
-        "src/main/resources/META-INF/proguard/protolite.pro"
+        "src/main/resources/META-INF/proguard/protolite.pro",
+        "src/main/resources/META-INF/com.android.tools/r8/protolite.pro",
     ],
     srcs = LITE_SRCS + [
         ":gen_well_known_protos_javalite",
