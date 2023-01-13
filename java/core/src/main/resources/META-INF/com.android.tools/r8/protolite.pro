@@ -5,6 +5,4 @@
 
 # Don't strip fields which are required for serialization
 # https://github.com/protocolbuffers/protobuf/issues/11252
--keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
-  <fields>;
-}
+-shrinkunusedprotofields

@@ -34,7 +34,7 @@ final class Android {
   private Android() {
   }
 
-  // Set to true in lite_proguard_android.pgcfg.
+  // Set to true in META-INF/proguard/protolite.pro.
   @SuppressWarnings("ConstantField")
   private static boolean ASSUME_ANDROID;
 
