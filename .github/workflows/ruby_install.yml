@@ -52,5 +52,5 @@ jobs:
       - name: Test installation
         run: |
           gem list -d
-          bazel run //:protoc -- --proto_path=$GITHUB_WORKSPACE --proto_path=$GITHUB_WORKSPACE/src --proto_path=$GITHUB_WORKSPACE/ruby/tests --ruby_out=ruby/tests ruby/tests/basic_test.proto
+          bazel run //:protoc -- --proto_path=$GITHUB_WORKSPACE/src --proto_path=$GITHUB_WORKSPACE/ruby/tests --ruby_out=$GITHUB_WORKSPACE/ruby/tests basic_test.proto
           ruby ruby/tests/basic.rb
