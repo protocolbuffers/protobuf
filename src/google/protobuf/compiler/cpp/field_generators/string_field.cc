@@ -776,12 +776,10 @@ void RepeatedStringFieldGenerator::GenerateAccessorDeclarations(
       "$deprecated_attr$void ${1$set_$name$$}$(int index, const "
       "char* value);\n",
       descriptor_);
-  if (!options_.opensource_runtime) {
-    format(
-        "$deprecated_attr$void ${1$set_$name$$}$(int index, "
-        "absl::string_view value);\n",
-        descriptor_);
-  }
+  format(
+      "$deprecated_attr$void ${1$set_$name$$}$(int index, "
+      "absl::string_view value);\n",
+      descriptor_);
   format(
       "$deprecated_attr$void ${1$set_$name$$}$("
       "int index, const $pointer_type$* value, ::size_t size);\n"
@@ -790,11 +788,8 @@ void RepeatedStringFieldGenerator::GenerateAccessorDeclarations(
       "$deprecated_attr$void ${1$add_$name$$}$(std::string&& value);\n"
       "$deprecated_attr$void ${1$add_$name$$}$(const char* value);\n",
       descriptor_);
-  if (!options_.opensource_runtime) {
-    format(
-        "$deprecated_attr$void ${1$add_$name$$}$(absl::string_view value);\n",
-        descriptor_);
-  }
+  format("$deprecated_attr$void ${1$add_$name$$}$(absl::string_view value);\n",
+         descriptor_);
   format(
       "$deprecated_attr$void ${1$add_$name$$}$(const $pointer_type$* "
       "value, ::size_t size)"
@@ -871,15 +866,13 @@ void RepeatedStringFieldGenerator::GenerateInlineAccessorDefinitions(
       "$annotate_set$"
       "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
       "}\n");
-  if (!options_.opensource_runtime) {
-    format(
-        "inline void "
-        "$classname$::set_$name$(int index, absl::string_view value) {\n"
-        "  $field$.Mutable(index)->assign(value.data(), value.size());\n"
-        "$annotate_set$"
-        "  // @@protoc_insertion_point(field_set_string_piece:$full_name$)\n"
-        "}\n");
-  }
+  format(
+      "inline void "
+      "$classname$::set_$name$(int index, absl::string_view value) {\n"
+      "  $field$.Mutable(index)->assign(value.data(), value.size());\n"
+      "$annotate_set$"
+      "  // @@protoc_insertion_point(field_set_string_piece:$full_name$)\n"
+      "}\n");
   format(
       "inline void "
       "$classname$::set_$name$"
@@ -908,14 +901,12 @@ void RepeatedStringFieldGenerator::GenerateInlineAccessorDefinitions(
       "$annotate_add$"
       "  // @@protoc_insertion_point(field_add_char:$full_name$)\n"
       "}\n");
-  if (!options_.opensource_runtime) {
-    format(
-        "inline void $classname$::add_$name$(absl::string_view value) {\n"
-        "  $field$.Add()->assign(value.data(), value.size());\n"
-        "$annotate_add$"
-        "  // @@protoc_insertion_point(field_add_string_piece:$full_name$)\n"
-        "}\n");
-  }
+  format(
+      "inline void $classname$::add_$name$(absl::string_view value) {\n"
+      "  $field$.Add()->assign(value.data(), value.size());\n"
+      "$annotate_add$"
+      "  // @@protoc_insertion_point(field_add_string_piece:$full_name$)\n"
+      "}\n");
   format(
       "inline void "
       "$classname$::add_$name$(const $pointer_type$* value, ::size_t size) {\n"

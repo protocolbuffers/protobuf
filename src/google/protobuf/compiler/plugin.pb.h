@@ -455,11 +455,13 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   void set_file_to_generate(int index, const std::string& value);
   void set_file_to_generate(int index, std::string&& value);
   void set_file_to_generate(int index, const char* value);
+  void set_file_to_generate(int index, absl::string_view value);
   void set_file_to_generate(int index, const char* value, ::size_t size);
   std::string* add_file_to_generate();
   void add_file_to_generate(const std::string& value);
   void add_file_to_generate(std::string&& value);
   void add_file_to_generate(const char* value);
+  void add_file_to_generate(absl::string_view value);
   void add_file_to_generate(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& file_to_generate() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_file_to_generate();
@@ -1147,6 +1149,10 @@ inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* va
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.file_to_generate_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
+inline void CodeGeneratorRequest::set_file_to_generate(int index, absl::string_view value) {
+  _impl_.file_to_generate_.Mutable(index)->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_set_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+}
 inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value, ::size_t size) {
   _impl_.file_to_generate_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
@@ -1166,6 +1172,10 @@ inline void CodeGeneratorRequest::add_file_to_generate(std::string&& value) {
 inline void CodeGeneratorRequest::add_file_to_generate(const char* value) {
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.file_to_generate_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+}
+inline void CodeGeneratorRequest::add_file_to_generate(absl::string_view value) {
+  _impl_.file_to_generate_.Add()->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_add_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::add_file_to_generate(const char* value, ::size_t size) {
   _impl_.file_to_generate_.Add()->assign(reinterpret_cast<const char*>(value), size);
