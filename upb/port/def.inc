@@ -110,7 +110,11 @@
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
+#ifdef __clang__
+#define UPB_ALIGN_OF(type) _Alignof(type)
+#else
 #define UPB_ALIGN_OF(type) offsetof (struct { char c; type member; }, member)
+#endif
 
 // Hints to the compiler about likely/unlikely branches.
 #if defined (__GNUC__) || defined(__clang__)
