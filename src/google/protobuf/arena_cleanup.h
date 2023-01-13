@@ -36,10 +36,10 @@
 #include <string>
 
 #include "absl/base/attributes.h"
+#include "absl/base/prefetch.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -121,6 +121,11 @@ PrefetchNode(const void* elem_address) {
   if (EnableSpecializedTags()) {
     uintptr_t elem;
     memcpy(&elem, elem_address, sizeof(elem));
+    // This prefetch may be half way into a string or cord, but not biggie they
+    // will be on the same cacheline. We explicitly use NTA prefetch here to
+    // avoid polluting remote caches: we are destroying these instances, there
+    // is no purpose for these cache lines to linger around in remote caches.
+    absl::PrefetchToLocalCacheNta(reinterpret_cast<void*>(elem));
     if (static_cast<Tag>(elem & 3) != Tag::kDynamic) {
       return sizeof(TaggedNode);
     }

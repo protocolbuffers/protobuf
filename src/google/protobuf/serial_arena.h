@@ -40,6 +40,7 @@
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/base/prefetch.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
@@ -181,6 +182,10 @@ class PROTOBUF_EXPORT SerialArena {
   void* AllocateFromExisting(size_t n) {
     PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
     void* ret = ptr();
+    // Prefetch the next n.
+    for (size_t i = n; i < n * 2; i += ABSL_CACHELINE_SIZE) {
+      absl::PrefetchToLocalCacheForWrite(static_cast<char*>(ret) + i);
+    }
     set_ptr(static_cast<char*>(ret) + n);
     return ret;
   }
@@ -291,6 +296,10 @@ class PROTOBUF_EXPORT SerialArena {
     n = AlignUpTo(n, align);
     PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
     void* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
+    // Prefetch the next n.
+    for (size_t i = n; i < n * 2; i += ABSL_CACHELINE_SIZE) {
+      absl::PrefetchToLocalCacheForWrite(static_cast<char*>(ret) + i);
+    }
     set_ptr(ptr() + n);
     GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
     AddCleanupFromExisting(ret, destructor);

@@ -38,6 +38,7 @@
 #include <typeinfo>
 
 #include "absl/base/attributes.h"
+#include "absl/base/prefetch.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arenaz_sampler.h"
@@ -280,6 +281,17 @@ void SerialArena::CleanupList() {
     char* limit = b->Limit();
     char* it = reinterpret_cast<char*>(b->cleanup_nodes);
     GOOGLE_ABSL_DCHECK(!b->IsSentry() || it == limit);
+    // A prefetch distance of 8 here was chosen arbitrarily.
+    char* prefetch = it;
+    int prefetch_dist = 8;
+    while (prefetch < limit && --prefetch_dist) {
+      prefetch += cleanup::PrefetchNode(prefetch);
+    }
+    while (prefetch < limit) {
+      it += cleanup::DestroyNode(it);
+      prefetch += cleanup::PrefetchNode(prefetch);
+    }
+    absl::PrefetchToLocalCacheNta(b->next);
     while (it < limit) {
       it += cleanup::DestroyNode(it);
     }
@@ -722,6 +734,8 @@ void ThreadSafeArena::WalkConstSerialArenaChunk(Functor fn) const {
   const SerialArenaChunk* chunk = head_.load(std::memory_order_acquire);
 
   for (; !chunk->IsSentry(); chunk = chunk->next_chunk()) {
+    // Prefetch the next chunk.
+    absl::PrefetchToLocalCache(chunk->next_chunk());
     fn(chunk);
   }
 }
@@ -736,6 +750,8 @@ void ThreadSafeArena::WalkSerialArenaChunk(Functor fn) {
   while (!chunk->IsSentry()) {
     // Cache next chunk in case this chunk is destroyed.
     SerialArenaChunk* next_chunk = chunk->next_chunk();
+    // Prefetch the next chunk.
+    absl::PrefetchToLocalCache(next_chunk);
     fn(chunk);
     chunk = next_chunk;
   }
