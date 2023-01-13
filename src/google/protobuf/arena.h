@@ -394,7 +394,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // time. Note that we can often devirtualize calls to `value->GetArena()` so
   // usually calling this method is unnecessary.
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE static Arena* GetArena(const T* value) {
+  PROTOBUF_ALWAYS_INLINE static Arena* GetArena(T* value) {
     return GetArenaInternal(value);
   }
 
@@ -432,11 +432,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     static void InternalSwap(T* a, T* b) { a->InternalSwap(b); }
 
-    static Arena* GetArenaForAllocation(const T* p) {
+    static Arena* GetArenaForAllocation(T* p) {
       return GetArenaForAllocation(Rank0{}, p);
     }
 
-    static Arena* GetArena(const T* p) {
+    static Arena* GetArena(T* p) {
       // Rather than replicate probing for `GetArena` with fallback to nullptr,
       // we borrow the implementation of `GetArenaForAllocation` but skip
       // `Rank0` which probes for `GetArenaForAllocation`.
@@ -444,19 +444,19 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
 
     template <typename U>
-    static auto GetArenaForAllocation(Rank0, const U* p)
+    static auto GetArenaForAllocation(Rank0, U* p)
         -> EnableIfArena<decltype(p->GetArenaForAllocation())> {
       return p->GetArenaForAllocation();
     }
 
     template <typename U>
-    static auto GetArenaForAllocation(Rank1, const U* p)
+    static auto GetArenaForAllocation(Rank1, U* p)
         -> EnableIfArena<decltype(p->GetArena())> {
       return p->GetArena();
     }
 
     template <typename U>
-    static Arena* GetArenaForAllocation(Rank2, const U*) {
+    static Arena* GetArenaForAllocation(Rank2, U*) {
       return nullptr;
     }
 
@@ -506,7 +506,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // Provides access to protected GetArenaForAllocation to generated messages.
   // For internal use only.
   template <typename T>
-  static Arena* InternalGetArenaForAllocation(const T* p) {
+  static Arena* InternalGetArenaForAllocation(T* p) {
     return InternalHelper<T>::GetArenaForAllocation(p);
   }
 
@@ -650,7 +650,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // InternalArenaConstructable_ tags can be associated with an arena, and such
   // objects must implement a GetArena() method.
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
+  PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(T* value) {
     return InternalHelper<T>::GetArena(value);
   }
 

@@ -310,7 +310,9 @@ class RepeatedField final {
   iterator erase(const_iterator first, const_iterator last);
 
   // Gets the Arena on which this RepeatedField stores its elements.
-  inline Arena* GetArena() const { return GetOwningArena(); }
+  // Note: this can be inaccurate for split default fields so we make this
+  // function non-const.
+  inline Arena* GetArena() { return GetOwningArena(); }
 
   // For internal use only.
   //
