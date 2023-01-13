@@ -31,6 +31,10 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
+# begin:github_only
+load("@rules_pkg//:mappings.bzl", "pkg_files")
+# end:github_only
+
 licenses(["notice"])
 
 package(
@@ -179,6 +183,12 @@ _message_target_compatible_with = {
    "@system_python//:unsupported": ["@platforms//:incompatible"],
    "//conditions:default": [],
 }
+
+pkg_files(
+   name = "message_extension",
+   srcs = [":message_srcs"],
+   prefix = "python/",
+)
 # end:github_only
 # begin:google_only
 # _message_target_compatible_with = {
@@ -187,8 +197,8 @@ _message_target_compatible_with = {
 # }
 # end:google_only
 
-py_extension(
-    name = "_message",
+filegroup(
+    name = "message_srcs",
     srcs = [
         "convert.c",
         "convert.h",
@@ -212,6 +222,14 @@ py_extension(
         "unknown_fields.c",
         "unknown_fields.h",
     ],
+    # begin:google_only
+#     compatible_with = ["//buildenv/target:non_prod"],
+    # end:google_only
+)
+
+py_extension(
+    name = "_message",
+    srcs = [":message_srcs"],
     copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT) + [
         # The Python API requires patterns that are ISO C incompatible, like
         # casts between function pointers and object pointers.

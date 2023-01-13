@@ -33,9 +33,9 @@ jobs:
       - name: Pull Docker Image
         run: docker pull $DOCKER_IMAGE
       - name: Build Wheels
-        run: cd ${{ github.workspace }} && docker run -e GOOGLE_APPLICATION_CREDENTIALS=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS) -v$PWD:/workspace $DOCKER_IMAGE build $BAZEL_CACHE --crosstool_top=@com_google_protobuf//toolchain:clang_suite --symlink_prefix=/ -c dbg python/dist python/dist:test_wheel
+        run: cd ${{ github.workspace }} && docker run -e GOOGLE_APPLICATION_CREDENTIALS=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS) -v$PWD:/workspace $DOCKER_IMAGE build $BAZEL_CACHE --crosstool_top=@com_google_protobuf//toolchain:clang_suite --symlink_prefix=/ -c dbg python/dist python/dist:test_wheel python/dist:source_wheel
       - name: Move Wheels
-        run: mkdir wheels && find _build/out -name 'protobuf*.whl' -exec mv '{}' wheels ';'
+        run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf*.tar.gz' \) -exec mv '{}' wheels ';'
       - uses: actions/upload-artifact@v3
         with:
           name: python-wheels
@@ -51,20 +51,25 @@ jobs:
           # Linux and Mac use the limited API, so all Python versions will use a single wheel.
           # As a result we can just test the oldest and newest supported Python versions and assume
           # this gives us sufficient test coverage.
-          - { os: ubuntu-18-large, python-version: "3.7", architecture: x64 }
-          - { os: macos-11, python-version: "3.7", architecture: x64 }
-          - { os: ubuntu-20-large, python-version: "3.10", architecture: x64 }
-          - { os: macos-12, python-version: "3.10", architecture: x64 }
+          - { os: ubuntu-18-large, python-version: "3.7", architecture: x64, type: 'binary' }
+          - { os: macos-11, python-version: "3.7", architecture: x64, type: 'binary' }
+          - { os: ubuntu-20-large, python-version: "3.10", architecture: x64, type: 'binary' }
+          - { os: macos-12, python-version: "3.10", architecture: x64, type: 'binary' }
+          - { os: ubuntu-18-large, python-version: "3.7", architecture: x64, type: 'source' }
+          - { os: macos-11, python-version: "3.7", architecture: x64, type: 'source' }
+          - { os: ubuntu-20-large, python-version: "3.10", architecture: x64, type: 'source' }
+          - { os: macos-12, python-version: "3.10", architecture: x64, type: 'source' }
+ 
           # Windows uses the full API up until Python 3.10, so each of these
           # jobs tests a distinct binary wheel.
-          - { os: windows-2019-large, python-version: "3.7", architecture: x86 }
-          - { os: windows-2019-large, python-version: "3.8", architecture: x86 }
-          - { os: windows-2019-large, python-version: "3.9", architecture: x86 }
-          - { os: windows-2019-large, python-version: "3.10", architecture: x86 }
-          - { os: windows-2019-large, python-version: "3.7", architecture: x64 }
-          - { os: windows-2019-large, python-version: "3.8", architecture: x64 }
-          - { os: windows-2019-large, python-version: "3.9", architecture: x64 }
-          - { os: windows-2019-large, python-version: "3.10", architecture: x64 }
+          - { os: windows-2019-large, python-version: "3.7", architecture: x86, type: 'binary' }
+          - { os: windows-2019-large, python-version: "3.8", architecture: x86, type: 'binary' }
+          - { os: windows-2019-large, python-version: "3.9", architecture: x86, type: 'binary' }
+          - { os: windows-2019-large, python-version: "3.10", architecture: x86, type: 'binary' }
+          - { os: windows-2019-large, python-version: "3.7", architecture: x64, type: 'binary' }
+          - { os: windows-2019-large, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: windows-2019-large, python-version: "3.9", architecture: x64, type: 'binary' }
+          - { os: windows-2019-large, python-version: "3.10", architecture: x64, type: 'binary' }
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -92,11 +97,21 @@ jobs:
         if: ${{ contains(matrix.os, 'windows') }}
       - name: Install numpy
         run: pip install numpy
-      - name: Install Protobuf Wheels
-        run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
+      - name: Install Protobuf Binary Wheel
+        run: pip install -vvv --no-index --find-links wheels protobuf
+        if: ${{ matrix.type == 'binary' }}
+      - name: Install Protobuf Source Wheel
+        run: |
+          cd wheels
+          tar -xzvf *.tar.gz
+          cd protobuf-*/
+          pip install .
+        if: ${{ matrix.type == 'source' }}
       - name: Test that module is importable
         run: python -v -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
         if: ${{ !matrix.pure_python }}
+      - name: Install Protobuf Test Wheel
+        run: pip install -vvv --no-index --find-links wheels protobuftests
       - name: Run the unit tests
         run: |
           TESTS=$(pip show -f protobuftests | grep pb_unit_tests.*py$ | sed 's,/,.,g' | sed 's,\\,.,g' | sed -E 's,.py$,,g')

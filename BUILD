@@ -54,6 +54,7 @@ load(
     "//bazel:amalgamation.bzl",
     "upb_amalgamation",
 )
+load("@rules_pkg//:mappings.bzl", "pkg_files")
 # end:github_only
 
 licenses(["notice"])
@@ -1186,6 +1187,22 @@ filegroup(
         "third_party/**/*",
     ]),
     visibility = ["//cmake:__pkg__"],
+)
+
+
+pkg_files(
+   name = "upb_source_files",
+   srcs = glob(
+       [
+           "upb/**/*.c",
+           "upb/**/*.h",
+           "upb/**/*.hpp",
+           "upb/**/*.inc",
+      ],
+       exclude = ["upb/conformance_upb.c"],
+   ),
+   strip_prefix = "",
+   visibility = ["//python/dist:__pkg__"],
 )
 
 # end:github_only

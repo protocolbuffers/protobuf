@@ -27,6 +27,8 @@ load("//bazel:py_proto_library.bzl", "py_proto_library")
 load(":dist.bzl", "py_dist", "py_dist_module")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@com_google_protobuf//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
+load("@rules_pkg//:mappings.bzl", "pkg_files")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 
@@ -43,7 +45,6 @@ py_proto_library(
     deps = [
         "@com_google_protobuf//:any_proto",
         "@com_google_protobuf//:api_proto",
-        "@com_google_protobuf//:compiler_plugin_proto",
         "@com_google_protobuf//:descriptor_proto",
         "@com_google_protobuf//:duration_proto",
         "@com_google_protobuf//:empty_proto",
@@ -54,6 +55,11 @@ py_proto_library(
         "@com_google_protobuf//:type_proto",
         "@com_google_protobuf//:wrappers_proto",
     ],
+)
+
+py_proto_library(
+    name = "plugin_py_pb2",
+    deps = ["@com_google_protobuf//:compiler_plugin_proto"],
 )
 
 config_setting(
@@ -187,6 +193,50 @@ selects.config_setting_group(
     ],
 )
 
+pkg_files(
+    name = "generated_wkt",
+    srcs = [
+        ":well_known_proto_py_pb2",
+        "//:descriptor_upb_proto",
+        "//:descriptor_upb_proto_reflection",
+    ],
+    prefix = "google/protobuf",
+)
+
+pkg_files(
+    name = "generated_wkt_compiler",
+    srcs = [
+        ":plugin_py_pb2",
+    ],
+    prefix = "google/protobuf/compiler",
+)
+
+pkg_files(
+    name = "utf8_range_source_files",
+    srcs = ["@utf8_range//:utf8_range_srcs"],
+    prefix = "utf8_range",
+)
+
+# NOTE: This package currently only works for macos and ubuntu, MSVC users
+# should use a binary wheel.
+pkg_tar(
+    name = "source_wheel",
+    srcs = [
+        "setup.py",
+        ":generated_wkt",
+        ":generated_wkt_compiler",
+        ":utf8_range_source_files",
+        "//:LICENSE",
+        "//:upb_source_files",
+        "//python:message_extension",
+        "//upb/util:util_source_files",
+        "@com_google_protobuf//python:python_source_files",
+    ],
+    extension = "tar.gz",
+    package_dir = "protobuf-%s" % PROTOBUF_PYTHON_VERSION,
+    package_file_name = "protobuf-%s.tar.gz" % PROTOBUF_PYTHON_VERSION,
+)
+
 py_wheel(
     name = "binary_wheel",
     abi = select({
@@ -240,6 +290,7 @@ py_wheel(
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":message_mod",
+        ":plugin_py_pb2",
         ":well_known_proto_py_pb2",
         "@com_google_protobuf//:python_srcs",
     ],
@@ -277,6 +328,7 @@ py_wheel(
     }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
+        ":plugin_py_pb2",
         ":well_known_proto_py_pb2",
         "@com_google_protobuf//:python_srcs",
     ],

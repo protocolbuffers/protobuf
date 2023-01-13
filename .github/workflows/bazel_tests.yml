@@ -100,4 +100,4 @@ jobs:
       - name: Uninstall python
         run: which python3 && sudo mv `which python3` /tmp && ! which python3
       - name: Run tests
-        run: cd ${{ github.workspace }} && bazel test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH //python/...
+        run: cd ${{ github.workspace }} && bazel test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH //python/... -- -//python/dist:source_wheel

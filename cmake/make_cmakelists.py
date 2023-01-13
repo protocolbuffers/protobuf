@@ -128,6 +128,9 @@ class BuildFileFunctions(object):
   def cc_fuzz_test(self, **kwargs):
     pass
 
+  def pkg_files(self, **kwargs):
+    pass
+
   def py_library(self, **kwargs):
     pass
 
@@ -182,7 +185,7 @@ class BuildFileFunctions(object):
   def select(self, arg_dict):
     return []
 
-  def glob(self, *args):
+  def glob(self, *args, **kwargs):
     return []
 
   def licenses(self, *args):
@@ -248,6 +251,9 @@ class WorkspaceFileFunctions(object):
     pass
 
   def rules_fuzzing_init(self):
+    pass
+
+  def rules_pkg_dependencies(self):
     pass
 
   def system_python(self, **kwargs):

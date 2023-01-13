@@ -23,8 +23,8 @@ def upb_deps():
         _github_archive,
         name = "com_google_protobuf",
         repo = "https://github.com/protocolbuffers/protobuf",
-        commit = "016ef2393e163cb8a49186adab8e2981476eec37",
-        sha256 = "ed91f723ba5db42190ca4a2734d1fdd449ceccf259c1112d3e4da14b322680f5",
+        sha256 = "bc4add2a4bf70d6db89ddde404264cbf5586ecf99c0bc8d4f1828eb016e4731e",
+        commit = "761492746a64cd5ea7a53f3028e42452ca74ff71",
         patches = ["@upb//bazel:protobuf.patch"],
     )
 
@@ -34,6 +34,16 @@ def upb_deps():
         repo = "https://github.com/protocolbuffers/utf8_range",
         commit = "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f",
         sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
+    )
+
+    maybe(
+        http_archive,
+        name = "rules_pkg",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
+            "https://github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
+        ],
+        sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
     )
 
     rules_python_version = "0.14.0"  # Latest @ November 20, 2022
