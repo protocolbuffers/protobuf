@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [2.6, 2.7, 3.0, 3.1, jruby-9.2, jruby-9.3]
+        ruby: [2.6, 2.7, 3.0, 3.1, 3.2, jruby-9.2, jruby-9.3]
 
     steps:
       - uses: actions/checkout@v2
