@@ -31,11 +31,11 @@
 
 #include "absl/strings/str_cat.h"
 // begin:google_only
-// #include "absl/log/check.h"
 // #include "absl/strings/str_replace.h"
 // end:google_only
 #include "absl/strings/str_split.h"
 #include "upbc/keywords.h"
+#include "upbc/plugin.h"
 
 namespace protos_generator {
 
@@ -44,9 +44,13 @@ namespace protobuf = ::google::protobuf;
 // begin:github_only
 #ifndef DCHECK
 #ifndef NDEBUG
-#define DCHECK(condition) if(!(condition)) LOG(FATAL);
+#define DCHECK(condition)                                             \
+  if (!(condition)) {                                                 \
+    upbc::LogFatal("Failed DCHECK: ", #condition, "File: ", __FILE__, \
+                   ", Line: ", __LINE__);                             \
+  }
 #else
-#define DCHECK(condition) if(!(true || condition)) LOG(FATAL);
+#define DCHECK(condition) if(!(true || condition)) ;
 #endif
 #endif
 // end:github_only
@@ -162,7 +166,7 @@ std::string CppTypeInternal(const protobuf::FieldDescriptor* field,
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
       return "absl::string_view";
     default:
-      LOG(FATAL) << "Unexpected type: " << field->cpp_type();
+      upbc::LogFatal("Unexpected type: ", field->cpp_type());
   }
 }
 

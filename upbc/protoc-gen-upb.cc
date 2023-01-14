@@ -43,8 +43,6 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -1262,7 +1260,7 @@ std::string FieldInitializer(upb::FieldDefPtr field,
                              const upb_MiniTableField* field32,
                              const Options& options) {
   if (options.bootstrap) {
-    CHECK(!field.is_extension());
+    if (field.is_extension()) LogFatal("Should not be an extension");
     return absl::Substitute(
         "*upb_MiniTable_FindFieldByNumber($0, $1)",
         MessageMiniTableRef(field.containing_type(), options), field.number());
@@ -1679,8 +1677,8 @@ int main(int argc, char** argv) {
     if (!file) {
       absl::string_view name =
           upbc::ToStringView(UPB_DESC(FileDescriptorProto_name)(file_proto));
-      LOG(FATAL) << "Couldn't add file " << name
-                 << " to DefPool: " << status.error_message();
+      upbc::LogFatal("Couldn't add file ", name,
+                     " to DefPool: ", status.error_message());
     }
     if (generate) GenerateFile(pools, file, options, &plugin);
   });
