@@ -729,11 +729,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   void set_dependency(int index, const std::string& value);
   void set_dependency(int index, std::string&& value);
   void set_dependency(int index, const char* value);
+  void set_dependency(int index, absl::string_view value);
   void set_dependency(int index, const char* value, ::size_t size);
   std::string* add_dependency();
   void add_dependency(const std::string& value);
   void add_dependency(std::string&& value);
   void add_dependency(const char* value);
+  void add_dependency(absl::string_view value);
   void add_dependency(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& dependency() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_dependency();
@@ -1594,11 +1596,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   void set_reserved_name(int index, const std::string& value);
   void set_reserved_name(int index, std::string&& value);
   void set_reserved_name(int index, const char* value);
+  void set_reserved_name(int index, absl::string_view value);
   void set_reserved_name(int index, const char* value, ::size_t size);
   std::string* add_reserved_name();
   void add_reserved_name(const std::string& value);
   void add_reserved_name(std::string&& value);
   void add_reserved_name(const char* value);
+  void add_reserved_name(absl::string_view value);
   void add_reserved_name(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& reserved_name() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_reserved_name();
@@ -2848,11 +2852,13 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   void set_reserved_name(int index, const std::string& value);
   void set_reserved_name(int index, std::string&& value);
   void set_reserved_name(int index, const char* value);
+  void set_reserved_name(int index, absl::string_view value);
   void set_reserved_name(int index, const char* value, ::size_t size);
   std::string* add_reserved_name();
   void add_reserved_name(const std::string& value);
   void add_reserved_name(std::string&& value);
   void add_reserved_name(const char* value);
+  void add_reserved_name(absl::string_view value);
   void add_reserved_name(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& reserved_name() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_reserved_name();
@@ -7227,11 +7233,13 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   void set_leading_detached_comments(int index, const std::string& value);
   void set_leading_detached_comments(int index, std::string&& value);
   void set_leading_detached_comments(int index, const char* value);
+  void set_leading_detached_comments(int index, absl::string_view value);
   void set_leading_detached_comments(int index, const char* value, ::size_t size);
   std::string* add_leading_detached_comments();
   void add_leading_detached_comments(const std::string& value);
   void add_leading_detached_comments(std::string&& value);
   void add_leading_detached_comments(const char* value);
+  void add_leading_detached_comments(absl::string_view value);
   void add_leading_detached_comments(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& leading_detached_comments() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_leading_detached_comments();
@@ -8079,6 +8087,10 @@ inline void FileDescriptorProto::set_dependency(int index, const char* value) {
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.dependency_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileDescriptorProto.dependency)
 }
+inline void FileDescriptorProto::set_dependency(int index, absl::string_view value) {
+  _impl_.dependency_.Mutable(index)->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_set_string_piece:google.protobuf.FileDescriptorProto.dependency)
+}
 inline void FileDescriptorProto::set_dependency(int index, const char* value, ::size_t size) {
   _impl_.dependency_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
@@ -8098,6 +8110,10 @@ inline void FileDescriptorProto::add_dependency(std::string&& value) {
 inline void FileDescriptorProto::add_dependency(const char* value) {
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.dependency_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FileDescriptorProto.dependency)
+}
+inline void FileDescriptorProto::add_dependency(absl::string_view value) {
+  _impl_.dependency_.Add()->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const char* value, ::size_t size) {
   _impl_.dependency_.Add()->assign(reinterpret_cast<const char*>(value), size);
@@ -9335,6 +9351,10 @@ inline void DescriptorProto::set_reserved_name(int index, const char* value) {
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.DescriptorProto.reserved_name)
 }
+inline void DescriptorProto::set_reserved_name(int index, absl::string_view value) {
+  _impl_.reserved_name_.Mutable(index)->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_set_string_piece:google.protobuf.DescriptorProto.reserved_name)
+}
 inline void DescriptorProto::set_reserved_name(int index, const char* value, ::size_t size) {
   _impl_.reserved_name_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
@@ -9354,6 +9374,10 @@ inline void DescriptorProto::add_reserved_name(std::string&& value) {
 inline void DescriptorProto::add_reserved_name(const char* value) {
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.DescriptorProto.reserved_name)
+}
+inline void DescriptorProto::add_reserved_name(absl::string_view value) {
+  _impl_.reserved_name_.Add()->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_add_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const char* value, ::size_t size) {
   _impl_.reserved_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
@@ -10427,6 +10451,10 @@ inline void EnumDescriptorProto::set_reserved_name(int index, const char* value)
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.EnumDescriptorProto.reserved_name)
 }
+inline void EnumDescriptorProto::set_reserved_name(int index, absl::string_view value) {
+  _impl_.reserved_name_.Mutable(index)->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_set_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
+}
 inline void EnumDescriptorProto::set_reserved_name(int index, const char* value, ::size_t size) {
   _impl_.reserved_name_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
@@ -10446,6 +10474,10 @@ inline void EnumDescriptorProto::add_reserved_name(std::string&& value) {
 inline void EnumDescriptorProto::add_reserved_name(const char* value) {
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.EnumDescriptorProto.reserved_name)
+}
+inline void EnumDescriptorProto::add_reserved_name(absl::string_view value) {
+  _impl_.reserved_name_.Add()->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_add_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const char* value, ::size_t size) {
   _impl_.reserved_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
@@ -13563,6 +13595,10 @@ inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, co
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.leading_detached_comments_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
+inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, absl::string_view value) {
+  _impl_.leading_detached_comments_.Mutable(index)->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_set_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+}
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value, ::size_t size) {
   _impl_.leading_detached_comments_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
@@ -13582,6 +13618,10 @@ inline void SourceCodeInfo_Location::add_leading_detached_comments(std::string&&
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value) {
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.leading_detached_comments_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+}
+inline void SourceCodeInfo_Location::add_leading_detached_comments(absl::string_view value) {
+  _impl_.leading_detached_comments_.Add()->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_add_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value, ::size_t size) {
   _impl_.leading_detached_comments_.Add()->assign(reinterpret_cast<const char*>(value), size);
