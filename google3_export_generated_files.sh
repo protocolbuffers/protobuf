@@ -27,6 +27,5 @@ update_staleness() {
   done
 }
 
-update_staleness ruby test_amalgamation_staleness ruby/ext/google/protobuf_c ruby-upb.*
+update_staleness ruby/ext/google/protobuf_c test_amalgamation_staleness ruby/ext/google/protobuf_c ruby-upb.*
 update_staleness php test_amalgamation_staleness php/ext/google/protobuf php-upb.*
-update_staleness src cmake_lists_staleness_test src file_lists.cmake
