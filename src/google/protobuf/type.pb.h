@@ -360,11 +360,13 @@ class PROTOBUF_EXPORT Type final :
   void set_oneofs(int index, const std::string& value);
   void set_oneofs(int index, std::string&& value);
   void set_oneofs(int index, const char* value);
+  void set_oneofs(int index, absl::string_view value);
   void set_oneofs(int index, const char* value, ::size_t size);
   std::string* add_oneofs();
   void add_oneofs(const std::string& value);
   void add_oneofs(std::string&& value);
   void add_oneofs(const char* value);
+  void add_oneofs(absl::string_view value);
   void add_oneofs(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& oneofs() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_oneofs();
@@ -1482,6 +1484,10 @@ inline void Type::set_oneofs(int index, const char* value) {
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.oneofs_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.Type.oneofs)
 }
+inline void Type::set_oneofs(int index, absl::string_view value) {
+  _impl_.oneofs_.Mutable(index)->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_set_string_piece:google.protobuf.Type.oneofs)
+}
 inline void Type::set_oneofs(int index, const char* value, ::size_t size) {
   _impl_.oneofs_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
@@ -1501,6 +1507,10 @@ inline void Type::add_oneofs(std::string&& value) {
 inline void Type::add_oneofs(const char* value) {
   GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.oneofs_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.Type.oneofs)
+}
+inline void Type::add_oneofs(absl::string_view value) {
+  _impl_.oneofs_.Add()->assign(value.data(), value.size());
+  // @@protoc_insertion_point(field_add_string_piece:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(const char* value, ::size_t size) {
   _impl_.oneofs_.Add()->assign(reinterpret_cast<const char*>(value), size);
