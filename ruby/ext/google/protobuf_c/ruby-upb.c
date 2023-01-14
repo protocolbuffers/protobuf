@@ -1231,6 +1231,24 @@ const upb_MiniTableEnum google_protobuf_FieldOptions_JSType_enum_init = {
     },
 };
 
+const upb_MiniTableEnum google_protobuf_FieldOptions_OptionRetention_enum_init = {
+    64,
+    0,
+    {
+        0x7,
+        0x0,
+    },
+};
+
+const upb_MiniTableEnum google_protobuf_FieldOptions_OptionTargetType_enum_init = {
+    64,
+    0,
+    {
+        0x3ff,
+        0x0,
+    },
+};
+
 const upb_MiniTableEnum google_protobuf_MethodOptions_IdempotencyLevel_enum_init = {
     64,
     0,
@@ -1249,12 +1267,14 @@ const upb_MiniTableEnum google_protobuf_GeneratedCodeInfo_Annotation_Semantic_en
     },
 };
 
-static const upb_MiniTableEnum *enums_layout[7] = {
+static const upb_MiniTableEnum *enums_layout[9] = {
   &google_protobuf_FieldDescriptorProto_Type_enum_init,
   &google_protobuf_FieldDescriptorProto_Label_enum_init,
   &google_protobuf_FileOptions_OptimizeMode_enum_init,
   &google_protobuf_FieldOptions_CType_enum_init,
   &google_protobuf_FieldOptions_JSType_enum_init,
+  &google_protobuf_FieldOptions_OptionRetention_enum_init,
+  &google_protobuf_FieldOptions_OptionTargetType_enum_init,
   &google_protobuf_MethodOptions_IdempotencyLevel_enum_init,
   &google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init,
 };
@@ -1264,7 +1284,7 @@ const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
   enums_layout,
   NULL,
   27,
-  7,
+  9,
   0,
 };
 
