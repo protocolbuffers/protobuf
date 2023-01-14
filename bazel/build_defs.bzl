@@ -35,6 +35,8 @@ _DEFAULT_CPPOPTS.extend([
     "-Werror",
     "-Wno-unused-parameter",
     "-Wno-long-long",
+    # TODO(b/265232445) This is required due to https://github.com/abseil/abseil-cpp/issues/1201.
+    "-Wno-deprecated",
 ])
 _DEFAULT_COPTS.extend([
     "-std=c99",
