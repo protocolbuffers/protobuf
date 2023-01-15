@@ -1016,7 +1016,7 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #pragma warning(disable: 4125)
 #endif
 
-#if PROTOBUF_ENABLE_DEBUG_LOGGING_MAY_LEAK_PII
+#ifdef PROTOBUF_ENABLE_DEBUG_LOGGING_MAY_LEAK_PII
 #define PROTOBUF_DEBUG true
 #else
 #define PROTOBUF_DEBUG false
