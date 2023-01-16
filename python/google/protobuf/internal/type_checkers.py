@@ -45,7 +45,11 @@ TYPE_TO_DESERIALIZE_METHOD: A dictionary with field types and deserialization
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-import ctypes
+try:
+  import ctypes
+except Exception:  # pylint: disable=broad-except
+  ctypes = None
+  import struct
 import numbers
 
 from google.protobuf.internal import decoder
@@ -57,7 +61,10 @@ _FieldDescriptor = descriptor.FieldDescriptor
 
 
 def TruncateToFourByteFloat(original):
-  return ctypes.c_float(original).value
+  if ctypes:
+    return ctypes.c_float(original).value
+  else:
+    return struct.unpack('<f', struct.pack('<f', original))[0]
 
 
 def ToShortestFloat(original):
