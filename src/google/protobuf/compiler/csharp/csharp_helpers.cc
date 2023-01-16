@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <limits>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
@@ -121,7 +122,7 @@ CSharpType GetCSharpType(FieldDescriptor::Type type) {
 // Numeric                       Alphanumeric              Upper
 // Lower letter                  Alphanumeric              Same as current
 // Upper letter                  Alphanumeric              Lower
-std::string ShoutyToPascalCase(const std::string& input) {
+std::string ShoutyToPascalCase(absl::string_view input) {
   std::string result;
   // Simple way of implementing "always start with upper"
   char previous = '_';
@@ -151,7 +152,7 @@ std::string ShoutyToPascalCase(const std::string& input) {
 // (foo_bar, foobarbaz) => baz - underscore in prefix is ignored
 // (foobar, foo_barbaz) => baz - underscore in value is ignored
 // (foo, bar) => bar - prefix isn't matched; return original value
-std::string TryRemovePrefix(const std::string& prefix, const std::string& value) {
+std::string TryRemovePrefix(absl::string_view prefix, absl::string_view value) {
   // First normalize to a lower-case no-underscores prefix to match against
   std::string prefix_to_match = "";
   for (size_t i = 0; i < prefix.size(); i++) {
@@ -171,13 +172,13 @@ std::string TryRemovePrefix(const std::string& prefix, const std::string& value)
     }
     if (absl::ascii_tolower(value[value_index]) != prefix_to_match[prefix_index++]) {
       // Failed to match the prefix - bail out early.
-      return value;
+      return std::string(value);
     }
   }
 
   // If we didn't finish looking through the prefix, we can't strip it.
   if (prefix_index < prefix_to_match.size()) {
-    return value;
+    return std::string(value);
   }
 
   // Step over any underscores after the prefix
@@ -187,10 +188,10 @@ std::string TryRemovePrefix(const std::string& prefix, const std::string& value)
 
   // If there's nothing left (e.g. it was a prefix with only underscores afterwards), don't strip.
   if (value_index == value.size()) {
-    return value;
+    return std::string(value);
   }
 
-  return value.substr(value_index);
+  return std::string(value.substr(value_index));
 }
 
 // Format the enum value name in a pleasant way for C#:
@@ -198,13 +199,14 @@ std::string TryRemovePrefix(const std::string& prefix, const std::string& value)
 // - Convert to PascalCase.
 // For example, an enum called Color with a value of COLOR_BLUE should
 // result in an enum value in C# called just Blue
-std::string GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name) {
+std::string GetEnumValueName(absl::string_view enum_name,
+                             absl::string_view enum_value_name) {
   std::string stripped = TryRemovePrefix(enum_name, enum_value_name);
   std::string result = ShoutyToPascalCase(stripped);
   // Just in case we have an enum name of FOO and a value of FOO_2... make sure the returned
   // string is a valid identifier.
   if (absl::ascii_isdigit(result[0])) {
-    result = "_" + result;
+    return absl::StrCat("_", result);
   }
   return result;
 }
@@ -249,11 +251,12 @@ uint GetGroupEndTag(const Descriptor* descriptor) {
 
 std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
   if (descriptor->extension_scope()) {
-    return GetClassName(descriptor->extension_scope()) + ".Extensions." + GetPropertyName(descriptor);
+    return absl::StrCat(GetClassName(descriptor->extension_scope()),
+                        ".Extensions.", GetPropertyName(descriptor));
   }
-  else {
-    return GetExtensionClassUnqualifiedName(descriptor->file())  + "." + GetPropertyName(descriptor);
-  }
+
+  return absl::StrCat(GetExtensionClassUnqualifiedName(descriptor->file()), ".",
+                      GetPropertyName(descriptor));
 }
 
 // Groups are hacky:  The name of the field is just the lower-cased name
@@ -268,7 +271,7 @@ std::string GetFieldName(const FieldDescriptor* descriptor) {
 }
 
 std::string GetFieldConstantName(const FieldDescriptor* field) {
-  return GetPropertyName(field) + "FieldNumber";
+  return absl::StrCat(GetPropertyName(field), "FieldNumber");
 }
 
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
@@ -296,7 +299,7 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
   // warnings, but not errors; changing the name now could be a breaking change.
   if (property_name == descriptor->containing_type()->name()
       || reserved_member_names.find(property_name) != reserved_member_names.end()) {
-    property_name += "_";
+    absl::StrAppend(&property_name, "_");
   }
   return property_name;
 }
@@ -344,10 +347,10 @@ int GetFixedSize(FieldDescriptor::Type type) {
 static const char base64_chars[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-std::string StringToBase64(const std::string& input) {
+std::string StringToBase64(absl::string_view input) {
   std::string result;
   size_t remaining = input.size();
-  const unsigned char *src = (const unsigned char*) input.c_str();
+  const unsigned char* src = (const unsigned char*)input.data();
   while (remaining > 2) {
     result += base64_chars[src[0] >> 2];
     result += base64_chars[((src[0] & 0x3) << 4) | (src[1] >> 4)];

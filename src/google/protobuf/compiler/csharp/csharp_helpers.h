@@ -38,13 +38,14 @@
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/port.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/port_def.inc"
+#include "google/protobuf/stubs/common.h"
 
 namespace google {
 namespace protobuf {
@@ -85,11 +86,11 @@ int GetFixedSize(FieldDescriptor::Type type);
 
 // Note that we wouldn't normally want to export this (we're not expecting
 // it to be used outside libprotoc itself) but this exposes it for testing.
-std::string PROTOC_EXPORT GetEnumValueName(const std::string& enum_name,
-                                           const std::string& enum_value_name);
+std::string PROTOC_EXPORT GetEnumValueName(absl::string_view enum_name,
+                                           absl::string_view enum_value_name);
 
 // TODO(jtattermusch): perhaps we could move this to strutil
-std::string StringToBase64(const std::string& input);
+std::string StringToBase64(absl::string_view input);
 
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 

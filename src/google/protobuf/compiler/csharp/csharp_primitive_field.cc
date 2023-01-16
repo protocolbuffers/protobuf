@@ -31,6 +31,7 @@
 #include "google/protobuf/compiler/csharp/csharp_primitive_field.h"
 
 #include <sstream>
+#include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/str_cat.h"
@@ -53,8 +54,11 @@ PrimitiveFieldGenerator::PrimitiveFieldGenerator(
   is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
   if (!is_value_type && !SupportsPresenceApi(descriptor_)) {
-    variables_["has_property_check"] = variables_["property_name"] + ".Length != 0";
-    variables_["other_has_property_check"] = "other." + variables_["property_name"] + ".Length != 0";
+    std::string property_name = variables_["property_name"];
+    variables_["has_property_check"] =
+        absl::StrCat(property_name, ".Length != 0");
+    variables_["other_has_property_check"] =
+        absl::StrCat("other.", property_name, ".Length != 0");
   }
 }
 
@@ -80,8 +84,9 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     printer->Print(
       variables_,
       "private readonly static $type_name$ $property_name$DefaultValue = $default_value$;\n\n");
+    std::string property_name = variables_["property_name"];
     variables_["default_value_access"] =
-      variables_["property_name"] + "DefaultValue";
+        absl::StrCat(property_name, "DefaultValue");
   } else {
     variables_["default_value_access"] = variables_["default_value"];
   }
