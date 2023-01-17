@@ -51,5 +51,5 @@ jobs:
         if: ${{ contains(matrix.ruby, 'jruby') }}
       - name: Test installation
         run: |
-          bazel run //:protoc -- --proto_path=$GITHUB_WORKSPACE/src --proto_path=$GITHUB_WORKSPACE/ruby/tests --ruby_out=$GITHUB_WORKSPACE/ruby/tests ruby/tests/test_import_proto2.proto ruby/tests/basic_test.proto
+          bazel run //:protoc -- --proto_path=$GITHUB_WORKSPACE/src --proto_path=$GITHUB_WORKSPACE/ruby/tests --ruby_out=$GITHUB_WORKSPACE/ruby/tests test_import_proto2.proto basic_test.proto
           ruby ruby/tests/basic.rb
