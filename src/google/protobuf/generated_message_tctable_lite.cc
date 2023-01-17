@@ -774,18 +774,8 @@ inline FieldType ZigZagDecodeHelper(FieldType value) {
 }
 
 template <>
-inline uint32_t ZigZagDecodeHelper<uint32_t, true>(uint32_t value) {
-  return WireFormatLite::ZigZagDecode32(value);
-}
-
-template <>
 inline int32_t ZigZagDecodeHelper<int32_t, true>(int32_t value) {
   return WireFormatLite::ZigZagDecode32(value);
-}
-
-template <>
-inline uint64_t ZigZagDecodeHelper<uint64_t, true>(uint64_t value) {
-  return WireFormatLite::ZigZagDecode64(value);
 }
 
 template <>
