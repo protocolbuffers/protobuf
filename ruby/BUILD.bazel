@@ -2,7 +2,6 @@
 #
 # See also code generation logic under /src/google/protobuf/compiler/ruby.
 
-load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
