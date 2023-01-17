@@ -42,6 +42,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
@@ -49,6 +50,7 @@
 #include "google/protobuf/compiler/objectivec/import_writer.h"
 #include "google/protobuf/compiler/objectivec/message.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -111,7 +113,8 @@ struct FileDescriptorsOrderedByName {
 };
 
 void MakeDescriptors(
-    const Descriptor* descriptor, const std::string& root_classname,
+    const Descriptor* descriptor, const std::string& root_class_name,
+    const std::string& file_descriptor_function_name,
     std::vector<std::unique_ptr<EnumGenerator>>* enum_generators,
     std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
     std::vector<std::unique_ptr<MessageGenerator>>* message_generators) {
@@ -121,11 +124,37 @@ void MakeDescriptors(
   }
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
     message_generators->emplace_back(std::make_unique<MessageGenerator>(
-        root_classname, descriptor->nested_type(i)));
+        root_class_name, file_descriptor_function_name,
+        descriptor->nested_type(i)));
     message_generators->back()->AddExtensionGenerators(extension_generators);
-    MakeDescriptors(descriptor->nested_type(i), root_classname, enum_generators,
+    MakeDescriptors(descriptor->nested_type(i), root_class_name,
+                    file_descriptor_function_name, enum_generators,
                     extension_generators, message_generators);
   }
+}
+
+std::string FilenameIdentifier(const std::string& filename) {
+  std::string result;
+  for (const auto ch : filename) {
+    if (absl::ascii_isalnum(ch)) {
+      result.push_back(ch);
+    } else if (ch == '/') {
+      result.push_back('_');
+    } else {
+      absl::StrAppend(&result, "_", absl::Hex(static_cast<uint8_t>(ch)));
+    }
+  }
+  return result;
+}
+
+std::string FileDescriptorFunctionName(
+    const FileDescriptor* file, const GenerationOptions& generation_options) {
+  // If multi source generation, then it won't be static and so make a longer
+  // name to hopefully ensure it is unique.
+  if (generation_options.experimental_multi_source_generation) {
+    return absl::StrCat("FileDescriptor_", FilenameIdentifier(file->name()));
+  }
+  return FileClassName(file) + "_FileDescriptor";
 }
 
 }  // namespace
@@ -219,6 +248,8 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
       generation_options_(generation_options),
       common_state_(&common_state),
       root_class_name_(FileClassName(file)),
+      file_descriptor_function_name_(
+          FileDescriptorFunctionName(file, generation_options)),
       is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
     enum_generators_.emplace_back(
@@ -230,9 +261,11 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
   }
   for (int i = 0; i < file_->message_type_count(); i++) {
     message_generators_.emplace_back(std::make_unique<MessageGenerator>(
-        root_class_name_, file_->message_type(i)));
+        root_class_name_, file_descriptor_function_name_,
+        file_->message_type(i)));
     message_generators_.back()->AddExtensionGenerators(&extension_generators_);
-    MakeDescriptors(file_->message_type(i), root_class_name_, &enum_generators_,
+    MakeDescriptors(file_->message_type(i), root_class_name_,
+                    file_descriptor_function_name_, &enum_generators_,
                     &extension_generators_, &message_generators_);
   }
 }
@@ -437,8 +470,8 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
 
   GenerateFile(p, GeneratedFileType::kSource, ignored_warnings, {}, [&] {
     p->Print(
-        "extern GPBFileDescriptor *$root_class_name$_FileDescriptor(void);\n\n",
-        "root_class_name", root_class_name_);
+        "extern GPBFileDescriptor *$file_descriptor_function_name$(void);\n\n",
+        "file_descriptor_function_name", file_descriptor_function_name_);
 
     if (!fwd_decls.empty()) {
       p->Print(
@@ -692,7 +725,7 @@ void FileGenerator::PrintFileDescriptorImplementation(io::Printer* p) const {
 
   const std::string objc_prefix(FileClassPrefix(file_));
   absl::flat_hash_map<absl::string_view, std::string> vars;
-  vars["root_class_name"] = root_class_name_;
+  vars["file_descriptor_function_name"] = file_descriptor_function_name_;
   vars["package"] = file_->package();
   switch (file_->syntax()) {
     case FileDescriptor::SYNTAX_UNKNOWN:
@@ -722,9 +755,9 @@ void FileGenerator::PrintFileDescriptorImplementation(io::Printer* p) const {
   // clang-format off
   p->Print(
       vars,
-      "#pragma mark - $root_class_name$_FileDescriptor\n"
+      "#pragma mark - $file_descriptor_function_name$\n"
       "\n"
-      "$file_desc_scope$GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
+      "$file_desc_scope$GPBFileDescriptor *$file_descriptor_function_name$(void) {\n"
       "  // This is called by +initialize so there is no need to worry\n"
       "  // about thread safety of the singleton.\n"
       "  static GPBFileDescriptor *descriptor = NULL;\n"

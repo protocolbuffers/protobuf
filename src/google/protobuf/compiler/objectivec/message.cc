@@ -181,9 +181,12 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
 
 }  // namespace
 
-MessageGenerator::MessageGenerator(const std::string& root_classname,
-                                   const Descriptor* descriptor)
+MessageGenerator::MessageGenerator(
+    const std::string& root_classname,
+    const std::string& file_descriptor_function_name,
+    const Descriptor* descriptor)
     : root_classname_(root_classname),
+      file_descriptor_function_name_(file_descriptor_function_name),
       descriptor_(descriptor),
       field_generators_(descriptor),
       class_name_(ClassName(descriptor_)),
@@ -453,6 +456,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["classname"] = class_name_;
   vars["rootclassname"] = root_classname_;
+  vars["file_descriptor_function_name"] = file_descriptor_function_name_;
   vars["fields"] = has_fields ? "fields" : "NULL";
   if (has_fields) {
     vars["fields_count"] = absl::StrCat("(uint32_t)(sizeof(fields) / sizeof(",
@@ -481,7 +485,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
       "    GPBDescriptor *localDescriptor =\n"
       "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
       "                                     rootClass:[$rootclassname$ class]\n"
-      "                                          file:$rootclassname$_FileDescriptor()\n"
+      "                                          file:$file_descriptor_function_name$()\n"
       "                                        fields:$fields$\n"
       "                                    fieldCount:$fields_count$\n"
       "                                   storageSize:sizeof($classname$__storage_)\n"

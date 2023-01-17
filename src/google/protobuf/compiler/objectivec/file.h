@@ -121,6 +121,7 @@ class FileGenerator {
   const GenerationOptions& generation_options_;
   mutable CommonState* common_state_;
   const std::string root_class_name_;
+  const std::string file_descriptor_function_name_;
   const bool is_bundled_proto_;
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
