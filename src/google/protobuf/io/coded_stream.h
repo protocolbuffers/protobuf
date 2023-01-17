@@ -1727,15 +1727,15 @@ inline size_t CodedOutputStream::VarintSize32(uint32_t value) {
   // Use an explicit multiplication to implement the divide of
   // a number in the 1..31 range.
   //
-  // Explicit OR 0x1 to avoid calling absl::bit_width(0), which is
+  // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
   // requires a branch to check for on many platforms.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 inline size_t CodedOutputStream::VarintSize32PlusOne(uint32_t value) {
   // Same as above, but one more.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
 }
 
@@ -1744,15 +1744,15 @@ inline size_t CodedOutputStream::VarintSize64(uint64_t value) {
   // Use an explicit multiplication to implement the divide of
   // a number in the 1..63 range.
   //
-  // Explicit OR 0x1 to avoid calling absl::bit_width(0), which is
+  // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
   // requires a branch to check for on many platforms.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 inline size_t CodedOutputStream::VarintSize64PlusOne(uint64_t value) {
   // Same as above, but one more.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
 }
 
