@@ -30,6 +30,8 @@
 
 #include "google/protobuf/parse_context.h"
 
+#include <cstring>
+
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
@@ -44,10 +46,9 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-namespace {
-
 // Only call if at start of tag.
-bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth) {
+bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
+                                               int depth) {
   constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
   GOOGLE_ABSL_DCHECK_GE(overrun, 0);
   GOOGLE_ABSL_DCHECK_LE(overrun, kSlopBytes);
@@ -96,42 +97,40 @@ bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth) {
   return false;
 }
 
-}  // namespace
-
 const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   if (next_chunk_ == nullptr) return nullptr;  // We've reached end of stream.
-  if (next_chunk_ != buffer_) {
+  if (next_chunk_ != patch_buffer_) {
     GOOGLE_ABSL_DCHECK(size_ > kSlopBytes);
     // The chunk is large enough to be used directly
     buffer_end_ = next_chunk_ + size_ - kSlopBytes;
     auto res = next_chunk_;
-    next_chunk_ = buffer_;
+    next_chunk_ = patch_buffer_;
     if (aliasing_ == kOnPatch) aliasing_ = kNoDelta;
     return res;
   }
   // Move the slop bytes of previous buffer to start of the patch buffer.
   // Note we must use memmove because the previous buffer could be part of
-  // buffer_.
-  std::memmove(buffer_, buffer_end_, kSlopBytes);
+  // patch_buffer_.
+  std::memmove(patch_buffer_, buffer_end_, kSlopBytes);
   if (overall_limit_ > 0 &&
-      (depth < 0 || !ParseEndsInSlopRegion(buffer_, overrun, depth))) {
+      (depth < 0 || !ParseEndsInSlopRegion(patch_buffer_, overrun, depth))) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
     while (StreamNext(&data)) {
       if (size_ > kSlopBytes) {
         // We got a large chunk
-        std::memcpy(buffer_ + kSlopBytes, data, kSlopBytes);
+        std::memcpy(patch_buffer_ + kSlopBytes, data, kSlopBytes);
         next_chunk_ = static_cast<const char*>(data);
-        buffer_end_ = buffer_ + kSlopBytes;
+        buffer_end_ = patch_buffer_ + kSlopBytes;
         if (aliasing_ >= kNoDelta) aliasing_ = kOnPatch;
-        return buffer_;
+        return patch_buffer_;
       } else if (size_ > 0) {
-        std::memcpy(buffer_ + kSlopBytes, data, size_);
-        next_chunk_ = buffer_;
-        buffer_end_ = buffer_ + size_;
+        std::memcpy(patch_buffer_ + kSlopBytes, data, size_);
+        next_chunk_ = patch_buffer_;
+        buffer_end_ = patch_buffer_ + size_;
         if (aliasing_ >= kNoDelta) aliasing_ = kOnPatch;
-        return buffer_;
+        return patch_buffer_;
       }
       GOOGLE_ABSL_DCHECK(size_ == 0) << size_;
     }
@@ -145,12 +144,12 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
     // array. This guarantees string_view's are always aliased if parsed from
     // an array.
     aliasing_ = reinterpret_cast<std::uintptr_t>(buffer_end_) -
-                reinterpret_cast<std::uintptr_t>(buffer_);
+                reinterpret_cast<std::uintptr_t>(patch_buffer_);
   }
   next_chunk_ = nullptr;
-  buffer_end_ = buffer_ + kSlopBytes;
+  buffer_end_ = patch_buffer_ + kSlopBytes;
   size_ = 0;
-  return buffer_;
+  return patch_buffer_;
 }
 
 const char* EpsCopyInputStream::Next() {
@@ -244,13 +243,13 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
       auto ptr = static_cast<const char*>(data);
       limit_ -= size - kSlopBytes;
       limit_end_ = buffer_end_ = ptr + size - kSlopBytes;
-      next_chunk_ = buffer_;
+      next_chunk_ = patch_buffer_;
       if (aliasing_ == kOnPatch) aliasing_ = kNoDelta;
       return ptr;
     } else {
-      limit_end_ = buffer_end_ = buffer_ + kSlopBytes;
-      next_chunk_ = buffer_;
-      auto ptr = buffer_ + 2 * kSlopBytes - size;
+      limit_end_ = buffer_end_ = patch_buffer_ + kSlopBytes;
+      next_chunk_ = patch_buffer_;
+      auto ptr = patch_buffer_ + kPatchBufferSize - size;
       std::memcpy(ptr, data, size);
       return ptr;
     }
@@ -258,8 +257,8 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   overall_limit_ = 0;
   next_chunk_ = nullptr;
   size_ = 0;
-  limit_end_ = buffer_end_ = buffer_;
-  return buffer_;
+  limit_end_ = buffer_end_ = patch_buffer_;
+  return patch_buffer_;
 }
 
 const char* ParseContext::ReadSizeAndPushLimitAndDepth(const char* ptr,
