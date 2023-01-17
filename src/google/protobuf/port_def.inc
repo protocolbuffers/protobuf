@@ -204,10 +204,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 
 #ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
 
-// Include static asserts to lock down assumptions about our containers.
-// Owner: mkruskal@
-#define PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS 1
-
 // Used to upgrade google::protobuf::MapPair<K, V> to std::pair<const K, V>.
 // Owner: mordberg@
 #define PROTOBUF_FUTURE_MAP_PAIR_UPGRADE 1

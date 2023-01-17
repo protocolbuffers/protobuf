@@ -1088,7 +1088,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
  private:
-#ifdef PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
   static_assert(!std::is_const<mapped_type>::value &&
                     !std::is_const<key_type>::value,
                 "We do not support const types.");
@@ -1101,9 +1100,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   static_assert(!std::is_reference<mapped_type>::value &&
                     !std::is_reference<key_type>::value,
                 "We do not support reference types.");
-#endif  // PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
-#ifdef PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
     static_assert(alignof(internal::NodeBase) >= alignof(mapped_type),
                   "Alignment of mapped type is too high.");
     static_assert(
@@ -1119,7 +1116,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                       internal::is_internal_map_value_type<mapped_type>>::value,
                   "We only support scalar, Message, and designated internal "
                   "mapped types.");
-#endif  // PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
   }
 
   template <typename P>

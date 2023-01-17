@@ -149,7 +149,6 @@ class RepeatedField final {
   static_assert(
       alignof(Arena) >= alignof(Element),
       "We only support types that have an alignment smaller than Arena");
-#ifndef PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
   static_assert(!std::is_const<Element>::value,
                 "We do not support const value types.");
   static_assert(!std::is_volatile<Element>::value,
@@ -158,16 +157,13 @@ class RepeatedField final {
                 "We do not support pointer value types.");
   static_assert(!std::is_reference<Element>::value,
                 "We do not support reference value types.");
-#endif  // !PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
-#ifdef PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
     static_assert(
         absl::disjunction<internal::is_supported_integral_type<Element>,
                           internal::is_supported_floating_point_type<Element>,
                           std::is_same<absl::Cord, Element>,
                           is_proto_enum<Element>>::value,
         "We only support non-string scalars in RepeatedField.");
-#endif  // PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
   }
 
  public:
