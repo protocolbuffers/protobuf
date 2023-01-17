@@ -163,6 +163,17 @@ bool AnnotationMatchesSubstring(const std::string& file_content,
   return AtLeastOneAnnotationMatchesSubstring(file_content, annotations,
                                               expected_text);
 }
+
+absl::optional<absl::string_view> GetAnnotationSubstring(
+    absl::string_view file_content,
+    const GeneratedCodeInfo::Annotation& annotation) {
+  auto begin = annotation.begin();
+  auto end = annotation.end();
+  if (begin < 0 || end < begin || end > file_content.size()) {
+    return absl::nullopt;
+  }
+  return file_content.substr(begin, end - begin);
+}
 }  // namespace annotation_test_util
 }  // namespace compiler
 }  // namespace protobuf

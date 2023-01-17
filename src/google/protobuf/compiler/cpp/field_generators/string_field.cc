@@ -34,6 +34,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
@@ -232,11 +233,14 @@ void StringFieldGenerator::GenerateAccessorDeclarations(
 
   format(
       "$deprecated_attr$const std::string& ${1$$name$$}$() const;\n"
-      "template <typename ArgT0 = const std::string&, typename... ArgT>\n"
-      "$deprecated_attr$void ${1$set_$name$$}$(ArgT0&& arg0, ArgT... args);\n",
+      "template <typename ArgT0 = const std::string&, typename... ArgT>\n",
       descriptor_);
   format(
-      "$deprecated_attr$std::string* ${1$mutable_$name$$}$();\n"
+      "$deprecated_attr$void ${1$set_$name$$}$(ArgT0&& arg0, ArgT... args);\n",
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
+  format("$deprecated_attr$std::string* ${1$mutable_$name$$}$();\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
+  format(
       "PROTOBUF_NODISCARD $deprecated_attr$std::string* "
       "${1$$release_name$$}$();\n"
       "$deprecated_attr$void ${1$set_allocated_$name$$}$(std::string* "
@@ -767,19 +771,22 @@ void RepeatedStringFieldGenerator::GenerateAccessorDeclarations(
   }
 
   format(
-      "$deprecated_attr$const std::string& ${1$$name$$}$(int index) const;\n"
-      "$deprecated_attr$std::string* ${1$mutable_$name$$}$(int index);\n"
+      "$deprecated_attr$const std::string& ${1$$name$$}$(int index) const;\n",
+      descriptor_);
+  format("$deprecated_attr$std::string* ${1$mutable_$name$$}$(int index);\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
+  format(
       "$deprecated_attr$void ${1$set_$name$$}$(int index, const "
       "std::string& value);\n"
       "$deprecated_attr$void ${1$set_$name$$}$(int index, std::string&& "
       "value);\n"
       "$deprecated_attr$void ${1$set_$name$$}$(int index, const "
       "char* value);\n",
-      descriptor_);
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
   format(
       "$deprecated_attr$void ${1$set_$name$$}$(int index, "
       "absl::string_view value);\n",
-      descriptor_);
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
   format(
       "$deprecated_attr$void ${1$set_$name$$}$("
       "int index, const $pointer_type$* value, ::size_t size);\n"
@@ -787,19 +794,25 @@ void RepeatedStringFieldGenerator::GenerateAccessorDeclarations(
       "$deprecated_attr$void ${1$add_$name$$}$(const std::string& value);\n"
       "$deprecated_attr$void ${1$add_$name$$}$(std::string&& value);\n"
       "$deprecated_attr$void ${1$add_$name$$}$(const char* value);\n",
-      descriptor_);
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
   format("$deprecated_attr$void ${1$add_$name$$}$(absl::string_view value);\n",
-         descriptor_);
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
   format(
       "$deprecated_attr$void ${1$add_$name$$}$(const $pointer_type$* "
       "value, ::size_t size)"
-      ";\n"
+      ";\n",
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
+  format(
       "$deprecated_attr$const ::$proto_ns$::RepeatedPtrField<std::string>& "
       "${1$$name$$}$() "
-      "const;\n"
+      "const;\n",
+      descriptor_);
+  format(
       "$deprecated_attr$::$proto_ns$::RepeatedPtrField<std::string>* "
       "${1$mutable_$name$$}$()"
-      ";\n"
+      ";\n",
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
+  format(
       "private:\n"
       "const std::string& ${1$_internal_$name$$}$(int index) const;\n"
       "std::string* _internal_add_$name$();\n"
