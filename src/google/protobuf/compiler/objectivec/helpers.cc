@@ -33,7 +33,6 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -311,7 +310,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
   return std::string();
 }
 
-std::string BuildFlagsString(const FlagType flag_type,
+std::string BuildFlagsString(FlagType flag_type,
                              const std::vector<std::string>& strings) {
   if (strings.empty()) {
     return GetZeroEnumNameForFlagType(flag_type);

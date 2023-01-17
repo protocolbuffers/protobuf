@@ -39,12 +39,12 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/nsobject_methods.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -1016,7 +1016,7 @@ bool PackageToPrefixesCollector::ConsumeLine(absl::string_view line,
   MaybeUnQuote(&prefix);
   // Don't really worry about error checking the package/prefix for
   // being valid.  Assume the file is validated when it is created/edited.
-  (*prefix_map_)[std::string(package)] = std::string(prefix);
+  (*prefix_map_)[package] = std::string(prefix);
   return true;
 }
 

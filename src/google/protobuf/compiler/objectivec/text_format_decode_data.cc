@@ -36,7 +36,6 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
@@ -58,7 +57,7 @@ class DecodeDataBuilder {
  public:
   DecodeDataBuilder() { Reset(); }
 
-  bool AddCharacter(const char desired, const char input);
+  bool AddCharacter(char desired, char input);
   void AddUnderscore() {
     Push();
     need_underscore_ = true;
@@ -122,7 +121,7 @@ class DecodeDataBuilder {
   std::string decode_data_;
 };
 
-bool DecodeDataBuilder::AddCharacter(const char desired, const char input) {
+bool DecodeDataBuilder::AddCharacter(char desired, char input) {
   // If we've hit the max size, push to start a new segment.
   if (segment_len_ == kMaxSegmentLen) {
     Push();
