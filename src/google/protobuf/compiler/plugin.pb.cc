@@ -195,9 +195,9 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2epro
     "\t\022\?\n\023generated_code_info\030\020 \001(\0132\".google."
     "protobuf.GeneratedCodeInfo\"8\n\007Feature\022\020\n"
     "\014FEATURE_NONE\020\000\022\033\n\027FEATURE_PROTO3_OPTION"
-    "AL\020\001BW\n\034com.google.protobuf.compilerB\014Pl"
+    "AL\020\001Br\n\034com.google.protobuf.compilerB\014Pl"
     "uginProtosZ)google.golang.org/protobuf/t"
-    "ypes/pluginpb"
+    "ypes/pluginpb\252\002\030Google.Protobuf.Compiler"
 };
 static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_deps[1] =
     {
@@ -207,7 +207,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
     false,
     false,
-    773,
+    800,
     descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
     "google/protobuf/compiler/plugin.proto",
     &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
