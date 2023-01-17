@@ -46,6 +46,7 @@
 #endif
 #include <errno.h>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/stubs/logging.h"
@@ -158,7 +159,8 @@ void File::DeleteRecursively(const std::string& name, void* dummy1,
 #ifdef _MSC_VER
   // This interface is so weird.
   WIN32_FIND_DATAA find_data;
-  HANDLE find_handle = FindFirstFileA((name + "/*").c_str(), &find_data);
+  HANDLE find_handle =
+      FindFirstFileA(absl::StrCat(name, "/*").c_str(), &find_data);
   if (find_handle == INVALID_HANDLE_VALUE) {
     // Just delete it, whatever it is.
     DeleteFileA(name.c_str());
@@ -169,7 +171,7 @@ void File::DeleteRecursively(const std::string& name, void* dummy1,
   do {
     std::string entry_name = find_data.cFileName;
     if (entry_name != "." && entry_name != "..") {
-      std::string path = name + "/" + entry_name;
+      std::string path = absl::StrCat(name, "/", entry_name);
       if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         DeleteRecursively(path, NULL, NULL);
         RemoveDirectoryA(path.c_str());
@@ -195,7 +197,7 @@ void File::DeleteRecursively(const std::string& name, void* dummy1,
         if (entry == NULL) break;
         std::string entry_name = entry->d_name;
         if (entry_name != "." && entry_name != "..") {
-          DeleteRecursively(name + "/" + entry_name, NULL, NULL);
+          DeleteRecursively(absl::StrCat(name, "/", entry_name), NULL, NULL);
         }
       }
     }

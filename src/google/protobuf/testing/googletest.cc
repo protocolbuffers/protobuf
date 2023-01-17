@@ -39,6 +39,7 @@
 #include <sys/types.h>
 
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/testing/file.h"
@@ -93,15 +94,17 @@ std::string TestSourceDir() {
   // src/.../descriptor.cc. It is important to look for a particular file,
   // keeping in mind that with Bazel builds the directory structure under
   // bazel-bin/ looks similar to the main directory tree in the Git repo.
-  while (!File::Exists(prefix + "/src/google/protobuf/descriptor.cc")) {
+  while (!File::Exists(
+      absl::StrCat(prefix, "/src/google/protobuf/descriptor.cc"))) {
     if (!File::Exists(prefix)) {
       GOOGLE_LOG(FATAL)
         << "Could not find protobuf source code.  Please run tests from "
            "somewhere within the protobuf source package.";
     }
-    prefix += "/..";
+    absl::StrAppend(&prefix, "/..");
   }
-  return prefix + "/src";
+  absl::StrAppend(&prefix, "/src");
+  return prefix;
 #endif  // GOOGLE_PROTOBUF_TEST_SOURCE_PATH
 #else
   return "third_party/protobuf/src";
@@ -113,9 +116,9 @@ namespace {
 std::string GetTemporaryDirectoryName() {
   // Tests run under Bazel "should not" use /tmp. Bazel sets this environment
   // variable for tests to use instead.
-  char *from_environment = getenv("TEST_TMPDIR");
+  char* from_environment = getenv("TEST_TMPDIR");
   if (from_environment != NULL && from_environment[0] != '\0') {
-    return std::string(from_environment) + "/protobuf_tmpdir";
+    return absl::StrCat(from_environment, "/protobuf_tmpdir");
   }
 
   // tmpnam() is generally not considered safe but we're only using it for
@@ -176,7 +179,8 @@ class TempDirDeleter {
 
       // Stick a file in the directory that tells people what this is, in case
       // we abort and don't get a chance to delete it.
-      File::WriteStringToFileOrDie("", name_ + "/TEMP_DIR_FOR_PROTOBUF_TESTS");
+      File::WriteStringToFileOrDie(
+          "", absl::StrCat(name_, "/TEMP_DIR_FOR_PROTOBUF_TESTS"));
     }
     return name_;
   }
@@ -201,7 +205,7 @@ static int original_stderr_ = -1;
 void CaptureTestStdout() {
   GOOGLE_CHECK_EQ(original_stdout_, -1) << "Already capturing.";
 
-  stdout_capture_filename_ = TestTempDir() + "/captured_stdout";
+  stdout_capture_filename_ = absl::StrCat(TestTempDir(), "/captured_stdout");
 
   int fd = open(stdout_capture_filename_.c_str(),
                 O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0777);
@@ -216,7 +220,7 @@ void CaptureTestStdout() {
 void CaptureTestStderr() {
   GOOGLE_CHECK_EQ(original_stderr_, -1) << "Already capturing.";
 
-  stderr_capture_filename_ = TestTempDir() + "/captured_stderr";
+  stderr_capture_filename_ = absl::StrCat(TestTempDir(), "/captured_stderr");
 
   int fd = open(stderr_capture_filename_.c_str(),
                 O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0777);
