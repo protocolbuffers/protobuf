@@ -77,10 +77,7 @@ upb_proto_library(
 
 upb_cc_proto_library(
     name = "test_model_upb_cc_proto",
-    visibility = [
-        "//protos:__pkg__",
-        "//protos_generator/nc_tests:__pkg__",
-    ],
+    visibility = ["//protos:__pkg__"],
     deps = [":test_model_proto"],
 )
 
@@ -113,7 +110,9 @@ cc_proto_library(
 #
 # upb_cc_proto_library(
 #     name = "legacy_name_test_proto",
-#     visibility = ["//protos_generator/nc_tests:__pkg__"],
+#     visibility = [
+#         "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
+#     ],
 #     deps = [":legacy_name_proto"],
 # )
 # end:google_only
