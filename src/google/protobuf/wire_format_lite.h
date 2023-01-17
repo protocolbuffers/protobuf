@@ -75,6 +75,8 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+extern int DummyFunctionToForcePresubmit();
+
 // This class is for internal use by the protocol buffer library and by
 // protocol-compiler-generated message classes.  It must not be called
 // directly by clients.

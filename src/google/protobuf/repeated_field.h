@@ -54,6 +54,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/message_lite.h"

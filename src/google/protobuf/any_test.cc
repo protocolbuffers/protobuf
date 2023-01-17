@@ -45,6 +45,7 @@ namespace {
 TEST(AnyMetadataTest, ConstInit) {
   PROTOBUF_CONSTINIT static internal::AnyMetadata metadata(nullptr, nullptr);
   (void)metadata;
+  (void)metadata;
 }
 
 TEST(AnyTest, TestPackAndUnpack) {
