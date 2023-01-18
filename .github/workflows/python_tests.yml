@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-large
     if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
     env:
-      DOCKER_IMAGE: gcr.io/protobuf-build/bazel/linux@sha256:9dba7773926bb6dce839de098948055c9e80260d7470a7fefb94b6a4fed363ba
+      DOCKER_IMAGE: us-docker.pkg.dev/protobuf-build/release-containers/linux@sha256:51eed1ced211cdcb3cae7733dbc7f2b28e195dfe0bbfb596794e52de4402fe1b
 
     steps:
       - uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
       - name: Use gcloud CLI
         run: gcloud info
       - name: Configure Docker
-        run: gcloud auth configure-docker
+        run: gcloud auth configure-docker -q us-docker.pkg.dev
       - name: Pull Docker Image
         run: docker pull $DOCKER_IMAGE
       - name: Build Wheels
@@ -59,7 +59,7 @@ jobs:
           - { os: macos-11, python-version: "3.7", architecture: x64, type: 'source' }
           - { os: ubuntu-20-large, python-version: "3.10", architecture: x64, type: 'source' }
           - { os: macos-12, python-version: "3.10", architecture: x64, type: 'source' }
- 
+
           # Windows uses the full API up until Python 3.10, so each of these
           # jobs tests a distinct binary wheel.
           - { os: windows-2019-large, python-version: "3.7", architecture: x86, type: 'binary' }

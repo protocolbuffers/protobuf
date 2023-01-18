@@ -33,6 +33,8 @@ _DEFAULT_CPPOPTS.extend([
     "-Wextra",
     # "-Wshorten-64-to-32",  # not in GCC (and my Kokoro images doesn't have Clang)
     "-Werror",
+    # TODO(b/265232445) This is required due to https://github.com/abseil/abseil-cpp/issues/1201.
+    "-Wno-deprecated",
     "-Wno-unused-parameter",
     "-Wno-long-long",
     # TODO(b/265232445) This is required due to https://github.com/abseil/abseil-cpp/issues/1201.
