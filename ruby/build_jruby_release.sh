@@ -46,6 +46,13 @@ cp "$(rlocation com_google_protobuf/src/google/protobuf/wrappers_pb.rb)" lib/goo
 
 cp "$(rlocation com_google_protobuf/ruby/lib/google/protobuf_java.jar)" lib/google
 
+# Move all source files to the correct location
+cp "$(rlocation com_google_protobuf/ruby/lib/google/protobuf.rb)" lib/google
+cp "$(rlocation com_google_protobuf/ruby/lib/google/protobuf/descriptor_dsl.rb)" lib/google/protobuf
+cp "$(rlocation com_google_protobuf/ruby/lib/google/protobuf/message_exts.rb)" lib/google/protobuf
+cp "$(rlocation com_google_protobuf/ruby/lib/google/protobuf/repeated_field.rb)" lib/google/protobuf
+cp "$(rlocation com_google_protobuf/ruby/lib/google/protobuf/well_known_types.rb)" lib/google/protobuf
+
 # Move gemspec file to current directory
 cp "$(rlocation com_google_protobuf/ruby/google.protobuf.gemspec)" .
 

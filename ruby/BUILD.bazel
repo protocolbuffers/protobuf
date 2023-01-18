@@ -24,6 +24,7 @@ sh_binary(
     name = "jruby_release",
     data = [
       "//ruby/lib/google:copy_jar",
+      "//ruby/lib/google:dist_files",
       "//:well_known_ruby_protos",
       "google-protobuf.gemspec",
     ],
