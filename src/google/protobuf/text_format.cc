@@ -485,8 +485,9 @@ class TextFormat::Parser::ParserImpl {
           finder_ ? finder_->FindAnyType(*message, prefix, full_type_name)
                   : DefaultFinderFindAnyType(*message, prefix, full_type_name);
       if (value_descriptor == nullptr) {
-        ReportError("Could not find type \"" + prefix_and_full_type_name +
-                    "\" stored in google.protobuf.Any.");
+        ReportError(absl::StrCat("Could not find type \"",
+                                 prefix_and_full_type_name,
+                                 "\" stored in google.protobuf.Any."));
         return false;
       }
       DO(ConsumeAnyValue(value_descriptor, &serialized_value));
@@ -517,15 +518,16 @@ class TextFormat::Parser::ParserImpl {
 
       if (field == nullptr) {
         if (!allow_unknown_field_ && !allow_unknown_extension_) {
-          ReportError("Extension \"" + field_name +
-                      "\" is not defined or "
-                      "is not an extension of \"" +
-                      descriptor->full_name() + "\".");
+          ReportError(absl::StrCat("Extension \"", field_name,
+                                   "\" is not defined or "
+                                   "is not an extension of \"",
+                                   descriptor->full_name(), "\"."));
           return false;
         } else {
-          ReportWarning("Ignoring extension \"" + field_name +
-                        "\" which is not defined or is not an extension of \"" +
-                        descriptor->full_name() + "\".");
+          ReportWarning(absl::StrCat(
+              "Ignoring extension \"", field_name,
+              "\" which is not defined or is not an extension of \"",
+              descriptor->full_name(), "\"."));
         }
       }
     } else {
@@ -578,12 +580,14 @@ class TextFormat::Parser::ParserImpl {
 
       if (field == nullptr && !reserved_field) {
         if (!allow_unknown_field_) {
-          ReportError("Message type \"" + descriptor->full_name() +
-                      "\" has no field named \"" + field_name + "\".");
+          ReportError(absl::StrCat("Message type \"", descriptor->full_name(),
+                                   "\" has no field named \"", field_name,
+                                   "\"."));
           return false;
         } else {
-          ReportWarning("Message type \"" + descriptor->full_name() +
-                        "\" has no field named \"" + field_name + "\".");
+          ReportWarning(absl::StrCat("Message type \"", descriptor->full_name(),
+                                     "\" has no field named \"", field_name,
+                                     "\"."));
         }
       }
     }
@@ -609,15 +613,15 @@ class TextFormat::Parser::ParserImpl {
     }
 
     if (field->options().deprecated()) {
-      ReportWarning("text format contains deprecated field \"" + field_name +
-                    "\"");
+      ReportWarning(absl::StrCat("text format contains deprecated field \"",
+                                 field_name, "\""));
     }
 
     if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
       // Fail if the field is not repeated and it has already been specified.
       if (!field->is_repeated() && reflection->HasField(*message, field)) {
-        ReportError("Non-repeated field \"" + field_name +
-                    "\" is specified multiple times.");
+        ReportError(absl::StrCat("Non-repeated field \"", field_name,
+                                 "\" is specified multiple times."));
         return false;
       }
       // Fail if the field is a member of a oneof and another member has already
@@ -626,13 +630,13 @@ class TextFormat::Parser::ParserImpl {
       if (oneof != nullptr && reflection->HasOneof(*message, oneof)) {
         const FieldDescriptor* other_field =
             reflection->GetOneofFieldDescriptor(*message, oneof);
-        ReportError("Field \"" + field_name +
-                    "\" is specified along with "
-                    "field \"" +
-                    other_field->name() +
-                    "\", another member "
-                    "of oneof \"" +
-                    oneof->name() + "\".");
+        ReportError(absl::StrCat("Field \"", field_name,
+                                 "\" is specified along with "
+                                 "field \"",
+                                 other_field->name(),
+                                 "\", another member "
+                                 "of oneof \"",
+                                 oneof->name(), "\"."));
         return false;
       }
     }
@@ -868,8 +872,9 @@ class TextFormat::Parser::ParserImpl {
           } else if (value == "false" || value == "False" || value == "f") {
             SET_FIELD(Bool, false);
           } else {
-            ReportError("Invalid value for boolean field \"" + field->name() +
-                        "\". Value: \"" + value + "\".");
+            ReportError(absl::StrCat("Invalid value for boolean field \"",
+                                     field->name(), "\". Value: \"", value,
+                                     "\"."));
             return false;
           }
         }
@@ -893,8 +898,8 @@ class TextFormat::Parser::ParserImpl {
           value = absl::StrCat(int_value);  // for error reporting
           enum_value = enum_type->FindValueByNumber(int_value);
         } else {
-          ReportError("Expected integer or identifier, got: " +
-                      tokenizer_.current().text);
+          ReportError(absl::StrCat("Expected integer or identifier, got: ",
+                                   tokenizer_.current().text));
           return false;
         }
 
@@ -904,16 +909,16 @@ class TextFormat::Parser::ParserImpl {
             SET_FIELD(EnumValue, int_value);
             return true;
           } else if (!allow_unknown_enum_) {
-            ReportError("Unknown enumeration value of \"" + value +
-                        "\" for "
-                        "field \"" +
-                        field->name() + "\".");
+            ReportError(absl::StrCat("Unknown enumeration value of \"", value,
+                                     "\" for "
+                                     "field \"",
+                                     field->name(), "\"."));
             return false;
           } else {
-            ReportWarning("Unknown enumeration value of \"" + value +
-                          "\" for "
-                          "field \"" +
-                          field->name() + "\".");
+            ReportWarning(absl::StrCat("Unknown enumeration value of \"", value,
+                                       "\" for "
+                                       "field \"",
+                                       field->name(), "\"."));
             return true;
           }
         }
@@ -992,7 +997,8 @@ class TextFormat::Parser::ParserImpl {
         !LookingAtType(io::Tokenizer::TYPE_FLOAT) &&
         !LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
       std::string text = tokenizer_.current().text;
-      ReportError("Cannot skip field value, unexpected token: " + text);
+      ReportError(
+          absl::StrCat("Cannot skip field value, unexpected token: ", text));
       ++recursion_limit_;
       return false;
     }
@@ -1007,7 +1013,7 @@ class TextFormat::Parser::ParserImpl {
       absl::AsciiStrToLower(&text);
       if (text != "inf" &&
           text != "infinity" && text != "nan") {
-        ReportError("Invalid float number: " + text);
+        ReportError(absl::StrCat("Invalid float number: ", text));
         ++recursion_limit_;
         return false;
       }
@@ -1046,7 +1052,8 @@ class TextFormat::Parser::ParserImpl {
       return true;
     }
 
-    ReportError("Expected identifier, got: " + tokenizer_.current().text);
+    ReportError(
+        absl::StrCat("Expected identifier, got: ", tokenizer_.current().text));
     return false;
   }
 
@@ -1065,8 +1072,7 @@ class TextFormat::Parser::ParserImpl {
     while (TryConsume(".")) {
       std::string part;
       DO(ConsumeIdentifier(&part));
-      *name += ".";
-      *name += part;
+      absl::StrAppend(name, ".", part);
     }
     return true;
   }
@@ -1094,7 +1100,8 @@ class TextFormat::Parser::ParserImpl {
   // Returns false if the token is not of type STRING.
   bool ConsumeString(std::string* text) {
     if (!LookingAtType(io::Tokenizer::TYPE_STRING)) {
-      ReportError("Expected string, got: " + tokenizer_.current().text);
+      ReportError(
+          absl::StrCat("Expected string, got: ", tokenizer_.current().text));
       return false;
     }
 
@@ -1112,13 +1119,15 @@ class TextFormat::Parser::ParserImpl {
   // Returns false if the token is not of type INTEGER.
   bool ConsumeUnsignedInteger(uint64_t* value, uint64_t max_value) {
     if (!LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
-      ReportError("Expected integer, got: " + tokenizer_.current().text);
+      ReportError(
+          absl::StrCat("Expected integer, got: ", tokenizer_.current().text));
       return false;
     }
 
     if (!io::Tokenizer::ParseInteger(tokenizer_.current().text, max_value,
                                      value)) {
-      ReportError("Integer out of range (" + tokenizer_.current().text + ")");
+      ReportError(absl::StrCat("Integer out of range (",
+                               tokenizer_.current().text, ")"));
       return false;
     }
 
@@ -1162,13 +1171,14 @@ class TextFormat::Parser::ParserImpl {
   // Accepts decimal numbers only, rejects hex or oct numbers.
   bool ConsumeUnsignedDecimalAsDouble(double* value, uint64_t max_value) {
     if (!LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
-      ReportError("Expected integer, got: " + tokenizer_.current().text);
+      ReportError(
+          absl::StrCat("Expected integer, got: ", tokenizer_.current().text));
       return false;
     }
 
     const std::string& text = tokenizer_.current().text;
     if (IsHexNumber(text) || IsOctNumber(text)) {
-      ReportError("Expect a decimal number, got: " + text);
+      ReportError(absl::StrCat("Expect a decimal number, got: ", text));
       return false;
     }
 
@@ -1218,11 +1228,12 @@ class TextFormat::Parser::ParserImpl {
         *value = std::numeric_limits<double>::quiet_NaN();
         tokenizer_.Next();
       } else {
-        ReportError("Expected double, got: " + text);
+        ReportError(absl::StrCat("Expected double, got: ", text));
         return false;
       }
     } else {
-      ReportError("Expected double, got: " + tokenizer_.current().text);
+      ReportError(
+          absl::StrCat("Expected double, got: ", tokenizer_.current().text));
       return false;
     }
 
@@ -1242,10 +1253,10 @@ class TextFormat::Parser::ParserImpl {
     while (TryConsume(".")) {
       std::string url;
       DO(ConsumeIdentifier(&url));
-      *prefix += "." + url;
+      absl::StrAppend(prefix, ".", url);
     }
     DO(Consume("/"));
-    *prefix += "/";
+    absl::StrAppend(prefix, "/");
     DO(ConsumeFullTypeName(full_type_name));
 
     return true;
@@ -1269,9 +1280,9 @@ class TextFormat::Parser::ParserImpl {
       value->AppendPartialToString(serialized_value);
     } else {
       if (!value->IsInitialized()) {
-        ReportError(
-            "Value of type \"" + value_descriptor->full_name() +
-            "\" stored in google.protobuf.Any has missing required fields");
+        ReportError(absl::StrCat(
+            "Value of type \"", value_descriptor->full_name(),
+            "\" stored in google.protobuf.Any has missing required fields"));
         return false;
       }
       value->AppendToString(serialized_value);
@@ -1286,8 +1297,8 @@ class TextFormat::Parser::ParserImpl {
     const std::string& current_value = tokenizer_.current().text;
 
     if (current_value != value) {
-      ReportError("Expected \"" + value + "\", found \"" + current_value +
-                  "\".");
+      ReportError(absl::StrCat("Expected \"", value, "\", found \"",
+                               current_value, "\"."));
       return false;
     }
 
@@ -1713,8 +1724,8 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* /* input */,
     std::vector<std::string> missing_fields;
     output->FindInitializationErrors(&missing_fields);
     parser_impl->ReportError(-1, 0,
-                             "Message missing required fields: " +
-                                 absl::StrJoin(missing_fields, ", "));
+                             absl::StrCat("Message missing required fields: ",
+                                          absl::StrJoin(missing_fields, ", ")));
     return false;
   }
   return true;

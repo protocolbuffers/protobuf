@@ -314,8 +314,8 @@ void TestMemswap() {
     b += b_char(i);
   }
   // We will not swap these.
-  a += "+";
-  b += "-";
+  a += '+';
+  b += '-';
 
   std::string expected_a = b, expected_b = a;
   expected_a.back() = '+';
@@ -2405,11 +2405,11 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
     std::string* new_data = new std::string;
-    *new_data = "name-" + absl::StrCat(i);
+    *new_data = absl::StrCat("name-", i);
     data.push_back(new_data);
 
     new_data = goldenproto.add_repeated_string();
-    *new_data = "name-" + absl::StrCat(i);
+    *new_data = absl::StrCat("name-", i);
   }
   TestAllTypes testproto;
   std::copy(data.begin(), data.end(),
@@ -2442,7 +2442,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
     auto* new_data = goldenproto->add_repeated_string();
-    *new_data = "name-" + absl::StrCat(i);
+    *new_data = absl::StrCat("name-", i);
     data.push_back(new_data);
   }
   auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);

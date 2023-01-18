@@ -209,8 +209,9 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
 
   ASSERT_EQ(1, errors.size());
   EXPECT_EQ(
-      "Can't parse message of type \"" + std::string(UNITTEST_PACKAGE_NAME) +
-          ".TestRequired\" because it is missing required fields: a, b, c",
+      absl::StrCat(
+          "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
+          ".TestRequired\" because it is missing required fields: a, b, c"),
       errors[0]);
 }
 
@@ -231,11 +232,10 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageNotInitialized) {
 
   EXPECT_THAT(
       errors,
-      testing::ElementsAre(
-          "Can't parse message of type \"" +
-          std::string(UNITTEST_PACKAGE_NAME) +
+      testing::ElementsAre(absl::StrCat(
+          "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
           ".TestRequiredForeign\" because it is missing required fields: "
-          "optional_message.a, optional_message.b, optional_message.c"));
+          "optional_message.a, optional_message.b, optional_message.c")));
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
@@ -694,19 +694,19 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
 TEST(MESSAGE_TEST_NAME, SerializeFailsIfNotInitialized) {
   UNITTEST::TestRequired message;
   std::string data;
-  EXPECT_DEBUG_DEATH(EXPECT_TRUE(message.SerializeToString(&data)),
-                     "Can't serialize message of type \"" +
-                         std::string(UNITTEST_PACKAGE_NAME) +
-                         ".TestRequired\" because "
-                         "it is missing required fields: a, b, c");
+  EXPECT_DEBUG_DEATH(
+      EXPECT_TRUE(message.SerializeToString(&data)),
+      absl::StrCat("Can't serialize message of type \"", UNITTEST_PACKAGE_NAME,
+                   ".TestRequired\" because "
+                   "it is missing required fields: a, b, c"));
 }
 
 TEST(MESSAGE_TEST_NAME, CheckInitialized) {
   UNITTEST::TestRequired message;
   EXPECT_DEATH(message.CheckInitialized(),
-               "Message of type \"" + std::string(UNITTEST_PACKAGE_NAME) +
-                   ".TestRequired\" is missing required "
-                   "fields: a, b, c");
+               absl::StrCat("Message of type \"", UNITTEST_PACKAGE_NAME,
+                            ".TestRequired\" is missing required "
+                            "fields: a, b, c"));
 }
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
@@ -1068,7 +1068,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // Parser ends in last 16 bytes of buffer due to a 0.
     std::string data;
     // 12 bytes of data
-    for (int i = 0; i < 4; i++) data += "\370\1\1";
+    for (int i = 0; i < 4; i++) absl::StrAppend(&data, "\370\1\1");
     // 13 byte is terminator
     data += '\0';  // Terminator
     // followed by the rest of the stream
@@ -1085,7 +1085,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // a failure.
     UNITTEST::TestAllTypes::OptionalGroup msg;
     std::string data;
-    for (int i = 0; i < 3; i++) data += "\370\1\1";
+    for (int i = 0; i < 3; i++) absl::StrAppend(&data, "\370\1\1");
     data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
     data += std::string(30, ' ');
     io::ArrayInputStream zcis(data.data(), data.size(), 17);
@@ -1099,8 +1099,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // a length delimited field.
     // a failure.
     UNITTEST::TestAllTypes::OptionalGroup msg;
-    std::string data;
-    data += "\22\3foo";
+    std::string data = "\22\3foo";
     data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
     data += std::string(30, ' ');
     io::ArrayInputStream zcis(data.data(), data.size(), 17);
@@ -1114,7 +1113,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     UNITTEST::TestAllTypes msg;
     std::string data;
     // 12 bytes of data
-    for (int i = 0; i < 4; i++) data += "\370\1\1";
+    for (int i = 0; i < 4; i++) absl::StrAppend(&data, "\370\1\1");
     // 13 byte is terminator
     data += '\0';  // Terminator
     data += std::string(30, ' ');

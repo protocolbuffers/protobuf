@@ -92,7 +92,7 @@ DescriptorProto* AddNestedMessage(DescriptorProto* parent,
 }
 
 EnumDescriptorProto* AddEnum(FileDescriptorProto* file,
-                             const std::string& name) {
+                             absl::string_view name) {
   EnumDescriptorProto* result = file->add_enum_type();
   result->set_name(name);
   return result;
@@ -196,8 +196,8 @@ MethodDescriptorProto* AddMethod(ServiceDescriptorProto* service,
 
 // Empty enums technically aren't allowed.  We need to insert a dummy value
 // into them.
-void AddEmptyEnum(FileDescriptorProto* file, const std::string& name) {
-  AddEnumValue(AddEnum(file, name), name + "_DUMMY", 1);
+void AddEmptyEnum(FileDescriptorProto* file, absl::string_view name) {
+  AddEnumValue(AddEnum(file, name), absl::StrCat(name, "_DUMMY"), 1);
 }
 
 class MockErrorCollector : public DescriptorPool::ErrorCollector {
@@ -8280,46 +8280,41 @@ class LazilyBuildDependenciesTest : public testing::Test {
     pool_.InternalSetLazilyBuildDependencies();
   }
 
-  void ParseProtoAndAddToDb(const char* proto) {
+  void ParseProtoAndAddToDb(absl::string_view proto) {
     FileDescriptorProto tmp;
     ASSERT_TRUE(TextFormat::ParseFromString(proto, &tmp));
     db_.Add(tmp);
   }
 
-  void ParseProtoAndAddToDb(const std::string& proto) {
-    FileDescriptorProto tmp;
-    ASSERT_TRUE(TextFormat::ParseFromString(proto, &tmp));
-    db_.Add(tmp);
+  void AddSimpleMessageProtoFileToDb(absl::string_view file_name,
+                                     absl::string_view message_name) {
+    ParseProtoAndAddToDb(absl::StrCat("name: '", file_name,
+                                      ".proto' "
+                                      "package: \"protobuf_unittest\" "
+                                      "message_type { "
+                                      "  name:'",
+                                      message_name,
+                                      "' "
+                                      "  field { name:'a' number:1 "
+                                      "  label:LABEL_OPTIONAL "
+                                      "  type_name:'int32' } "
+                                      "}"));
   }
 
-  void AddSimpleMessageProtoFileToDb(const char* file_name,
-                                     const char* message_name) {
-    ParseProtoAndAddToDb("name: '" + std::string(file_name) +
-                         ".proto' "
-                         "package: \"protobuf_unittest\" "
-                         "message_type { "
-                         "  name:'" +
-                         std::string(message_name) +
-                         "' "
-                         "  field { name:'a' number:1 "
-                         "  label:LABEL_OPTIONAL "
-                         "  type_name:'int32' } "
-                         "}");
-  }
-
-  void AddSimpleEnumProtoFileToDb(const char* file_name, const char* enum_name,
-                                  const char* enum_value_name) {
-    ParseProtoAndAddToDb("name: '" + std::string(file_name) +
-                         ".proto' "
-                         "package: 'protobuf_unittest' "
-                         "enum_type { "
-                         "  name:'" +
-                         std::string(enum_name) +
-                         "' "
-                         "  value { name:'" +
-                         std::string(enum_value_name) +
-                         "' number:1 } "
-                         "}");
+  void AddSimpleEnumProtoFileToDb(absl::string_view file_name,
+                                  absl::string_view enum_name,
+                                  absl::string_view enum_value_name) {
+    ParseProtoAndAddToDb(absl::StrCat("name: '", file_name,
+                                      ".proto' "
+                                      "package: 'protobuf_unittest' "
+                                      "enum_type { "
+                                      "  name:'",
+                                      enum_name,
+                                      "' "
+                                      "  value { name:'",
+                                      enum_value_name,
+                                      "' number:1 } "
+                                      "}"));
   }
 
  protected:

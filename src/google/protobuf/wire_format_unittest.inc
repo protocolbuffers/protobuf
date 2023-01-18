@@ -1425,13 +1425,12 @@ TEST_F(Utf8ValidationTest, WriteInvalidUTF8String) {
     errors = log.GetMessages(ERROR);
   }
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  EXPECT_THAT(errors,
-              testing::ElementsAre(
-                  "String field '" + std::string(UNITTEST_PACKAGE_NAME) +
-                  ".OneString.data' "
-                  "contains invalid UTF-8 data when "
-                  "serializing a protocol buffer. Use the "
-                  "'bytes' type if you intend to send raw bytes. "));
+  EXPECT_THAT(errors, testing::ElementsAre(absl::StrCat(
+                          "String field '", UNITTEST_PACKAGE_NAME,
+                          ".OneString.data' "
+                          "contains invalid UTF-8 data when "
+                          "serializing a protocol buffer. Use the "
+                          "'bytes' type if you intend to send raw bytes. ")));
 #else
   ASSERT_EQ(0, errors.size());
 #endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
@@ -1450,13 +1449,12 @@ TEST_F(Utf8ValidationTest, ReadInvalidUTF8String) {
     errors = log.GetMessages(ERROR);
   }
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  EXPECT_THAT(errors,
-              testing::ElementsAre(
-                  "String field '" + std::string(UNITTEST_PACKAGE_NAME) +
-                  ".OneString.data' "
-                  "contains invalid UTF-8 data when "
-                  "parsing a protocol buffer. Use the "
-                  "'bytes' type if you intend to send raw bytes. "));
+  EXPECT_THAT(errors, testing::ElementsAre(absl::StrCat(
+                          "String field '", UNITTEST_PACKAGE_NAME,
+                          ".OneString.data' "
+                          "contains invalid UTF-8 data when "
+                          "parsing a protocol buffer. Use the "
+                          "'bytes' type if you intend to send raw bytes. ")));
 
 #else
   ASSERT_EQ(0, errors.size());

@@ -1072,7 +1072,7 @@ TEST(ExtensionSetTest, RepeatedFields) {
                .MutableRepeatedExtension(unittest::repeated_string_extension)
                ->end();
        string_iter != string_end; ++string_iter) {
-    *string_iter += "test";
+    absl::StrAppend(&*string_iter, "test");
   }
   RepeatedPtrField<std::string>::const_iterator string_const_iter;
   RepeatedPtrField<std::string>::const_iterator string_const_end;
@@ -1229,7 +1229,8 @@ TEST(ExtensionSetTest, DynamicExtensions) {
 
     // If the field refers to one of the types nested in TestDynamicExtensions,
     // make it refer to the type in our dynamic proto instead.
-    std::string prefix = "." + template_descriptor->full_name() + ".";
+    std::string prefix =
+        absl::StrCat(".", template_descriptor->full_name(), ".");
     if (extension->has_type_name()) {
       std::string* type_name = extension->mutable_type_name();
       if (absl::StartsWith(*type_name, prefix)) {

@@ -3263,9 +3263,9 @@ class MapFieldInDynamicMessageTest : public testing::Test {
 
   void SetUp() override {
     map_descriptor_ = pool_->FindMessageTypeByName(
-        std::string(UNITTEST_PACKAGE_NAME) + ".TestMap");
+        absl::StrCat(UNITTEST_PACKAGE_NAME, ".TestMap"));
     recursive_map_descriptor_ = pool_->FindMessageTypeByName(
-        std::string(UNITTEST_PACKAGE_NAME) + ".TestRecursiveMapMessage");
+        absl::StrCat(UNITTEST_PACKAGE_NAME, ".TestRecursiveMapMessage"));
     ASSERT_TRUE(map_descriptor_ != nullptr);
     ASSERT_TRUE(recursive_map_descriptor_ != nullptr);
     map_prototype_ = factory_.GetPrototype(map_descriptor_);
@@ -3770,9 +3770,10 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
   UNITTEST::TestMaps t;
   const std::string filename = "golden_message_maps";
   std::string golden;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(
-      TestUtil::GetTestDataPath("third_party/protobuf/testdata/" + filename),
-      &golden, true));
+  GOOGLE_ABSL_CHECK_OK(
+      File::GetContents(TestUtil::GetTestDataPath(absl::StrCat(
+                            "third_party/protobuf/testdata/", filename)),
+                        &golden, true));
   t.ParseFromString(golden);
   *(p.mutable_m()) = t;
   std::vector<std::string> v;
