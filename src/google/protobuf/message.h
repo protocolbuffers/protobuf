@@ -463,10 +463,8 @@ class MutableRepeatedFieldRef;
 //   Get*() method, one Set*() method, and one Add*() method that is
 //   valid for that type.  It should be obvious which (except maybe
 //   for TYPE_BYTES, which are represented using strings in C++).
-// - A Get*() or Set*() method for singular fields is called on a repeated
-//   field.
-// - GetRepeated*(), SetRepeated*(), or Add*() is called on a non-repeated
-//   field.
+// - A Get*() or Set*() method is called on a singular field.
+// - GetRepeated*(), SetRepeated*(), or Add*() is called on a repeated field.
 // - The Message object passed to any method is not of the right type for
 //   this Reflection object (i.e. message.GetReflection() != reflection).
 //
