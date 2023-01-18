@@ -288,10 +288,10 @@ void CollectMapInfo(
     default:
       vars["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
   }
-  vars["key_wire_type"] =
-      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type()));
-  vars["val_wire_type"] =
-      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type()));
+  vars["key_wire_type"] = absl::StrCat(
+      "TYPE_", absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type())));
+  vars["val_wire_type"] = absl::StrCat(
+      "TYPE_", absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type())));
 }
 
 
@@ -2142,7 +2142,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
       format("PROTOBUF_FIELD_OFFSET($classtype$$1$, $2$)",
              ShouldSplit(field, options_) ? "::Impl_::Split" : "",
              ShouldSplit(field, options_)
-                 ? FieldName(field) + "_"
+                 ? absl::StrCat(FieldName(field), "_")
                  : FieldMemberName(field, /*cold=*/false));
     }
 

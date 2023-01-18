@@ -49,13 +49,13 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-std::string ReinterpretCast(const std::string& type,
-                            const std::string& expression,
+std::string ReinterpretCast(absl::string_view type,
+                            absl::string_view expression,
                             bool implicit_weak_field) {
   if (implicit_weak_field) {
-    return "reinterpret_cast< " + type + " >(" + expression + ")";
+    return absl::StrCat("reinterpret_cast< ", type, " >(", expression, ")");
   } else {
-    return expression;
+    return std::string(expression);
   }
 }
 

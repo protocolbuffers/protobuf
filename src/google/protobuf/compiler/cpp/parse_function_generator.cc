@@ -458,12 +458,12 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
   // All entries without a fast-path parsing function need a fallback.
   std::string fallback;
   if (tc_table_info_->use_generated_fallback) {
-    fallback = ClassName(descriptor_) + "::Tct_ParseFallback";
+    fallback = absl::StrCat(ClassName(descriptor_), "::Tct_ParseFallback");
   } else {
     fallback = "::_pbi::TcParser::GenericFallback";
     if (GetOptimizeFor(descriptor_->file(), options_) ==
         FileOptions::LITE_RUNTIME) {
-      fallback += "Lite";
+      absl::StrAppend(&fallback, "Lite");
     }
   }
 
@@ -842,7 +842,7 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
       bool split = ShouldSplit(field, options_);
       if (split) {
         format("PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, $1$), ",
-               FieldName(field) + "_");
+               absl::StrCat(FieldName(field), "_"));
       } else {
         format("PROTOBUF_FIELD_OFFSET($classname$, $1$), ",
                FieldMemberName(field, /*cold=*/false));

@@ -63,11 +63,11 @@ class CppMetadataTest : public ::testing::Test {
     CommandLineInterface cli;
     CppGenerator cpp_generator;
     cli.RegisterGenerator("--cpp_out", &cpp_generator, "");
-    std::string cpp_out =
+    std::string cpp_out = absl::StrCat(
         "--cpp_out=annotate_headers=true,"
         "annotation_pragma_name=pragma_name,"
-        "annotation_guard_name=guard_name:" +
-        TestTempDir();
+        "annotation_guard_name=guard_name:",
+        TestTempDir());
 
     const bool result = atu::RunProtoCompiler(filename, cpp_out, &cli, file);
 
@@ -75,25 +75,28 @@ class CppMetadataTest : public ::testing::Test {
       return result;
     }
 
-    std::string output_base = TestTempDir() + "/" + StripProto(filename);
+    std::string output_base =
+        absl::StrCat(TestTempDir(), "/", StripProto(filename));
 
     if (pb_cc != nullptr) {
-      GOOGLE_ABSL_CHECK_OK(
-          File::GetContents(output_base + ".pb.cc", pb_cc, true));
+      GOOGLE_ABSL_CHECK_OK(File::GetContents(absl::StrCat(output_base, ".pb.cc"),
+                                      pb_cc, true));
     }
 
     if (pb_h != nullptr && pb_h_info != nullptr) {
-      GOOGLE_ABSL_CHECK_OK(
-          File::GetContents(output_base + ".pb.h", pb_h, true));
-      if (!atu::DecodeMetadata(output_base + ".pb.h.meta", pb_h_info)) {
+      GOOGLE_ABSL_CHECK_OK(File::GetContents(absl::StrCat(output_base, ".pb.h"), pb_h,
+                                      true));
+      if (!atu::DecodeMetadata(absl::StrCat(output_base, ".pb.h.meta"),
+                               pb_h_info)) {
         return false;
       }
     }
 
     if (proto_h != nullptr && proto_h_info != nullptr) {
-      GOOGLE_ABSL_CHECK_OK(File::GetContents(output_base + ".proto.h", proto_h,
-                                      true));
-      if (!atu::DecodeMetadata(output_base + ".proto.h.meta", proto_h_info)) {
+      GOOGLE_ABSL_CHECK_OK(File::GetContents(absl::StrCat(output_base, ".proto.h"),
+                                      proto_h, true));
+      if (!atu::DecodeMetadata(absl::StrCat(output_base, ".proto.h.meta"),
+                               proto_h_info)) {
         return false;
       }
     }
@@ -102,7 +105,7 @@ class CppMetadataTest : public ::testing::Test {
   }
 };
 
-const char kSmallTestFile[] =
+constexpr absl::string_view kSmallTestFile =
     "syntax = \"proto2\";\n"
     "package foo;\n"
     "enum Enum { VALUE = 0; }\n"

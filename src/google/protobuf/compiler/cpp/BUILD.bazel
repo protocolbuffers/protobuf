@@ -17,6 +17,7 @@ cc_library(
         ":names_internal",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -36,6 +37,7 @@ cc_library(
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/strings",
     ],
 )
 

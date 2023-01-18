@@ -97,9 +97,9 @@ class MockGeneratorContext : public GeneratorContext {
 
     std::string expected_contents = *it->second;
     std::string actual_contents;
-    GOOGLE_ABSL_CHECK_OK(
-        File::GetContents(TestUtil::TestSourceDir() + "/" + physical_filename,
-                          &actual_contents, true))
+    GOOGLE_ABSL_CHECK_OK(File::GetContents(
+        absl::StrCat(TestUtil::TestSourceDir(), "/", physical_filename),
+        &actual_contents, true))
         << physical_filename;
 
 #ifdef WRITE_FILES  // Define to debug mismatched files.
@@ -174,8 +174,10 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
         FindWithDefault(vpath_map, file_parameter[0], file_parameter[0]);
     std::string rpath =
         FindWithDefault(rpath_map, file_parameter[0], file_parameter[0]);
-    context.ExpectFileMatches(vpath + ".pb.cc", rpath + ".pb.cc");
-    context.ExpectFileMatches(vpath + ".pb.h", rpath + ".pb.h");
+    context.ExpectFileMatches(absl::StrCat(vpath, ".pb.cc"),
+                              absl::StrCat(rpath, ".pb.cc"));
+    context.ExpectFileMatches(absl::StrCat(vpath, ".pb.h"),
+                              absl::StrCat(rpath, ".pb.h"));
   }
 }
 
@@ -189,7 +191,7 @@ TEST(BootstrapTest, OptionNotExist) {
   ASSERT_FALSE(generator.Generate(
       pool.FindFileByName("google/protobuf/descriptor.proto"), parameter,
       generator_context, &error));
-  EXPECT_EQ(error, "Unknown generator option: " + parameter);
+  EXPECT_EQ(error, absl::StrCat("Unknown generator option: ", parameter));
 }
 
 }  // namespace

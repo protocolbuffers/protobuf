@@ -187,12 +187,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       } else if (value == "always") {
         file_options.tctable_mode = Options::kTCTableAlways;
       } else {
-        *error =
-            "Unknown value for experimental_tail_call_table_mode: " + value;
+        *error = absl::StrCat(
+            "Unknown value for experimental_tail_call_table_mode: ", value);
         return false;
       }
     } else {
-      *error = "Unknown generator option: " + key;
+      *error = absl::StrCat("Unknown generator option: ", key);
       return false;
     }
   }

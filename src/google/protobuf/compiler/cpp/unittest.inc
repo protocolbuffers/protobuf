@@ -2107,10 +2107,11 @@ TEST(HELPERS_TEST_NAME, TestSCC) {
   std::string package = a.GetDescriptor()->file()->package();
   ASSERT_EQ(names.size(), 4);
   std::sort(names.begin(), names.end());
-  EXPECT_EQ(names[0], package + ".TestMutualRecursionA");
-  EXPECT_EQ(names[1], package + ".TestMutualRecursionA.SubGroup");
-  EXPECT_EQ(names[2], package + ".TestMutualRecursionA.SubMessage");
-  EXPECT_EQ(names[3], package + ".TestMutualRecursionB");
+  EXPECT_EQ(names[0], absl::StrCat(package, ".TestMutualRecursionA"));
+  EXPECT_EQ(names[1], absl::StrCat(package, ".TestMutualRecursionA.SubGroup"));
+  EXPECT_EQ(names[2],
+            absl::StrCat(package, ".TestMutualRecursionA.SubMessage"));
+  EXPECT_EQ(names[3], absl::StrCat(package, ".TestMutualRecursionB"));
 
   MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
   EXPECT_EQ(result.is_recursive, true);
