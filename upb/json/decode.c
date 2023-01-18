@@ -1446,6 +1446,14 @@ static void jsondec_wellknown(jsondec* d, upb_Message* msg,
   }
 }
 
+static bool upb_JsonDecoder_Decode(jsondec* const d, upb_Message* const msg,
+                                   const upb_MessageDef* const m) {
+  if (UPB_SETJMP(d->err)) return false;
+
+  jsondec_tomsg(d, msg, m);
+  return true;
+}
+
 bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
                     const upb_MessageDef* m, const upb_DefPool* symtab,
                     int options, upb_Arena* arena, upb_Status* status) {
@@ -1465,8 +1473,5 @@ bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
   d.debug_field = NULL;
   d.is_first = false;
 
-  if (UPB_SETJMP(d.err)) return false;
-
-  jsondec_tomsg(&d, msg, m);
-  return true;
+  return upb_JsonDecoder_Decode(&d, msg, m);
 }
