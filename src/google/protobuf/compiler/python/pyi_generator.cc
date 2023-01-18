@@ -32,6 +32,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/stubs/logging.h"
@@ -62,12 +63,12 @@ std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
     std::string filename = descriptor.file()->name();
     if (import_map_.find(filename) == import_map_.end()) {
       std::string module_name = ModuleName(descriptor.file()->name());
-      std::vector<std::string> tokens = absl::StrSplit(module_name, ".");
-      module_alias = "_" + tokens.back();
+      std::vector<absl::string_view> tokens = absl::StrSplit(module_name, '.');
+      module_alias = absl::StrCat("_", tokens.back());
     } else {
       module_alias = import_map_.at(filename);
     }
-    name = module_alias + "." + name;
+    name = absl::StrCat(module_alias, ".", name);
   }
   return name;
 }
@@ -172,7 +173,7 @@ void PyiGenerator::PrintImportForDescriptor(
   std::string alias = absl::StrCat("_", module_name);
   // Generate a unique alias by adding _1 suffixes until we get an unused alias.
   while (seen_aliases->find(alias) != seen_aliases->end()) {
-    alias = alias + "_1";
+    absl::StrAppend(&alias, "_1");
   }
   printer_->Print("$statement$ as $alias$\n", "statement",
                   import_statement, "alias", alias);
@@ -341,7 +342,8 @@ template <typename DescriptorT>
 void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
   for (int i = 0; i < descriptor.extension_count(); ++i) {
     const FieldDescriptor* extension_field = descriptor.extension(i);
-    std::string constant_name = extension_field->name() + "_FIELD_NUMBER";
+    std::string constant_name =
+        absl::StrCat(extension_field->name(), "_FIELD_NUMBER");
     absl::AsciiStrToUpper(&constant_name);
     printer_->Print("$constant_name$: _ClassVar[int]\n",
                     "constant_name", constant_name);
@@ -381,7 +383,7 @@ std::string PyiGenerator::GetFieldType(
       if ((containing_des.containing_type() != nullptr &&
            name == containing_des.name())) {
         std::string module = ModuleName(field_des.file()->name());
-        name = module + "." + name;
+        name = absl::StrCat(module, ".", name);
       }
       return name;
     }
@@ -401,7 +403,8 @@ void PyiGenerator::PrintMessage(
   // A well-known type needs to inherit from its corresponding base class in
   // net/proto2/python/internal/well_known_types.
   if (IsWellKnownType(message_descriptor.full_name())) {
-    extra_base = ", _well_known_types." + message_descriptor.name();
+    extra_base =
+        absl::StrCat(", _well_known_types.", message_descriptor.name());
   } else {
     extra_base = "";
   }
@@ -449,8 +452,8 @@ void PyiGenerator::PrintMessage(
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
     const FieldDescriptor& field_des = *message_descriptor.field(i);
     printer_->Print(
-      "$field_number_name$: _ClassVar[int]\n", "field_number_name",
-      absl::AsciiStrToUpper(field_des.name()) + "_FIELD_NUMBER");
+        "$field_number_name$: _ClassVar[int]\n", "field_number_name",
+        absl::StrCat(absl::AsciiStrToUpper(field_des.name()), "_FIELD_NUMBER"));
   }
   // Prints field name and type
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
@@ -462,12 +465,12 @@ void PyiGenerator::PrintMessage(
     if (field_des.is_map()) {
       const FieldDescriptor* key_des = field_des.message_type()->field(0);
       const FieldDescriptor* value_des = field_des.message_type()->field(1);
-      field_type = (value_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
-                        ? "_containers.MessageMap["
-                        : "_containers.ScalarMap[");
-      field_type += GetFieldType(*key_des, message_descriptor);
-      field_type += ", ";
-      field_type += GetFieldType(*value_des, message_descriptor);
+      field_type =
+          absl::StrCat(value_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
+                           ? "_containers.MessageMap["
+                           : "_containers.ScalarMap[",
+                       GetFieldType(*key_des, message_descriptor), ", ",
+                       GetFieldType(*value_des, message_descriptor));
     } else {
       if (field_des.is_repeated()) {
         field_type = (field_des.cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
@@ -478,7 +481,7 @@ void PyiGenerator::PrintMessage(
     }
 
     if (field_des.is_repeated()) {
-      field_type += "]";
+      absl::StrAppend(&field_type, "]");
     }
     printer_->Print("$name$: $type$\n",
                     "name", field_des.name(), "type", field_type);
@@ -591,7 +594,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
     } else if (absl::EndsWith(option.first, ".pyi")) {
       filename = option.first;
     } else {
-      *error = "Unknown generator option: " + option.first;
+      *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
     }
   }
