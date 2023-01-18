@@ -25,9 +25,12 @@ PROTOBUF_CONSTEXPR Version::Version(
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.suffix_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.major_)*/0
-  , /*decltype(_impl_.minor_)*/0
-  , /*decltype(_impl_.patch_)*/0} {}
+  , /* ._impl_.major_ = */ 0
+
+  , /* ._impl_.minor_ = */ 0
+
+  , /* ._impl_.patch_ = */ 0
+} {}
 struct VersionDefaultTypeInternal {
   PROTOBUF_CONSTEXPR VersionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~VersionDefaultTypeInternal() {}
@@ -80,7 +83,8 @@ PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.file_)*/{}
   , /*decltype(_impl_.error_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.supported_features_)*/::uint64_t{0u}} {}
+  , /* ._impl_.supported_features_ = */ ::uint64_t{0u}
+} {}
 struct CodeGeneratorResponseDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponseDefaultTypeInternal() {}
@@ -298,9 +302,12 @@ Version::Version(const Version& from)
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.suffix_){}
-    , decltype(_impl_.major_){}
-    , decltype(_impl_.minor_){}
-    , decltype(_impl_.patch_){}};
+    , decltype(_impl_.major_) {}
+
+    , decltype(_impl_.minor_) {}
+
+    , decltype(_impl_.patch_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.suffix_.InitDefault();
@@ -323,9 +330,12 @@ inline void Version::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.suffix_){}
-    , decltype(_impl_.major_){0}
-    , decltype(_impl_.minor_){0}
-    , decltype(_impl_.patch_){0}
+    , decltype(_impl_.major_) { 0 }
+
+    , decltype(_impl_.minor_) { 0 }
+
+    , decltype(_impl_.patch_) { 0 }
+
   };
   _impl_.suffix_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -454,19 +464,22 @@ failure:
   // optional int32 major = 1;
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_major(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        1, this->_internal_major(), target);
   }
 
   // optional int32 minor = 2;
   if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_minor(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        2, this->_internal_minor(), target);
   }
 
   // optional int32 patch = 3;
   if (cached_has_bits & 0x00000008u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_patch(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        3, this->_internal_patch(), target);
   }
 
   // optional string suffix = 4;
@@ -506,17 +519,20 @@ failure:
 
     // optional int32 major = 1;
     if (cached_has_bits & 0x00000002u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_major());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_major());
     }
 
     // optional int32 minor = 2;
     if (cached_has_bits & 0x00000004u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_minor());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_minor());
     }
 
     // optional int32 patch = 3;
     if (cached_has_bits & 0x00000008u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_patch());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_patch());
     }
 
   }
@@ -1365,7 +1381,8 @@ CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from)
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.file_){from._impl_.file_}
     , decltype(_impl_.error_){}
-    , decltype(_impl_.supported_features_){}};
+    , decltype(_impl_.supported_features_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.error_.InitDefault();
@@ -1387,7 +1404,8 @@ inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* arena) {
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.file_){arena}
     , decltype(_impl_.error_){}
-    , decltype(_impl_.supported_features_){::uint64_t{0u}}
+    , decltype(_impl_.supported_features_) { ::uint64_t{0u} }
+
   };
   _impl_.error_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -1518,7 +1536,8 @@ failure:
   // optional uint64 supported_features = 2;
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(2, this->_internal_supported_features(), target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
+        2, this->_internal_supported_features(), target);
   }
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
@@ -1563,7 +1582,8 @@ failure:
 
     // optional uint64 supported_features = 2;
     if (cached_has_bits & 0x00000002u) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_supported_features());
+      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
+          this->_internal_supported_features());
     }
 
   }
@@ -1621,6 +1641,7 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
       &_impl_.error_, lhs_arena,
       &other->_impl_.error_, rhs_arena
   );
+
   swap(_impl_.supported_features_, other->_impl_.supported_features_);
 }
 

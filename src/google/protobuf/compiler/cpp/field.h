@@ -291,6 +291,7 @@ class FieldGenerator {
   // The code that this method generates will be executed inside a
   // shared-for-the-whole-message-class method registered with OwnDestructor().
   void GenerateArenaDestructorCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateArenaDestructorCode(p);
   }
 

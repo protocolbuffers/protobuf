@@ -64,6 +64,14 @@ const int WireFormatLite::kMessageSetMessageTag;
 
 #endif
 
+constexpr size_t WireFormatLite::kFixed32Size;
+constexpr size_t WireFormatLite::kFixed64Size;
+constexpr size_t WireFormatLite::kSFixed32Size;
+constexpr size_t WireFormatLite::kSFixed64Size;
+constexpr size_t WireFormatLite::kFloatSize;
+constexpr size_t WireFormatLite::kDoubleSize;
+constexpr size_t WireFormatLite::kBoolSize;
+
 // IBM xlC requires prefixing constants with WireFormatLite::
 const size_t WireFormatLite::kMessageSetItemTagsSize =
     io::CodedOutputStream::StaticVarintSize32<

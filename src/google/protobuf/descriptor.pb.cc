@@ -42,8 +42,10 @@ PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(
   , /*decltype(_impl_.enum_type_)*/{}
   , /*decltype(_impl_.service_)*/{}
   , /*decltype(_impl_.extension_)*/{}
-  , /*decltype(_impl_.public_dependency_)*/{}
-  , /*decltype(_impl_.weak_dependency_)*/{}
+  , /* ._impl_.public_dependency_ = */ {}
+
+  , /* ._impl_.weak_dependency_ = */ {}
+
   , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.package_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.syntax_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
@@ -65,8 +67,10 @@ PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRang
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.options_)*/nullptr
-  , /*decltype(_impl_.start_)*/0
-  , /*decltype(_impl_.end_)*/0} {}
+  , /* ._impl_.start_ = */ 0
+
+  , /* ._impl_.end_ = */ 0
+} {}
 struct DescriptorProto_ExtensionRangeDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DescriptorProto_ExtensionRangeDefaultTypeInternal() {}
@@ -81,8 +85,10 @@ PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.start_)*/0
-  , /*decltype(_impl_.end_)*/0} {}
+  , /* ._impl_.start_ = */ 0
+
+  , /* ._impl_.end_ = */ 0
+} {}
 struct DescriptorProto_ReservedRangeDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DescriptorProto_ReservedRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DescriptorProto_ReservedRangeDefaultTypeInternal() {}
@@ -142,9 +148,12 @@ PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(
   , /*decltype(_impl_.default_value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.json_name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.options_)*/nullptr
-  , /*decltype(_impl_.number_)*/0
-  , /*decltype(_impl_.oneof_index_)*/0
-  , /*decltype(_impl_.proto3_optional_)*/false
+  , /* ._impl_.number_ = */ 0
+
+  , /* ._impl_.oneof_index_ = */ 0
+
+  , /* ._impl_.proto3_optional_ = */ false
+
   , /*decltype(_impl_.label_)*/1
   , /*decltype(_impl_.type_)*/1} {}
 struct FieldDescriptorProtoDefaultTypeInternal {
@@ -177,8 +186,10 @@ PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_En
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.start_)*/0
-  , /*decltype(_impl_.end_)*/0} {}
+  , /* ._impl_.start_ = */ 0
+
+  , /* ._impl_.end_ = */ 0
+} {}
 struct EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal() {}
@@ -214,7 +225,8 @@ PROTOBUF_CONSTEXPR EnumValueDescriptorProto::EnumValueDescriptorProto(
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.options_)*/nullptr
-  , /*decltype(_impl_.number_)*/0} {}
+  , /* ._impl_.number_ = */ 0
+} {}
 struct EnumValueDescriptorProtoDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EnumValueDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EnumValueDescriptorProtoDefaultTypeInternal() {}
@@ -250,8 +262,10 @@ PROTOBUF_CONSTEXPR MethodDescriptorProto::MethodDescriptorProto(
   , /*decltype(_impl_.input_type_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.output_type_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.options_)*/nullptr
-  , /*decltype(_impl_.client_streaming_)*/false
-  , /*decltype(_impl_.server_streaming_)*/false} {}
+  , /* ._impl_.client_streaming_ = */ false
+
+  , /* ._impl_.server_streaming_ = */ false
+} {}
 struct MethodDescriptorProtoDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MethodDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MethodDescriptorProtoDefaultTypeInternal() {}
@@ -278,16 +292,25 @@ PROTOBUF_CONSTEXPR FileOptions::FileOptions(
   , /*decltype(_impl_.php_namespace_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.php_metadata_namespace_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.ruby_package_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.java_multiple_files_)*/false
-  , /*decltype(_impl_.java_generate_equals_and_hash_)*/false
-  , /*decltype(_impl_.java_string_check_utf8_)*/false
-  , /*decltype(_impl_.cc_generic_services_)*/false
-  , /*decltype(_impl_.java_generic_services_)*/false
-  , /*decltype(_impl_.py_generic_services_)*/false
-  , /*decltype(_impl_.php_generic_services_)*/false
-  , /*decltype(_impl_.deprecated_)*/false
+  , /* ._impl_.java_multiple_files_ = */ false
+
+  , /* ._impl_.java_generate_equals_and_hash_ = */ false
+
+  , /* ._impl_.java_string_check_utf8_ = */ false
+
+  , /* ._impl_.cc_generic_services_ = */ false
+
+  , /* ._impl_.java_generic_services_ = */ false
+
+  , /* ._impl_.py_generic_services_ = */ false
+
+  , /* ._impl_.php_generic_services_ = */ false
+
+  , /* ._impl_.deprecated_ = */ false
+
   , /*decltype(_impl_.optimize_for_)*/1
-  , /*decltype(_impl_.cc_enable_arenas_)*/true} {}
+  , /* ._impl_.cc_enable_arenas_ = */ true
+} {}
 struct FileOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FileOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FileOptionsDefaultTypeInternal() {}
@@ -304,11 +327,16 @@ PROTOBUF_CONSTEXPR MessageOptions::MessageOptions(
   , /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.uninterpreted_option_)*/{}
-  , /*decltype(_impl_.message_set_wire_format_)*/false
-  , /*decltype(_impl_.no_standard_descriptor_accessor_)*/false
-  , /*decltype(_impl_.deprecated_)*/false
-  , /*decltype(_impl_.map_entry_)*/false
-  , /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/false} {}
+  , /* ._impl_.message_set_wire_format_ = */ false
+
+  , /* ._impl_.no_standard_descriptor_accessor_ = */ false
+
+  , /* ._impl_.deprecated_ = */ false
+
+  , /* ._impl_.map_entry_ = */ false
+
+  , /* ._impl_.deprecated_legacy_json_field_conflicts_ = */ false
+} {}
 struct MessageOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MessageOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MessageOptionsDefaultTypeInternal() {}
@@ -327,12 +355,18 @@ PROTOBUF_CONSTEXPR FieldOptions::FieldOptions(
   , /*decltype(_impl_.uninterpreted_option_)*/{}
   , /*decltype(_impl_.ctype_)*/0
   , /*decltype(_impl_.jstype_)*/0
-  , /*decltype(_impl_.packed_)*/false
-  , /*decltype(_impl_.lazy_)*/false
-  , /*decltype(_impl_.unverified_lazy_)*/false
-  , /*decltype(_impl_.deprecated_)*/false
-  , /*decltype(_impl_.weak_)*/false
-  , /*decltype(_impl_.debug_redact_)*/false} {}
+  , /* ._impl_.packed_ = */ false
+
+  , /* ._impl_.lazy_ = */ false
+
+  , /* ._impl_.unverified_lazy_ = */ false
+
+  , /* ._impl_.deprecated_ = */ false
+
+  , /* ._impl_.weak_ = */ false
+
+  , /* ._impl_.debug_redact_ = */ false
+} {}
 struct FieldOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldOptionsDefaultTypeInternal() {}
@@ -364,9 +398,12 @@ PROTOBUF_CONSTEXPR EnumOptions::EnumOptions(
   , /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.uninterpreted_option_)*/{}
-  , /*decltype(_impl_.allow_alias_)*/false
-  , /*decltype(_impl_.deprecated_)*/false
-  , /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/false} {}
+  , /* ._impl_.allow_alias_ = */ false
+
+  , /* ._impl_.deprecated_ = */ false
+
+  , /* ._impl_.deprecated_legacy_json_field_conflicts_ = */ false
+} {}
 struct EnumOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EnumOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EnumOptionsDefaultTypeInternal() {}
@@ -383,7 +420,8 @@ PROTOBUF_CONSTEXPR EnumValueOptions::EnumValueOptions(
   , /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.uninterpreted_option_)*/{}
-  , /*decltype(_impl_.deprecated_)*/false} {}
+  , /* ._impl_.deprecated_ = */ false
+} {}
 struct EnumValueOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EnumValueOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EnumValueOptionsDefaultTypeInternal() {}
@@ -400,7 +438,8 @@ PROTOBUF_CONSTEXPR ServiceOptions::ServiceOptions(
   , /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.uninterpreted_option_)*/{}
-  , /*decltype(_impl_.deprecated_)*/false} {}
+  , /* ._impl_.deprecated_ = */ false
+} {}
 struct ServiceOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ServiceOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ServiceOptionsDefaultTypeInternal() {}
@@ -417,7 +456,8 @@ PROTOBUF_CONSTEXPR MethodOptions::MethodOptions(
   , /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.uninterpreted_option_)*/{}
-  , /*decltype(_impl_.deprecated_)*/false
+  , /* ._impl_.deprecated_ = */ false
+
   , /*decltype(_impl_.idempotency_level_)*/0} {}
 struct MethodOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MethodOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -434,7 +474,8 @@ PROTOBUF_CONSTEXPR UninterpretedOption_NamePart::UninterpretedOption_NamePart(
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.name_part_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.is_extension_)*/false} {}
+  , /* ._impl_.is_extension_ = */ false
+} {}
 struct UninterpretedOption_NamePartDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UninterpretedOption_NamePartDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UninterpretedOption_NamePartDefaultTypeInternal() {}
@@ -453,9 +494,12 @@ PROTOBUF_CONSTEXPR UninterpretedOption::UninterpretedOption(
   , /*decltype(_impl_.identifier_value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.string_value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.aggregate_value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.positive_int_value_)*/::uint64_t{0u}
-  , /*decltype(_impl_.negative_int_value_)*/::int64_t{0}
-  , /*decltype(_impl_.double_value_)*/0} {}
+  , /* ._impl_.positive_int_value_ = */ ::uint64_t{0u}
+
+  , /* ._impl_.negative_int_value_ = */ ::int64_t{0}
+
+  , /* ._impl_.double_value_ = */ 0
+} {}
 struct UninterpretedOptionDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UninterpretedOptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UninterpretedOptionDefaultTypeInternal() {}
@@ -470,10 +514,12 @@ PROTOBUF_CONSTEXPR SourceCodeInfo_Location::SourceCodeInfo_Location(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.path_)*/{}
-  , /*decltype(_impl_._path_cached_byte_size_)*/{0}
-  , /*decltype(_impl_.span_)*/{}
-  , /*decltype(_impl_._span_cached_byte_size_)*/{0}
+  , /* ._impl_.path_ = */ {}
+  ,/* _impl_._path_cached_byte_size_ = */ { 0 }
+
+  , /* ._impl_.span_ = */ {}
+  ,/* _impl_._span_cached_byte_size_ = */ { 0 }
+
   , /*decltype(_impl_.leading_detached_comments_)*/{}
   , /*decltype(_impl_.leading_comments_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.trailing_comments_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}} {}
@@ -505,11 +551,14 @@ PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.path_)*/{}
-  , /*decltype(_impl_._path_cached_byte_size_)*/{0}
+  , /* ._impl_.path_ = */ {}
+  ,/* _impl_._path_cached_byte_size_ = */ { 0 }
+
   , /*decltype(_impl_.source_file_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.begin_)*/0
-  , /*decltype(_impl_.end_)*/0
+  , /* ._impl_.begin_ = */ 0
+
+  , /* ._impl_.end_ = */ 0
+
   , /*decltype(_impl_.semantic_)*/0} {}
 struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
   PROTOBUF_CONSTEXPR GeneratedCodeInfo_AnnotationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -1724,8 +1773,10 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
     , decltype(_impl_.enum_type_){from._impl_.enum_type_}
     , decltype(_impl_.service_){from._impl_.service_}
     , decltype(_impl_.extension_){from._impl_.extension_}
-    , decltype(_impl_.public_dependency_){from._impl_.public_dependency_}
-    , decltype(_impl_.weak_dependency_){from._impl_.weak_dependency_}
+    , decltype(_impl_.public_dependency_) { from._impl_.public_dependency_ }
+
+    , decltype(_impl_.weak_dependency_) { from._impl_.weak_dependency_ }
+
     , decltype(_impl_.name_){}
     , decltype(_impl_.package_){}
     , decltype(_impl_.syntax_){}
@@ -1785,8 +1836,10 @@ inline void FileDescriptorProto::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.enum_type_){arena}
     , decltype(_impl_.service_){arena}
     , decltype(_impl_.extension_){arena}
-    , decltype(_impl_.public_dependency_){arena}
-    , decltype(_impl_.weak_dependency_){arena}
+    , decltype(_impl_.public_dependency_) { arena }
+
+    , decltype(_impl_.weak_dependency_) { arena }
+
     , decltype(_impl_.name_){}
     , decltype(_impl_.package_){}
     , decltype(_impl_.syntax_){}
@@ -2175,15 +2228,17 @@ failure:
   }
 
   // repeated int32 public_dependency = 10;
-  for (int i = 0, n = this->_internal_public_dependency_size(); i < n; i++) {
+  for (int i = 0, n = this->_internal_public_dependency_size(); i < n; ++i) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(10, this->_internal_public_dependency(i), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        10, this->_internal_public_dependency(i), target);
   }
 
   // repeated int32 weak_dependency = 11;
-  for (int i = 0, n = this->_internal_weak_dependency_size(); i < n; i++) {
+  for (int i = 0, n = this->_internal_weak_dependency_size(); i < n; ++i) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(11, this->_internal_weak_dependency(i), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        11, this->_internal_weak_dependency(i), target);
   }
 
   // optional string syntax = 12;
@@ -2260,20 +2315,22 @@ failure:
 
   // repeated int32 public_dependency = 10;
   {
-    ::size_t data_size = ::_pbi::WireFormatLite::
-      Int32Size(this->_impl_.public_dependency_);
-    total_size += 1 *
-                  ::_pbi::FromIntSize(this->_internal_public_dependency_size());
-    total_size += data_size;
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.public_dependency_)
+    ;
+    std::size_t tag_size = std::size_t{1} *
+        ::_pbi::FromIntSize(this->_internal_public_dependency_size());
+    ;
+    total_size += tag_size + data_size;
   }
 
   // repeated int32 weak_dependency = 11;
   {
-    ::size_t data_size = ::_pbi::WireFormatLite::
-      Int32Size(this->_impl_.weak_dependency_);
-    total_size += 1 *
-                  ::_pbi::FromIntSize(this->_internal_weak_dependency_size());
-    total_size += data_size;
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.weak_dependency_)
+    ;
+    std::size_t tag_size = std::size_t{1} *
+        ::_pbi::FromIntSize(this->_internal_weak_dependency_size());
+    ;
+    total_size += tag_size + data_size;
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -2471,8 +2528,10 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorP
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.start_){}
-    , decltype(_impl_.end_){}};
+    , decltype(_impl_.start_) {}
+
+    , decltype(_impl_.end_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
@@ -2490,8 +2549,10 @@ inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.start_){0}
-    , decltype(_impl_.end_){0}
+    , decltype(_impl_.start_) { 0 }
+
+    , decltype(_impl_.end_) { 0 }
+
   };
 }
 
@@ -2603,13 +2664,15 @@ failure:
   // optional int32 start = 1;
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_start(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        1, this->_internal_start(), target);
   }
 
   // optional int32 end = 2;
   if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_end(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        2, this->_internal_end(), target);
   }
 
   // optional .google.protobuf.ExtensionRangeOptions options = 3;
@@ -2646,12 +2709,14 @@ failure:
 
     // optional int32 start = 1;
     if (cached_has_bits & 0x00000002u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_start());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_start());
     }
 
     // optional int32 end = 2;
     if (cached_has_bits & 0x00000004u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_end());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_end());
     }
 
   }
@@ -2753,8 +2818,10 @@ inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.start_){0}
-    , decltype(_impl_.end_){0}
+    , decltype(_impl_.start_) { 0 }
+
+    , decltype(_impl_.end_) { 0 }
+
   };
 }
 
@@ -2852,13 +2919,15 @@ failure:
   // optional int32 start = 1;
   if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_start(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        1, this->_internal_start(), target);
   }
 
   // optional int32 end = 2;
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_end(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        2, this->_internal_end(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2881,12 +2950,14 @@ failure:
   if (cached_has_bits & 0x00000003u) {
     // optional int32 start = 1;
     if (cached_has_bits & 0x00000001u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_start());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_start());
     }
 
     // optional int32 end = 2;
     if (cached_has_bits & 0x00000002u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_end());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_end());
     }
 
   }
@@ -3793,9 +3864,12 @@ FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
     , decltype(_impl_.default_value_){}
     , decltype(_impl_.json_name_){}
     , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.number_){}
-    , decltype(_impl_.oneof_index_){}
-    , decltype(_impl_.proto3_optional_){}
+    , decltype(_impl_.number_) {}
+
+    , decltype(_impl_.oneof_index_) {}
+
+    , decltype(_impl_.proto3_optional_) {}
+
     , decltype(_impl_.label_){}
     , decltype(_impl_.type_){}};
 
@@ -3860,9 +3934,12 @@ inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.default_value_){}
     , decltype(_impl_.json_name_){}
     , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.number_){0}
-    , decltype(_impl_.oneof_index_){0}
-    , decltype(_impl_.proto3_optional_){false}
+    , decltype(_impl_.number_) { 0 }
+
+    , decltype(_impl_.oneof_index_) { 0 }
+
+    , decltype(_impl_.proto3_optional_) { false }
+
     , decltype(_impl_.label_){1}
     , decltype(_impl_.type_){1}
   };
@@ -4146,7 +4223,8 @@ failure:
   // optional int32 number = 3;
   if (cached_has_bits & 0x00000040u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_number(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        3, this->_internal_number(), target);
   }
 
   // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
@@ -4193,7 +4271,8 @@ failure:
   // optional int32 oneof_index = 9;
   if (cached_has_bits & 0x00000080u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(9, this->_internal_oneof_index(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        9, this->_internal_oneof_index(), target);
   }
 
   // optional string json_name = 10;
@@ -4209,7 +4288,8 @@ failure:
   // optional bool proto3_optional = 17;
   if (cached_has_bits & 0x00000100u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(17, this->_internal_proto3_optional(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        17, this->_internal_proto3_optional(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -4274,19 +4354,21 @@ failure:
 
     // optional int32 number = 3;
     if (cached_has_bits & 0x00000040u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_number());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_number());
     }
 
     // optional int32 oneof_index = 9;
     if (cached_has_bits & 0x00000080u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_oneof_index());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_oneof_index());
     }
 
   }
   if (cached_has_bits & 0x00000700u) {
     // optional bool proto3_optional = 17;
     if (cached_has_bits & 0x00000100u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
     // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
@@ -4724,8 +4806,10 @@ inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* aren
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.start_){0}
-    , decltype(_impl_.end_){0}
+    , decltype(_impl_.start_) { 0 }
+
+    , decltype(_impl_.end_) { 0 }
+
   };
 }
 
@@ -4823,13 +4907,15 @@ failure:
   // optional int32 start = 1;
   if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_start(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        1, this->_internal_start(), target);
   }
 
   // optional int32 end = 2;
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_end(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        2, this->_internal_end(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -4852,12 +4938,14 @@ failure:
   if (cached_has_bits & 0x00000003u) {
     // optional int32 start = 1;
     if (cached_has_bits & 0x00000001u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_start());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_start());
     }
 
     // optional int32 end = 2;
     if (cached_has_bits & 0x00000002u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_end());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_end());
     }
 
   }
@@ -5345,7 +5433,8 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProt
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.name_){}
     , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.number_){}};
+    , decltype(_impl_.number_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -5370,7 +5459,8 @@ inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* arena) {
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.name_){}
     , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.number_){0}
+    , decltype(_impl_.number_) { 0 }
+
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -5501,7 +5591,8 @@ failure:
   // optional int32 number = 2;
   if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_number(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        2, this->_internal_number(), target);
   }
 
   // optional .google.protobuf.EnumValueOptions options = 3;
@@ -5545,7 +5636,8 @@ failure:
 
     // optional int32 number = 2;
     if (cached_has_bits & 0x00000004u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_number());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_number());
     }
 
   }
@@ -5980,8 +6072,10 @@ MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
     , decltype(_impl_.input_type_){}
     , decltype(_impl_.output_type_){}
     , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.client_streaming_){}
-    , decltype(_impl_.server_streaming_){}};
+    , decltype(_impl_.client_streaming_) {}
+
+    , decltype(_impl_.server_streaming_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -6026,8 +6120,10 @@ inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.input_type_){}
     , decltype(_impl_.output_type_){}
     , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.client_streaming_){false}
-    , decltype(_impl_.server_streaming_){false}
+    , decltype(_impl_.client_streaming_) { false }
+
+    , decltype(_impl_.server_streaming_) { false }
+
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -6239,13 +6335,15 @@ failure:
   // optional bool client_streaming = 5 [default = false];
   if (cached_has_bits & 0x00000010u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(5, this->_internal_client_streaming(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        5, this->_internal_client_streaming(), target);
   }
 
   // optional bool server_streaming = 6 [default = false];
   if (cached_has_bits & 0x00000020u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(6, this->_internal_server_streaming(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        6, this->_internal_server_streaming(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -6296,12 +6394,12 @@ failure:
 
     // optional bool client_streaming = 5 [default = false];
     if (cached_has_bits & 0x00000010u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool server_streaming = 6 [default = false];
     if (cached_has_bits & 0x00000020u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
   }
@@ -6486,16 +6584,25 @@ FileOptions::FileOptions(const FileOptions& from)
     , decltype(_impl_.php_namespace_){}
     , decltype(_impl_.php_metadata_namespace_){}
     , decltype(_impl_.ruby_package_){}
-    , decltype(_impl_.java_multiple_files_){}
-    , decltype(_impl_.java_generate_equals_and_hash_){}
-    , decltype(_impl_.java_string_check_utf8_){}
-    , decltype(_impl_.cc_generic_services_){}
-    , decltype(_impl_.java_generic_services_){}
-    , decltype(_impl_.py_generic_services_){}
-    , decltype(_impl_.php_generic_services_){}
-    , decltype(_impl_.deprecated_){}
+    , decltype(_impl_.java_multiple_files_) {}
+
+    , decltype(_impl_.java_generate_equals_and_hash_) {}
+
+    , decltype(_impl_.java_string_check_utf8_) {}
+
+    , decltype(_impl_.cc_generic_services_) {}
+
+    , decltype(_impl_.java_generic_services_) {}
+
+    , decltype(_impl_.py_generic_services_) {}
+
+    , decltype(_impl_.php_generic_services_) {}
+
+    , decltype(_impl_.deprecated_) {}
+
     , decltype(_impl_.optimize_for_){}
-    , decltype(_impl_.cc_enable_arenas_){}};
+    , decltype(_impl_.cc_enable_arenas_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
@@ -6602,16 +6709,25 @@ inline void FileOptions::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.php_namespace_){}
     , decltype(_impl_.php_metadata_namespace_){}
     , decltype(_impl_.ruby_package_){}
-    , decltype(_impl_.java_multiple_files_){false}
-    , decltype(_impl_.java_generate_equals_and_hash_){false}
-    , decltype(_impl_.java_string_check_utf8_){false}
-    , decltype(_impl_.cc_generic_services_){false}
-    , decltype(_impl_.java_generic_services_){false}
-    , decltype(_impl_.py_generic_services_){false}
-    , decltype(_impl_.php_generic_services_){false}
-    , decltype(_impl_.deprecated_){false}
+    , decltype(_impl_.java_multiple_files_) { false }
+
+    , decltype(_impl_.java_generate_equals_and_hash_) { false }
+
+    , decltype(_impl_.java_string_check_utf8_) { false }
+
+    , decltype(_impl_.cc_generic_services_) { false }
+
+    , decltype(_impl_.java_generic_services_) { false }
+
+    , decltype(_impl_.py_generic_services_) { false }
+
+    , decltype(_impl_.php_generic_services_) { false }
+
+    , decltype(_impl_.deprecated_) { false }
+
     , decltype(_impl_.optimize_for_){1}
-    , decltype(_impl_.cc_enable_arenas_){true}
+    , decltype(_impl_.cc_enable_arenas_) { true }
+
   };
   _impl_.java_package_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -7064,7 +7180,8 @@ failure:
   // optional bool java_multiple_files = 10 [default = false];
   if (cached_has_bits & 0x00000400u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(10, this->_internal_java_multiple_files(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        10, this->_internal_java_multiple_files(), target);
   }
 
   // optional string go_package = 11;
@@ -7080,43 +7197,50 @@ failure:
   // optional bool cc_generic_services = 16 [default = false];
   if (cached_has_bits & 0x00002000u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(16, this->_internal_cc_generic_services(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        16, this->_internal_cc_generic_services(), target);
   }
 
   // optional bool java_generic_services = 17 [default = false];
   if (cached_has_bits & 0x00004000u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(17, this->_internal_java_generic_services(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        17, this->_internal_java_generic_services(), target);
   }
 
   // optional bool py_generic_services = 18 [default = false];
   if (cached_has_bits & 0x00008000u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(18, this->_internal_py_generic_services(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        18, this->_internal_py_generic_services(), target);
   }
 
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
   if (cached_has_bits & 0x00000800u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(20, this->_internal_java_generate_equals_and_hash(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        20, this->_internal_java_generate_equals_and_hash(), target);
   }
 
   // optional bool deprecated = 23 [default = false];
   if (cached_has_bits & 0x00020000u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(23, this->_internal_deprecated(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        23, this->_internal_deprecated(), target);
   }
 
   // optional bool java_string_check_utf8 = 27 [default = false];
   if (cached_has_bits & 0x00001000u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(27, this->_internal_java_string_check_utf8(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        27, this->_internal_java_string_check_utf8(), target);
   }
 
   // optional bool cc_enable_arenas = 31 [default = true];
   if (cached_has_bits & 0x00080000u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(31, this->_internal_cc_enable_arenas(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        31, this->_internal_cc_enable_arenas(), target);
   }
 
   // optional string objc_class_prefix = 36;
@@ -7172,7 +7296,8 @@ failure:
   // optional bool php_generic_services = 42 [default = false];
   if (cached_has_bits & 0x00010000u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(42, this->_internal_php_generic_services(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        42, this->_internal_php_generic_services(), target);
   }
 
   // optional string php_metadata_namespace = 44;
@@ -7308,44 +7433,44 @@ failure:
 
     // optional bool java_multiple_files = 10 [default = false];
     if (cached_has_bits & 0x00000400u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
     if (cached_has_bits & 0x00000800u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
     // optional bool java_string_check_utf8 = 27 [default = false];
     if (cached_has_bits & 0x00001000u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
     // optional bool cc_generic_services = 16 [default = false];
     if (cached_has_bits & 0x00002000u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
     // optional bool java_generic_services = 17 [default = false];
     if (cached_has_bits & 0x00004000u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
     // optional bool py_generic_services = 18 [default = false];
     if (cached_has_bits & 0x00008000u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
   }
   if (cached_has_bits & 0x000f0000u) {
     // optional bool php_generic_services = 42 [default = false];
     if (cached_has_bits & 0x00010000u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
     // optional bool deprecated = 23 [default = false];
     if (cached_has_bits & 0x00020000u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
     // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
@@ -7356,7 +7481,7 @@ failure:
 
     // optional bool cc_enable_arenas = 31 [default = true];
     if (cached_has_bits & 0x00080000u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
   }
@@ -7567,11 +7692,16 @@ MessageOptions::MessageOptions(const MessageOptions& from)
     , decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
-    , decltype(_impl_.message_set_wire_format_){}
-    , decltype(_impl_.no_standard_descriptor_accessor_){}
-    , decltype(_impl_.deprecated_){}
-    , decltype(_impl_.map_entry_){}
-    , decltype(_impl_.deprecated_legacy_json_field_conflicts_){}};
+    , decltype(_impl_.message_set_wire_format_) {}
+
+    , decltype(_impl_.no_standard_descriptor_accessor_) {}
+
+    , decltype(_impl_.deprecated_) {}
+
+    , decltype(_impl_.map_entry_) {}
+
+    , decltype(_impl_.deprecated_legacy_json_field_conflicts_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
@@ -7588,11 +7718,16 @@ inline void MessageOptions::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){arena}
-    , decltype(_impl_.message_set_wire_format_){false}
-    , decltype(_impl_.no_standard_descriptor_accessor_){false}
-    , decltype(_impl_.deprecated_){false}
-    , decltype(_impl_.map_entry_){false}
-    , decltype(_impl_.deprecated_legacy_json_field_conflicts_){false}
+    , decltype(_impl_.message_set_wire_format_) { false }
+
+    , decltype(_impl_.no_standard_descriptor_accessor_) { false }
+
+    , decltype(_impl_.deprecated_) { false }
+
+    , decltype(_impl_.map_entry_) { false }
+
+    , decltype(_impl_.deprecated_legacy_json_field_conflicts_) { false }
+
   };
 }
 
@@ -7743,31 +7878,36 @@ failure:
   // optional bool message_set_wire_format = 1 [default = false];
   if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(1, this->_internal_message_set_wire_format(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        1, this->_internal_message_set_wire_format(), target);
   }
 
   // optional bool no_standard_descriptor_accessor = 2 [default = false];
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(2, this->_internal_no_standard_descriptor_accessor(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        2, this->_internal_no_standard_descriptor_accessor(), target);
   }
 
   // optional bool deprecated = 3 [default = false];
   if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(3, this->_internal_deprecated(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        3, this->_internal_deprecated(), target);
   }
 
   // optional bool map_entry = 7;
   if (cached_has_bits & 0x00000008u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(7, this->_internal_map_entry(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        7, this->_internal_map_entry(), target);
   }
 
   // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
   if (cached_has_bits & 0x00000010u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(11, this->_internal_deprecated_legacy_json_field_conflicts(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        11, this->_internal_deprecated_legacy_json_field_conflicts(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -7811,27 +7951,27 @@ failure:
   if (cached_has_bits & 0x0000001fu) {
     // optional bool message_set_wire_format = 1 [default = false];
     if (cached_has_bits & 0x00000001u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool no_standard_descriptor_accessor = 2 [default = false];
     if (cached_has_bits & 0x00000002u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool deprecated = 3 [default = false];
     if (cached_has_bits & 0x00000004u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool map_entry = 7;
     if (cached_has_bits & 0x00000008u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
     if (cached_has_bits & 0x00000010u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
   }
@@ -7961,12 +8101,18 @@ FieldOptions::FieldOptions(const FieldOptions& from)
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
     , decltype(_impl_.ctype_){}
     , decltype(_impl_.jstype_){}
-    , decltype(_impl_.packed_){}
-    , decltype(_impl_.lazy_){}
-    , decltype(_impl_.unverified_lazy_){}
-    , decltype(_impl_.deprecated_){}
-    , decltype(_impl_.weak_){}
-    , decltype(_impl_.debug_redact_){}};
+    , decltype(_impl_.packed_) {}
+
+    , decltype(_impl_.lazy_) {}
+
+    , decltype(_impl_.unverified_lazy_) {}
+
+    , decltype(_impl_.deprecated_) {}
+
+    , decltype(_impl_.weak_) {}
+
+    , decltype(_impl_.debug_redact_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
@@ -7985,12 +8131,18 @@ inline void FieldOptions::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.uninterpreted_option_){arena}
     , decltype(_impl_.ctype_){0}
     , decltype(_impl_.jstype_){0}
-    , decltype(_impl_.packed_){false}
-    , decltype(_impl_.lazy_){false}
-    , decltype(_impl_.unverified_lazy_){false}
-    , decltype(_impl_.deprecated_){false}
-    , decltype(_impl_.weak_){false}
-    , decltype(_impl_.debug_redact_){false}
+    , decltype(_impl_.packed_) { false }
+
+    , decltype(_impl_.lazy_) { false }
+
+    , decltype(_impl_.unverified_lazy_) { false }
+
+    , decltype(_impl_.deprecated_) { false }
+
+    , decltype(_impl_.weak_) { false }
+
+    , decltype(_impl_.debug_redact_) { false }
+
   };
 }
 
@@ -8186,19 +8338,22 @@ failure:
   // optional bool packed = 2;
   if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(2, this->_internal_packed(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        2, this->_internal_packed(), target);
   }
 
   // optional bool deprecated = 3 [default = false];
   if (cached_has_bits & 0x00000020u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(3, this->_internal_deprecated(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        3, this->_internal_deprecated(), target);
   }
 
   // optional bool lazy = 5 [default = false];
   if (cached_has_bits & 0x00000008u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(5, this->_internal_lazy(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        5, this->_internal_lazy(), target);
   }
 
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
@@ -8211,19 +8366,22 @@ failure:
   // optional bool weak = 10 [default = false];
   if (cached_has_bits & 0x00000040u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(10, this->_internal_weak(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        10, this->_internal_weak(), target);
   }
 
   // optional bool unverified_lazy = 15 [default = false];
   if (cached_has_bits & 0x00000010u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(15, this->_internal_unverified_lazy(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        15, this->_internal_unverified_lazy(), target);
   }
 
   // optional bool debug_redact = 16 [default = false];
   if (cached_has_bits & 0x00000080u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(16, this->_internal_debug_redact(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        16, this->_internal_debug_redact(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -8279,32 +8437,32 @@ failure:
 
     // optional bool packed = 2;
     if (cached_has_bits & 0x00000004u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool lazy = 5 [default = false];
     if (cached_has_bits & 0x00000008u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool unverified_lazy = 15 [default = false];
     if (cached_has_bits & 0x00000010u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool deprecated = 3 [default = false];
     if (cached_has_bits & 0x00000020u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool weak = 10 [default = false];
     if (cached_has_bits & 0x00000040u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool debug_redact = 16 [default = false];
     if (cached_has_bits & 0x00000080u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
   }
@@ -8632,9 +8790,12 @@ EnumOptions::EnumOptions(const EnumOptions& from)
     , decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
-    , decltype(_impl_.allow_alias_){}
-    , decltype(_impl_.deprecated_){}
-    , decltype(_impl_.deprecated_legacy_json_field_conflicts_){}};
+    , decltype(_impl_.allow_alias_) {}
+
+    , decltype(_impl_.deprecated_) {}
+
+    , decltype(_impl_.deprecated_legacy_json_field_conflicts_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
@@ -8651,9 +8812,12 @@ inline void EnumOptions::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){arena}
-    , decltype(_impl_.allow_alias_){false}
-    , decltype(_impl_.deprecated_){false}
-    , decltype(_impl_.deprecated_legacy_json_field_conflicts_){false}
+    , decltype(_impl_.allow_alias_) { false }
+
+    , decltype(_impl_.deprecated_) { false }
+
+    , decltype(_impl_.deprecated_legacy_json_field_conflicts_) { false }
+
   };
 }
 
@@ -8781,19 +8945,22 @@ failure:
   // optional bool allow_alias = 2;
   if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(2, this->_internal_allow_alias(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        2, this->_internal_allow_alias(), target);
   }
 
   // optional bool deprecated = 3 [default = false];
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(3, this->_internal_deprecated(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        3, this->_internal_deprecated(), target);
   }
 
   // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
   if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(6, this->_internal_deprecated_legacy_json_field_conflicts(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        6, this->_internal_deprecated_legacy_json_field_conflicts(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -8837,17 +9004,17 @@ failure:
   if (cached_has_bits & 0x00000007u) {
     // optional bool allow_alias = 2;
     if (cached_has_bits & 0x00000001u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool deprecated = 3 [default = false];
     if (cached_has_bits & 0x00000002u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
     // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
     if (cached_has_bits & 0x00000004u) {
-      total_size += 1 + 1;
+      total_size += 2;
     }
 
   }
@@ -8948,7 +9115,8 @@ EnumValueOptions::EnumValueOptions(const EnumValueOptions& from)
     , decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
-    , decltype(_impl_.deprecated_){}};
+    , decltype(_impl_.deprecated_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
@@ -8963,7 +9131,8 @@ inline void EnumValueOptions::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){arena}
-    , decltype(_impl_.deprecated_){false}
+    , decltype(_impl_.deprecated_) { false }
+
   };
 }
 
@@ -9069,7 +9238,8 @@ failure:
   // optional bool deprecated = 1 [default = false];
   if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(1, this->_internal_deprecated(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        1, this->_internal_deprecated(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9112,7 +9282,7 @@ failure:
   // optional bool deprecated = 1 [default = false];
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    total_size += 1 + 1;
+    total_size += 2;
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -9164,6 +9334,7 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+
   swap(_impl_.deprecated_, other->_impl_.deprecated_);
 }
 
@@ -9197,7 +9368,8 @@ ServiceOptions::ServiceOptions(const ServiceOptions& from)
     , decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
-    , decltype(_impl_.deprecated_){}};
+    , decltype(_impl_.deprecated_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
@@ -9212,7 +9384,8 @@ inline void ServiceOptions::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){arena}
-    , decltype(_impl_.deprecated_){false}
+    , decltype(_impl_.deprecated_) { false }
+
   };
 }
 
@@ -9318,7 +9491,8 @@ failure:
   // optional bool deprecated = 33 [default = false];
   if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(33, this->_internal_deprecated(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        33, this->_internal_deprecated(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9361,7 +9535,7 @@ failure:
   // optional bool deprecated = 33 [default = false];
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    total_size += 2 + 1;
+    total_size += 3;
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -9413,6 +9587,7 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+
   swap(_impl_.deprecated_, other->_impl_.deprecated_);
 }
 
@@ -9449,7 +9624,8 @@ MethodOptions::MethodOptions(const MethodOptions& from)
     , decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
-    , decltype(_impl_.deprecated_){}
+    , decltype(_impl_.deprecated_) {}
+
     , decltype(_impl_.idempotency_level_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -9467,7 +9643,8 @@ inline void MethodOptions::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){arena}
-    , decltype(_impl_.deprecated_){false}
+    , decltype(_impl_.deprecated_) { false }
+
     , decltype(_impl_.idempotency_level_){0}
   };
 }
@@ -9593,7 +9770,8 @@ failure:
   // optional bool deprecated = 33 [default = false];
   if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(33, this->_internal_deprecated(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        33, this->_internal_deprecated(), target);
   }
 
   // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
@@ -9644,7 +9822,7 @@ failure:
   if (cached_has_bits & 0x00000003u) {
     // optional bool deprecated = 33 [default = false];
     if (cached_has_bits & 0x00000001u) {
-      total_size += 2 + 1;
+      total_size += 3;
     }
 
     // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
@@ -9753,7 +9931,8 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOp
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.name_part_){}
-    , decltype(_impl_.is_extension_){}};
+    , decltype(_impl_.is_extension_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_part_.InitDefault();
@@ -9774,7 +9953,8 @@ inline void UninterpretedOption_NamePart::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.name_part_){}
-    , decltype(_impl_.is_extension_){false}
+    , decltype(_impl_.is_extension_) { false }
+
   };
   _impl_.name_part_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -9889,7 +10069,8 @@ failure:
   // required bool is_extension = 2;
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(2, this->_internal_is_extension(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        2, this->_internal_is_extension(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -9913,7 +10094,7 @@ failure:
 
   if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
     // required bool is_extension = 2;
-    total_size += 1 + 1;
+    total_size += 2;
   }
 
   return total_size;
@@ -9929,7 +10110,7 @@ failure:
         this->_internal_name_part());
 
     // required bool is_extension = 2;
-    total_size += 1 + 1;
+    total_size += 2;
 
   } else {
     total_size += RequiredFieldsByteSizeFallback();
@@ -9991,6 +10172,7 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* ot
       &_impl_.name_part_, lhs_arena,
       &other->_impl_.name_part_, rhs_arena
   );
+
   swap(_impl_.is_extension_, other->_impl_.is_extension_);
 }
 
@@ -10041,9 +10223,12 @@ UninterpretedOption::UninterpretedOption(const UninterpretedOption& from)
     , decltype(_impl_.identifier_value_){}
     , decltype(_impl_.string_value_){}
     , decltype(_impl_.aggregate_value_){}
-    , decltype(_impl_.positive_int_value_){}
-    , decltype(_impl_.negative_int_value_){}
-    , decltype(_impl_.double_value_){}};
+    , decltype(_impl_.positive_int_value_) {}
+
+    , decltype(_impl_.negative_int_value_) {}
+
+    , decltype(_impl_.double_value_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.identifier_value_.InitDefault();
@@ -10085,9 +10270,12 @@ inline void UninterpretedOption::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.identifier_value_){}
     , decltype(_impl_.string_value_){}
     , decltype(_impl_.aggregate_value_){}
-    , decltype(_impl_.positive_int_value_){::uint64_t{0u}}
-    , decltype(_impl_.negative_int_value_){::int64_t{0}}
-    , decltype(_impl_.double_value_){0}
+    , decltype(_impl_.positive_int_value_) { ::uint64_t{0u} }
+
+    , decltype(_impl_.negative_int_value_) { ::int64_t{0} }
+
+    , decltype(_impl_.double_value_) { 0 }
+
   };
   _impl_.identifier_value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -10291,19 +10479,22 @@ failure:
   // optional uint64 positive_int_value = 4;
   if (cached_has_bits & 0x00000008u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(4, this->_internal_positive_int_value(), target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
+        4, this->_internal_positive_int_value(), target);
   }
 
   // optional int64 negative_int_value = 5;
   if (cached_has_bits & 0x00000010u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt64ToArray(5, this->_internal_negative_int_value(), target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(
+        5, this->_internal_negative_int_value(), target);
   }
 
   // optional double double_value = 6;
   if (cached_has_bits & 0x00000020u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteDoubleToArray(6, this->_internal_double_value(), target);
+    target = ::_pbi::WireFormatLite::WriteDoubleToArray(
+        6, this->_internal_double_value(), target);
   }
 
   // optional bytes string_value = 7;
@@ -10370,17 +10561,19 @@ failure:
 
     // optional uint64 positive_int_value = 4;
     if (cached_has_bits & 0x00000008u) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_positive_int_value());
+      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
+          this->_internal_positive_int_value());
     }
 
     // optional int64 negative_int_value = 5;
     if (cached_has_bits & 0x00000010u) {
-      total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_negative_int_value());
+      total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
+          this->_internal_negative_int_value());
     }
 
     // optional double double_value = 6;
     if (cached_has_bits & 0x00000020u) {
-      total_size += 1 + 8;
+      total_size += 9;
     }
 
   }
@@ -10499,10 +10692,12 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& 
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.path_){from._impl_.path_}
-    , /*decltype(_impl_._path_cached_byte_size_)*/{0}
-    , decltype(_impl_.span_){from._impl_.span_}
-    , /*decltype(_impl_._span_cached_byte_size_)*/{0}
+    , decltype(_impl_.path_) { from._impl_.path_ }
+    ,/* _impl_._path_cached_byte_size_ = */ { 0 }
+
+    , decltype(_impl_.span_) { from._impl_.span_ }
+    ,/* _impl_._span_cached_byte_size_ = */ { 0 }
+
     , decltype(_impl_.leading_detached_comments_){from._impl_.leading_detached_comments_}
     , decltype(_impl_.leading_comments_){}
     , decltype(_impl_.trailing_comments_){}};
@@ -10532,10 +10727,12 @@ inline void SourceCodeInfo_Location::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.path_){arena}
-    , /*decltype(_impl_._path_cached_byte_size_)*/{0}
-    , decltype(_impl_.span_){arena}
-    , /*decltype(_impl_._span_cached_byte_size_)*/{0}
+    , decltype(_impl_.path_) { arena }
+    ,/* _impl_._path_cached_byte_size_ = */ { 0 }
+
+    , decltype(_impl_.span_) { arena }
+    ,/* _impl_._span_cached_byte_size_ = */ { 0 }
+
     , decltype(_impl_.leading_detached_comments_){arena}
     , decltype(_impl_.leading_comments_){}
     , decltype(_impl_.trailing_comments_){}
@@ -10703,8 +10900,8 @@ failure:
   {
     int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(
-          1, _internal_path(), byte_size, target);
+      target = stream->WriteInt32Packed(1, _internal_path(),
+                                                 byte_size, target);
     }
   }
 
@@ -10712,8 +10909,8 @@ failure:
   {
     int byte_size = _impl_._span_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(
-          2, _internal_span(), byte_size, target);
+      target = stream->WriteInt32Packed(2, _internal_span(),
+                                                 byte_size, target);
     }
   }
 
@@ -10766,28 +10963,28 @@ failure:
 
   // repeated int32 path = 1 [packed = true];
   {
-    ::size_t data_size = ::_pbi::WireFormatLite::
-      Int32Size(this->_impl_.path_);
-    if (data_size > 0) {
-      total_size += 1 +
-        ::_pbi::WireFormatLite::Int32Size(static_cast<::int32_t>(data_size));
-    }
-    int cached_size = ::_pbi::ToCachedSize(data_size);
-    _impl_._path_cached_byte_size_.Set(cached_size);
-    total_size += data_size;
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.path_)
+    ;
+    _impl_._path_cached_byte_size_.Set(::_pbi::ToCachedSize(data_size));
+    std::size_t tag_size = data_size == 0
+        ? 0
+        : 1 + ::_pbi::WireFormatLite::Int32Size(
+                            static_cast<int32_t>(data_size))
+    ;
+    total_size += tag_size + data_size;
   }
 
   // repeated int32 span = 2 [packed = true];
   {
-    ::size_t data_size = ::_pbi::WireFormatLite::
-      Int32Size(this->_impl_.span_);
-    if (data_size > 0) {
-      total_size += 1 +
-        ::_pbi::WireFormatLite::Int32Size(static_cast<::int32_t>(data_size));
-    }
-    int cached_size = ::_pbi::ToCachedSize(data_size);
-    _impl_._span_cached_byte_size_.Set(cached_size);
-    total_size += data_size;
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.span_)
+    ;
+    _impl_._span_cached_byte_size_.Set(::_pbi::ToCachedSize(data_size));
+    std::size_t tag_size = data_size == 0
+        ? 0
+        : 1 + ::_pbi::WireFormatLite::Int32Size(
+                            static_cast<int32_t>(data_size))
+    ;
+    total_size += tag_size + data_size;
   }
 
   // repeated string leading_detached_comments = 6;
@@ -11097,11 +11294,14 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeIn
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.path_){from._impl_.path_}
-    , /*decltype(_impl_._path_cached_byte_size_)*/{0}
+    , decltype(_impl_.path_) { from._impl_.path_ }
+    ,/* _impl_._path_cached_byte_size_ = */ { 0 }
+
     , decltype(_impl_.source_file_){}
-    , decltype(_impl_.begin_){}
-    , decltype(_impl_.end_){}
+    , decltype(_impl_.begin_) {}
+
+    , decltype(_impl_.end_) {}
+
     , decltype(_impl_.semantic_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -11124,11 +11324,14 @@ inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.path_){arena}
-    , /*decltype(_impl_._path_cached_byte_size_)*/{0}
+    , decltype(_impl_.path_) { arena }
+    ,/* _impl_._path_cached_byte_size_ = */ { 0 }
+
     , decltype(_impl_.source_file_){}
-    , decltype(_impl_.begin_){0}
-    , decltype(_impl_.end_){0}
+    , decltype(_impl_.begin_) { 0 }
+
+    , decltype(_impl_.end_) { 0 }
+
     , decltype(_impl_.semantic_){0}
   };
   _impl_.source_file_.InitDefault();
@@ -11276,8 +11479,8 @@ failure:
   {
     int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(
-          1, _internal_path(), byte_size, target);
+      target = stream->WriteInt32Packed(1, _internal_path(),
+                                                 byte_size, target);
     }
   }
 
@@ -11295,13 +11498,15 @@ failure:
   // optional int32 begin = 3;
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_begin(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        3, this->_internal_begin(), target);
   }
 
   // optional int32 end = 4;
   if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(4, this->_internal_end(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        4, this->_internal_end(), target);
   }
 
   // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
@@ -11329,15 +11534,15 @@ failure:
 
   // repeated int32 path = 1 [packed = true];
   {
-    ::size_t data_size = ::_pbi::WireFormatLite::
-      Int32Size(this->_impl_.path_);
-    if (data_size > 0) {
-      total_size += 1 +
-        ::_pbi::WireFormatLite::Int32Size(static_cast<::int32_t>(data_size));
-    }
-    int cached_size = ::_pbi::ToCachedSize(data_size);
-    _impl_._path_cached_byte_size_.Set(cached_size);
-    total_size += data_size;
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.path_)
+    ;
+    _impl_._path_cached_byte_size_.Set(::_pbi::ToCachedSize(data_size));
+    std::size_t tag_size = data_size == 0
+        ? 0
+        : 1 + ::_pbi::WireFormatLite::Int32Size(
+                            static_cast<int32_t>(data_size))
+    ;
+    total_size += tag_size + data_size;
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -11351,12 +11556,14 @@ failure:
 
     // optional int32 begin = 3;
     if (cached_has_bits & 0x00000002u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_begin());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_begin());
     }
 
     // optional int32 end = 4;
     if (cached_has_bits & 0x00000004u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_end());
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_end());
     }
 
     // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;

@@ -65,17 +65,20 @@ absl::flat_hash_map<absl::string_view, std::string> FieldVars(
     const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
   absl::flat_hash_map<absl::string_view, std::string> vars = {
-      {"ns", Namespace(field, opts)},
+      // This will eventually be renamed to "field", once the existing "field"
+      // variable is replaced with "field_" everywhere.
       {"name", FieldName(field)},
+
       {"index", absl::StrCat(field->index())},
       {"number", absl::StrCat(field->number())},
-      {"classname", ClassName(FieldScope(field), false)},
-      {"declared_type", DeclaredTypeMethodName(field->type())},
-      {"field", FieldMemberName(field, split)},
-      {"tag_size",
+      {"pkg.Msg.field", field->full_name()},
+
+      {"field_", FieldMemberName(field, split)},
+      {"DeclaredType", DeclaredTypeMethodName(field->type())},
+      {"kTagBytes",
        absl::StrCat(WireFormat::TagSize(field->number(), field->type()))},
       {"deprecated_attr", DeprecatedAttribute(opts, field)},
-      {"maybe_prepare_split_message",
+      {"PrepareSplitMessageForWrite",
        split ? "PrepareSplitMessageForWrite();" : ""},
 
       // These variables are placeholders to pick out the beginning and ends of
@@ -84,6 +87,16 @@ absl::flat_hash_map<absl::string_view, std::string> FieldVars(
       // but the empty string.
       {"{", ""},
       {"}", ""},
+
+      // Old-style names.
+      {"field", FieldMemberName(field, split)},
+      {"maybe_prepare_split_message",
+       split ? "PrepareSplitMessageForWrite();" : ""},
+      {"declared_type", DeclaredTypeMethodName(field->type())},
+      {"classname", ClassName(FieldScope(field), false)},
+      {"ns", Namespace(field, opts)},
+      {"tag_size",
+       absl::StrCat(WireFormat::TagSize(field->number(), field->type()))},
   };
 
   if (const auto* oneof = field->containing_oneof()) {
@@ -192,7 +205,7 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
       case FieldDescriptor::CPPTYPE_ENUM:
         return MakeOneofEnumGenerator(field, options, scc);
       default:
-        return MakeOneofPrimitiveGenerator(field, options, scc);
+        return MakeSinguarPrimitiveGenerator(field, options, scc);
     }
   }
 
@@ -225,12 +238,13 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
                                    ? "_has_bits_"
                                    : "_impl_._has_bits_";
 
-  vars.emplace_back("has_hasbit",
-                    absl::StrFormat("%s[%d] & %s", has_bits, index, mask));
-  vars.emplace_back("set_hasbit",
-                    absl::StrFormat("%s[%d] |= %s;", has_bits, index, mask));
-  vars.emplace_back("clear_hasbit",
-                    absl::StrFormat("%s[%d] &= ~%s;", has_bits, index, mask));
+  auto has = absl::StrFormat("%s[%d] & %s", has_bits, index, mask);
+  auto set = absl::StrFormat("%s[%d] |= %s;", has_bits, index, mask);
+  auto clr = absl::StrFormat("%s[%d] &= ~%s;", has_bits, index, mask);
+
+  vars.emplace_back("has_hasbit", has);
+  vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
+  vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
 }
 
 void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
@@ -273,6 +287,11 @@ FieldGenerator::FieldGenerator(const FieldDescriptor* field,
   for (auto&& kv : OneofFieldVars(field)) {
     field_vars_.push_back(Sub{std::string(kv.first), kv.second});
   }
+
+  // This is set up here rather than in FieldVars so we can set a prefix.
+  // The " " suffix allows us to write `$DEPRECATED$ int foo();` and such.
+  field_vars_.push_back(
+      Sub("DEPRECATED", DeprecatedAttribute(options, field)).WithSuffix(" "));
 
   HasBitVars(field, options, hasbit_index, field_vars_);
   InlinedStringVars(field, options, inlined_string_index, field_vars_);

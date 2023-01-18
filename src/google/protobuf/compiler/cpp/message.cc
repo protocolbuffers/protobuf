@@ -498,6 +498,7 @@ absl::flat_hash_map<absl::string_view, std::string> ClassVars(
     const Descriptor* desc, Options opts) {
   absl::flat_hash_map<absl::string_view, std::string> vars = MessageVars(desc);
 
+  vars.emplace("pkg", Namespace(desc, opts));
   vars.emplace("Msg", ClassName(desc, false));
   vars.emplace("pkg::Msg", QualifiedClassName(desc, opts));
   vars.emplace("pkg.Msg", desc->full_name());
