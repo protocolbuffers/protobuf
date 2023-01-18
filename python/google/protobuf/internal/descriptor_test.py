@@ -1186,6 +1186,7 @@ class MakeDescriptorTest(unittest.TestCase):
 
   def testCamelcaseName(self):
     descriptor_proto = descriptor_pb2.DescriptorProto()
+    descriptor_proto.options.deprecated_legacy_json_field_conflicts = True
     descriptor_proto.name = 'Bar'
     names = ['foo_foo', 'FooBar', 'fooBaz', 'fooFoo', 'foobar']
     camelcase_names = ['fooFoo', 'fooBar', 'fooBaz', 'fooFoo', 'foobar']
@@ -1200,6 +1201,7 @@ class MakeDescriptorTest(unittest.TestCase):
 
   def testJsonName(self):
     descriptor_proto = descriptor_pb2.DescriptorProto()
+    descriptor_proto.options.deprecated_legacy_json_field_conflicts = True
     descriptor_proto.name = 'TestJsonName'
     names = ['field_name', 'fieldName', 'FieldName',
              '_field_name', 'FIELD_NAME', 'json_name']

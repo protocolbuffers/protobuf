@@ -1277,6 +1277,8 @@ class StylizedFieldNamesTest : public testing::Test {
     AddExtensionRange(AddMessage(&file, "ExtendableMessage"), 1, 1000);
 
     DescriptorProto* message = AddMessage(&file, "TestMessage");
+    message->mutable_options()->set_deprecated_legacy_json_field_conflicts(
+        true);
     AddField(message, "foo_foo", 1, FieldDescriptorProto::LABEL_OPTIONAL,
              FieldDescriptorProto::TYPE_INT32);
     AddField(message, "FooBar", 2, FieldDescriptorProto::LABEL_OPTIONAL,
@@ -7012,7 +7014,7 @@ TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto3) {
 }
 
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto2) {
-  BuildFileWithWarnings(
+  BuildFileWithErrors(
       "name: 'foo.proto' "
       "syntax: 'proto2' "
       "message_type {"
