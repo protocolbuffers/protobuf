@@ -712,7 +712,8 @@ failure:
   // double number_value = 2;
   if (kind_case() == kNumberValue) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteDoubleToArray(2, this->_internal_number_value(), target);
+    target = ::_pbi::WireFormatLite::WriteDoubleToArray(
+        2, this->_internal_number_value(), target);
   }
 
   // string string_value = 3;
@@ -728,7 +729,8 @@ failure:
   // bool bool_value = 4;
   if (kind_case() == kBoolValue) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(4, this->_internal_bool_value(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        4, this->_internal_bool_value(), target);
   }
 
   // .google.protobuf.Struct struct_value = 5;
@@ -770,7 +772,7 @@ failure:
     }
     // double number_value = 2;
     case kNumberValue: {
-      total_size += 1 + 8;
+      total_size += 9;
       break;
     }
     // string string_value = 3;
@@ -782,7 +784,7 @@ failure:
     }
     // bool bool_value = 4;
     case kBoolValue: {
-      total_size += 1 + 1;
+      total_size += 2;
       break;
     }
     // .google.protobuf.Struct struct_value = 5;

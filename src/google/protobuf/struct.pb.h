@@ -452,9 +452,11 @@ class PROTOBUF_EXPORT Value final :
   void clear_number_value() ;
   double number_value() const;
   void set_number_value(double value);
+
   private:
   double _internal_number_value() const;
   void _internal_set_number_value(double value);
+
   public:
   // string string_value = 3;
   bool has_string_value() const;
@@ -475,9 +477,11 @@ class PROTOBUF_EXPORT Value final :
   void clear_bool_value() ;
   bool bool_value() const;
   void set_bool_value(bool value);
+
   private:
   bool _internal_bool_value() const;
   void _internal_set_bool_value(bool value);
+
   public:
   // .google.protobuf.Struct struct_value = 5;
   bool has_struct_value() const;
@@ -806,6 +810,15 @@ inline void Value::clear_number_value() {
     clear_has_kind();
   }
 }
+inline double Value::number_value() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Value.number_value)
+  return _internal_number_value();
+}
+inline void Value::set_number_value(double value) {
+  ;
+  _internal_set_number_value(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.Value.number_value)
+}
 inline double Value::_internal_number_value() const {
   if (kind_case() == kNumberValue) {
     return _impl_.kind_.number_value_;
@@ -818,14 +831,6 @@ inline void Value::_internal_set_number_value(double value) {
     set_has_number_value();
   }
   _impl_.kind_.number_value_ = value;
-}
-inline double Value::number_value() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.Value.number_value)
-  return _internal_number_value();
-}
-inline void Value::set_number_value(double value) {
-  _internal_set_number_value(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.Value.number_value)
 }
 
 // string string_value = 3;
@@ -915,6 +920,15 @@ inline void Value::clear_bool_value() {
     clear_has_kind();
   }
 }
+inline bool Value::bool_value() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Value.bool_value)
+  return _internal_bool_value();
+}
+inline void Value::set_bool_value(bool value) {
+  ;
+  _internal_set_bool_value(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.Value.bool_value)
+}
 inline bool Value::_internal_bool_value() const {
   if (kind_case() == kBoolValue) {
     return _impl_.kind_.bool_value_;
@@ -927,14 +941,6 @@ inline void Value::_internal_set_bool_value(bool value) {
     set_has_bool_value();
   }
   _impl_.kind_.bool_value_ = value;
-}
-inline bool Value::bool_value() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.Value.bool_value)
-  return _internal_bool_value();
-}
-inline void Value::set_bool_value(bool value) {
-  _internal_set_bool_value(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.Value.bool_value)
 }
 
 // .google.protobuf.Struct struct_value = 5;

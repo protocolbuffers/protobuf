@@ -231,9 +231,11 @@ class PROTOBUF_EXPORT DoubleValue final :
   void clear_value() ;
   double value() const;
   void set_value(double value);
+
   private:
   double _internal_value() const;
   void _internal_set_value(double value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.DoubleValue)
  private:
@@ -376,9 +378,11 @@ class PROTOBUF_EXPORT FloatValue final :
   void clear_value() ;
   float value() const;
   void set_value(float value);
+
   private:
   float _internal_value() const;
   void _internal_set_value(float value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FloatValue)
  private:
@@ -521,9 +525,11 @@ class PROTOBUF_EXPORT Int64Value final :
   void clear_value() ;
   ::int64_t value() const;
   void set_value(::int64_t value);
+
   private:
   ::int64_t _internal_value() const;
   void _internal_set_value(::int64_t value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Int64Value)
  private:
@@ -666,9 +672,11 @@ class PROTOBUF_EXPORT UInt64Value final :
   void clear_value() ;
   ::uint64_t value() const;
   void set_value(::uint64_t value);
+
   private:
   ::uint64_t _internal_value() const;
   void _internal_set_value(::uint64_t value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt64Value)
  private:
@@ -811,9 +819,11 @@ class PROTOBUF_EXPORT Int32Value final :
   void clear_value() ;
   ::int32_t value() const;
   void set_value(::int32_t value);
+
   private:
   ::int32_t _internal_value() const;
   void _internal_set_value(::int32_t value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Int32Value)
  private:
@@ -956,9 +966,11 @@ class PROTOBUF_EXPORT UInt32Value final :
   void clear_value() ;
   ::uint32_t value() const;
   void set_value(::uint32_t value);
+
   private:
   ::uint32_t _internal_value() const;
   void _internal_set_value(::uint32_t value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt32Value)
  private:
@@ -1101,9 +1113,11 @@ class PROTOBUF_EXPORT BoolValue final :
   void clear_value() ;
   bool value() const;
   void set_value(bool value);
+
   private:
   bool _internal_value() const;
   void _internal_set_value(bool value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.BoolValue)
  private:
@@ -1440,20 +1454,21 @@ class PROTOBUF_EXPORT BytesValue final :
 inline void DoubleValue::clear_value() {
   _impl_.value_ = 0;
 }
-inline double DoubleValue::_internal_value() const {
-  return _impl_.value_;
-}
 inline double DoubleValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.DoubleValue.value)
   return _internal_value();
 }
-inline void DoubleValue::_internal_set_value(double value) {
-
-  _impl_.value_ = value;
-}
 inline void DoubleValue::set_value(double value) {
+  ;
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.DoubleValue.value)
+}
+inline double DoubleValue::_internal_value() const {
+  return _impl_.value_;
+}
+inline void DoubleValue::_internal_set_value(double value) {
+  ;
+  _impl_.value_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1464,20 +1479,21 @@ inline void DoubleValue::set_value(double value) {
 inline void FloatValue::clear_value() {
   _impl_.value_ = 0;
 }
-inline float FloatValue::_internal_value() const {
-  return _impl_.value_;
-}
 inline float FloatValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FloatValue.value)
   return _internal_value();
 }
-inline void FloatValue::_internal_set_value(float value) {
-
-  _impl_.value_ = value;
-}
 inline void FloatValue::set_value(float value) {
+  ;
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FloatValue.value)
+}
+inline float FloatValue::_internal_value() const {
+  return _impl_.value_;
+}
+inline void FloatValue::_internal_set_value(float value) {
+  ;
+  _impl_.value_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1488,20 +1504,21 @@ inline void FloatValue::set_value(float value) {
 inline void Int64Value::clear_value() {
   _impl_.value_ = ::int64_t{0};
 }
-inline ::int64_t Int64Value::_internal_value() const {
-  return _impl_.value_;
-}
 inline ::int64_t Int64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int64Value.value)
   return _internal_value();
 }
-inline void Int64Value::_internal_set_value(::int64_t value) {
-
-  _impl_.value_ = value;
-}
 inline void Int64Value::set_value(::int64_t value) {
+  ;
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Int64Value.value)
+}
+inline ::int64_t Int64Value::_internal_value() const {
+  return _impl_.value_;
+}
+inline void Int64Value::_internal_set_value(::int64_t value) {
+  ;
+  _impl_.value_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1512,20 +1529,21 @@ inline void Int64Value::set_value(::int64_t value) {
 inline void UInt64Value::clear_value() {
   _impl_.value_ = ::uint64_t{0u};
 }
-inline ::uint64_t UInt64Value::_internal_value() const {
-  return _impl_.value_;
-}
 inline ::uint64_t UInt64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt64Value.value)
   return _internal_value();
 }
-inline void UInt64Value::_internal_set_value(::uint64_t value) {
-
-  _impl_.value_ = value;
-}
 inline void UInt64Value::set_value(::uint64_t value) {
+  ;
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.UInt64Value.value)
+}
+inline ::uint64_t UInt64Value::_internal_value() const {
+  return _impl_.value_;
+}
+inline void UInt64Value::_internal_set_value(::uint64_t value) {
+  ;
+  _impl_.value_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1536,20 +1554,21 @@ inline void UInt64Value::set_value(::uint64_t value) {
 inline void Int32Value::clear_value() {
   _impl_.value_ = 0;
 }
-inline ::int32_t Int32Value::_internal_value() const {
-  return _impl_.value_;
-}
 inline ::int32_t Int32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int32Value.value)
   return _internal_value();
 }
-inline void Int32Value::_internal_set_value(::int32_t value) {
-
-  _impl_.value_ = value;
-}
 inline void Int32Value::set_value(::int32_t value) {
+  ;
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Int32Value.value)
+}
+inline ::int32_t Int32Value::_internal_value() const {
+  return _impl_.value_;
+}
+inline void Int32Value::_internal_set_value(::int32_t value) {
+  ;
+  _impl_.value_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1560,20 +1579,21 @@ inline void Int32Value::set_value(::int32_t value) {
 inline void UInt32Value::clear_value() {
   _impl_.value_ = 0u;
 }
-inline ::uint32_t UInt32Value::_internal_value() const {
-  return _impl_.value_;
-}
 inline ::uint32_t UInt32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt32Value.value)
   return _internal_value();
 }
-inline void UInt32Value::_internal_set_value(::uint32_t value) {
-
-  _impl_.value_ = value;
-}
 inline void UInt32Value::set_value(::uint32_t value) {
+  ;
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.UInt32Value.value)
+}
+inline ::uint32_t UInt32Value::_internal_value() const {
+  return _impl_.value_;
+}
+inline void UInt32Value::_internal_set_value(::uint32_t value) {
+  ;
+  _impl_.value_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1584,20 +1604,21 @@ inline void UInt32Value::set_value(::uint32_t value) {
 inline void BoolValue::clear_value() {
   _impl_.value_ = false;
 }
-inline bool BoolValue::_internal_value() const {
-  return _impl_.value_;
-}
 inline bool BoolValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.BoolValue.value)
   return _internal_value();
 }
-inline void BoolValue::_internal_set_value(bool value) {
-
-  _impl_.value_ = value;
-}
 inline void BoolValue::set_value(bool value) {
+  ;
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.BoolValue.value)
+}
+inline bool BoolValue::_internal_value() const {
+  return _impl_.value_;
+}
+inline void BoolValue::_internal_set_value(bool value) {
+  ;
+  _impl_.value_ = value;
 }
 
 // -------------------------------------------------------------------

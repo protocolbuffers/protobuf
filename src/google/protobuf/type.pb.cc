@@ -47,9 +47,12 @@ PROTOBUF_CONSTEXPR Field::Field(
   , /*decltype(_impl_.default_value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.kind_)*/0
   , /*decltype(_impl_.cardinality_)*/0
-  , /*decltype(_impl_.number_)*/0
-  , /*decltype(_impl_.oneof_index_)*/0
-  , /*decltype(_impl_.packed_)*/false
+  , /* ._impl_.number_ = */ 0
+
+  , /* ._impl_.oneof_index_ = */ 0
+
+  , /* ._impl_.packed_ = */ false
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct FieldDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -83,7 +86,8 @@ PROTOBUF_CONSTEXPR EnumValue::EnumValue(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.options_)*/{}
   , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.number_)*/0
+  , /* ._impl_.number_ = */ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct EnumValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EnumValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -800,9 +804,12 @@ Field::Field(const Field& from)
     , decltype(_impl_.default_value_){}
     , decltype(_impl_.kind_){}
     , decltype(_impl_.cardinality_){}
-    , decltype(_impl_.number_){}
-    , decltype(_impl_.oneof_index_){}
-    , decltype(_impl_.packed_){}
+    , decltype(_impl_.number_) {}
+
+    , decltype(_impl_.oneof_index_) {}
+
+    , decltype(_impl_.packed_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -854,9 +861,12 @@ inline void Field::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.default_value_){}
     , decltype(_impl_.kind_){0}
     , decltype(_impl_.cardinality_){0}
-    , decltype(_impl_.number_){0}
-    , decltype(_impl_.oneof_index_){0}
-    , decltype(_impl_.packed_){false}
+    , decltype(_impl_.number_) { 0 }
+
+    , decltype(_impl_.oneof_index_) { 0 }
+
+    , decltype(_impl_.packed_) { false }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -1073,7 +1083,8 @@ failure:
   // int32 number = 3;
   if (this->_internal_number() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_number(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        3, this->_internal_number(), target);
   }
 
   // string name = 4;
@@ -1099,13 +1110,15 @@ failure:
   // int32 oneof_index = 7;
   if (this->_internal_oneof_index() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(7, this->_internal_oneof_index(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        7, this->_internal_oneof_index(), target);
   }
 
   // bool packed = 8;
   if (this->_internal_packed() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(8, this->_internal_packed(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        8, this->_internal_packed(), target);
   }
 
   // repeated .google.protobuf.Option options = 9;
@@ -1201,17 +1214,19 @@ failure:
 
   // int32 number = 3;
   if (this->_internal_number() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_number());
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+        this->_internal_number());
   }
 
   // int32 oneof_index = 7;
   if (this->_internal_oneof_index() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_oneof_index());
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+        this->_internal_oneof_index());
   }
 
   // bool packed = 8;
   if (this->_internal_packed() != 0) {
-    total_size += 1 + 1;
+    total_size += 2;
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1680,7 +1695,8 @@ EnumValue::EnumValue(const EnumValue& from)
   new (&_impl_) Impl_{
       decltype(_impl_.options_){from._impl_.options_}
     , decltype(_impl_.name_){}
-    , decltype(_impl_.number_){}
+    , decltype(_impl_.number_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -1701,7 +1717,8 @@ inline void EnumValue::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_{
       decltype(_impl_.options_){arena}
     , decltype(_impl_.name_){}
-    , decltype(_impl_.number_){0}
+    , decltype(_impl_.number_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -1823,7 +1840,8 @@ failure:
   // int32 number = 2;
   if (this->_internal_number() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_number(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        2, this->_internal_number(), target);
   }
 
   // repeated .google.protobuf.Option options = 3;
@@ -1866,7 +1884,8 @@ failure:
 
   // int32 number = 2;
   if (this->_internal_number() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_number());
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+        this->_internal_number());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1918,6 +1937,7 @@ void EnumValue::InternalSwap(EnumValue* other) {
       &_impl_.name_, lhs_arena,
       &other->_impl_.name_, rhs_arena
   );
+
   swap(_impl_.number_, other->_impl_.number_);
 }
 

@@ -731,25 +731,31 @@ class PROTOBUF_EXPORT Field final :
   void clear_number() ;
   ::int32_t number() const;
   void set_number(::int32_t value);
+
   private:
   ::int32_t _internal_number() const;
   void _internal_set_number(::int32_t value);
+
   public:
   // int32 oneof_index = 7;
   void clear_oneof_index() ;
   ::int32_t oneof_index() const;
   void set_oneof_index(::int32_t value);
+
   private:
   ::int32_t _internal_oneof_index() const;
   void _internal_set_oneof_index(::int32_t value);
+
   public:
   // bool packed = 8;
   void clear_packed() ;
   bool packed() const;
   void set_packed(bool value);
+
   private:
   bool _internal_packed() const;
   void _internal_set_packed(bool value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Field)
  private:
@@ -1154,9 +1160,11 @@ class PROTOBUF_EXPORT EnumValue final :
   void clear_number() ;
   ::int32_t number() const;
   void set_number(::int32_t value);
+
   private:
   ::int32_t _internal_number() const;
   void _internal_set_number(::int32_t value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValue)
  private:
@@ -1715,20 +1723,21 @@ inline void Field::set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality va
 inline void Field::clear_number() {
   _impl_.number_ = 0;
 }
-inline ::int32_t Field::_internal_number() const {
-  return _impl_.number_;
-}
 inline ::int32_t Field::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.number)
   return _internal_number();
 }
-inline void Field::_internal_set_number(::int32_t value) {
-
-  _impl_.number_ = value;
-}
 inline void Field::set_number(::int32_t value) {
+  ;
   _internal_set_number(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.number)
+}
+inline ::int32_t Field::_internal_number() const {
+  return _impl_.number_;
+}
+inline void Field::_internal_set_number(::int32_t value) {
+  ;
+  _impl_.number_ = value;
 }
 
 // string name = 4;
@@ -1825,40 +1834,42 @@ inline void Field::set_allocated_type_url(std::string* type_url) {
 inline void Field::clear_oneof_index() {
   _impl_.oneof_index_ = 0;
 }
-inline ::int32_t Field::_internal_oneof_index() const {
-  return _impl_.oneof_index_;
-}
 inline ::int32_t Field::oneof_index() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.oneof_index)
   return _internal_oneof_index();
 }
-inline void Field::_internal_set_oneof_index(::int32_t value) {
-
-  _impl_.oneof_index_ = value;
-}
 inline void Field::set_oneof_index(::int32_t value) {
+  ;
   _internal_set_oneof_index(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.oneof_index)
+}
+inline ::int32_t Field::_internal_oneof_index() const {
+  return _impl_.oneof_index_;
+}
+inline void Field::_internal_set_oneof_index(::int32_t value) {
+  ;
+  _impl_.oneof_index_ = value;
 }
 
 // bool packed = 8;
 inline void Field::clear_packed() {
   _impl_.packed_ = false;
 }
-inline bool Field::_internal_packed() const {
-  return _impl_.packed_;
-}
 inline bool Field::packed() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.packed)
   return _internal_packed();
 }
-inline void Field::_internal_set_packed(bool value) {
-
-  _impl_.packed_ = value;
-}
 inline void Field::set_packed(bool value) {
+  ;
   _internal_set_packed(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.packed)
+}
+inline bool Field::_internal_packed() const {
+  return _impl_.packed_;
+}
+inline void Field::_internal_set_packed(bool value) {
+  ;
+  _impl_.packed_ = value;
 }
 
 // repeated .google.protobuf.Option options = 9;
@@ -2273,20 +2284,21 @@ inline void EnumValue::set_allocated_name(std::string* name) {
 inline void EnumValue::clear_number() {
   _impl_.number_ = 0;
 }
-inline ::int32_t EnumValue::_internal_number() const {
-  return _impl_.number_;
-}
 inline ::int32_t EnumValue::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.number)
   return _internal_number();
 }
-inline void EnumValue::_internal_set_number(::int32_t value) {
-
-  _impl_.number_ = value;
-}
 inline void EnumValue::set_number(::int32_t value) {
+  ;
   _internal_set_number(value);
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValue.number)
+}
+inline ::int32_t EnumValue::_internal_number() const {
+  return _impl_.number_;
+}
+inline void EnumValue::_internal_set_number(::int32_t value) {
+  ;
+  _impl_.number_ = value;
 }
 
 // repeated .google.protobuf.Option options = 3;

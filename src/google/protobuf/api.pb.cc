@@ -45,8 +45,10 @@ PROTOBUF_CONSTEXPR Method::Method(
   , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.request_type_url_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.response_type_url_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.request_streaming_)*/false
-  , /*decltype(_impl_.response_streaming_)*/false
+  , /* ._impl_.request_streaming_ = */ false
+
+  , /* ._impl_.response_streaming_ = */ false
+
   , /*decltype(_impl_.syntax_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct MethodDefaultTypeInternal {
@@ -664,8 +666,10 @@ Method::Method(const Method& from)
     , decltype(_impl_.name_){}
     , decltype(_impl_.request_type_url_){}
     , decltype(_impl_.response_type_url_){}
-    , decltype(_impl_.request_streaming_){}
-    , decltype(_impl_.response_streaming_){}
+    , decltype(_impl_.request_streaming_) {}
+
+    , decltype(_impl_.response_streaming_) {}
+
     , decltype(_impl_.syntax_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
@@ -707,8 +711,10 @@ inline void Method::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.name_){}
     , decltype(_impl_.request_type_url_){}
     , decltype(_impl_.response_type_url_){}
-    , decltype(_impl_.request_streaming_){false}
-    , decltype(_impl_.response_streaming_){false}
+    , decltype(_impl_.request_streaming_) { false }
+
+    , decltype(_impl_.response_streaming_) { false }
+
     , decltype(_impl_.syntax_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
@@ -896,7 +902,8 @@ failure:
   // bool request_streaming = 3;
   if (this->_internal_request_streaming() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(3, this->_internal_request_streaming(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        3, this->_internal_request_streaming(), target);
   }
 
   // string response_type_url = 4;
@@ -912,7 +919,8 @@ failure:
   // bool response_streaming = 5;
   if (this->_internal_response_streaming() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(5, this->_internal_response_streaming(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        5, this->_internal_response_streaming(), target);
   }
 
   // repeated .google.protobuf.Option options = 6;
@@ -976,12 +984,12 @@ failure:
 
   // bool request_streaming = 3;
   if (this->_internal_request_streaming() != 0) {
-    total_size += 1 + 1;
+    total_size += 2;
   }
 
   // bool response_streaming = 5;
   if (this->_internal_response_streaming() != 0) {
-    total_size += 1 + 1;
+    total_size += 2;
   }
 
   // .google.protobuf.Syntax syntax = 7;
