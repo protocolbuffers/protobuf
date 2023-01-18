@@ -1107,8 +1107,7 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
   }
   if (field.real_containing_oneof()) {
     uint64_t case_offset = ~mt_f->presence;
-    if (case_offset > 0xffff) return false;
-    assert(field.number() < 256);
+    if (case_offset > 0xffff || field.number() > 0xff) return false;
     data |= field.number() << 24;
     data |= case_offset << 32;
   } else {
