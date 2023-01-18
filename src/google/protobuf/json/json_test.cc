@@ -1053,6 +1053,16 @@ TEST_P(JsonTest, Extensions) {
           R"("[protobuf_unittest.TestMixedFieldsAndExtensions.c]":42,)"
           R"("b":[1,2,3],)"
           R"("[protobuf_unittest.TestMixedFieldsAndExtensions.d]":[1,1,2,3,5,8,13]})"));
+
+  auto m2 = ToProto<protobuf_unittest::TestAllTypes>(R"json({
+    "[this.extension.does.not.exist]": 42
+  })json");
+  EXPECT_THAT(m2, StatusIs(absl::StatusCode::kInvalidArgument));
+
+  auto m3 = ToProto<protobuf_unittest::TestAllTypes>(R"json({
+    "[protobuf_unittest.TestMixedFieldsAndExtensions.c]": 42
+  })json");
+  EXPECT_THAT(m3, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 // Parsing does NOT work like MergeFrom: existing repeated field values are

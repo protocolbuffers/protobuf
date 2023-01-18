@@ -1181,6 +1181,19 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
   if (absl::StartsWith(name, "[") && absl::EndsWith(name, "]")) {
     absl::string_view extn_name = name.substr(1, name.size() - 2);
     field = Traits::ExtensionByName(desc, extn_name);
+
+    if (field.has_value()) {
+      // The check for whether this is an invalid field occurs below, since it
+      // is combined for both extension and non-extension fields.
+      auto correct_type_name = Traits::TypeName(desc);
+      if (Traits::TypeName(Traits::ContainingType(*field)) !=
+          correct_type_name) {
+        return lex.Invalid(absl::StrFormat(
+            "'%s' is a known extension name, but is not an extenion "
+            "of '%s' as expected",
+            extn_name, correct_type_name));
+      }
+    }
   } else {
     field = Traits::FieldByName(desc, name);
   }
