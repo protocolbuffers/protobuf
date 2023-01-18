@@ -22,8 +22,9 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - { NAME: "Fastbuild", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "" }
-          - { NAME: "Optmized", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "-c opt" }  # Some warnings only fire with -c opt
+          # Temporarily disabled until Copybara fixes its cap of 30 jobs per PR.
+          # - { NAME: "Fastbuild", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "" }
+          # - { NAME: "Optmized", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "-c opt" }  # Some warnings only fire with -c opt
           - { NAME: "GCC Optimized", BAZEL: bazel, CC: gcc-12, os: ubuntu-22.04, flags: "-c opt" }
           - { NAME: "FastTable", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
           - { NAME: "ASAN", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--config=asan -c dbg -- -benchmarks:benchmark -python/..." }
@@ -73,31 +74,32 @@ jobs:
       - name: Run tests
         run: cd ${{ github.workspace }} && source /tmp/venv/bin/activate && CC=${{ matrix.CC }} ${{ matrix.BAZEL }} test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH ... ${{ matrix.flags }}
 
-  no-python:
-    runs-on: ubuntu-20-large
-    env:
-      BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/upb
+  # Temporarily disabled until Copybara fixes its cap of 30 jobs per PR.
+  # no-python:
+  #   runs-on: ubuntu-20-large
+  #   env:
+  #     BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/upb
 
-    strategy:
-      fail-fast: false   # Don't cancel all jobs if one fails.
+  #   strategy:
+  #     fail-fast: false   # Don't cancel all jobs if one fails.
 
-    name: "No System Python"
+  #   name: "No System Python"
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/auth@v0
-        with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-          export_environment_variables: true
-        if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
-      - name: Set up Bazel read/write caching
-        run: echo "BAZEL_CACHE_AUTH=--google_default_credentials" >> $GITHUB_ENV
-        if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
-      - name: Set up Bazel read-only caching
-        run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
-        if: ${{ github.event.pull_request.head.repo.full_name != 'protocolbuffers/upb' }}
-      - name: Uninstall python
-        run: which python3 && sudo mv `which python3` /tmp && ! which python3
-      - name: Run tests
-        run: cd ${{ github.workspace }} && bazel test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH //python/... -- -//python/dist:source_wheel
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/auth@v0
+  #       with:
+  #         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+  #         export_environment_variables: true
+  #       if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
+  #     - name: Set up Bazel read/write caching
+  #       run: echo "BAZEL_CACHE_AUTH=--google_default_credentials" >> $GITHUB_ENV
+  #       if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
+  #     - name: Set up Bazel read-only caching
+  #       run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
+  #       if: ${{ github.event.pull_request.head.repo.full_name != 'protocolbuffers/upb' }}
+  #     - name: Uninstall python
+  #       run: which python3 && sudo mv `which python3` /tmp && ! which python3
+  #     - name: Run tests
+  #       run: cd ${{ github.workspace }} && bazel test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH //python/... -- -//python/dist:source_wheel
