@@ -36,7 +36,7 @@
 #include "google/protobuf/port_def.inc"
 
 // ===================================================================
-// emulates google3/base/callback.h
+// emulates google3/base/functional/callback.h
 
 namespace google {
 namespace protobuf {
