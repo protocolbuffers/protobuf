@@ -120,11 +120,13 @@ class DescriptorPool(object):
 
   if _USE_C_DESCRIPTORS:
 
-    def __new__(cls, descriptor_db=None):
-      # pylint: disable=protected-access
-      return descriptor._message.DescriptorPool(descriptor_db)
+   def __new__(cls, descriptor_db=None):
+     # pylint: disable=protected-access
+     return descriptor._message.DescriptorPool(descriptor_db)
 
-  def __init__(self, descriptor_db=None):
+  def __init__(
+      self, descriptor_db=None, use_deprecated_legacy_json_field_conflicts=False
+  ):
     """Initializes a Pool of proto buffs.
 
     The descriptor_db argument to the constructor is provided to allow
@@ -135,6 +137,8 @@ class DescriptorPool(object):
 
     Args:
       descriptor_db: A secondary source of file descriptors.
+      use_deprecated_legacy_json_field_conflicts: Unused, for compatibility with
+        C++.
     """
 
     self._internal_db = descriptor_database.DescriptorDatabase()
