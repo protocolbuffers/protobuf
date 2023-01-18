@@ -567,6 +567,24 @@ bool WireFormat::ParseAndMergeField(
       // Handle strings separately so that we can optimize the ctype=CORD case.
       case FieldDescriptor::TYPE_STRING: {
         bool strict_utf8_check = StrictUtf8Check(field);
+        if (field->options().ctype() == FieldOptions::CORD) {
+          absl::Cord value;
+          if (!WireFormatLite::ReadString(input, &value)) return false;
+          if (strict_utf8_check) {
+            if (!WireFormatLite::VerifyUtf8Cord(value, WireFormatLite::PARSE,
+                                                field->full_name().c_str())) {
+              return false;
+            }
+          } else {
+            VerifyUTF8CordNamedField(value, PARSE, field->full_name().c_str());
+          }
+          if (field->is_repeated()) {
+            message_reflection->AddStringFromCord(message, field, value);
+          } else {
+            message_reflection->SetStringFromCord(message, field, value);
+          }
+          break;
+        }
         std::string value;
         if (!WireFormatLite::ReadString(input, &value)) return false;
         if (strict_utf8_check) {
@@ -588,6 +606,16 @@ bool WireFormat::ParseAndMergeField(
       }
 
       case FieldDescriptor::TYPE_BYTES: {
+        if (field->options().ctype() == FieldOptions::CORD) {
+          absl::Cord value;
+          if (!WireFormatLite::ReadBytes(input, &value)) return false;
+          if (field->is_repeated()) {
+            message_reflection->AddStringFromCord(message, field, value);
+          } else {
+            message_reflection->SetStringFromCord(message, field, value);
+          }
+          break;
+        }
         std::string value;
         if (!WireFormatLite::ReadBytes(input, &value)) return false;
         if (field->is_repeated()) {
@@ -987,6 +1015,27 @@ const char* WireFormat::_InternalParseAndMergeField(
     case FieldDescriptor::TYPE_BYTES: {
       int size = ReadSize(&ptr);
       if (ptr == nullptr) return nullptr;
+      if (field->options().ctype() == FieldOptions::CORD) {
+        absl::Cord value;
+        ptr = ctx->ReadCord(ptr, size, &value);
+        if (ptr == nullptr) return nullptr;
+        if (utf8_check) {
+          if (strict_utf8_check) {
+            if (!WireFormatLite::VerifyUtf8Cord(value, WireFormatLite::PARSE,
+                                                field->full_name().c_str())) {
+              return nullptr;
+            }
+          } else {
+            VerifyUTF8CordNamedField(value, PARSE, field->full_name().c_str());
+          }
+        }
+        if (field->is_repeated()) {
+          reflection->AddStringFromCord(msg, field, value);
+        } else {
+          reflection->SetStringFromCord(msg, field, value);
+        }
+        return ptr;
+      }
       std::string value;
       ptr = ctx->ReadString(ptr, size, &value);
       if (ptr == nullptr) return nullptr;
@@ -1401,6 +1450,22 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       // instead of copying.
       case FieldDescriptor::TYPE_STRING: {
         bool strict_utf8_check = StrictUtf8Check(field);
+        if (field->options().ctype() == FieldOptions::CORD) {
+          absl::Cord value =
+              field->is_repeated()
+                  ? message_reflection->GetRepeatedStringAsCord(message, field,
+                                                                j)
+                  : message_reflection->GetStringAsCord(message, field);
+          if (strict_utf8_check) {
+            WireFormatLite::VerifyUtf8Cord(value, WireFormatLite::SERIALIZE,
+                                           field->full_name().c_str());
+          } else {
+            VerifyUTF8CordNamedField(value, SERIALIZE,
+                                     field->full_name().c_str());
+          }
+          target = stream->WriteString(field->number(), value, target);
+          break;
+        }
         std::string scratch;
         const std::string& value =
             field->is_repeated()
@@ -1421,6 +1486,15 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       }
 
       case FieldDescriptor::TYPE_BYTES: {
+        if (field->options().ctype() == FieldOptions::CORD) {
+          absl::Cord value =
+              field->is_repeated()
+                  ? message_reflection->GetRepeatedStringAsCord(message, field,
+                                                                j)
+                  : message_reflection->GetStringAsCord(message, field);
+          target = stream->WriteString(field->number(), value, target);
+          break;
+        }
         std::string scratch;
         const std::string& value =
             field->is_repeated()
@@ -1717,6 +1791,17 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     // instead of copying.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
+      if (field->options().ctype() == FieldOptions::CORD) {
+        for (size_t j = 0; j < count; j++) {
+          absl::Cord value =
+              field->is_repeated()
+                  ? message_reflection->GetRepeatedStringAsCord(message, field,
+                                                                j)
+                  : message_reflection->GetStringAsCord(message, field);
+          data_size += WireFormatLite::StringSize(value);
+        }
+        break;
+      }
       for (size_t j = 0; j < count; j++) {
         std::string scratch;
         const std::string& value =

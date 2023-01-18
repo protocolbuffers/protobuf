@@ -285,6 +285,11 @@ class PROTOBUF_EXPORT WireFormat {
   static void VerifyUTF8StringNamedField(const char* data, int size,
                                          Operation op, const char* field_name);
 
+  // Identical to the above functions except that they accept a Cord input.
+  static void VerifyUTF8Cord(const absl::Cord& cord, Operation op);
+  static void VerifyUTF8CordNamedField(const absl::Cord& cord, Operation op,
+                                       const char* field_name);
+
  private:
   struct MessageSetParser;
   friend class TcParser;
@@ -382,6 +387,28 @@ inline void WireFormat::VerifyUTF8StringNamedField(const char* data, int size,
 #endif
 }
 
+inline void WireFormat::VerifyUTF8Cord(const absl::Cord& cord,
+                                       WireFormat::Operation op) {
+#ifndef NDEBUG
+  // Don't do UTF-8 validation on CORDS in Release build, too expensive.
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  WireFormatLite::VerifyUtf8Cord(
+      cord, static_cast<WireFormatLite::Operation>(op), nullptr);
+#endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+#endif  // !NDEBUG
+}
+
+inline void WireFormat::VerifyUTF8CordNamedField(const absl::Cord& cord,
+                                                 WireFormat::Operation op,
+                                                 const char* field_name) {
+#ifndef NDEBUG
+  // Don't do UTF-8 validation on CORDS in Release build, too expensive.
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  WireFormatLite::VerifyUtf8Cord(
+      cord, static_cast<WireFormatLite::Operation>(op), field_name);
+#endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+#endif  // !NDEBUG
+}
 
 inline uint8_t* InternalSerializeUnknownMessageSetItemsToArray(
     const UnknownFieldSet& unknown_fields, uint8_t* target,
