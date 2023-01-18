@@ -134,9 +134,8 @@ void ImportWriter::AddFile(const FileDescriptor* file,
     // in other cases, they get skipped because the generated code already
     // import GPBProtocolBuffers.h and hence proves them.
     if (for_bundled_proto_) {
-      const std::string header_name =
-          "GPB" + FilePathBasename(file) + header_extension;
-      protobuf_imports_.push_back(header_name);
+      protobuf_imports_.emplace_back(
+          absl::StrCat("GPB", FilePathBasename(file), header_extension));
     }
     return;
   }
@@ -148,15 +147,15 @@ void ImportWriter::AddFile(const FileDescriptor* file,
 
   auto proto_lookup = proto_file_to_framework_name_.find(file->name());
   if (proto_lookup != proto_file_to_framework_name_.end()) {
-    other_framework_imports_.push_back(
-        proto_lookup->second + "/" + FilePathBasename(file) + header_extension);
+    other_framework_imports_.emplace_back(absl::StrCat(
+        proto_lookup->second, "/", FilePathBasename(file), header_extension));
     return;
   }
 
   if (!generate_for_named_framework_.empty()) {
-    other_framework_imports_.push_back(generate_for_named_framework_ + "/" +
-                                       FilePathBasename(file) +
-                                       header_extension);
+    other_framework_imports_.push_back(
+        absl::StrCat(generate_for_named_framework_, "/", FilePathBasename(file),
+                     header_extension));
     return;
   }
 

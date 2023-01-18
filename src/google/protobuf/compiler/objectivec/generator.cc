@@ -145,8 +145,9 @@ bool ObjectiveCGenerator::GenerateAll(
       // Default is "no".
       if (!StringToBool(options[i].second,
                         &validation_options.prefixes_must_be_registered)) {
-        *error = "error: Unknown value for prefixes_must_be_registered: " +
-                 options[i].second;
+        *error = absl::StrCat(
+            "error: Unknown value for prefixes_must_be_registered: ",
+            options[i].second);
         return false;
       }
     } else if (options[i].first == "require_prefixes") {
@@ -158,8 +159,8 @@ bool ObjectiveCGenerator::GenerateAll(
       // Default is "no".
       if (!StringToBool(options[i].second,
                         &validation_options.require_prefixes)) {
-        *error =
-            "error: Unknown value for require_prefixes: " + options[i].second;
+        *error = absl::StrCat("error: Unknown value for require_prefixes: ",
+                              options[i].second);
         return false;
       }
     } else if (options[i].first == "generate_for_named_framework") {
@@ -229,7 +230,8 @@ bool ObjectiveCGenerator::GenerateAll(
       if (StringToBool(options[i].second, &value)) {
         SetUseProtoPackageAsDefaultPrefix(value);
       } else {
-        *error = "error: Unknown use_package_as_prefix: " + options[i].second;
+        *error = absl::StrCat("error: Unknown use_package_as_prefix: ",
+                              options[i].second);
         return false;
       }
     } else if (options[i].first == "proto_package_prefix_exceptions_path") {
@@ -251,8 +253,9 @@ bool ObjectiveCGenerator::GenerateAll(
     } else if (options[i].first == "headers_use_forward_declarations") {
       if (!StringToBool(options[i].second,
                         &generation_options.headers_use_forward_declarations)) {
-        *error = "error: Unknown value for headers_use_forward_declarations: " +
-                 options[i].second;
+        *error = absl::StrCat(
+            "error: Unknown value for headers_use_forward_declarations: ",
+            options[i].second);
         return false;
       }
     } else if (options[i].first == "experimental_multi_source_generation") {
@@ -267,13 +270,14 @@ bool ObjectiveCGenerator::GenerateAll(
       if (!StringToBool(
               options[i].second,
               &generation_options.experimental_multi_source_generation)) {
-        *error =
-            "error: Unknown value for experimental_multi_source_generation: " +
-            options[i].second;
+        *error = absl::StrCat(
+            "error: Unknown value for experimental_multi_source_generation: ",
+            options[i].second);
         return false;
       }
     } else {
-      *error = "error: Unknown generator option: " + options[i].first;
+      *error =
+          absl::StrCat("error: Unknown generator option: ", options[i].first);
       return false;
     }
   }
@@ -312,7 +316,8 @@ bool ObjectiveCGenerator::GenerateAll(
 
     // Generate header.
     {
-      auto output = absl::WrapUnique(context->Open(filepath + ".pbobjc.h"));
+      auto output =
+          absl::WrapUnique(context->Open(absl::StrCat(filepath, ".pbobjc.h")));
       io::Printer printer(output.get());
       file_generator.GenerateHeader(&printer);
       if (printer.failed()) {
@@ -367,7 +372,8 @@ bool ObjectiveCGenerator::GenerateAll(
           }
         }
       } else {
-        auto output = absl::WrapUnique(context->Open(filepath + ".pbobjc.m"));
+        auto output = absl::WrapUnique(
+            context->Open(absl::StrCat(filepath, ".pbobjc.m")));
         io::Printer printer(output.get());
         file_generator.GenerateSource(&printer);
         if (printer.failed()) {

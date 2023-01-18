@@ -90,9 +90,10 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
     const FieldDescriptor* descriptor)
     : RepeatedFieldGenerator(descriptor) {
   SetMessageVariables(descriptor, &variables_);
+  std::string storage_type = variables_["storage_type"];
   variables_["array_storage_type"] = "NSMutableArray";
   variables_["array_property_type"] =
-      "NSMutableArray<" + variables_["storage_type"] + "*>";
+      absl::StrCat("NSMutableArray<", storage_type, "*>");
 }
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(

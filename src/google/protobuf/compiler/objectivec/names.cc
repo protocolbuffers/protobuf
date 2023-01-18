@@ -83,7 +83,7 @@ class SimpleLineCollector : public LineConsumer {
 
 class PackageToPrefixesCollector : public LineConsumer {
  public:
-  PackageToPrefixesCollector(const std::string& usage,
+  PackageToPrefixesCollector(absl::string_view usage,
                              absl::flat_hash_map<std::string, std::string>*
                                  inout_package_to_prefix_map)
       : usage_(usage), prefix_map_(inout_package_to_prefix_map) {}
@@ -99,32 +99,33 @@ class PrefixModeStorage {
  public:
   PrefixModeStorage();
 
-  std::string package_to_prefix_mappings_path() const {
+  absl::string_view package_to_prefix_mappings_path() const {
     return package_to_prefix_mappings_path_;
   }
-  void set_package_to_prefix_mappings_path(const std::string& path) {
-    package_to_prefix_mappings_path_ = path;
+  void set_package_to_prefix_mappings_path(absl::string_view path) {
+    package_to_prefix_mappings_path_ = std::string(path);
     package_to_prefix_map_.clear();
   }
 
-  std::string prefix_from_proto_package_mappings(const FileDescriptor* file);
+  absl::string_view prefix_from_proto_package_mappings(
+      const FileDescriptor* file);
 
   bool use_package_name() const { return use_package_name_; }
   void set_use_package_name(bool on_or_off) { use_package_name_ = on_or_off; }
 
-  std::string exception_path() const { return exception_path_; }
-  void set_exception_path(const std::string& path) {
-    exception_path_ = path;
+  absl::string_view exception_path() const { return exception_path_; }
+  void set_exception_path(absl::string_view path) {
+    exception_path_ = std::string(path);
     exceptions_.clear();
   }
 
-  bool is_package_exempted(const std::string& package);
+  bool is_package_exempted(absl::string_view package);
 
   // When using a proto package as the prefix, this should be added as the
   // prefix in front of it.
-  const std::string& forced_package_prefix() const { return forced_prefix_; }
-  void set_forced_package_prefix(const std::string& prefix) {
-    forced_prefix_ = prefix;
+  absl::string_view forced_package_prefix() const { return forced_prefix_; }
+  void set_forced_package_prefix(absl::string_view prefix) {
+    forced_prefix_ = std::string(prefix);
   }
 
  private:
@@ -156,7 +157,7 @@ PrefixModeStorage::PrefixModeStorage() {
 
 constexpr absl::string_view kNoPackagePrefix = "no_package:";
 
-std::string PrefixModeStorage::prefix_from_proto_package_mappings(
+absl::string_view PrefixModeStorage::prefix_from_proto_package_mappings(
     const FileDescriptor* file) {
   if (!file) {
     return "";
@@ -197,7 +198,7 @@ std::string PrefixModeStorage::prefix_from_proto_package_mappings(
   return "";
 }
 
-bool PrefixModeStorage::is_package_exempted(const std::string& package) {
+bool PrefixModeStorage::is_package_exempted(absl::string_view package) {
   if (exceptions_.empty() && !exception_path_.empty()) {
     std::string error_str;
     SimpleLineCollector collector(&exceptions_);
@@ -226,11 +227,11 @@ PrefixModeStorage& g_prefix_mode = *new PrefixModeStorage();
 
 }  // namespace
 
-std::string GetPackageToPrefixMappingsPath() {
+absl::string_view GetPackageToPrefixMappingsPath() {
   return g_prefix_mode.package_to_prefix_mappings_path();
 }
 
-void SetPackageToPrefixMappingsPath(const std::string& file_path) {
+void SetPackageToPrefixMappingsPath(absl::string_view file_path) {
   g_prefix_mode.set_package_to_prefix_mappings_path(file_path);
 }
 
@@ -242,19 +243,19 @@ void SetUseProtoPackageAsDefaultPrefix(bool on_or_off) {
   g_prefix_mode.set_use_package_name(on_or_off);
 }
 
-std::string GetProtoPackagePrefixExceptionList() {
+absl::string_view GetProtoPackagePrefixExceptionList() {
   return g_prefix_mode.exception_path();
 }
 
-void SetProtoPackagePrefixExceptionList(const std::string& file_path) {
+void SetProtoPackagePrefixExceptionList(absl::string_view file_path) {
   g_prefix_mode.set_exception_path(file_path);
 }
 
-std::string GetForcedPackagePrefix() {
+absl::string_view GetForcedPackagePrefix() {
   return g_prefix_mode.forced_package_prefix();
 }
 
-void SetForcedPackagePrefix(const std::string& prefix) {
+void SetForcedPackagePrefix(absl::string_view prefix) {
   g_prefix_mode.set_forced_package_prefix(prefix);
 }
 
@@ -277,7 +278,7 @@ const absl::flat_hash_set<absl::string_view>& UpperSegments() {
 // Internal helper for name handing.
 // Do not expose this outside of helpers, stick to having functions for specific
 // cases (ClassName(), FieldName()), so there is always consistent suffix rules.
-std::string UnderscoresToCamelCase(const std::string& input,
+std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool first_capitalized) {
   std::vector<std::string> values;
   std::string current;
@@ -552,7 +553,7 @@ const absl::flat_hash_set<absl::string_view>& NSObjectMethods() {
 // here but this verifies and allows for future expansion if we decide to
 // redefine what a reserved C identifier is (for example the GNU list
 // https://www.gnu.org/software/libc/manual/html_node/Reserved-Names.html )
-bool IsReservedCIdentifier(const std::string& input) {
+bool IsReservedCIdentifier(absl::string_view input) {
   if (input.length() > 2) {
     if (input.at(0) == '_') {
       if (isupper(input.at(1)) || input.at(1) == '_') {
@@ -563,9 +564,9 @@ bool IsReservedCIdentifier(const std::string& input) {
   return false;
 }
 
-std::string SanitizeNameForObjC(const std::string& prefix,
-                                const std::string& input,
-                                const std::string& extension,
+std::string SanitizeNameForObjC(absl::string_view prefix,
+                                absl::string_view input,
+                                absl::string_view extension,
                                 std::string* out_suffix_added) {
   std::string sanitized;
   // We add the prefix in the cases where the string is missing a prefix.
@@ -576,17 +577,17 @@ std::string SanitizeNameForObjC(const std::string& prefix,
   if (absl::StartsWith(input, prefix)) {
     if (input.length() == prefix.length() ||
         !absl::ascii_isupper(input[prefix.length()])) {
-      sanitized = prefix + input;
+      sanitized = absl::StrCat(prefix, input);
     } else {
-      sanitized = input;
+      sanitized = std::string(input);
     }
   } else {
-    sanitized = prefix + input;
+    sanitized = absl::StrCat(prefix, input);
   }
   if (IsReservedCIdentifier(sanitized) || ReservedWords().contains(sanitized) ||
       NSObjectMethods().contains(sanitized)) {
-    if (out_suffix_added) *out_suffix_added = extension;
-    return sanitized + extension;
+    if (out_suffix_added) *out_suffix_added = std::string(extension);
+    return absl::StrCat(sanitized, extension);
   }
   if (out_suffix_added) out_suffix_added->clear();
   return sanitized;
@@ -600,27 +601,27 @@ std::string NameFromFieldDescriptor(const FieldDescriptor* field) {
   }
 }
 
-void PathSplit(const std::string& path, std::string* directory,
+void PathSplit(absl::string_view path, std::string* directory,
                std::string* basename) {
-  std::string::size_type last_slash = path.rfind('/');
-  if (last_slash == std::string::npos) {
+  absl::string_view::size_type last_slash = path.rfind('/');
+  if (last_slash == absl::string_view::npos) {
     if (directory) {
       *directory = "";
     }
     if (basename) {
-      *basename = path;
+      *basename = std::string(path);
     }
   } else {
     if (directory) {
-      *directory = path.substr(0, last_slash);
+      *directory = std::string(path.substr(0, last_slash));
     }
     if (basename) {
-      *basename = path.substr(last_slash + 1);
+      *basename = std::string(path.substr(last_slash + 1));
     }
   }
 }
 
-bool IsSpecialNamePrefix(const std::string& name,
+bool IsSpecialNamePrefix(absl::string_view name,
                          const std::vector<std::string>& special_names) {
   for (const auto& special_name : special_names) {
     const size_t length = special_name.length();
@@ -648,7 +649,7 @@ void MaybeUnQuote(absl::string_view* input) {
 
 }  // namespace
 
-bool IsRetainedName(const std::string& name) {
+bool IsRetainedName(absl::string_view name) {
   // List of prefixes from
   // http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmRules.html
   static const std::vector<std::string>* retained_names =
@@ -656,13 +657,13 @@ bool IsRetainedName(const std::string& name) {
   return IsSpecialNamePrefix(name, *retained_names);
 }
 
-bool IsInitName(const std::string& name) {
+bool IsInitName(absl::string_view name) {
   static const std::vector<std::string>* init_names =
       new std::vector<std::string>({"init"});
   return IsSpecialNamePrefix(name, *init_names);
 }
 
-bool IsCreateName(const std::string& name) {
+bool IsCreateName(absl::string_view name) {
   // List of segments from
   // https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFMemoryMgmt/Concepts/Ownership.html#//apple_ref/doc/uid/20001148-103029
   static const std::vector<std::string>* create_names =
@@ -708,10 +709,10 @@ std::string FileClassPrefix(const FileDescriptor* file) {
 
   // If package prefix is specified in an prefix to proto mappings file then use
   // that.
-  std::string objc_class_prefix =
+  absl::string_view objc_class_prefix =
       g_prefix_mode.prefix_from_proto_package_mappings(file);
   if (!objc_class_prefix.empty()) {
-    return objc_class_prefix;
+    return std::string(objc_class_prefix);
   }
 
   // If package prefix isn't enabled, done.
@@ -743,7 +744,7 @@ std::string FileClassPrefix(const FileDescriptor* file) {
   if (!result.empty()) {
     result.append("_");
   }
-  return g_prefix_mode.forced_package_prefix() + result;
+  return absl::StrCat(g_prefix_mode.forced_package_prefix(), result);
 }
 
 std::string FilePath(const FileDescriptor* file) {
@@ -752,15 +753,14 @@ std::string FilePath(const FileDescriptor* file) {
   std::string directory;
   PathSplit(file->name(), &directory, &basename);
   if (directory.length() > 0) {
-    output = directory + "/";
+    output = absl::StrCat(directory, "/");
   }
   basename = StripProto(basename);
 
   // CamelCase to be more ObjC friendly.
   basename = UnderscoresToCamelCase(basename, true);
 
-  output += basename;
-  return output;
+  return absl::StrCat(output, basename);
 }
 
 std::string FilePathBasename(const FileDescriptor* file) {
@@ -778,8 +778,8 @@ std::string FilePathBasename(const FileDescriptor* file) {
 
 std::string FileClassName(const FileDescriptor* file) {
   const std::string prefix = FileClassPrefix(file);
-  const std::string name =
-      UnderscoresToCamelCase(StripProto(BaseFileName(file)), true) + "Root";
+  const std::string name = absl::StrCat(
+      UnderscoresToCamelCase(StripProto(BaseFileName(file)), true), "Root");
   // There aren't really any reserved words that end in "Root", but playing
   // it safe and checking.
   return SanitizeNameForObjC(prefix, name, "_RootClass", nullptr);
@@ -788,19 +788,19 @@ std::string FileClassName(const FileDescriptor* file) {
 std::string ClassNameWorker(const Descriptor* descriptor) {
   std::string name;
   if (descriptor->containing_type() != nullptr) {
-    name = ClassNameWorker(descriptor->containing_type());
-    name += "_";
+    return absl::StrCat(ClassNameWorker(descriptor->containing_type()), "_",
+                        descriptor->name());
   }
-  return name + descriptor->name();
+  return absl::StrCat(name, descriptor->name());
 }
 
 std::string ClassNameWorker(const EnumDescriptor* descriptor) {
   std::string name;
   if (descriptor->containing_type() != nullptr) {
-    name = ClassNameWorker(descriptor->containing_type());
-    name += "_";
+    return absl::StrCat(ClassNameWorker(descriptor->containing_type()), "_",
+                        descriptor->name());
   }
-  return name + descriptor->name();
+  return absl::StrCat(name, descriptor->name());
 }
 
 std::string ClassName(const Descriptor* descriptor) {
@@ -840,7 +840,7 @@ std::string EnumValueName(const EnumValueDescriptor* descriptor) {
   const std::string class_name = EnumName(descriptor->type());
   const std::string value_str =
       UnderscoresToCamelCase(descriptor->name(), true);
-  const std::string name = class_name + "_" + value_str;
+  const std::string name = absl::StrCat(class_name, "_", value_str);
   // There aren't really any reserved words with an underscore and a leading
   // capital letter, but playing it safe and checking.
   return SanitizeNameForObjC("", name, "_Value", nullptr);
@@ -860,12 +860,12 @@ std::string EnumValueShortName(const EnumValueDescriptor* descriptor) {
   // and then strip off the enum name (leaving the value name and anything
   // done by sanitize).
   const std::string class_name = EnumName(descriptor->type());
-  const std::string long_name_prefix = class_name + "_";
+  const std::string long_name_prefix = absl::StrCat(class_name, "_");
   const std::string long_name = EnumValueName(descriptor);
   return std::string(absl::StripPrefix(long_name, long_name_prefix));
 }
 
-std::string UnCamelCaseEnumShortName(const std::string& name) {
+std::string UnCamelCaseEnumShortName(absl::string_view name) {
   std::string result;
   for (int i = 0; i < name.size(); i++) {
     char c = name[i];
@@ -888,11 +888,11 @@ std::string FieldName(const FieldDescriptor* field) {
   std::string result = UnderscoresToCamelCase(name, false);
   if (field->is_repeated() && !field->is_map()) {
     // Add "Array" before do check for reserved worlds.
-    result += "Array";
+    absl::StrAppend(&result, "Array");
   } else {
     // If it wasn't repeated, but ends in "Array", force on the _p suffix.
     if (absl::EndsWith(result, "Array")) {
-      result += "_p";
+      absl::StrAppend(&result, "_p");
     }
   }
   return SanitizeNameForObjC("", result, "_p", nullptr);
@@ -910,8 +910,9 @@ std::string FieldNameCapitalized(const FieldDescriptor* field) {
 
 std::string OneofEnumName(const OneofDescriptor* descriptor) {
   const Descriptor* fieldDescriptor = descriptor->containing_type();
-  std::string name = ClassName(fieldDescriptor);
-  name += "_" + UnderscoresToCamelCase(descriptor->name(), true) + "_OneOfCase";
+  std::string name = absl::StrCat(
+      ClassName(fieldDescriptor), "_",
+      UnderscoresToCamelCase(descriptor->name(), true), "_OneOfCase");
   // No sanitize needed because the OS never has names that end in _OneOfCase.
   return name;
 }
@@ -932,7 +933,7 @@ std::string OneofNameCapitalized(const OneofDescriptor* descriptor) {
   return result;
 }
 
-std::string UnCamelCaseFieldName(const std::string& name,
+std::string UnCamelCaseFieldName(absl::string_view name,
                                  const FieldDescriptor* field) {
   absl::string_view worker(name);
   if (absl::EndsWith(worker, "_p")) {
@@ -973,7 +974,7 @@ std::string UnCamelCaseFieldName(const std::string& name,
 // use a different value; so it isn't as simple as a option.
 const char* const ProtobufLibraryFrameworkName = "Protobuf";
 
-std::string ProtobufFrameworkImportSymbol(const std::string& framework_name) {
+std::string ProtobufFrameworkImportSymbol(absl::string_view framework_name) {
   // GPB_USE_[framework_name]_FRAMEWORK_IMPORTS
   return absl::StrCat("GPB_USE_", absl::AsciiStrToUpper(framework_name),
                       "_FRAMEWORK_IMPORTS");
@@ -1021,7 +1022,7 @@ bool PackageToPrefixesCollector::ConsumeLine(absl::string_view line,
 }
 
 bool LoadExpectedPackagePrefixes(
-    const std::string& expected_prefixes_path,
+    absl::string_view expected_prefixes_path,
     absl::flat_hash_map<std::string, std::string>* prefix_map,
     std::string* out_error) {
   if (expected_prefixes_path.empty()) {
@@ -1033,7 +1034,7 @@ bool LoadExpectedPackagePrefixes(
 }
 
 bool ValidateObjCClassPrefix(
-    const FileDescriptor* file, const std::string& expected_prefixes_path,
+    const FileDescriptor* file, absl::string_view expected_prefixes_path,
     const absl::flat_hash_map<std::string, std::string>&
         expected_package_prefixes,
     bool prefixes_must_be_registered, bool require_prefixes,
@@ -1065,16 +1066,17 @@ bool ValidateObjCClassPrefix(
       return true;
     } else {
       // ...it didn't match!
-      *out_error = "error: Expected 'option objc_class_prefix = \"" +
-                   package_match->second + "\";'";
+      *out_error =
+          absl::StrCat("error: Expected 'option objc_class_prefix = \"",
+                       package_match->second, "\";'");
       if (!package.empty()) {
-        *out_error += " for package '" + package + "'";
+        absl::StrAppend(out_error, " for package '", package, "'");
       }
-      *out_error += " in '" + file->name() + "'";
+      absl::StrAppend(out_error, " in '", file->name(), "'");
       if (has_prefix) {
-        *out_error += "; but found '" + prefix + "' instead";
+        absl::StrAppend(out_error, "; but found '", prefix, "' instead");
       }
-      *out_error += ".";
+      absl::StrAppend(out_error, ".");
       return false;
     }
   }
@@ -1082,9 +1084,9 @@ bool ValidateObjCClassPrefix(
   // If there was no prefix option, we're done at this point.
   if (!has_prefix) {
     if (require_prefixes) {
-      *out_error = "error: '" + file->name() +
-                   "' does not have a required 'option" +
-                   " objc_class_prefix'.";
+      *out_error = absl::StrCat("error: '", file->name(),
+                                "' does not have a required 'option"
+                                " objc_class_prefix'.");
       return false;
     }
     return true;
@@ -1110,17 +1112,17 @@ bool ValidateObjCClassPrefix(
     // package (overlap is allowed, but it has to be listed as an expected
     // overlap).
     if (!other_package_for_prefix.empty()) {
-      *out_error = "error: Found 'option objc_class_prefix = \"" + prefix +
-                   "\";' in '" + file->name() +
-                   "'; that prefix is already used for ";
+      *out_error = absl::StrCat("error: Found 'option objc_class_prefix = \"",
+                                prefix, "\";' in '", file->name(),
+                                "'; that prefix is already used for ");
       if (absl::StartsWith(other_package_for_prefix, kNoPackagePrefix)) {
         absl::StrAppend(
             out_error, "file '",
             absl::StripPrefix(other_package_for_prefix, kNoPackagePrefix),
             "'.");
       } else {
-        absl::StrAppend(out_error, "'package ",
-                        other_package_for_prefix + ";'.");
+        absl::StrAppend(out_error, "'package ", other_package_for_prefix,
+                        ";'.");
       }
       absl::StrAppend(out_error, " It can only be reused by adding '",
                       lookup_key, " = ", prefix,
@@ -1153,11 +1155,11 @@ bool ValidateObjCClassPrefix(
   // issue a error/warning to added to the file.
   if (have_expected_prefix_file) {
     if (prefixes_must_be_registered) {
-      *out_error =
-          "error: '" + file->name() + "' has 'option objc_class_prefix = \"" +
-          prefix + "\";', but it is not registered. Add '" + lookup_key +
-          " = " + (prefix.empty() ? "\"\"" : prefix) +
-          "' to the expected prefixes file (" + expected_prefixes_path + ").";
+      *out_error = absl::StrCat(
+          "error: '", file->name(), "' has 'option objc_class_prefix = \"",
+          prefix, "\";', but it is not registered. Add '", lookup_key, " = ",
+          (prefix.empty() ? "\"\"" : prefix),
+          "' to the expected prefixes file (", expected_prefixes_path, ").");
       return false;
     }
 

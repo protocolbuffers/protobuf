@@ -82,7 +82,7 @@ void SetCommonFieldVariables(
   (*variables)["capitalized_name"] = capitalized_name;
   (*variables)["raw_field_name"] = raw_field_name;
   (*variables)["field_number_name"] =
-      classname + "_FieldNumber_" + capitalized_name;
+      absl::StrCat(classname, "_FieldNumber_", capitalized_name);
   (*variables)["field_number"] = absl::StrCat(descriptor->number());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
   (*variables)["deprecated_attribute"] =
@@ -120,8 +120,8 @@ void SetCommonFieldVariables(
   (*variables)["dataTypeSpecific_name"] = "clazz";
   (*variables)["dataTypeSpecific_value"] = "Nil";
 
-  (*variables)["storage_offset_value"] = "(uint32_t)offsetof(" + classname +
-                                         "__storage_, " + camel_case_name + ")";
+  (*variables)["storage_offset_value"] = absl::StrCat(
+      "(uint32_t)offsetof(", classname, "__storage_, ", camel_case_name, ")");
   (*variables)["storage_offset_comment"] = "";
 
   // Clear some common things so they can be set just when needed.

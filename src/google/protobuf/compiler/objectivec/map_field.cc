@@ -99,7 +99,8 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
 
   // Build custom field flags.
   std::vector<std::string> field_flags;
-  field_flags.push_back("GPBFieldMapKey" + GetCapitalizedType(key_descriptor));
+  field_flags.push_back(
+      absl::StrCat("GPBFieldMapKey", GetCapitalizedType(key_descriptor)));
   // Pull over the current text format custom name values that was calculated.
   if (absl::StrContains(variables_["fieldflags"],
                         "GPBFieldTextFormatNameCustom")) {
@@ -129,18 +130,17 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
       value_is_object_type) {
     variables_["array_storage_type"] = "NSMutableDictionary";
     variables_["array_property_type"] =
-        "NSMutableDictionary<NSString*, " +
-        value_field_generator_->variable("storage_type") + "*>";
+        absl::StrCat("NSMutableDictionary<NSString*, ",
+                     value_field_generator_->variable("storage_type"), "*>");
   } else {
-    std::string class_name("GPB");
-    class_name += MapEntryTypeName(key_descriptor, true);
-    class_name += MapEntryTypeName(value_descriptor, false);
-    class_name += "Dictionary";
+    std::string class_name =
+        absl::StrCat("GPB", MapEntryTypeName(key_descriptor, true),
+                     MapEntryTypeName(value_descriptor, false), "Dictionary");
     variables_["array_storage_type"] = class_name;
     if (value_is_object_type) {
       variables_["array_property_type"] =
-          class_name + "<" + value_field_generator_->variable("storage_type") +
-          "*>";
+          absl::StrCat(class_name, "<",
+                       value_field_generator_->variable("storage_type"), "*>");
     }
   }
 
@@ -157,9 +157,10 @@ void MapFieldGenerator::FinishInitialization() {
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_ENUM) {
+    std::string name = variables_["name"];
     variables_["array_comment"] =
-        "// |" + variables_["name"] + "| values are |" +
-        value_field_generator_->variable("storage_type") + "|\n";
+        absl::StrCat("// |", name, "| values are |",
+                     value_field_generator_->variable("storage_type"), "|\n");
   }
 }
 

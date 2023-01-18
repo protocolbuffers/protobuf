@@ -168,11 +168,12 @@ RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
 
   std::string base_name = PrimitiveArrayTypeName(descriptor);
   if (base_name.length()) {
-    variables_["array_storage_type"] = "GPB" + base_name + "Array";
+    variables_["array_storage_type"] = absl::StrCat("GPB", base_name, "Array");
   } else {
+    std::string storage_type = variables_["storage_type"];
     variables_["array_storage_type"] = "NSMutableArray";
     variables_["array_property_type"] =
-        "NSMutableArray<" + variables_["storage_type"] + "*>";
+        absl::StrCat("NSMutableArray<", storage_type, "*>");
   }
 }
 

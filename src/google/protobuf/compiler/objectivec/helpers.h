@@ -105,11 +105,11 @@ std::string BuildFlagsString(FlagType type,
 
 // Returns a symbol that can be used in C code to refer to an Objective C
 // class without initializing the class.
-std::string ObjCClass(const std::string& class_name);
+std::string ObjCClass(absl::string_view class_name);
 
 // Declares an Objective C class without initializing the class so that it can
 // be refrerred to by ObjCClass.
-std::string ObjCClassDeclaration(const std::string& class_name);
+std::string ObjCClassDeclaration(absl::string_view class_name);
 
 // Builds HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
@@ -134,20 +134,14 @@ std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
     std::string message;
     const FileDescriptor* sourceFile = descriptor->file();
     if (isFileLevelDeprecation) {
-      message = sourceFile->name() + " is deprecated.";
+      message = absl::StrCat(sourceFile->name(), " is deprecated.");
     } else {
-      message = descriptor->full_name() + " is deprecated (see " +
-                sourceFile->name() + ").";
+      message = absl::StrCat(descriptor->full_name(), " is deprecated (see ",
+                             sourceFile->name(), ").");
     }
 
-    std::string result = std::string("GPB_DEPRECATED_MSG(\"") + message + "\")";
-    if (preSpace) {
-      result.insert(0, " ");
-    }
-    if (postNewline) {
-      result.append("\n");
-    }
-    return result;
+    return absl::StrCat(preSpace ? " " : "", "GPB_DEPRECATED_MSG(\"", message,
+                        "\")", postNewline ? "\n" : "");
   } else {
     return "";
   }
