@@ -82,7 +82,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
         GOOGLE_ABSL_LOG(WARNING) << "Duplicate enum value " << name << " (originally "
                           << original_name << ") in " << descriptor_->name()
                           << "; adding underscore to distinguish";
-        name += "_";
+        absl::StrAppend(&name, "_");
       }
       int number = descriptor_->value(i)->number();
       if (!used_number.insert(number).second) {

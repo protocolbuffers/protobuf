@@ -175,11 +175,13 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   // Access the message descriptor via the relevant file descriptor or containing message descriptor.
   if (!descriptor_->containing_type()) {
-    vars["descriptor_accessor"] = GetReflectionClassName(descriptor_->file())
-        + ".Descriptor.MessageTypes[" + absl::StrCat(descriptor_->index()) + "]";
+    vars["descriptor_accessor"] =
+        absl::StrCat(GetReflectionClassName(descriptor_->file()),
+                     ".Descriptor.MessageTypes[", descriptor_->index(), "]");
   } else {
-    vars["descriptor_accessor"] = GetClassName(descriptor_->containing_type())
-        + ".Descriptor.NestedTypes[" + absl::StrCat(descriptor_->index()) + "]";
+    vars["descriptor_accessor"] =
+        absl::StrCat(GetClassName(descriptor_->containing_type()),
+                     ".Descriptor.NestedTypes[", descriptor_->index(), "]");
   }
 
   WriteGeneratedCodeAttributes(printer);
