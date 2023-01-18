@@ -93,7 +93,7 @@ void SetEnumVariables(
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
-        GenerateSetBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
     (*variables)["set_has_field_bit_to_local"] =
         GenerateSetBitToLocal(messageBitIndex);
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
@@ -114,9 +114,9 @@ void SetEnumVariables(
 
   // Note that these have a trailing ";".
   (*variables)["set_has_field_bit_builder"] =
-      GenerateSetBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      GenerateClearBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
 

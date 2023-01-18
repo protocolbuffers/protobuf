@@ -111,9 +111,9 @@ void SetMessageVariables(
 
   (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["set_has_field_bit_builder"] =
-      GenerateSetBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      GenerateClearBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
 }

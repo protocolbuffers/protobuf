@@ -6909,14 +6909,13 @@ void DescriptorBuilder::ValidateFileOptions(FileDescriptor* file,
   if (!IsLite(file)) {
     for (int i = 0; i < file->dependency_count(); i++) {
       if (IsLite(file->dependency(i))) {
-        AddError(file->dependency(i)->name(), proto,
-                 DescriptorPool::ErrorCollector::IMPORT,
-                 absl::StrCat("Files that do not use optimize_for = "
-                              "LITE_RUNTIME cannot import "
-                              "files which do use this option.  This file is "
-                              "not lite, but it "
-                              "imports \"",
-                              file->dependency(i)->name(), "\" which is."));
+        AddError(
+            file->dependency(i)->name(), proto,
+            DescriptorPool::ErrorCollector::IMPORT,
+            absl::StrCat("Files that do not use optimize_for = LITE_RUNTIME "
+                         "cannot import files which do use this option.  This "
+                         "file is not lite, but it imports \"",
+                         file->dependency(i)->name(), "\" which is."));
         break;
       }
     }
@@ -7448,8 +7447,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   }
   if (uninterpreted_option_->name(0).name_part() == "uninterpreted_option") {
     return AddNameError(
-        "Option must not use reserved name "
-        "\"uninterpreted_option\".");
+        "Option must not use reserved name \"uninterpreted_option\".");
   }
 
   const Descriptor* options_descriptor = nullptr;
@@ -7941,8 +7939,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       uint64_t value;
       if (!uninterpreted_option_->has_identifier_value()) {
         return AddValueError(
-            absl::StrCat("Value must be identifier for boolean option "
-                         "\"",
+            absl::StrCat("Value must be identifier for boolean option \"",
                          option_field->full_name(), "\"."));
       }
       if (uninterpreted_option_->identifier_value() == "true") {
@@ -7950,10 +7947,9 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       } else if (uninterpreted_option_->identifier_value() == "false") {
         value = 0;
       } else {
-        return AddValueError(
-            absl::StrCat("Value must be \"true\" or \"false\" for boolean "
-                         "option \"",
-                         option_field->full_name(), "\"."));
+        return AddValueError(absl::StrCat(
+            "Value must be \"true\" or \"false\" for boolean option \"",
+            option_field->full_name(), "\"."));
       }
       unknown_fields->AddVarint(option_field->number(), value);
       break;
@@ -7961,8 +7957,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
     case FieldDescriptor::CPPTYPE_ENUM: {
       if (!uninterpreted_option_->has_identifier_value()) {
         return AddValueError(
-            absl::StrCat("Value must be identifier for enum-valued option "
-                         "\"",
+            absl::StrCat("Value must be identifier for enum-valued option \"",
                          option_field->full_name(), "\"."));
       }
       const EnumDescriptor* enum_type = option_field->enum_type();
@@ -8004,9 +7999,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
         return AddValueError(
             absl::StrCat("Enum type \"", option_field->enum_type()->full_name(),
                          "\" has no value named \"", value_name,
-                         "\" for "
-                         "option \"",
-                         option_field->full_name(), "\"."));
+                         "\" for option \"", option_field->full_name(), "\"."));
       } else {
         // Sign-extension is not a problem, since we cast directly from int32_t
         // to uint64_t, without first going through uint32_t.
@@ -8020,8 +8013,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
     case FieldDescriptor::CPPTYPE_STRING:
       if (!uninterpreted_option_->has_string_value()) {
         return AddValueError(
-            absl::StrCat("Value must be quoted string for string option "
-                         "\"",
+            absl::StrCat("Value must be quoted string for string option \"",
                          option_field->full_name(), "\"."));
       }
       // The string has already been unquoted and unescaped by the parser.
@@ -8115,12 +8107,11 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
   if (!uninterpreted_option_->has_aggregate_value()) {
     return AddValueError(
         absl::StrCat("Option \"", option_field->full_name(),
-                     "\" is a message. To set the entire message, use "
-                     "syntax like \"",
+                     "\" is a message. "
+                     "To set the entire message, use syntax like \"",
                      option_field->name(),
                      " = { <proto text format> }\". "
-                     "To set fields within it, use "
-                     "syntax like \"",
+                     "To set fields within it, use syntax like \"",
                      option_field->name(), ".foo = value\"."));
   }
 

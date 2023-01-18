@@ -1072,7 +1072,7 @@ TEST(ExtensionSetTest, RepeatedFields) {
                .MutableRepeatedExtension(unittest::repeated_string_extension)
                ->end();
        string_iter != string_end; ++string_iter) {
-    absl::StrAppend(&*string_iter, "test");
+    string_iter->append("test");
   }
   RepeatedPtrField<std::string>::const_iterator string_const_iter;
   RepeatedPtrField<std::string>::const_iterator string_const_end;
