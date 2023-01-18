@@ -38,6 +38,7 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -183,6 +184,17 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   PROTOBUF_NODISCARD const char* ReadArenaString(const char* ptr,
                                                  ArenaStringPtr* s,
                                                  Arena* arena);
+
+  PROTOBUF_NODISCARD const char* ReadCord(const char* ptr, int size,
+                                          ::absl::Cord* cord) {
+    if (size <= std::min<int>(static_cast<int>(buffer_end_ + kSlopBytes - ptr),
+                              kMaxCordBytesToCopy)) {
+      *cord = absl::string_view(ptr, size);
+      return ptr + size;
+    }
+    return ReadCordFallback(ptr, size, cord);
+  }
+
 
   template <typename Tag, typename T>
   PROTOBUF_NODISCARD const char* ReadRepeatedFixed(const char* ptr,
@@ -334,6 +346,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
+  const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
   bool StreamNext(const void** data) {
     bool res = zcis_->Next(data, &size_);
