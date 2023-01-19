@@ -121,6 +121,7 @@
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/functional/function_ref.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -129,7 +130,6 @@
 #include "google/protobuf/map.h"  // TODO(b/211442718): cleanup
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -629,6 +629,28 @@ class PROTOBUF_EXPORT Reflection final {
                                         const FieldDescriptor* field,
                                         std::string* scratch) const;
 
+  // Returns the a view into the contents of a string field.
+  //
+  // REQUIRES: The ctype for this string field != CORD, or is an extension
+  // field (extension fields are never represented as Cord, even when
+  // ctype=CORD).
+  absl::string_view GetStringView(const Message& message,
+                                  const FieldDescriptor* field) const;
+
+  // Returns the value of a Cord field.
+  //
+  // REQUIRES: The ctype for this string field is CORD, and the field is not an
+  // extension field (extensions are never represented as Cord).
+  const absl::Cord& GetCord(const Message& message,
+                            const FieldDescriptor* field) const;
+
+  // Returns a Cord containing the value of the string field.  If the
+  // underlying field is stored as a cord (e.g. it has the [ctype=CORD]
+  // option), this involves no copies (just reference counting).  If the
+  // underlying representation is not a Cord, a copy will have to be made.
+  absl::Cord GetStringAsCord(const Message& message,
+                             const FieldDescriptor* field) const;
+
 
   // Singular field mutators -----------------------------------------
   // These mutate the value of a non-repeated field.
@@ -705,6 +727,11 @@ class PROTOBUF_EXPORT Reflection final {
                                      const FieldDescriptor* field,
                                      MessageFactory* factory = nullptr) const;
 
+  // Set a string field to a Cord value.  If the underlying field is
+  // represented using a Cord already, this involves no copies  (just
+  // reference counting).  Otherwise, a copy must be made.
+  void SetStringFromCord(Message* message, const FieldDescriptor* field,
+                         const absl::Cord& value) const;
 
   // Repeated field getters ------------------------------------------
   // These get the value of one element of a repeated field.
@@ -745,6 +772,20 @@ class PROTOBUF_EXPORT Reflection final {
                                                 int index,
                                                 std::string* scratch) const;
 
+  // See GetStringView(), above.
+  absl::string_view GetRepeatedStringView(const Message& message,
+                                          const FieldDescriptor* field,
+                                          int index) const;
+
+  // See GetCord(), above.
+  const absl::Cord& GetRepeatedCord(const Message& message,
+                                    const FieldDescriptor* field,
+                                    int index) const;
+
+  // See GetStringAsCord(), above.
+  absl::Cord GetRepeatedStringAsCord(const Message& message,
+                                     const FieldDescriptor* field,
+                                     int index) const;
 
   // Repeated field mutators -----------------------------------------
   // These mutate the value of one element of a repeated field.
@@ -782,6 +823,9 @@ class PROTOBUF_EXPORT Reflection final {
                                   const FieldDescriptor* field,
                                   int index) const;
 
+  // See SetStringFromCord(), above.
+  void SetRepeatedStringFromCord(Message* message, const FieldDescriptor* field,
+                                 int index, const absl::Cord& value) const;
 
   // Repeated field adders -------------------------------------------
   // These add an element to a repeated field.
@@ -830,6 +874,9 @@ class PROTOBUF_EXPORT Reflection final {
                                       const FieldDescriptor* field,
                                       Message* new_entry) const;
 
+  // See SetStringFromCord(), above.
+  void AddStringFromCord(Message* message, const FieldDescriptor* field,
+                         const absl::Cord& value) const;
 
   // Get a RepeatedFieldRef object that can be used to read the underlying
   // repeated field. The type parameter T must be set according to the
@@ -1402,6 +1449,7 @@ DECLARE_GET_REPEATED_FIELD(uint64_t)
 DECLARE_GET_REPEATED_FIELD(float)
 DECLARE_GET_REPEATED_FIELD(double)
 DECLARE_GET_REPEATED_FIELD(bool)
+DECLARE_GET_REPEATED_FIELD(absl::Cord)
 
 #undef DECLARE_GET_REPEATED_FIELD
 

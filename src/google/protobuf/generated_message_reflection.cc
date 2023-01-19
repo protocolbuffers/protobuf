@@ -362,6 +362,10 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
 
         case FieldDescriptor::CPPTYPE_STRING:
           switch (field->options().ctype()) {
+            case FieldOptions::CORD:
+              total_size += GetRaw<RepeatedField<absl::Cord> >(message, field)
+                                .SpaceUsedExcludingSelfLong();
+              break;
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING:
               total_size +=
@@ -403,6 +407,18 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
 
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->options().ctype()) {
+            case FieldOptions::CORD:
+              if (schema_.InRealOneof(field)) {
+                total_size += GetField<absl::Cord*>(message, field)
+                                  ->EstimatedMemoryUsage();
+
+              } else {
+                // sizeof(absl::Cord) is included to self.
+                total_size += GetField<absl::Cord>(message, field)
+                                  .EstimatedMemoryUsage() -
+                              sizeof(absl::Cord);
+              }
+              break;
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING:
               if (IsInlined(field)) {
@@ -501,6 +517,9 @@ struct OneofFieldMover {
           break;
         }
         switch (field->options().ctype()) {
+          case FieldOptions::CORD:
+            to->SetCord(from->GetCord());
+            break;
           default:
           case FieldOptions::STRING: {
             to->SetArenaStringPtr(from->GetArenaStringPtr());
@@ -569,6 +588,16 @@ void SwapFieldHelper::SwapRepeatedStringField(const Reflection* r, Message* lhs,
                                               Message* rhs,
                                               const FieldDescriptor* field) {
   switch (field->options().ctype()) {
+    case FieldOptions::CORD: {
+      auto* lhs_cord = r->MutableRaw<RepeatedField<absl::Cord>>(lhs, field);
+      auto* rhs_cord = r->MutableRaw<RepeatedField<absl::Cord>>(rhs, field);
+      if (unsafe_shallow_swap) {
+        lhs_cord->InternalSwap(rhs_cord);
+      } else {
+        lhs_cord->Swap(rhs_cord);
+      }
+      break;
+    }
     default:
     case FieldOptions::STRING: {
       auto* lhs_string = r->MutableRaw<RepeatedPtrFieldBase>(lhs, field);
@@ -635,6 +664,11 @@ void SwapFieldHelper::SwapStringField(const Reflection* r, Message* lhs,
                                       Message* rhs,
                                       const FieldDescriptor* field) {
   switch (field->options().ctype()) {
+    case FieldOptions::CORD:
+      // Always shallow swap for Cord.
+      std::swap(*r->MutableRaw<absl::Cord>(lhs, field),
+                *r->MutableRaw<absl::Cord>(rhs, field));
+      break;
     default:
     case FieldOptions::STRING: {
       if (r->IsInlined(field)) {
@@ -1263,6 +1297,10 @@ int Reflection::FieldSize(const Message& message,
 #undef HANDLE_TYPE
 
       case FieldDescriptor::CPPTYPE_STRING:
+        if (field->options().ctype() == FieldOptions::CORD) {
+          return GetRaw<RepeatedField<absl::Cord> >(message, field).size();
+        }
+        ABSL_FALLTHROUGH_INTENDED;
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           const internal::MapFieldBase& map =
@@ -1321,6 +1359,14 @@ void Reflection::ClearField(Message* message,
 
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->options().ctype()) {
+            case FieldOptions::CORD:
+              if (field->has_default_value()) {
+                *MutableRaw<absl::Cord>(message, field) =
+                    field->default_value_string();
+              } else {
+                MutableRaw<absl::Cord>(message, field)->Clear();
+              }
+              break;
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING:
               if (IsInlined(field)) {
@@ -1370,6 +1416,9 @@ void Reflection::ClearField(Message* message,
 
       case FieldDescriptor::CPPTYPE_STRING: {
         switch (field->options().ctype()) {
+          case FieldOptions::CORD:
+            MutableRaw<RepeatedField<absl::Cord> >(message, field)->Clear();
+            break;
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
             MutableRaw<RepeatedPtrField<std::string> >(message, field)->Clear();
@@ -1419,6 +1468,10 @@ void Reflection::RemoveLast(Message* message,
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
+          case FieldOptions::CORD:
+            MutableRaw<RepeatedField<absl::Cord> >(message, field)
+                ->RemoveLast();
+            break;
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
             MutableRaw<RepeatedPtrField<std::string> >(message, field)
@@ -1511,6 +1564,11 @@ void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
 #undef HANDLE_TYPE
 
       case FieldDescriptor::CPPTYPE_STRING:
+        if (field->options().ctype() == FieldOptions::CORD) {
+          MutableRaw<RepeatedField<absl::Cord> >(message, field)
+              ->SwapElements(index1, index2);
+          break;
+        }
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message, field)
@@ -1722,6 +1780,12 @@ std::string Reflection::GetString(const Message& message,
       return field->default_value_string();
     }
     switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          return std::string(*GetField<absl::Cord*>(message, field));
+        } else {
+          return std::string(GetField<absl::Cord>(message, field));
+        }
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
         if (IsInlined(field)) {
@@ -1747,6 +1811,13 @@ const std::string& Reflection::GetStringReference(const Message& message,
       return field->default_value_string();
     }
     switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          GetField<absl::Cord*>(message, field)->CopyTo(scratch);
+        } else {
+          GetField<absl::Cord>(message, field).CopyTo(scratch);
+        }
+        return *scratch;
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
         if (IsInlined(field)) {
@@ -1755,6 +1826,73 @@ const std::string& Reflection::GetStringReference(const Message& message,
           const auto& str = GetField<ArenaStringPtr>(message, field);
           return str.IsDefault() ? field->default_value_string() : str.Get();
         }
+    }
+  }
+}
+
+absl::string_view Reflection::GetStringView(
+    const Message& message, const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(GetStringView, SINGULAR, STRING);
+  USAGE_CHECK(
+      field->options().ctype() != FieldOptions::CORD || field->is_extension(),
+      GetStringView, "Field is a cord; the method requires a non-cord field.");
+  if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+    return field->default_value_string();
+  }
+  if (field->is_extension()) {
+    return GetExtensionSet(message).GetString(field->number(),
+                                              field->default_value_string());
+  }
+  if (IsInlined(field)) {
+    return GetField<InlinedStringField>(message, field).GetNoArena();
+  } else {
+    auto str = GetField<ArenaStringPtr>(message, field);
+    return str.IsDefault() ? field->default_value_string() : str.Get();
+  }
+}
+
+const absl::Cord& Reflection::GetCord(const Message& message,
+                                      const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(GetCord, SINGULAR, STRING);
+  USAGE_CHECK(
+      field->options().ctype() == FieldOptions::CORD && !field->is_extension(),
+      GetCord, "Field is not a cord; the method requires a cord field.");
+  if (schema_.InRealOneof(field)) {
+    return *GetField<absl::Cord*>(message, field);
+  } else {
+    return GetField<absl::Cord>(message, field);
+  }
+}
+
+absl::Cord Reflection::GetStringAsCord(const Message& message,
+                                       const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(GetStringAsCord, SINGULAR, STRING);
+  if (field->is_extension()) {
+    return absl::Cord(GetExtensionSet(message).GetString(
+        field->number(), field->default_value_string()));
+  } else {
+    if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+      return absl::Cord(field->default_value_string());
+    }
+    switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          return *GetField<absl::Cord*>(message, field);
+        } else {
+          return GetField<absl::Cord>(message, field);
+        }
+      case FieldOptions::STRING:
+        if (IsInlined(field)) {
+          return absl::Cord(
+              GetField<InlinedStringField>(message, field).GetNoArena());
+        } else {
+          const auto& str = GetField<ArenaStringPtr>(message, field);
+          return absl::Cord(str.IsDefault() ? field->default_value_string()
+                                            : str.Get());
+        }
+      default:
+        GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+        return absl::Cord();  // Make compiler happy.
     }
   }
 }
@@ -1768,6 +1906,19 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
         field->number(), field->type(), std::move(value), field);
   } else {
     switch (field->options().ctype()) {
+      case FieldOptions::CORD: {
+        if (schema_.InRealOneof(field)) {
+          if (!HasOneofField(*message, field)) {
+            ClearOneof(message, field->containing_oneof());
+            *MutableField<absl::Cord*>(message, field) =
+                Arena::Create<absl::Cord>(message->GetArenaForAllocation());
+          }
+          *(*MutableField<absl::Cord*>(message, field)) = value;
+          break;
+        }
+        *MutableField<absl::Cord>(message, field) = value;
+        break;
+      }
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
         if (IsInlined(field)) {
@@ -1799,6 +1950,55 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
   }
 }
 
+void Reflection::SetStringFromCord(Message* message,
+                                   const FieldDescriptor* field,
+                                   const absl::Cord& value) const {
+  USAGE_CHECK_ALL(SetStringFromCord, SINGULAR, STRING);
+  if (field->is_extension()) {
+    return value.CopyTo(MutableExtensionSet(message)->MutableString(
+        field->number(), field->type(), field));
+  } else {
+    switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          if (!HasOneofField(*message, field)) {
+            ClearOneof(message, field->containing_oneof());
+            *MutableField<absl::Cord*>(message, field) =
+                Arena::Create<absl::Cord>(message->GetArenaForAllocation());
+          }
+          *(*MutableField<absl::Cord*>(message, field)) = value;
+        } else {
+          *MutableField<absl::Cord>(message, field) = value;
+        }
+        break;
+      case FieldOptions::STRING: {
+        // Oneof string fields are never set as a default instance.
+        // We just need to pass some arbitrary default string to make it work.
+        // This allows us to not have the real default accessible from
+        // reflection.
+        if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
+          ClearOneof(message, field->containing_oneof());
+          MutableField<ArenaStringPtr>(message, field)->InitDefault();
+        }
+        if (IsInlined(field)) {
+          auto* str = MutableField<InlinedStringField>(message, field);
+          const uint32_t index = schema_.InlinedStringIndex(field);
+          GOOGLE_ABSL_DCHECK_GT(index, 0);
+          uint32_t* states =
+              &MutableInlinedStringDonatedArray(message)[index / 32];
+          uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
+          str->Set(std::string(value), message->GetArenaForAllocation(),
+                   IsInlinedStringDonated(*message, field), states, mask,
+                   message);
+        } else {
+          auto* str = MutableField<ArenaStringPtr>(message, field);
+          str->Set(std::string(value), message->GetArenaForAllocation());
+        }
+        break;
+      }
+    }
+  }
+}
 
 std::string Reflection::GetRepeatedString(const Message& message,
                                           const FieldDescriptor* field,
@@ -1808,6 +2008,8 @@ std::string Reflection::GetRepeatedString(const Message& message,
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
     switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        return std::string(GetRepeatedField<absl::Cord>(message, field, index));
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
         return GetRepeatedPtrField<std::string>(message, field, index);
@@ -1824,6 +2026,9 @@ const std::string& Reflection::GetRepeatedStringReference(
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
     switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        GetRepeatedField<absl::Cord>(message, field, index).CopyTo(scratch);
+        return *scratch;
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
         return GetRepeatedPtrField<std::string>(message, field, index);
@@ -1831,6 +2036,50 @@ const std::string& Reflection::GetRepeatedStringReference(
   }
 }
 
+// See GetStringView(), above.
+absl::string_view Reflection::GetRepeatedStringView(
+    const Message& message, const FieldDescriptor* field, int index) const {
+  USAGE_CHECK_ALL(GetStringView, REPEATED, STRING);
+  USAGE_CHECK(
+      field->options().ctype() != FieldOptions::CORD || field->is_extension(),
+      GetStringView, "Field is a cord; the method requires a non-cord field.");
+  if (field->is_extension()) {
+    return GetExtensionSet(message).GetRepeatedString(field->number(), index);
+  }
+  return GetRepeatedPtrField<std::string>(message, field, index);
+}
+
+// See GetCord(), above.
+const absl::Cord& Reflection::GetRepeatedCord(const Message& message,
+                                              const FieldDescriptor* field,
+                                              int index) const {
+  USAGE_CHECK_ALL(GetRepeatedCord, REPEATED, STRING);
+  USAGE_CHECK(
+      field->options().ctype() == FieldOptions::CORD && !field->is_extension(),
+      GetCord, "Field is not a cord; the method requires a cord field.");
+  return GetRepeatedField<absl::Cord>(message, field, index);
+}
+
+absl::Cord Reflection::GetRepeatedStringAsCord(const Message& message,
+                                               const FieldDescriptor* field,
+                                               int index) const {
+  USAGE_CHECK_ALL(GetRepeatedStringAsCord, REPEATED, STRING);
+  if (field->is_extension()) {
+    return absl::Cord(
+        GetExtensionSet(message).GetRepeatedString(field->number(), index));
+  } else {
+    switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        return GetRepeatedField<absl::Cord>(message, field, index);
+      case FieldOptions::STRING:
+        return absl::Cord(
+            GetRepeatedPtrField<std::string>(message, field, index));
+      default:
+        GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+        return absl::Cord();  // Make compiler happy.
+    }
+  }
+}
 
 void Reflection::SetRepeatedString(Message* message,
                                    const FieldDescriptor* field, int index,
@@ -1841,6 +2090,9 @@ void Reflection::SetRepeatedString(Message* message,
                                                     std::move(value));
   } else {
     switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        SetRepeatedField<absl::Cord>(message, field, index, absl::Cord(value));
+        break;
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
         MutableRepeatedField<std::string>(message, field, index)
@@ -1850,6 +2102,25 @@ void Reflection::SetRepeatedString(Message* message,
   }
 }
 
+void Reflection::SetRepeatedStringFromCord(Message* message,
+                                           const FieldDescriptor* field,
+                                           int index,
+                                           const absl::Cord& value) const {
+  USAGE_CHECK_ALL(SetRepeatedStringFromCord, REPEATED, STRING);
+  if (field->is_extension()) {
+    value.CopyTo(MutableExtensionSet(message)->MutableRepeatedString(
+        field->number(), index));
+  } else {
+    switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        SetRepeatedField<absl::Cord>(message, field, index, value);
+        break;
+      case FieldOptions::STRING:
+        value.CopyTo(MutableRepeatedField<std::string>(message, field, index));
+        break;
+    }
+  }
+}
 
 void Reflection::AddString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
@@ -1867,6 +2138,24 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
   }
 }
 
+void Reflection::AddStringFromCord(Message* message,
+                                   const FieldDescriptor* field,
+                                   const absl::Cord& value) const {
+  USAGE_CHECK_ALL(AddStringFromCord, REPEATED, STRING);
+  if (field->is_extension()) {
+    value.CopyTo(MutableExtensionSet(message)->AddString(field->number(),
+                                                         field->type(), field));
+  } else {
+    switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        AddField<absl::Cord>(message, field, value);
+        break;
+      case FieldOptions::STRING:
+        value.CopyTo(AddField<std::string>(message, field));
+        break;
+    }
+  }
+}
 
 // -------------------------------------------------------------------
 
@@ -2666,6 +2955,8 @@ bool Reflection::HasBit(const Message& message,
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
+          case FieldOptions::CORD:
+            return !GetField<const absl::Cord>(message, field).empty();
           default: {
             if (IsInlined(field)) {
               return !GetField<InlinedStringField>(message, field)
@@ -2778,6 +3069,9 @@ void Reflection::ClearOneof(Message* message,
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->options().ctype()) {
+            case FieldOptions::CORD:
+              delete *MutableRaw<absl::Cord*>(message, field);
+              break;
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
               // Oneof string fields are never set as a default instance.
@@ -2826,7 +3120,7 @@ HANDLE_TYPE(uint64_t, FieldDescriptor::CPPTYPE_UINT64, -1);
 HANDLE_TYPE(float, FieldDescriptor::CPPTYPE_FLOAT, -1);
 HANDLE_TYPE(double, FieldDescriptor::CPPTYPE_DOUBLE, -1);
 HANDLE_TYPE(bool, FieldDescriptor::CPPTYPE_BOOL, -1);
-
+HANDLE_TYPE(absl::Cord, FieldDescriptor::CPPTYPE_STRING, FieldOptions::CORD);
 
 #undef HANDLE_TYPE
 

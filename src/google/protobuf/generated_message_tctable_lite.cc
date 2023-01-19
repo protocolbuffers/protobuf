@@ -1623,6 +1623,12 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
         field.Destroy();
         break;
       }
+      case field_layout::kRepCord: {
+        if (msg->GetArenaForAllocation() == nullptr) {
+          delete RefAt<absl::Cord*>(msg, current_entry->offset);
+        }
+        break;
+      }
       case field_layout::kRepSString:
       case field_layout::kRepIString:
       default:
@@ -2059,6 +2065,27 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
     case field_layout::kRepIString: {
       break;
     }
+
+    case field_layout::kRepCord: {
+      absl::Cord* field;
+      if (is_oneof) {
+        if (need_init) {
+          field = new absl::Cord;
+          RefAt<absl::Cord*>(msg, entry.offset) = field;
+          Arena* arena = msg->GetArenaForAllocation();
+          if (arena) arena->Own(field);
+        } else {
+          field = RefAt<absl::Cord*>(msg, entry.offset);
+        }
+      } else {
+        field = &RefAt<absl::Cord>(base, entry.offset);
+      }
+      ptr = InlineCordParser(field, ptr, ctx);
+      if (!ptr) break;
+      is_valid = MpVerifyUtf8(*field, table, entry, xform_val);
+      break;
+    }
+
   }
 
   if (ptr == nullptr || !is_valid) {
@@ -2131,6 +2158,25 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
         } while (next_tag == decoded_tag);
       }
 
+      break;
+    }
+
+    case field_layout::kRepCord: {
+      auto& field = RefAt<RepeatedField<absl::Cord>>(msg, entry.offset);
+      const char* ptr2 = ptr;
+      uint32_t next_tag;
+      do {
+        ptr = ptr2;
+        absl::Cord* str = field.Add();
+        ptr = InlineCordParser(str, ptr, ctx);
+        if (PROTOBUF_PREDICT_FALSE(
+                ptr == nullptr ||
+                !MpVerifyUtf8(*str, table, entry, xform_val))) {
+          return Error(PROTOBUF_TC_PARAM_PASS);
+        }
+        if (!ctx->DataAvailable(ptr)) break;
+        ptr2 = ReadTag(ptr, &next_tag);
+      } while (next_tag == decoded_tag);
       break;
     }
 

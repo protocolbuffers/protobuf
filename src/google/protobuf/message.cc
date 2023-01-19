@@ -412,6 +412,8 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
 #undef HANDLE_PRIMITIVE_TYPE
     case FieldDescriptor::CPPTYPE_STRING:
       switch (field->options().ctype()) {
+        case FieldOptions::CORD:
+          return GetSingleton<internal::RepeatedFieldCordAccessor>();
         default:
         case FieldOptions::STRING:
           return GetSingleton<internal::RepeatedPtrFieldStringAccessor>();

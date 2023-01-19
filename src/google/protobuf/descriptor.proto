@@ -547,6 +547,12 @@ message FieldOptions {
     // Default mode.
     STRING = 0;
 
+    // The option [ctype=CORD] may be applied to a field of type "string" or
+    // "bytes".  It indicates that in C++, the data should be stored in a
+    // Cord instead of a string.  For very large strings, this may reduce
+    // memory fragmentation.  It may also allow better performance when parsing
+    // from a Cord, or when parsing with aliasing enabled, as the parsed
+    // Cord may then alias the original buffer.
     CORD = 1;
 
     STRING_PIECE = 2;

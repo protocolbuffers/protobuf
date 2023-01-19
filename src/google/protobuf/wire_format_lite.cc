@@ -520,6 +520,37 @@ void WireFormatLite::WriteBytesMaybeAliased(int field_number,
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
 
+void WireFormatLite::WriteString(int field_number, const absl::Cord& value,
+                                 io::CodedOutputStream* output) {
+  //  String is for UTF-8 text only
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
+  output->WriteVarint32(value.size());
+  output->WriteCord(value);
+}
+void WireFormatLite::WriteBytes(int field_number, const absl::Cord& value,
+                                io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
+  output->WriteVarint32(value.size());
+  output->WriteCord(value);
+}
+void WireFormatLite::WriteString(int field_number,
+                                 const absl::string_view value,
+                                 io::CodedOutputStream* output) {
+  // String is for UTF-8 text only
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
+  output->WriteVarint32(value.size());
+  output->WriteRaw(value.data(), value.size());
+}
+void WireFormatLite::WriteBytes(int field_number, const absl::string_view value,
+                                io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
+  output->WriteVarint32(value.size());
+  output->WriteRaw(value.data(), value.size());
+}
 
 void WireFormatLite::WriteGroup(int field_number, const MessageLite& value,
                                 io::CodedOutputStream* output) {
@@ -818,6 +849,14 @@ size_t WireFormatLite::SInt64Size(const RepeatedField<int64_t>& value) {
 }
 
 #endif
+
+bool WireFormatLite::VerifyUtf8Cord(const absl::Cord& value, Operation op,
+                                    const char* field_name) {
+  std::string s;
+  absl::CopyCordToString(value, &s);
+  return VerifyUtf8String(s.data(), s.size(), op, field_name);
+  return true;
+}
 
 }  // namespace internal
 }  // namespace protobuf

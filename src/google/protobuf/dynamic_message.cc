@@ -140,7 +140,10 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
 
       case FD::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          case FieldOptions::CORD:
+            return sizeof(RepeatedField<absl::Cord>);
+          case FieldOptions::STRING_PIECE:
+            return sizeof(RepeatedPtrField<StringPieceField>);
           case FieldOptions::STRING:
             return sizeof(RepeatedPtrField<std::string>);
         }
@@ -170,6 +173,8 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
 
       case FD::CPPTYPE_STRING:
         switch (field->options().ctype()) {
+          case FieldOptions::CORD:
+            return sizeof(absl::Cord);
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
             return sizeof(ArenaStringPtr);
@@ -411,6 +416,30 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
+          case FieldOptions::CORD:
+            if (!field->is_repeated()) {
+              if (field->has_default_value()) {
+                new (field_ptr) absl::Cord(field->default_value_string());
+              } else {
+                new (field_ptr) absl::Cord;
+              }
+              if (GetOwningArena() != nullptr) {
+                // Cord does not support arena so here we need to notify arena
+                // to remove the data it allocated on the heap by calling its
+                // destructor.
+                GetOwningArena()->OwnDestructor(
+                    static_cast<absl::Cord*>(field_ptr));
+              }
+            } else {
+              new (field_ptr)
+                  RepeatedField<absl::Cord>(GetArenaForAllocation());
+              if (GetOwningArena() != nullptr) {
+                // Needs to destroy Cord elements.
+                GetOwningArena()->OwnDestructor(
+                    static_cast<RepeatedField<absl::Cord>*>(field_ptr));
+              }
+            }
+            break;
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
             if (!field->is_repeated()) {
@@ -514,6 +543,9 @@ DynamicMessage::~DynamicMessage() {
         field_ptr = MutableOneofFieldRaw(field);
         if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
           switch (field->options().ctype()) {
+            case FieldOptions::CORD:
+              delete *reinterpret_cast<absl::Cord**>(field_ptr);
+              break;
             default:
             case FieldOptions::STRING: {
               reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
@@ -548,6 +580,10 @@ DynamicMessage::~DynamicMessage() {
 
         case FieldDescriptor::CPPTYPE_STRING:
           switch (field->options().ctype()) {
+            case FieldOptions::CORD:
+              reinterpret_cast<RepeatedField<absl::Cord>*>(field_ptr)
+                  ->~RepeatedField<absl::Cord>();
+              break;
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING:
               reinterpret_cast<RepeatedPtrField<std::string>*>(field_ptr)
@@ -568,6 +604,9 @@ DynamicMessage::~DynamicMessage() {
 
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
       switch (field->options().ctype()) {
+        case FieldOptions::CORD:
+          reinterpret_cast<absl::Cord*>(field_ptr)->~Cord();
+          break;
         default:  // TODO(kenton):  Support other string reps.
         case FieldOptions::STRING: {
           reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();

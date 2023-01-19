@@ -176,9 +176,36 @@ void FieldGeneratorBase::GenerateIfHasField(io::Printer* p) const {
 }
 
 namespace {
+
+// Code generators for specialized fields.
+std::unique_ptr<FieldGeneratorBase> MakeSpecialFieldGenerator(
+    const FieldDescriptor* field, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+    switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        if (field->is_repeated()) {
+          return MakeRepeatedCordGenerator(field, options, scc);
+        } else if (field->real_containing_oneof()) {
+          return MakeOneofCordGenerator(field, options, scc);
+        } else {
+          return MakeSingularCordGenerator(field, options, scc);
+        }
+      default:
+        return nullptr;
+    }
+  }
+
+
+  return nullptr;
+}
 std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
                                                   const Options& options,
                                                   MessageSCCAnalyzer* scc) {
+  auto special_generator = MakeSpecialFieldGenerator(field, options, scc);
+  if (special_generator != nullptr) {
+    return special_generator;
+  }
 
   if (field->is_map()) {
     return MakeMapGenerator(field, options, scc);

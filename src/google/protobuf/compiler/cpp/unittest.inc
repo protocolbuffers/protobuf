@@ -229,14 +229,17 @@ TEST(GENERATED_MESSAGE_TEST_NAME, MutableStringDefault) {
   UNITTEST::TestAllTypes message;
 
   EXPECT_EQ("hello", *message.mutable_default_string());
+  EXPECT_EQ("123", std::string(*message.mutable_default_cord()));
 
   // Note that the first time we call mutable_foo(), we get a newly-allocated
   // string, but if we clear it and call it again, we get the same object again.
   // We should verify that it has its default value in both cases.
   message.set_default_string("blah");
+  *message.mutable_default_cord() = "blah";
   message.Clear();
 
   EXPECT_EQ("hello", *message.mutable_default_string());
+  EXPECT_EQ("123", std::string(*message.mutable_default_cord()));
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, StringDefaults) {
@@ -244,6 +247,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, StringDefaults) {
   // Check if '\000' can be used in default string value.
   EXPECT_EQ(std::string("hel\000lo", 6), message.string_with_zero());
   EXPECT_EQ(std::string("wor\000ld", 6), message.bytes_with_zero());
+  EXPECT_EQ(std::string("12\0003", 4), std::string(message.cord_with_zero()));
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, ReleaseString) {
@@ -445,6 +449,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   message1.set_optional_string("abc");
   message1.mutable_optional_nested_message()->set_bb(1);
   message1.set_optional_nested_enum(UNITTEST::TestAllTypes::FOO);
+  message1.set_optional_cord("the quick brown fox");
   message1.add_repeated_int32(1);
   message1.add_repeated_int32(2);
   message1.add_repeated_string("a");
@@ -453,15 +458,19 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   message1.add_repeated_nested_message()->set_bb(8);
   message1.add_repeated_nested_enum(UNITTEST::TestAllTypes::FOO);
   message1.add_repeated_nested_enum(UNITTEST::TestAllTypes::BAR);
+  message1.add_repeated_cord("ddd");
+  message1.add_repeated_cord("eee");
 
   message2.set_optional_int32(456);
   message2.set_optional_string("def");
   message2.mutable_optional_nested_message()->set_bb(2);
   message2.set_optional_nested_enum(UNITTEST::TestAllTypes::BAR);
+  message2.set_optional_cord("jumped over the lazy dog");
   message2.add_repeated_int32(3);
   message2.add_repeated_string("c");
   message2.add_repeated_nested_message()->set_bb(9);
   message2.add_repeated_nested_enum(UNITTEST::TestAllTypes::BAZ);
+  message2.add_repeated_cord("fff");
 
   message1.Swap(&message2);
 
@@ -469,6 +478,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   EXPECT_EQ("def", message1.optional_string());
   EXPECT_EQ(2, message1.optional_nested_message().bb());
   EXPECT_EQ(UNITTEST::TestAllTypes::BAR, message1.optional_nested_enum());
+  EXPECT_EQ(absl::Cord("jumped over the lazy dog"), message1.optional_cord());
   ASSERT_EQ(1, message1.repeated_int32_size());
   EXPECT_EQ(3, message1.repeated_int32(0));
   ASSERT_EQ(1, message1.repeated_string_size());
@@ -477,11 +487,14 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   EXPECT_EQ(9, message1.repeated_nested_message(0).bb());
   ASSERT_EQ(1, message1.repeated_nested_enum_size());
   EXPECT_EQ(UNITTEST::TestAllTypes::BAZ, message1.repeated_nested_enum(0));
+  ASSERT_EQ(1, message1.repeated_cord_size());
+  EXPECT_EQ(absl::Cord("fff"), message1.repeated_cord(0));
 
   EXPECT_EQ(123, message2.optional_int32());
   EXPECT_EQ("abc", message2.optional_string());
   EXPECT_EQ(1, message2.optional_nested_message().bb());
   EXPECT_EQ(UNITTEST::TestAllTypes::FOO, message2.optional_nested_enum());
+  EXPECT_EQ(absl::Cord("the quick brown fox"), message2.optional_cord());
   ASSERT_EQ(2, message2.repeated_int32_size());
   EXPECT_EQ(1, message2.repeated_int32(0));
   EXPECT_EQ(2, message2.repeated_int32(1));
@@ -494,6 +507,9 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   ASSERT_EQ(2, message2.repeated_nested_enum_size());
   EXPECT_EQ(UNITTEST::TestAllTypes::FOO, message2.repeated_nested_enum(0));
   EXPECT_EQ(UNITTEST::TestAllTypes::BAR, message2.repeated_nested_enum(1));
+  ASSERT_EQ(2, message2.repeated_cord_size());
+  EXPECT_EQ(absl::Cord("ddd"), message2.repeated_cord(0));
+  EXPECT_EQ(absl::Cord("eee"), message2.repeated_cord(1));
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, ADLSwap) {
@@ -818,21 +834,25 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CamelCaseFieldNames) {
   message.set_stringfield("foo");
   message.set_enumfield(UNITTEST::FOREIGN_FOO);
   message.mutable_messagefield()->set_c(6);
+  message.set_cordfield("baz");
 
   message.add_repeatedprimitivefield(8);
   message.add_repeatedstringfield("moo");
   message.add_repeatedenumfield(UNITTEST::FOREIGN_BAR);
   message.add_repeatedmessagefield()->set_c(15);
+  message.add_repeatedcordfield("grault");
 
   EXPECT_EQ(2, message.primitivefield());
   EXPECT_EQ("foo", message.stringfield());
   EXPECT_EQ(UNITTEST::FOREIGN_FOO, message.enumfield());
   EXPECT_EQ(6, message.messagefield().c());
+  EXPECT_EQ("baz", std::string(message.cordfield()));
 
   EXPECT_EQ(8, message.repeatedprimitivefield(0));
   EXPECT_EQ("moo", message.repeatedstringfield(0));
   EXPECT_EQ(UNITTEST::FOREIGN_BAR, message.repeatedenumfield(0));
   EXPECT_EQ(15, message.repeatedmessagefield(0).c());
+  EXPECT_EQ("grault", std::string(message.repeatedcordfield(0)));
 }
 
 #ifndef PROTOBUF_TEST_NO_DESCRIPTORS
@@ -1468,6 +1488,10 @@ TEST_F(OneofTest, SettingOneFieldClearsOthers) {
   EXPECT_TRUE(message.has_foo_string());
   TestUtil::ExpectAtMostOneFieldSetInOneof(message);
 
+  message.set_foo_cord("bar");
+  EXPECT_TRUE(message.has_foo_cord());
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message);
+
 
   message.set_foo_bytes("moo");
   EXPECT_TRUE(message.has_foo_bytes());
@@ -1499,6 +1523,8 @@ TEST_F(OneofTest, EnumCases) {
   message.set_foo_int(123);
   ExpectEnumCasesWork(message);
   message.set_foo_string("foo");
+  ExpectEnumCasesWork(message);
+  message.set_foo_cord("bar");
   ExpectEnumCasesWork(message);
   message.set_foo_bytes("moo");
   ExpectEnumCasesWork(message);
@@ -1630,6 +1656,38 @@ TEST_F(OneofTest, ArenaSetAllocatedString) {
   EXPECT_EQ(kHello, message->foo_string());
 }
 
+TEST_F(OneofTest, SetCord) {
+  // Check that setting a Cord field in various ways works
+  UNITTEST::TestOneof2 message;
+
+  // Unset field returns default value
+  EXPECT_EQ(message.foo_cord(), "");
+
+  message.set_foo_cord("foo");
+  EXPECT_TRUE(message.has_foo_cord());
+  EXPECT_EQ(message.foo_cord(), "foo");
+  message.clear_foo_cord();
+  EXPECT_FALSE(message.has_foo_cord());
+
+  message.set_foo_cord("bar");
+  EXPECT_TRUE(message.has_foo_cord());
+  EXPECT_EQ(message.foo_cord(), "bar");
+  message.clear_foo_cord();
+  EXPECT_FALSE(message.has_foo_cord());
+
+  message.set_foo_cord("baz");
+  EXPECT_TRUE(message.has_foo_cord());
+  EXPECT_EQ(message.foo_cord(), "baz");
+  message.clear_foo_cord();
+  EXPECT_FALSE(message.has_foo_cord());
+
+  message.mutable_foo_cord()->CopyFrom("moo");
+  EXPECT_TRUE(message.has_foo_cord());
+  EXPECT_EQ(message.foo_cord(), "moo");
+  message.clear_foo_cord();
+  EXPECT_FALSE(message.has_foo_cord());
+}
+
 
 TEST_F(OneofTest, SetMessage) {
   // Check that setting a message field works
@@ -1710,6 +1768,9 @@ TEST_F(OneofTest, Defaults) {
   EXPECT_FALSE(message.has_foo_string());
   EXPECT_EQ(message.foo_string(), "");
 
+  EXPECT_FALSE(message.has_foo_cord());
+  EXPECT_EQ(message.foo_cord(), "");
+
 
   EXPECT_FALSE(message.has_foo_bytes());
   EXPECT_EQ(message.foo_bytes(), "");
@@ -1729,6 +1790,9 @@ TEST_F(OneofTest, Defaults) {
 
   EXPECT_FALSE(message.has_bar_string());
   EXPECT_EQ(message.bar_string(), "STRING");
+
+  EXPECT_FALSE(message.has_bar_cord());
+  EXPECT_EQ(message.bar_cord(), "CORD");
 
 
   EXPECT_FALSE(message.has_bar_bytes());
@@ -1859,6 +1923,20 @@ EXPECT_EQ(message2.foo_int(), 123);
     EXPECT_EQ(message2.foo_string(), "foo");
   }
 
+  // Cord
+  {
+    UNITTEST::TestOneof2 message1, message2;
+    std::string data;
+    message1.set_foo_cord("bar");
+    int size = message1.ByteSizeLong();
+    data.resize(size);
+    uint8_t* start = reinterpret_cast<uint8_t*>(&data[0]);
+    uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
+    EXPECT_EQ(size, end - start);
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_cord(), "bar");
+  }
+
 
   // Bytes
   {
@@ -1966,6 +2044,27 @@ data.resize(size);
     EXPECT_EQ(message2.foo_string(), "foo");
   }
 
+  // Cord
+  {
+    UNITTEST::TestOneof2 message1, message2;
+    std::string data;
+    message1.set_foo_cord("bar");
+    int size = message1.ByteSizeLong();
+    data.resize(size);
+
+    {
+      // Allow the output stream to buffer only one byte at a time.
+    io::ArrayOutputStream array_stream(&data[0], size, 1);
+    io::CodedOutputStream output_stream(&array_stream);
+    message1.SerializeWithCachedSizes(&output_stream);
+    EXPECT_FALSE(output_stream.HadError());
+    EXPECT_EQ(size, output_stream.ByteCount());
+    }
+
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_cord(), "bar");
+  }
+
 
   // Bytes
   {
@@ -2067,6 +2166,12 @@ TEST_F(OneofTest, MergeFrom) {
   TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
   EXPECT_TRUE(message2.has_foo_string());
   EXPECT_EQ(message2.foo_string(), "foo");
+
+  message1.set_foo_cord("bar");
+  message2.MergeFrom(message1);
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
+  EXPECT_TRUE(message2.has_foo_cord());
+  EXPECT_EQ(message2.foo_cord(), "bar");
 
 
   message1.set_foo_bytes("moo");

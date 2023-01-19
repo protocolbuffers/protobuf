@@ -47,6 +47,8 @@
 #include "google/protobuf/port.h"
 #include "absl/base/casts.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
@@ -327,6 +329,12 @@ class PROTOBUF_EXPORT WireFormatLite {
   // Analogous to ReadString().
   static bool ReadBytes(io::CodedInputStream* input, std::string* value);
   static bool ReadBytes(io::CodedInputStream* input, std::string** p);
+  // Analogous to the above, but the Cord variants are simpler, because the
+  // mutable accessors for Cords are simpler than the std::string equivalents.
+  static inline bool ReadString(io::CodedInputStream* input, absl::Cord* value);
+  static inline bool ReadString(io::CodedInputStream* input, absl::Cord** p);
+  static inline bool ReadBytes(io::CodedInputStream* input, absl::Cord* value);
+  static inline bool ReadBytes(io::CodedInputStream* input, absl::Cord** p);
 
   enum Operation {
     PARSE = 0,
@@ -336,6 +344,10 @@ class PROTOBUF_EXPORT WireFormatLite {
   // Returns true if the data is valid UTF-8.
   static bool VerifyUtf8String(const char* data, int size, Operation op,
                                const char* field_name);
+
+  // Returns true if the data is valid UTF-8.
+  static bool VerifyUtf8Cord(const absl::Cord& cord, Operation op,
+                             const char* field_name);
 
   template <typename MessageType>
   static inline bool ReadGroup(int field_number, io::CodedInputStream* input,
@@ -435,8 +447,17 @@ class PROTOBUF_EXPORT WireFormatLite {
 
   static void WriteString(int field_number, const std::string& value,
                           io::CodedOutputStream* output);
+  static void WriteString(int field_number, absl::string_view value,
+                          io::CodedOutputStream* output);
+  static void WriteString(int field_number, const absl::Cord& value,
+                          io::CodedOutputStream* output);
   static void WriteBytes(int field_number, const std::string& value,
                          io::CodedOutputStream* output);
+  static void WriteBytes(int field_number, absl::string_view value,
+                         io::CodedOutputStream* output);
+  static void WriteBytes(int field_number, const absl::Cord& value,
+                         io::CodedOutputStream* output);
+
   static void WriteStringMaybeAliased(int field_number,
                                       const std::string& value,
                                       io::CodedOutputStream* output);
@@ -621,8 +642,16 @@ class PROTOBUF_EXPORT WireFormatLite {
 
   PROTOBUF_NDEBUG_INLINE static uint8_t* WriteStringToArray(
       int field_number, const std::string& value, uint8_t* target);
+  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteStringToArray(
+      int field_number, absl::string_view value, uint8_t* target);
+  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteStringToArray(
+      int field_number, const absl::Cord& value, uint8_t* target);
   PROTOBUF_NDEBUG_INLINE static uint8_t* WriteBytesToArray(
       int field_number, const std::string& value, uint8_t* target);
+  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteBytesToArray(
+      int field_number, absl::string_view value, uint8_t* target);
+  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteBytesToArray(
+      int field_number, const absl::Cord& value, uint8_t* target);
 
   // Whether to serialize deterministically (e.g., map keys are
   // sorted) is a property of a CodedOutputStream, and in the process
@@ -709,7 +738,11 @@ class PROTOBUF_EXPORT WireFormatLite {
   static constexpr size_t kBoolSize = 1;
 
   static inline size_t StringSize(const std::string& value);
+  static inline size_t StringSize(absl::string_view value);
+  static inline size_t StringSize(const absl::Cord& value);
   static inline size_t BytesSize(const std::string& value);
+  static inline size_t BytesSize(absl::string_view value);
+  static inline size_t BytesSize(const absl::Cord& value);
 
   template <typename MessageType>
   static inline size_t GroupSize(const MessageType& value);
@@ -1257,6 +1290,27 @@ bool WireFormatLite::ReadPackedPrimitiveNoInline(io::CodedInputStream* input,
   return ReadPackedPrimitive<CType, DeclaredType>(input, values);
 }
 
+inline bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
+                                      absl::Cord* value) {
+  int length;
+  return input->ReadVarintSizeAsInt(&length) && input->ReadCord(value, length);
+}
+
+inline bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
+                                      absl::Cord** p) {
+  return ReadBytes(input, *p);
+}
+
+inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
+                                       absl::Cord* value) {
+  return ReadBytes(input, value);
+}
+
+inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
+                                       absl::Cord** p) {
+  return ReadBytes(input, p);
+}
+
 
 template <typename MessageType>
 inline bool WireFormatLite::ReadGroup(int field_number,
@@ -1709,6 +1763,51 @@ inline uint8_t* WireFormatLite::WriteBytesToArray(int field_number,
   return io::CodedOutputStream::WriteStringWithSizeToArray(value, target);
 }
 
+inline uint8_t* WireFormatLite::WriteStringToArray(int field_number,
+                                                   const absl::Cord& value,
+                                                   uint8_t* target) {
+  //  String is for UTF-8 text only
+  target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
+  GOOGLE_ABSL_DCHECK_LE(value.size(), std::numeric_limits<uint32_t>::max());
+  target = io::CodedOutputStream::WriteVarint32ToArray(
+      static_cast<uint32_t>(value.size()), target);
+  return io::CodedOutputStream::WriteCordToArray(value, target);
+}
+inline uint8_t* WireFormatLite::WriteBytesToArray(int field_number,
+                                                  const absl::Cord& value,
+                                                  uint8_t* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
+  GOOGLE_ABSL_DCHECK_LE(value.size(), std::numeric_limits<uint32_t>::max());
+  target = io::CodedOutputStream::WriteVarint32ToArray(
+      static_cast<uint32_t>(value.size()), target);
+  return io::CodedOutputStream::WriteCordToArray(value, target);
+}
+inline uint8_t* WireFormatLite::WriteStringToArray(
+    int field_number, const absl::string_view value, uint8_t* target) {
+  // String is for UTF-8 text only
+  target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
+  GOOGLE_ABSL_DCHECK_LE(
+      static_cast<size_t>(value.size()),
+      std::max(static_cast<size_t>(std::numeric_limits<int>::max()),
+               static_cast<size_t>(std::numeric_limits<uint32_t>::max())));
+  target = io::CodedOutputStream::WriteVarint32ToArray(
+      static_cast<uint32_t>(value.size()), target);
+  return io::CodedOutputStream::WriteRawToArray(
+      value.data(), static_cast<int>(value.size()), target);
+}
+inline uint8_t* WireFormatLite::WriteBytesToArray(int field_number,
+                                                  const absl::string_view value,
+                                                  uint8_t* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
+  GOOGLE_ABSL_DCHECK_LE(
+      static_cast<size_t>(value.size()),
+      std::max(static_cast<size_t>(std::numeric_limits<int>::max()),
+               static_cast<size_t>(std::numeric_limits<uint32_t>::max())));
+  target = io::CodedOutputStream::WriteVarint32ToArray(
+      static_cast<uint32_t>(value.size()), target);
+  return io::CodedOutputStream::WriteRawToArray(
+      value.data(), static_cast<int>(value.size()), target);
+}
 
 // See comment on ReadGroupNoVirtual to understand the need for this template
 // parameter name.
@@ -1788,6 +1887,21 @@ inline size_t WireFormatLite::BytesSize(const std::string& value) {
   return LengthDelimitedSize(value.size());
 }
 
+inline size_t WireFormatLite::StringSize(const absl::Cord& value) {
+  return LengthDelimitedSize(value.size());
+}
+inline size_t WireFormatLite::BytesSize(const absl::Cord& value) {
+  return LengthDelimitedSize(value.size());
+}
+inline size_t WireFormatLite::StringSize(const absl::string_view value) {
+  // WARNING:  In wire_format.cc, both strings and bytes are handled by
+  //   StringSize() to avoid code duplication.  If the implementations become
+  //   different, you will need to update that usage.
+  return LengthDelimitedSize(value.size());
+}
+inline size_t WireFormatLite::BytesSize(const absl::string_view value) {
+  return LengthDelimitedSize(value.size());
+}
 
 template <typename MessageType>
 inline size_t WireFormatLite::GroupSize(const MessageType& value) {
