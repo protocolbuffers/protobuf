@@ -6,6 +6,7 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
 load("//conformance:defs.bzl", "conformance_test")
+load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
 
 ################################################################################
 # Ruby Runtime
@@ -17,6 +18,44 @@ ruby_library(
     visibility = [
         "//visibility:public",
     ],
+)
+
+sh_binary(
+    name = "jruby_release",
+    data = [
+      "//ruby/lib/google:copy_jar",
+      "//ruby/lib/google:dist_files",
+      "//:well_known_ruby_protos",
+      "google-protobuf.gemspec",
+    ],
+    srcs = [
+      "build_jruby_release.sh",
+    ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+    target_compatible_with = select({
+        "@rules_ruby//ruby/runtime:config_jruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+sh_binary(
+    name = "release",
+    data = [
+      "@utf8_range//:utf8_range_srcs",
+      "@utf8_range//:LICENSE",
+      "//:well_known_ruby_protos",
+      "//ruby/ext/google/protobuf_c:dist_files",
+      "//ruby/lib/google:dist_files",
+      "google-protobuf.gemspec",
+    ],
+    srcs = [
+      "build_release.sh",
+    ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+    target_compatible_with = select({
+        "@rules_ruby//ruby/runtime:config_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
 ################################################################################
