@@ -39,15 +39,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: Build and install cruby gem
-        run: |
-          $HOME/bin/bazel run ruby:release
-          gem install bazel-bin/ruby/release.runfiles/com_google_protobuf/tmp/google-protobuf-*
+      - name: Build cruby gem
+        run: $HOME/bin/bazel run ruby:release
         if: ${{ !contains(matrix.ruby, 'jruby') }}
-      - name: Build and install jruby gem
-        run: |
-          $HOME/bin/bazel run ruby:jruby_release
-          gem install bazel-bin/ruby/jruby_release.runfiles/com_google_protobuf/tmp/google-protobuf-*
+      - name: Install cruby gem
+        run: gem install bazel-bin/ruby/release.runfiles/com_google_protobuf/tmp/google-protobuf-*
+        if: ${{ !contains(matrix.ruby, 'jruby') }}
+      - name: Build jruby gem
+        run: $HOME/bin/bazel run ruby:jruby_release
+        if: ${{ contains(matrix.ruby, 'jruby') }}
+      - name: Install jruby gem
+        run: gem install bazel-bin/ruby/jruby_release.runfiles/com_google_protobuf/tmp/google-protobuf-*
         if: ${{ contains(matrix.ruby, 'jruby') }}
       - name: Test installation
         run: |
