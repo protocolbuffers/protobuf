@@ -7016,7 +7016,7 @@ TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto3) {
 }
 
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto2) {
-  BuildFileWithErrors(
+  BuildFileWithWarnings(
       "name: 'foo.proto' "
       "syntax: 'proto2' "
       "message_type {"
