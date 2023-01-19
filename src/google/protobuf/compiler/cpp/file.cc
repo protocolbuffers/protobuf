@@ -1100,11 +1100,10 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
         }
       )cc");
 
-  // For proto files included in the full runtime (i.e. descriptor.proto
-  // and extension_declarations.proto), we want to avoid doing any dynamic
-  // initialization, because in some situations that would otherwise pull
-  // in a lot of unnecessary code that can't be stripped by --gc-sections.
-  // Initialization will still be performed lazily when it's needed.
+  // For descriptor.proto we want to avoid doing any dynamic initialization,
+  // because in some situations that would otherwise pull in a lot of
+  // unnecessary code that can't be stripped by --gc-sections. Descriptor
+  // initialization will still be performed lazily when it's needed.
   if (file_->name() == "net/proto2/proto/descriptor.proto") {
     return;
   }
