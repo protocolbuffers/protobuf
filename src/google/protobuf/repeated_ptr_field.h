@@ -1152,6 +1152,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   //
   // This method cannot be called when either the repeated field or |value| is
   // on an arena; both cases will trigger a GOOGLE_ABSL_DCHECK-failure.
+  ABSL_DEPRECATED("This will be removed in a future release")
   void AddCleared(Element* value);
   // Removes and returns a single element from the cleared pool, passing
   // ownership to the caller.  The element is guaranteed to be cleared.
@@ -1159,6 +1160,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   //
   // This method cannot be called when the repeated field is on an arena; doing
   // so will trigger a GOOGLE_ABSL_DCHECK-failure.
+  ABSL_DEPRECATED("This will be removed in a future release")
   PROTOBUF_NODISCARD Element* ReleaseCleared();
 #endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
 
