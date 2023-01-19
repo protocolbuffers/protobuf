@@ -5626,8 +5626,16 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
         this_type, field.name(), details.orig_name, existing_type,
         match.field->name(), name_suffix);
 
-    AddError(message_name, field, DescriptorPool::ErrorCollector::NAME,
-             error_message);
+    bool involves_default = !details.is_custom || !match.is_custom;
+    if (syntax == FileDescriptor::SYNTAX_PROTO2 && involves_default) {
+      // TODO(b/261750676) Upgrade this to an error once downstream protos have
+      // been fixed.
+      AddWarning(message_name, field, DescriptorPool::ErrorCollector::NAME,
+                 error_message);
+    } else {
+      AddError(message_name, field, DescriptorPool::ErrorCollector::NAME,
+               error_message);
+    }
   }
 }
 
