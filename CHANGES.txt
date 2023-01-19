@@ -3,7 +3,7 @@
 * cpp_generated_lib_linked support is removed in protoc
 * Reduced .pb.o object file size slightly by explicitly instantiating
   InternalMetadata templates in the runtime.
-* Add C++20 keywords guarded by PROTOBUF_FUTURE_CPP20_KEYWORDS
+* Breaking change: Add C++20 reserved keywords.
 * Fixed crash in ThreadLocalStorage for pre-C++17 compilers on 32-bit ARM.
 * Clarified that JSON API non-OK statuses are not a stable API.
 * Added a default implementation of MessageDifferencer::Reporter methods.
@@ -24,7 +24,7 @@
 * Undefine the macro `linux` when compiling protobuf
 * Reduce memory consumption of MessageSet parsing.
 * Save code space by avoiding inlining of large-in-aggregate code-space MessageLite::~MessageLite destructor.
-* Breaking change: delete Arena::Init
+* Breaking change: Delete Arena::Init
 * Make a PROTOBUF_POISON/UNPOISON to reduce noise in the source
 * Put alignment functions in "arena_align.h"
 * Split off `cleanup` arena functions into "arena_cleanup.h"
@@ -63,7 +63,6 @@
 * Make message-type extensions merge from wire-format instead of building up instances and merging afterwards. This has much better performance.
 * Fix TextFormat parser to build up recurring (but supposedly not repeated) sub-messages directly from text rather than building a new sub-message and merging the fully formed message into the existing field.
 * Fix bug in nested builder caching logic where cleared sub-field builders would remain dirty after a clear and build in a parent layer. https://github.com/protocolbuffers/protobuf/issues/10624
-* Performance test for TextFormat to verify fix for https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-h4h5-3hr4-j3g2
 
 # Python
 * Changes ordering of printed fields in .pyi files from lexicographic to the same ordering found in the proto descriptor.
