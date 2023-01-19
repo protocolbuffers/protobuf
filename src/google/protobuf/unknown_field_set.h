@@ -40,12 +40,16 @@
 
 #include <assert.h>
 
+#include <atomic>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/cord.h"
+#include "absl/synchronization/mutex.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
@@ -145,6 +149,8 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   void AddFixed64(int number, uint64_t value);
   void AddLengthDelimited(int number, const std::string& value);
   std::string* AddLengthDelimited(int number);
+  void AddLengthDelimitedCord(int number, const absl::Cord& value);
+  absl::Cord* AddLengthDelimitedCord(int number);
   UnknownFieldSet* AddGroup(int number);
 
   // Adds an unknown field from another set.
@@ -270,28 +276,71 @@ class PROTOBUF_EXPORT UnknownField {
   uint8_t* InternalSerializeLengthDelimitedNoTag(
       uint8_t* target, io::EpsCopyOutputStream* stream) const;
 
+  size_t SpaceUsedExcludingSelfLong() const;
+
+  UnknownField() = default;
+  inline UnknownField(const UnknownField& other);
+  inline UnknownField& operator=(const UnknownField& other);
+
+ private:
+  friend class UnknownFieldSet;
+  friend class UnknownFieldTest;
+
+  // Allow WireFormat class to take advantage of the underlying Cord
+  // implementation in parsing and serialization.
+  friend class google::protobuf::internal::WireFormat;
+
+  static constexpr int32_t kWireTypeMask = 0x0000000F;
+
+  enum DataType {
+    DATATYPE_STRING = 0x10 | TYPE_LENGTH_DELIMITED,
+    DATATYPE_CORD = 0x20 | TYPE_LENGTH_DELIMITED,
+  };
 
   // If this UnknownField contains a pointer, delete it.
   void Delete();
 
-  // Make a deep copy of any pointers in this UnknownField.
-  void DeepCopy(const UnknownField& other);
+  // Makes a deep copy of this UnknownField.
+  // This method creates an exact copy of this instance, and creates
+  // an explicit deep copy of any allocated pointer values such as string,
+  // cord or group contents.
+  UnknownField DeepCopy() const;
 
   // Set the wire type of this UnknownField. Should only be used when this
   // UnknownField is being created.
   inline void SetType(Type type);
 
-  union LengthDelimited {
-    std::string* string_value;
-  };
+  // Sets the data type of a length-delimited UnknownField.
+  // Should only be used when this UnknownField is being created.
+  inline void SetLengthDelimitedType(DataType datatype);
+  inline void SetLengthDelimitedTypeToString();
+
+  // Used for length delimited fields. Converts the underlying Cord to
+  // std::string. Do nothing if it's already a std::string.
+  // This method is thread safe.
+  inline void EnsureConvertedToString() const;
+  void EnsureConvertedToStringSlow() const;
+
+  // Return the underlying data type for a length delimited field. The value
+  // should be of type DataType.
+  inline uint32_t GetLengthDelimitedDataType() const;
+
+  // Returns the cord value if this instance holds as cord value.
+  std::optional<absl::Cord> GetLengthDelimitedCord() const;
 
   uint32_t number_;
-  uint32_t type_;
+  // The least-significant 4 bits of this field are used to represent wire type.
+  // If wire type is length-delimited, this field's value indicates the type of
+  // the underlying data structure used to store the length-delimited value.
+  // This value is mutable iff the value is DATATYPE_CORD
+  mutable absl::Mutex datatype_mutex_;
+  mutable std::atomic<uint32_t> datatype_;
   union {
     uint64_t varint_;
     uint32_t fixed32_;
     uint64_t fixed64_;
-    mutable union LengthDelimited length_delimited_;
+    mutable std::string* string_value_;
+    mutable absl::Cord* cord_value_;
     UnknownFieldSet* group_;
   } data_;
 };
@@ -332,12 +381,31 @@ inline void UnknownFieldSet::AddLengthDelimited(int number,
   AddLengthDelimited(number)->assign(value);
 }
 
+inline void UnknownFieldSet::AddLengthDelimitedCord(int number,
+                                                    const absl::Cord& value) {
+  *AddLengthDelimitedCord(number) = value;
+}
 
+inline UnknownField::UnknownField(const UnknownField& other) {
+  number_ = other.number_;
+  datatype_.store(other.datatype_.load(std::memory_order_relaxed),
+                  std::memory_order_relaxed);
+  data_ = other.data_;
+}
 
+inline UnknownField& UnknownField::operator=(const UnknownField& other) {
+  number_ = other.number_;
+  datatype_.store(other.datatype_.load(std::memory_order_relaxed),
+                  std::memory_order_relaxed);
+  data_ = other.data_;
+  return *this;
+}
 
 inline int UnknownField::number() const { return static_cast<int>(number_); }
+
 inline UnknownField::Type UnknownField::type() const {
-  return static_cast<Type>(type_);
+  return static_cast<Type>(datatype_.load(std::memory_order_relaxed) &
+                           kWireTypeMask);
 }
 
 inline uint64_t UnknownField::varint() const {
@@ -354,7 +422,8 @@ inline uint64_t UnknownField::fixed64() const {
 }
 inline const std::string& UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  return *data_.length_delimited_.string_value;
+  EnsureConvertedToString();
+  return *data_.string_value_;
 }
 inline const UnknownFieldSet& UnknownField::group() const {
   assert(type() == TYPE_GROUP);
@@ -375,11 +444,13 @@ inline void UnknownField::set_fixed64(uint64_t value) {
 }
 inline void UnknownField::set_length_delimited(const std::string& value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  data_.length_delimited_.string_value->assign(value);
+  EnsureConvertedToString();
+  data_.string_value_->assign(value);
 }
 inline std::string* UnknownField::mutable_length_delimited() {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  return data_.length_delimited_.string_value;
+  EnsureConvertedToString();
+  return data_.string_value_;
 }
 inline UnknownFieldSet* UnknownField::mutable_group() {
   assert(type() == TYPE_GROUP);
@@ -391,16 +462,40 @@ bool UnknownFieldSet::MergeFromMessage(const MessageType& message) {
   return InternalMergeFromMessage(message);
 }
 
+inline uint32_t UnknownField::GetLengthDelimitedDataType() const {
+  return datatype_.load(std::memory_order_acquire);
+}
+
+inline void UnknownField::EnsureConvertedToString() const {
+  if (GetLengthDelimitedDataType() != DATATYPE_STRING) {
+    EnsureConvertedToStringSlow();
+    GOOGLE_ABSL_DCHECK_EQ(GetLengthDelimitedDataType(), DATATYPE_STRING);
+  }
+}
 
 inline size_t UnknownField::GetLengthDelimitedSize() const {
   GOOGLE_ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  return data_.length_delimited_.string_value->size();
+  if (GetLengthDelimitedDataType() == DATATYPE_CORD) {
+    absl::MutexLock lock(&datatype_mutex_);
+    if (GetLengthDelimitedDataType() == DATATYPE_CORD) {
+      return data_.cord_value_->size();
+    }
+  }
+  return data_.string_value_->size();
 }
 
 inline void UnknownField::SetType(Type type) {
-  type_ = type;
+  datatype_.store(type, std::memory_order_relaxed);
 }
 
+inline void UnknownField::SetLengthDelimitedType(DataType type) {
+  datatype_.store(type, std::memory_order_relaxed);
+}
+
+inline void UnknownField::SetLengthDelimitedTypeToString() {
+  GOOGLE_ABSL_DCHECK_EQ(datatype_.load(std::memory_order_relaxed), DATATYPE_CORD);
+  datatype_.store(DATATYPE_STRING, std::memory_order_release);
+}
 
 }  // namespace protobuf
 }  // namespace google

@@ -34,6 +34,9 @@
 
 #include "google/protobuf/unknown_field_set.h"
 
+#include <optional>
+#include <utility>
+
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
@@ -47,7 +50,6 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -74,8 +76,7 @@ void UnknownFieldSet::InternalMergeFrom(const UnknownFieldSet& other) {
   if (other_field_count > 0) {
     fields_.reserve(fields_.size() + other_field_count);
     for (int i = 0; i < other_field_count; i++) {
-      fields_.push_back((other.fields_)[i]);
-      fields_.back().DeepCopy((other.fields_)[i]);
+      fields_.push_back((other.fields_)[i].DeepCopy());
     }
   }
 }
@@ -85,8 +86,7 @@ void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
   if (other_field_count > 0) {
     fields_.reserve(fields_.size() + other_field_count);
     for (int i = 0; i < other_field_count; i++) {
-      fields_.push_back((other.fields_)[i]);
-      fields_.back().DeepCopy((other.fields_)[i]);
+      fields_.push_back((other.fields_)[i].DeepCopy());
     }
   }
 }
@@ -109,24 +109,28 @@ void UnknownFieldSet::MergeToInternalMetadata(
   metadata->mutable_unknown_fields<UnknownFieldSet>()->MergeFrom(other);
 }
 
+size_t UnknownField::SpaceUsedExcludingSelfLong() const {
+  switch (type()) {
+    case TYPE_LENGTH_DELIMITED:
+      if (auto cord = GetLengthDelimitedCord()) {
+        return sizeof(*cord) + cord->EstimatedMemoryUsage();
+      }
+      GOOGLE_ABSL_DCHECK_EQ(GetLengthDelimitedDataType(), DATATYPE_STRING);
+      return sizeof(*data_.string_value_) +
+             internal::StringSpaceUsedExcludingSelfLong(*data_.string_value_);
+    case UnknownField::TYPE_GROUP:
+      return data_.group_->SpaceUsedLong();
+    default:
+      return 0;
+  }
+}
+
 size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
   if (fields_.empty()) return 0;
 
   size_t total_size = sizeof(UnknownField) * fields_.capacity();
-
   for (const UnknownField& field : fields_) {
-    switch (field.type()) {
-      case UnknownField::TYPE_LENGTH_DELIMITED:
-        total_size += sizeof(*field.data_.length_delimited_.string_value) +
-                      internal::StringSpaceUsedExcludingSelfLong(
-                          *field.data_.length_delimited_.string_value);
-        break;
-      case UnknownField::TYPE_GROUP:
-        total_size += field.data_.group_->SpaceUsedLong();
-        break;
-      default:
-        break;
-    }
+    total_size += field.SpaceUsedExcludingSelfLong();
   }
   return total_size;
 }
@@ -163,11 +167,19 @@ std::string* UnknownFieldSet::AddLengthDelimited(int number) {
   fields_.emplace_back();
   auto& field = fields_.back();
   field.number_ = number;
-  field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
-  field.data_.length_delimited_.string_value = new std::string;
-  return field.data_.length_delimited_.string_value;
+  field.SetLengthDelimitedType(UnknownField::DATATYPE_STRING);
+  field.data_.string_value_ = new std::string;
+  return field.data_.string_value_;
 }
 
+absl::Cord* UnknownFieldSet::AddLengthDelimitedCord(int number) {
+  fields_.emplace_back();
+  auto& field = fields_.back();
+  field.number_ = number;
+  field.SetLengthDelimitedType(UnknownField::DATATYPE_CORD);
+  field.data_.cord_value_ = new absl::Cord();
+  return field.data_.cord_value_;
+}
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
   fields_.emplace_back();
@@ -179,8 +191,7 @@ UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
 }
 
 void UnknownFieldSet::AddField(const UnknownField& field) {
-  fields_.push_back(field);
-  fields_.back().DeepCopy(field);
+  fields_.push_back(field.DeepCopy());
 }
 
 void UnknownFieldSet::DeleteSubrange(int start, int num) {
@@ -271,7 +282,12 @@ bool UnknownFieldSet::SerializeToCord(absl::Cord* output) const {
 void UnknownField::Delete() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      delete data_.length_delimited_.string_value;
+      if (GetLengthDelimitedDataType() == DATATYPE_STRING) {
+        delete data_.string_value_;
+      } else {
+        GOOGLE_ABSL_DCHECK_EQ(GetLengthDelimitedDataType(), DATATYPE_CORD);
+        delete data_.cord_value_;
+      }
       break;
     case UnknownField::TYPE_GROUP:
       delete data_.group_;
@@ -281,32 +297,65 @@ void UnknownField::Delete() {
   }
 }
 
-void UnknownField::DeepCopy(const UnknownField& other) {
-  (void)other;  // Parameter is used by Google-internal code.
+UnknownField UnknownField::DeepCopy() const {
+  UnknownField field = *this;
   switch (type()) {
-    case UnknownField::TYPE_LENGTH_DELIMITED:
-      data_.length_delimited_.string_value =
-          new std::string(*data_.length_delimited_.string_value);
+    case TYPE_LENGTH_DELIMITED:
+      if (auto cord = GetLengthDelimitedCord()) {
+        field.datatype_.store(DATATYPE_CORD, std::memory_order_relaxed);
+        field.data_.cord_value_ = new absl::Cord(std::move(*cord));
+      } else {
+        GOOGLE_ABSL_DCHECK_EQ(GetLengthDelimitedDataType(), DATATYPE_STRING);
+        field.datatype_.store(DATATYPE_STRING, std::memory_order_relaxed);
+        field.data_.string_value_ = new std::string(*data_.string_value_);
+      }
       break;
-    case UnknownField::TYPE_GROUP: {
-      UnknownFieldSet* group = new UnknownFieldSet();
-      group->InternalMergeFrom(*data_.group_);
-      data_.group_ = group;
+
+    case UnknownField::TYPE_GROUP:
+      field.data_.group_ = new UnknownFieldSet();
+      field.data_.group_->InternalMergeFrom(*data_.group_);
       break;
-    }
+
     default:
       break;
   }
+  return field;
 }
 
+void UnknownField::EnsureConvertedToStringSlow() const {
+  absl::MutexLock lock(&datatype_mutex_);
+  if (GetLengthDelimitedDataType() == DATATYPE_CORD) {
+    std::string* string_value = new std::string();
+    data_.cord_value_->AppendTo(string_value);
+    delete data_.cord_value_;
+    data_.string_value_ = string_value;
+    datatype_.store(DATATYPE_STRING, std::memory_order_release);
+  }
+  GOOGLE_ABSL_DCHECK_EQ(GetLengthDelimitedDataType(), DATATYPE_STRING);
+}
 
 uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   GOOGLE_ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  const std::string& data = *data_.length_delimited_.string_value;
+  if (auto cord = GetLengthDelimitedCord()) {
+    target = io::CodedOutputStream::WriteVarint32ToArray(cord->size(), target);
+    target = stream->WriteCord(*cord, target);
+    return target;
+  }
+  const std::string& data = *data_.string_value_;
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
   target = stream->WriteRaw(data.data(), data.size(), target);
   return target;
+}
+
+std::optional<absl::Cord> UnknownField::GetLengthDelimitedCord() const {
+  if (GetLengthDelimitedDataType() == DATATYPE_CORD) {
+    absl::MutexLock lock(&datatype_mutex_);
+    if (GetLengthDelimitedDataType() == DATATYPE_CORD) {
+      return *data_.cord_value_;
+    }
+  }
+  return std::nullopt;
 }
 
 namespace internal {

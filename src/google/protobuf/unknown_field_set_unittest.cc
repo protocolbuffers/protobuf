@@ -37,11 +37,11 @@
 
 #include "google/protobuf/unknown_field_set.h"
 
+#include <optional>
 #include <string>
+#include <thread>
 #include <vector>
 
-#include "google/protobuf/stubs/callback.h"
-#include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -58,7 +58,6 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_lite.pb.h"
 #include "google/protobuf/wire_format.h"
-
 
 namespace google {
 namespace protobuf {
@@ -106,6 +105,16 @@ class UnknownFieldSetTest : public testing::Test {
     std::string data;
     EXPECT_TRUE(bizarro_message.SerializeToString(&data));
     return data;
+  }
+
+  // Expose Cord API of UnknownFieldSet to this test
+  static void AddLengthDelimitedCord(int field_number, const absl::Cord& data,
+                                     google::protobuf::UnknownFieldSet* unknown_fields) {
+    unknown_fields->AddLengthDelimitedCord(field_number, data);
+  }
+  static absl::Cord* AddLengthDelimitedCord(
+      int field_number, google::protobuf::UnknownFieldSet* unknown_fields) {
+    return unknown_fields->AddLengthDelimitedCord(field_number);
   }
 
   const Descriptor* descriptor_;
@@ -357,6 +366,18 @@ TEST_F(UnknownFieldSetTest, MergeFromMessageLite) {
   EXPECT_EQ(unknown_field.fixed32(), 42);
 }
 
+TEST_F(UnknownFieldSetTest, TestMergeFromForUnknownFieldsUsingCord) {
+  unittest::TestEmptyMessage source, destination;
+  AddLengthDelimitedCord(4, absl::Cord("hello"),
+                         source.mutable_unknown_fields());
+  destination.MergeFrom(source);
+  std::string destination_text;
+  TextFormat::PrintToString(destination, &destination_text);
+  EXPECT_EQ(
+      // Note:  The ordering of fields here depends on the ordering of adds
+      //   and merging, above.
+      "4: \"hello\"\n", destination_text);
+}
 
 TEST_F(UnknownFieldSetTest, Clear) {
   // Clear the set.
@@ -597,6 +618,23 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var2";
 }
 
+TEST_F(UnknownFieldSetTest, TestSpaceUsedForUnknownFieldsUsingCord) {
+  unittest::TestEmptyMessage empty_message;
+
+  // Make sure an unknown field set has zero space used until a field is
+  // actually added.
+  size_t base_size = empty_message.SpaceUsedLong();
+  UnknownFieldSet* unknown_fields = empty_message.mutable_unknown_fields();
+  EXPECT_EQ(base_size, empty_message.SpaceUsedLong());
+
+  // Make sure each thing we add to the set increases the SpaceUsedLong().
+  absl::Cord* cord = AddLengthDelimitedCord(1, unknown_fields);
+  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
+  base_size = empty_message.SpaceUsedLong();
+
+  *cord = std::string(4096, 'x');
+  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
+}
 
 TEST_F(UnknownFieldSetTest, Empty) {
   UnknownFieldSet unknown_fields;
