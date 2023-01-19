@@ -38,6 +38,7 @@
 #include <array>
 #include <cstdlib>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -62,8 +63,11 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_database.h"
@@ -1872,6 +1876,7 @@ void DescriptorPool::AddUnusedImportTrackFile(absl::string_view file_name,
   unused_import_track_files_[file_name] = is_error;
 }
 
+
 void DescriptorPool::ClearUnusedImportTrackFiles() {
   unused_import_track_files_.clear();
 }
@@ -1912,7 +1917,11 @@ DescriptorPool* DescriptorPool::internal_generated_pool() {
 
 const DescriptorPool* DescriptorPool::generated_pool() {
   const DescriptorPool* pool = internal_generated_pool();
-  // Ensure that descriptor.proto has been registered in the generated pool.
+  // Ensure that descriptor.proto and extension_declarations.proto get
+  // registered in the generated pool. These protos are a special case
+  // because they are included in the full runtime. We have to avoid
+  // registering them pre-main, because we need to ensure that the linker
+  // --gc-sections step can strip out the full runtime if it is unused.
   DescriptorProto::descriptor();
   return pool;
 }
@@ -6465,6 +6474,7 @@ void DescriptorBuilder::CrossLinkExtensionRange(
   }
 }
 
+
 void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                                        const FieldDescriptorProto& proto) {
   if (field->options_ == nullptr) {
@@ -7104,7 +7114,7 @@ void DescriptorBuilder::ValidateFieldOptions(
   // determine whether the json_name option is set on the field. Here we
   // compare it against the default calculated json_name value and consider
   // the option set if they are different. This won't catch the case when
-  // an user explicitly sets json_name to the default value, but should be
+  // a user explicitly sets json_name to the default value, but should be
   // good enough to catch common misuses.
   if (field->is_extension() &&
       (field->has_json_name() &&
