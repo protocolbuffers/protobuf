@@ -4,7 +4,7 @@
         "lts": false,
         "date": "2022-07-21",
         "languages": {
-            "cpp": "3.22-dev",
+            "cpp": "4.22-dev",
             "csharp": "3.22-dev",
             "java": "3.22-dev",
             "javascript": "3.22-dev",
