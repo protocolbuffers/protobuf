@@ -69,9 +69,9 @@ void SetPrimitiveVariables(
 
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
-  (*variables)["default_init"] =
-      "= " +
-      ImmutableDefaultValue(descriptor, name_resolver, context->options());
+  (*variables)["default_init"] = absl::StrCat(
+      "= ",
+      ImmutableDefaultValue(descriptor, name_resolver, context->options()));
   (*variables)["capitalized_type"] = "java.lang.String";
   (*variables)["tag"] =
       absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
@@ -109,9 +109,9 @@ void SetPrimitiveVariables(
 
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
-        GenerateSetBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
     (*variables)["clear_has_field_bit_message"] =
-        GenerateClearBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateClearBit(messageBitIndex), ";");
 
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {

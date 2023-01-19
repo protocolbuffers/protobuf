@@ -273,7 +273,8 @@ void FileGenerator::Generate(io::Printer* printer) {
         "package", java_package_);
   }
   PrintGeneratedAnnotation(
-      printer, '$', options_.annotate_code ? classname_ + ".java.pb.meta" : "",
+      printer, '$',
+      options_.annotate_code ? absl::StrCat(classname_, ".java.pb.meta") : "",
       options_);
 
   if (!options_.opensource_runtime) {
@@ -552,12 +553,14 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(
     for (const FieldDescriptor* field : extensions) {
       std::string scope;
       if (field->extension_scope() != NULL) {
-        scope = name_resolver_->GetMutableClassName(field->extension_scope()) +
-                ".getDescriptor()";
+        scope = absl::StrCat(
+            name_resolver_->GetMutableClassName(field->extension_scope()),
+            ".getDescriptor()");
       } else {
-        scope = FileJavaPackage(field->file(), true, options_) + "." +
-                name_resolver_->GetDescriptorClassName(field->file()) +
-                ".descriptor";
+        scope =
+            absl::StrCat(FileJavaPackage(field->file(), true, options_), ".",
+                         name_resolver_->GetDescriptorClassName(field->file()),
+                         ".descriptor");
       }
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         printer->Print(
@@ -606,9 +609,9 @@ static void GenerateSibling(
     GeneratorClass* generator,
     void (GeneratorClass::*pfn)(io::Printer* printer)) {
   std::string filename =
-      package_dir + descriptor->name() + name_suffix + ".java";
+      absl::StrCat(package_dir, descriptor->name(), name_suffix, ".java");
   file_list->push_back(filename);
-  std::string info_full_path = filename + ".pb.meta";
+  std::string info_full_path = absl::StrCat(filename, ".pb.meta");
   GeneratedCodeInfo annotations;
   io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
       &annotations);
@@ -717,9 +720,10 @@ void FileGenerator::GenerateKotlinSiblings(
     auto open_file = [context](const std::string& filename) {
       return std::unique_ptr<io::ZeroCopyOutputStream>(context->Open(filename));
     };
-    std::string filename = package_dir + descriptor->name() + "Kt.kt";
+    std::string filename =
+        absl::StrCat(package_dir, descriptor->name(), "Kt.kt");
     file_list->push_back(filename);
-    std::string info_full_path = filename + ".pb.meta";
+    std::string info_full_path = absl::StrCat(filename, ".pb.meta");
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);

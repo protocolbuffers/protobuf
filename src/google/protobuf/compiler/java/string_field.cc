@@ -69,9 +69,9 @@ void SetPrimitiveVariables(
 
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
-  (*variables)["default_init"] =
-      "= " +
-      ImmutableDefaultValue(descriptor, name_resolver, context->options());
+  (*variables)["default_init"] = absl::StrCat(
+      "= ",
+      ImmutableDefaultValue(descriptor, name_resolver, context->options()));
   (*variables)["capitalized_type"] = "String";
   (*variables)["tag"] =
       absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
@@ -79,14 +79,15 @@ void SetPrimitiveVariables(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   (*variables)["null_check"] =
       "if (value == null) { throw new NullPointerException(); }";
-  (*variables)["isStringEmpty"] = "com.google.protobuf.GeneratedMessage" +
-                                  GeneratedCodeVersionSuffix() +
-                                  ".isStringEmpty";
-  (*variables)["writeString"] = "com.google.protobuf.GeneratedMessage" +
-                                GeneratedCodeVersionSuffix() + ".writeString";
-  (*variables)["computeStringSize"] = "com.google.protobuf.GeneratedMessage" +
-                                      GeneratedCodeVersionSuffix() +
-                                      ".computeStringSize";
+  (*variables)["isStringEmpty"] =
+      absl::StrCat("com.google.protobuf.GeneratedMessage",
+                   GeneratedCodeVersionSuffix(), ".isStringEmpty");
+  (*variables)["writeString"] =
+      absl::StrCat("com.google.protobuf.GeneratedMessage",
+                   GeneratedCodeVersionSuffix(), ".writeString");
+  (*variables)["computeStringSize"] =
+      absl::StrCat("com.google.protobuf.GeneratedMessage",
+                   GeneratedCodeVersionSuffix(), ".computeStringSize");
 
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
@@ -108,7 +109,7 @@ void SetPrimitiveVariables(
 
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
-        GenerateSetBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
 
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
@@ -130,9 +131,9 @@ void SetPrimitiveVariables(
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_builder"] =
-      GenerateSetBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      GenerateClearBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
 }
 
 }  // namespace
