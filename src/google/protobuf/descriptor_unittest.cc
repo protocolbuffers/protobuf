@@ -47,6 +47,7 @@
 #include "absl/log/die_if_null.h"
 #include "absl/log/scoped_mock_log.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/stubs/common.h"
@@ -3937,6 +3938,7 @@ class ValidationErrorTest : public testing::Test {
     return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
   }
 
+
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect errors to be produced which match the
   // given error text.
@@ -7076,6 +7078,7 @@ TEST_F(ValidationErrorTest, UnusedImportWithOtherError) {
       // Should not also contain unused import error.
       "foo.proto: Foo.foo: EXTENDEE: \"Baz\" is not defined.\n");
 }
+
 
 
 TEST_F(ValidationErrorTest, PackageTooLong) {
