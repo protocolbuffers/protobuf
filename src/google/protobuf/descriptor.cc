@@ -8092,16 +8092,16 @@ class AggregateErrorCollector : public io::ErrorCollector {
  public:
   std::string error_;
 
-  void AddError(int /* line */, int /* column */,
-                const std::string& message) override {
+  void RecordError(int /* line */, int /* column */,
+                   const absl::string_view message) override {
     if (!error_.empty()) {
       absl::StrAppend(&error_, "; ");
     }
     absl::StrAppend(&error_, message);
   }
 
-  void AddWarning(int /* line */, int /* column */,
-                  const std::string& /* message */) override {
+  void RecordWarning(int /* line */, int /* column */,
+                     const absl::string_view /* message */) override {
     // Ignore warnings
   }
 };

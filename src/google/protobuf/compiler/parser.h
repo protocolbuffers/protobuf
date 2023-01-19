@@ -210,19 +210,19 @@ class PROTOBUF_EXPORT Parser {
   // -----------------------------------------------------------------
   // Error logging helpers
 
-  // Invokes error_collector_->AddError(), if error_collector_ is not NULL.
-  void AddError(int line, int column, const std::string& error);
+  // Invokes error_collector_->RecordError(), if error_collector_ is not NULL.
+  void RecordError(int line, int column, absl::string_view error);
 
-  // Invokes error_collector_->AddError() with the line and column number
+  // Invokes error_collector_->RecordError() with the line and column number
   // of the current token.
-  void AddError(const std::string& error);
+  void RecordError(absl::string_view error);
 
-  // Invokes error_collector_->AddWarning(), if error_collector_ is not NULL.
-  void AddWarning(int line, int column, const std::string& warning);
+  // Invokes error_collector_->RecordWarning(), if error_collector_ is not NULL.
+  void RecordWarning(int line, int column, absl::string_view warning);
 
-  // Invokes error_collector_->AddWarning() with the line and column number
+  // Invokes error_collector_->RecordWarning() with the line and column number
   // of the current token.
-  void AddWarning(const std::string& warning);
+  void RecordWarning(absl::string_view warning);
 
   // Records a location in the SourceCodeInfo.location table (see
   // descriptor.proto).  We use RAII to ensure that the start and end locations
@@ -313,7 +313,7 @@ class PROTOBUF_EXPORT Parser {
   // were no errors; only that there were no *syntax* errors.  For instance,
   // if a service method is defined using proper syntax but uses a primitive
   // type as its input or output, ParseMethodField() still returns true
-  // and only reports the error by calling AddError().  In practice, this
+  // and only reports the error by calling RecordError().  In practice, this
   // makes logic much simpler for the caller.
 
   // Parse a top-level message, enum, service, etc.
@@ -578,7 +578,7 @@ class PROTOBUF_EXPORT SourceLocationTable {
   bool Find(const Message* descriptor,
             DescriptorPool::ErrorCollector::ErrorLocation location, int* line,
             int* column) const;
-  bool FindImport(const Message* descriptor, const std::string& name, int* line,
+  bool FindImport(const Message* descriptor, absl::string_view name, int* line,
                   int* column) const;
 
   // Adds a location to the table.

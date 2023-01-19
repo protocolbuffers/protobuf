@@ -105,7 +105,7 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
   bool had_errors() { return had_errors_; }
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) override {
+  void RecordError(int line, int column, absl::string_view message) override {
     if (multi_file_error_collector_ != nullptr) {
       multi_file_error_collector_->RecordError(filename_, line, column,
                                                message);
@@ -191,10 +191,10 @@ SourceTreeDescriptorDatabase::ValidationErrorCollector::
 SourceTreeDescriptorDatabase::ValidationErrorCollector::
     ~ValidationErrorCollector() {}
 
-void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
-    const std::string& filename, const std::string& element_name,
+void SourceTreeDescriptorDatabase::ValidationErrorCollector::RecordError(
+    absl::string_view filename, absl::string_view element_name,
     const Message* descriptor, ErrorLocation location,
-    const std::string& message) {
+    absl::string_view message) {
   if (owner_->error_collector_ == nullptr) return;
 
   int line, column;
@@ -207,10 +207,10 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
   owner_->error_collector_->RecordError(filename, line, column, message);
 }
 
-void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
-    const std::string& filename, const std::string& element_name,
+void SourceTreeDescriptorDatabase::ValidationErrorCollector::RecordWarning(
+    absl::string_view filename, absl::string_view element_name,
     const Message* descriptor, ErrorLocation location,
-    const std::string& message) {
+    absl::string_view message) {
   if (owner_->error_collector_ == nullptr) return;
 
   int line, column;

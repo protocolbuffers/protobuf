@@ -376,7 +376,7 @@ class TextFormat::Parser::ParserImpl {
     return suc && LookingAtType(io::Tokenizer::TYPE_END);
   }
 
-  void ReportError(int line, int col, const std::string& message) {
+  void ReportError(int line, int col, absl::string_view message) {
     had_errors_ = true;
     if (error_collector_ == nullptr) {
       if (line >= 0) {
@@ -392,7 +392,7 @@ class TextFormat::Parser::ParserImpl {
     }
   }
 
-  void ReportWarning(int line, int col, const std::string& message) {
+  void ReportWarning(int line, int col, const absl::string_view message) {
     if (error_collector_ == nullptr) {
       if (line >= 0) {
         ABSL_LOG(WARNING) << "Warning parsing text-format "
@@ -416,14 +416,14 @@ class TextFormat::Parser::ParserImpl {
 
   // Reports an error with the given message with information indicating
   // the position (as derived from the current token).
-  void ReportError(const std::string& message) {
+  void ReportError(absl::string_view message) {
     ReportError(tokenizer_.current().line, tokenizer_.current().column,
                 message);
   }
 
   // Reports a warning with the given message with information indicating
   // the position (as derived from the current token).
-  void ReportWarning(const std::string& message) {
+  void ReportWarning(absl::string_view message) {
     ReportWarning(tokenizer_.current().line, tokenizer_.current().column,
                   message);
   }
@@ -1359,11 +1359,12 @@ class TextFormat::Parser::ParserImpl {
     ParserErrorCollector& operator=(const ParserErrorCollector&) = delete;
     ~ParserErrorCollector() override {}
 
-    void AddError(int line, int column, const std::string& message) override {
+    void RecordError(int line, int column, absl::string_view message) override {
       parser_->ReportError(line, column, message);
     }
 
-    void AddWarning(int line, int column, const std::string& message) override {
+    void RecordWarning(int line, int column,
+                       absl::string_view message) override {
       parser_->ReportWarning(line, column, message);
     }
 

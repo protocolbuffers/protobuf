@@ -1465,13 +1465,14 @@ class TextFormatParserTest : public testing::Test {
     std::string text_;
 
     // implements ErrorCollector -------------------------------------
-    void AddError(int line, int column, const std::string& message) override {
+    void RecordError(int line, int column, absl::string_view message) override {
       absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line + 1, column + 1,
                                 message);
     }
 
-    void AddWarning(int line, int column, const std::string& message) override {
-      AddError(line, column, absl::StrCat("WARNING:", message));
+    void RecordWarning(int line, int column,
+                       absl::string_view message) override {
+      RecordError(line, column, absl::StrCat("WARNING:", message));
     }
   };
 
