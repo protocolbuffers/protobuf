@@ -103,8 +103,8 @@ std::string CapitalizedFieldName(const FieldDescriptor* descriptor);
 // Returns:
 //   Converts a name to camel-case. If cap_first_letter is true, capitalize the
 //   first letter.
-std::string UnderscoresToCamelCase(absl::string_view input,
-                                   bool cap_next_letter);
+std::string UnderscoresToCamelCase(const std::string& name,
+                                   bool cap_first_letter);
 // Requires:
 //   field != NULL
 // Returns:

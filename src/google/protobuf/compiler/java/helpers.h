@@ -69,7 +69,7 @@ bool IsForbiddenKotlin(absl::string_view field_name);
 // annotation_file should be generated from the filename of the source file
 // being annotated (which in turn must be a Java identifier plus ".java").
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter = '$',
-                              absl::string_view annotation_file = "",
+                              const std::string& annotation_file = "",
                               Options options = {});
 
 // If a GeneratedMessageLite contains non-lite enums, then its verifier
@@ -77,12 +77,11 @@ void PrintGeneratedAnnotation(io::Printer* printer, char delimiter = '$',
 void PrintEnumVerifierLogic(
     io::Printer* printer, const FieldDescriptor* descriptor,
     const absl::flat_hash_map<absl::string_view, std::string>& variables,
-    absl::string_view var_name, absl::string_view terminating_string,
-    bool enforce_lite);
+    const char* var_name, const char* terminating_string, bool enforce_lite);
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
-std::string ToCamelCase(absl::string_view input, bool lower_first);
+std::string ToCamelCase(const std::string& input, bool lower_first);
 
 // Similar to UnderscoresToCamelCase, but guarantees that the result is a
 // complete Java identifier by adding a _ if needed.
@@ -185,8 +184,8 @@ inline bool IsOwnFile(const ServiceDescriptor* descriptor, bool immutable) {
 // (e.g.) be "OrBuilder" for some generated interfaces.
 template <typename Descriptor>
 std::string AnnotationFileName(const Descriptor* descriptor,
-                               absl::string_view suffix) {
-  return absl::StrCat(descriptor->name(), suffix, ".java.pb.meta");
+                               const std::string& suffix) {
+  return descriptor->name() + suffix + ".java.pb.meta";
 }
 
 // Get the unqualified name that should be used for a field's field
@@ -212,21 +211,21 @@ enum JavaType {
 
 JavaType GetJavaType(const FieldDescriptor* field);
 
-absl::string_view PrimitiveTypeName(JavaType type);
+const char* PrimitiveTypeName(JavaType type);
 
 // Get the fully-qualified class name for a boxed primitive type, e.g.
 // "java.lang.Integer" for JAVATYPE_INT.  Returns NULL for enum and message
 // types.
-absl::string_view BoxedPrimitiveTypeName(JavaType type);
+const char* BoxedPrimitiveTypeName(JavaType type);
 
 // Kotlin source does not distinguish between primitives and non-primitives,
 // but does use Kotlin-specific qualified types for them.
-absl::string_view KotlinTypeName(JavaType type);
+const char* KotlinTypeName(JavaType type);
 
 // Get the name of the java enum constant representing this type. E.g.,
 // "INT32" for FieldDescriptor::TYPE_INT32. The enum constant's full
 // name is "com.google.protobuf.WireFormat.FieldType.INT32".
-absl::string_view FieldTypeName(const FieldDescriptor::Type field_type);
+const char* FieldTypeName(const FieldDescriptor::Type field_type);
 
 class ClassNameResolver;
 std::string DefaultValue(const FieldDescriptor* field, bool immutable,
@@ -314,8 +313,8 @@ bool IsReferenceType(JavaType type);
 
 // Returns the capitalized name for calling relative functions in
 // CodedInputStream
-absl::string_view GetCapitalizedType(const FieldDescriptor* field,
-                                     bool immutable, Options options);
+const char* GetCapitalizedType(const FieldDescriptor* field, bool immutable,
+                               Options options);
 
 // For encodings with fixed sizes, returns that size in bytes.  Otherwise
 // returns -1.

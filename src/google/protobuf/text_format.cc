@@ -910,12 +910,15 @@ class TextFormat::Parser::ParserImpl {
             return true;
           } else if (!allow_unknown_enum_) {
             ReportError(absl::StrCat("Unknown enumeration value of \"", value,
-                                     "\" for field \"", field->name(), "\"."));
+                                     "\" for "
+                                     "field \"",
+                                     field->name(), "\"."));
             return false;
           } else {
             ReportWarning(absl::StrCat("Unknown enumeration value of \"", value,
-                                       "\" for field \"", field->name(),
-                                       "\"."));
+                                       "\" for "
+                                       "field \"",
+                                       field->name(), "\"."));
             return true;
           }
         }

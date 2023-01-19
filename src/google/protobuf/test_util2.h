@@ -61,8 +61,9 @@ inline std::string TranslatePathToOpensource(absl::string_view google3_path) {
 }
 
 inline std::string MaybeTranslatePath(absl::string_view google3_path) {
-  return TranslatePathToOpensource(google3_path);
-  return std::string(google3_path);
+  std::string path(google3_path);
+  path = TranslatePathToOpensource(path);
+  return path;
 }
 
 inline std::string TestSourceDir() {

@@ -68,8 +68,8 @@ std::string TypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return std::string(boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
-                             : PrimitiveTypeName(GetJavaType(field)));
+    return boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
+                 : PrimitiveTypeName(GetJavaType(field));
   }
 }
 
@@ -80,13 +80,13 @@ std::string KotlinTypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return std::string(KotlinTypeName(GetJavaType(field)));
+    return KotlinTypeName(GetJavaType(field));
   }
 }
 
 std::string WireType(const FieldDescriptor* field) {
-  return absl::StrCat("com.google.protobuf.WireFormat.FieldType.",
-                      FieldTypeName(field->type()));
+  return "com.google.protobuf.WireFormat.FieldType." +
+         std::string(FieldTypeName(field->type()));
 }
 
 void SetMessageVariables(
@@ -190,18 +190,18 @@ void SetMessageVariables(
       {"default_entry", absl::StrCat((*variables)["capitalized_name"],
                                      "DefaultEntryHolder.defaultEntry")});
   variables->insert({"map_field_parameter", (*variables)["default_entry"]});
-  (*variables)["descriptor"] = absl::StrCat(
-      name_resolver->GetImmutableClassName(descriptor->file()), ".internal_",
-      UniqueFileScopeIdentifier(descriptor->message_type()), "_descriptor, ");
+  (*variables)["descriptor"] =
+      name_resolver->GetImmutableClassName(descriptor->file()) + ".internal_" +
+      UniqueFileScopeIdentifier(descriptor->message_type()) + "_descriptor, ";
   (*variables)["ver"] = GeneratedCodeVersionSuffix();
 
   (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_builder"] =
-      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
+      GenerateSetBit(builderBitIndex) + ";";
   (*variables)["clear_has_field_bit_builder"] =
-      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
+      GenerateClearBit(builderBitIndex) + ";";
 }
 
 }  // namespace

@@ -81,17 +81,16 @@ class TestGenerator : public CodeGenerator {
 // not verify that they are correctly-placed; that would require actually
 // compiling the output which is a bit more than I care to do for this test.
 TEST(JavaPluginTest, PluginTest) {
-  GOOGLE_ABSL_CHECK_OK(
-      File::SetContents(absl::StrCat(TestTempDir(), "/test.proto"),
-                        "syntax = \"proto2\";\n"
-                        "package foo;\n"
-                        "option java_package = \"\";\n"
-                        "option java_outer_classname = \"Test\";\n"
-                        "message Bar {\n"
-                        "  message Baz {}\n"
-                        "}\n"
-                        "enum Qux { BLAH = 1; }\n",
-                        true));
+  GOOGLE_ABSL_CHECK_OK(File::SetContents(TestTempDir() + "/test.proto",
+                                  "syntax = \"proto2\";\n"
+                                  "package foo;\n"
+                                  "option java_package = \"\";\n"
+                                  "option java_outer_classname = \"Test\";\n"
+                                  "message Bar {\n"
+                                  "  message Baz {}\n"
+                                  "}\n"
+                                  "enum Qux { BLAH = 1; }\n",
+                                  true));
 
   CommandLineInterface cli;
   cli.SetInputsAreProtoPathRelative(true);
@@ -101,9 +100,9 @@ TEST(JavaPluginTest, PluginTest) {
   cli.RegisterGenerator("--java_out", &java_generator, "");
   cli.RegisterGenerator("--test_out", &test_generator, "");
 
-  std::string proto_path = absl::StrCat("-I", TestTempDir());
-  std::string java_out = absl::StrCat("--java_out=", TestTempDir());
-  std::string test_out = absl::StrCat("--test_out=", TestTempDir());
+  std::string proto_path = "-I" + TestTempDir();
+  std::string java_out = "--java_out=" + TestTempDir();
+  std::string test_out = "--test_out=" + TestTempDir();
 
   const char* argv[] = {"protoc", proto_path.c_str(), java_out.c_str(),
                         test_out.c_str(), "test.proto"};
@@ -114,8 +113,8 @@ TEST(JavaPluginTest, PluginTest) {
   // expect
 
   std::string output;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(absl::StrCat(TestTempDir(), "/Test.java"),
-                                  &output, true));
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(TestTempDir() + "/Test.java", &output,
+                                  true));
   std::vector<std::string> lines = absl::StrSplit(output, "\n");
   bool found_generated_annotation = false;
   bool found_do_not_edit = false;

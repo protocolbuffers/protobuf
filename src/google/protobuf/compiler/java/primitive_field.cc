@@ -64,9 +64,9 @@ void SetPrimitiveVariables(
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
 
-  (*variables)["type"] = std::string(PrimitiveTypeName(javaType));
-  (*variables)["boxed_type"] = std::string(BoxedPrimitiveTypeName(javaType));
-  (*variables)["kt_type"] = std::string(KotlinTypeName(javaType));
+  (*variables)["type"] = PrimitiveTypeName(javaType);
+  (*variables)["boxed_type"] = BoxedPrimitiveTypeName(javaType);
+  (*variables)["kt_type"] = KotlinTypeName(javaType);
   variables->insert({"field_type", (*variables)["type"]});
 
   std::string name = (*variables)["name"];
@@ -112,10 +112,10 @@ void SetPrimitiveVariables(
   (*variables)["default_init"] =
       IsDefaultValueJavaDefault(descriptor)
           ? ""
-          : absl::StrCat("= ", ImmutableDefaultValue(descriptor, name_resolver,
-                                                     context->options()));
-  (*variables)["capitalized_type"] = std::string(GetCapitalizedType(
-      descriptor, /* immutable = */ true, context->options()));
+          : ("= " + ImmutableDefaultValue(descriptor, name_resolver,
+                                          context->options()));
+  (*variables)["capitalized_type"] = GetCapitalizedType(
+      descriptor, /* immutable = */ true, context->options());
   (*variables)["tag"] =
       absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = absl::StrCat(
@@ -146,7 +146,7 @@ void SetPrimitiveVariables(
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =
-        absl::StrCat(GenerateSetBitToLocal(messageBitIndex), ";");
+        GenerateSetBitToLocal(messageBitIndex) + ";";
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
@@ -182,9 +182,9 @@ void SetPrimitiveVariables(
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_builder"] =
-      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
+      GenerateSetBit(builderBitIndex) + ";";
   (*variables)["clear_has_field_bit_builder"] =
-      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
+      GenerateClearBit(builderBitIndex) + ";";
 }
 
 }  // namespace
@@ -506,7 +506,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateHashCode(
 }
 
 std::string ImmutablePrimitiveFieldGenerator::GetBoxedType() const {
-  return std::string(BoxedPrimitiveTypeName(GetJavaType(descriptor_)));
+  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
 }
 
 // ===================================================================
@@ -1069,7 +1069,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateHashCode(
 }
 
 std::string RepeatedImmutablePrimitiveFieldGenerator::GetBoxedType() const {
-  return std::string(BoxedPrimitiveTypeName(GetJavaType(descriptor_)));
+  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
 }
 
 }  // namespace java

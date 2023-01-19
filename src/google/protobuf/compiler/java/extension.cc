@@ -83,7 +83,7 @@ void ExtensionGenerator::InitTemplateVars(
                         ? ""
                         : DefaultValue(descriptor, immutable, name_resolver,
                                        context->options());
-  vars["type_constant"] = std::string(FieldTypeName(GetType(descriptor)));
+  vars["type_constant"] = FieldTypeName(GetType(descriptor));
   vars["packed"] = descriptor->is_packed() ? "true" : "false";
   vars["enum_map"] = "null";
   vars["prototype"] = "null";
@@ -94,12 +94,12 @@ void ExtensionGenerator::InitTemplateVars(
     case JAVATYPE_MESSAGE:
       singular_type =
           name_resolver->GetClassName(descriptor->message_type(), immutable);
-      vars["prototype"] = absl::StrCat(singular_type, ".getDefaultInstance()");
+      vars["prototype"] = singular_type + ".getDefaultInstance()";
       break;
     case JAVATYPE_ENUM:
       singular_type =
           name_resolver->GetClassName(descriptor->enum_type(), immutable);
-      vars["enum_map"] = absl::StrCat(singular_type, ".internalGetValueMap()");
+      vars["enum_map"] = singular_type + ".internalGetValueMap()";
       break;
     case JAVATYPE_STRING:
       singular_type = "java.lang.String";
@@ -108,11 +108,11 @@ void ExtensionGenerator::InitTemplateVars(
       singular_type = immutable ? "com.google.protobuf.ByteString" : "byte[]";
       break;
     default:
-      singular_type = std::string(BoxedPrimitiveTypeName(java_type));
+      singular_type = BoxedPrimitiveTypeName(java_type);
       break;
   }
   vars["type"] = descriptor->is_repeated()
-                     ? absl::StrCat("java.util.List<", singular_type, ">")
+                     ? "java.util.List<" + singular_type + ">"
                      : singular_type;
   vars["singular_type"] = singular_type;
 }

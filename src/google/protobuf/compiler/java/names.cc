@@ -74,7 +74,7 @@ bool IsReservedName(absl::string_view name) {
   return kReservedNames.contains(name);
 }
 
-bool IsForbidden(absl::string_view field_name) {
+bool IsForbidden(const std::string& field_name) {
   // Names that should be avoided (in UpperCamelCase format).
   // Using them will cause the compiler to generate accessors whose names
   // collide with methods defined in base classes.
@@ -113,7 +113,7 @@ std::string FieldName(const FieldDescriptor* field) {
   if (IsForbidden(field_name)) {
     // Append a trailing "#" to indicate that the name should be decorated to
     // avoid collision with other names.
-    absl::StrAppend(&field_name, "#");
+    field_name += "#";
   }
   return field_name;
 }
@@ -180,7 +180,7 @@ std::string UnderscoresToCamelCase(const MethodDescriptor* method) {
 std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   std::string name = UnderscoresToCamelCase(field);
   if (IsReservedName(name)) {
-    absl::StrAppend(&name, "_");
+    return name + "_";
   }
   return name;
 }
