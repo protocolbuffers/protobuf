@@ -1189,7 +1189,7 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
       if (Traits::TypeName(Traits::ContainingType(*field)) !=
           correct_type_name) {
         return lex.Invalid(absl::StrFormat(
-            "'%s' is a known extension name, but is not an extenion "
+            "'%s' is a known extension name, but is not an extension "
             "of '%s' as expected",
             extn_name, correct_type_name));
       }
