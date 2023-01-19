@@ -388,7 +388,7 @@ class TextFormat::Parser::ParserImpl {
                         << root_message_type_->full_name() << ": " << message;
       }
     } else {
-      error_collector_->AddError(line, col, message);
+      error_collector_->RecordError(line, col, message);
     }
   }
 
@@ -403,7 +403,7 @@ class TextFormat::Parser::ParserImpl {
                           << root_message_type_->full_name() << ": " << message;
       }
     } else {
-      error_collector_->AddWarning(line, col, message);
+      error_collector_->RecordWarning(line, col, message);
     }
   }
 
@@ -1662,7 +1662,7 @@ namespace {
 bool CheckParseInputSize(absl::string_view input,
                          io::ErrorCollector* error_collector) {
   if (input.size() > INT_MAX) {
-    error_collector->AddError(
+    error_collector->RecordError(
         -1, 0,
         absl::StrCat(
             "Input size too large: ", static_cast<int64_t>(input.size()),

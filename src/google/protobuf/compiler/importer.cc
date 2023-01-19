@@ -107,7 +107,8 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
   // implements ErrorCollector ---------------------------------------
   void AddError(int line, int column, const std::string& message) override {
     if (multi_file_error_collector_ != nullptr) {
-      multi_file_error_collector_->AddError(filename_, line, column, message);
+      multi_file_error_collector_->RecordError(filename_, line, column,
+                                               message);
     }
     had_errors_ = true;
   }
@@ -147,8 +148,8 @@ bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
       return true;
     }
     if (error_collector_ != nullptr) {
-      error_collector_->AddError(filename, -1, 0,
-                                 source_tree_->GetLastErrorMessage());
+      error_collector_->RecordError(filename, -1, 0,
+                                    source_tree_->GetLastErrorMessage());
     }
     return false;
   }
@@ -203,7 +204,7 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
   } else {
     owner_->source_locations_.Find(descriptor, location, &line, &column);
   }
-  owner_->error_collector_->AddError(filename, line, column, message);
+  owner_->error_collector_->RecordError(filename, line, column, message);
 }
 
 void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
@@ -219,7 +220,7 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
   } else {
     owner_->source_locations_.Find(descriptor, location, &line, &column);
   }
-  owner_->error_collector_->AddWarning(filename, line, column, message);
+  owner_->error_collector_->RecordWarning(filename, line, column, message);
 }
 
 // ===================================================================

@@ -410,6 +410,23 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 # define PROTOBUF_DEPRECATED_ENUM
 #endif
 
+#if defined(__clang__)
+#define PROTOBUF_IGNORE_DEPRECATION_START                     \
+  _Pragma("clang diagnostic push")                                  \
+  _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
+#define PROTOBUF_IGNORE_DEPRECATION_STOP                     \
+  _Pragma("clang diagnostic pop")
+#elif defined(__GNUC__)
+#define PROTOBUF_IGNORE_DEPRECATION_START                     \
+  _Pragma("GCC diagnostic push")                                  \
+  _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#define PROTOBUF_IGNORE_DEPRECATION_STOP                     \
+  _Pragma("GCC diagnostic pop")
+#else
+#define PROTOBUF_IGNORE_DEPRECATION_START
+#define PROTOBUF_IGNORE_DEPRECATION_STOP
+#endif
+
 #ifdef PROTOBUF_RETURNS_NONNULL
 #error PROTOBUF_RETURNS_NONNULL was previously defined
 #endif

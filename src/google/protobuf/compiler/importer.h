@@ -41,6 +41,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
@@ -202,11 +203,31 @@ class PROTOBUF_EXPORT MultiFileErrorCollector {
 
   // Line and column numbers are zero-based.  A line number of -1 indicates
   // an error with the entire file (e.g. "not found").
-  virtual void AddError(const std::string& filename, int line, int column,
-                        const std::string& message) = 0;
+  virtual void RecordError(absl::string_view filename, int line, int column,
+                           absl::string_view message) {
+    PROTOBUF_IGNORE_DEPRECATION_START
+    AddError(std::string(filename), line, column, std::string(message));
+    PROTOBUF_IGNORE_DEPRECATION_STOP
+  }
+  virtual void RecordWarning(absl::string_view filename, int line, int column,
+                             absl::string_view message) {
+    PROTOBUF_IGNORE_DEPRECATION_START
+    AddWarning(std::string(filename), line, column, std::string(message));
+    PROTOBUF_IGNORE_DEPRECATION_STOP
+  }
 
-  virtual void AddWarning(const std::string& /* filename */, int /* line */,
-                          int /* column */, const std::string& /* message */) {}
+ private:
+  // These should never be called directly, but if a legacy class overrides
+  // them they'll get routed to by the Record* methods.
+  ABSL_DEPRECATED("Use RecordError")
+  virtual void AddError(const std::string& filename, int line, int column,
+                        const std::string& message) {
+    GOOGLE_ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
+  }
+
+  ABSL_DEPRECATED("Use RecordWarning")
+  virtual void AddWarning(const std::string& filename, int line, int column,
+                          const std::string& message) {}
 };
 
 // Abstract interface which represents a directory tree containing proto files.

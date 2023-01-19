@@ -400,7 +400,7 @@ bool Parser::ConsumeEndOfDeclaration(absl::string_view text,
 
 void Parser::AddError(int line, int column, const std::string& error) {
   if (error_collector_ != nullptr) {
-    error_collector_->AddError(line, column, error);
+    error_collector_->RecordError(line, column, error);
   }
   had_errors_ = true;
 }
@@ -411,7 +411,7 @@ void Parser::AddError(const std::string& error) {
 
 void Parser::AddWarning(int line, int column, const std::string& warning) {
   if (error_collector_ != nullptr) {
-    error_collector_->AddWarning(line, column, warning);
+    error_collector_->RecordWarning(line, column, warning);
   }
 }
 

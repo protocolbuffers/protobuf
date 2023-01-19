@@ -99,7 +99,7 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
     } else {
       source_locations_.Find(descriptor, location, &line, &column);
     }
-    wrapped_collector_->AddError(line, column, message);
+    wrapped_collector_->RecordError(line, column, message);
   }
 
  private:

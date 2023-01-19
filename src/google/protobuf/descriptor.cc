@@ -4200,8 +4200,8 @@ PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
     }
     GOOGLE_ABSL_LOG(ERROR) << "  " << element_name << ": " << error;
   } else {
-    error_collector_->AddError(filename_, element_name, &descriptor, location,
-                               error);
+    error_collector_->RecordError(filename_, element_name, &descriptor,
+                                  location, error);
   }
   had_errors_ = true;
 }
@@ -4252,8 +4252,8 @@ PROTOBUF_NOINLINE void DescriptorBuilder::AddWarning(
   if (error_collector_ == nullptr) {
     GOOGLE_ABSL_LOG(WARNING) << filename_ << " " << element_name << ": " << error;
   } else {
-    error_collector_->AddWarning(filename_, element_name, &descriptor, location,
-                                 error);
+    error_collector_->RecordWarning(filename_, element_name, &descriptor,
+                                    location, error);
   }
 }
 
