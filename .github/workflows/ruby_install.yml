@@ -40,16 +40,16 @@ jobs:
         with:
           submodules: recursive
       - name: Build cruby gem
-        run: $HOME/bin/bazel run ruby:release
+        run: $HOME/bin/bazel build ruby:release
         if: ${{ !contains(matrix.ruby, 'jruby') }}
       - name: Install cruby gem
-        run: gem install bazel-bin/ruby/release.runfiles/com_google_protobuf/tmp/google-protobuf-*
+        run: gem install bazel-bin/ruby/google-protobuf-*
         if: ${{ !contains(matrix.ruby, 'jruby') }}
       - name: Build jruby gem
-        run: $HOME/bin/bazel run ruby:jruby_release
+        run: $HOME/bin/bazel build ruby:jruby_release
         if: ${{ contains(matrix.ruby, 'jruby') }}
       - name: Install jruby gem
-        run: gem install bazel-bin/ruby/jruby_release.runfiles/com_google_protobuf/tmp/google-protobuf-*
+        run: gem install bazel-bin/ruby/google-protobuf-*
         if: ${{ contains(matrix.ruby, 'jruby') }}
       - name: Test installation
         run: |
