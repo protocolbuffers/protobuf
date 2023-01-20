@@ -258,7 +258,7 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
 };
 
 // Default field comparison: use the basic implementation of FieldComparator.
-class PROTOBUF_EXPORT DefaultFieldComparator PROTOBUF_FUTURE_FINAL
+class PROTOBUF_EXPORT DefaultFieldComparator final
     : public SimpleFieldComparator {
  public:
   ComparisonResult Compare(const Message& message_1, const Message& message_2,
