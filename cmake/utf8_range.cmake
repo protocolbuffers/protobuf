@@ -2,10 +2,8 @@ set(utf8_range_ENABLE_TESTS OFF CACHE BOOL "Disable utf8_range tests")
 
 if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/utf8_range/CMakeLists.txt")
   message(FATAL_ERROR
-          "Cannot find third_party/utf8_range directory that's needed to "
-          "build conformance tests. If you use git, make sure you have cloned "
-          "submodules:\n"
-          "  git submodule update --init --recursive\n")
+          "Cannot find third_party/utf8_range directory that's needed for "
+          "the protobuf runtime.\n")
 endif()
 
 set(utf8_range_ENABLE_INSTALL ${protobuf_INSTALL} CACHE BOOL "Set install")
