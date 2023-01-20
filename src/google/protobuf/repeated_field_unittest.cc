@@ -470,6 +470,9 @@ TEST(RepeatedField, ReserveLarge) {
 }
 
 TEST(RepeatedField, ReserveHuge) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || defined(ABSL_HAVE_MEMORY_SANITIZER)
+  GTEST_SKIP() << "Disabled because sanitizer is active";
+#endif
   // Largest value that does not clamp to the large limit:
   constexpr int non_clamping_limit =
       (std::numeric_limits<int>::max() - sizeof(Arena*)) / 2;
@@ -494,7 +497,6 @@ TEST(RepeatedField, ReserveHuge) {
   EXPECT_GE(huge_field.Capacity(), min_clamping_size);
   ASSERT_LT(huge_field.Capacity(), std::numeric_limits<int>::max() - 1);
 
-#ifndef PROTOBUF_ASAN
   // The array containing all the fields is, in theory, up to MAXINT-1 in size.
   // However, some compilers can't handle a struct whose size is larger
   // than 2GB, and the protocol buffer format doesn't handle more than 2GB of
@@ -505,7 +507,6 @@ TEST(RepeatedField, ReserveHuge) {
   // size must still be clamped to a valid range.
   huge_field.Reserve(huge_field.Capacity() + 1);
   EXPECT_EQ(huge_field.Capacity(), std::numeric_limits<int>::max());
-#endif  // PROTOBUF_ASAN
 #endif  // PROTOBUF_TEST_ALLOW_LARGE_ALLOC
 }
 
@@ -649,6 +650,43 @@ TEST(RepeatedField, AddRange5) {
   ASSERT_EQ(me.Get(0), 0);
   ASSERT_EQ(me.Get(1), 1);
   ASSERT_EQ(me.Get(2), 2);
+}
+
+// Add contents of container with a quirky iterator like std::vector<bool>
+TEST(RepeatedField, AddRange) {
+  RepeatedField<bool> me;
+  me.Add(true);
+  me.Add(false);
+
+  std::vector<bool> values;
+  values.push_back(true);
+  values.push_back(true);
+  values.push_back(false);
+
+  me.Add(values.begin(), values.end());
+  ASSERT_EQ(me.size(), 5);
+  ASSERT_EQ(me.Get(0), true);
+  ASSERT_EQ(me.Get(1), false);
+  ASSERT_EQ(me.Get(2), true);
+  ASSERT_EQ(me.Get(3), true);
+  ASSERT_EQ(me.Get(4), false);
+}
+
+// Add contents of absl::Span which evaluates to const T on access.
+TEST(RepeatedField, AddRange7) {
+  int ints[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  absl::Span<const int> span(ints);
+  const int* p = span.begin();
+  auto x = span.begin();
+  static_assert(std::is_convertible<decltype(x), const int*>::value, "");
+  (void)p;
+  RepeatedField<int> me;
+  me.Add(span.begin(), span.end());
+
+  ASSERT_EQ(me.size(), 10);
+  for (int i = 0; i < 10; ++i) {
+    ASSERT_EQ(me.Get(i), i);
+  }
 }
 
 TEST(RepeatedField, AddAndAssignRanges) {
@@ -953,6 +991,23 @@ TEST(RepeatedField, Truncate) {
 #endif
 }
 
+TEST(RepeatedCordField, AddRemoveLast) {
+  RepeatedField<absl::Cord> field;
+  field.Add(absl::Cord("foo"));
+  field.RemoveLast();
+}
+
+TEST(RepeatedCordField, AddClear) {
+  RepeatedField<absl::Cord> field;
+  field.Add(absl::Cord("foo"));
+  field.Clear();
+}
+
+TEST(RepeatedCordField, Resize) {
+  RepeatedField<absl::Cord> field;
+  field.Resize(10, absl::Cord("foo"));
+}
+
 TEST(RepeatedField, Cords) {
   RepeatedField<absl::Cord> field;
 
@@ -1007,8 +1062,8 @@ TEST(RepeatedField, TruncateCords) {
   // Truncating to the current size should be fine (no-op), but truncating
   // to a larger size should crash.
   field.Truncate(field.size());
-#if PROTOBUF_HAS_DEATH_TEST
-  EXPECT_DEBUG_DEATH(field.Truncate(field.size() + 1), "new_size");
+#if defined(PROTOBUF_HAS_DEATH_TEST) && !defined(NDEBUG)
+  EXPECT_DEATH(field.Truncate(field.size() + 1), "new_size");
 #endif
 }
 
@@ -1066,6 +1121,113 @@ TEST(RepeatedField, TestSAddFromSelf) {
     field.Add(field[0]);
   }
 }
+
+// We have, or at least had bad callers that never triggered our DCHECKS
+// Here we check we DO fail on bad Truncate calls under debug, and do nothing
+// under opt compiles.
+TEST(RepeatedField, HardenAgainstBadTruncate) {
+  RepeatedField<int> field;
+  for (int size = 0; size < 10; ++size) {
+    field.Truncate(size);
+#if PROTOBUF_HAS_DEATH_TEST
+    EXPECT_DEBUG_DEATH(field.Truncate(size + 1), "new_size <= current_size_");
+    EXPECT_DEBUG_DEATH(field.Truncate(size + 2), "new_size <= current_size_");
+#elif defined(NDEBUG)
+    field.Truncate(size + 1);
+    field.Truncate(size + 1);
+#endif
+    EXPECT_EQ(field.size(), size);
+    field.Add(1);
+  }
+}
+
+#if defined(PROTOBUF_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+                                      defined(ABSL_HAVE_MEMORY_SANITIZER))
+
+// Returns an expected poison / uninitialized death message expression.
+const char* MASanDeathExpr() {
+  return "(container-overflow|heap-buffer-overflow|"
+         "use-after-poison|use-of-uninitialized-value)";
+}
+
+MATCHER(DiesOfDeathOnWriteAndReadAccessBeyondEnd, "Poison Death test") {
+  auto* end = arg->Mutable(arg->size() - 1) + 1;
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  EXPECT_DEATH(*end = 1, "container-overflow");
+  EXPECT_DEATH(EXPECT_NE(*end, 1), "container-overflow");
+#elif defined(ABSL_HAVE_MEMORY_SANITIZER)
+  EXPECT_DEATH(EXPECT_NE(*end, 1), "use-of-uninitialized-value");
+#endif
+
+  // Confirm we died a death of *SAN
+  EXPECT_EQ(arg->AddAlreadyReserved(), end);
+  *end = 1;
+  EXPECT_EQ(*end, 1);
+  return true;
+}
+
+TEST(RepeatedField, PoisonsMemoryOnAdd) {
+  RepeatedField<int64_t> field;
+  do {
+    field.Add(0);
+  } while (field.size() == field.Capacity());
+  EXPECT_THAT(&field, DiesOfDeathOnWriteAndReadAccessBeyondEnd());
+}
+
+TEST(RepeatedField, PoisonsMemoryOnAddAlreadyReserved) {
+  RepeatedField<int64_t> field;
+  field.Reserve(2);
+  field.AddAlreadyReserved();
+  EXPECT_THAT(&field, DiesOfDeathOnWriteAndReadAccessBeyondEnd());
+}
+
+TEST(RepeatedField, PoisonsMemoryOnAddNAlreadyReserved) {
+  RepeatedField<int64_t> field;
+  field.Reserve(10);
+  field.AddNAlreadyReserved(8);
+  EXPECT_THAT(&field, DiesOfDeathOnWriteAndReadAccessBeyondEnd());
+}
+
+TEST(RepeatedField, PoisonsMemoryOnResize) {
+  RepeatedField<int64_t> field;
+  field.Add(0);
+  do {
+    field.Resize(field.size() + 1, 1);
+  } while (field.size() == field.Capacity());
+  EXPECT_THAT(&field, DiesOfDeathOnWriteAndReadAccessBeyondEnd());
+
+  // Shrink size
+  field.Resize(field.size() - 1, 1);
+  EXPECT_THAT(&field, DiesOfDeathOnWriteAndReadAccessBeyondEnd());
+}
+
+TEST(RepeatedField, PoisonsMemoryOnTruncate) {
+  RepeatedField<int64_t> field;
+  field.Add(0);
+  field.Add(1);
+  field.Truncate(1);
+  EXPECT_THAT(&field, DiesOfDeathOnWriteAndReadAccessBeyondEnd());
+}
+
+TEST(RepeatedField, PoisonsMemoryOnReserve) {
+  RepeatedField<int64_t> field;
+  field.Add(1);
+  field.Reserve(field.Capacity() + 1);
+
+  EXPECT_THAT(&field, DiesOfDeathOnWriteAndReadAccessBeyondEnd());
+}
+
+TEST(RepeatedField, PoisonsMemoryOnAssign) {
+  RepeatedField<int64_t> src;
+  RepeatedField<int64_t> field;
+  src.Add(1);
+  src.Add(2);
+  field.Reserve(3);
+  field = src;
+  EXPECT_THAT(&field, DiesOfDeathOnWriteAndReadAccessBeyondEnd());
+}
+
+#endif
 
 // ===================================================================
 // RepeatedPtrField tests.  These pretty much just mirror the RepeatedField

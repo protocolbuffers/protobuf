@@ -49,14 +49,6 @@ namespace protobuf {
 
 
 template <>
-PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::Clear() {
-  for (int i = 0; i < current_size_; i++) {
-    Mutable(i)->Clear();
-  }
-  ExchangeCurrentSize(0);
-}
-
-template <>
 PROTOBUF_EXPORT_TEMPLATE_DEFINE size_t
 RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const {
   size_t result = current_size_ * sizeof(absl::Cord);
@@ -65,46 +57,6 @@ RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const {
     result += Get(i).size();
   }
   return result;
-}
-
-template <>
-PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::Truncate(
-    int new_size) {
-  GOOGLE_ABSL_DCHECK_LE(new_size, current_size_);
-  while (current_size_ > new_size) {
-    RemoveLast();
-  }
-}
-
-template <>
-PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::Resize(
-    int new_size, const absl::Cord& value) {
-  GOOGLE_ABSL_DCHECK_GE(new_size, 0);
-  if (new_size > current_size_) {
-    Reserve(new_size);
-    std::fill(&rep()->elements()[ExchangeCurrentSize(new_size)],
-              &rep()->elements()[new_size], value);
-  } else {
-    while (current_size_ > new_size) {
-      RemoveLast();
-    }
-  }
-}
-
-template <>
-PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::MoveArray(
-    absl::Cord* to, absl::Cord* from, int size) {
-  for (int i = 0; i < size; i++) {
-    swap(to[i], from[i]);
-  }
-}
-
-template <>
-PROTOBUF_EXPORT_TEMPLATE_DEFINE void RepeatedField<absl::Cord>::CopyArray(
-    absl::Cord* to, const absl::Cord* from, int size) {
-  for (int i = 0; i < size; i++) {
-    to[i] = from[i];
-  }
 }
 
 
