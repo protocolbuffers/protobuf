@@ -1160,8 +1160,9 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   //
   // This method cannot be called when the repeated field is on an arena; doing
   // so will trigger a GOOGLE_ABSL_DCHECK-failure.
+  PROTOBUF_NODISCARD
   ABSL_DEPRECATED("This will be removed in a future release")
-  PROTOBUF_NODISCARD Element* ReleaseCleared();
+  Element* ReleaseCleared();
 #endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
 
   // Removes the element referenced by position.
