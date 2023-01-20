@@ -1,0 +1,6 @@
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_NAMES_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_NAMES_H__
+
+#include <google/protobuf/compiler/csharp/names.h>
+
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_NAMES_H__
