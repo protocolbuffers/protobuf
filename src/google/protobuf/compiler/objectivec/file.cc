@@ -449,9 +449,12 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
       });
 }
 
-void FileGenerator::GenerateSourceForEnum(int idx, io::Printer* p) const {
-  GenerateFile(p, GeneratedFileType::kSource,
-               [&] { enum_generators_[idx]->GenerateSource(p); });
+void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
+  GenerateFile(p, GeneratedFileType::kSource, [&] {
+    for (const auto& generator : enum_generators_) {
+      generator->GenerateSource(p);
+    }
+  });
 }
 
 void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {

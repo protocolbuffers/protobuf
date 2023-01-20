@@ -262,11 +262,10 @@ bool ObjectiveCGenerator::GenerateAll(
       // This is an experimental option, and could be removed or change at any
       // time; it is not documented in the README.md for that reason.
       //
-      // Enables a mode where each type (message & enum) generates to a unique
-      // .m file; this is to explore impacts on code size when not
+      // Enables a mode where each ObjC class (messages and roots) generates to
+      // a unique .m file; this is to explore impacts on code size when not
       // compiling/linking with `-ObjC` as then only linker visible needs should
       // be pulled into the builds.
-
       if (!StringToBool(
               options[i].second,
               &generation_options.experimental_multi_source_generation)) {
@@ -346,15 +345,17 @@ bool ObjectiveCGenerator::GenerateAll(
           }
         }
 
-        for (int i = 0; i < file_generator.NumEnums(); ++i) {
+        // Enums only generate C functions, so they can all go in one file as
+        // dead stripping anything not used.
+        if (file_generator.NumEnums() > 0) {
           std::unique_ptr<io::ZeroCopyOutputStream> output(
               context->Open(NumberedObjCMFileName(filepath, file_number++)));
           io::Printer printer(output.get());
-          file_generator.GenerateSourceForEnum(i, &printer);
+          file_generator.GenerateSourceForEnums(&printer);
           if (printer.failed()) {
             *error = absl::StrCat(
-                "error: internal error generating an enum implementation:",
-                file->name(), "::", i);
+                "error: internal error generating an enum implementation(s):",
+                file->name());
             return false;
           }
         }
