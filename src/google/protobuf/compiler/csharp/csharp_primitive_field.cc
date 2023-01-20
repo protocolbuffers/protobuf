@@ -32,6 +32,7 @@
 
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/str_cat.h"
@@ -88,7 +89,8 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_["default_value_access"] =
         absl::StrCat(property_name, "DefaultValue");
   } else {
-    variables_["default_value_access"] = variables_["default_value"];
+    std::string default_value = variables_["default_value"];
+    variables_["default_value_access"] = std::move(default_value);
   }
 
   // Declare the field itself.
