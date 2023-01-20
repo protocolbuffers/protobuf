@@ -384,15 +384,19 @@ inline bool ExposePublicParser(const FileDescriptor* descriptor) {
   return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 
-// Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
-// but in the message and can be queried using additional getters that return
-// ints.
-inline bool SupportUnknownEnumValue(const FileDescriptor* descriptor) {
-  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
+inline bool SupportUnknownEnumValue(const EnumDescriptor* e) {
+  return !e->is_closed();
 }
 
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+  // If we get in a map field, we are asking about its value type, not the map
+  // field.
+  if (field->is_map()) {
+    field = field->message_type()->map_value();
+  }
+
+  GOOGLE_ABSL_CHECK(field->enum_type() != nullptr) << field->type_name();
+  return SupportUnknownEnumValue(field->enum_type());
 }
 
 // Check whether a message has repeated fields.

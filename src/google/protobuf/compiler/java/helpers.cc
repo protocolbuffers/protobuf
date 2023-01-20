@@ -932,11 +932,10 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
   }
 
   if (field->is_map()) {
-    if (!SupportUnknownEnumValue(field)) {
-      const FieldDescriptor* value = field->message_type()->map_value();
-      if (GetJavaType(value) == JAVATYPE_ENUM) {
-        extra_bits |= kMapWithProto2EnumValue;
-      }
+    const FieldDescriptor* value = field->message_type()->map_value();
+    if (GetJavaType(value) == JAVATYPE_ENUM &&
+        !SupportUnknownEnumValue(field)) {
+      extra_bits |= kMapWithProto2EnumValue;
     }
     return kMapFieldType | extra_bits;
   } else if (field->is_packed()) {
