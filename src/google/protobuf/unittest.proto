@@ -1565,6 +1565,36 @@ message BoolParseTester {
   optional int32 other_field = 99;
 };
 
+message Int32ParseTester {
+  optional int32 optional_int32_lowfield = 1;
+  optional int32 optional_int32_midfield = 1001;
+  optional int32 optional_int32_hifield = 1000001;
+  repeated int32 repeated_int32_lowfield = 2;
+  repeated int32 repeated_int32_midfield = 1002;
+  repeated int32 repeated_int32_hifield = 1000002;
+  repeated int32 packed_int32_lowfield = 3 [packed = true];
+  repeated int32 packed_int32_midfield = 1003 [packed = true];
+  repeated int32 packed_int32_hifield = 1000003 [packed = true];
+
+  // An arbitrary field we can append to to break the runs of repeated fields.
+  optional int32 other_field = 99;
+};
+
+message Int64ParseTester {
+  optional int64 optional_int64_lowfield = 1;
+  optional int64 optional_int64_midfield = 1001;
+  optional int64 optional_int64_hifield = 1000001;
+  repeated int64 repeated_int64_lowfield = 2;
+  repeated int64 repeated_int64_midfield = 1002;
+  repeated int64 repeated_int64_hifield = 1000002;
+  repeated int64 packed_int64_lowfield = 3 [packed = true];
+  repeated int64 packed_int64_midfield = 1003 [packed = true];
+  repeated int64 packed_int64_hifield = 1000003 [packed = true];
+
+  // An arbitrary field we can append to to break the runs of repeated fields.
+  optional int32 other_field = 99;
+};
+
 message StringParseTester {
   optional string optional_string_lowfield = 1;
   optional string optional_string_midfield = 1001;
