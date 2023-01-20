@@ -35,15 +35,19 @@ genrule(
     outs = ["google-protobuf-"+PROTOBUF_RUBY_VERSION+"-java.gem"],
     cmd = """
         set -eux
+        mkdir tmp
         for src in $(SRCS); do
-            cp --parents "$$src" "$(GENDIR)"
+            rsync -R -L "$$src" tmp
         done
         for wkt in $(execpaths //:well_known_ruby_protos); do
-            cp "$$wkt" "$(GENDIR)/ruby/lib/google/protobuf/"
+            mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
         done
-        cd $(GENDIR)/ruby
+        mv "tmp/$(execpath //ruby/lib/google:copy_jar)" "tmp/ruby/lib/google"
+        cd tmp/ruby
         chmod -R 777 ./
         gem build google-protobuf.gemspec
+        cd ../..
+        mv tmp/ruby/google-protobuf-*.gem $@
     """,
     target_compatible_with = select({
         "@rules_ruby//ruby/runtime:config_jruby": [],
@@ -64,20 +68,22 @@ genrule(
     outs = ["google-protobuf-"+PROTOBUF_RUBY_VERSION+".gem"],
     cmd = """
         set -eux
+        mkdir tmp
         for src in $(SRCS); do
-            cp --parents "$$src" "$(GENDIR)"
+            rsync -R -L "$$src" "tmp"
         done
-        mkdir -p "$(GENDIR)/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
-            cp "$$utf" "$(GENDIR)/ruby/ext/google/protobuf_c/third_party/utf8_range"
+            mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         done
         for wkt in $(execpaths //:well_known_ruby_protos); do
-            cp "$$wkt" "$(GENDIR)/ruby/lib/google/protobuf/"
+            mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
         done
-        cd $(GENDIR)/ruby
+        cd tmp/ruby
         chmod -R 777 ./
         gem build google-protobuf.gemspec
-        pwd
+        cd ../..
+        mv tmp/ruby/google-protobuf-*.gem $@
     """,
     target_compatible_with = select({
         "@rules_ruby//ruby/runtime:config_ruby": [],
