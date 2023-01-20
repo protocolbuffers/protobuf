@@ -208,11 +208,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Owner: mordberg@
 #define PROTOBUF_FUTURE_MAP_PAIR_UPGRADE 1
 
-// Used on classes that are historically not marked as final, but that may be
-// marked final in future (breaking) releases.
-// Owner: kfm@
-#define PROTOBUF_FUTURE_FINAL final
-
 // Used to remove the RTTI checks for `DefaultFieldComparator`.
 // Owner: kfm@
 #define PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR 1
@@ -221,8 +216,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
 
-#else
-#define PROTOBUF_FUTURE_FINAL
 #endif
 
 #ifdef PROTOBUF_VERSION

@@ -56,8 +56,7 @@ namespace protobuf {
 namespace io {
 
 // A ZeroCopyInputStream that reads compressed data through zlib
-class PROTOBUF_EXPORT GzipInputStream PROTOBUF_FUTURE_FINAL
-    : public ZeroCopyInputStream {
+class PROTOBUF_EXPORT GzipInputStream final : public ZeroCopyInputStream {
  public:
   // Format key for constructor
   enum Format {
@@ -105,8 +104,7 @@ class PROTOBUF_EXPORT GzipInputStream PROTOBUF_FUTURE_FINAL
   void DoNextOutput(const void** data, int* size);
 };
 
-class PROTOBUF_EXPORT GzipOutputStream PROTOBUF_FUTURE_FINAL
-    : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT GzipOutputStream final : public ZeroCopyOutputStream {
  public:
   // Format key for constructor
   enum Format {
