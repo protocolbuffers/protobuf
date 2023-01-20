@@ -97,7 +97,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
     printer->Annotate("name", canonical_values_[i]);
   }
 
-  if (SupportUnknownEnumValue(descriptor_)) {
+  if (SupportUnknownEnumValue(descriptor_->file())) {
     printer->Print("${$UNRECOGNIZED$}$(-1),\n", "{", "", "}", "");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -142,7 +142,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
       "\n"
       "@java.lang.Override\n"
       "public final int getNumber() {\n");
-  if (SupportUnknownEnumValue(descriptor_)) {
+  if (SupportUnknownEnumValue(descriptor_->file())) {
     printer->Print(
         "  if (this == UNRECOGNIZED) {\n"
         "    throw new java.lang.IllegalArgumentException(\n"
@@ -235,7 +235,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
         "  result.append(getClass().getName()).append('@')\n"
         "      .append(java.lang.Integer.toHexString(\n"
         "        java.lang.System.identityHashCode(this)));\n");
-    if (SupportUnknownEnumValue(descriptor_)) {
+    if (SupportUnknownEnumValue(descriptor_->file())) {
       printer->Print(
           "  if (this != UNRECOGNIZED) {\n"
           "    result.append(\" number=\").append(getNumber());\n"
