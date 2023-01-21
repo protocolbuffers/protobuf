@@ -60,6 +60,7 @@ cc_library(
     copts = select({
         "@bazel_tools//src/conditions:windows": [],
         "//conditions:default": [
+            "-Wno-deprecated",
             "-Wno-unused-variable",
             "-Wno-implicit-function-declaration",
         ],
