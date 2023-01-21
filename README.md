@@ -8,6 +8,7 @@ understand why. It was commented on by Jon Skeet (one of the main protobuf devs)
 For Q-PAC
 ---------
 When you have a forked repo, you should [add an upstream remote](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork) so that you can sync up.
+See also: [Atlassian explanation of working with forks](https://www.atlassian.com/git/tutorials/git-forks-and-upstreams)
 
 
 Protocol Buffers - Google's data interchange format
