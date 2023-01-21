@@ -1500,7 +1500,6 @@ inline void RepeatedPtrField<Element>::Assign(std::initializer_list<Element> ele
   Assign(elements.begin(), elements.end());
 }
 
-
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
 RepeatedPtrField<Element>::erase(const_iterator position) {
