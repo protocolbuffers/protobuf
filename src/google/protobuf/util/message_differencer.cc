@@ -347,14 +347,12 @@ void MessageDifferencer::set_field_comparator(FieldComparator* comparator) {
   field_comparator_.base = comparator;
 }
 
-#ifdef PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR
 void MessageDifferencer::set_field_comparator(
     DefaultFieldComparator* comparator) {
   GOOGLE_ABSL_CHECK(comparator) << "Field comparator can't be NULL.";
   field_comparator_kind_ = kFCDefault;
   field_comparator_.default_impl = comparator;
 }
-#endif  // PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR
 
 void MessageDifferencer::set_message_field_comparison(
     MessageFieldComparison comparison) {

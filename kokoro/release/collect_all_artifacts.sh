@@ -57,6 +57,10 @@ sudo rm -f /etc/apt/sources.list.d/cuda.list
 sudo apt update
 sudo apt-get install -y nuget
 
+# Copy WKT protos to csharp directory.
+mkdir -p src/google/protobuf
+cp ../src/google/protobuf/*.proto src/google/protobuf/
+
 nuget pack Google.Protobuf.Tools.nuspec
 
 # Copy the nupkg to the output artifacts

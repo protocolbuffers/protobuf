@@ -1398,7 +1398,7 @@ TEST(RepeatedPtrField, ClearedElements) {
   EXPECT_EQ(field.ClearedCount(), 1);
   EXPECT_EQ(field.Add(), original);
   EXPECT_EQ(field.ClearedCount(), 0);
-    PROTOBUF_IGNORE_DEPRECATION_STOP
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 #endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
 }
 
