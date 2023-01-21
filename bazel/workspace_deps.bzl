@@ -14,9 +14,9 @@ def upb_deps():
     maybe(
         http_archive,
         name = "com_google_absl",
-        url = "https://github.com/abseil/abseil-cpp/archive/e6044634dd7caec2d79a13aecc9e765023768757.tar.gz",
-        strip_prefix = "abseil-cpp-e6044634dd7caec2d79a13aecc9e765023768757",
-        sha256 = "e7fdfe0bed87702a22c5b73b6b5fe08bedd25f17d617e52df6061b0f47d480b0",
+        url = "https://github.com/abseil/abseil-cpp/archive/10b627fbe944110d1672bdf3f8e23b5909721399.tar.gz",
+        strip_prefix = "abseil-cpp-10b627fbe944110d1672bdf3f8e23b5909721399",
+        sha256 = "0505b32f741578dbf55f5ab9270debd1026900bec8324d479dbdad9d276962a1",
     )
 
     maybe(
