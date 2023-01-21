@@ -428,7 +428,7 @@ TEST(TimeUtilTest, IsTimestampValid) {
   EXPECT_FALSE(TimeUtil::IsTimestampValid(underflow_nanos));
 }
 
-#if PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
 #ifndef NDEBUG
 
 TEST(TimeUtilTest, DurationBounds) {
@@ -523,7 +523,7 @@ TEST(TimeUtilTest, TimestampBounds) {
                      "outside of the valid range");
 }
 #endif  // !NDEBUG
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace util

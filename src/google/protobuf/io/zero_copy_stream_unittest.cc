@@ -70,8 +70,8 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/cord_buffer.h"
@@ -584,7 +584,7 @@ TEST_F(IoTest, CompressionOptions) {
   std::string golden_filename =
       TestUtil::GetTestDataPath("third_party/protobuf/testdata/golden_message");
   std::string golden;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(golden_filename, &golden, true));
+  ABSL_CHECK_OK(File::GetContents(golden_filename, &golden, true));
 
   GzipOutputStream::Options options;
   std::string gzip_compressed = Compress(golden, options);

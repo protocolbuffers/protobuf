@@ -300,7 +300,7 @@ inline bool TableEntryIsTooLong(NodeBase* node) {
     node = node->next;
   } while (node != nullptr);
   // Invariant: no linked list ever is more than kMaxLength in length.
-  GOOGLE_ABSL_DCHECK_LE(count, kMaxLength);
+  ABSL_DCHECK_LE(count, kMaxLength);
   return count >= kMaxLength;
 }
 
@@ -339,21 +339,21 @@ inline bool TableEntryIsNonEmptyList(TableEntryPtr entry) {
   return !TableEntryIsEmpty(entry) && TableEntryIsList(entry);
 }
 inline NodeBase* TableEntryToNode(TableEntryPtr entry) {
-  GOOGLE_ABSL_DCHECK(TableEntryIsList(entry));
+  ABSL_DCHECK(TableEntryIsList(entry));
   return reinterpret_cast<NodeBase*>(static_cast<uintptr_t>(entry));
 }
 inline TableEntryPtr NodeToTableEntry(NodeBase* node) {
-  GOOGLE_ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
+  ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
   return static_cast<TableEntryPtr>(reinterpret_cast<uintptr_t>(node));
 }
 template <typename Tree>
 Tree* TableEntryToTree(TableEntryPtr entry) {
-  GOOGLE_ABSL_DCHECK(TableEntryIsTree(entry));
+  ABSL_DCHECK(TableEntryIsTree(entry));
   return reinterpret_cast<Tree*>(static_cast<uintptr_t>(entry) - 1);
 }
 template <typename Tree>
 TableEntryPtr TreeToTableEntry(Tree* node) {
-  GOOGLE_ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
+  ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
   return static_cast<TableEntryPtr>(reinterpret_cast<uintptr_t>(node) | 1);
 }
 
@@ -538,8 +538,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   TableEntryPtr* CreateEmptyTable(size_type n) {
-    GOOGLE_ABSL_DCHECK_GE(n, size_type{kMinTableSize});
-    GOOGLE_ABSL_DCHECK_EQ(n & (n - 1), 0u);
+    ABSL_DCHECK_GE(n, size_type{kMinTableSize});
+    ABSL_DCHECK_EQ(n & (n - 1), 0u);
     TableEntryPtr* result = AllocFor<TableEntryPtr>(alloc_).allocate(n);
     memset(result, 0, n * sizeof(result[0]));
     return result;
@@ -668,7 +668,7 @@ class KeyMapBase : public UntypedMapBase {
     // Advance through buckets, looking for the first that isn't empty.
     // If nothing non-empty is found then leave node_ == nullptr.
     void SearchFrom(size_type start_bucket) {
-      GOOGLE_ABSL_DCHECK(m_->index_of_first_non_null_ == m_->num_buckets_ ||
+      ABSL_DCHECK(m_->index_of_first_non_null_ == m_->num_buckets_ ||
                   !m_->TableEntryIsEmpty(m_->index_of_first_non_null_));
       for (size_type i = start_bucket; i < m_->num_buckets_; ++i) {
         TableEntryPtr entry = m_->table_[i];
@@ -678,7 +678,7 @@ class KeyMapBase : public UntypedMapBase {
           node_ = static_cast<KeyNode*>(TableEntryToNode(entry));
         } else {
           Tree* tree = TableEntryToTree<Tree>(entry);
-          GOOGLE_ABSL_DCHECK(!tree->empty());
+          ABSL_DCHECK(!tree->empty());
           node_ = static_cast<KeyNode*>(tree->begin()->second);
         }
         return;
@@ -717,12 +717,12 @@ class KeyMapBase : public UntypedMapBase {
     TreeIterator tree_it;
     const bool is_list = revalidate_if_necessary(b, node, &tree_it);
     if (is_list) {
-      GOOGLE_ABSL_DCHECK(TableEntryIsNonEmptyList(b));
+      ABSL_DCHECK(TableEntryIsNonEmptyList(b));
       auto* head = TableEntryToNode(table_[b]);
       head = EraseFromLinkedList(node, head);
       table_[b] = NodeToTableEntry(head);
     } else {
-      GOOGLE_ABSL_DCHECK(this->TableEntryIsTree(b));
+      ABSL_DCHECK(this->TableEntryIsTree(b));
       Tree* tree = internal::TableEntryToTree<Tree>(this->table_[b]);
       if (tree_it != tree->begin()) {
         auto* prev = std::prev(tree_it)->second;
@@ -775,13 +775,13 @@ class KeyMapBase : public UntypedMapBase {
   // Requires count(*KeyPtrFromNodePtr(node)) == 0 and that b is the correct
   // bucket.  num_elements_ is not modified.
   void InsertUnique(size_type b, KeyNode* node) {
-    GOOGLE_ABSL_DCHECK(index_of_first_non_null_ == num_buckets_ ||
+    ABSL_DCHECK(index_of_first_non_null_ == num_buckets_ ||
                 !TableEntryIsEmpty(index_of_first_non_null_));
     // In practice, the code that led to this point may have already
     // determined whether we are inserting into an empty list, a short list,
     // or whatever.  But it's probably cheap enough to recompute that here;
     // it's likely that we're inserting into an empty or short list.
-    GOOGLE_ABSL_DCHECK(FindHelper(node->key()).node == nullptr);
+    ABSL_DCHECK(FindHelper(node->key()).node == nullptr);
     if (TableEntryIsEmpty(b)) {
       InsertUniqueInList(b, node);
       index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
@@ -791,7 +791,7 @@ class KeyMapBase : public UntypedMapBase {
       if (TableEntryIsNonEmptyList(b)) {
         TreeConvert(b);
       }
-      GOOGLE_ABSL_DCHECK(TableEntryIsTree(b))
+      ABSL_DCHECK(TableEntryIsTree(b))
           << (void*)table_[b] << " " << (uintptr_t)table_[b];
       InsertUniqueInTree(b, node);
       index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
@@ -864,7 +864,7 @@ class KeyMapBase : public UntypedMapBase {
       return;
     }
 
-    GOOGLE_ABSL_DCHECK_GE(new_num_buckets, kMinTableSize);
+    ABSL_DCHECK_GE(new_num_buckets, kMinTableSize);
     const auto old_table = table_;
     const size_type old_table_size = num_buckets_;
     num_buckets_ = new_num_buckets;
@@ -898,12 +898,12 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   void TreeConvert(size_type b) {
-    GOOGLE_ABSL_DCHECK(!TableEntryIsTree(b));
+    ABSL_DCHECK(!TableEntryIsTree(b));
     Tree* tree =
         Arena::Create<Tree>(alloc_.arena(), typename Tree::key_compare(),
                             typename Tree::allocator_type(alloc_));
     size_type count = CopyListToTree(b, tree);
-    GOOGLE_ABSL_DCHECK_EQ(count, tree->size());
+    ABSL_DCHECK_EQ(count, tree->size());
     table_[b] = TreeToTableEntry(tree);
     // Relink the nodes.
     NodeBase* next = nullptr;
@@ -1217,14 +1217,14 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   template <typename K = key_type>
   const T& at(const key_arg<K>& key) const {
     const_iterator it = find(key);
-    GOOGLE_ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
+    ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
   }
 
   template <typename K = key_type>
   T& at(const key_arg<K>& key) {
     iterator it = find(key);
-    GOOGLE_ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
+    ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
   }
 
@@ -1328,7 +1328,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   iterator erase(iterator pos) {
     auto next = std::next(pos);
-    GOOGLE_ABSL_DCHECK_EQ(pos.m_, static_cast<Base*>(this));
+    ABSL_DCHECK_EQ(pos.m_, static_cast<Base*>(this));
     auto* node = static_cast<Node*>(pos.node_);
     this->erase_no_destroy(pos.bucket_index_, node);
     DestroyNode(node);

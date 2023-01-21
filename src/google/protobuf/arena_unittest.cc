@@ -41,7 +41,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "google/protobuf/arena_test_util.h"
@@ -670,7 +670,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(arena1_message->set_allocated_optional_nested_message(
                            arena2_submessage),
                        "submessage_arena");
@@ -683,7 +683,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
       Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena1);
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(
       heap_message->set_allocated_optional_nested_message(arena1_submessage),
       "submessage_arena");
@@ -739,7 +739,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
         r->SetAllocatedMessage(arena1_message, arena2_submessage, msg_field),
         "GetOwningArena");
@@ -752,7 +752,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
       Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena1);
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(
       r->SetAllocatedMessage(heap_message, arena1_submessage, msg_field),
       "GetOwningArena");
@@ -855,14 +855,13 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_HAS_DEATH_TEST
-    EXPECT_DEBUG_DEATH(
-        arena1_message->mutable_repeated_nested_message()->AddAllocated(
-            arena2_submessage),
-        "value_arena");
-#endif
-    // Should not receive object.
-    EXPECT_TRUE(arena1_message->repeated_nested_message().empty());
+    arena1_message->mutable_repeated_nested_message()->AddAllocated(
+        arena2_submessage);
+    ASSERT_THAT(arena1_message->repeated_nested_message(), testing::SizeIs(1));
+    EXPECT_EQ(
+        arena1_message->mutable_repeated_nested_message()->at(0).GetArena(),
+        &arena1);
+    arena1_message->clear_repeated_nested_message();
   }
 
   // Arena->heap case.
@@ -872,14 +871,12 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_HAS_DEATH_TEST
-    EXPECT_DEBUG_DEATH(
-        heap_message->mutable_repeated_nested_message()->AddAllocated(
-            arena2_submessage),
-        "value_arena");
-#endif
-    // Should not receive object.
-    EXPECT_TRUE(heap_message->repeated_nested_message().empty());
+    heap_message->mutable_repeated_nested_message()->AddAllocated(
+        arena2_submessage);
+    ASSERT_THAT(heap_message->repeated_nested_message(), testing::SizeIs(1));
+    EXPECT_EQ(heap_message->mutable_repeated_nested_message()->at(0).GetArena(),
+              nullptr);
+    heap_message->clear_repeated_nested_message();
   }
   delete heap_message;
 
@@ -977,13 +974,12 @@ TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_HAS_DEATH_TEST
-    EXPECT_DEBUG_DEATH(
-        r->AddAllocatedMessage(arena1_message, fd, arena2_submessage),
-        "value_arena");
-#endif
-    // Should not receive object.
-    EXPECT_TRUE(arena1_message->repeated_nested_message().empty());
+    r->AddAllocatedMessage(arena1_message, fd, arena2_submessage);
+    ASSERT_THAT(arena1_message->repeated_nested_message(), testing::SizeIs(1));
+    EXPECT_EQ(
+        arena1_message->mutable_repeated_nested_message()->at(0).GetArena(),
+        &arena1);
+    arena1_message->clear_repeated_nested_message();
   }
 
   // Arena->heap case.
@@ -993,13 +989,11 @@ TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_HAS_DEATH_TEST
-    EXPECT_DEBUG_DEATH(
-        r->AddAllocatedMessage(heap_message, fd, arena2_submessage),
-        "value_arena");
-#endif
-    // Should not receive object.
-    EXPECT_TRUE(heap_message->repeated_nested_message().empty());
+    r->AddAllocatedMessage(heap_message, fd, arena2_submessage);
+    ASSERT_THAT(heap_message->repeated_nested_message(), testing::SizeIs(1));
+    EXPECT_EQ(heap_message->mutable_repeated_nested_message()->at(0).GetArena(),
+              nullptr);
+    heap_message->clear_repeated_nested_message();
   }
   delete heap_message;
 }
@@ -1450,7 +1444,7 @@ TEST(ArenaTest, Alignment) {
   Arena arena;
   for (int i = 0; i < 200; i++) {
     void* p = Arena::CreateArray<char>(&arena, i);
-    GOOGLE_ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
+    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
   }
 }
 

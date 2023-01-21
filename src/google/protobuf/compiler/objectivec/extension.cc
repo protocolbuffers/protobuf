@@ -54,14 +54,9 @@ ExtensionGenerator::ExtensionGenerator(absl::string_view root_class_name,
       root_class_and_method_name_(
           absl::StrCat(root_class_name, "_", method_name_)),
       descriptor_(descriptor) {
-  if (descriptor->is_map()) {
-    // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
-    // error cases, so it seems to be ok to use as a back door for errors.
-    std::cerr << "error: Extension is a map<>!"
-              << " That used to be blocked by the compiler." << std::endl;
-    std::cerr.flush();
-    abort();
-  }
+  ABSL_CHECK(!descriptor->is_map())
+      << "error: Extension is a map<>!"
+      << " That used to be blocked by the compiler.";
 }
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {

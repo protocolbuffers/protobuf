@@ -37,7 +37,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/java/generator.h"
@@ -81,7 +81,7 @@ class TestGenerator : public CodeGenerator {
 // not verify that they are correctly-placed; that would require actually
 // compiling the output which is a bit more than I care to do for this test.
 TEST(JavaPluginTest, PluginTest) {
-  GOOGLE_ABSL_CHECK_OK(
+  ABSL_CHECK_OK(
       File::SetContents(absl::StrCat(TestTempDir(), "/test.proto"),
                         "syntax = \"proto2\";\n"
                         "package foo;\n"
@@ -114,7 +114,7 @@ TEST(JavaPluginTest, PluginTest) {
   // expect
 
   std::string output;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(absl::StrCat(TestTempDir(), "/Test.java"),
+  ABSL_CHECK_OK(File::GetContents(absl::StrCat(TestTempDir(), "/Test.java"),
                                   &output, true));
   std::vector<std::string> lines = absl::StrSplit(output, "\n");
   bool found_generated_annotation = false;

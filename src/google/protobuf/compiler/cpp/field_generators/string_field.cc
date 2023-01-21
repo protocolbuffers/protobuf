@@ -36,7 +36,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
@@ -160,7 +160,7 @@ class RepeatedStringFieldGenerator : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override {}
   void GenerateCopyConstructorCode(io::Printer* printer) const override {
-    GOOGLE_ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
   }
   void GenerateDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
@@ -430,7 +430,7 @@ void StringFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   if (descriptor_->default_value_string().empty()) {
     format("$field$.ClearToEmpty();\n");
   } else {
-    GOOGLE_ABSL_DCHECK(!inlined_);
+    ABSL_DCHECK(!inlined_);
     format(
         "$field$.ClearToDefault($lazy_variable$, GetArenaForAllocation());\n");
   }
@@ -504,7 +504,7 @@ void StringFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   if (inlined_ && descriptor_->default_value_string().empty()) {
     return;
   }
-  GOOGLE_ABSL_DCHECK(!inlined_);
+  ABSL_DCHECK(!inlined_);
   format("$field$.InitDefault();\n");
   if (IsString(descriptor_, options_) &&
       descriptor_->default_value_string().empty()) {
@@ -558,7 +558,7 @@ void StringFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   }
   // Explicitly calls ~InlinedStringField as its automatic call is disabled.
   // Destructor has been implicitly skipped as a union.
-  GOOGLE_ABSL_DCHECK(!ShouldSplit(descriptor_, options_));
+  ABSL_DCHECK(!ShouldSplit(descriptor_, options_));
   format("$field$.~InlinedStringField();\n");
 }
 
@@ -616,7 +616,7 @@ void StringFieldGenerator::GenerateAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (ShouldSplit(descriptor_, options_)) {
-    GOOGLE_ABSL_CHECK(!inlined_);
+    ABSL_CHECK(!inlined_);
     format("decltype(Impl_::Split::$name$_){}");
     return;
   }

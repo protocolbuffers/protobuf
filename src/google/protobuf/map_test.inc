@@ -51,8 +51,8 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
@@ -330,7 +330,7 @@ TEST_F(MapImplTest, MutableAt) {
   ExpectSingleElement(key, value2);
 }
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 
 TEST_F(MapImplTest, MutableAtNonExistDeathTest) {
   EXPECT_DEATH(map_.at(0), "");
@@ -352,11 +352,16 @@ TEST_F(MapImplTest, UsageErrors) {
   MapValueRef value;
   EXPECT_DEATH(
       value.SetFloatValue(0.1),
-      "Protocol Buffer map usage error:\n"
-      "MapValue[Const]*Ref::type MapValue[Const]*Ref is not initialized.");
+      testing::AnyOf(
+        testing::HasSubstr(
+          "Protocol Buffer map usage error:\n"
+          "MapValueRef::type MapValueRef is not initialized."),
+        testing::HasSubstr(
+          "Protocol Buffer map usage error:\n"
+          "MapValueConstRef::type MapValueConstRef is not initialized.")));
 }
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 TEST_F(MapImplTest, MapKeyAssignment) {
   MapKey from, to;
@@ -529,7 +534,7 @@ static void TestOldVersusNewIterator(int skip, Map<int, int>* m) {
   }
   if (it == m->end()) return;
   const IteratorType old = it;
-  GOOGLE_ABSL_LOG(INFO) << "skip=" << skip << ", old->first=" << old->first;
+  ABSL_LOG(INFO) << "skip=" << skip << ", old->first=" << old->first;
   const int target_size =
       initial_size < 100 ? initial_size * 5 : initial_size * 5 / 4;
   for (int i = 0; m->size() <= target_size; i++) {
@@ -557,8 +562,8 @@ static void TestOldVersusNewIterator(int skip, Map<int, int>* m) {
 
 // Create and test an n-element Map, with emphasis on iterator correctness.
 static void StressTestIterators(int n) {
-  GOOGLE_ABSL_LOG(INFO) << "StressTestIterators " << n;
-  GOOGLE_ABSL_CHECK_GT(n, 0);
+  ABSL_LOG(INFO) << "StressTestIterators " << n;
+  ABSL_CHECK_GT(n, 0);
   // Create a random-looking map of size n.  Use non-negative integer keys.
   Map<int, int> m;
   uint32_t frog = 123987 + n;
@@ -570,7 +575,7 @@ static void StressTestIterators(int n) {
     frog += counter++;
     last_key =
         static_cast<int>(frog) >= 0 ? static_cast<int>(frog) : last_key ^ 1;
-    GOOGLE_ABSL_DCHECK_GE(last_key, 0);
+    ABSL_DCHECK_GE(last_key, 0);
     m[last_key] = last_key ^ 1;
   }
   // Test it.
@@ -1363,10 +1368,10 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   EXPECT_EQ(m.at(key), 1);
   EXPECT_EQ(cm.at(key), 1);
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
   EXPECT_DEATH(m.at(miss_key), "");
   EXPECT_DEATH(cm.at(miss_key), "");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
   EXPECT_EQ(m.count(key), 1);
   EXPECT_EQ(cm.count(key), 1);
@@ -2293,8 +2298,8 @@ class MyMapEntry
                                 internal::WireFormatLite::TYPE_INT32> {
  public:
   constexpr MyMapEntry() {}
-  MyMapEntry(Arena*) { std::abort(); }
-  Metadata GetMetadata() const override { std::abort(); }
+  MyMapEntry(Arena*) { ABSL_CHECK(false); }
+  Metadata GetMetadata() const override { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };
@@ -2305,7 +2310,7 @@ class MyMapEntryLite
                                     internal::WireFormatLite::TYPE_INT32> {
  public:
   constexpr MyMapEntryLite() {}
-  explicit MyMapEntryLite(Arena*) { std::abort(); }
+  explicit MyMapEntryLite(Arena*) { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };
@@ -3782,7 +3787,7 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
   UNITTEST::TestMaps t;
   const std::string filename = "golden_message_maps";
   std::string golden;
-  GOOGLE_ABSL_CHECK_OK(
+  ABSL_CHECK_OK(
       File::GetContents(TestUtil::GetTestDataPath(absl::StrCat(
                             "third_party/protobuf/testdata/", filename)),
                         &golden, true));
@@ -3825,7 +3830,7 @@ TEST(TextFormatMapTest, DynamicMessage) {
   tester.SetMapFieldsViaReflection(message.get());
 
   std::string expected_text;
-  GOOGLE_ABSL_CHECK_OK(
+  ABSL_CHECK_OK(
       File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
@@ -3841,7 +3846,7 @@ TEST(TextFormatMapTest, Sorted) {
   tester.SetMapFieldsViaReflection(&message);
 
   std::string expected_text;
-  GOOGLE_ABSL_CHECK_OK(
+  ABSL_CHECK_OK(
       File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
@@ -3861,12 +3866,12 @@ TEST(TextFormatMapTest, Sorted) {
 
 TEST(TextFormatMapTest, ParseCorruptedString) {
   std::string serialized_message;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(
+  ABSL_CHECK_OK(File::GetContents(
       TestUtil::GetTestDataPath(
           "third_party/protobuf/testdata/golden_message_maps"),
       &serialized_message, true));
   UNITTEST::TestMaps message;
-  GOOGLE_ABSL_CHECK(message.ParseFromString(serialized_message));
+  ABSL_CHECK(message.ParseFromString(serialized_message));
   TestParseCorruptedString<UNITTEST::TestMaps, true>(message);
   TestParseCorruptedString<UNITTEST::TestMaps, false>(message);
 }
@@ -3928,7 +3933,7 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
   const Reflection* map_entry_reflection = iter->GetReflection();
   const FieldDescriptor* value_field_desc = iter->GetDescriptor()->map_value();
   map_entry_reflection->SetInt32(&(*iter), value_field_desc, 2);
-  GOOGLE_ABSL_LOG(INFO) << iter->DebugString();
+  ABSL_LOG(INFO) << iter->DebugString();
 
   // In previous implementation, the new change won't be reflected in text
   // format, because the previous iterator has been invalidated.

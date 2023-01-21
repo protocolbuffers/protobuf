@@ -68,18 +68,18 @@ void RubyTest(std::string proto_file, std::string import_proto_file = "") {
 
   // Copy generated_code.proto to the temporary test directory.
   std::string test_input;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(
+  ABSL_CHECK_OK(File::GetContents(
       absl::StrCat(ruby_tests, proto_file, ".proto"), &test_input, true));
-  GOOGLE_ABSL_CHECK_OK(File::SetContents(
+  ABSL_CHECK_OK(File::SetContents(
       absl::StrCat(TestTempDir(), proto_file, ".proto"), test_input, true));
 
   // Copy generated_code_import.proto to the temporary test directory.
   std::string test_import;
   if (!import_proto_file.empty()) {
-    GOOGLE_ABSL_CHECK_OK(
+    ABSL_CHECK_OK(
         File::GetContents(absl::StrCat(ruby_tests, import_proto_file, ".proto"),
                           &test_import, true));
-    GOOGLE_ABSL_CHECK_OK(File::SetContents(
+    ABSL_CHECK_OK(File::SetContents(
         absl::StrCat(TestTempDir(), import_proto_file, ".proto"), test_import,
         true));
   }
@@ -100,10 +100,10 @@ void RubyTest(std::string proto_file, std::string import_proto_file = "") {
 
   // Load the generated output and compare to the expected result.
   std::string output;
-  GOOGLE_ABSL_CHECK_OK(File::GetContentsAsText(
+  ABSL_CHECK_OK(File::GetContentsAsText(
       absl::StrCat(TestTempDir(), proto_file, "_pb.rb"), &output, true));
   std::string expected_output;
-  GOOGLE_ABSL_CHECK_OK(File::GetContentsAsText(
+  ABSL_CHECK_OK(File::GetContentsAsText(
       absl::StrCat(ruby_tests, proto_file, "_pb.rb"), &expected_output, true));
   EXPECT_EQ(expected_output, output);
 }

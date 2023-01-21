@@ -314,7 +314,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                   "CreateArray requires a trivially constructible type");
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
-    GOOGLE_ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
+    ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return static_cast<T*>(::operator new[](num_elements * sizeof(T)));

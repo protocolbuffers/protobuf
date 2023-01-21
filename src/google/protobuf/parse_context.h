@@ -36,8 +36,8 @@
 #include <string>
 #include <type_traits>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
@@ -121,7 +121,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       : aliasing_(enable_aliasing ? kOnPatch : kNoAliasing) {}
 
   void BackUp(const char* ptr) {
-    GOOGLE_ABSL_DCHECK(ptr <= buffer_end_ + kSlopBytes);
+    ABSL_DCHECK(ptr <= buffer_end_ + kSlopBytes);
     int count;
     if (next_chunk_ == patch_buffer_) {
       count = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   // If return value is negative it's an error
   PROTOBUF_NODISCARD int PushLimit(const char* ptr, int limit) {
-    GOOGLE_ABSL_DCHECK(limit >= 0 && limit <= INT_MAX - kSlopBytes);
+    ABSL_DCHECK(limit >= 0 && limit <= INT_MAX - kSlopBytes);
     // This add is safe due to the invariant above, because
     // ptr - buffer_end_ <= kSlopBytes.
     limit += static_cast<int>(ptr - buffer_end_);
@@ -238,10 +238,10 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // reached. It aligns *ptr across buffer seams.
   // If limit is exceeded it returns true and ptr is set to null.
   bool DoneWithCheck(const char** ptr, int d) {
-    GOOGLE_ABSL_DCHECK(*ptr);
+    ABSL_DCHECK(*ptr);
     if (PROTOBUF_PREDICT_TRUE(*ptr < limit_end_)) return false;
     int overrun = static_cast<int>(*ptr - buffer_end_);
-    GOOGLE_ABSL_DCHECK_LE(overrun, kSlopBytes);  // Guaranteed by parse loop.
+    ABSL_DCHECK_LE(overrun, kSlopBytes);  // Guaranteed by parse loop.
     if (overrun ==
         limit_) {  //  No need to flip buffers if we ended on a limit.
       // If we actually overrun the buffer and next_chunk_ is null. It means
@@ -362,7 +362,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* AppendSize(const char* ptr, int size, const A& append) {
     int chunk_size = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
     do {
-      GOOGLE_ABSL_DCHECK(size > chunk_size);
+      ABSL_DCHECK(size > chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
       append(ptr, chunk_size);
       ptr += chunk_size;
@@ -396,7 +396,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       ptr += kSlopBytes;
     }
     auto end = buffer_end_ + limit_;
-    GOOGLE_ABSL_DCHECK(end >= ptr);
+    ABSL_DCHECK(end >= ptr);
     append(ptr, end - ptr);
     return end;
   }
@@ -474,7 +474,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
     auto old_depth = depth_;
     ptr = ptr ? TcParser::ParseLoop(msg, ptr, this, table) : nullptr;
-    if (ptr != nullptr) GOOGLE_ABSL_DCHECK_EQ(old_depth, depth_);
+    if (ptr != nullptr) ABSL_DCHECK_EQ(old_depth, depth_);
     depth_++;
     if (!PopLimit(old)) return nullptr;
     return ptr;
@@ -489,8 +489,8 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     auto old_group_depth = group_depth_;
     ptr = msg->_InternalParse(ptr, this);
     if (ptr != nullptr) {
-      GOOGLE_ABSL_DCHECK_EQ(old_depth, depth_);
-      GOOGLE_ABSL_DCHECK_EQ(old_group_depth, group_depth_);
+      ABSL_DCHECK_EQ(old_depth, depth_);
+      ABSL_DCHECK_EQ(old_group_depth, group_depth_);
     }
     group_depth_--;
     depth_++;
@@ -507,8 +507,8 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     auto old_group_depth = group_depth_;
     ptr = TcParser::ParseLoop(msg, ptr, this, table);
     if (ptr != nullptr) {
-      GOOGLE_ABSL_DCHECK_EQ(old_depth, depth_);
-      GOOGLE_ABSL_DCHECK_EQ(old_group_depth, group_depth_);
+      ABSL_DCHECK_EQ(old_depth, depth_);
+      ABSL_DCHECK_EQ(old_group_depth, group_depth_);
     }
     group_depth_--;
     depth_++;
@@ -878,7 +878,7 @@ PROTOBUF_NODISCARD const char* ParseContext::ParseMessage(T* msg,
   if (ptr == nullptr) return ptr;
   auto old_depth = depth_;
   ptr = msg->_InternalParse(ptr, this);
-  if (ptr != nullptr) GOOGLE_ABSL_DCHECK_EQ(old_depth, depth_);
+  if (ptr != nullptr) ABSL_DCHECK_EQ(old_depth, depth_);
   depth_++;
   if (!PopLimit(old)) return nullptr;
   return ptr;
@@ -914,7 +914,7 @@ const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
 #define GOOGLE_PROTOBUF_ASSERT_RETURN(predicate, ret) \
   if (!(predicate)) {                                  \
     /*  ::raise(SIGINT);  */                           \
-    /*  GOOGLE_ABSL_LOG(ERROR) << "Parse failure";  */        \
+    /*  ABSL_LOG(ERROR) << "Parse failure";  */        \
     return ret;                                        \
   }
 
@@ -952,7 +952,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   out->Reserve(old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
 #ifdef PROTOBUF_LITTLE_ENDIAN
-  GOOGLE_ABSL_CHECK(dst != nullptr) << out << "," << num;
+  ABSL_CHECK(dst != nullptr) << out << "," << num;
   std::memcpy(dst, ptr, block_size);
 #else
   for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
@@ -982,21 +982,21 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
     ptr = ReadPackedVarintArray(ptr, buffer_end_, add);
     if (ptr == nullptr) return nullptr;
     int overrun = static_cast<int>(ptr - buffer_end_);
-    GOOGLE_ABSL_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
+    ABSL_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
     if (size - chunk_size <= kSlopBytes) {
       // The current buffer contains all the information needed, we don't need
       // to flip buffers. However we must parse from a buffer with enough space
       // so we are not prone to a buffer overflow.
       char buf[kSlopBytes + 10] = {};
       std::memcpy(buf, buffer_end_, kSlopBytes);
-      GOOGLE_ABSL_CHECK_LE(size - chunk_size, kSlopBytes);
+      ABSL_CHECK_LE(size - chunk_size, kSlopBytes);
       auto end = buf + (size - chunk_size);
       auto res = ReadPackedVarintArray(buf + overrun, end, add);
       if (res == nullptr || res != end) return nullptr;
       return buffer_end_ + (res - buf);
     }
     size -= overrun + chunk_size;
-    GOOGLE_ABSL_DCHECK_GT(size, 0);
+    ABSL_DCHECK_GT(size, 0);
     // We must flip buffers
     if (limit_ <= kSlopBytes) return nullptr;
     ptr = Next();
@@ -1053,7 +1053,7 @@ PROTOBUF_NODISCARD const char* FieldParser(uint64_t tag, T& field_parser,
       break;
     }
     case WireType::WIRETYPE_END_GROUP: {
-      GOOGLE_ABSL_LOG(FATAL) << "Can't happen";
+      ABSL_LOG(FATAL) << "Can't happen";
       break;
     }
     case WireType::WIRETYPE_FIXED32: {

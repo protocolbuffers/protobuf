@@ -38,7 +38,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -2316,14 +2316,14 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       options.aggregate_metadata = true;
       for (const auto& prefix : absl::StrSplit(option_pair[1], "#", absl::AllowEmpty())) {
         options.aggregate_metadata_prefixes.emplace(prefix);
-        GOOGLE_ABSL_LOG(INFO) << prefix;
+        ABSL_LOG(INFO) << prefix;
       }
     } else if (option_pair[0] == "internal") {
       options.is_descriptor = true;
     } else if (option_pair[0] == "internal_generate_c_wkt") {
       GenerateCWellKnownTypes(files, generator_context);
     } else {
-      GOOGLE_ABSL_LOG(FATAL) << "Unknown codegen option: " << option_pair[0];
+      ABSL_LOG(FATAL) << "Unknown codegen option: " << option_pair[0];
     }
   }
 

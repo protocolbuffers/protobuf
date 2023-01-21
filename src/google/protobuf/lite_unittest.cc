@@ -37,7 +37,7 @@
 #include <utility>
 
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"

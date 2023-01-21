@@ -70,7 +70,7 @@ class MapIterator;
 
 #define TYPE_CHECK(EXPECTEDTYPE, METHOD)                                  \
   if (type() != EXPECTEDTYPE) {                                           \
-    GOOGLE_ABSL_LOG(FATAL) << "Protocol Buffer map usage error:\n"               \
+    ABSL_LOG(FATAL) << "Protocol Buffer map usage error:\n"               \
                     << METHOD << " type does not match\n"                 \
                     << "  Expected : "                                    \
                     << FieldDescriptor::CppTypeName(EXPECTEDTYPE) << "\n" \
@@ -98,7 +98,7 @@ class PROTOBUF_EXPORT MapKey {
 
   FieldDescriptor::CppType type() const {
     if (type_ == FieldDescriptor::CppType()) {
-      GOOGLE_ABSL_LOG(FATAL) << "Protocol Buffer map usage error:\n"
+      ABSL_LOG(FATAL) << "Protocol Buffer map usage error:\n"
                       << "MapKey::type MapKey is not initialized. "
                       << "Call set methods to initialize MapKey.";
     }
@@ -159,14 +159,14 @@ class PROTOBUF_EXPORT MapKey {
     if (type_ != other.type_) {
       // We could define a total order that handles this case, but
       // there currently no need.  So, for now, fail.
-      GOOGLE_ABSL_LOG(FATAL) << "Unsupported: type mismatch";
+      ABSL_LOG(FATAL) << "Unsupported: type mismatch";
     }
     switch (type()) {
       case FieldDescriptor::CPPTYPE_DOUBLE:
       case FieldDescriptor::CPPTYPE_FLOAT:
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
+        ABSL_LOG(FATAL) << "Unsupported";
         return false;
       case FieldDescriptor::CPPTYPE_STRING:
         return val_.string_value_.get() < other.val_.string_value_.get();
@@ -187,14 +187,14 @@ class PROTOBUF_EXPORT MapKey {
   bool operator==(const MapKey& other) const {
     if (type_ != other.type_) {
       // To be consistent with operator<, we don't allow this either.
-      GOOGLE_ABSL_LOG(FATAL) << "Unsupported: type mismatch";
+      ABSL_LOG(FATAL) << "Unsupported: type mismatch";
     }
     switch (type()) {
       case FieldDescriptor::CPPTYPE_DOUBLE:
       case FieldDescriptor::CPPTYPE_FLOAT:
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
+        ABSL_LOG(FATAL) << "Unsupported";
         break;
       case FieldDescriptor::CPPTYPE_STRING:
         return val_.string_value_.get() == other.val_.string_value_.get();
@@ -209,7 +209,7 @@ class PROTOBUF_EXPORT MapKey {
       case FieldDescriptor::CPPTYPE_BOOL:
         return val_.bool_value_ == other.val_.bool_value_;
     }
-    GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+    ABSL_LOG(FATAL) << "Can't get here.";
     return false;
   }
 
@@ -220,7 +220,7 @@ class PROTOBUF_EXPORT MapKey {
       case FieldDescriptor::CPPTYPE_FLOAT:
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
+        ABSL_LOG(FATAL) << "Unsupported";
         break;
       case FieldDescriptor::CPPTYPE_STRING:
         *val_.string_value_.get_mutable() = other.val_.string_value_.get();
@@ -291,7 +291,7 @@ struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_FLOAT:
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_ENUM:
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
+        ABSL_LOG(FATAL) << "Unsupported";
         break;
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
         return hash<std::string>()(map_key.GetStringValue());
@@ -315,7 +315,7 @@ struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
         return hash<bool>()(map_key.GetBoolValue());
       }
     }
-    GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+    ABSL_LOG(FATAL) << "Can't get here.";
     return 0;
   }
   bool operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key1,
@@ -358,7 +358,7 @@ class PROTOBUF_EXPORT MapFieldBase {
 
  protected:
   ~MapFieldBase() {  // "protected" stops users from deleting a `MapFieldBase *`
-    GOOGLE_ABSL_DCHECK(repeated_field_ == nullptr);
+    ABSL_DCHECK(repeated_field_ == nullptr);
   }
   void Destruct();
 
@@ -434,7 +434,7 @@ class PROTOBUF_EXPORT MapFieldBase {
   // MapFieldBase-derived object, and there is no synchronization going
   // on between them, tsan will alert.
 #if defined(__SANITIZE_THREAD__) || defined(THREAD_SANITIZER)
-  void ConstAccess() const { GOOGLE_ABSL_CHECK_EQ(seq1_, seq2_); }
+  void ConstAccess() const { ABSL_CHECK_EQ(seq1_, seq2_); }
   void MutableAccess() {
     if (seq1_ & 1) {
       seq2_ = ++seq1_;
@@ -774,7 +774,7 @@ class PROTOBUF_EXPORT MapValueConstRef {
 
   FieldDescriptor::CppType type() const {
     if (type_ == FieldDescriptor::CppType() || data_ == nullptr) {
-      GOOGLE_ABSL_LOG(FATAL)
+      ABSL_LOG(FATAL)
           << "Protocol Buffer map usage error:\n"
           << "MapValueConstRef::type MapValueConstRef is not initialized.";
     }

@@ -1660,7 +1660,7 @@ FileDescriptorSet::~FileDescriptorSet() {
 }
 
 inline void FileDescriptorSet::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_.~RepeatedPtrField();
 }
 
@@ -1772,7 +1772,7 @@ void FileDescriptorSet::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, cons
   auto* const _this = static_cast<FileDescriptorSet*>(&to_msg);
   auto& from = static_cast<const FileDescriptorSet&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorSet)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1959,7 +1959,7 @@ FileDescriptorProto::~FileDescriptorProto() {
 }
 
 inline void FileDescriptorProto::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.dependency_.~RepeatedPtrField();
   _impl_.message_type_.~RepeatedPtrField();
   _impl_.enum_type_.~RepeatedPtrField();
@@ -2007,11 +2007,11 @@ void FileDescriptorProto::Clear() {
       _impl_.edition_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000010u) {
-      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
+      ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
     if (cached_has_bits & 0x00000020u) {
-      GOOGLE_ABSL_DCHECK(_impl_.source_code_info_ != nullptr);
+      ABSL_DCHECK(_impl_.source_code_info_ != nullptr);
       _impl_.source_code_info_->Clear();
     }
   }
@@ -2476,7 +2476,7 @@ void FileDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, co
   auto* const _this = static_cast<FileDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FileDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorProto)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2650,7 +2650,7 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
 }
 
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete _impl_.options_;
 }
 
@@ -2666,7 +2666,7 @@ void DescriptorProto_ExtensionRange::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
+    ABSL_DCHECK(_impl_.options_ != nullptr);
     _impl_.options_->Clear();
   }
   if (cached_has_bits & 0x00000006u) {
@@ -2818,7 +2818,7 @@ void DescriptorProto_ExtensionRange::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message&
   auto* const _this = static_cast<DescriptorProto_ExtensionRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ExtensionRange&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ExtensionRange)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2919,7 +2919,7 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
 }
 
 inline void DescriptorProto_ReservedRange::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void DescriptorProto_ReservedRange::SetCachedSize(int size) const {
@@ -3059,7 +3059,7 @@ void DescriptorProto_ReservedRange::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& 
   auto* const _this = static_cast<DescriptorProto_ReservedRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ReservedRange&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ReservedRange)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3193,7 +3193,7 @@ DescriptorProto::~DescriptorProto() {
 }
 
 inline void DescriptorProto::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.field_.~RepeatedPtrField();
   _impl_.nested_type_.~RepeatedPtrField();
   _impl_.enum_type_.~RepeatedPtrField();
@@ -3230,7 +3230,7 @@ void DescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
+      ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -3601,7 +3601,7 @@ void DescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const 
   auto* const _this = static_cast<DescriptorProto*>(&to_msg);
   auto& from = static_cast<const DescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3721,7 +3721,7 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
 }
 
 inline void ExtensionRangeOptions::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -3846,7 +3846,7 @@ void ExtensionRangeOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, 
   auto* const _this = static_cast<ExtensionRangeOptions*>(&to_msg);
   auto& from = static_cast<const ExtensionRangeOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -4059,7 +4059,7 @@ FieldDescriptorProto::~FieldDescriptorProto() {
 }
 
 inline void FieldDescriptorProto::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   _impl_.extendee_.Destroy();
   _impl_.type_name_.Destroy();
@@ -4096,7 +4096,7 @@ void FieldDescriptorProto::Clear() {
       _impl_.json_name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000020u) {
-      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
+      ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -4482,7 +4482,7 @@ void FieldDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, c
   auto* const _this = static_cast<FieldDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FieldDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldDescriptorProto)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -4656,7 +4656,7 @@ OneofDescriptorProto::~OneofDescriptorProto() {
 }
 
 inline void OneofDescriptorProto::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
@@ -4677,7 +4677,7 @@ void OneofDescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
+      ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -4809,7 +4809,7 @@ void OneofDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, c
   auto* const _this = static_cast<OneofDescriptorProto*>(&to_msg);
   auto& from = static_cast<const OneofDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofDescriptorProto)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -4907,7 +4907,7 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
 }
 
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void EnumDescriptorProto_EnumReservedRange::SetCachedSize(int size) const {
@@ -5047,7 +5047,7 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::PROTOBUF_NAMESPACE_ID::M
   auto* const _this = static_cast<EnumDescriptorProto_EnumReservedRange*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto_EnumReservedRange&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -5171,7 +5171,7 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 }
 
 inline void EnumDescriptorProto::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.~RepeatedPtrField();
   _impl_.reserved_range_.~RepeatedPtrField();
   _impl_.reserved_name_.~RepeatedPtrField();
@@ -5198,7 +5198,7 @@ void EnumDescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
+      ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -5424,7 +5424,7 @@ void EnumDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, co
   auto* const _this = static_cast<EnumDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -5562,7 +5562,7 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 }
 
 inline void EnumValueDescriptorProto::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
@@ -5583,7 +5583,7 @@ void EnumValueDescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
+      ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -5739,7 +5739,7 @@ void EnumValueDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_ms
   auto* const _this = static_cast<EnumValueDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumValueDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueDescriptorProto)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -5872,7 +5872,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 }
 
 inline void ServiceDescriptorProto::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.method_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
@@ -5895,7 +5895,7 @@ void ServiceDescriptorProto::Clear() {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
+      ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -6056,7 +6056,7 @@ void ServiceDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg,
   auto* const _this = static_cast<ServiceDescriptorProto*>(&to_msg);
   auto& from = static_cast<const ServiceDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceDescriptorProto)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -6233,7 +6233,7 @@ MethodDescriptorProto::~MethodDescriptorProto() {
 }
 
 inline void MethodDescriptorProto::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   _impl_.input_type_.Destroy();
   _impl_.output_type_.Destroy();
@@ -6262,7 +6262,7 @@ void MethodDescriptorProto::Clear() {
       _impl_.output_type_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000008u) {
-      GOOGLE_ABSL_DCHECK(_impl_.options_ != nullptr);
+      ABSL_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
   }
@@ -6501,7 +6501,7 @@ void MethodDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, 
   auto* const _this = static_cast<MethodDescriptorProto*>(&to_msg);
   auto& from = static_cast<const MethodDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodDescriptorProto)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -6865,7 +6865,7 @@ FileOptions::~FileOptions() {
 }
 
 inline void FileOptions::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   _impl_.java_package_.Destroy();
@@ -7583,7 +7583,7 @@ void FileOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PR
   auto* const _this = static_cast<FileOptions*>(&to_msg);
   auto& from = static_cast<const FileOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileOptions)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7825,7 +7825,7 @@ MessageOptions::~MessageOptions() {
 }
 
 inline void MessageOptions::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -8073,7 +8073,7 @@ void MessageOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const :
   auto* const _this = static_cast<MessageOptions*>(&to_msg);
   auto& from = static_cast<const MessageOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MessageOptions)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -8250,7 +8250,7 @@ FieldOptions::~FieldOptions() {
 }
 
 inline void FieldOptions::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -8635,7 +8635,7 @@ void FieldOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::P
   auto* const _this = static_cast<FieldOptions*>(&to_msg);
   auto& from = static_cast<const FieldOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -8760,7 +8760,7 @@ OneofOptions::~OneofOptions() {
 }
 
 inline void OneofOptions::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -8885,7 +8885,7 @@ void OneofOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::P
   auto* const _this = static_cast<OneofOptions*>(&to_msg);
   auto& from = static_cast<const OneofOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofOptions)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -8995,7 +8995,7 @@ EnumOptions::~EnumOptions() {
 }
 
 inline void EnumOptions::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -9196,7 +9196,7 @@ void EnumOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PR
   auto* const _this = static_cast<EnumOptions*>(&to_msg);
   auto& from = static_cast<const EnumOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumOptions)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -9310,7 +9310,7 @@ EnumValueOptions::~EnumValueOptions() {
 }
 
 inline void EnumValueOptions::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -9463,7 +9463,7 @@ void EnumValueOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const
   auto* const _this = static_cast<EnumValueOptions*>(&to_msg);
   auto& from = static_cast<const EnumValueOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueOptions)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -9563,7 +9563,7 @@ ServiceOptions::~ServiceOptions() {
 }
 
 inline void ServiceOptions::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -9716,7 +9716,7 @@ void ServiceOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const :
   auto* const _this = static_cast<ServiceOptions*>(&to_msg);
   auto& from = static_cast<const ServiceOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceOptions)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -9823,7 +9823,7 @@ MethodOptions::~MethodOptions() {
 }
 
 inline void MethodOptions::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
@@ -10010,7 +10010,7 @@ void MethodOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::
   auto* const _this = static_cast<MethodOptions*>(&to_msg);
   auto& from = static_cast<const MethodOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodOptions)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10136,7 +10136,7 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
 }
 
 inline void UninterpretedOption_NamePart::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_part_.Destroy();
 }
 
@@ -10297,7 +10297,7 @@ void UninterpretedOption_NamePart::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& t
   auto* const _this = static_cast<UninterpretedOption_NamePart*>(&to_msg);
   auto& from = static_cast<const UninterpretedOption_NamePart&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption.NamePart)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10465,7 +10465,7 @@ UninterpretedOption::~UninterpretedOption() {
 }
 
 inline void UninterpretedOption::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.~RepeatedPtrField();
   _impl_.identifier_value_.Destroy();
   _impl_.string_value_.Destroy();
@@ -10755,7 +10755,7 @@ void UninterpretedOption::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, co
   auto* const _this = static_cast<UninterpretedOption*>(&to_msg);
   auto& from = static_cast<const UninterpretedOption&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10921,7 +10921,7 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
 }
 
 inline void SourceCodeInfo_Location::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.path_.~RepeatedField();
   _impl_.span_.~RepeatedField();
   _impl_.leading_detached_comments_.~RepeatedPtrField();
@@ -11190,7 +11190,7 @@ void SourceCodeInfo_Location::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg
   auto* const _this = static_cast<SourceCodeInfo_Location*>(&to_msg);
   auto& from = static_cast<const SourceCodeInfo_Location&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo.Location)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11284,7 +11284,7 @@ SourceCodeInfo::~SourceCodeInfo() {
 }
 
 inline void SourceCodeInfo::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.location_.~RepeatedPtrField();
 }
 
@@ -11396,7 +11396,7 @@ void SourceCodeInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const :
   auto* const _this = static_cast<SourceCodeInfo*>(&to_msg);
   auto& from = static_cast<const SourceCodeInfo&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11514,7 +11514,7 @@ GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
 }
 
 inline void GeneratedCodeInfo_Annotation::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.path_.~RepeatedField();
   _impl_.source_file_.Destroy();
 }
@@ -11751,7 +11751,7 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& t
   auto* const _this = static_cast<GeneratedCodeInfo_Annotation*>(&to_msg);
   auto& from = static_cast<const GeneratedCodeInfo_Annotation&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11850,7 +11850,7 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
 }
 
 inline void GeneratedCodeInfo::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.annotation_.~RepeatedPtrField();
 }
 
@@ -11962,7 +11962,7 @@ void GeneratedCodeInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, cons
   auto* const _this = static_cast<GeneratedCodeInfo*>(&to_msg);
   auto& from = static_cast<const GeneratedCodeInfo&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

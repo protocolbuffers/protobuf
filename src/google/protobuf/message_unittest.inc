@@ -54,7 +54,8 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/scoped_mock_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
@@ -199,20 +200,15 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
   UNITTEST::TestRequired message;
-  std::vector<std::string> errors;
 
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::StrCat(
+            "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
+            ".TestRequired\" because it is missing required fields: a, b, c")));
+    log.StartCapturingLogs();
     EXPECT_FALSE(message.ParseFromString(""));
-    errors = log.GetMessages(ERROR);
   }
-
-  ASSERT_EQ(1, errors.size());
-  EXPECT_EQ(
-      absl::StrCat(
-          "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
-          ".TestRequired\" because it is missing required fields: a, b, c"),
-      errors[0]);
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageNotInitialized) {
@@ -223,19 +219,15 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageNotInitialized) {
   EXPECT_TRUE(message.ParsePartialFromString(serialized));
   EXPECT_FALSE(message.IsInitialized());
 
-  std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
-    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
-    errors = log.GetMessages(ERROR);
-  }
-
-  EXPECT_THAT(
-      errors,
-      testing::ElementsAre(absl::StrCat(
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::StrCat(
           "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
           ".TestRequiredForeign\" because it is missing required fields: "
           "optional_message.a, optional_message.b, optional_message.c")));
+    log.StartCapturingLogs();
+    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
+  }
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
@@ -248,21 +240,18 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
   EXPECT_TRUE(message.ParsePartialFromString(serialized));
   EXPECT_FALSE(message.IsInitialized());
 
-  std::vector<std::string> errors;
-  {
-    ScopedMemoryLog log;
-    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
-    errors = log.GetMessages(ERROR);
-  }
-
-  EXPECT_THAT(errors,
-              testing::ElementsAre(absl::Substitute(
+{
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::Substitute(
                   "Can't parse message of type \"$0.TestChildExtension\" "
                   "because it is missing required fields: "
                   "optional_extension.($0.TestRequired.single).a, "
                   "optional_extension.($0.TestRequired.single).b, "
                   "optional_extension.($0.TestRequired.single).c",
                   UNITTEST_PACKAGE_NAME)));
+    log.StartCapturingLogs();
+    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
+  }
 }
 
 TEST(MESSAGE_TEST_NAME, MergeFromUninitialized) {
@@ -689,7 +678,7 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
                          test_all_types_pointer_nullptr));
 }
 
-#if PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
 
 TEST(MESSAGE_TEST_NAME, SerializeFailsIfNotInitialized) {
   UNITTEST::TestRequired message;
@@ -709,7 +698,7 @@ TEST(MESSAGE_TEST_NAME, CheckInitialized) {
                             "fields: a, b, c"));
 }
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 namespace {
 // An input stream that repeats a std::string's content for a number of times.
@@ -1285,7 +1274,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
                 continue;
               }
               SCOPED_TRACE(value_desc->number());
-              GOOGLE_ABSL_CHECK_NE(value_desc->number(), kInvalidValue)
+              ABSL_CHECK_NE(value_desc->number(), kInvalidValue)
                   << "Invalid value is a real label.";
               auto encoded =
                   EncodeEnumValue(field->number(), value_desc->number(),
@@ -1595,13 +1584,13 @@ class TestInputStream final : public io::ZeroCopyInputStream {
     return true;
   }
 
-  void BackUp(int) override { GOOGLE_ABSL_CHECK(false); }
+  void BackUp(int) override { ABSL_CHECK(false); }
   bool Skip(int) override {
-    GOOGLE_ABSL_CHECK(false);
+    ABSL_CHECK(false);
     return false;
   }
   int64_t ByteCount() const override {
-    GOOGLE_ABSL_CHECK(false);
+    ABSL_CHECK(false);
     return 0;
   }
 

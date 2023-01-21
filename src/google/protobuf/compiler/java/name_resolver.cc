@@ -32,7 +32,7 @@
 
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
@@ -106,7 +106,7 @@ std::string ClassNameWithoutPackage(const ServiceDescriptor* descriptor,
   absl::string_view full_name =
       StripPackageName(descriptor->full_name(), descriptor->file());
   // We don't allow nested service definitions.
-  GOOGLE_ABSL_CHECK(!absl::StrContains(full_name, '.'));
+  ABSL_CHECK(!absl::StrContains(full_name, '.'));
   return std::string(full_name);
 }
 

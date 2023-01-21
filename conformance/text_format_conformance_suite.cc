@@ -32,7 +32,7 @@
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "conformance_test.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
@@ -70,7 +70,7 @@ bool TextFormatConformanceTestSuite::ParseTextFormatResponse(
     parser.AllowFieldNumber(true);
   }
   if (!parser.ParseFromString(response.text_payload(), test_message)) {
-    GOOGLE_ABSL_LOG(ERROR) << "INTERNAL ERROR: internal text->protobuf transcode "
+    ABSL_LOG(ERROR) << "INTERNAL ERROR: internal text->protobuf transcode "
                     << "yielded unparseable proto. Text payload: "
                     << response.text_payload();
     return false;
@@ -127,7 +127,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
     }
 
     default:
-      GOOGLE_ABSL_LOG(FATAL) << test_name
+      ABSL_LOG(FATAL) << test_name
                       << ": unknown payload type: " << response.result_case();
   }
 

@@ -45,19 +45,6 @@
 #include "google/protobuf/stubs/platform_macros.h"
 #include "google/protobuf/stubs/port.h"
 
-#ifndef PROTOBUF_USE_EXCEPTIONS
-#if defined(_MSC_VER) && defined(_CPPUNWIND)
-  #define PROTOBUF_USE_EXCEPTIONS 1
-#elif defined(__EXCEPTIONS)
-  #define PROTOBUF_USE_EXCEPTIONS 1
-#else
-  #define PROTOBUF_USE_EXCEPTIONS 0
-#endif
-#endif
-
-#if PROTOBUF_USE_EXCEPTIONS
-#include <exception>
-#endif
 #if defined(__APPLE__)
 #include <TargetConditionals.h>  // for TARGET_OS_IPHONE
 #endif
@@ -137,27 +124,6 @@ void StrongReference(const T& var) {
 }
 
 }  // namespace internal
-
-#if PROTOBUF_USE_EXCEPTIONS
-class FatalException : public std::exception {
- public:
-  FatalException(const char* filename, int line, const std::string& message)
-      : filename_(filename), line_(line), message_(message) {}
-  virtual ~FatalException() throw();
-
-  const char* what() const throw() override;
-
-  const char* filename() const { return filename_; }
-  int line() const { return line_; }
-  const std::string& message() const { return message_; }
-
- private:
-  const char* filename_;
-  const int line_;
-  const std::string message_;
-};
-#endif
-
 }  // namespace protobuf
 }  // namespace google
 

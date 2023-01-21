@@ -37,7 +37,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
@@ -202,7 +202,7 @@ bool ParseFunctionGenerator::should_generate_tctable() const {
 }
 
 void ParseFunctionGenerator::GenerateTailcallParseFunction(Formatter& format) {
-  GOOGLE_ABSL_CHECK(should_generate_tctable());
+  ABSL_CHECK(should_generate_tctable());
 
   // Generate an `_InternalParse` that starts the tail-calling loop.
   format(
@@ -229,7 +229,7 @@ static bool NeedsUnknownEnumSupport(const Descriptor* descriptor) {
 
 void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
     Formatter& format) {
-  GOOGLE_ABSL_CHECK(should_generate_tctable());
+  ABSL_CHECK(should_generate_tctable());
   format(
       "const char* $classname$::Tct_ParseFallback(PROTOBUF_TC_PARAM_DECL) {\n"
       "#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) return nullptr\n");
@@ -421,7 +421,7 @@ static NumToEntryTable MakeNumToEntryTable(
   for (; field_entry_index != N; ++field_entry_index) {
     auto* field_descriptor = field_descriptors[field_entry_index];
     uint32_t fnum = field_descriptor->number();
-    GOOGLE_ABSL_CHECK_GT(fnum, last_skip_entry_start);
+    ABSL_CHECK_GT(fnum, last_skip_entry_start);
     if (start_new_block == false) {
       // If the next field number is within 15 of the last_skip_entry_start, we
       // continue writing just to that entry.  If it's between 16 and 31 more,
@@ -454,7 +454,7 @@ static NumToEntryTable MakeNumToEntryTable(
 }
 
 void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
-  GOOGLE_ABSL_CHECK(should_generate_tctable());
+  ABSL_CHECK(should_generate_tctable());
   // All entries without a fast-path parsing function need a fallback.
   std::string fallback;
   if (tc_table_info_->use_generated_fallback) {
@@ -565,7 +565,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       format("65535, 65535\n");
     }
     if (ordered_fields_.empty()) {
-      GOOGLE_ABSL_LOG_IF(DFATAL, !tc_table_info_->aux_entries.empty())
+      ABSL_DLOG_IF(FATAL, !tc_table_info_->aux_entries.empty())
           << "Invalid message: " << descriptor_->full_name() << " has "
           << tc_table_info_->aux_entries.size()
           << " auxiliary field entries, but no fields";
@@ -662,7 +662,7 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
       format("{$1$, {$2$, $3$}},\n", info.func_name, info.coded_tag,
              info.nonfield_info);
     } else {
-      GOOGLE_ABSL_CHECK(!ShouldSplit(info.field, options_));
+      ABSL_CHECK(!ShouldSplit(info.field, options_));
 
       std::string func_name = info.func_name;
       if (GetOptimizeFor(info.field->file(), options_) == FileOptions::SPEED) {
@@ -731,7 +731,7 @@ static void FormatFieldKind(Formatter& format,
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(RawString);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Utf8String);
         default:
-          GOOGLE_ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
+          ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
       }
 
       static constexpr const char* kRepNames[] = {"AString", "IString", "Cord",
@@ -814,7 +814,7 @@ static void FormatFieldKind(Formatter& format,
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSInt64);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedDouble);
         default:
-          GOOGLE_ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
+          ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
       }
     }
   }
@@ -907,13 +907,13 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
       "if (arena != nullptr) {\n"
       "  ptr = ctx->ReadArenaString(ptr, &$msg$$field$, arena");
   if (IsStringInlined(field, options_)) {
-    GOOGLE_ABSL_DCHECK(!inlined_string_indices_.empty());
+    ABSL_DCHECK(!inlined_string_indices_.empty());
     int inlined_string_index = inlined_string_indices_[field->index()];
-    GOOGLE_ABSL_DCHECK_GT(inlined_string_index, 0);
+    ABSL_DCHECK_GT(inlined_string_index, 0);
     format(", &$msg$$inlined_string_donated_array$[0], $1$, $this$",
            inlined_string_index);
   } else {
-    GOOGLE_ABSL_DCHECK(field->default_value_string().empty());
+    ABSL_DCHECK(field->default_value_string().empty());
   }
   format(
       ");\n"
@@ -1026,7 +1026,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
       case FieldDescriptor::TYPE_MESSAGE: {
         if (field->is_map()) {
           const FieldDescriptor* val = field->message_type()->map_value();
-          GOOGLE_ABSL_CHECK(val);
+          ABSL_CHECK(val);
           if (val->type() == FieldDescriptor::TYPE_ENUM &&
               !internal::cpp::HasPreservingUnknownEnumSemantics(field)) {
             format(
@@ -1114,7 +1114,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
         break;
       }
       default:
-        GOOGLE_ABSL_LOG(FATAL) << "Illegal combination for length delimited wiretype "
+        ABSL_LOG(FATAL) << "Illegal combination for length delimited wiretype "
                         << " filed type is " << field->type();
     }
   }
@@ -1229,7 +1229,7 @@ void ParseFunctionGenerator::GenerateFieldBody(
       break;
     }
     case WireFormatLite::WIRETYPE_END_GROUP: {
-      GOOGLE_ABSL_LOG(FATAL) << "Can't have end group field\n";
+      ABSL_LOG(FATAL) << "Can't have end group field\n";
       break;
     }
   }  // switch (wire_type)
@@ -1243,7 +1243,7 @@ static uint32_t ExpectedTag(const FieldDescriptor* field,
   if (field->is_packable()) {
     auto expected_wiretype = WireFormat::WireTypeForFieldType(field->type());
     expected_tag = WireFormatLite::MakeTag(field->number(), expected_wiretype);
-    GOOGLE_ABSL_CHECK(expected_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+    ABSL_CHECK(expected_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
     auto fallback_wiretype = WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
     uint32_t fallback_tag =
         WireFormatLite::MakeTag(field->number(), fallback_wiretype);

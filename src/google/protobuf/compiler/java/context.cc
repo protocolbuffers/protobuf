@@ -32,7 +32,7 @@
 
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
@@ -159,7 +159,7 @@ void Context::InitializeFieldGeneratorInfoForFields(
       }
     }
     if (is_conflict[i]) {
-      GOOGLE_ABSL_LOG(WARNING) << "field \"" << field->full_name()
+      ABSL_LOG(WARNING) << "field \"" << field->full_name()
                         << "\" is conflicting "
                         << "with another field: " << conflict_reason[i];
     }
@@ -184,7 +184,7 @@ const FieldGeneratorInfo* Context::GetFieldGeneratorInfo(
     const FieldDescriptor* field) const {
   auto it = field_generator_info_map_.find(field);
   if (it == field_generator_info_map_.end()) {
-    GOOGLE_ABSL_LOG(FATAL) << "Can not find FieldGeneratorInfo for field: "
+    ABSL_LOG(FATAL) << "Can not find FieldGeneratorInfo for field: "
                     << field->full_name();
   }
   return &it->second;
@@ -194,7 +194,7 @@ const OneofGeneratorInfo* Context::GetOneofGeneratorInfo(
     const OneofDescriptor* oneof) const {
   auto it = oneof_generator_info_map_.find(oneof);
   if (it == oneof_generator_info_map_.end()) {
-    GOOGLE_ABSL_LOG(FATAL) << "Can not find OneofGeneratorInfo for oneof: "
+    ABSL_LOG(FATAL) << "Can not find OneofGeneratorInfo for oneof: "
                     << oneof->name();
   }
   return &it->second;

@@ -37,7 +37,7 @@
 #include "google/protobuf/repeated_field.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map_test_util.h"

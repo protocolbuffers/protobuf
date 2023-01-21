@@ -42,7 +42,7 @@
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -172,7 +172,7 @@ class TestGenerator : public CodeGenerator {
 // not verify that they are correctly-placed; that would require actually
 // compiling the output which is a bit more than I care to do for this test.
 TEST(CppPluginTest, PluginTest) {
-  GOOGLE_ABSL_CHECK_OK(
+  ABSL_CHECK_OK(
       File::SetContents(absl::StrCat(TestTempDir(), "/test.proto"),
                         "syntax = \"proto2\";\n"
                         "package foo;\n"

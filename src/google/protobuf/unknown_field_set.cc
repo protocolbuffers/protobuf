@@ -34,7 +34,7 @@
 
 #include "google/protobuf/unknown_field_set.h"
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "google/protobuf/extension_set.h"
@@ -61,7 +61,7 @@ const UnknownFieldSet& UnknownFieldSet::default_instance() {
 }
 
 void UnknownFieldSet::ClearFallback() {
-  GOOGLE_ABSL_DCHECK(!fields_.empty());
+  ABSL_DCHECK(!fields_.empty());
   int n = fields_.size();
   do {
     (fields_)[--n].Delete();
@@ -302,7 +302,7 @@ void UnknownField::DeepCopy(const UnknownField& other) {
 
 uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
-  GOOGLE_ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
+  ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
   const std::string& data = *data_.length_delimited_.string_value;
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
   target = stream->WriteRaw(data.data(), data.size(), target);

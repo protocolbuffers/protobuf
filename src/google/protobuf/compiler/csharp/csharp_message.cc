@@ -35,7 +35,7 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
@@ -767,7 +767,7 @@ int MessageGenerator::GetPresenceIndex(const FieldDescriptor* descriptor) {
       index++;
     }
   }
-  GOOGLE_ABSL_LOG(DFATAL) << "Could not find presence index for field "
+  ABSL_DLOG(FATAL) << "Could not find presence index for field "
                    << descriptor->name();
   return -1;
 }

@@ -52,8 +52,8 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -168,7 +168,7 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
   }
   // (We could add a default case above but then we wouldn't get the nice
   // compiler warning when a new type is added.)
-  GOOGLE_ABSL_LOG(FATAL) << "Not reached.";
+  ABSL_LOG(FATAL) << "Not reached.";
   return "";
 }
 
@@ -180,7 +180,7 @@ std::string StringifySyntax(FileDescriptor::Syntax syntax) {
       return "proto3";
     case FileDescriptor::SYNTAX_UNKNOWN:
     default:
-      GOOGLE_ABSL_LOG(FATAL)
+      ABSL_LOG(FATAL)
           << "Unsupported syntax; this generator only supports proto2 "
              "and proto3 syntax.";
       return "";
@@ -292,7 +292,7 @@ bool Generator::Generate(const FileDescriptor* file,
   }
 
   std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
-  GOOGLE_ABSL_CHECK(output.get());
+  ABSL_CHECK(output.get());
   io::Printer printer(output.get(), '$');
   printer_ = &printer;
 
@@ -951,7 +951,7 @@ std::string Generator::FieldReferencingExpression(
     absl::string_view python_dict_name) const {
   // We should only ever be looking up fields in the current file.
   // The only things we refer to from other files are message descriptors.
-  GOOGLE_ABSL_CHECK_EQ(field.file(), file_)
+  ABSL_CHECK_EQ(field.file(), file_)
       << field.file()->name() << " vs. " << file_->name();
   if (!containing_type) {
     return ResolveKeyword(field.name());
@@ -1017,7 +1017,7 @@ void Generator::FixForeignFieldsInExtensions() const {
 
 void Generator::FixForeignFieldsInExtension(
     const FieldDescriptor& extension_field) const {
-  GOOGLE_ABSL_CHECK(extension_field.is_extension());
+  ABSL_CHECK(extension_field.is_extension());
 
   absl::flat_hash_map<absl::string_view, std::string> m;
   // Confusingly, for FieldDescriptors that happen to be extensions,
@@ -1232,7 +1232,7 @@ void Generator::PrintSerializedPbInterval(const DescriptorT& descriptor,
   std::string sp;
   proto.SerializeToString(&sp);
   int offset = file_descriptor_serialized_.find(sp);
-  GOOGLE_ABSL_CHECK_GE(offset, 0);
+  ABSL_CHECK_GE(offset, 0);
 
   printer_->Print(
       "_globals['$name$']._serialized_start=$serialized_start$\n"

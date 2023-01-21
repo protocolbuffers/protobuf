@@ -38,7 +38,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/context.h"
@@ -186,7 +186,7 @@ static inline void ReportUnexpectedPackedFieldsCall(io::Printer* printer) {
   //     but this method should be overridden.
   //   - This FieldGenerator doesn't support packing, and this method
   //     should never have been called.
-  GOOGLE_ABSL_LOG(FATAL) << "GenerateBuilderParsingCodeFromPacked() "
+  ABSL_LOG(FATAL) << "GenerateBuilderParsingCodeFromPacked() "
                   << "called on field generator that does not support packing.";
 }
 

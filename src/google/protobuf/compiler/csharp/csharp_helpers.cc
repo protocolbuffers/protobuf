@@ -41,7 +41,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
@@ -108,7 +108,7 @@ CSharpType GetCSharpType(FieldDescriptor::Type type) {
       // No default because we want the compiler to complain if any new
       // types are added.
   }
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return (CSharpType) -1;
 }
 
@@ -340,7 +340,7 @@ int GetFixedSize(FieldDescriptor::Type type) {
     // No default because we want the compiler to complain if any new
     // types are added.
   }
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return -1;
 }
 
@@ -465,7 +465,7 @@ bool IsNullable(const FieldDescriptor* descriptor) {
       return true;
 
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unknown field type.";
+      ABSL_LOG(FATAL) << "Unknown field type.";
       return true;
   }
 }

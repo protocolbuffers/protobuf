@@ -38,7 +38,7 @@
 
 #include <cstdint>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 
@@ -289,7 +289,7 @@ void CommandLineInterfaceTest::SetUp() {
   }
 
   // Create the temp directory.
-  GOOGLE_ABSL_CHECK_OK(File::CreateDir(temp_directory_, 0777));
+  ABSL_CHECK_OK(File::CreateDir(temp_directory_, 0777));
 
   // Register generators.
   CodeGenerator* generator = new MockCodeGenerator("test_generator");
@@ -362,7 +362,7 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
 #endif
 
     if (plugin_path.empty() || !FileExists(plugin_path)) {
-      GOOGLE_ABSL_LOG(ERROR)
+      ABSL_LOG(ERROR)
           << "Plugin executable not found.  Plugin tests are likely to fail."
           << plugin_path;
     } else {
@@ -402,20 +402,20 @@ void CommandLineInterfaceTest::CreateTempFile(absl::string_view name,
   if (slash_pos != std::string::npos) {
     absl::string_view dir = name.substr(0, slash_pos);
     if (!FileExists(absl::StrCat(temp_directory_, "/", dir))) {
-      GOOGLE_ABSL_CHECK_OK(File::RecursivelyCreateDir(
+      ABSL_CHECK_OK(File::RecursivelyCreateDir(
           absl::StrCat(temp_directory_, "/", dir), 0777));
     }
   }
 
   // Write file.
   std::string full_name = absl::StrCat(temp_directory_, "/", name);
-  GOOGLE_ABSL_CHECK_OK(File::SetContents(
+  ABSL_CHECK_OK(File::SetContents(
       full_name, absl::StrReplaceAll(contents, {{"$tmpdir", temp_directory_}}),
       true));
 }
 
 void CommandLineInterfaceTest::CreateTempDir(absl::string_view name) {
-  GOOGLE_ABSL_CHECK_OK(File::RecursivelyCreateDir(
+  ABSL_CHECK_OK(File::RecursivelyCreateDir(
       absl::StrCat(temp_directory_, "/", name), 0777));
 }
 
@@ -504,7 +504,7 @@ void CommandLineInterfaceTest::ReadDescriptorSet(
     absl::string_view filename, FileDescriptorSet* descriptor_set) {
   std::string path = absl::StrCat(temp_directory_, "/", filename);
   std::string file_contents;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
+  ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
 
   if (!descriptor_set->ParseFromString(file_contents)) {
     FAIL() << "Could not parse file contents: " << path;
@@ -514,7 +514,7 @@ void CommandLineInterfaceTest::ReadDescriptorSet(
 void CommandLineInterfaceTest::WriteDescriptorSet(
     absl::string_view filename, const FileDescriptorSet* descriptor_set) {
   std::string binary_proto;
-  GOOGLE_ABSL_CHECK(descriptor_set->SerializeToString(&binary_proto));
+  ABSL_CHECK(descriptor_set->SerializeToString(&binary_proto));
   CreateTempFile(filename, binary_proto);
 }
 
@@ -540,7 +540,7 @@ void CommandLineInterfaceTest::ExpectFileContent(absl::string_view filename,
                                                  absl::string_view content) {
   std::string path = absl::StrCat(temp_directory_, "/", filename);
   std::string file_contents;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
+  ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
 
   EXPECT_EQ(absl::StrReplaceAll(content, {{"$tmpdir", temp_directory_}}),
             file_contents);
@@ -2240,7 +2240,7 @@ TEST_F(CommandLineInterfaceTest, PluginReceivesSourceCodeInfo) {
   Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
 
   ExpectErrorSubstring(
-      "Saw message type MockCodeGenerator_HasSourceCodeInfo: 1.");
+      "Saw message type MockCodeGenerator_HasSourceCodeInfo: true.");
 }
 
 TEST_F(CommandLineInterfaceTest, PluginReceivesJsonName) {
@@ -2252,7 +2252,7 @@ TEST_F(CommandLineInterfaceTest, PluginReceivesJsonName) {
 
   Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
 
-  ExpectErrorSubstring("Saw json_name: 1");
+  ExpectErrorSubstring("Saw json_name: true");
 }
 
 TEST_F(CommandLineInterfaceTest, PluginReceivesCompilerVersion) {
@@ -2567,8 +2567,8 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 
   void RedirectStdinFromText(const std::string& input) {
     std::string filename = absl::StrCat(TestTempDir(), "/test_stdin");
-    GOOGLE_ABSL_CHECK_OK(File::SetContents(filename, input, true));
-    GOOGLE_ABSL_CHECK(RedirectStdinFromFile(filename));
+    ABSL_CHECK_OK(File::SetContents(filename, input, true));
+    ABSL_CHECK(RedirectStdinFromFile(filename));
   }
 
   bool RedirectStdinFromFile(const std::string& filename) {
@@ -2637,7 +2637,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 
   void ExpectStdoutMatchesBinaryFile(const std::string& filename) {
     std::string expected_output;
-    GOOGLE_ABSL_CHECK_OK(
+    ABSL_CHECK_OK(
         File::GetContents(filename, &expected_output, true));
 
     // Don't use EXPECT_EQ because we don't want to print raw binary data to
@@ -2647,7 +2647,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 
   void ExpectStdoutMatchesTextFile(const std::string& filename) {
     std::string expected_output;
-    GOOGLE_ABSL_CHECK_OK(
+    ABSL_CHECK_OK(
         File::GetContents(filename, &expected_output, true));
 
     ExpectStdoutMatchesText(expected_output);
@@ -2680,11 +2680,11 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     protobuf_unittest_import::PublicImportMessage public_import_message;
     public_import_message.descriptor()->file()->CopyTo(
         file_descriptor_set.add_file());
-    GOOGLE_ABSL_DCHECK(file_descriptor_set.IsInitialized());
+    ABSL_DCHECK(file_descriptor_set.IsInitialized());
 
     std::string binary_proto;
-    GOOGLE_ABSL_CHECK(file_descriptor_set.SerializeToString(&binary_proto));
-    GOOGLE_ABSL_CHECK_OK(File::SetContents(unittest_proto_descriptor_set_filename_,
+    ABSL_CHECK(file_descriptor_set.SerializeToString(&binary_proto));
+    ABSL_CHECK_OK(File::SetContents(unittest_proto_descriptor_set_filename_,
                                     binary_proto, true));
   }
 

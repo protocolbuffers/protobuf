@@ -1186,7 +1186,7 @@ TEST(ExtensionSetTest, AbsentExtension) {
                 .bb());
 }
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 
 TEST(ExtensionSetTest, InvalidEnumDeath) {
   unittest::TestAllExtensions message;
@@ -1196,7 +1196,7 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
       "IsValid");
 }
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 TEST(ExtensionSetTest, DynamicExtensions) {
   // Test adding a dynamic extension to a compiled-in message object.

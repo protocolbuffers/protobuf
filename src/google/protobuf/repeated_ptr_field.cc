@@ -34,7 +34,7 @@
 
 #include <algorithm>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
@@ -58,7 +58,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   Arena* arena = GetOwningArena();
   new_size = internal::CalculateReserveSize<void*, kRepHeaderSize>(total_size_,
                                                                    new_size);
-  GOOGLE_ABSL_CHECK_LE(static_cast<int64_t>(new_size),
+  ABSL_CHECK_LE(static_cast<int64_t>(new_size),
                 static_cast<int64_t>(
                     (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
                     sizeof(old_rep->elements[0])))
@@ -98,8 +98,8 @@ void RepeatedPtrFieldBase::Reserve(int new_size) {
 }
 
 void RepeatedPtrFieldBase::DestroyProtos() {
-  GOOGLE_ABSL_DCHECK(rep_);
-  GOOGLE_ABSL_DCHECK(arena_ == nullptr);
+  ABSL_DCHECK(rep_);
+  ABSL_DCHECK(arena_ == nullptr);
   int n = rep_->allocated_size;
   void* const* elements = rep_->elements;
   for (int i = 0; i < n; i++) {

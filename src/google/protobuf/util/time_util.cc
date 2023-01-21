@@ -35,7 +35,7 @@
 
 #include "google/protobuf/duration.pb.h"
 #include "google/protobuf/timestamp.pb.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/int128.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -68,7 +68,7 @@ T CreateNormalized(int64_t seconds, int32_t nanos);
 
 template <>
 Timestamp CreateNormalized(int64_t seconds, int32_t nanos) {
-  GOOGLE_ABSL_DCHECK(seconds >= TimeUtil::kTimestampMinSeconds &&
+  ABSL_DCHECK(seconds >= TimeUtil::kTimestampMinSeconds &&
               seconds <= TimeUtil::kTimestampMaxSeconds)
       << "Timestamp seconds are outside of the valid range";
 
@@ -83,7 +83,7 @@ Timestamp CreateNormalized(int64_t seconds, int32_t nanos) {
     nanos += kNanosPerSecond;
   }
 
-  GOOGLE_ABSL_DCHECK(seconds >= TimeUtil::kTimestampMinSeconds &&
+  ABSL_DCHECK(seconds >= TimeUtil::kTimestampMinSeconds &&
               seconds <= TimeUtil::kTimestampMaxSeconds &&
               nanos >= TimeUtil::kTimestampMinNanoseconds &&
               nanos <= TimeUtil::kTimestampMaxNanoseconds)
@@ -96,7 +96,7 @@ Timestamp CreateNormalized(int64_t seconds, int32_t nanos) {
 
 template <>
 Duration CreateNormalized(int64_t seconds, int32_t nanos) {
-  GOOGLE_ABSL_DCHECK(seconds >= TimeUtil::kDurationMinSeconds &&
+  ABSL_DCHECK(seconds >= TimeUtil::kDurationMinSeconds &&
               seconds <= TimeUtil::kDurationMaxSeconds)
       << "Duration seconds are outside of the valid range";
 
@@ -114,7 +114,7 @@ Duration CreateNormalized(int64_t seconds, int32_t nanos) {
     nanos += kNanosPerSecond;
   }
 
-  GOOGLE_ABSL_DCHECK(seconds >= TimeUtil::kDurationMinSeconds &&
+  ABSL_DCHECK(seconds >= TimeUtil::kDurationMinSeconds &&
               seconds <= TimeUtil::kDurationMaxSeconds &&
               nanos >= TimeUtil::kDurationMinNanoseconds &&
               nanos <= TimeUtil::kDurationMaxNanoseconds)
@@ -314,21 +314,21 @@ Duration TimeUtil::SecondsToDuration(int64_t seconds) {
 }
 
 Duration TimeUtil::MinutesToDuration(int64_t minutes) {
-  GOOGLE_ABSL_DCHECK(minutes >= TimeUtil::kDurationMinSeconds / kSecondsPerMinute &&
+  ABSL_DCHECK(minutes >= TimeUtil::kDurationMinSeconds / kSecondsPerMinute &&
               minutes <= TimeUtil::kDurationMaxSeconds / kSecondsPerMinute)
       << "Duration minutes are outside of the valid range";
   return SecondsToDuration(minutes * kSecondsPerMinute);
 }
 
 Duration TimeUtil::HoursToDuration(int64_t hours) {
-  GOOGLE_ABSL_DCHECK(hours >= TimeUtil::kDurationMinSeconds / kSecondsPerHour &&
+  ABSL_DCHECK(hours >= TimeUtil::kDurationMinSeconds / kSecondsPerHour &&
               hours <= TimeUtil::kDurationMaxSeconds / kSecondsPerHour)
       << "Duration hours are outside of the valid range";
   return SecondsToDuration(hours * kSecondsPerHour);
 }
 
 int64_t TimeUtil::DurationToNanoseconds(const Duration& duration) {
-  GOOGLE_ABSL_DCHECK(IsDurationValid(duration))
+  ABSL_DCHECK(IsDurationValid(duration))
       << "Duration is outside of the valid range";
   return duration.seconds() * kNanosPerSecond + duration.nanos();
 }
@@ -342,7 +342,7 @@ int64_t TimeUtil::DurationToMilliseconds(const Duration& duration) {
 }
 
 int64_t TimeUtil::DurationToSeconds(const Duration& duration) {
-  GOOGLE_ABSL_DCHECK(IsDurationValid(duration))
+  ABSL_DCHECK(IsDurationValid(duration))
       << "Duration is outside of the valid range";
   return duration.seconds();
 }
@@ -377,27 +377,27 @@ Timestamp TimeUtil::SecondsToTimestamp(int64_t seconds) {
 }
 
 int64_t TimeUtil::TimestampToNanoseconds(const Timestamp& timestamp) {
-  GOOGLE_ABSL_DCHECK(IsTimestampValid(timestamp))
+  ABSL_DCHECK(IsTimestampValid(timestamp))
       << "Timestamp is outside of the valid range";
   return timestamp.seconds() * kNanosPerSecond + timestamp.nanos();
 }
 
 int64_t TimeUtil::TimestampToMicroseconds(const Timestamp& timestamp) {
-  GOOGLE_ABSL_DCHECK(IsTimestampValid(timestamp))
+  ABSL_DCHECK(IsTimestampValid(timestamp))
       << "Timestamp is outside of the valid range";
   return timestamp.seconds() * kMicrosPerSecond +
          RoundTowardZero(timestamp.nanos(), kNanosPerMicrosecond);
 }
 
 int64_t TimeUtil::TimestampToMilliseconds(const Timestamp& timestamp) {
-  GOOGLE_ABSL_DCHECK(IsTimestampValid(timestamp))
+  ABSL_DCHECK(IsTimestampValid(timestamp))
       << "Timestamp is outside of the valid range";
   return timestamp.seconds() * kMillisPerSecond +
          RoundTowardZero(timestamp.nanos(), kNanosPerMillisecond);
 }
 
 int64_t TimeUtil::TimestampToSeconds(const Timestamp& timestamp) {
-  GOOGLE_ABSL_DCHECK(IsTimestampValid(timestamp))
+  ABSL_DCHECK(IsTimestampValid(timestamp))
       << "Timestamp is outside of the valid range";
   return timestamp.seconds();
 }

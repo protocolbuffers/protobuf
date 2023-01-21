@@ -393,7 +393,7 @@ class PROTOBUF_EXPORT TcParser final {
     static_assert(sizeof(FieldType) == 1 || sizeof(FieldType) == 4 ||
                       sizeof(FieldType) == 8,
                   "");
-    std::abort();  // unreachable
+    ABSL_LOG(FATAL) << "This should be unreachable";
   }
 
   // Functions referenced by generated fast tables (closed enum):
@@ -777,7 +777,7 @@ Parse64FallbackPair(const char* p, int64_t res1) {
   //
   // Just as importantly, by keeping results in res1, res2, and res3, we take
   // advantage of the superscalar abilities of the CPU.
-  GOOGLE_ABSL_DCHECK_EQ(res1 >> 7, -1);
+  ABSL_DCHECK_EQ(res1 >> 7, -1);
   uint64_t ones = res1;  // save the high 1 bits from res1 (input to SHLD)
   int64_t res2, res3;    // accumulated result chunks
 

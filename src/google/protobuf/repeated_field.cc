@@ -37,8 +37,8 @@
 #include <algorithm>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 
 // Must be included last.

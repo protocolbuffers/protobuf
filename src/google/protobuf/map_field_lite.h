@@ -193,7 +193,7 @@ struct MapEntryToMapField<
 #ifndef NDEBUG
 inline PROTOBUF_NOINLINE void MapFieldLiteNotDestructed(void* map_field_lite) {
   bool proper_destruct = false;
-  GOOGLE_ABSL_CHECK(proper_destruct) << map_field_lite;
+  ABSL_CHECK(proper_destruct) << map_field_lite;
 }
 #endif
 

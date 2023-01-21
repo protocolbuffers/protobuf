@@ -600,7 +600,7 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #endif
 
 // PROTOBUF_ASSUME(pred) tells the compiler that it can assume pred is true. To
-// be safe, we also validate the assumption with a GOOGLE_ABSL_DCHECK in unoptimized
+// be safe, we also validate the assumption with a ABSL_DCHECK in unoptimized
 // builds. The macro does not do anything useful if the compiler does not
 // support __builtin_assume.
 #ifdef PROTOBUF_ASSUME
@@ -608,10 +608,10 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #endif
 #if __has_builtin(__builtin_assume)
 #define PROTOBUF_ASSUME(pred) \
-  GOOGLE_ABSL_DCHECK(pred);               \
+  ABSL_DCHECK(pred);               \
   __builtin_assume(pred)
 #else
-#define PROTOBUF_ASSUME(pred) GOOGLE_ABSL_DCHECK(pred)
+#define PROTOBUF_ASSUME(pred) ABSL_DCHECK(pred)
 #endif
 
 // Specify memory alignment for structs, classes, etc.
@@ -1029,14 +1029,14 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #define PROTOBUF_DEBUG false
 #endif
 
-// This `for` allows us to condition the `GOOGLE_ABSL_LOG` on the define above, so that
+// This `for` allows us to condition the `ABSL_LOG` on the define above, so that
 // code can write `PROTOBUF_DLOG(INFO) << ...;` and have it turned off when
 // debug logging is off.
 //
 // This is a `for`, not and `if`, to avoid it accidentally chaining with an
 // `else` below it.
 #define PROTOBUF_DLOG(x) \
-  for (bool b = PROTOBUF_DEBUG; b; b = false) GOOGLE_ABSL_LOG(x)
+  for (bool b = PROTOBUF_DEBUG; b; b = false) ABSL_LOG(x)
 
 #define PROTO2_IS_OSS true
 

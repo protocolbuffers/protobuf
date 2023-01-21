@@ -3,6 +3,7 @@
 COPTS = select({
     "//build_defs:config_msvc": [
         "/wd4065",  # switch statement contains 'default' but no 'case' labels
+        "/wd4146",  # unary minus operator applied to unsigned type
         "/wd4244",  # 'conversion' conversion from 'type1' to 'type2', possible loss of data
         "/wd4251",  # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
         "/wd4267",  # 'var' : conversion from 'size_t' to 'type', possible loss of data

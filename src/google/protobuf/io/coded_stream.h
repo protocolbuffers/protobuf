@@ -129,7 +129,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -844,7 +844,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   inline uint8_t* Next();
   int Flush(uint8_t* ptr);
   std::ptrdiff_t GetSize(uint8_t* ptr) const {
-    GOOGLE_ABSL_DCHECK(ptr <= end_ + kSlopBytes);  // NOLINT
+    ABSL_DCHECK(ptr <= end_ + kSlopBytes);  // NOLINT
     return end_ + kSlopBytes - ptr;
   }
 
@@ -865,7 +865,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteTag(uint32_t num, uint32_t wt,
                                            uint8_t* ptr) {
-    GOOGLE_ABSL_DCHECK(ptr < end_);  // NOLINT
+    ABSL_DCHECK(ptr < end_);  // NOLINT
     return UnsafeVarint((num << 3) | wt, ptr);
   }
 
@@ -1074,7 +1074,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // errors.
   bool HadError() {
     cur_ = impl_.FlushAndResetBuffer(cur_);
-    GOOGLE_ABSL_DCHECK(cur_);
+    ABSL_DCHECK(cur_);
     return impl_.HadError();
   }
 

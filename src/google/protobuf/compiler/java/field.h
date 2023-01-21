@@ -40,7 +40,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
 
@@ -135,7 +135,7 @@ class FieldGeneratorMap {
 template <typename FieldGeneratorType>
 inline const FieldGeneratorType& FieldGeneratorMap<FieldGeneratorType>::get(
     const FieldDescriptor* field) const {
-  GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
+  ABSL_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
 }
 
