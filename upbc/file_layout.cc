@@ -56,6 +56,10 @@ std::vector<upb::EnumDefPtr> SortedEnums(upb::FileDefPtr file) {
   for (int i = 0; i < file.toplevel_message_count(); i++) {
     AddEnums(file.toplevel_message(i), &enums);
   }
+  std::sort(enums.begin(), enums.end(),
+            [](upb::EnumDefPtr a, upb::EnumDefPtr b) {
+              return strcmp(a.full_name(), b.full_name()) < 0;
+            });
   return enums;
 }
 
