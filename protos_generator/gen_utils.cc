@@ -29,31 +29,17 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 // begin:google_only
 // #include "absl/strings/str_replace.h"
 // end:google_only
 #include "absl/strings/str_split.h"
 #include "upbc/keywords.h"
-#include "upbc/plugin.h"
 
 namespace protos_generator {
 
 namespace protobuf = ::google::protobuf;
-
-// begin:github_only
-#ifndef DCHECK
-#ifndef NDEBUG
-#define DCHECK(condition)                                             \
-  if (!(condition)) {                                                 \
-    upbc::LogFatal("Failed DCHECK: ", #condition, "File: ", __FILE__, \
-                   ", Line: ", __LINE__);                             \
-  }
-#else
-#define DCHECK(condition) if(!(true || condition)) ;
-#endif
-#endif
-// end:github_only
 
 std::string DotsToColons(const std::string& name) {
   return absl::StrReplaceAll(name, {{".", "::"}});
@@ -166,7 +152,7 @@ std::string CppTypeInternal(const protobuf::FieldDescriptor* field,
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
       return "absl::string_view";
     default:
-      upbc::LogFatal("Unexpected type: ", field->cpp_type());
+      ABSL_LOG(FATAL) << "Unexpected type: " << field->cpp_type();
   }
 }
 
@@ -182,14 +168,14 @@ std::string CppTypeParameterName(const protobuf::FieldDescriptor* field) {
 
 std::string MessageBaseType(const protobuf::FieldDescriptor* field,
                             bool is_const) {
-  DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
+  ABSL_DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
   std::string maybe_const = is_const ? "const " : "";
   return maybe_const + QualifiedClassName(field->message_type());
 }
 
 std::string MessagePtrConstType(const protobuf::FieldDescriptor* field,
                                 bool is_const) {
-  DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
+  ABSL_DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
   std::string maybe_const = is_const ? "const " : "";
   return "::protos::Ptr<" + maybe_const +
          QualifiedClassName(field->message_type()) + ">";
@@ -197,7 +183,7 @@ std::string MessagePtrConstType(const protobuf::FieldDescriptor* field,
 
 std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
                               bool is_const) {
-  DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
+  ABSL_DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
   std::string maybe_const = is_const ? "const " : "";
   return maybe_const + QualifiedInternalClassName(field->message_type()) +
          "CProxy";
@@ -205,7 +191,7 @@ std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
 
 std::string MessageProxyType(const protobuf::FieldDescriptor* field,
                              bool is_const) {
-  DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
+  ABSL_DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
   std::string maybe_const = is_const ? "const " : "";
   return maybe_const + QualifiedInternalClassName(field->message_type()) +
          "Proxy";

@@ -45,6 +45,7 @@
 // end:github_only
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "upb/reflection/def.hpp"
@@ -69,12 +70,6 @@ inline std::vector<std::pair<std::string, std::string>> ParseGeneratorParameter(
     ret.push_back(std::move(value));
   }
   return ret;
-}
-
-template <class... Arg>
-void LogFatal(const Arg&... arg) {
-  fprintf(stderr, "FATAL ERROR: %s\n", absl::StrCat(arg...).c_str());
-  exit(1);
 }
 
 class Plugin {
@@ -118,8 +113,8 @@ class Plugin {
           if (!file) {
             absl::string_view name =
                 ToStringView(UPB_DESC(FileDescriptorProto_name)(file_proto));
-            LogFatal("Couldn't add file ", name,
-                     " to DefPool: ", status.error_message());
+            ABSL_LOG(FATAL) << "Couldn't add file " << name
+                            << " to DefPool: " << status.error_message();
           }
           if (generate) func(file);
         });
@@ -174,7 +169,7 @@ class Plugin {
     request_ = UPB_DESC(compiler_CodeGeneratorRequest_parse)(
         data.data(), data.size(), arena_.ptr());
     if (!request_) {
-      LogFatal("Failed to parse CodeGeneratorRequest");
+      ABSL_LOG(FATAL) << "Failed to parse CodeGeneratorRequest";
     }
     response_ = UPB_DESC(compiler_CodeGeneratorResponse_new)(arena_.ptr());
     UPB_DESC(compiler_CodeGeneratorResponse_set_supported_features)
@@ -187,11 +182,11 @@ class Plugin {
     char* serialized = UPB_DESC(compiler_CodeGeneratorResponse_serialize)(
         response_, arena_.ptr(), &size);
     if (!serialized) {
-      LogFatal("Failed to serialize CodeGeneratorResponse");
+      ABSL_LOG(FATAL) << "Failed to serialize CodeGeneratorResponse";
     }
 
     if (fwrite(serialized, 1, size, stdout) != size) {
-      LogFatal("Failed to write response to stdout");
+      ABSL_LOG(FATAL) << "Failed to write response to stdout";
     }
   }
 };

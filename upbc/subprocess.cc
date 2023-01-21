@@ -41,6 +41,7 @@
 #include <sys/wait.h>
 #endif
 
+#include "absl/log/absl_log.h"
 #include "absl/strings/substitute.h"
 
 // Must be last.
@@ -62,8 +63,8 @@ char* portable_strdup(const char* s) {
 
 static void CloseHandleOrDie(HANDLE handle) {
   if (!CloseHandle(handle)) {
-    GOOGLE_LOG(FATAL) << "CloseHandle: "
-                      << Subprocess::Win32ErrorMessage(GetLastError());
+    ABSL_LOG(FATAL) << "CloseHandle: "
+                    << Subprocess::Win32ErrorMessage(GetLastError());
   }
 }
 
@@ -90,22 +91,22 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   HANDLE stdout_pipe_write;
 
   if (!CreatePipe(&stdin_pipe_read, &stdin_pipe_write, nullptr, 0)) {
-    GOOGLE_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
+    ABSL_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
   }
   if (!CreatePipe(&stdout_pipe_read, &stdout_pipe_write, nullptr, 0)) {
-    GOOGLE_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
+    ABSL_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
   }
 
   // Make child side of the pipes inheritable.
   if (!SetHandleInformation(stdin_pipe_read, HANDLE_FLAG_INHERIT,
                             HANDLE_FLAG_INHERIT)) {
-    GOOGLE_LOG(FATAL) << "SetHandleInformation: "
-                      << Win32ErrorMessage(GetLastError());
+    ABSL_LOG(FATAL) << "SetHandleInformation: "
+                    << Win32ErrorMessage(GetLastError());
   }
   if (!SetHandleInformation(stdout_pipe_write, HANDLE_FLAG_INHERIT,
                             HANDLE_FLAG_INHERIT)) {
-    GOOGLE_LOG(FATAL) << "SetHandleInformation: "
-                      << Win32ErrorMessage(GetLastError());
+    ABSL_LOG(FATAL) << "SetHandleInformation: "
+                    << Win32ErrorMessage(GetLastError());
   }
 
   // Setup STARTUPINFO to redirect handles.
@@ -118,7 +119,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   startup_info.hStdError = GetStdHandle(STD_ERROR_HANDLE);
 
   if (startup_info.hStdError == INVALID_HANDLE_VALUE) {
-    GOOGLE_LOG(FATAL) << "GetStdHandle: " << Win32ErrorMessage(GetLastError());
+    ABSL_LOG(FATAL) << "GetStdHandle: " << Win32ErrorMessage(GetLastError());
   }
 
   // Invoking cmd.exe allows for '.bat' files from the path as well as '.exe'.
@@ -184,11 +185,11 @@ bool Subprocess::Communicate(const std::string& input_data,
         wait_result < WAIT_OBJECT_0 + handle_count) {
       signaled_handle = handles[wait_result - WAIT_OBJECT_0];
     } else if (wait_result == WAIT_FAILED) {
-      GOOGLE_LOG(FATAL) << "WaitForMultipleObjects: "
-                        << Win32ErrorMessage(GetLastError());
+      ABSL_LOG(FATAL) << "WaitForMultipleObjects: "
+                      << Win32ErrorMessage(GetLastError());
     } else {
-      GOOGLE_LOG(FATAL) << "WaitForMultipleObjects: Unexpected return code: "
-                        << wait_result;
+      ABSL_LOG(FATAL) << "WaitForMultipleObjects: Unexpected return code: "
+                      << wait_result;
     }
 
     if (signaled_handle == child_stdin_) {
@@ -231,17 +232,17 @@ bool Subprocess::Communicate(const std::string& input_data,
   DWORD wait_result = WaitForSingleObject(child_handle_, INFINITE);
 
   if (wait_result == WAIT_FAILED) {
-    GOOGLE_LOG(FATAL) << "WaitForSingleObject: "
-                      << Win32ErrorMessage(GetLastError());
+    ABSL_LOG(FATAL) << "WaitForSingleObject: "
+                    << Win32ErrorMessage(GetLastError());
   } else if (wait_result != WAIT_OBJECT_0) {
-    GOOGLE_LOG(FATAL) << "WaitForSingleObject: Unexpected return code: "
-                      << wait_result;
+    ABSL_LOG(FATAL) << "WaitForSingleObject: Unexpected return code: "
+                    << wait_result;
   }
 
   DWORD exit_code;
   if (!GetExitCodeProcess(child_handle_, &exit_code)) {
-    GOOGLE_LOG(FATAL) << "GetExitCodeProcess: "
-                      << Win32ErrorMessage(GetLastError());
+    ABSL_LOG(FATAL) << "GetExitCodeProcess: "
+                    << Win32ErrorMessage(GetLastError());
   }
 
   CloseHandleOrDie(child_handle_);

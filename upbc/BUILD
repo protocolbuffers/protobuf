@@ -178,6 +178,8 @@ bootstrap_cc_library(
     deps = [
         "//:port",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -250,6 +252,8 @@ bootstrap_cc_binary(
         "//:wire_types",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -293,6 +297,7 @@ cc_binary(
         ":plugin_upb_proto",
         ":upbdev",
         "//:port",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )

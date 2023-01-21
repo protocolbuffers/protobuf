@@ -30,11 +30,11 @@
 
 #include <vector>
 
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "upbc/plugin.h"
 
 namespace protos_generator {
 
@@ -57,7 +57,7 @@ class Output {
   void Outdent() { Outdent(kIndentationSize); }
   void Outdent(size_t size) {
     if (indent_ < size) {
-      upbc::LogFatal("mismatched Output indent/unindent calls");
+      ABSL_LOG(FATAL) << "mismatched Output indent/unindent calls";
     }
     indent_ -= size;
   }
