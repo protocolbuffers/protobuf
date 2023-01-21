@@ -86,6 +86,7 @@ build_msvc
 /debug/
 /solution/
 /release/
+cmake/install
 
 # NuGet packages: we want the repository configuration, but not the
 # packages themselves.
