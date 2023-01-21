@@ -20,8 +20,6 @@ COPTS = select({
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
         "-Werror",
-        # TODO(b/265232445) This is required due to https://github.com/abseil/abseil-cpp/issues/1201.
-        "-Wno-deprecated",
     ],
 })
 
