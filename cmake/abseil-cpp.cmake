@@ -1,7 +1,5 @@
 # Setup our dependency on Abseil.
 
-set(ABSL_PROPAGATE_CXX_STD ON)
-
 if(TARGET absl::strings)
   # If Abseil is included already, skip including it.
   # (https://github.com/protocolbuffers/protobuf/issues/10435)
