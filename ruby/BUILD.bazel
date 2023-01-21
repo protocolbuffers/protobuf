@@ -37,7 +37,7 @@ genrule(
         set -eux
         mkdir tmp
         for src in $(SRCS); do
-            rsync -R -L "$$src" tmp
+            cp --parents -L "$$src" tmp
         done
         for wkt in $(execpaths //:well_known_ruby_protos); do
             mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
@@ -49,6 +49,7 @@ genrule(
         cd ../..
         mv tmp/ruby/google-protobuf-*.gem $@
     """,
+    tags = ["manual"],
     target_compatible_with = select({
         "@rules_ruby//ruby/runtime:config_jruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
@@ -70,7 +71,7 @@ genrule(
         set -eux
         mkdir tmp
         for src in $(SRCS); do
-            rsync -R -L "$$src" "tmp"
+            cp --parents -L "$$src" "tmp"
         done
         mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
@@ -85,6 +86,7 @@ genrule(
         cd ../..
         mv tmp/ruby/google-protobuf-*.gem $@
     """,
+    tags = ["manual"],
     target_compatible_with = select({
         "@rules_ruby//ruby/runtime:config_ruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
