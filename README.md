@@ -1,3 +1,15 @@
+Q-PAC Fork for Protobuf
+=======================
+The purpose of this repo is to add list-setter to the C# implementation. The reason is
+because entity framework needs list setters which google deliberately decided not to allow.
+See [this issue](https://github.com/protocolbuffers/protobuf/issues/6995) to
+understand why. It was commented on by Jon Skeet (one of the main protobuf devs).
+
+For Q-PAC
+---------
+When you have a forked repo, you should [add an upstream remote](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork) so that you can sync up.
+
+
 Protocol Buffers - Google's data interchange format
 ===================================================
 
