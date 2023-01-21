@@ -325,16 +325,6 @@ const upb_MiniTable* google_protobuf_GeneratedCodeInfo_Annotation_msg_init() {
   return mini_table;
 }
 
-const upb_MiniTableEnum* google_protobuf_FieldDescriptorProto_Type_enum_init() {
-  static const upb_MiniTableEnum* mini_table = NULL;
-  static const char* mini_descriptor = "!@AA1";
-  if (mini_table) return mini_table;
-  mini_table =
-      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
-                              upb_BootstrapArena(), NULL);
-  return mini_table;
-}
-
 const upb_MiniTableEnum* google_protobuf_FieldDescriptorProto_Label_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!0";
@@ -345,9 +335,9 @@ const upb_MiniTableEnum* google_protobuf_FieldDescriptorProto_Label_enum_init() 
   return mini_table;
 }
 
-const upb_MiniTableEnum* google_protobuf_FileOptions_OptimizeMode_enum_init() {
+const upb_MiniTableEnum* google_protobuf_FieldDescriptorProto_Type_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
-  static const char* mini_descriptor = "!0";
+  static const char* mini_descriptor = "!@AA1";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
@@ -375,7 +365,7 @@ const upb_MiniTableEnum* google_protobuf_FieldOptions_JSType_enum_init() {
   return mini_table;
 }
 
-const upb_MiniTableEnum* google_protobuf_MethodOptions_IdempotencyLevel_enum_init() {
+const upb_MiniTableEnum* google_protobuf_FieldOptions_OptionRetention_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!)";
   if (mini_table) return mini_table;
@@ -385,7 +375,37 @@ const upb_MiniTableEnum* google_protobuf_MethodOptions_IdempotencyLevel_enum_ini
   return mini_table;
 }
 
+const upb_MiniTableEnum* google_protobuf_FieldOptions_OptionTargetType_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!AA";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                              upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
+const upb_MiniTableEnum* google_protobuf_FileOptions_OptimizeMode_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!0";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                              upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
 const upb_MiniTableEnum* google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!)";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                              upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
+const upb_MiniTableEnum* google_protobuf_MethodOptions_IdempotencyLevel_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!)";
   if (mini_table) return mini_table;
