@@ -1277,8 +1277,10 @@ class StylizedFieldNamesTest : public testing::Test {
     AddExtensionRange(AddMessage(&file, "ExtendableMessage"), 1, 1000);
 
     DescriptorProto* message = AddMessage(&file, "TestMessage");
+    PROTOBUF_IGNORE_DEPRECATION_START
     message->mutable_options()->set_deprecated_legacy_json_field_conflicts(
         true);
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     AddField(message, "foo_foo", 1, FieldDescriptorProto::LABEL_OPTIONAL,
              FieldDescriptorProto::TYPE_INT32);
     AddField(message, "FooBar", 2, FieldDescriptorProto::LABEL_OPTIONAL,
