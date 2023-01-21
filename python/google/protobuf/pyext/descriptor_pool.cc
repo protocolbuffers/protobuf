@@ -48,6 +48,9 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/str_replace.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
        ? ((*(charpp) = const_cast<char*>(                        \
@@ -172,7 +175,9 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
     cpool->is_mutable = true;
   }
   if (use_deprecated_legacy_json_field_conflicts) {
+    PROTOBUF_IGNORE_DEPRECATION_START
     pool->UseDeprecatedLegacyJsonFieldConflicts();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
   }
   cpool->pool = pool;
   cpool->is_owned = true;
@@ -826,3 +831,5 @@ PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
