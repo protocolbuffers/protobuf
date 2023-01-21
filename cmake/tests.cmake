@@ -165,12 +165,12 @@ target_link_libraries(lite-test
 add_test(NAME lite-test
   COMMAND lite-test ${protobuf_GTEST_ARGS})
 
-add_custom_target(test
+add_custom_target(full-test
   COMMAND tests
   DEPENDS tests lite-test test_plugin
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
-add_test(NAME test
+add_test(NAME full-test
   COMMAND tests ${protobuf_GTEST_ARGS})
 
 # For test purposes, remove headers that should already be installed.  This
