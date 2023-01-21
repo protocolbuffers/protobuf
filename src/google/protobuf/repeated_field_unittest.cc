@@ -679,6 +679,21 @@ TEST(RepeatedField, AddAndAssignRanges) {
   EXPECT_EQ(field.Get(7), 609250);
 }
 
+TEST(RepeatedField, AddInitializerList) {
+  RepeatedField<std::string> field;
+
+  field.Add({"Hello", "World"});
+  ASSERT_EQ(field.size(), 2);
+  EXPECT_EQ(field.Get(0), "Hello");
+  EXPECT_EQ(field.Get(1), "World");
+  
+  field.Assign({"0", "1", "2"});
+  ASSERT_EQ(field.size(), 3);
+  EXPECT_EQ(field.Get(0), "0");
+  EXPECT_EQ(field.Get(1), "1");
+  EXPECT_EQ(field.Get(2), "2");
+}
+
 TEST(RepeatedField, CopyConstruct) {
   RepeatedField<int> source;
   source.Add(1);
@@ -1159,6 +1174,20 @@ TEST(RepeatedPtrField, AddAndAssignRanges) {
   EXPECT_EQ(field.Get(5), "x");
   EXPECT_EQ(field.Get(6), "yz");
   EXPECT_EQ(field.Get(7), "xyzzy");
+}
+
+TEST(RepeatedPtrField, AddInitializerList) {
+  RepeatedPtrField<std::string> field;
+  field.Add({"Hello", "World"});
+  ASSERT_EQ(field.size(), 2);
+  EXPECT_EQ(field.Get(0), "Hello");
+  EXPECT_EQ(field.Get(1), "World");
+  
+  field.Assign({"0", "1", "2"});
+  ASSERT_EQ(field.size(), 3);
+  EXPECT_EQ(field.Get(0), "0");
+  EXPECT_EQ(field.Get(1), "1");
+  EXPECT_EQ(field.Get(2), "2");
 }
 
 TEST(RepeatedPtrField, SwapSmallSmall) {

@@ -53,6 +53,7 @@
 #include <algorithm>
 #endif
 
+#include <initializer_list>
 #include <iterator>
 #include <limits>
 #include <string>
@@ -962,6 +963,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // the appropriate number of elements.
   template <typename Iter>
   void Add(Iter begin, Iter end);
+  void Add(std::initializer_list<Element> elements);
 
   const Element& operator[](int index) const { return Get(index); }
   Element& operator[](int index) { return *Mutable(index); }
@@ -985,6 +987,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // Replaces the contents with RepeatedPtrField(begin, end).
   template <typename Iter>
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Assign(Iter begin, Iter end);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Assign(std::initializer_list<Element> elements);
 
   // Reserves space to expand the field to at least the given size.  This only
   // resizes the pointer array; it doesn't allocate any objects.  If the
@@ -1360,6 +1363,11 @@ inline void RepeatedPtrField<Element>::Add(Iter begin, Iter end) {
 }
 
 template <typename Element>
+void RepeatedPtrField<Element>::Add(std::initializer_list<Element> elements){
+  Add(elements.begin(), elements.end());
+}
+
+template <typename Element>
 inline void RepeatedPtrField<Element>::RemoveLast() {
   RepeatedPtrFieldBase::RemoveLast<TypeHandler>();
 }
@@ -1486,6 +1494,12 @@ inline void RepeatedPtrField<Element>::Assign(Iter begin, Iter end) {
   Clear();
   Add(begin, end);
 }
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::Assign(std::initializer_list<Element> elements) {
+  Assign(elements.begin(), elements.end());
+}
+
 
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator

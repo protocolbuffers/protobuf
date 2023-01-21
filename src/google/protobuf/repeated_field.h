@@ -46,6 +46,7 @@
 
 
 #include <algorithm>
+#include <initializer_list>
 #include <iterator>
 #include <limits>
 #include <string>
@@ -185,6 +186,7 @@ class RepeatedField final {
   // the appropriate number of elements.
   template <typename Iter>
   void Add(Iter begin, Iter end);
+  void Add(std::initializer_list<Element> elements);
 
   // Removes the last element in the array.
   void RemoveLast();
@@ -202,7 +204,8 @@ class RepeatedField final {
   // Replaces the contents with RepeatedField(begin, end).
   template <typename Iter>
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Assign(Iter begin, Iter end);
-
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Assign(std::initializer_list<Element> elements);
+  
   // Reserves space to expand the field to at least the given size.  If the
   // array is grown, it will always be at least doubled in size.
   void Reserve(int new_size);
@@ -735,6 +738,11 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
 }
 
 template <typename Element>
+void RepeatedField<Element>::Add(std::initializer_list<Element> elements){
+  Add(elements.begin(), elements.end());
+}
+
+template <typename Element>
 inline void RepeatedField<Element>::RemoveLast() {
   GOOGLE_DCHECK_GT(current_size_, 0);
   ExchangeCurrentSize(current_size_ - 1);
@@ -788,6 +796,11 @@ template <typename Iter>
 inline void RepeatedField<Element>::Assign(Iter begin, Iter end) {
   Clear();
   Add(begin, end);
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::Assign(std::initializer_list<Element> elements) {
+  Assign(elements.begin(), elements.end());
 }
 
 template <typename Element>
