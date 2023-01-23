@@ -204,10 +204,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 
 #ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
 
-// Used to upgrade google::protobuf::MapPair<K, V> to std::pair<const K, V>.
-// Owner: mordberg@
-#define PROTOBUF_FUTURE_MAP_PAIR_UPGRADE 1
-
 // Used to remove the manipulation of cleared elements in RepeatedPtrField.
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1

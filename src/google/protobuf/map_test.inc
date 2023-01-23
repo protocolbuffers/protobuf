@@ -813,24 +813,6 @@ TEST_F(MapImplTest, Emplace) {
       m, UnorderedElementsAre(Pair(1, "one"), Pair(2, "two"), Pair(42, "aaa")));
 }
 
-#ifndef PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
-
-TEST_F(MapImplTest, EmplaceKeyOnly) {
-  using ::testing::Pair;
-  using ::testing::UnorderedElementsAre;
-
-  Map<int32_t, std::string> m;
-
-  m.emplace(1);
-  EXPECT_EQ(m.size(), 1);
-
-  const int32_t key = 42;
-  m.emplace(key);
-  EXPECT_THAT(m, UnorderedElementsAre(Pair(1, ""), Pair(42, "")));
-}
-
-#else
-
 TEST_F(MapImplTest, ValueTypeHasMoveConstructor) {
   using vt = typename Map<ConstructorTag, ConstructorTag>::value_type;
   ConstructorTag l, r;
@@ -840,8 +822,6 @@ TEST_F(MapImplTest, ValueTypeHasMoveConstructor) {
   EXPECT_EQ(pair.first.invoked_constructor, ConstructorType::kCopy);
   EXPECT_EQ(pair.second.invoked_constructor, ConstructorType::kMove);
 }
-
-#endif  // !PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
 
 TEST_F(MapImplTest, TryEmplaceExisting) {
   Map<int32_t, CountedInstance> m;

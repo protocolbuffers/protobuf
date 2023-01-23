@@ -981,42 +981,9 @@ class KeyMapBase : public UntypedMapBase {
 
 }  // namespace internal
 
-#ifdef PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
 // This is the class for Map's internal value_type.
 template <typename Key, typename T>
 using MapPair = std::pair<const Key, T>;
-#else
-// This is the class for Map's internal value_type. Instead of using
-// std::pair as value_type, we use this class which provides us more control of
-// its process of construction and destruction.
-template <typename Key, typename T>
-struct PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG MapPair {
-  using first_type = const Key;
-  using second_type = T;
-
-  MapPair(const Key& other_first, const T& other_second)
-      : first(other_first), second(other_second) {}
-  explicit MapPair(const Key& other_first) : first(other_first), second() {}
-  explicit MapPair(Key&& other_first)
-      : first(std::move(other_first)), second() {}
-  MapPair(const MapPair& other) : first(other.first), second(other.second) {}
-
-  ~MapPair() {}
-
-  // Implicitly convertible to std::pair of compatible types.
-  template <typename T1, typename T2>
-  operator std::pair<T1, T2>() const {  // NOLINT(runtime/explicit)
-    return std::pair<T1, T2>(first, second);
-  }
-
-  const Key first;
-  T second;
-
- private:
-  friend class Arena;
-  friend class Map<Key, T>;
-};
-#endif
 
 // Map is an associative container type used to store protobuf map
 // fields.  Each Map instance may or may not use a different hash function, a
