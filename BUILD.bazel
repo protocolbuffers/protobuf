@@ -158,8 +158,8 @@ cc_library(
 
 # DEPRECATED: Prefer :well_known_type_protos for the Well-Known Types
 # (https://developers.google.com/protocol-buffers/docs/reference/google.protobuf)
-# or :descriptor_proto(_srcs) for descriptor.proto (source), or
-# :compiler_plugin_proto for compiler/plugin.proto.
+# or :descriptor_proto for descriptor.proto, or :compiler_plugin_proto for
+# compiler/plugin.proto.
 filegroup(
     name = "well_known_protos",
     srcs = [
@@ -167,7 +167,8 @@ filegroup(
         "src/google/protobuf/descriptor.proto",
         ":well_known_type_protos",
     ],
-    deprecation = "Prefer :well_known_type_protos instead.",
+    deprecation = "Prefer :well_known_type_protos, :compiler_plugin_proto, " +
+                  "and :descriptor_proto instead.",
     visibility = ["//visibility:public"],
 )
 
