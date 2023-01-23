@@ -50,6 +50,7 @@ genrule(
     outs = ["cmake_copy/file_lists.cmake"],
     cmd = "cp $< $@",
     visibility = ["//visibility:private"],
+    tags = ["manual"],
 )
 
 staleness_test(
