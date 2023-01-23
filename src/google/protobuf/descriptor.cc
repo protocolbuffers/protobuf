@@ -8356,12 +8356,7 @@ const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {
 }
 
 const std::string& FieldDescriptor::PrintableNameForExtension() const {
-  const bool is_message_set_extension =
-      is_extension() &&
-      containing_type()->options().message_set_wire_format() &&
-      type() == FieldDescriptor::TYPE_MESSAGE && is_optional() &&
-      extension_scope() == message_type();
-  return is_message_set_extension ? message_type()->full_name() : full_name();
+  return full_name();
 }
 
 void FileDescriptor::InternalDependenciesOnceInit() const {

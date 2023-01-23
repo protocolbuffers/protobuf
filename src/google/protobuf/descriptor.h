@@ -870,15 +870,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   // Return true iff [packed = true] is valid for fields of this type.
   static inline bool IsTypePackable(Type field_type);
 
-  // Returns full_name() except if the field is a MessageSet extension,
-  // in which case it returns the full_name() of the containing message type
-  // for backwards compatibility with proto1.
-  //
-  // A MessageSet extension is defined as an optional message extension
-  // whose containing type has the message_set_wire_format option set.
-  // This should be true of extensions of google.protobuf.bridge.MessageSet;
-  // by convention, such extensions are named "message_set_extension".
-  //
+  // Returns full_name()
   // The opposite operation (looking up an extension's FieldDescriptor given
   // its printable name) can be accomplished with
   //     message->file()->pool()->FindExtensionByPrintableName(message, name)
