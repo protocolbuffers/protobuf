@@ -79,6 +79,7 @@
 #define PROTOBUF_EXPORT
 #endif
 
+// Test
 
 namespace google {
 namespace protobuf {
