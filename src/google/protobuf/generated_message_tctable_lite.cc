@@ -751,7 +751,9 @@ inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
                 if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
                   byte = (byte - 0x80) | *p++;
                   if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
-                    byte = (byte - 0x80) | *p++;
+                    // We only care about the continuation bit and the first bit
+                    // of the 10th byte.
+                    byte = (byte - 0x80) | (*p++ & 0x81);
                     if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
                       return nullptr;
                     }

@@ -1176,6 +1176,12 @@ TEST(MESSAGE_TEST_NAME, PreservesFloatingPointNegative0) {
             std::signbit(out_message.optional_double()));
 }
 
+const uint8_t* SkipTag(const uint8_t* buf) {
+  while (*buf & 0x80) ++buf;
+  ++buf;
+  return buf;
+}
+
 // Adds `non_canonical_bytes` bytes to the varint representation at the tail of
 // the buffer.
 // `buf` points to the start of the buffer, `p` points to one-past-the-end.
@@ -1208,7 +1214,7 @@ std::string EncodeEnumValue(int number, int value, int non_canonical_bytes,
 
   } else {
     p = internal::WireFormatLite::WriteEnumToArray(number, value, p);
-    p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
+    p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
     return std::string(buf, p);
   }
 }
@@ -1257,71 +1263,82 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
     SCOPED_TRACE(use_packed);
     for (bool use_tail_field : {false, true}) {
       SCOPED_TRACE(use_tail_field);
-      for (int non_canonical_bytes = 0; non_canonical_bytes < 5;
+      for (int non_canonical_bytes = 0; non_canonical_bytes < 9;
            ++non_canonical_bytes) {
         SCOPED_TRACE(non_canonical_bytes);
-        for (int i = 0; i < descriptor->field_count(); ++i) {
-          const auto* field = descriptor->field(i);
-          if (field->name() == "other_field") continue;
-          if (!field->is_repeated() && use_packed) continue;
-          SCOPED_TRACE(field->full_name());
-          const auto* enum_desc = field->enum_type();
-          for (int e = 0; e < enum_desc->value_count(); ++e) {
-            const auto* value_desc = enum_desc->value(e);
-            if (value_desc->number() < 0 && non_canonical_bytes > 0) {
-              // Negative numbers only have a canonical representation.
-              continue;
-            }
-            SCOPED_TRACE(value_desc->number());
-            GOOGLE_ABSL_CHECK_NE(value_desc->number(), kInvalidValue)
-                << "Invalid value is a real label.";
-            auto encoded =
-                EncodeEnumValue(field->number(), value_desc->number(),
-                                non_canonical_bytes, use_packed);
-            if (use_tail_field) {
-              // Make sure that fields after this one can be parsed too. ie test
-              // that the "next" jump is correct too.
-              encoded += other_field;
+        for (bool add_garbage_bits : {false, true}) {
+          if (add_garbage_bits && non_canonical_bytes != 9) {
+            // We only add garbage on the 10th byte.
+            continue;
+          }
+          SCOPED_TRACE(add_garbage_bits);
+          for (int i = 0; i < descriptor->field_count(); ++i) {
+            const auto* field = descriptor->field(i);
+            if (field->name() == "other_field") continue;
+            if (!field->is_repeated() && use_packed) continue;
+            SCOPED_TRACE(field->full_name());
+            const auto* enum_desc = field->enum_type();
+            for (int e = 0; e < enum_desc->value_count(); ++e) {
+              const auto* value_desc = enum_desc->value(e);
+              if (value_desc->number() < 0 && non_canonical_bytes > 0) {
+                // Negative numbers only have a canonical representation.
+                continue;
+              }
+              SCOPED_TRACE(value_desc->number());
+              GOOGLE_ABSL_CHECK_NE(value_desc->number(), kInvalidValue)
+                  << "Invalid value is a real label.";
+              auto encoded =
+                  EncodeEnumValue(field->number(), value_desc->number(),
+                                  non_canonical_bytes, use_packed);
+              if (add_garbage_bits) {
+                // These bits should be discarded even in the `false` case.
+                encoded.back() |= 0b0111'1110;
+              }
+              if (use_tail_field) {
+                // Make sure that fields after this one can be parsed too. ie
+                // test that the "next" jump is correct too.
+                encoded += other_field;
+              }
+
+              EXPECT_TRUE(obj.ParseFromString(encoded));
+              if (field->is_repeated()) {
+                ASSERT_EQ(ref->FieldSize(obj, field), 1);
+                EXPECT_EQ(ref->GetRepeatedEnumValue(obj, field, 0),
+                          value_desc->number());
+              } else {
+                EXPECT_TRUE(ref->HasField(obj, field));
+                EXPECT_EQ(ref->GetEnumValue(obj, field), value_desc->number());
+              }
+              auto& unknown = ref->GetUnknownFields(obj);
+              ASSERT_EQ(unknown.field_count(), 0);
             }
 
-            EXPECT_TRUE(obj.ParseFromString(encoded));
-            if (field->is_repeated()) {
-              ASSERT_EQ(ref->FieldSize(obj, field), 1);
-              EXPECT_EQ(ref->GetRepeatedEnumValue(obj, field, 0),
-                        value_desc->number());
-            } else {
-              EXPECT_TRUE(ref->HasField(obj, field));
-              EXPECT_EQ(ref->GetEnumValue(obj, field), value_desc->number());
+            {
+              SCOPED_TRACE("Invalid value");
+              // Try an invalid value, which should go to the unknown fields.
+              EXPECT_TRUE(obj.ParseFromString(
+                  EncodeEnumValue(field->number(), kInvalidValue,
+                                  non_canonical_bytes, use_packed)));
+              if (field->is_repeated()) {
+                ASSERT_EQ(ref->FieldSize(obj, field), 0);
+              } else {
+                EXPECT_FALSE(ref->HasField(obj, field));
+                EXPECT_EQ(ref->GetEnumValue(obj, field),
+                          enum_desc->value(0)->number());
+              }
+              auto& unknown = ref->GetUnknownFields(obj);
+              ASSERT_EQ(unknown.field_count(), 1);
+              EXPECT_EQ(unknown.field(0).number(), field->number());
+              EXPECT_EQ(unknown.field(0).type(), unknown.field(0).TYPE_VARINT);
+              EXPECT_EQ(unknown.field(0).varint(), kInvalidValue);
             }
-            auto& unknown = ref->GetUnknownFields(obj);
-            ASSERT_EQ(unknown.field_count(), 0);
-          }
-
-          {
-            SCOPED_TRACE("Invalid value");
-            // Try an invalid value, which should go to the unknown fields.
-            EXPECT_TRUE(obj.ParseFromString(
-                EncodeEnumValue(field->number(), kInvalidValue,
-                                non_canonical_bytes, use_packed)));
-            if (field->is_repeated()) {
-              ASSERT_EQ(ref->FieldSize(obj, field), 0);
-            } else {
-              EXPECT_FALSE(ref->HasField(obj, field));
-              EXPECT_EQ(ref->GetEnumValue(obj, field),
-                        enum_desc->value(0)->number());
+            {
+              SCOPED_TRACE("Overlong varint");
+              // Try an overlong varint. It should fail parsing, but not trigger
+              // any sanitizer warning.
+              EXPECT_FALSE(obj.ParseFromString(
+                  EncodeOverlongEnum(field->number(), use_packed)));
             }
-            auto& unknown = ref->GetUnknownFields(obj);
-            ASSERT_EQ(unknown.field_count(), 1);
-            EXPECT_EQ(unknown.field(0).number(), field->number());
-            EXPECT_EQ(unknown.field(0).type(), unknown.field(0).TYPE_VARINT);
-            EXPECT_EQ(unknown.field(0).varint(), kInvalidValue);
-          }
-          {
-            SCOPED_TRACE("Overlong varint");
-            // Try an overlong varint. It should fail parsing, but not trigger
-            // any sanitizer warning.
-            EXPECT_FALSE(obj.ParseFromString(
-                EncodeOverlongEnum(field->number(), use_packed)));
           }
         }
       }
@@ -1334,7 +1351,7 @@ std::string EncodeBoolValue(int number, bool value, int non_canonical_bytes) {
   uint8_t* p = buf;
 
   p = internal::WireFormatLite::WriteBoolToArray(number, value, p);
-  p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
+  p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
   return std::string(buf, p);
 }
 
@@ -1358,30 +1375,189 @@ TEST(MESSAGE_TEST_NAME, TestBoolParsers) {
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
          ++non_canonical_bytes) {
       SCOPED_TRACE(non_canonical_bytes);
-      for (int i = 0; i < descriptor->field_count(); ++i) {
-        const auto* field = descriptor->field(i);
-        if (field->name() == "other_field") continue;
-        SCOPED_TRACE(field->full_name());
-        for (bool value : {false, true}) {
-          SCOPED_TRACE(value);
-          auto encoded =
-              EncodeBoolValue(field->number(), value, non_canonical_bytes);
-          if (use_tail_field) {
-            // Make sure that fields after this one can be parsed too. ie test
-            // that the "next" jump is correct too.
-            encoded += other_field;
-          }
+      for (bool add_garbage_bits : {false, true}) {
+        if (add_garbage_bits && non_canonical_bytes != 9) {
+          // We only add garbage on the 10th byte.
+          continue;
+        }
+        SCOPED_TRACE(add_garbage_bits);
+        for (int i = 0; i < descriptor->field_count(); ++i) {
+          const auto* field = descriptor->field(i);
+          if (field->name() == "other_field") continue;
+          SCOPED_TRACE(field->full_name());
+          for (bool value : {false, true}) {
+            SCOPED_TRACE(value);
+            auto encoded =
+                EncodeBoolValue(field->number(), value, non_canonical_bytes);
+            if (add_garbage_bits) {
+              // These bits should be discarded even in the `false` case.
+              encoded.back() |= 0b0111'1110;
+            }
+            if (use_tail_field) {
+              // Make sure that fields after this one can be parsed too. ie test
+              // that the "next" jump is correct too.
+              encoded += other_field;
+            }
 
-          EXPECT_TRUE(obj.ParseFromString(encoded));
-          if (field->is_repeated()) {
-            ASSERT_EQ(ref->FieldSize(obj, field), 1);
-            EXPECT_EQ(ref->GetRepeatedBool(obj, field, 0), value);
-          } else {
-            EXPECT_TRUE(ref->HasField(obj, field));
-            EXPECT_EQ(ref->GetBool(obj, field), value);
+            EXPECT_TRUE(obj.ParseFromString(encoded));
+            if (field->is_repeated()) {
+              ASSERT_EQ(ref->FieldSize(obj, field), 1);
+              EXPECT_EQ(ref->GetRepeatedBool(obj, field, 0), value);
+            } else {
+              EXPECT_TRUE(ref->HasField(obj, field));
+              EXPECT_EQ(ref->GetBool(obj, field), value)
+                  << testing::PrintToString(encoded);
+            }
+            auto& unknown = ref->GetUnknownFields(obj);
+            ASSERT_EQ(unknown.field_count(), 0);
           }
-          auto& unknown = ref->GetUnknownFields(obj);
-          ASSERT_EQ(unknown.field_count(), 0);
+        }
+      }
+    }
+  }
+}
+
+std::string EncodeInt32Value(int number, int32_t value,
+                             int non_canonical_bytes) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  p = internal::WireFormatLite::WriteInt32ToArray(number, value, p);
+  p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
+  return std::string(buf, p);
+}
+
+TEST(MESSAGE_TEST_NAME, TestInt32Parsers) {
+  UNITTEST::Int32ParseTester obj;
+
+  const auto other_field = EncodeOtherField();
+
+  // Encode an int32 field for many different cases and verify that it can be
+  // parsed as expected.
+  // There are:
+  //  - optional/repeated/packed fields
+  //  - field tags that encode in 1/2/3 bytes
+  //  - canonical and non-canonical encodings of the varint
+  //  - last vs not last field
+
+  auto* ref = obj.GetReflection();
+  auto* descriptor = obj.descriptor();
+  for (bool use_tail_field : {false, true}) {
+    SCOPED_TRACE(use_tail_field);
+    for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
+         ++non_canonical_bytes) {
+      SCOPED_TRACE(non_canonical_bytes);
+      for (bool add_garbage_bits : {false, true}) {
+        if (add_garbage_bits && non_canonical_bytes != 9) {
+          // We only add garbage on the 10th byte.
+          continue;
+        }
+        SCOPED_TRACE(add_garbage_bits);
+        for (int i = 0; i < descriptor->field_count(); ++i) {
+          const auto* field = descriptor->field(i);
+          if (field->name() == "other_field") continue;
+          SCOPED_TRACE(field->full_name());
+          for (int32_t value : {1, 0, -1, (std::numeric_limits<int32_t>::min)(),
+                              (std::numeric_limits<int32_t>::max)()}) {
+            SCOPED_TRACE(value);
+            auto encoded =
+                EncodeInt32Value(field->number(), value, non_canonical_bytes);
+            if (add_garbage_bits) {
+              // These bits should be discarded even in the `false` case.
+              encoded.back() |= 0b0111'1110;
+            }
+            if (use_tail_field) {
+              // Make sure that fields after this one can be parsed too. ie test
+              // that the "next" jump is correct too.
+              encoded += other_field;
+            }
+
+            EXPECT_TRUE(obj.ParseFromString(encoded));
+            if (field->is_repeated()) {
+              ASSERT_EQ(ref->FieldSize(obj, field), 1);
+              EXPECT_EQ(ref->GetRepeatedInt32(obj, field, 0), value);
+            } else {
+              EXPECT_TRUE(ref->HasField(obj, field));
+              EXPECT_EQ(ref->GetInt32(obj, field), value)
+                  << testing::PrintToString(encoded);
+            }
+            auto& unknown = ref->GetUnknownFields(obj);
+            ASSERT_EQ(unknown.field_count(), 0);
+          }
+        }
+      }
+    }
+  }
+}
+
+std::string EncodeInt64Value(int number, int64_t value,
+                             int non_canonical_bytes) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  p = internal::WireFormatLite::WriteInt64ToArray(number, value, p);
+  p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
+  return std::string(buf, p);
+}
+
+TEST(MESSAGE_TEST_NAME, TestInt64Parsers) {
+  UNITTEST::Int64ParseTester obj;
+
+  const auto other_field = EncodeOtherField();
+
+  // Encode an int64 field for many different cases and verify that it can be
+  // parsed as expected.
+  // There are:
+  //  - optional/repeated/packed fields
+  //  - field tags that encode in 1/2/3 bytes
+  //  - canonical and non-canonical encodings of the varint
+  //  - last vs not last field
+
+  auto* ref = obj.GetReflection();
+  auto* descriptor = obj.descriptor();
+  for (bool use_tail_field : {false, true}) {
+    SCOPED_TRACE(use_tail_field);
+    for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
+         ++non_canonical_bytes) {
+      SCOPED_TRACE(non_canonical_bytes);
+      for (bool add_garbage_bits : {false, true}) {
+        if (add_garbage_bits && non_canonical_bytes != 9) {
+          // We only add garbage on the 10th byte.
+          continue;
+        }
+        SCOPED_TRACE(add_garbage_bits);
+        for (int i = 0; i < descriptor->field_count(); ++i) {
+          const auto* field = descriptor->field(i);
+          if (field->name() == "other_field") continue;
+          SCOPED_TRACE(field->full_name());
+          for (int64_t value : {int64_t{1}, int64_t{0}, int64_t{-1},
+                                (std::numeric_limits<int64_t>::min)(),
+                                (std::numeric_limits<int64_t>::max)()}) {
+            SCOPED_TRACE(value);
+            auto encoded =
+                EncodeInt64Value(field->number(), value, non_canonical_bytes);
+            if (add_garbage_bits) {
+              // These bits should be discarded even in the `false` case.
+              encoded.back() |= 0b0111'1110;
+            }
+            if (use_tail_field) {
+              // Make sure that fields after this one can be parsed too. ie test
+              // that the "next" jump is correct too.
+              encoded += other_field;
+            }
+
+            EXPECT_TRUE(obj.ParseFromString(encoded));
+            if (field->is_repeated()) {
+              ASSERT_EQ(ref->FieldSize(obj, field), 1);
+              EXPECT_EQ(ref->GetRepeatedInt64(obj, field, 0), value);
+            } else {
+              EXPECT_TRUE(ref->HasField(obj, field));
+              EXPECT_EQ(ref->GetInt64(obj, field), value)
+                  << testing::PrintToString(encoded);
+            }
+            auto& unknown = ref->GetUnknownFields(obj);
+            ASSERT_EQ(unknown.field_count(), 0);
+          }
         }
       }
     }
