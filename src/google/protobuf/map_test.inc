@@ -76,6 +76,9 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+using ::testing::ElementsAre;
+using ::testing::Pair;
+
 namespace google {
 namespace protobuf {
 
@@ -3636,6 +3639,35 @@ TEST(WireFormatForMapFieldTest, MapParseHelpers) {
     UNITTEST::TestAllTypes message;
     EXPECT_FALSE(
         message.ParseFromBoundedZeroCopyStream(&stream, data.size() + 1));
+  }
+}
+
+std::string WriteVarint(int number, uint64_t v) {
+  uint8_t buf[16];
+  return std::string(buf, WireFormatLite::WriteUInt64ToArray(number, v, buf));
+}
+
+std::string WriteString(int number, const std::string& str) {
+  uint8_t buf[100];
+  return std::string(buf, WireFormatLite::WriteStringToArray(number, str, buf));
+}
+
+TEST(WireFormatForMapFieldTest, BoolWorksWithOverlongValues) {
+  // map<bool, bool> map_bool_bool = 13;
+  for (uint64_t v : {uint64_t{1}, uint64_t{1000}, uint64_t{100000},
+                     uint64_t{1} << 32, uint64_t{1} << 63}) {
+    SCOPED_TRACE(v);
+    std::string payload =
+        WriteString(13, WriteVarint(1, v) + WriteVarint(2, v));
+    UNITTEST::TestMap obj;
+    ASSERT_TRUE(obj.ParseFromString(payload));
+    EXPECT_THAT(obj.map_bool_bool(), ElementsAre(Pair(true, true)));
+
+    io::ArrayInputStream raw_input(payload.data(), payload.size());
+    io::CodedInputStream input(&raw_input);
+    obj.Clear();
+    ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &obj));
+    EXPECT_THAT(obj.map_bool_bool(), ElementsAre(Pair(true, true)));
   }
 }
 
