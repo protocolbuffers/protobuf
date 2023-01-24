@@ -1144,7 +1144,9 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   // Gets the number of cleared objects that are currently being kept
   // around for reuse.
+  ABSL_DEPRECATED("This will be removed in a future release")
   int ClearedCount() const;
+
 #ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
   // Adds an element to the pool of cleared objects, passing ownership to
   // the RepeatedPtrField.  The element must be cleared prior to calling
