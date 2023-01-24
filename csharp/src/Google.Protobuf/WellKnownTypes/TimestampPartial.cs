@@ -115,7 +115,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             if (!IsNormalized(Seconds, Nanos))
             {
-                throw new InvalidOperationException(@"Timestamp contains invalid values: Seconds={Seconds}; Nanos={Nanos}");
+                throw new InvalidOperationException($"Timestamp contains invalid values: Seconds={Seconds}; Nanos={Nanos}");
             }
             return UnixEpoch.AddSeconds(Seconds).AddTicks(Nanos / Duration.NanosecondsPerTick);
         }
@@ -147,7 +147,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             if (dateTime.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Conversion from DateTime to Timestamp requires the DateTime kind to be Utc", "dateTime");
+                throw new ArgumentException("Conversion from DateTime to Timestamp requires the DateTime kind to be Utc", nameof(dateTime));
             }
             // Do the arithmetic using DateTime.Ticks, which is always non-negative, making things simpler.
             long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
