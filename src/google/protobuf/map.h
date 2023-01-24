@@ -46,17 +46,15 @@
 #include <type_traits>
 #include <utility>
 
-#if defined(__cpp_lib_string_view)
-#include <string_view>
-#endif  // defined(__cpp_lib_string_view)
-
 #if !defined(GOOGLE_PROTOBUF_NO_RDTSC) && defined(__APPLE__)
 #include <mach/mach_time.h>
 #endif
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/container/btree_map.h"
+#include "absl/hash/hash.h"
 #include "absl/meta/type_traits.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/map_type_handler.h"
@@ -229,33 +227,31 @@ struct TransparentSupport {
   using key_arg = key_type;
 };
 
-#if defined(__cpp_lib_string_view)
-// If std::string_view is available, we add transparent support for std::string
-// keys. We use std::hash<std::string_view> as it supports the input types we
-// care about. The lookup functions accept arbitrary `K`. This will include any
-// key type that is convertible to std::string_view.
+// We add transparent support for std::string keys. We use
+// std::hash<absl::string_view> as it supports the input types we care about.
+// The lookup functions accept arbitrary `K`. This will include any key type
+// that is convertible to absl::string_view.
 template <>
 struct TransparentSupport<std::string> {
-  static std::string_view ImplicitConvert(std::string_view str) { return str; }
-  // If the element is not convertible to std::string_view, try to convert to
+  static absl::string_view ImplicitConvert(absl::string_view str) {
+    return str;
+  }
+  // If the element is not convertible to absl::string_view, try to convert to
   // std::string first.
   // The template makes this overload lose resolution when both have the same
   // rank otherwise.
   template <typename = void>
-  static std::string_view ImplicitConvert(const std::string& str) {
+  static absl::string_view ImplicitConvert(const std::string& str) {
     return str;
   }
 
-  struct hash : private std::hash<std::string_view> {
+  struct hash : public absl::Hash<absl::string_view> {
     using is_transparent = void;
 
     template <typename T>
     size_t operator()(const T& str) const {
-      return base()(ImplicitConvert(str));
+      return absl::Hash<absl::string_view>::operator()(ImplicitConvert(str));
     }
-
-   private:
-    const std::hash<std::string_view>& base() const { return *this; }
   };
   struct less {
     using is_transparent = void;
@@ -274,7 +270,6 @@ struct TransparentSupport<std::string> {
   template <typename K>
   using key_arg = K;
 };
-#endif  // defined(__cpp_lib_string_view)
 
 struct NodeBase {
   // Align the node to allow KeyNode to predict the location of the key.
