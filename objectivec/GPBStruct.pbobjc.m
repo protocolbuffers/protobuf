@@ -34,14 +34,17 @@ GPBObjCClassDeclaration(GPBValue);
 #pragma mark - GPBStructRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBStructRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
+  static _Atomic(GPBFileDescriptor*) descriptor = nil;
   if (!descriptor) {
     GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
+    GPBFileDescriptor *worker =
+        [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
+                                        objcPrefix:@"GPB"
+                                            syntax:GPBFileSyntaxProto3];
+    GPBFileDescriptor *expected = nil;
+    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
+      [worker release];
+    }
   }
   return descriptor;
 }

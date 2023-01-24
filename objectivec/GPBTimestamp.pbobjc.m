@@ -22,14 +22,15 @@
 #pragma mark - GPBTimestampRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBTimestampRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
+  // This is called by +descriptor called by +initialize so there is no
+  // need to worry about thread safety of the singleton.
+  static GPBFileDescriptor *descriptor = nil;
   if (!descriptor) {
     GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
+    descriptor =
+        [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
+                                        objcPrefix:@"GPB"
+                                            syntax:GPBFileSyntaxProto3];
   }
   return descriptor;
 }

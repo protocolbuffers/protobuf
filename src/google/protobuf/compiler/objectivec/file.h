@@ -98,10 +98,11 @@ class FileGenerator {
       io::Printer* p, GeneratedFileType file_type,
       const std::vector<std::string>& ignored_warnings,
       const std::vector<const FileDescriptor*>& extra_files_to_import,
+      const std::vector<absl::string_view>& extra_system_headers,
       std::function<void()> body) const;
   void GenerateFile(io::Printer* p, GeneratedFileType file_type,
                     std::function<void()> body) const {
-    GenerateFile(p, file_type, {}, {}, body);
+    GenerateFile(p, file_type, {}, {}, {}, body);
   }
 
   void PrintRootImplementation(

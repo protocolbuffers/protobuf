@@ -377,8 +377,16 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
     ignored_warnings.push_back("dollar-in-identifier-extension");
   }
 
+  // Enum implementation uses atomic in the generated code, if there is more
+  // than one message, the FileDescriptor code uses atomic.
+  std::vector<absl::string_view> system_imports;
+  if (!enum_generators_.empty() || message_generators_.size() > 1) {
+    system_imports.emplace_back("stdatomic.h");
+  }
+
   GenerateFile(
-      p, GeneratedFileType::kSource, ignored_warnings, extra_files, [&] {
+      p, GeneratedFileType::kSource, ignored_warnings, extra_files,
+      system_imports, [&] {
         if (!fwd_decls.empty()) {
           p->Print(
               // clang-format off
@@ -429,8 +437,15 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
     ignored_warnings.push_back("dollar-in-identifier-extension");
   }
 
+  // If there is more than one message, the FileDescriptor code uses atomic.
+  std::vector<absl::string_view> system_imports;
+  if (message_generators_.size() > 1) {
+    system_imports.emplace_back("stdatomic.h");
+  }
+
   GenerateFile(
-      p, GeneratedFileType::kSource, ignored_warnings, extra_files, [&] {
+      p, GeneratedFileType::kSource, ignored_warnings, extra_files,
+      system_imports, [&] {
         if (!fwd_decls.empty()) {
           p->Print(
               // clang-format off
@@ -450,7 +465,9 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
 }
 
 void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
-  GenerateFile(p, GeneratedFileType::kSource, [&] {
+  // Enum implementation uses atomic in the generated code, so add the system
+  // import as needed.
+  GenerateFile(p, GeneratedFileType::kSource, {}, {}, {"stdatomic.h"}, [&] {
     for (const auto& generator : enum_generators_) {
       generator->GenerateSource(p);
     }
@@ -471,7 +488,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
     ignored_warnings.push_back("direct-ivar-access");
   }
 
-  GenerateFile(p, GeneratedFileType::kSource, ignored_warnings, {}, [&] {
+  GenerateFile(p, GeneratedFileType::kSource, ignored_warnings, {}, {}, [&] {
     p->Print(
         "extern GPBFileDescriptor *$file_descriptor_function_name$(void);\n\n",
         "file_descriptor_function_name", file_descriptor_function_name_);
@@ -497,6 +514,7 @@ void FileGenerator::GenerateFile(
     io::Printer* p, GeneratedFileType file_type,
     const std::vector<std::string>& ignored_warnings,
     const std::vector<const FileDescriptor*>& extra_files_to_import,
+    const std::vector<absl::string_view>& extra_system_headers,
     std::function<void()> body) const {
   ImportWriter import_writer(
       generation_options_.generate_for_named_framework,
@@ -585,10 +603,11 @@ void FileGenerator::GenerateFile(
         absl::StrCat(GOOGLE_PROTOBUF_OBJC_VERSION));
   }
 
-  // Enum implementation uses atomic in the generated code, so add
-  // the system import as needed.
-  if (file_type == GeneratedFileType::kSource && !enum_generators_.empty()) {
-    p->Print("#import <stdatomic.h>\n\n");
+  if (!extra_system_headers.empty()) {
+    for (const auto& header : extra_system_headers) {
+      p->Print("#import <$header$>\n", "header", header);
+    }
+    p->Print("\n");
   }
 
   import_writer.PrintFileImports(p);
@@ -744,9 +763,9 @@ void FileGenerator::PrintFileDescriptorImplementation(io::Printer* p) const {
   if (objc_prefix.empty()) {
     vars["prefix_arg"] = "";
   } else {
-    vars["prefix_arg"] = absl::StrCat(
-        "                                                 objcPrefix:@\"",
-        objc_prefix, "\"\n");
+    vars["prefix_arg"] =
+        absl::StrCat("                                        objcPrefix:@\"",
+                     objc_prefix, "\"\n");
   }
 
   if (generation_options_.experimental_multi_source_generation) {
@@ -755,20 +774,43 @@ void FileGenerator::PrintFileDescriptorImplementation(io::Printer* p) const {
     vars["file_desc_scope"] = "static ";
   }
 
+  if (message_generators_.size() == 1) {
+    // clang-format off
+    vars["maybe_comment"] =
+        "  // This is called by +descriptor called by +initialize so there is no\n"
+        "  // need to worry about thread safety of the singleton.\n";
+    // clang-format on
+    vars["storage_type"] = "GPBFileDescriptor *";
+    vars["assignment_var"] = "descriptor";
+    vars["maybe_swap"] = "";
+  } else {
+    vars["maybe_comment"] = "";
+    vars["storage_type"] = "_Atomic(GPBFileDescriptor*) ";
+    vars["assignment_var"] = "GPBFileDescriptor *worker";
+    // clang-format off
+    vars["maybe_swap"] =
+        "    GPBFileDescriptor *expected = nil;\n"
+        "    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {\n"
+        "      [worker release];\n"
+        "    }\n";
+    // clang-format on
+  }
+
   // clang-format off
   p->Print(
       vars,
       "#pragma mark - $file_descriptor_function_name$\n"
       "\n"
       "$file_desc_scope$GPBFileDescriptor *$file_descriptor_function_name$(void) {\n"
-      "  // This is called by +initialize so there is no need to worry\n"
-      "  // about thread safety of the singleton.\n"
-      "  static GPBFileDescriptor *descriptor = NULL;\n"
+      "$maybe_comment$"
+      "  static $storage_type$descriptor = nil;\n"
       "  if (!descriptor) {\n"
       "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n"
-      "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
+      "    $assignment_var$ =\n"
+      "        [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
       "$prefix_arg$"
-      "                                                     syntax:$syntax$];\n"
+      "                                            syntax:$syntax$];\n"
+      "$maybe_swap$"
       "  }\n"
       "  return descriptor;\n"
       "}\n"

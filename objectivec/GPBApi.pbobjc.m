@@ -5,6 +5,8 @@
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBApi.pbobjc.h"
 
+#import <stdatomic.h>
+
 // @@protoc_insertion_point(imports)
 
 #pragma clang diagnostic push
@@ -32,14 +34,17 @@ GPBObjCClassDeclaration(GPBSourceContext);
 #pragma mark - GPBApiRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBApiRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
+  static _Atomic(GPBFileDescriptor*) descriptor = nil;
   if (!descriptor) {
     GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
+    GPBFileDescriptor *worker =
+        [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
+                                        objcPrefix:@"GPB"
+                                            syntax:GPBFileSyntaxProto3];
+    GPBFileDescriptor *expected = nil;
+    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
+      [worker release];
+    }
   }
   return descriptor;
 }
