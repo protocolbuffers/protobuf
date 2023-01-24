@@ -38,7 +38,6 @@ namespace Google.Protobuf.WellKnownTypes
 {
     public partial class Timestamp : ICustomDiagnosticMessage, IComparable<Timestamp>
     {
-        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         // Constants determined programmatically, but then hard-coded so they can be constant expressions.
         private const long BclSecondsAtUnixEpoch = 62135596800;
         internal const long UnixSecondsAtBclMaxValue = 253402300799;
@@ -117,7 +116,7 @@ namespace Google.Protobuf.WellKnownTypes
             {
                 throw new InvalidOperationException($"Timestamp contains invalid values: Seconds={Seconds}; Nanos={Nanos}");
             }
-            return UnixEpoch.AddSeconds(Seconds).AddTicks(Nanos / Duration.NanosecondsPerTick);
+            return new DateTime((Seconds + BclSecondsAtUnixEpoch) * TimeSpan.TicksPerSecond + (Nanos / Duration.NanosecondsPerTick), DateTimeKind.Utc);
         }
 
         /// <summary>
@@ -150,9 +149,10 @@ namespace Google.Protobuf.WellKnownTypes
                 throw new ArgumentException("Conversion from DateTime to Timestamp requires the DateTime kind to be Utc", nameof(dateTime));
             }
             // Do the arithmetic using DateTime.Ticks, which is always non-negative, making things simpler.
-            long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
-            int nanoseconds = (int)  (dateTime.Ticks % TimeSpan.TicksPerSecond) * Duration.NanosecondsPerTick;
-            return new Timestamp { Seconds = secondsSinceBclEpoch - BclSecondsAtUnixEpoch, Nanos = nanoseconds };
+            long ticks = dateTime.Ticks;
+            long secondsSinceBclEpoch = ticks / TimeSpan.TicksPerSecond;
+            ticks -= secondsSinceBclEpoch * TimeSpan.TicksPerSecond;
+            return new Timestamp { Seconds = secondsSinceBclEpoch - BclSecondsAtUnixEpoch, Nanos = (int) ticks * Duration.NanosecondsPerTick };
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace Google.Protobuf.WellKnownTypes
             if (IsNormalized(seconds, nanoseconds))
             {
                 // Use .NET's formatting for the value down to the second, including an opening double quote (as it's a string value)
-                DateTime dateTime = UnixEpoch.AddSeconds(seconds);
+                DateTime dateTime = new DateTime((seconds + BclSecondsAtUnixEpoch) * TimeSpan.TicksPerSecond, DateTimeKind.Utc);
                 var builder = new StringBuilder();
                 builder.Append('"');
                 builder.Append(dateTime.ToString("yyyy'-'MM'-'dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
