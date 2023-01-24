@@ -970,6 +970,69 @@ bool ContainsProto3Optional(const FileDescriptor* file) {
   return false;
 }
 
+template <typename Visitor>
+struct VisitImpl {
+  Visitor visitor;
+  void Visit(const FieldDescriptor* descriptor) { visitor(descriptor); }
+
+  void Visit(const EnumDescriptor* descriptor) { visitor(descriptor); }
+
+  void Visit(const Descriptor* descriptor) {
+    visitor(descriptor);
+
+    for (int i = 0; i < descriptor->enum_type_count(); i++) {
+      Visit(descriptor->enum_type(i));
+    }
+
+    for (int i = 0; i < descriptor->field_count(); i++) {
+      Visit(descriptor->field(i));
+    }
+
+    for (int i = 0; i < descriptor->nested_type_count(); i++) {
+      Visit(descriptor->nested_type(i));
+    }
+
+    for (int i = 0; i < descriptor->extension_count(); i++) {
+      Visit(descriptor->extension(i));
+    }
+  }
+
+  void Visit(const std::vector<const FileDescriptor*>& descriptors) {
+    for (auto* descriptor : descriptors) {
+      visitor(descriptor);
+      for (int i = 0; i < descriptor->message_type_count(); i++) {
+        Visit(descriptor->message_type(i));
+      }
+      for (int i = 0; i < descriptor->enum_type_count(); i++) {
+        Visit(descriptor->enum_type(i));
+      }
+      for (int i = 0; i < descriptor->extension_count(); i++) {
+        Visit(descriptor->extension(i));
+      }
+    }
+  }
+};
+
+// Visit every node in the descriptors calling `visitor(node)`.
+// The visitor does not need to handle all possible node types. Types that are
+// not visitable via `visitor` will be ignored.
+// Disclaimer: this is not fully implemented yet to visit _every_ node.
+// VisitImpl might need to be updated where needs arise.
+template <typename Visitor>
+void VisitDescriptors(const std::vector<const FileDescriptor*>& descriptors,
+                      Visitor visitor) {
+  // Provide a fallback to ignore all the nodes that are not interesting to the
+  // input visitor.
+  struct VisitorImpl : Visitor {
+    explicit VisitorImpl(Visitor visitor) : Visitor(visitor) {}
+    using Visitor::operator();
+    // Honeypot to ignore all inputs that Visitor does not take.
+    void operator()(const void*) const {}
+  };
+
+  VisitImpl<VisitorImpl>{VisitorImpl(visitor)}.Visit(descriptors);
+}
+
 }  // namespace
 
 namespace {
@@ -1063,6 +1126,28 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     return 1;
   }
 
+  bool validation_error = false;  // Defer exiting so we log more warnings.
+
+  VisitDescriptors(parsed_files, [&](const FieldDescriptor* field) {
+    if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
+        field->number() <= FieldDescriptor::kLastReservedNumber) {
+      validation_error = true;
+      static_cast<DescriptorPool::ErrorCollector*>(error_collector.get())
+          ->RecordError(
+              field->file()->name(), field->full_name(), nullptr,
+              DescriptorPool::ErrorCollector::NUMBER,
+              absl::Substitute("Field numbers $0 through $1 are reserved "
+                               "for the protocol "
+                               "buffer library implementation.",
+                               FieldDescriptor::kFirstReservedNumber,
+                               FieldDescriptor::kLastReservedNumber));
+    }
+  });
+
+
+  if (validation_error) {
+    return 1;
+  }
 
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
