@@ -450,6 +450,18 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
       "  if (!descriptor) {\n");
   // clang-format on
 
+  // If the message scopes extensions, trigger the root class
+  // +initialize/+extensionRegistry as that is where the runtime support for
+  // extensions lives.
+  if (descriptor_->extension_count() > 0) {
+    // clang-format off
+    printer->Print(
+        "    // Start up the root class to support the scoped extensions.\n"
+        "    __unused Class rootStartup = [$rootclass_name$ class];\n",
+        "rootclass_name", root_classname_);
+    // clang-format on
+  }
+
   TextFormatDecodeData text_format_decode_data;
   bool has_fields = descriptor_->field_count() > 0;
   bool need_defaults = field_generators_.DoesAnyFieldHaveNonZeroDefault();
@@ -483,7 +495,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
 
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["classname"] = class_name_;
-  vars["rootclassname"] = root_classname_;
   vars["file_descriptor_function_name"] = file_descriptor_function_name_;
   vars["fields"] = has_fields ? "fields" : "NULL";
   if (has_fields) {
@@ -512,7 +523,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
       vars,
       "    GPBDescriptor *localDescriptor =\n"
       "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
-      "                                     rootClass:[$rootclassname$ class]\n"
       "                                          file:$file_descriptor_function_name$()\n"
       "                                        fields:$fields$\n"
       "                                    fieldCount:$fields_count$\n"
