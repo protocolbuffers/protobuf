@@ -1,0 +1,28 @@
+name: Setup Docker
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets:
+      GAR_SERVICE_ACCOUNT:
+        required: true
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          export_environment_variables: true
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+      - name: Use gcloud CLI
+        run: gcloud info
+      - name: Configure Docker
+        run: gcloud auth configure-docker -q us-docker.pkg.dev
