@@ -158,13 +158,13 @@ cc_library(
 
 # DEPRECATED: Prefer :well_known_type_protos for the Well-Known Types
 # (https://developers.google.com/protocol-buffers/docs/reference/google.protobuf)
-# or :descriptor_proto for descriptor.proto, or :compiler_plugin_proto for
-# compiler/plugin.proto.
+# or :descriptor_proto_srcs for descriptor.proto, or :compiler_plugin_proto_srcs
+# for compiler/plugin.proto.
 filegroup(
     name = "well_known_protos",
     srcs = [
-        "src/google/protobuf/compiler/plugin.proto",
-        "src/google/protobuf/descriptor.proto",
+        ":compiler_plugin_proto_srcs",
+        ":descriptor_proto_srcs",
         ":well_known_type_protos",
     ],
     deprecation = "Prefer :well_known_type_protos, :compiler_plugin_proto, " +
@@ -192,10 +192,22 @@ filegroup(
 filegroup(
     name = "built_in_runtime_protos",
     srcs = [
-        "src/google/protobuf/compiler/plugin.proto",
-        "src/google/protobuf/descriptor.proto",
+        ":descriptor_proto_srcs",
+        ":compiler_plugin_proto_srcs",
     ],
     visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "descriptor_proto_srcs",
+    srcs = ["src/google/protobuf/descriptor.proto"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "compiler_plugin_proto_srcs",
+    srcs = ["src/google/protobuf/compiler/plugin.proto"],
+    visibility = ["//visibility:public"],
 )
 
 exports_files(
@@ -343,7 +355,7 @@ proto_library(
 
 proto_library(
     name = "compiler_plugin_proto",
-    srcs = ["src/google/protobuf/compiler/plugin.proto"],
+    srcs = [":compiler_plugin_proto_srcs"],
     strip_import_prefix = "src",
     visibility = ["//visibility:public"],
     deps = ["//:descriptor_proto"],
@@ -351,7 +363,7 @@ proto_library(
 
 proto_library(
     name = "descriptor_proto",
-    srcs = ["src/google/protobuf/descriptor.proto"],
+    srcs = [":descriptor_proto_srcs"],
     strip_import_prefix = "src",
     visibility = ["//visibility:public"],
 )
