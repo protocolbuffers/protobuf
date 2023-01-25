@@ -39,14 +39,15 @@
 #include <Python.h>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_database.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
-#include "absl/strings/string_view.h"
-#include "absl/strings/str_replace.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -76,19 +77,19 @@ class BuildFileErrorCollector : public DescriptorPool::ErrorCollector {
  public:
   BuildFileErrorCollector() : error_message(""), had_errors_(false) {}
 
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* descriptor, ErrorLocation location,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
     // Replicates the logging behavior that happens in the C++ implementation
     // when an error collector is not passed in.
     if (!had_errors_) {
-      error_message +=
-          ("Invalid proto descriptor for file \"" + filename + "\":\n");
+      absl::StrAppend(&error_message, "Invalid proto descriptor for file \"",
+                      filename, "\":\n");
       had_errors_ = true;
     }
     // As this only happens on failure and will result in the program not
     // running at all, no effort is made to optimize this string manipulation.
-    error_message += ("  " + element_name + ": " + message + "\n");
+    absl::StrAppend(&error_message, "  ", element_name, ": ", message, "\n");
   }
 
   void Clear() {

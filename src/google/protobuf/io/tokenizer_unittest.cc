@@ -161,7 +161,7 @@ class TestErrorCollector : public ErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) {
+  void RecordError(int line, int column, absl::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
