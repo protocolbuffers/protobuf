@@ -105,6 +105,11 @@ struct FirstSerialArena {
 // used.
 class PROTOBUF_EXPORT SerialArena {
  public:
+  struct Memory {
+    void* ptr;
+    size_t size;
+  };
+
   void CleanupList();
   uint64_t SpaceAllocated() const {
     return space_allocated_.load(std::memory_order_relaxed);
@@ -310,10 +315,10 @@ class PROTOBUF_EXPORT SerialArena {
   // future allocations.
   // The `parent` arena must outlive the serial arena, which is guaranteed
   // because the parent manages the lifetime of the serial arenas.
-  static SerialArena* New(SizedPtr mem, ThreadSafeArena& parent);
+  static SerialArena* New(SerialArena::Memory mem, ThreadSafeArena& parent);
   // Free SerialArena returning the memory passed in to New
   template <typename Deallocator>
-  SizedPtr Free(Deallocator deallocator);
+  Memory Free(Deallocator deallocator);
 
   // Members are declared here to track sizeof(SerialArena) and hotness
   // centrally. They are (roughly) laid out in descending order of hotness.
