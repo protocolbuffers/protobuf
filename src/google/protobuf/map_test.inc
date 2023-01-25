@@ -1406,12 +1406,32 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   EXPECT_THAT(m, UnorderedElementsAre(Pair("ABC", 1), Pair("DEF", 2)));
 }
 
+// Emulate a non-Abseil string_view (e.g. STL when Abseil's alias is disabled).
+class CustomStringView {
+  public:
+    CustomStringView(absl::string_view str) : str_(std::string(str)) {}
+
+    const char* data() const { return str_.data(); }
+    size_t size() const { return str_.size(); }
+
+    bool operator==(const CustomStringView& other) const {
+      return other.str_ == str_;
+    }
+    bool operator==(absl::string_view other) const { return other == str_; }
+    explicit operator std::string() const { return str_; }
+    friend std::ostream& operator<<(std::ostream& out, const CustomStringView& view) {
+      return out << view.str_;
+    }
+
+  private:
+    std::string str_;
+};
+
 TEST_F(MapImplTest, TransparentLookupForString) {
   TestTransparent("ABC", "LKJ");
   TestTransparent(std::string("ABC"), std::string("LKJ"));
-#if defined(__cpp_lib_string_view)
-  TestTransparent(std::string_view("ABC"), std::string_view("LKJ"));
-#endif  // defined(__cpp_lib_string_view)
+  TestTransparent(absl::string_view("ABC"), absl::string_view("LKJ"));
+  TestTransparent(CustomStringView("ABC"), CustomStringView("LKJ"));
 
   // std::reference_wrapper
   std::string abc = "ABC", lkj = "LKJ";
