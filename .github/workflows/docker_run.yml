@@ -1,0 +1,55 @@
+name: Run a Docker-based workflow
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        description: "The deployment environment to use for secrets."
+        type: string
+      image:
+        required: true
+        description: "The docker image to use."
+        type: string
+      run:
+        required: true
+        description: "The command to pass to `docker run`."
+        type: string
+      cache:
+        required: true
+        description: "A unique path for where to store the bazel cache."
+        type: string
+    secrets:
+      GAR_SERVICE_ACCOUNT:
+        required: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          export_environment_variables: true
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+      - name: Use gcloud CLI
+        run: gcloud info
+      - name: Configure Docker
+        run: gcloud auth configure-docker -q us-docker.pkg.dev
+
+      - name: Set up Bazel caching
+        run: >
+          echo "BAZEL_CACHE=
+          --google_credentials=$(basename $GOOGLE_APPLICATION_CREDENTIALS)
+          --remote_upload_local_results
+          --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.cache }}" >> $GITHUB_ENV
+        if: ${{ inputs.cache }}
+
+      - name: Pull Docker Image
+        run: docker pull ${{ inputs.image }}
+      - name: Test
+        run: docker run -v${{ github.workspace }}:/workspace ${{ inputs.image }} ${{ inputs.run }} $BAZEL_CACHE
