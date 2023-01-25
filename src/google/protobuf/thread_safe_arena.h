@@ -222,7 +222,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before
   // deleting.
-  SizedPtr Free(size_t* space_allocated);
+  SerialArena::Memory Free(size_t* space_allocated);
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4324)

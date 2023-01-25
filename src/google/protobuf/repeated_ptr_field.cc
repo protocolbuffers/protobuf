@@ -65,9 +65,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
       << "Requested size is too large to fit into size_t.";
   size_t bytes = kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size;
   if (arena == nullptr) {
-    internal::SizedPtr res = internal::AllocateAtLeast(bytes);
-    new_size = (res.n - kRepHeaderSize) / sizeof(old_rep->elements[0]);
-    rep_ = reinterpret_cast<Rep*>(res.p);
+    rep_ = reinterpret_cast<Rep*>(::operator new(bytes));
   } else {
     rep_ = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
   }
