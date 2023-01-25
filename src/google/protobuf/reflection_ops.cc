@@ -247,9 +247,20 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
       }
     }
   }
-  if (check_descendants && reflection->HasExtensionSet(message) &&
-      !reflection->GetExtensionSet(message).IsInitialized()) {
-    return false;
+  if (check_descendants && reflection->HasExtensionSet(message)) {
+    // Note that "extendee" is only referenced if the extension is lazily parsed
+    // (e.g. LazyMessageExtensionImpl), which requires a verification function
+    // to be generated.
+    //
+    // Dynamic messages would get null prototype from the generated message
+    // factory but their verification functions are not generated. Therefore, it
+    // it will always be eagerly parsed and "extendee" here will not be
+    // referenced.
+    const Message* extendee =
+        MessageFactory::generated_factory()->GetPrototype(descriptor);
+    if (!reflection->GetExtensionSet(message).IsInitialized(extendee)) {
+      return false;
+    }
   }
   return true;
 }

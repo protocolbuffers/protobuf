@@ -1213,17 +1213,21 @@ void ExtensionSet::UnsafeShallowSwapExtension(ExtensionSet* other, int number) {
   }
 }
 
-bool ExtensionSet::IsInitialized() const {
+bool ExtensionSet::IsInitialized(const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
     for (const auto& kv : *map_.large) {
-      if (!kv.second.IsInitialized()) return false;
+      if (!kv.second.IsInitialized(this, extendee, kv.first, arena_)) {
+        return false;
+      }
     }
     return true;
   }
   for (const KeyValue* it = flat_begin(); it != flat_end(); ++it) {
-    if (!it->second.IsInitialized()) return false;
+    if (!it->second.IsInitialized(this, extendee, it->first, arena_)) {
+      return false;
+    }
   }
   return true;
 }
@@ -1563,25 +1567,29 @@ void ExtensionSet::Extension::Free() {
 // Defined in extension_set_heavy.cc.
 // int ExtensionSet::Extension::SpaceUsedExcludingSelf() const
 
-bool ExtensionSet::Extension::IsInitialized() const {
-  if (cpp_type(type) == WireFormatLite::CPPTYPE_MESSAGE) {
-    if (is_repeated) {
-      for (int i = 0; i < repeated_message_value->size(); i++) {
-        if (!repeated_message_value->Get(i).IsInitialized()) {
-          return false;
-        }
-      }
-    } else {
-      if (!is_cleared) {
-        if (is_lazy) {
-          if (!lazymessage_value->IsInitialized()) return false;
-        } else {
-          if (!message_value->IsInitialized()) return false;
-        }
+bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
+                                            const MessageLite* extendee,
+                                            int number, Arena* arena) const {
+  if (cpp_type(type) != WireFormatLite::CPPTYPE_MESSAGE) return true;
+
+  if (is_repeated) {
+    for (int i = 0; i < repeated_message_value->size(); i++) {
+      if (!repeated_message_value->Get(i).IsInitialized()) {
+        return false;
       }
     }
+    return true;
   }
-  return true;
+
+  if (is_cleared) return true;
+
+  if (!is_lazy) return message_value->IsInitialized();
+
+  const MessageLite* prototype =
+      ext_set->GetPrototypeForLazyMessage(extendee, number);
+  ABSL_DCHECK_NE(prototype, nullptr)
+      << "extendee: " << extendee->GetTypeName() << "; number: " << number;
+  return lazymessage_value->IsInitialized(prototype, arena);
 }
 
 // Dummy key method to avoid weak vtable.

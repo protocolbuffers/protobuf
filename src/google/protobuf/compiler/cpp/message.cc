@@ -4202,7 +4202,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
 
   if (descriptor_->extension_range_count() > 0) {
     format(
-        "if (!$extensions$.IsInitialized()) {\n"
+        "if (!$extensions$.IsInitialized(internal_default_instance())) {\n"
         "  return false;\n"
         "}\n\n");
   }
