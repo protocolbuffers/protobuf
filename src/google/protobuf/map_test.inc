@@ -1404,7 +1404,9 @@ void TestTransparent(const Key& key, const Key& miss_key) {
 TEST_F(MapImplTest, TransparentLookupForString) {
   TestTransparent("ABC", "LKJ");
   TestTransparent(std::string("ABC"), std::string("LKJ"));
-  TestTransparent(absl::string_view("ABC"), absl::string_view("LKJ"));
+#if defined(__cpp_lib_string_view)
+  TestTransparent(std::string_view("ABC"), std::string_view("LKJ"));
+#endif  // defined(__cpp_lib_string_view)
 
   // std::reference_wrapper
   std::string abc = "ABC", lkj = "LKJ";
