@@ -180,6 +180,17 @@ static void upbc_Scrape_Message(upbc_State* s, const upb_MessageDef* m) {
   upbc_Scrape_NestedMessages(s, m);
 }
 
+static upbc_CodeGeneratorRequest* upbc_State_MakeCodeGeneratorRequest(
+    upbc_State* const s, google_protobuf_compiler_CodeGeneratorRequest* const request) {
+  if (UPB_SETJMP(s->jmp)) return NULL;
+  upbc_State_Init(s);
+
+  upbc_CodeGeneratorRequest_set_request(s->out, request);
+  upbc_Scrape_Files(s);
+  upbc_State_Fini(s);
+  return s->out;
+}
+
 upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
     google_protobuf_compiler_CodeGeneratorRequest* request, upb_Arena* arena,
     upb_Status* status) {
@@ -190,11 +201,5 @@ upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
       .out = NULL,
   };
 
-  if (UPB_SETJMP(s.jmp)) return NULL;
-  upbc_State_Init(&s);
-
-  upbc_CodeGeneratorRequest_set_request(s.out, request);
-  upbc_Scrape_Files(&s);
-  upbc_State_Fini(&s);
-  return s.out;
+  return upbc_State_MakeCodeGeneratorRequest(&s, request);
 }
