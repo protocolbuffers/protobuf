@@ -173,7 +173,7 @@ class PROTOBUF_EXPORT DoubleValue final :
   }
   void UnsafeArenaSwap(DoubleValue* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -320,7 +320,7 @@ class PROTOBUF_EXPORT FloatValue final :
   }
   void UnsafeArenaSwap(FloatValue* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -467,7 +467,7 @@ class PROTOBUF_EXPORT Int64Value final :
   }
   void UnsafeArenaSwap(Int64Value* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -614,7 +614,7 @@ class PROTOBUF_EXPORT UInt64Value final :
   }
   void UnsafeArenaSwap(UInt64Value* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -761,7 +761,7 @@ class PROTOBUF_EXPORT Int32Value final :
   }
   void UnsafeArenaSwap(Int32Value* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -908,7 +908,7 @@ class PROTOBUF_EXPORT UInt32Value final :
   }
   void UnsafeArenaSwap(UInt32Value* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -1055,7 +1055,7 @@ class PROTOBUF_EXPORT BoolValue final :
   }
   void UnsafeArenaSwap(BoolValue* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -1202,7 +1202,7 @@ class PROTOBUF_EXPORT StringValue final :
   }
   void UnsafeArenaSwap(StringValue* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -1352,7 +1352,7 @@ class PROTOBUF_EXPORT BytesValue final :
   }
   void UnsafeArenaSwap(BytesValue* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 

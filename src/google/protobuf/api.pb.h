@@ -145,7 +145,7 @@ class PROTOBUF_EXPORT Api final :
   }
   void UnsafeArenaSwap(Api* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -400,7 +400,7 @@ class PROTOBUF_EXPORT Method final :
   }
   void UnsafeArenaSwap(Method* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -634,7 +634,7 @@ class PROTOBUF_EXPORT Mixin final :
   }
   void UnsafeArenaSwap(Mixin* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 

@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT FieldMask final :
   }
   void UnsafeArenaSwap(FieldMask* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -279,7 +279,7 @@ inline void FieldMask::set_paths(int index, std::string&& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::set_paths(int index, const char* value) {
-  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.paths_.Mutable(index)->assign(value);
+  ABSL_DCHECK(value != nullptr);  _impl_.paths_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::set_paths(int index, absl::string_view value) {
@@ -303,7 +303,7 @@ inline void FieldMask::add_paths(std::string&& value) {
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::add_paths(const char* value) {
-  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.paths_.Add()->assign(value);
+  ABSL_DCHECK(value != nullptr);  _impl_.paths_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::add_paths(absl::string_view value) {
