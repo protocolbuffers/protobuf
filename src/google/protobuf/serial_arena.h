@@ -35,11 +35,13 @@
 
 #include <algorithm>
 #include <atomic>
+#include <string>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
@@ -47,6 +49,7 @@
 #include "google/protobuf/arena_config.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/typed_block.h"
 
 
 // Must be included last.
@@ -106,6 +109,7 @@ struct FirstSerialArena {
 class PROTOBUF_EXPORT SerialArena {
  public:
   void CleanupList();
+  size_t FreeStringBlocks();
   uint64_t SpaceAllocated() const {
     return space_allocated_.load(std::memory_order_relaxed);
   }
@@ -280,6 +284,8 @@ class PROTOBUF_EXPORT SerialArena {
     AddCleanupFromExisting(elem, destructor);
   }
 
+  void* AllocateFromStringBlock() ABSL_ATTRIBUTE_RETURNS_NONNULL;
+
  private:
   void* AllocateFromExistingWithCleanupFallback(size_t n, size_t align,
                                                 void (*destructor)(void*)) {
@@ -303,7 +309,11 @@ class PROTOBUF_EXPORT SerialArena {
     cleanup::CreateNode(tag, limit_, elem, destructor);
   }
 
+  void* AllocateFromStringBlockFallback() ABSL_ATTRIBUTE_RETURNS_NONNULL;
+
  private:
+  using StringBlock = TypedBlock<std::string>;
+
   friend class ThreadSafeArena;
 
   // Creates a new SerialArena inside mem using the remaining memory as for
@@ -324,6 +334,8 @@ class PROTOBUF_EXPORT SerialArena {
   std::atomic<char*> ptr_{nullptr};
   // Limiting address up to which memory can be allocated from the head block.
   char* limit_ = nullptr;
+
+  StringBlock* string_block_ = StringBlock::sentinel();
 
   std::atomic<ArenaBlock*> head_{nullptr};  // Head of linked list of blocks.
   std::atomic<size_t> space_used_{0};       // Necessary for metrics.
@@ -372,6 +384,18 @@ class PROTOBUF_EXPORT SerialArena {
   static constexpr size_t kBlockHeaderSize =
       ArenaAlignDefault::Ceil(sizeof(ArenaBlock));
 };
+
+inline PROTOBUF_NDEBUG_INLINE void* SerialArena::AllocateFromStringBlock() {
+  void* ptr = string_block_->TryAllocate();
+  if (PROTOBUF_PREDICT_TRUE(ptr != nullptr)) return ptr;
+  return AllocateFromStringBlockFallback();
+}
+
+template <>
+inline PROTOBUF_ALWAYS_INLINE void*
+SerialArena::MaybeAllocateWithCleanup<std::string>() {
+  return string_block_->TryAllocate();
+}
 
 }  // namespace internal
 }  // namespace protobuf
