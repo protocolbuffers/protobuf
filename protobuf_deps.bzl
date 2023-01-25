@@ -37,12 +37,12 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("com_google_absl"):
-        # Abseil LTS from November 2021
+        # Abseil LTS RC3 from January 2023
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "f016820c2496845293659e181643aa1509487e03",
-            sha256 = "f4ad187e815deb34f70218173799659867087fa8925b9741934c0462b88d2f93",
+            commit = "78be63686ba732b25052be15f8d6dee891c05749",
+            sha256 = "4f356a07b9ec06ef51f943928508566e992f621ed5fa4dd588865d7bed1284cd",
         )
 
     if not native.existing_rule("zlib"):

@@ -9,10 +9,6 @@ Powershell.exe -Command "New-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\C
 @rem Update git submodules.
 git submodule update --init --recursive
 
-@rem TODO(b/265232445) Remove this once the patch is upstreamed
-sed -i 's:random/mock_helpers.h:random/internal/mock_helpers.h:' third_party\abseil-cpp\CMake\AbseilDll.cmake
-sed -i 's:ABSL_INTERNA_TEST_DLL_TARGETS:ABSL_INTERNAL_TEST_DLL_TARGETS:' third_party\abseil-cpp\CMake\AbseilDll.cmake
-
 @rem Select Visual Studio 2017.
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
 
