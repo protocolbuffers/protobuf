@@ -55,7 +55,7 @@
 #include "absl/container/fixed_array.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
@@ -342,7 +342,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
     virtual bool IsMatch(const Message& message1, const Message& message2,
                          int /* unmapped_any */,
                          const std::vector<SpecificField>& fields) const {
-      GOOGLE_ABSL_CHECK(false) << "IsMatch() is not implemented.";
+      ABSL_CHECK(false) << "IsMatch() is not implemented.";
       return false;
     }
   };

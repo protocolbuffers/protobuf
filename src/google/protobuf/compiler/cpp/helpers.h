@@ -44,7 +44,7 @@
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -340,7 +340,7 @@ inline bool UseUnknownFieldSet(const FileDescriptor* file,
 
 inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   if (field->options().weak()) {
-    GOOGLE_ABSL_CHECK(!options.opensource_runtime);
+    ABSL_CHECK(!options.opensource_runtime);
     return true;
   }
   return false;
@@ -985,7 +985,7 @@ struct OneOfRangeImpl {
     value_type operator*() { return descriptor->oneof_decl(idx); }
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
-      GOOGLE_ABSL_DCHECK(a.descriptor == b.descriptor);
+      ABSL_DCHECK(a.descriptor == b.descriptor);
       return a.idx == b.idx;
     }
     friend bool operator!=(const Iterator& a, const Iterator& b) {

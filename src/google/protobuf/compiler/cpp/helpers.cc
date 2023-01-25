@@ -50,8 +50,8 @@
 #include "google/protobuf/dynamic_message.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -439,7 +439,7 @@ std::string ExtensionName(const FieldDescriptor* d) {
 
 std::string QualifiedExtensionName(const FieldDescriptor* d,
                                    const Options& options) {
-  GOOGLE_ABSL_DCHECK(d->is_extension());
+  ABSL_DCHECK(d->is_extension());
   return QualifiedFileLevelSymbol(d->file(), ExtensionName(d), options);
 }
 
@@ -559,19 +559,19 @@ std::string FieldMemberName(const FieldDescriptor* field, bool split) {
     return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
   }
   // Oneof fields are never split.
-  GOOGLE_ABSL_CHECK(!split);
+  ABSL_CHECK(!split);
   return absl::StrCat(prefix, field->containing_oneof()->name(), "_.",
                       FieldName(field), "_");
 }
 
 std::string OneofCaseConstantName(const FieldDescriptor* field) {
-  GOOGLE_ABSL_DCHECK(field->containing_oneof());
+  ABSL_DCHECK(field->containing_oneof());
   std::string field_name = UnderscoresToCamelCase(field->name(), true);
   return absl::StrCat("k", field_name);
 }
 
 std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
-  GOOGLE_ABSL_DCHECK(field->containing_oneof());
+  ABSL_DCHECK(field->containing_oneof());
   const std::string qualification =
       QualifiedClassName(field->containing_type());
   return absl::StrCat(qualification, "::", OneofCaseConstantName(field));
@@ -605,7 +605,7 @@ int EstimateAlignmentSize(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return 8;
   }
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return -1;  // Make compiler happy.
 }
 
@@ -667,7 +667,7 @@ const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
       // CppTypes are added.
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
@@ -699,7 +699,7 @@ std::string PrimitiveTypeName(const Options& options,
       // CppTypes are added.
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
@@ -747,7 +747,7 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
       // No default because we want the compiler to complain if any new
       // types are added.
   }
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
@@ -838,7 +838,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
   // Can't actually get here; make compiler happy.  (We could add a default
   // case above but then we wouldn't get the nice compiler warning when a
   // new type is added.)
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
@@ -1117,13 +1117,13 @@ bool IsStringOrMessage(const FieldDescriptor* field) {
       return true;
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return false;
 }
 
 FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
                                          const Options& options) {
-  GOOGLE_ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
   if (options.opensource_runtime) {
     // Open-source protobuf release only supports STRING ctype.
     return FieldOptions::STRING;
@@ -1634,7 +1634,7 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
     case EnforceOptimizeMode::kNoEnforcement:
       if (file->options().optimize_for() == FileOptions::CODE_SIZE) {
         if (HasBootstrapProblem(file, options, has_opt_codesize_extension)) {
-          GOOGLE_ABSL_LOG(WARNING)
+          ABSL_LOG(WARNING)
               << "Proto states optimize_for = CODE_SIZE, but we "
                  "cannot honor that because it contains custom option "
                  "extensions defined in the same proto.";
@@ -1644,7 +1644,7 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
       return file->options().optimize_for();
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Unknown optimization enforcement requested.";
+  ABSL_LOG(FATAL) << "Unknown optimization enforcement requested.";
   // The phony return below serves to silence a warning from GCC 8.
   return FileOptions::SPEED;
 }

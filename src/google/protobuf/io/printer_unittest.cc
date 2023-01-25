@@ -43,7 +43,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -52,6 +52,7 @@
 namespace google {
 namespace protobuf {
 namespace io {
+namespace {
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Field;
@@ -61,7 +62,7 @@ using ::testing::MatchesRegex;
 class PrinterTest : public testing::Test {
  protected:
   ZeroCopyOutputStream* output() {
-    GOOGLE_ABSL_CHECK(stream_.has_value());
+    ABSL_CHECK(stream_.has_value());
     return &*stream_;
   }
   absl::string_view written() {
@@ -846,6 +847,7 @@ TEST_F(PrinterTest, PreserveNewlinesThroughEmits) {
             "// four\n");
 }
 
+}  // namespace
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google

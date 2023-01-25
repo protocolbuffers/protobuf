@@ -1331,7 +1331,7 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethod) {
 TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
   // Verify death if we call Foo() with Bar's message types.
 
-#if PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
     mock_service_.CallMethod(foo_, &mock_controller_,
                              &foo_request_, &bar_response_, done_.get()),
@@ -1342,7 +1342,7 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
     mock_service_.CallMethod(foo_, &mock_controller_,
                              &bar_request_, &foo_response_, done_.get()),
     "dynamic_cast");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 }
 
 TEST_F(GENERATED_SERVICE_TEST_NAME, GetPrototypes) {

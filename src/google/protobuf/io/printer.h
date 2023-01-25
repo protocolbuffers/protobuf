@@ -48,7 +48,7 @@
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/function_ref.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -922,7 +922,7 @@ class Printer::Sub {
 
   absl::string_view value() const {
     const auto* str = value_.AsString();
-    GOOGLE_ABSL_CHECK(str != nullptr)
+    ABSL_CHECK(str != nullptr)
         << "could not find " << key() << "; found callback instead";
     return *str;
   }
@@ -1051,10 +1051,10 @@ inline auto Printer::WithDefs(absl::Span<const Sub> vars,
   absl::flat_hash_map<std::string, AnnotationRecord> annotation_map;
 
   for (const auto& var : vars) {
-    GOOGLE_ABSL_CHECK(allow_callbacks || var.value_.AsCallback() == nullptr)
+    ABSL_CHECK(allow_callbacks || var.value_.AsCallback() == nullptr)
         << "callback arguments are not permitted in this position";
     auto result = var_map.insert({var.key_, var.value_});
-    GOOGLE_ABSL_CHECK(result.second)
+    ABSL_CHECK(result.second)
         << "repeated variable in Emit() or WithVars() call: \"" << var.key_
         << "\"";
     if (var.annotation_.has_value()) {

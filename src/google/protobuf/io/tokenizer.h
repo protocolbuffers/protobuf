@@ -41,7 +41,7 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
@@ -100,7 +100,7 @@ class PROTOBUF_EXPORT ErrorCollector {
   ABSL_DEPRECATED("Use RecordError")
   virtual void AddError(int line, ColumnNumber column,
                         const std::string& message) {
-    GOOGLE_ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
+    ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
   }
   ABSL_DEPRECATED("Use RecordWarning")
   virtual void AddWarning(int line, ColumnNumber column,

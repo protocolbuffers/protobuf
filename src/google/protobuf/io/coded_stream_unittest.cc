@@ -46,8 +46,10 @@
 #include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/base/log_severity.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+#include "absl/log/scoped_mock_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -62,7 +64,6 @@ namespace google {
 namespace protobuf {
 namespace io {
 namespace {
-
 
 // ===================================================================
 // Data-Driven Test Infrastructure
@@ -239,10 +240,10 @@ TEST_F(CodedStreamTest, EmptyInputBeforeEos) {
       return count_++ < 2;
     }
     void BackUp(int count) override {
-      GOOGLE_ABSL_LOG(FATAL) << "Tests never call this.";
+      ABSL_LOG(FATAL) << "Tests never call this.";
     }
     bool Skip(int count) override {
-      GOOGLE_ABSL_LOG(FATAL) << "Tests never call this.";
+      ABSL_LOG(FATAL) << "Tests never call this.";
       return false;
     }
     int64_t ByteCount() const override { return 0; }
@@ -1378,18 +1379,16 @@ TEST_F(CodedStreamTest, TotalBytesLimit) {
   EXPECT_TRUE(coded_input.ReadString(&str, 16));
   EXPECT_EQ(0, coded_input.BytesUntilTotalBytesLimit());
 
-  std::vector<std::string> errors;
-
   {
-    ScopedMemoryLog error_log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(
+        log,
+        Log(absl::LogSeverity::kError, testing::_,
+            testing::HasSubstr(
+                "A protocol message was rejected because it was too big")));
+    log.StartCapturingLogs();
     EXPECT_FALSE(coded_input.ReadString(&str, 1));
-    errors = error_log.GetMessages(ERROR);
   }
-
-  ASSERT_EQ(1, errors.size());
-  EXPECT_PRED_FORMAT2(testing::IsSubstring,
-                      "A protocol message was rejected because it was too big",
-                      errors[0]);
 
   coded_input.SetTotalBytesLimit(32);
   EXPECT_EQ(16, coded_input.BytesUntilTotalBytesLimit());
@@ -1493,11 +1492,11 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
   void BackUp(int count) override { backup_amount_ = count; }
 
   bool Skip(int count) override {
-    GOOGLE_ABSL_LOG(FATAL) << "Not implemented.";
+    ABSL_LOG(FATAL) << "Not implemented.";
     return false;
   }
   int64_t ByteCount() const override {
-    GOOGLE_ABSL_LOG(FATAL) << "Not implemented.";
+    ABSL_LOG(FATAL) << "Not implemented.";
     return 0;
   }
 
@@ -1513,19 +1512,18 @@ TEST_F(CodedStreamTest, InputOver2G) {
   // input.BackUp() with the correct number of bytes on destruction.
   ReallyBigInputStream input;
 
-  std::vector<std::string> errors;
-
   {
-    ScopedMemoryLog error_log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_))
+        .Times(0);
+    log.StartCapturingLogs();
     CodedInputStream coded_input(&input);
     std::string str;
     EXPECT_TRUE(coded_input.ReadString(&str, 512));
     EXPECT_TRUE(coded_input.ReadString(&str, 1024));
-    errors = error_log.GetMessages(ERROR);
   }
 
   EXPECT_EQ(INT_MAX - 512, input.backup_amount_);
-  EXPECT_EQ(0, errors.size());
 }
 
 }  // namespace

@@ -40,8 +40,8 @@
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
@@ -106,7 +106,7 @@ void Message::CopyFrom(const Message& from) {
 
   if (class_to == nullptr || class_to != class_from) {
     const Descriptor* descriptor = GetDescriptor();
-    GOOGLE_ABSL_CHECK_EQ(from.GetDescriptor(), descriptor)
+    ABSL_CHECK_EQ(from.GetDescriptor(), descriptor)
         << ": Tried to copy from a message with a different type. "
            "to: "
         << descriptor->full_name()
@@ -122,7 +122,7 @@ void Message::CopyFrom(const Message& from) {
 
 void Message::CopyWithSourceCheck(Message& to, const Message& from) {
   // Fail if "from" is a descendant of "to" as such copy is not allowed.
-  GOOGLE_ABSL_DCHECK(!internal::IsDescendant(to, from))
+  ABSL_DCHECK(!internal::IsDescendant(to, from))
       << "Source of CopyFrom cannot be a descendant of the target.";
 
   to.Clear();
@@ -150,7 +150,7 @@ std::string Message::InitializationErrorString() const {
 }
 
 void Message::CheckInitialized() const {
-  GOOGLE_ABSL_CHECK(IsInitialized())
+  ABSL_CHECK(IsInitialized())
       << "Message of type \"" << GetDescriptor()->full_name()
       << "\" is missing required fields: " << InitializationErrorString();
 }
@@ -184,7 +184,7 @@ size_t Message::ByteSizeLong() const {
 }
 
 void Message::SetCachedSize(int /* size */) const {
-  GOOGLE_ABSL_LOG(FATAL) << "Message class \"" << GetDescriptor()->full_name()
+  ABSL_LOG(FATAL) << "Message class \"" << GetDescriptor()->full_name()
                   << "\" implements neither SetCachedSize() nor ByteSize().  "
                      "Must implement one or the other.";
 }
@@ -219,7 +219,7 @@ namespace internal {
 void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
                                 size_t size, const void* message,
                                 const void* default_message) {
-  GOOGLE_ABSL_DCHECK_NE(message, default_message);
+  ABSL_DCHECK_NE(message, default_message);
   void* split =
       (arena == nullptr) ? ::operator new(size) : arena->AllocateAligned(size);
   memcpy(split, default_split, size);
@@ -308,13 +308,13 @@ GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
 void GeneratedMessageFactory::RegisterFile(
     const google::protobuf::internal::DescriptorTable* table) {
   if (!files_.insert(table).second) {
-    GOOGLE_ABSL_LOG(FATAL) << "File is already registered: " << table->filename;
+    ABSL_LOG(FATAL) << "File is already registered: " << table->filename;
   }
 }
 
 void GeneratedMessageFactory::RegisterType(const Descriptor* descriptor,
                                            const Message* prototype) {
-  GOOGLE_ABSL_DCHECK_EQ(descriptor->file()->pool(), DescriptorPool::generated_pool())
+  ABSL_DCHECK_EQ(descriptor->file()->pool(), DescriptorPool::generated_pool())
       << "Tried to register a non-generated type with the generated "
          "type registry.";
 
@@ -323,7 +323,7 @@ void GeneratedMessageFactory::RegisterType(const Descriptor* descriptor,
   // the mutex.
   mutex_.AssertHeld();
   if (!type_map_.try_emplace(descriptor, prototype).second) {
-    GOOGLE_ABSL_LOG(DFATAL) << "Type is already registered: "
+    ABSL_DLOG(FATAL) << "Type is already registered: "
                      << descriptor->full_name();
   }
 }
@@ -344,7 +344,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
   const internal::DescriptorTable* registration_data =
       FindInFileMap(type->file()->name());
   if (registration_data == nullptr) {
-    GOOGLE_ABSL_LOG(DFATAL) << "File appears to be in generated pool but wasn't "
+    ABSL_DLOG(FATAL) << "File appears to be in generated pool but wasn't "
                         "registered: "
                      << type->file()->name();
     return nullptr;
@@ -362,7 +362,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
   }
 
   if (result == nullptr) {
-    GOOGLE_ABSL_LOG(DFATAL) << "Type appears to be in generated pool but wasn't "
+    ABSL_DLOG(FATAL) << "Type appears to be in generated pool but wasn't "
                      << "registered: " << type->full_name();
   }
 
@@ -396,7 +396,7 @@ T* GetSingleton() {
 
 const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
     const FieldDescriptor* field) const {
-  GOOGLE_ABSL_CHECK(field->is_repeated());
+  ABSL_CHECK(field->is_repeated());
   switch (field->cpp_type()) {
 #define HANDLE_PRIMITIVE_TYPE(TYPE, type) \
   case FieldDescriptor::CPPTYPE_##TYPE:   \
@@ -424,7 +424,7 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
         return GetSingleton<internal::RepeatedPtrFieldMessageAccessor>();
       }
   }
-  GOOGLE_ABSL_LOG(FATAL) << "Should not reach here.";
+  ABSL_LOG(FATAL) << "Should not reach here.";
   return nullptr;
 }
 

@@ -68,7 +68,7 @@ std::vector<std::string> ReadLeftoverDoNotConsumeInput(
   return out;
 }
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 TEST(TestZeroCopyInputStreamTest, NextChecksPreconditions) {
   std::unique_ptr<ZeroCopyInputStream> stream =
       std::make_unique<TestZeroCopyInputStream>(std::vector<std::string>{});
@@ -77,7 +77,7 @@ TEST(TestZeroCopyInputStreamTest, NextChecksPreconditions) {
   EXPECT_DEATH(stream->Next(nullptr, &size), "data must not be null");
   EXPECT_DEATH(stream->Next(&data, nullptr), "size must not be null");
 }
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 TEST(TestZeroCopyInputStreamTest, NextProvidesTheBuffersCorrectly) {
   std::vector<std::string> expected = {"ABC", "D", "EFG", "", "", "HIJKLMN"};
@@ -116,30 +116,34 @@ TEST(TestZeroCopyInputStreamTest, BackUpGivesBackABuffer) {
   EXPECT_THAT(CallNext(*stream), Eq(absl::nullopt));
 }
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 TEST(TestZeroCopyInputStreamTest, BackUpChecksPreconditions) {
   std::vector<std::string> expected = {"ABC", "D", "EFG", "", "", "HIJKLMN"};
   std::unique_ptr<ZeroCopyInputStream> stream =
       std::make_unique<TestZeroCopyInputStream>(expected);
 
-  EXPECT_DEATH(stream->BackUp(0), "The last call was not a successful Next()");
+  EXPECT_DEATH(stream->BackUp(0),
+               "The last call was not a successful Next\\(\\)");
   EXPECT_THAT(CallNext(*stream), Optional(Eq("ABC")));
   EXPECT_DEATH(stream->BackUp(-1), "count must not be negative");
   stream->BackUp(1);
-  EXPECT_DEATH(stream->BackUp(0), "The last call was not a successful Next()");
+  EXPECT_DEATH(stream->BackUp(0),
+               "The last call was not a successful Next\\(\\)");
   EXPECT_THAT(CallNext(*stream), Optional(Eq("C")));
   EXPECT_THAT(CallNext(*stream), Optional(Eq("D")));
   stream->Skip(1);
-  EXPECT_DEATH(stream->BackUp(0), "The last call was not a successful Next()");
+  EXPECT_DEATH(stream->BackUp(0),
+               "The last call was not a successful Next\\(\\)");
   EXPECT_THAT(CallNext(*stream), Optional(Eq("FG")));
   EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
   EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
   EXPECT_THAT(CallNext(*stream), Optional(Eq("HIJKLMN")));
   EXPECT_DEATH(stream->BackUp(8), "count must be within bounds of last buffer");
   EXPECT_THAT(CallNext(*stream), Eq(absl::nullopt));
-  EXPECT_DEATH(stream->BackUp(0), "The last call was not a successful Next()");
+  EXPECT_DEATH(stream->BackUp(0),
+               "The last call was not a successful Next\\(\\)");
 }
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 TEST(TestZeroCopyInputStreamTest, SkipWorks) {
   std::vector<std::string> expected = {"ABC", "D", "EFG", "", "", "HIJKLMN"};
@@ -172,13 +176,13 @@ TEST(TestZeroCopyInputStreamTest, SkipWorks) {
   EXPECT_FALSE(stream.Skip(1));
 }
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 TEST(TestZeroCopyInputStreamTest, SkipChecksPreconditions) {
   std::unique_ptr<ZeroCopyInputStream> stream =
       std::make_unique<TestZeroCopyInputStream>(std::vector<std::string>{});
   EXPECT_DEATH(stream->Skip(-1), "count must not be negative");
 }
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 TEST(TestZeroCopyInputStreamTest, ByteCountWorks) {
   std::vector<std::string> expected = {"ABC", "D", "EFG", "", "", "HIJKLMN"};

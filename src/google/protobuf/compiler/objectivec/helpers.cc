@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
@@ -67,7 +67,7 @@ std::string GetZeroEnumNameForFlagType(const FlagType flag_type) {
     case FLAGTYPE_FIELD:
       return "GPBFieldNone";
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+      ABSL_LOG(FATAL) << "Can't get here.";
       return "0";
   }
 }
@@ -81,7 +81,7 @@ std::string GetEnumNameForFlagType(const FlagType flag_type) {
     case FLAGTYPE_FIELD:
       return "GPBFieldFlags";
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+      ABSL_LOG(FATAL) << "Can't get here.";
       return std::string();
   }
 }
@@ -148,7 +148,7 @@ std::string GetCapitalizedType(const FieldDescriptor* field) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return std::string();
 }
 
@@ -197,7 +197,7 @@ ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return OBJECTIVECTYPE_INT32;
 }
 
@@ -236,7 +236,7 @@ std::string GPBGenericValueFieldName(const FieldDescriptor* field) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return std::string();
 }
 
@@ -309,7 +309,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return std::string();
 }
 

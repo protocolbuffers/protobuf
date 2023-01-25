@@ -275,7 +275,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // exact same class).
   virtual void MergeFrom(const Message& from);
 
-  // Verifies that IsInitialized() returns true.  GOOGLE_ABSL_CHECK-fails otherwise,
+  // Verifies that IsInitialized() returns true.  ABSL_CHECK-fails otherwise,
   // with a nice error message.
   void CheckInitialized() const;
 
@@ -937,7 +937,7 @@ class PROTOBUF_EXPORT Reflection final {
   // take arbitrary integer values, and the legacy GetEnum() getter will
   // dynamically create an EnumValueDescriptor for any integer value without
   // one. If |false|, setting an unknown enum value via the integer-based
-  // setters results in undefined behavior (in practice, GOOGLE_ABSL_DCHECK-fails).
+  // setters results in undefined behavior (in practice, ABSL_DCHECK-fails).
   //
   // Generic code that uses reflection to handle messages with enum fields
   // should check this flag before using the integer-based setter, and either
@@ -1526,7 +1526,7 @@ const Type& Reflection::DefaultRaw(const FieldDescriptor* field) const {
 
 uint32_t Reflection::GetOneofCase(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
-  GOOGLE_ABSL_DCHECK(!oneof_descriptor->is_synthetic());
+  ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   return internal::GetConstRefAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
@@ -1538,20 +1538,20 @@ bool Reflection::HasOneofField(const Message& message,
 }
 
 const void* Reflection::GetSplitField(const Message* message) const {
-  GOOGLE_ABSL_DCHECK(schema_.IsSplit());
+  ABSL_DCHECK(schema_.IsSplit());
   return *internal::GetConstPointerAtOffset<void*>(message,
                                                    schema_.SplitOffset());
 }
 
 void** Reflection::MutableSplitField(Message* message) const {
-  GOOGLE_ABSL_DCHECK(schema_.IsSplit());
+  ABSL_DCHECK(schema_.IsSplit());
   return internal::GetPointerAtOffset<void*>(message, schema_.SplitOffset());
 }
 
 template <typename Type>
 const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
-  GOOGLE_ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
+  ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
       << "Field = " << field->full_name();
   if (schema_.IsSplit(field)) {
     return *internal::GetConstPointerAtOffset<Type>(

@@ -46,10 +46,15 @@
 #endif
 #include <errno.h>
 
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/io_win32.h"
-#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/status_macros.h"
+
+// Needs to be last.
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 namespace google {
 namespace protobuf {
@@ -73,11 +78,11 @@ bool File::Exists(const std::string& name) {
   return access(name.c_str(), F_OK) == 0;
 }
 
-bool File::ReadFileToString(const std::string& name, std::string* output,
-                            bool text_mode) {
+absl::Status File::ReadFileToString(const std::string& name,
+                                    std::string* output, bool text_mode) {
   char buffer[1024];
   FILE* file = fopen(name.c_str(), text_mode ? "rt" : "rb");
-  if (file == NULL) return false;
+  if (file == NULL) return absl::NotFoundError("Could not open file");
 
   while (true) {
     size_t n = fread(buffer, 1, sizeof(buffer), file);
@@ -86,67 +91,70 @@ bool File::ReadFileToString(const std::string& name, std::string* output,
   }
 
   int error = ferror(file);
-  if (fclose(file) != 0) return false;
-  return error == 0;
+  if (fclose(file) != 0) return absl::InternalError("Failed to close file");
+  if (error != 0) return absl::InternalError("Error parsing file");
+  return absl::OkStatus();
 }
 
 void File::ReadFileToStringOrDie(const std::string& name, std::string* output) {
-  GOOGLE_CHECK(ReadFileToString(name, output)) << "Could not read: " << name;
+  ABSL_CHECK_OK(ReadFileToString(name, output)) << "Could not read: " << name;
 }
 
-bool File::WriteStringToFile(absl::string_view contents,
-                             const std::string& name) {
+absl::Status File::WriteStringToFile(absl::string_view contents,
+                                     const std::string& name) {
   FILE* file = fopen(name.c_str(), "wb");
   if (file == NULL) {
-    GOOGLE_LOG(ERROR) << "fopen(" << name << ", \"wb\"): " << strerror(errno);
-    return false;
+    return absl::InternalError(
+        absl::StrCat("fopen(", name, ", \"wb\"): ", strerror(errno)));
   }
 
   if (fwrite(contents.data(), 1, contents.size(), file) != contents.size()) {
-    GOOGLE_LOG(ERROR) << "fwrite(" << name << "): " << strerror(errno);
     fclose(file);
-    return false;
+    return absl::InternalError(
+        absl::StrCat("fwrite(", name, "): ", strerror(errno)));
   }
 
   if (fclose(file) != 0) {
-    return false;
+    return absl::InternalError("Failed to close file");
   }
-  return true;
+  return absl::OkStatus();
 }
 
 void File::WriteStringToFileOrDie(absl::string_view contents,
                                   const std::string& name) {
   FILE* file = fopen(name.c_str(), "wb");
-  GOOGLE_CHECK(file != NULL)
-      << "fopen(" << name << ", \"wb\"): " << strerror(errno);
-  GOOGLE_CHECK_EQ(fwrite(contents.data(), 1, contents.size(), file),
-                  contents.size())
+  ABSL_CHECK(file != NULL) << "fopen(" << name
+                           << ", \"wb\"): " << strerror(errno);
+  ABSL_CHECK_EQ(fwrite(contents.data(), 1, contents.size(), file),
+                contents.size())
       << "fwrite(" << name << "): " << strerror(errno);
-  GOOGLE_CHECK(fclose(file) == 0)
+  ABSL_CHECK(fclose(file) == 0)
       << "fclose(" << name << "): " << strerror(errno);
 }
 
-bool File::CreateDir(const std::string& name, int mode) {
+absl::Status File::CreateDir(const std::string& name, int mode) {
   if (!name.empty()) {
-    GOOGLE_CHECK_OK(name[name.size() - 1] != '.');
+    ABSL_CHECK(name[name.size() - 1] != '.');
   }
-  return mkdir(name.c_str(), mode) == 0;
+  if (mkdir(name.c_str(), mode) != 0) {
+    return absl::InternalError("Failed to create directory");
+  }
+  return absl::OkStatus();
 }
 
-bool File::RecursivelyCreateDir(const std::string& path, int mode) {
-  if (CreateDir(path, mode)) return true;
+absl::Status File::RecursivelyCreateDir(const std::string& path, int mode) {
+  if (CreateDir(path, mode).ok()) return absl::OkStatus();
 
-  if (Exists(path)) return false;
+  if (Exists(path)) return absl::AlreadyExistsError("Path already exists");
 
   // Try creating the parent.
   std::string::size_type slashpos = path.find_last_of('/');
   if (slashpos == std::string::npos) {
-    // No parent given.
-    return false;
+    return absl::FailedPreconditionError("No parent given");
   }
 
-  return RecursivelyCreateDir(path.substr(0, slashpos), mode) &&
-         CreateDir(path, mode);
+  RETURN_IF_ERROR(RecursivelyCreateDir(path.substr(0, slashpos), mode));
+  return CreateDir(path, mode);
 }
 
 void File::DeleteRecursively(const std::string& name, void* dummy1,
@@ -217,3 +225,5 @@ bool File::ChangeWorkingDirectory(const std::string& new_working_directory) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"  // NOLINT

@@ -1,5 +1,15 @@
 # Setup our dependency on Abseil.
 
+if(protobuf_BUILD_TESTS)
+  # Tell Abseil to build test-only helpers.
+  set(ABSL_BUILD_TEST_HELPERS ON)
+
+  # We depend on googletest too, so just tell Abseil to use the same one we've
+  # already setup.
+  set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
+  set(ABSL_FIND_GOOGLETEST OFF)
+endif()
+
 if(TARGET absl::strings)
   # If Abseil is included already, skip including it.
   # (https://github.com/protocolbuffers/protobuf/issues/10435)
@@ -31,11 +41,11 @@ if (BUILD_SHARED_LIBS AND MSVC)
   # On MSVC Abseil is bundled into a single DLL.
   set(protobuf_ABSL_USED_TARGETS abseil_dll)
 
-  # As a workaround for https://github.com/abseil/abseil-cpp/issues/1118,
-  # make sure ABSL_CONSUME_DLL gets set for all subsequent builds.
-  add_definitions(-DABSL_CONSUME_DLL)
+  set(protobuf_ABSL_USED_TEST_TARGETS abseil_test_dll)
 else()
   set(protobuf_ABSL_USED_TARGETS
+    absl::absl_check
+    absl::absl_log
     absl::algorithm
     absl::base
     absl::bind_front
@@ -45,6 +55,7 @@ else()
     absl::cord
     absl::core_headers
     absl::debugging
+    absl::die_if_null
     absl::dynamic_annotations
     absl::flags
     absl::flat_hash_map
@@ -52,6 +63,8 @@ else()
     absl::function_ref
     absl::hash
     absl::layout
+    absl::log_initialize
+    absl::log_severity
     absl::memory
     absl::node_hash_map
     absl::node_hash_set
@@ -65,5 +78,8 @@ else()
     absl::type_traits
     absl::utility
     absl::variant
+  )
+  set(protobuf_ABSL_USED_TEST_TARGETS
+    absl::scoped_mock_log
   )
 endif ()

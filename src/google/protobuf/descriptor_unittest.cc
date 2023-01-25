@@ -44,6 +44,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/die_if_null.h"
+#include "absl/log/scoped_mock_log.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
@@ -56,8 +58,8 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
@@ -2998,7 +3000,7 @@ class AllowUnknownDependenciesTest
         return pool_->FindFileByName(proto.name());
       }
     }
-    GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+    ABSL_LOG(FATAL) << "Can't get here.";
     return nullptr;
   }
 
@@ -3223,7 +3225,7 @@ TEST_P(AllowUnknownDependenciesTest,
 
   const FileDescriptor* file = BuildFile(test_proto);
   ASSERT_TRUE(file != nullptr);
-  GOOGLE_ABSL_LOG(INFO) << file->DebugString();
+  ABSL_LOG(INFO) << file->DebugString();
 
   EXPECT_EQ(0, file->dependency_count());
   ASSERT_EQ(1, file->message_type_count());
@@ -3932,7 +3934,7 @@ class ValidationErrorTest : public testing::Test {
   const FileDescriptor* BuildFile(const std::string& file_text) {
     FileDescriptorProto file_proto;
     EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
-    return GOOGLE_CHECK_NOTNULL(pool_.BuildFile(file_proto));
+    return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
   }
 
   // Parse file_text as a FileDescriptorProto in text format and add it
@@ -6096,7 +6098,7 @@ TEST_F(ValidationErrorTest, RollbackAfterError) {
 }
 
 TEST_F(ValidationErrorTest, ErrorsReportedToLogError) {
-  // Test that errors are reported to GOOGLE_ABSL_LOG(ERROR) if no error collector is
+  // Test that errors are reported to ABSL_LOG(ERROR) if no error collector is
   // provided.
 
   FileDescriptorProto file_proto;
@@ -6105,19 +6107,15 @@ TEST_F(ValidationErrorTest, ErrorsReportedToLogError) {
                                   "message_type { name: \"Foo\" } "
                                   "message_type { name: \"Foo\" } ",
                                   &file_proto));
-
-  std::vector<std::string> errors;
-
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_,
+                         "Invalid proto descriptor for file \"foo.proto\":"));
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_,
+                         "  Foo: \"Foo\" is already defined."));
+    log.StartCapturingLogs();
     EXPECT_TRUE(pool_.BuildFile(file_proto) == nullptr);
-    errors = log.GetMessages(ERROR);
   }
-
-  ASSERT_EQ(2, errors.size());
-
-  EXPECT_EQ("Invalid proto descriptor for file \"foo.proto\":", errors[0]);
-  EXPECT_EQ("  Foo: \"Foo\" is already defined.", errors[1]);
 }
 
 TEST_F(ValidationErrorTest, DisallowEnumAlias) {
@@ -7350,15 +7348,13 @@ TEST_F(DatabaseBackedPoolTest, ErrorWithoutErrorCollector) {
   ErrorDescriptorDatabase error_database;
   DescriptorPool pool(&error_database);
 
-  std::vector<std::string> errors;
-
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log;
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_))
+        .Times(testing::AtLeast(1));
+    log.StartCapturingLogs();
     EXPECT_TRUE(pool.FindFileByName("error.proto") == nullptr);
-    errors = log.GetMessages(ERROR);
   }
-
-  EXPECT_FALSE(errors.empty());
 }
 
 TEST_F(DatabaseBackedPoolTest, ErrorWithErrorCollector) {
@@ -7543,11 +7539,11 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
                  absl::string_view end_with, int32_t* file_num) {
     if (!absl::ConsumePrefix(&name, begin_with)) return;
     if (!absl::ConsumeSuffix(&name, end_with)) return;
-    GOOGLE_ABSL_CHECK(absl::SimpleAtoi(name, file_num));
+    ABSL_CHECK(absl::SimpleAtoi(name, file_num));
   }
 
   bool PopulateFile(int file_num, FileDescriptorProto* output) {
-    GOOGLE_ABSL_CHECK_GE(file_num, 0);
+    ABSL_CHECK_GE(file_num, 0);
     output->Clear();
     output->set_name(absl::Substitute("file$0.proto", file_num));
     // file0.proto doesn't define Message0
@@ -7572,7 +7568,7 @@ TEST_F(DatabaseBackedPoolTest, DoesntReloadKnownBadFiles) {
   ExponentialErrorDatabase error_database;
   DescriptorPool pool(&error_database);
 
-  GOOGLE_ABSL_LOG(INFO) << "A timeout in this test probably indicates a real bug.";
+  ABSL_LOG(INFO) << "A timeout in this test probably indicates a real bug.";
 
   EXPECT_TRUE(pool.FindFileByName("file40.proto") == nullptr);
   EXPECT_TRUE(pool.FindMessageTypeByName("Message40") == nullptr);
@@ -7617,7 +7613,7 @@ class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
   void AddError(const std::string& filename, const std::string& element_name,
                 const Message* message, ErrorLocation location,
                 const std::string& error_message) override {
-    GOOGLE_ABSL_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
+    ABSL_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
                     << element_name << "]: " << error_message;
   }
 };
@@ -7762,7 +7758,7 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   const Descriptor* a_desc = file_desc->FindMessageTypeByName("A");
   EXPECT_TRUE(a_desc->GetSourceLocation(&loc));
@@ -7793,7 +7789,7 @@ TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   const FieldDescriptor* int32_extension_desc =
       file_desc->FindExtensionByName("int32_extension");
@@ -7820,7 +7816,7 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   // File options
   {
@@ -8183,7 +8179,7 @@ TEST_F(SourceLocationTest, GetSourceLocation_MissingSourceCodeInfo) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   FileDescriptorProto proto;
   file_desc->CopyTo(&proto);  // Note, this discards the SourceCodeInfo.
@@ -8191,7 +8187,7 @@ TEST_F(SourceLocationTest, GetSourceLocation_MissingSourceCodeInfo) {
 
   DescriptorPool bad1_pool(&pool_);
   const FileDescriptor* bad1_file_desc =
-      GOOGLE_CHECK_NOTNULL(bad1_pool.BuildFile(proto));
+      ABSL_DIE_IF_NULL(bad1_pool.BuildFile(proto));
   const Descriptor* bad1_a_desc = bad1_file_desc->FindMessageTypeByName("A");
   EXPECT_FALSE(bad1_a_desc->GetSourceLocation(&loc));
 }
@@ -8201,7 +8197,7 @@ TEST_F(SourceLocationTest, GetSourceLocation_BogusSourceCodeInfo) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   FileDescriptorProto proto;
   file_desc->CopyTo(&proto);  // Note, this discards the SourceCodeInfo.
@@ -8217,7 +8213,7 @@ TEST_F(SourceLocationTest, GetSourceLocation_BogusSourceCodeInfo) {
 
   DescriptorPool bad2_pool(&pool_);
   const FileDescriptor* bad2_file_desc =
-      GOOGLE_CHECK_NOTNULL(bad2_pool.BuildFile(proto));
+      ABSL_DIE_IF_NULL(bad2_pool.BuildFile(proto));
   const Descriptor* bad2_a_desc = bad2_file_desc->FindMessageTypeByName("A");
   EXPECT_FALSE(bad2_a_desc->GetSourceLocation(&loc));
 }
@@ -8248,7 +8244,7 @@ class CopySourceCodeInfoToTest : public testing::Test {
 
 TEST_F(CopySourceCodeInfoToTest, CopyTo_DoesNotCopySourceCodeInfo) {
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
   FileDescriptorProto file_desc_proto;
   ASSERT_FALSE(file_desc_proto.has_source_code_info());
 
@@ -8258,7 +8254,7 @@ TEST_F(CopySourceCodeInfoToTest, CopyTo_DoesNotCopySourceCodeInfo) {
 
 TEST_F(CopySourceCodeInfoToTest, CopySourceCodeInfoTo) {
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
   FileDescriptorProto file_desc_proto;
   ASSERT_FALSE(file_desc_proto.has_source_code_info());
 

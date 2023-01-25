@@ -32,7 +32,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"

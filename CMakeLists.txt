@@ -258,6 +258,9 @@ else (protobuf_BUILD_SHARED_LIBS)
   endif()
 endif (protobuf_BUILD_SHARED_LIBS)
 
+# Export all symbols on Windows when building shared libraries
+SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 if (MSVC)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Build with multiple processes
@@ -268,6 +271,7 @@ if (MSVC)
   # MSVC warning suppressions
   add_compile_options(
     /wd4065 # switch statement contains 'default' but no 'case' labels
+    /wd4146 # unary minus operator applied to unsigned type
     /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     /wd4267 # 'var' : conversion from 'size_t' to 'type', possible loss of data
@@ -318,6 +322,10 @@ endif (protobuf_UNICODE)
 
 set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
 set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
+
+if (protobuf_BUILD_TESTS)
+  include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)
+endif (protobuf_BUILD_TESTS)
 
 include(${protobuf_SOURCE_DIR}/cmake/abseil-cpp.cmake)
 

@@ -43,7 +43,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
@@ -269,7 +269,7 @@ class DiskSourceTreeTest : public testing::Test {
       if (FileExists(dirnames_[i])) {
         File::DeleteRecursively(dirnames_[i], NULL, NULL);
       }
-      GOOGLE_ABSL_CHECK_OK(File::CreateDir(dirnames_[i], 0777));
+      ABSL_CHECK_OK(File::CreateDir(dirnames_[i], 0777));
     }
   }
 
@@ -282,11 +282,11 @@ class DiskSourceTreeTest : public testing::Test {
   }
 
   void AddFile(const std::string& filename, const char* contents) {
-    GOOGLE_ABSL_CHECK_OK(File::SetContents(filename, contents, true));
+    ABSL_CHECK_OK(File::SetContents(filename, contents, true));
   }
 
   void AddSubdir(const std::string& dirname) {
-    GOOGLE_ABSL_CHECK_OK(File::CreateDir(dirname, 0777));
+    ABSL_CHECK_OK(File::CreateDir(dirname, 0777));
   }
 
   void ExpectFileContents(const std::string& filename,
@@ -400,7 +400,7 @@ TEST_F(DiskSourceTreeTest, OrderingTrumpsSpecificity) {
   // directory is more-specific than a former one.
 
   // Create the "bar" directory so we can put a file in it.
-  GOOGLE_ABSL_CHECK_OK(File::CreateDir(absl::StrCat(dirnames_[0], "/bar"),
+  ABSL_CHECK_OK(File::CreateDir(absl::StrCat(dirnames_[0], "/bar"),
                                 0777));
 
   // Add files and map paths.

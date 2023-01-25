@@ -40,8 +40,8 @@
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/util/message_differencer.h"
 
 namespace google {
@@ -62,7 +62,7 @@ struct Epsilon<double> {
 template <typename T>
 bool WithinFractionOrMargin(const T x, const T y, const T fraction,
                             const T margin) {
-  GOOGLE_ABSL_DCHECK(fraction >= T(0) && fraction < T(1) && margin >= T(0));
+  ABSL_DCHECK(fraction >= T(0) && fraction < T(1) && margin >= T(0));
 
   if (!std::isfinite(x) || !std::isfinite(y)) {
     return false;
@@ -149,7 +149,7 @@ FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
       return RECURSE;
 
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "No comparison code for field " << field->full_name()
+      ABSL_LOG(FATAL) << "No comparison code for field " << field->full_name()
                       << " of CppType = " << field->cpp_type();
       return DIFFERENT;
   }
@@ -171,7 +171,7 @@ void SimpleFieldComparator::SetDefaultFractionAndMargin(double fraction,
 void SimpleFieldComparator::SetFractionAndMargin(const FieldDescriptor* field,
                                                  double fraction,
                                                  double margin) {
-  GOOGLE_ABSL_CHECK(FieldDescriptor::CPPTYPE_FLOAT == field->cpp_type() ||
+  ABSL_CHECK(FieldDescriptor::CPPTYPE_FLOAT == field->cpp_type() ||
              FieldDescriptor::CPPTYPE_DOUBLE == field->cpp_type())
       << "Field has to be float or double type. Field name is: "
       << field->full_name();

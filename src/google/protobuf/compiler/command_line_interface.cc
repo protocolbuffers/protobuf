@@ -73,8 +73,8 @@
 #endif
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "absl/container/flat_hash_set.h"
@@ -142,7 +142,7 @@ void SetFdToTextMode(int fd) {
 #ifdef _WIN32
   if (setmode(fd, _O_TEXT) == -1) {
     // This should never happen, I think.
-    GOOGLE_ABSL_LOG(WARNING) << "setmode(" << fd << ", _O_TEXT): " << strerror(errno);
+    ABSL_LOG(WARNING) << "setmode(" << fd << ", _O_TEXT): " << strerror(errno);
   }
 #endif
   // (Text and binary are the same on non-Windows platforms.)
@@ -152,7 +152,7 @@ void SetFdToBinaryMode(int fd) {
 #ifdef _WIN32
   if (setmode(fd, _O_BINARY) == -1) {
     // This should never happen, I think.
-    GOOGLE_ABSL_LOG(WARNING) << "setmode(" << fd
+    ABSL_LOG(WARNING) << "setmode(" << fd
                       << ", _O_BINARY): " << strerror(errno);
   }
 #endif
@@ -898,7 +898,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
     data_pos += line_length;
   }
 
-  GOOGLE_ABSL_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
+  ABSL_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
 
   UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
 }
@@ -1112,7 +1112,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   if (!dependency_out_name_.empty()) {
-    GOOGLE_ABSL_DCHECK(disk_source_tree.get());
+    ABSL_DCHECK(disk_source_tree.get());
     if (!GenerateDependencyManifestFile(parsed_files, output_directories,
                                         disk_source_tree.get())) {
       return 1;
@@ -1132,7 +1132,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       FileDescriptorProto file;
       file.set_name("empty_message.proto");
       file.add_message_type()->set_name("EmptyMessage");
-      GOOGLE_ABSL_CHECK(pool.BuildFile(file) != nullptr);
+      ABSL_CHECK(pool.BuildFile(file) != nullptr);
       codec_type_ = "EmptyMessage";
       if (!EncodeOrDecode(&pool)) {
         return 1;
@@ -1160,7 +1160,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         }
         break;
       case PRINT_NONE:
-        GOOGLE_ABSL_LOG(ERROR)
+        ABSL_LOG(ERROR)
             << "If the code reaches here, it usually means a bug of "
                "flag parsing in the CommandLineInterface.";
         return 1;
@@ -1565,7 +1565,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
           input_files_.empty() && descriptor_set_in_names_.empty();
       break;
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unexpected mode: " << mode_;
+      ABSL_LOG(FATAL) << "Unexpected mode: " << mode_;
   }
   if (missing_proto_definitions) {
     std::cerr << "Missing input file." << std::endl;
@@ -1770,7 +1770,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     direct_dependencies_explicitly_set_ = true;
     std::vector<std::string> direct =
         absl::StrSplit(value, ":", absl::SkipEmpty());
-    GOOGLE_ABSL_DCHECK(direct_dependencies_.empty());
+    ABSL_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
 
   } else if (name == "--direct_dependencies_violation_msg") {
@@ -2170,7 +2170,7 @@ bool CommandLineInterface::GenerateOutput(
   std::string error;
   if (output_directive.generator == nullptr) {
     // This is a plugin.
-    GOOGLE_ABSL_CHECK(absl::StartsWith(output_directive.name, "--") &&
+    ABSL_CHECK(absl::StartsWith(output_directive.name, "--") &&
                absl::EndsWith(output_directive.name, "_out"))
         << "Bad name for plugin generator: " << output_directive.name;
 

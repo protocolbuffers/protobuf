@@ -38,7 +38,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
@@ -129,7 +129,7 @@ int OrderGroupForFieldDescriptor(const FieldDescriptor* descriptor) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return 0;
 }
 

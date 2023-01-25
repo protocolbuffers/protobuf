@@ -36,7 +36,7 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -64,8 +64,8 @@ class TestZeroCopyInputStream final : public ZeroCopyInputStream {
         byte_count_(other.byte_count_) {}
 
   bool Next(const void** data, int* size) override {
-    GOOGLE_ABSL_CHECK(data) << "data must not be null";
-    GOOGLE_ABSL_CHECK(size) << "size must not be null";
+    ABSL_CHECK(data) << "data must not be null";
+    ABSL_CHECK(size) << "size must not be null";
     last_returned_buffer_ = absl::nullopt;
 
     // We are done
@@ -80,10 +80,10 @@ class TestZeroCopyInputStream final : public ZeroCopyInputStream {
   }
 
   void BackUp(int count) override {
-    GOOGLE_ABSL_CHECK_GE(count, 0) << "count must not be negative";
-    GOOGLE_ABSL_CHECK(last_returned_buffer_.has_value())
+    ABSL_CHECK_GE(count, 0) << "count must not be negative";
+    ABSL_CHECK(last_returned_buffer_.has_value())
         << "The last call was not a successful Next()";
-    GOOGLE_ABSL_CHECK_LE(count, last_returned_buffer_->size())
+    ABSL_CHECK_LE(count, last_returned_buffer_->size())
         << "count must be within bounds of last buffer";
     buffers_.push_front(
         last_returned_buffer_->substr(last_returned_buffer_->size() - count));
@@ -92,7 +92,7 @@ class TestZeroCopyInputStream final : public ZeroCopyInputStream {
   }
 
   bool Skip(int count) override {
-    GOOGLE_ABSL_CHECK_GE(count, 0) << "count must not be negative";
+    ABSL_CHECK_GE(count, 0) << "count must not be negative";
     last_returned_buffer_ = absl::nullopt;
     while (true) {
       if (count == 0) return true;

@@ -53,7 +53,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -97,15 +97,15 @@ class MockGeneratorContext : public GeneratorContext {
 
     std::string expected_contents = *it->second;
     std::string actual_contents;
-    GOOGLE_ABSL_CHECK_OK(File::GetContents(
+    ABSL_CHECK_OK(File::GetContents(
         absl::StrCat(TestUtil::TestSourceDir(), "/", physical_filename),
         &actual_contents, true))
         << physical_filename;
 
 #ifdef WRITE_FILES  // Define to debug mismatched files.
-    GOOGLE_ABSL_CHECK_OK(File::SetContents("/tmp/expected.cc", expected_contents,
+    ABSL_CHECK_OK(File::SetContents("/tmp/expected.cc", expected_contents,
                                     true));
-    GOOGLE_ABSL_CHECK_OK(
+    ABSL_CHECK_OK(
         File::SetContents("/tmp/actual.cc", actual_contents, true));
 #endif
 

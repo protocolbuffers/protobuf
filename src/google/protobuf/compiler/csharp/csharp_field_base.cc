@@ -36,7 +36,7 @@
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.h"
@@ -279,7 +279,7 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
     case FieldDescriptor::TYPE_SINT64:
       return "long";
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unknown field type.";
+      ABSL_LOG(FATAL) << "Unknown field type.";
       return "";
   }
 }
@@ -321,7 +321,7 @@ bool FieldGeneratorBase::has_default_value() {
     case FieldDescriptor::TYPE_SINT64:
       return descriptor_->default_value_int64() != 0L;
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unknown field type.";
+      ABSL_LOG(FATAL) << "Unknown field type.";
       return true;
   }
 }
@@ -425,7 +425,7 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
     case FieldDescriptor::TYPE_SINT64:
       return absl::StrCat(descriptor->default_value_int64(), "L");
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unknown field type.";
+      ABSL_LOG(FATAL) << "Unknown field type.";
       return "";
   }
 }
@@ -473,7 +473,7 @@ std::string FieldGeneratorBase::capitalized_type_name() {
     case FieldDescriptor::TYPE_SINT64:
       return "SInt64";
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unknown field type.";
+      ABSL_LOG(FATAL) << "Unknown field type.";
       return "";
   }
 }

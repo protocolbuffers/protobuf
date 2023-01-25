@@ -180,7 +180,7 @@ TEST(FastVarints, NameHere) {
         ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                          /* aliasing= */ false, &ptr, serialized);
 #if 0  // FOR_DEBUGGING
-      GOOGLE_ABSL_LOG(ERROR) << "size=" << size << " i=" << i << " ptr points to "  //
+      ABSL_LOG(ERROR) << "size=" << size << " i=" << i << " ptr points to "  //
                       << +ptr[0] << "," << +ptr[1] << ","                    //
                       << +ptr[2] << "," << +ptr[3] << ","                    //
                       << +ptr[4] << "," << +ptr[5] << ","                    //
@@ -393,7 +393,7 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
                 IsEntryForFieldNum(&table, i, table_field_numbers));
   }
   for (int i : {0, 1, 6, 7, 110, 112, 500000000}) {
-    GOOGLE_ABSL_LOG(WARNING) << "Field " << i;
+    ABSL_LOG(WARNING) << "Field " << i;
     EXPECT_THAT(FindFieldEntry(table, i), Eq(nullptr));
   }
 }

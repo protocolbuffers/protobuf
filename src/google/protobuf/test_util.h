@@ -201,7 +201,7 @@ inline const FieldDescriptor* TestUtil::ReflectionTester::F(
   } else {
     result = base_descriptor_->FindFieldByName(name);
   }
-  GOOGLE_ABSL_CHECK(result != nullptr);
+  ABSL_CHECK(result != nullptr);
   return result;
 }
 

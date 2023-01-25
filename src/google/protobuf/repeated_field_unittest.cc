@@ -49,7 +49,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
@@ -195,7 +195,7 @@ TEST(RepeatedField, ArenaAllocationSizesMatchExpectedValues) {
   // This is important to avoid a branch in the reallocation path.
   // This is also important because allocating anything less would be wasting
   // memory.
-  // If the allocation size is wrong, ReturnArrayMemory will GOOGLE_ABSL_DCHECK.
+  // If the allocation size is wrong, ReturnArrayMemory will ABSL_DCHECK.
   CheckAllocationSizes<RepeatedField<bool>>(false);
   CheckAllocationSizes<RepeatedField<uint32_t>>(false);
   CheckAllocationSizes<RepeatedField<uint64_t>>(false);
@@ -984,7 +984,7 @@ TEST(RepeatedField, Truncate) {
   // Truncations that don't change the size are allowed, but growing is not
   // allowed.
   field.Truncate(field.size());
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(field.Truncate(field.size() + 1), "new_size");
 #endif
 }
@@ -1060,7 +1060,7 @@ TEST(RepeatedField, TruncateCords) {
   // Truncating to the current size should be fine (no-op), but truncating
   // to a larger size should crash.
   field.Truncate(field.size());
-#if defined(PROTOBUF_HAS_DEATH_TEST) && !defined(NDEBUG)
+#if defined(GTEST_HAS_DEATH_TEST) && !defined(NDEBUG)
   EXPECT_DEATH(field.Truncate(field.size() + 1), "new_size");
 #endif
 }
@@ -1127,7 +1127,7 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   RepeatedField<int> field;
   for (int size = 0; size < 10; ++size) {
     field.Truncate(size);
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(field.Truncate(size + 1), "new_size <= current_size_");
     EXPECT_DEBUG_DEATH(field.Truncate(size + 2), "new_size <= current_size_");
 #elif defined(NDEBUG)
@@ -1139,7 +1139,7 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   }
 }
 
-#if defined(PROTOBUF_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+#if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
                                       defined(ABSL_HAVE_MEMORY_SANITIZER))
 
 // This function verifies that the code dies under ASAN or MSAN trying to both
@@ -2370,7 +2370,7 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
         std::lower_bound(proto_array_.pointer_begin(),
                          proto_array_.pointer_end(), &v, StringLessThan());
 
-    GOOGLE_ABSL_CHECK(*it != nullptr);
+    ABSL_CHECK(*it != nullptr);
 
     EXPECT_EQ(**it, "n");
     EXPECT_TRUE(it == proto_array_.pointer_begin() + 3);
@@ -2381,7 +2381,7 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
         const_proto_array_->pointer_begin(), const_proto_array_->pointer_end(),
         &v, StringLessThan());
 
-    GOOGLE_ABSL_CHECK(*it != nullptr);
+    ABSL_CHECK(*it != nullptr);
 
     EXPECT_EQ(**it, "n");
     EXPECT_TRUE(it == const_proto_array_->pointer_begin() + 3);

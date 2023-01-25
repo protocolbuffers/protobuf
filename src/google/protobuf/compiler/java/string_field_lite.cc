@@ -39,7 +39,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -408,7 +408,7 @@ ImmutableStringOneofFieldLiteGenerator::
 void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -486,7 +486,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateFieldInfo(
 
 void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"

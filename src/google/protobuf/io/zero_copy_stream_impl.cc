@@ -44,8 +44,8 @@
 #include <iostream>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 
@@ -114,13 +114,13 @@ FileInputStream::CopyingFileInputStream::CopyingFileInputStream(
 FileInputStream::CopyingFileInputStream::~CopyingFileInputStream() {
   if (close_on_delete_) {
     if (!Close()) {
-      GOOGLE_ABSL_LOG(ERROR) << "close() failed: " << strerror(errno_);
+      ABSL_LOG(ERROR) << "close() failed: " << strerror(errno_);
     }
   }
 }
 
 bool FileInputStream::CopyingFileInputStream::Close() {
-  GOOGLE_ABSL_CHECK(!is_closed_);
+  ABSL_CHECK(!is_closed_);
 
   is_closed_ = true;
   if (close_no_eintr(file_) != 0) {
@@ -135,7 +135,7 @@ bool FileInputStream::CopyingFileInputStream::Close() {
 }
 
 int FileInputStream::CopyingFileInputStream::Read(void* buffer, int size) {
-  GOOGLE_ABSL_CHECK(!is_closed_);
+  ABSL_CHECK(!is_closed_);
 
   int result;
   do {
@@ -151,7 +151,7 @@ int FileInputStream::CopyingFileInputStream::Read(void* buffer, int size) {
 }
 
 int FileInputStream::CopyingFileInputStream::Skip(int count) {
-  GOOGLE_ABSL_CHECK(!is_closed_);
+  ABSL_CHECK(!is_closed_);
 
   if (!previous_seek_failed_ && lseek(file_, count, SEEK_CUR) != (off_t)-1) {
     // Seek succeeded.
@@ -191,13 +191,13 @@ FileOutputStream::~FileOutputStream() { Flush(); }
 FileOutputStream::CopyingFileOutputStream::~CopyingFileOutputStream() {
   if (close_on_delete_) {
     if (!Close()) {
-      GOOGLE_ABSL_LOG(ERROR) << "close() failed: " << strerror(errno_);
+      ABSL_LOG(ERROR) << "close() failed: " << strerror(errno_);
     }
   }
 }
 
 bool FileOutputStream::CopyingFileOutputStream::Close() {
-  GOOGLE_ABSL_CHECK(!is_closed_);
+  ABSL_CHECK(!is_closed_);
 
   is_closed_ = true;
   if (close_no_eintr(file_) != 0) {
@@ -213,7 +213,7 @@ bool FileOutputStream::CopyingFileOutputStream::Close() {
 
 bool FileOutputStream::CopyingFileOutputStream::Write(const void* buffer,
                                                       int size) {
-  GOOGLE_ABSL_CHECK(!is_closed_);
+  ABSL_CHECK(!is_closed_);
   int total_written = 0;
 
   const uint8_t* buffer_base = reinterpret_cast<const uint8_t*>(buffer);
@@ -330,7 +330,7 @@ void ConcatenatingInputStream::BackUp(int count) {
   if (stream_count_ > 0) {
     streams_[0]->BackUp(count);
   } else {
-    GOOGLE_ABSL_LOG(DFATAL) << "Can't BackUp() after failed Next().";
+    ABSL_DLOG(FATAL) << "Can't BackUp() after failed Next().";
   }
 }
 
@@ -344,7 +344,7 @@ bool ConcatenatingInputStream::Skip(int count) {
     // Hit the end of the stream.  Figure out how many more bytes we still have
     // to skip.
     int64_t final_byte_count = streams_[0]->ByteCount();
-    GOOGLE_ABSL_DCHECK_LT(final_byte_count, target_byte_count);
+    ABSL_DCHECK_LT(final_byte_count, target_byte_count);
     count = target_byte_count - final_byte_count;
 
     // That stream is done.  Advance to the next one.

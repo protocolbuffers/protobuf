@@ -78,7 +78,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 
 // Must be included last.
@@ -175,8 +175,8 @@ struct ArenaAlign {
 
 inline ArenaAlign ArenaAlignAs(size_t align) {
   // align must be a non zero power of 2 >= 8
-  GOOGLE_ABSL_DCHECK_NE(align, 0U);
-  GOOGLE_ABSL_DCHECK(absl::has_single_bit(align)) << "Invalid alignment " << align;
+  ABSL_DCHECK_NE(align, 0U);
+  ABSL_DCHECK(absl::has_single_bit(align)) << "Invalid alignment " << align;
   return ArenaAlign{align};
 }
 

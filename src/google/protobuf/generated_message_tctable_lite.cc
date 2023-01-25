@@ -59,13 +59,13 @@ using FieldEntry = TcParseTableBase::FieldEntry;
 
 #ifndef NDEBUG
 void AlignFail(std::integral_constant<size_t, 4>, std::uintptr_t address) {
-  GOOGLE_ABSL_LOG(FATAL) << "Unaligned (4) access at " << address;
+  ABSL_LOG(FATAL) << "Unaligned (4) access at " << address;
 
   // Explicit abort to let compilers know this function does not return
   abort();
 }
 void AlignFail(std::integral_constant<size_t, 8>, std::uintptr_t address) {
-  GOOGLE_ABSL_LOG(FATAL) << "Unaligned (8) access at " << address;
+  ABSL_LOG(FATAL) << "Unaligned (8) access at " << address;
 
   // Explicit abort to let compilers know this function does not return
   abort();
@@ -1620,7 +1620,7 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
       case field_layout::kRepSString:
       case field_layout::kRepIString:
       default:
-        GOOGLE_ABSL_LOG(DFATAL) << "string rep not handled: "
+        ABSL_DLOG(FATAL) << "string rep not handled: "
                          << (current_rep >> field_layout::kRepShift);
         return true;
     }
@@ -1635,7 +1635,7 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
         break;
       }
       default:
-        GOOGLE_ABSL_LOG(DFATAL) << "message rep not handled: "
+        ABSL_DLOG(FATAL) << "message rep not handled: "
                          << (current_rep >> field_layout::kRepShift);
         break;
     }
@@ -1692,7 +1692,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
   } else {
-    GOOGLE_ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep32Bits));
+    ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep32Bits));
     if (decoded_wiretype != WireFormatLite::WIRETYPE_FIXED32) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
@@ -1744,7 +1744,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
       ptr2 = ReadTag(ptr, &next_tag);
     } while (next_tag == decoded_tag);
   } else {
-    GOOGLE_ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep32Bits));
+    ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep32Bits));
     if (decoded_wiretype != WireFormatLite::WIRETYPE_FIXED32) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
@@ -1784,7 +1784,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedFixed(PROTOBUF_TC_PARAM_DECL) {
     auto& field = RefAt<RepeatedField<uint64_t>>(msg, entry.offset);
     ptr = ctx->ReadPackedFixed(ptr, size, &field);
   } else {
-    GOOGLE_ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep32Bits));
+    ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep32Bits));
     auto& field = RefAt<RepeatedField<uint32_t>>(msg, entry.offset);
     ptr = ctx->ReadPackedFixed(ptr, size, &field);
   }
@@ -1850,7 +1850,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
   } else if (rep == field_layout::kRep32Bits) {
     RefAt<uint32_t>(base, entry.offset) = static_cast<uint32_t>(tmp);
   } else {
-    GOOGLE_ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
+    ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
     RefAt<bool>(base, entry.offset) = static_cast<bool>(tmp);
   }
 
@@ -1912,7 +1912,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
       if (ptr2 == nullptr) return Error(PROTOBUF_TC_PARAM_PASS);
     } while (next_tag == decoded_tag);
   } else {
-    GOOGLE_ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
+    ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
     auto& field = RefAt<RepeatedField<bool>>(msg, entry.offset);
     const char* ptr2 = ptr;
     uint32_t next_tag;
@@ -1972,7 +1972,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
       });
     }
   } else {
-    GOOGLE_ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
+    ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
     auto* field = &RefAt<RepeatedField<bool>>(msg, entry.offset);
     return ctx->ReadPackedVarint(
         ptr, [field](uint64_t value) { field->Add(value); });
@@ -2130,7 +2130,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
 
 #ifndef NDEBUG
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unsupported repeated string rep: " << rep;
+      ABSL_LOG(FATAL) << "Unsupported repeated string rep: " << rep;
       break;
 #endif
   }
@@ -2200,7 +2200,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
       if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
         def = table->field_aux(&entry)->message_default();
       } else {
-        GOOGLE_ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
+        ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
                        +field_layout::kTvWeakPtr);
         def = table->field_aux(&entry)->message_default_weak();
       }
@@ -2216,7 +2216,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
 const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
-  GOOGLE_ABSL_DCHECK_EQ(type_card & field_layout::kFcMask,
+  ABSL_DCHECK_EQ(type_card & field_layout::kFcMask,
                  static_cast<uint16_t>(field_layout::kFcRepeated));
   const uint32_t decoded_tag = data.tag();
   const uint32_t decoded_wiretype = decoded_tag & 7;
@@ -2259,7 +2259,7 @@ const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
     if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
       def = aux.message_default();
     } else {
-      GOOGLE_ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
+      ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
                      +field_layout::kTvWeakPtr);
       def = aux.message_default_weak();
     }

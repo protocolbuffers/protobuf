@@ -41,7 +41,7 @@
 
 #include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -169,7 +169,7 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
 }
 
 void FieldGeneratorBase::GenerateIfHasField(io::Printer* p) const {
-  GOOGLE_ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
+  ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
 
   Formatter format(p);
   format("if (($has_hasbit$) != 0) {\n");
@@ -229,7 +229,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
     return;
   }
 
-  GOOGLE_ABSL_CHECK(internal::cpp::HasHasbit(field));
+  ABSL_CHECK(internal::cpp::HasHasbit(field));
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
@@ -250,12 +250,12 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
 void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
                        absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
   if (!IsStringInlined(field, opts)) {
-    GOOGLE_ABSL_CHECK(!idx.has_value());
+    ABSL_CHECK(!idx.has_value());
     return;
   }
 
   // The first bit is the tracking bit for on demand registering ArenaDtor.
-  GOOGLE_ABSL_CHECK_GT(*idx, 0)
+  ABSL_CHECK_GT(*idx, 0)
       << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
 
   int32_t index = *idx / 32;

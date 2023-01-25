@@ -47,7 +47,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -103,7 +103,7 @@ class GenericTypeHandler;  // defined in repeated_field.h
 // computed size to a cached size.  Since we don't proceed with serialization
 // if the total size was > INT_MAX, it is not important what this function
 // returns for inputs > INT_MAX.  However this case should not error or
-// GOOGLE_ABSL_CHECK-fail, because the full size_t resolution is still returned from
+// ABSL_CHECK-fail, because the full size_t resolution is still returned from
 // ByteSizeLong() and checked against INT_MAX; we can catch the overflow
 // there.
 inline int ToCachedSize(size_t size) { return static_cast<int>(size); }
@@ -118,11 +118,11 @@ inline size_t FromIntSize(int size) {
   return static_cast<unsigned int>(size);
 }
 
-// For cases where a legacy function returns an integer size.  We GOOGLE_ABSL_DCHECK()
+// For cases where a legacy function returns an integer size.  We ABSL_DCHECK()
 // that the conversion will fit within an integer; if this is false then we
 // are losing information.
 inline int ToIntSize(size_t size) {
-  GOOGLE_ABSL_DCHECK_LE(size, static_cast<size_t>(INT_MAX));
+  ABSL_DCHECK_LE(size, static_cast<size_t>(INT_MAX));
   return static_cast<int>(size);
 }
 
@@ -331,7 +331,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Write a protocol buffer of this message to the given output.  Returns
   // false on a write error.  If the message is missing required fields,
-  // this may GOOGLE_ABSL_CHECK-fail.
+  // this may ABSL_CHECK-fail.
   bool SerializeToCodedStream(io::CodedOutputStream* output) const;
   // Like SerializeToCodedStream(), but allows missing required fields.
   bool SerializePartialToCodedStream(io::CodedOutputStream* output) const;

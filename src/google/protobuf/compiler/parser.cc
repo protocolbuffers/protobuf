@@ -48,8 +48,8 @@
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -516,8 +516,8 @@ int Parser::LocationRecorder::CurrentPathSize() const {
 void Parser::LocationRecorder::AttachComments(
     std::string* leading, std::string* trailing,
     std::vector<std::string>* detached_comments) const {
-  GOOGLE_ABSL_CHECK(!location_->has_leading_comments());
-  GOOGLE_ABSL_CHECK(!location_->has_trailing_comments());
+  ABSL_CHECK(!location_->has_leading_comments());
+  ABSL_CHECK(!location_->has_trailing_comments());
 
   if (!leading->empty()) {
     location_->mutable_leading_comments()->swap(*leading);
@@ -670,7 +670,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
         file->set_syntax(syntax_identifier_);
       }
     } else if (!stop_after_syntax_identifier_) {
-      GOOGLE_ABSL_LOG(WARNING) << "No syntax specified for the proto file: "
+      ABSL_LOG(WARNING) << "No syntax specified for the proto file: "
                         << file->name()
                         << ". Please use 'syntax = \"proto2\";' "
                         << "or 'syntax = \"proto3\";' to specify a syntax "
@@ -1487,7 +1487,7 @@ bool Parser::ParseOption(Message* options,
   // Create an entry in the uninterpreted_option field.
   const FieldDescriptor* uninterpreted_option_field =
       options->GetDescriptor()->FindFieldByName("uninterpreted_option");
-  GOOGLE_ABSL_CHECK(uninterpreted_option_field != nullptr)
+  ABSL_CHECK(uninterpreted_option_field != nullptr)
       << "No field named \"uninterpreted_option\" in the Options proto.";
 
   const Reflection* reflection = options->GetReflection();
@@ -1540,7 +1540,7 @@ bool Parser::ParseOption(Message* options,
 
     switch (input_->current().type) {
       case io::Tokenizer::TYPE_START:
-        GOOGLE_ABSL_LOG(FATAL)
+        ABSL_LOG(FATAL)
             << "Trying to read value before any tokens have been read.";
         return false;
 
@@ -1550,9 +1550,9 @@ bool Parser::ParseOption(Message* options,
 
       case io::Tokenizer::TYPE_WHITESPACE:
       case io::Tokenizer::TYPE_NEWLINE:
-        GOOGLE_ABSL_CHECK(!input_->report_whitespace() && !input_->report_newlines())
+        ABSL_CHECK(!input_->report_whitespace() && !input_->report_newlines())
             << "Whitespace tokens were not requested.";
-        GOOGLE_ABSL_LOG(FATAL) << "Tokenizer reported whitespace.";
+        ABSL_LOG(FATAL) << "Tokenizer reported whitespace.";
         return false;
 
       case io::Tokenizer::TYPE_IDENTIFIER: {

@@ -40,7 +40,7 @@
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_cleanup.h"
@@ -66,11 +66,11 @@ struct ArenaBlock {
 
   ArenaBlock(ArenaBlock* next, size_t size)
       : next(next), cleanup_nodes(nullptr), size(size) {
-    GOOGLE_ABSL_DCHECK_GT(size, sizeof(ArenaBlock));
+    ABSL_DCHECK_GT(size, sizeof(ArenaBlock));
   }
 
   char* Pointer(size_t n) {
-    GOOGLE_ABSL_DCHECK_LE(n, size);
+    ABSL_DCHECK_LE(n, size);
     return reinterpret_cast<char*>(this) + n;
   }
   char* Limit() { return Pointer(size & static_cast<size_t>(-8)); }
@@ -146,8 +146,8 @@ class PROTOBUF_EXPORT SerialArena {
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n) {
-    GOOGLE_ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
+    ABSL_DCHECK_GE(limit_, ptr());
 
     if (alloc_client == AllocationClient::kArray) {
       if (void* res = TryAllocateFromCachedBlock(n)) {
@@ -238,8 +238,8 @@ class PROTOBUF_EXPORT SerialArena {
  public:
   // Allocate space if the current region provides enough space.
   bool MaybeAllocateAligned(size_t n, void** out) {
-    GOOGLE_ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
+    ABSL_DCHECK_GE(limit_, ptr());
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) return false;
     *out = AllocateFromExisting(n);
     return true;
@@ -250,7 +250,7 @@ class PROTOBUF_EXPORT SerialArena {
   // and the memory returned is uninitialized.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void* MaybeAllocateWithCleanup() {
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(limit_, ptr());
     static_assert(!std::is_trivially_destructible<T>::value,
                   "This function is only for non-trivial types.");
 
@@ -292,7 +292,7 @@ class PROTOBUF_EXPORT SerialArena {
     PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
     void* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
     set_ptr(ptr() + n);
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(limit_, ptr());
     AddCleanupFromExisting(ret, destructor);
     return ret;
   }
@@ -304,7 +304,7 @@ class PROTOBUF_EXPORT SerialArena {
 
     PROTOBUF_UNPOISON_MEMORY_REGION(limit_ - n, n);
     limit_ -= n;
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(limit_, ptr());
     cleanup::CreateNode(tag, limit_, elem, destructor);
   }
 

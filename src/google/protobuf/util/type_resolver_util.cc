@@ -34,7 +34,7 @@
 #include "google/protobuf/wrappers.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -353,7 +353,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
         return descriptor->default_value_enum()->name();
         break;
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(DFATAL) << "Messages can't have default values!";
+        ABSL_DLOG(FATAL) << "Messages can't have default values!";
         break;
     }
     return "";

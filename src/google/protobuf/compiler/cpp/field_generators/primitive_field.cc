@@ -39,7 +39,7 @@
 
 #include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/substitute.h"
 #include "absl/types/optional.h"
@@ -95,7 +95,7 @@ absl::optional<size_t> FixedSize(FieldDescriptor::Type type) {
       // types are added.
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return absl::nullopt;
 }
 
@@ -335,7 +335,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateConstructorCode(io::Printer* p) const override {}
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    GOOGLE_ABSL_CHECK(!ShouldSplit(field_, *opts_));
+    ABSL_CHECK(!ShouldSplit(field_, *opts_));
   }
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
