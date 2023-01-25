@@ -40,6 +40,9 @@ public final class Values {
 
   private static final Value NULL_VALUE =
       Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
+  private static final Value TRUE_VALUE = Value.newBuilder().setBoolValue(true).build();
+  private static final Value FALSE_VALUE = Value.newBuilder().setBoolValue(false).build();
+  private static final Value EMPTY_STR_VALUE = Value.newBuilder().setStringValue("").build();
 
   public static Value ofNull() {
     return NULL_VALUE;
@@ -47,7 +50,7 @@ public final class Values {
 
   /** Returns a Value object with number set to value. */
   public static Value of(boolean value) {
-    return Value.newBuilder().setBoolValue(value).build();
+    return value ? TRUE_VALUE : FALSE_VALUE;
   }
 
   /** Returns a Value object with number set to value. */
@@ -57,7 +60,7 @@ public final class Values {
 
   /** Returns a Value object with string set to value. */
   public static Value of(String value) {
-    return Value.newBuilder().setStringValue(value).build();
+    return value.isEmpty() ? EMPTY_STR_VALUE : Value.newBuilder().setStringValue(value).build();
   }
 
   /** Returns a Value object with struct set to value. */
