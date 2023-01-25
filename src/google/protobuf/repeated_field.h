@@ -957,7 +957,15 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
   size_t bytes =
       kRepHeaderSize + sizeof(Element) * static_cast<size_t>(new_size);
   if (arena == nullptr) {
-    new_rep = static_cast<Rep*>(::operator new(bytes));
+    ABSL_DCHECK_LE((bytes - kRepHeaderSize) / sizeof(Element),
+                   static_cast<size_t>(std::numeric_limits<int>::max()))
+        << "Requested size is too large to fit element count into int.";
+    internal::SizedPtr res = internal::AllocateAtLeast(bytes);
+    size_t num_available =
+        std::min((res.n - kRepHeaderSize) / sizeof(Element),
+                 static_cast<size_t>(std::numeric_limits<int>::max()));
+    new_size = static_cast<int>(num_available);
+    new_rep = static_cast<Rep*>(res.p);
   } else {
     new_rep = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
   }
