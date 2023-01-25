@@ -84,22 +84,29 @@ class ProtoBuilderTest(unittest.TestCase):
         pool=pool)
     self.assertIs(proto_cls1.DESCRIPTOR, proto_cls2.DESCRIPTOR)
 
-  def testMakeLargeProtoClass(self):
-    """Test that large created protos don't use reserved field numbers."""
-    num_fields = 123456
-    fields = {
-        'foo%d' % i: descriptor_pb2.FieldDescriptorProto.TYPE_INT64
-        for i in range(num_fields)
-    }
-    proto_cls = proto_builder.MakeSimpleProtoClass(
-        fields,
-        full_name='net.proto2.python.public.proto_builder_test.LargeProtoTest')
+  # TODO(b/266670806): We disable this test so that we can assert the candidate
+  # tag numbers are not used by protos across Google.
+  # Since the field numbers are generated automatically by MakeSimpleProtoClass,
+  # to fix the test we'd need to modify the factory function logic to avoid the
+  # candidate tag numbers. This would mask non-test use cases which happen to
+  # build protos which do use the candidate tags.
+  #
+  # def testMakeLargeProtoClass(self):
+  #   """Test that large created protos don't use reserved field numbers."""
+  #   num_fields = 123456
+  #   fields = {
+  #       'foo%d' % i: descriptor_pb2.FieldDescriptorProto.TYPE_INT64
+  #       for i in range(num_fields)
+  #   }
+  #   proto_cls = proto_builder.MakeSimpleProtoClass(
+  #       fields,
+  #       full_name='net.proto2.python.public.proto_builder_test.LargeProtoTest')
 
-    reserved_field_numbers = set(
-        range(descriptor.FieldDescriptor.FIRST_RESERVED_FIELD_NUMBER,
-              descriptor.FieldDescriptor.LAST_RESERVED_FIELD_NUMBER + 1))
-    proto_field_numbers = set(proto_cls.DESCRIPTOR.fields_by_number)
-    self.assertFalse(reserved_field_numbers.intersection(proto_field_numbers))
+  #   reserved_field_numbers = set(
+  #       range(descriptor.FieldDescriptor.FIRST_RESERVED_FIELD_NUMBER,
+  #             descriptor.FieldDescriptor.LAST_RESERVED_FIELD_NUMBER + 1))
+  #   proto_field_numbers = set(proto_cls.DESCRIPTOR.fields_by_number)
+  #   self.assertFalse(reserved_field_numbers.intersection(proto_field_numbers))
 
 
 if __name__ == '__main__':

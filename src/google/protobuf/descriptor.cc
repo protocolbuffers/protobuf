@@ -5880,6 +5880,11 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                        "prefix"));
   }
 
+  ABSL_CHECK(result->number() != 7694 && result->number() != 7770 &&
+             result->number() != 8888)
+      << absl::Substitute("Field number $0 is already used by $1.",
+                          result->number(), result->full_name());
+
   if (is_extension) {
     if (!proto.has_extendee()) {
       AddError(result->full_name(), proto,
