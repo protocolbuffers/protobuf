@@ -249,6 +249,40 @@ static bool upb_UnknownFields_IsEqual(const upb_UnknownFields* uf1,
   return true;
 }
 
+static upb_UnknownCompareResult upb_UnknownField_DoCompare(
+    upb_UnknownField_Context* ctx, const char* buf1, size_t size1,
+    const char* buf2, size_t size2) {
+  upb_UnknownCompareResult ret;
+  // First build both unknown fields into a sorted data structure (similar
+  // to the UnknownFieldSet in C++).
+  upb_UnknownFields* uf1 = upb_UnknownFields_Build(ctx, buf1, size1);
+  upb_UnknownFields* uf2 = upb_UnknownFields_Build(ctx, buf2, size2);
+
+  // Now perform the equality check on the sorted structures.
+  if (upb_UnknownFields_IsEqual(uf1, uf2)) {
+    ret = kUpb_UnknownCompareResult_Equal;
+  } else {
+    ret = kUpb_UnknownCompareResult_NotEqual;
+  }
+  return ret;
+}
+
+static upb_UnknownCompareResult upb_UnknownField_Compare(
+    upb_UnknownField_Context* const ctx, const char* const buf1,
+    const size_t size1, const char* const buf2, const size_t size2) {
+  upb_UnknownCompareResult ret;
+  if (UPB_SETJMP(ctx->err) == 0) {
+    ret = upb_UnknownField_DoCompare(ctx, buf1, size1, buf2, size2);
+  } else {
+    ret = ctx->status;
+    UPB_ASSERT(ret != kUpb_UnknownCompareResult_Equal);
+  }
+
+  upb_Arena_Free(ctx->arena);
+  free(ctx->tmp);
+  return ret;
+}
+
 upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(const char* buf1,
                                                            size_t size1,
                                                            const char* buf2,
@@ -268,25 +302,5 @@ upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(const char* buf1,
 
   if (!ctx.arena) return kUpb_UnknownCompareResult_OutOfMemory;
 
-  upb_UnknownCompareResult ret;
-  if (UPB_SETJMP(ctx.err) == 0) {
-    // First build both unknown fields into a sorted data structure (similar
-    // to the UnknownFieldSet in C++).
-    upb_UnknownFields* uf1 = upb_UnknownFields_Build(&ctx, buf1, size1);
-    upb_UnknownFields* uf2 = upb_UnknownFields_Build(&ctx, buf2, size2);
-
-    // Now perform the equality check on the sorted structures.
-    if (upb_UnknownFields_IsEqual(uf1, uf2)) {
-      ret = kUpb_UnknownCompareResult_Equal;
-    } else {
-      ret = kUpb_UnknownCompareResult_NotEqual;
-    }
-  } else {
-    ret = ctx.status;
-    UPB_ASSERT(ret != kUpb_UnknownCompareResult_Equal);
-  }
-
-  upb_Arena_Free(ctx.arena);
-  free(ctx.tmp);
-  return ret;
+  return upb_UnknownField_Compare(&ctx, buf1, size1, buf2, size2);
 }
