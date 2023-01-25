@@ -224,7 +224,7 @@ bool Parser::Consume(absl::string_view text, absl::string_view error) {
   if (TryConsume(text)) {
     return true;
   } else {
-    AddError(std::string(error));
+    RecordError(error);
     return false;
   }
 }
@@ -239,7 +239,7 @@ bool Parser::ConsumeIdentifier(std::string* output, absl::string_view error) {
     input_->Next();
     return true;
   } else {
-    AddError(std::string(error));
+    RecordError(error);
     return false;
   }
 }
@@ -250,14 +250,14 @@ bool Parser::ConsumeInteger(int* output, absl::string_view error) {
     if (!io::Tokenizer::ParseInteger(input_->current().text,
                                      std::numeric_limits<int32_t>::max(),
                                      &value)) {
-      AddError("Integer out of range.");
+      RecordError("Integer out of range.");
       // We still return true because we did, in fact, parse an integer.
     }
     *output = value;
     input_->Next();
     return true;
   } else {
-    AddError(std::string(error));
+    RecordError(error);
     return false;
   }
 }
@@ -281,14 +281,14 @@ bool Parser::ConsumeInteger64(uint64_t max_value, uint64_t* output,
   if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
     if (!io::Tokenizer::ParseInteger(input_->current().text, max_value,
                                      output)) {
-      AddError("Integer out of range.");
+      RecordError("Integer out of range.");
       // We still return true because we did, in fact, parse an integer.
       *output = 0;
     }
     input_->Next();
     return true;
   } else {
-    AddError(std::string(error));
+    RecordError(error);
     return false;
   }
 }
@@ -316,11 +316,11 @@ bool Parser::ConsumeNumber(double* output, absl::string_view error) {
       *output = value;
     } else if (input_->current().text[0] == '0') {
       // octal or hexadecimal; don't bother parsing as float
-      AddError("Integer out of range.");
+      RecordError("Integer out of range.");
       // We still return true because we did, in fact, parse a number.
     } else if (!io::Tokenizer::TryParseFloat(input_->current().text, output)) {
       // out of int range, and not valid float? 🤷
-      AddError("Integer out of range.");
+      RecordError("Integer out of range.");
       // We still return true because we did, in fact, parse a number.
     }
     input_->Next();
@@ -334,7 +334,7 @@ bool Parser::ConsumeNumber(double* output, absl::string_view error) {
     input_->Next();
     return true;
   } else {
-    AddError(std::string(error));
+    RecordError(error);
     return false;
   }
 }
@@ -350,7 +350,7 @@ bool Parser::ConsumeString(std::string* output, absl::string_view error) {
     }
     return true;
   } else {
-    AddError(std::string(error));
+    RecordError(error);
     return false;
   }
 }
@@ -391,32 +391,32 @@ bool Parser::ConsumeEndOfDeclaration(absl::string_view text,
   if (TryConsumeEndOfDeclaration(text, location)) {
     return true;
   } else {
-    AddError(absl::StrCat("Expected \"", text, "\"."));
+    RecordError(absl::StrCat("Expected \"", text, "\"."));
     return false;
   }
 }
 
 // -------------------------------------------------------------------
 
-void Parser::AddError(int line, int column, const std::string& error) {
+void Parser::RecordError(int line, int column, absl::string_view error) {
   if (error_collector_ != nullptr) {
     error_collector_->RecordError(line, column, error);
   }
   had_errors_ = true;
 }
 
-void Parser::AddError(const std::string& error) {
-  AddError(input_->current().line, input_->current().column, error);
+void Parser::RecordError(absl::string_view error) {
+  RecordError(input_->current().line, input_->current().column, error);
 }
 
-void Parser::AddWarning(int line, int column, const std::string& warning) {
+void Parser::RecordWarning(int line, int column, absl::string_view warning) {
   if (error_collector_ != nullptr) {
     error_collector_->RecordWarning(line, column, warning);
   }
 }
 
-void Parser::AddWarning(const std::string& warning) {
-  AddWarning(input_->current().line, input_->current().column, warning);
+void Parser::RecordWarning(absl::string_view warning) {
+  RecordWarning(input_->current().line, input_->current().column, warning);
 }
 
 // -------------------------------------------------------------------
@@ -593,7 +593,7 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
         "\" declares 'option allow_alias = false;' which has no effect. "
         "Please remove the declaration.");
     // This needlessly clutters declarations with nops.
-    AddError(error);
+    RecordError(error);
     return false;
   }
 
@@ -616,7 +616,7 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
         "declaration.");
     // Generate an error if an enum declares support for duplicate enum values
     // and does not use it protect future authors.
-    AddError(error);
+    RecordError(error);
     return false;
   }
 
@@ -625,7 +625,7 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   if (!allow_alias) {
     for (const auto& enum_value : proto->value()) {
       if (!IsUpperUnderscore(enum_value.name())) {
-        AddWarning(absl::StrCat(
+        RecordWarning(absl::StrCat(
             "Enum constant should be in UPPER_CASE. Found: ", enum_value.name(),
             ". See https://developers.google.com/protocol-buffers/docs/style"));
       }
@@ -688,7 +688,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
         SkipStatement();
 
         if (LookingAt("}")) {
-          AddError("Unmatched \"}\".");
+          RecordError("Unmatched \"}\".");
           input_->NextWithComments(nullptr, &upcoming_detached_comments_,
                                    &upcoming_doc_comments_);
         }
@@ -719,10 +719,10 @@ bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
   syntax_identifier_ = syntax;
   if (syntax != "proto2" && syntax != "proto3" &&
       !stop_after_syntax_identifier_) {
-    AddError(syntax_token.line, syntax_token.column,
-             absl::StrCat("Unrecognized syntax identifier \"", syntax,
-                          "\".  This parser "
-                          "only recognizes \"proto2\" and \"proto3\"."));
+    RecordError(syntax_token.line, syntax_token.column,
+                absl::StrCat("Unrecognized syntax identifier \"", syntax,
+                             "\".  This parser "
+                             "only recognizes \"proto2\" and \"proto3\"."));
     return false;
   }
 
@@ -767,7 +767,7 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
     return ParseOption(file->mutable_options(), location, file,
                        OPTION_STATEMENT);
   } else {
-    AddError("Expected top-level statement (e.g. \"message\").");
+    RecordError("Expected top-level statement (e.g. \"message\").");
     return false;
   }
 }
@@ -786,7 +786,7 @@ bool Parser::ParseMessageDefinition(
                                   DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(message->mutable_name(), "Expected message name."));
     if (!IsUpperCamelCase(message->name())) {
-      AddWarning(absl::StrCat(
+      RecordWarning(absl::StrCat(
           "Message name should be in UpperCamelCase. Found: ", message->name(),
           ". See https://developers.google.com/protocol-buffers/docs/style"));
     }
@@ -888,7 +888,7 @@ bool Parser::ParseMessageBlock(DescriptorProto* message,
 
   while (!TryConsumeEndOfDeclaration("}", nullptr)) {
     if (AtEnd()) {
-      AddError("Reached end of input in message definition (missing '}').");
+      RecordError("Reached end of input in message definition (missing '}').");
       return false;
     }
 
@@ -1017,7 +1017,7 @@ bool Parser::ParseMessageFieldNoLabel(
         field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
       }
       if (!field->has_label()) {
-        AddError("Expected \"required\", \"optional\", or \"repeated\".");
+        RecordError("Expected \"required\", \"optional\", or \"repeated\".");
         // We can actually reasonably recover here by just assuming the user
         // forgot the label altogether.
         field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
@@ -1047,12 +1047,12 @@ bool Parser::ParseMessageFieldNoLabel(
     DO(ConsumeIdentifier(field->mutable_name(), "Expected field name."));
 
     if (!IsLowerUnderscore(field->name())) {
-      AddWarning(absl::StrCat(
+      RecordWarning(absl::StrCat(
           "Field name should be lowercase. Found: ", field->name(),
           ". See: https://developers.google.com/protocol-buffers/docs/style"));
     }
     if (IsNumberFollowUnderscore(field->name())) {
-      AddWarning(absl::StrCat(
+      RecordWarning(absl::StrCat(
           "Number should not come right after an underscore. Found: ",
           field->name(),
           ". See: https://developers.google.com/protocol-buffers/docs/style"));
@@ -1108,8 +1108,8 @@ bool Parser::ParseMessageFieldNoLabel(
     // with a capital letter and lower-case the field name.  New code should
     // not use groups; it should use nested messages.
     if (group->name()[0] < 'A' || 'Z' < group->name()[0]) {
-      AddError(name_token.line, name_token.column,
-               "Group names must start with a capital letter.");
+      RecordError(name_token.line, name_token.column,
+                  "Group names must start with a capital letter.");
     }
     absl::AsciiStrToLower(field->mutable_name());
 
@@ -1117,7 +1117,7 @@ bool Parser::ParseMessageFieldNoLabel(
     if (LookingAt("{")) {
       DO(ParseMessageBlock(group, group_location, containing_file));
     } else {
-      AddError("Missing group body.");
+      RecordError("Missing group body.");
       return false;
     }
   } else {
@@ -1135,17 +1135,17 @@ bool Parser::ParseMessageFieldNoLabel(
 bool Parser::ParseMapType(MapField* map_field, FieldDescriptorProto* field,
                           LocationRecorder& type_name_location) {
   if (field->has_oneof_index()) {
-    AddError("Map fields are not allowed in oneofs.");
+    RecordError("Map fields are not allowed in oneofs.");
     return false;
   }
   if (field->has_label()) {
-    AddError(
+    RecordError(
         "Field labels (required/optional/repeated) are not allowed on "
         "map fields.");
     return false;
   }
   if (field->has_extendee()) {
-    AddError("Map fields are not allowed to be extensions.");
+    RecordError("Map fields are not allowed to be extensions.");
     return false;
   }
   field->set_label(FieldDescriptorProto::LABEL_REPEATED);
@@ -1257,7 +1257,7 @@ bool Parser::ParseDefaultAssignment(
     FieldDescriptorProto* field, const LocationRecorder& field_location,
     const FileDescriptorProto* containing_file) {
   if (field->has_default_value()) {
-    AddError("Already set option \"default\".");
+    RecordError("Already set option \"default\".");
     field->clear_default_value();
   }
 
@@ -1326,7 +1326,7 @@ bool Parser::ParseDefaultAssignment(
 
       // Numeric, not negative.
       if (TryConsume("-")) {
-        AddError("Unsigned field can't have negative default value.");
+        RecordError("Unsigned field can't have negative default value.");
       }
       // Parse the integer to verify that it is not out-of-range.
       uint64_t value;
@@ -1357,7 +1357,7 @@ bool Parser::ParseDefaultAssignment(
       } else if (TryConsume("false")) {
         default_value->assign("false");
       } else {
-        AddError("Expected \"true\" or \"false\".");
+        RecordError("Expected \"true\" or \"false\".");
         return false;
       }
       break;
@@ -1384,7 +1384,7 @@ bool Parser::ParseDefaultAssignment(
 
     case FieldDescriptorProto::TYPE_MESSAGE:
     case FieldDescriptorProto::TYPE_GROUP:
-      AddError("Messages can't have default values.");
+      RecordError("Messages can't have default values.");
       return false;
   }
 
@@ -1395,7 +1395,7 @@ bool Parser::ParseJsonName(FieldDescriptorProto* field,
                            const LocationRecorder& field_location,
                            const FileDescriptorProto* containing_file) {
   if (field->has_json_name()) {
-    AddError("Already set option \"json_name\".");
+    RecordError("Already set option \"json_name\".");
     field->clear_json_name();
   }
 
@@ -1474,7 +1474,7 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
     value->append(input_->current().text);
     input_->Next();
   }
-  AddError("Unexpected end of stream while parsing aggregate value.");
+  RecordError("Unexpected end of stream while parsing aggregate value.");
   return false;
 }
 
@@ -1545,7 +1545,7 @@ bool Parser::ParseOption(Message* options,
         return false;
 
       case io::Tokenizer::TYPE_END:
-        AddError("Unexpected end of stream while parsing option value.");
+        RecordError("Unexpected end of stream while parsing option value.");
         return false;
 
       case io::Tokenizer::TYPE_WHITESPACE:
@@ -1559,7 +1559,7 @@ bool Parser::ParseOption(Message* options,
         value_location.AddPath(
             UninterpretedOption::kIdentifierValueFieldNumber);
         if (is_negative) {
-          AddError("Invalid '-' symbol before identifier.");
+          RecordError("Invalid '-' symbol before identifier.");
           return false;
         }
         std::string value;
@@ -1603,7 +1603,7 @@ bool Parser::ParseOption(Message* options,
       case io::Tokenizer::TYPE_STRING: {
         value_location.AddPath(UninterpretedOption::kStringValueFieldNumber);
         if (is_negative) {
-          AddError("Invalid '-' symbol before string.");
+          RecordError("Invalid '-' symbol before string.");
           return false;
         }
         std::string value;
@@ -1619,7 +1619,7 @@ bool Parser::ParseOption(Message* options,
           DO(ParseUninterpretedBlock(
               uninterpreted_option->mutable_aggregate_value()));
         } else {
-          AddError("Expected option value.");
+          RecordError("Expected option value.");
           return false;
         }
         break;
@@ -1763,9 +1763,10 @@ bool Parser::ParseReservedName(std::string* name,
   int col = input_->current().column;
   DO(ConsumeString(name, error_message));
   if (!io::Tokenizer::IsIdentifier(*name)) {
-    AddWarning(line, col,
-               absl::StrFormat(
-                   "Reserved name \"%s\" is not a valid identifier.", *name));
+    RecordWarning(
+        line, col,
+        absl::StrFormat("Reserved name \"%s\" is not a valid identifier.",
+                        *name));
   }
   return true;
 }
@@ -1923,7 +1924,7 @@ bool Parser::ParseExtend(RepeatedPtrField<FieldDescriptorProto>* extensions,
 
   do {
     if (AtEnd()) {
-      AddError("Reached end of input in extend definition (missing '}').");
+      RecordError("Reached end of input in extend definition (missing '}').");
       return false;
     }
 
@@ -1976,7 +1977,7 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
 
   do {
     if (AtEnd()) {
-      AddError("Reached end of input in oneof definition (missing '}').");
+      RecordError("Reached end of input in oneof definition (missing '}').");
       return false;
     }
 
@@ -1994,7 +1995,7 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
     // on an individual member of a oneof.
     if (LookingAt("required") || LookingAt("optional") ||
         LookingAt("repeated")) {
-      AddError(
+      RecordError(
           "Fields in oneofs must not have labels (required / optional "
           "/ repeated).");
       // We can continue parsing here because we understand what the user
@@ -2053,7 +2054,7 @@ bool Parser::ParseEnumBlock(EnumDescriptorProto* enum_type,
 
   while (!TryConsumeEndOfDeclaration("}", nullptr)) {
     if (AtEnd()) {
-      AddError("Reached end of input in enum definition (missing '}').");
+      RecordError("Reached end of input in enum definition (missing '}').");
       return false;
     }
 
@@ -2170,7 +2171,7 @@ bool Parser::ParseServiceBlock(ServiceDescriptorProto* service,
 
   while (!TryConsumeEndOfDeclaration("}", nullptr)) {
     if (AtEnd()) {
-      AddError("Reached end of input in service definition (missing '}').");
+      RecordError("Reached end of input in service definition (missing '}').");
       return false;
     }
 
@@ -2274,7 +2275,7 @@ bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
   ConsumeEndOfDeclaration("{", &parent_location);
   while (!TryConsumeEndOfDeclaration("}", nullptr)) {
     if (AtEnd()) {
-      AddError("Reached end of input in method options (missing '}').");
+      RecordError("Reached end of input in method options (missing '}').");
       return false;
     }
 
@@ -2338,7 +2339,7 @@ bool Parser::ParseUserDefinedType(std::string* type_name) {
     //   if we are parsing a field type then we would not get here because
     //   primitives are allowed there as well.  So this error message doesn't
     //   need to account for enums.
-    AddError("Expected message type.");
+    RecordError("Expected message type.");
 
     // Pretend to accept this type so that we can go on parsing.
     *type_name = input_->current().text;
@@ -2370,7 +2371,7 @@ bool Parser::ParsePackage(FileDescriptorProto* file,
                           const LocationRecorder& root_location,
                           const FileDescriptorProto* containing_file) {
   if (file->has_package()) {
-    AddError("Multiple package definitions.");
+    RecordError("Multiple package definitions.");
     // Don't append the new package to the old one.  Just replace it.  Not
     // that it really matters since this is an error anyway.
     file->clear_package();
@@ -2452,9 +2453,9 @@ bool SourceLocationTable::Find(
 }
 
 bool SourceLocationTable::FindImport(const Message* descriptor,
-                                     const std::string& name, int* line,
+                                     absl::string_view name, int* line,
                                      int* column) const {
-  auto it = import_location_map_.find({descriptor, name});
+  auto it = import_location_map_.find({descriptor, std::string(name)});
   if (it == import_location_map_.end()) {
     *line = -1;
     *column = 0;

@@ -129,14 +129,14 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
     ~ValidationErrorCollector() override;
 
     // implements ErrorCollector ---------------------------------------
-    void AddError(const std::string& filename, const std::string& element_name,
-                  const Message* descriptor, ErrorLocation location,
-                  const std::string& message) override;
+    void RecordError(absl::string_view filename, absl::string_view element_name,
+                     const Message* descriptor, ErrorLocation location,
+                     absl::string_view message) override;
 
-    void AddWarning(const std::string& filename,
-                    const std::string& element_name, const Message* descriptor,
-                    ErrorLocation location,
-                    const std::string& message) override;
+    void RecordWarning(absl::string_view filename,
+                       absl::string_view element_name,
+                       const Message* descriptor, ErrorLocation location,
+                       absl::string_view message) override;
 
    private:
     SourceTreeDescriptorDatabase* owner_;

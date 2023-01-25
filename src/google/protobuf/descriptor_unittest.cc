@@ -211,9 +211,9 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
   std::string warning_text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* descriptor, ErrorLocation location,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
     const char* location_name = nullptr;
     switch (location) {
       case NAME:
@@ -256,9 +256,9 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
   }
 
   // implements ErrorCollector ---------------------------------------
-  void AddWarning(const std::string& filename, const std::string& element_name,
-                  const Message* descriptor, ErrorLocation location,
-                  const std::string& message) override {
+  void RecordWarning(absl::string_view filename, absl::string_view element_name,
+                     const Message* descriptor, ErrorLocation location,
+                     absl::string_view message) override {
     const char* location_name = nullptr;
     switch (location) {
       case NAME:
@@ -595,7 +595,7 @@ void ExtractDebugString(
 class SimpleErrorCollector : public io::ErrorCollector {
  public:
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) override {
+  void RecordError(int line, int column, absl::string_view message) override {
     last_error_ = absl::StrFormat("%d:%d:%s", line, column, message);
   }
 
@@ -7610,9 +7610,9 @@ class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
   AbortingErrorCollector(const AbortingErrorCollector&) = delete;
   AbortingErrorCollector& operator=(const AbortingErrorCollector&) = delete;
 
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* message, ErrorLocation location,
-                const std::string& error_message) override {
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* message, ErrorLocation location,
+                   absl::string_view error_message) override {
     ABSL_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
                     << element_name << "]: " << error_message;
   }

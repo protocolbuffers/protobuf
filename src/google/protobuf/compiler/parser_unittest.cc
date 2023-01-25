@@ -72,11 +72,11 @@ class MockErrorCollector : public io::ErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddWarning(int line, int column, const std::string& message) override {
+  void RecordWarning(int line, int column, absl::string_view message) override {
     absl::SubstituteAndAppend(&warning_, "$0:$1: $2\n", line, column, message);
   }
 
-  void AddError(int line, int column, const std::string& message) override {
+  void RecordError(int line, int column, absl::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
@@ -90,9 +90,9 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
   ~MockValidationErrorCollector() override = default;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* descriptor, ErrorLocation location,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
     int line, column;
     if (location == DescriptorPool::ErrorCollector::IMPORT) {
       source_locations_.FindImport(descriptor, element_name, &line, &column);
