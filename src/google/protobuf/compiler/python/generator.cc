@@ -433,6 +433,7 @@ void Generator::PrintImports() const {
     printer_->Print("from $module$ import *\n", "module", module_name);
   }
   printer_->Print("\n");
+  printer_->Print("# @@protoc_insertion_point(post_imports)\n\n");
 }
 
 // Prints the single file descriptor for this file.
