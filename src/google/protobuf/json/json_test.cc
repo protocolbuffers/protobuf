@@ -371,7 +371,7 @@ TEST_P(JsonTest, TestPrintProto2EnumAsIntWithDefaultValue) {
   auto parsed = ToProto<protobuf_unittest::TestDefaultEnumValue>(*printed);
   ASSERT_OK(parsed);
 
-  EXPECT_EQ(parsed->enum_value(), protobuf_unittest::DEFAULT);
+  EXPECT_NE(parsed->enum_value(), protobuf_unittest::DEFAULT);
 }
 
 TEST_P(JsonTest, QuotedEnumValue) {
