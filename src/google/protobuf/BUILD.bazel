@@ -551,6 +551,7 @@ filegroup(
         "unittest_proto3_arena_lite.proto",
         "unittest_proto3_lite.proto",
         "unittest_proto3_optional.proto",
+        "unittest_retention.proto",
         "unittest_well_known_types.proto",
     ],
     visibility = ["//:__subpackages__"],
@@ -1273,6 +1274,31 @@ cc_test(
         "//src/google/protobuf/testing",
         "@com_google_absl//absl/log:scoped_mock_log",
         "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "unittest_retention_proto",
+    testonly = True,
+    srcs = ["unittest_retention.proto"],
+    strip_import_prefix = "/src",
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_retention_cc_proto",
+    testonly = True,
+    deps = ["unittest_retention_proto"],
+)
+
+cc_test(
+    name = "retention_test",
+    srcs = ["retention_test.cc"],
+    deps = [
+        ":protobuf",
+        ":unittest_retention_cc_proto",
+        "//src/google/protobuf/compiler:retention",
         "@com_google_googletest//:gtest_main",
     ],
 )
