@@ -31,10 +31,13 @@
 #include "google/protobuf/arena.h"
 
 #include <algorithm>
+#include <array>
+#include <atomic>
 #include <cstddef>
 #include <cstring>
 #include <memory>
 #include <string>
+#include <thread>
 #include <type_traits>
 #include <typeinfo>
 #include <vector>
@@ -51,6 +54,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
