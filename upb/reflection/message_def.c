@@ -461,13 +461,18 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
         (upb_MiniTableField*)&m->layout->fields[layout_index];
     if (sub_m) {
       if (!mt->subs) {
-        _upb_DefBuilder_Errf(ctx, "invalid submsg for (%s)", m->full_name);
+        _upb_DefBuilder_Errf(ctx, "unexpected submsg for (%s)", m->full_name);
       }
       UPB_ASSERT(mt_f);
       UPB_ASSERT(sub_m->layout);
-      upb_MiniTable_SetSubMessage(mt, mt_f, sub_m->layout);
+      if (UPB_UNLIKELY(!upb_MiniTable_SetSubMessage(mt, mt_f, sub_m->layout))) {
+        _upb_DefBuilder_Errf(ctx, "invalid submsg for (%s)", m->full_name);
+      }
     } else if (_upb_FieldDef_IsClosedEnum(f)) {
-      upb_MiniTable_SetSubEnum(mt, mt_f, _upb_EnumDef_MiniTable(sub_e));
+      const upb_MiniTableEnum* mt_e = _upb_EnumDef_MiniTable(sub_e);
+      if (UPB_UNLIKELY(!upb_MiniTable_SetSubEnum(mt, mt_f, mt_e))) {
+        _upb_DefBuilder_Errf(ctx, "invalid subenum for (%s)", m->full_name);
+      }
     }
   }
 

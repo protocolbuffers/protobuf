@@ -61,19 +61,21 @@ UPB_API_INLINE upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
                               status);
 }
 
-// Links a sub-message field to a MiniTable for that sub-message.  If a
+// Links a sub-message field to a MiniTable for that sub-message. If a
 // sub-message field is not linked, it will be treated as an unknown field
-// during parsing, and setting the field will not be allowed.  It is possible
+// during parsing, and setting the field will not be allowed. It is possible
 // to link the message field later, at which point it will no longer be treated
-// as unknown.  However there is no synchronization for this operation, which
+// as unknown. However there is no synchronization for this operation, which
 // means parallel mutation requires external synchronization.
-UPB_API void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
+// Returns success/failure.
+UPB_API bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                          upb_MiniTableField* field,
                                          const upb_MiniTable* sub);
 
-// Links an enum field to a MiniTable for that enum.  All enum fields must
-// be linked prior to parsing.
-UPB_API void upb_MiniTable_SetSubEnum(upb_MiniTable* table,
+// Links an enum field to a MiniTable for that enum.
+// All enum fields must be linked prior to parsing.
+// Returns success/failure.
+UPB_API bool upb_MiniTable_SetSubEnum(upb_MiniTable* table,
                                       upb_MiniTableField* field,
                                       const upb_MiniTableEnum* sub);
 

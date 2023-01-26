@@ -973,7 +973,7 @@ upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
   return ret;
 }
 
-void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
+bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                  upb_MiniTableField* field,
                                  const upb_MiniTable* sub) {
   UPB_ASSERT((uintptr_t)table->fields <= (uintptr_t)field &&
@@ -989,13 +989,15 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   }
   upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];
   table_sub->submsg = sub;
+  return true;
 }
 
-void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
+bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
                               const upb_MiniTableEnum* sub) {
   UPB_ASSERT((uintptr_t)table->fields <= (uintptr_t)field &&
              (uintptr_t)field <
                  (uintptr_t)(table->fields + table->field_count));
   upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];
   table_sub->subenum = sub;
+  return true;
 }

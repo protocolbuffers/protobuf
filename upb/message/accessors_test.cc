@@ -642,9 +642,9 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
   upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 5);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
   // Update mini table and promote unknown to a message.
-  upb_MiniTable_SetSubMessage(mini_table,
-                              (upb_MiniTableField*)&mini_table->fields[1],
-                              &upb_test_ModelWithExtensions_msg_init);
+  EXPECT_TRUE(upb_MiniTable_SetSubMessage(
+      mini_table, (upb_MiniTableField*)&mini_table->fields[1],
+      &upb_test_ModelWithExtensions_msg_init));
   const int decode_options =
       UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
   upb_UnknownToMessageRet promote_result =
@@ -691,9 +691,9 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessage) {
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
-  upb_MiniTable_SetSubMessage(mini_table,
-                              (upb_MiniTableField*)&mini_table->fields[2],
-                              &upb_test_ModelWithExtensions_msg_init);
+  EXPECT_TRUE(upb_MiniTable_SetSubMessage(
+      mini_table, (upb_MiniTableField*)&mini_table->fields[2],
+      &upb_test_ModelWithExtensions_msg_init));
   const int decode_options =
       UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
   upb_UnknownToMessage_Status promote_result =
@@ -746,9 +746,9 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
-  upb_MiniTable_SetSubMessage(mini_table,
-                              (upb_MiniTableField*)&mini_table->fields[1],
-                              map_entry_mini_table);
+  EXPECT_TRUE(upb_MiniTable_SetSubMessage(
+      mini_table, (upb_MiniTableField*)&mini_table->fields[1],
+      map_entry_mini_table));
   const int decode_options =
       UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
   upb_UnknownToMessage_Status promote_result =

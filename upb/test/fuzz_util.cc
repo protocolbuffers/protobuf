@@ -47,7 +47,7 @@ class Builder {
     BuildMessages();
     BuildEnums();
     BuildExtensions(exts);
-    LinkMessages();
+    if (!LinkMessages()) return nullptr;
     return mini_tables_.empty() ? nullptr : mini_tables_.front();
   }
 
@@ -56,7 +56,7 @@ class Builder {
   void BuildEnums();
   void BuildExtensions(upb_ExtensionRegistry** exts);
   bool LinkExtension(upb_MiniTableExtension* ext);
-  void LinkMessages();
+  bool LinkMessages();
 
   size_t NextLink() {
     if (input_->links.empty()) return 0;
@@ -160,7 +160,7 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
   }
 }
 
-void Builder::LinkMessages() {
+bool Builder::LinkMessages() {
   for (auto* t : mini_tables_) {
     upb_MiniTable* table = const_cast<upb_MiniTable*>(t);
     // For each field that requires a sub-table, assign one as appropriate.
@@ -173,19 +173,21 @@ void Builder::LinkMessages() {
           const upb_MiniTable* sub = NextMiniTable();
           // We should always have at least one message.
           assert(sub);
-          upb_MiniTable_SetSubMessage(table, field, sub);
+          if (!upb_MiniTable_SetSubMessage(table, field, sub)) return false;
           break;
         }
         case kUpb_FieldType_Group: {
           const upb_MiniTable* sub = NextNonMapEntryMiniTable();
           // sub will be nullptr if no non-map entry messages are available.
-          if (sub) upb_MiniTable_SetSubMessage(table, field, sub);
+          if (sub) {
+            if (!upb_MiniTable_SetSubMessage(table, field, sub)) return false;
+          }
           break;
         }
         case kUpb_FieldType_Enum: {
           auto* et = NextEnumTable();
           if (et) {
-            upb_MiniTable_SetSubEnum(table, field, et);
+            if (!upb_MiniTable_SetSubEnum(table, field, et)) return false;
           } else {
             // We don't have any sub-enums.  Override the field type so that it
             // is not needed.
@@ -195,6 +197,7 @@ void Builder::LinkMessages() {
       }
     }
   }
+  return true;
 }
 
 }  // namespace
