@@ -1,23 +1,19 @@
-name: C++ Bazel Tests
+name: C++ Bazel
+run-name: C++ Bazel
 
 on:
-  push:
-    branches:
-      - gha
-  pull_request:
-    branches:
-      - gha
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        description: "The deployment environment to use for secrets."
+        type: string
+    secrets:
+      GAR_SERVICE_ACCOUNT:
+        required: true
 
 jobs:
-  approve: # First step
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Approve
-      run: echo For security reasons, all pull requests need to be approved first before running any automated CI.
-
   run:
-    needs: [approve]
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
@@ -30,11 +26,13 @@ jobs:
           - { name: "UBSAN", config: "ubsan" }
           - { name: "Opt", config: "opt" }
     name: ${{ matrix.name }}
-    uses: ./.github/workflows/docker_run.yml
+    uses: ./.github/workflows/docker_bazel.yml
     with:
-      environment: test-docker
+      name: C++ Bazel / ${{ matrix.name}}
+      environment: ${{ inputs.environment }}
       image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:dbd2f15fb69734d72c3fd10cb819bbe2ce4890acf49e9a2f9403983fe48e8807
-      run: test --distinct_host_configuration=false --config=${{ matrix.config }} //pkg/... //src/... @com_google_protobuf_examples//...
+      flags: --distinct_host_configuration=false --config=${{ matrix.config }}
+      targets: //pkg/... //src/... @com_google_protobuf_examples//...
       cache: cpp_bazel/${{ matrix.name }}
     secrets:
       GAR_SERVICE_ACCOUNT: ${{secrets.GAR_SERVICE_ACCOUNT}}
