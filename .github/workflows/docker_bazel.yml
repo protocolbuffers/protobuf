@@ -11,10 +11,6 @@ on:
         required: true
         description: "The targets to test."
         type: string
-      environment:
-        required: true
-        description: "The deployment environment to use for secrets."
-        type: string
       image:
         required: false
         default: 'us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1'
@@ -33,13 +29,11 @@ on:
       GAR_SERVICE_ACCOUNT:
         required: true
 
-run-name: ${{ inputs.name }}
-
 jobs:
   run:
     name: ${{ inputs.name }}
+
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v2
       - name: Authenticate to Google Cloud
@@ -57,7 +51,7 @@ jobs:
       - name: Set up Bazel caching
         run: >
           echo "BAZEL_CACHE=
-          --google_credentials=$(basename $GOOGLE_APPLICATION_CREDENTIALS)
+          --google_credentials=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS)
           --remote_upload_local_results
           --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.cache }}" >> $GITHUB_ENV
         if: ${{ inputs.cache }}
