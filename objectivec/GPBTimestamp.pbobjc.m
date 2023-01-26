@@ -74,7 +74,6 @@ typedef struct GPBTimestamp__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBTimestamp class]
-                                     rootClass:[GPBTimestampRoot class]
                                           file:GPBTimestampRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
