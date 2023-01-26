@@ -153,6 +153,7 @@ class PROTOBUF_EXPORT MapKey {
     return val_.bool_value_;
   }
   const std::string& GetStringValue() const {
+    ABSL_CHECK(false) << "Test error";
     TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING, "MapKey::GetStringValue");
     return val_.string_value_.get();
   }
