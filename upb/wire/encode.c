@@ -568,6 +568,35 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
   *size = (e->limit - e->ptr) - pre_len;
 }
 
+static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
+                                           const void* const msg,
+                                           const upb_MiniTable* const l,
+                                           char** const buf,
+                                           size_t* const size) {
+  // Unfortunately we must continue to perform hackery here because there are
+  // code paths which blindly copy the returned pointer without bothering to
+  // check for errors until much later (b/235839510). So we still set *buf to
+  // NULL on error and we still set it to non-NULL on a successful empty result.
+  if (UPB_SETJMP(encoder->err) == 0) {
+    encode_message(encoder, msg, l, size);
+    *size = encoder->limit - encoder->ptr;
+    if (*size == 0) {
+      static char ch;
+      *buf = &ch;
+    } else {
+      UPB_ASSERT(encoder->ptr);
+      *buf = encoder->ptr;
+    }
+  } else {
+    UPB_ASSERT(encoder->status != kUpb_EncodeStatus_Ok);
+    *buf = NULL;
+    *size = 0;
+  }
+
+  _upb_mapsorter_destroy(&encoder->sorter);
+  return encoder->status;
+}
+
 upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
                             int options, upb_Arena* arena, char** buf,
                             size_t* size) {
@@ -583,26 +612,5 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
   e.options = options;
   _upb_mapsorter_init(&e.sorter);
 
-  // Unfortunately we must continue to perform hackery here because there are
-  // code paths which blindly copy the returned pointer without bothering to
-  // check for errors until much later (b/235839510). So we still set *buf to
-  // NULL on error and we still set it to non-NULL on a successful empty result.
-  if (UPB_SETJMP(e.err) == 0) {
-    encode_message(&e, msg, l, size);
-    *size = e.limit - e.ptr;
-    if (*size == 0) {
-      static char ch;
-      *buf = &ch;
-    } else {
-      UPB_ASSERT(e.ptr);
-      *buf = e.ptr;
-    }
-  } else {
-    UPB_ASSERT(e.status != kUpb_EncodeStatus_Ok);
-    *buf = NULL;
-    *size = 0;
-  }
-
-  _upb_mapsorter_destroy(&e.sorter);
-  return e.status;
+  return upb_Encoder_Encode(&e, msg, l, buf, size);
 }

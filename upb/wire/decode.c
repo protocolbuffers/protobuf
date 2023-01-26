@@ -1246,6 +1246,23 @@ const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
       e, ptr, overrun, _upb_Decoder_BufferFlipCallback);
 }
 
+static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
+                                           const char* const buf,
+                                           void* const msg,
+                                           const upb_MiniTable* const l,
+                                           upb_Arena* const arena) {
+  if (UPB_SETJMP(decoder->err) == 0) {
+    decoder->status = _upb_Decoder_DecodeTop(decoder, buf, msg, l);
+  } else {
+    UPB_ASSERT(decoder->status != kUpb_DecodeStatus_Ok);
+  }
+
+  arena->head.ptr = decoder->arena.head.ptr;
+  arena->head.end = decoder->arena.head.end;
+  arena->cleanup_metadata = decoder->arena.cleanup_metadata;
+  return decoder->status;
+}
+
 upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
                             const upb_MiniTable* l,
                             const upb_ExtensionRegistry* extreg, int options,
@@ -1268,16 +1285,7 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
   state.arena.parent = arena;
   state.status = kUpb_DecodeStatus_Ok;
 
-  if (UPB_SETJMP(state.err) == 0) {
-    state.status = _upb_Decoder_DecodeTop(&state, buf, msg, l);
-  } else {
-    UPB_ASSERT(state.status != kUpb_DecodeStatus_Ok);
-  }
-
-  arena->head.ptr = state.arena.head.ptr;
-  arena->head.end = state.arena.head.end;
-  arena->cleanup_metadata = state.arena.cleanup_metadata;
-  return state.status;
+  return upb_Decoder_Decode(&state, buf, msg, l, arena);
 }
 
 #undef OP_FIXPCK_LG2
