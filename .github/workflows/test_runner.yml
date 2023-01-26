@@ -1,5 +1,14 @@
 name: Tests
 
+# This file implements the protection strategy laid out in
+# go/protobuf-gha-protected-resources.  Pull requests from branches within this
+# repository are considered safe and will immediately start running tests on
+# every commit.  Pull requests from forked repositories are unsafe, and leave
+# us vulnerable to PWN requests and stolen resources.  In these cases, we
+# require a special "safe for tests" tag to be added to the pull request before
+# we start testing.  This will be immediately removed, so that further commits
+# require their own stamp to test.
+
 on:
   # postsubmit
   push:
@@ -19,7 +28,7 @@ on:
 
 jobs:
   check-tag:
-    name: Check for Safety Tag
+    name: Check for Safety
 
     # Avoid running tests twice on PR updates.  If the PR is coming from our
     # repository, it's safe and we can use `pull_request`.  Otherwise, we should
@@ -33,12 +42,12 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - name: Check for safety approval
+      - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
         # unless this is specifically an event for adding the safe label.
         run: >
           ${{ github.event_name != 'pull_request_target' || github.event.label.name == 'safe for tests' }} ||
-          (echo "This pull request hasn't been marked safe to test!" && exit 1)
+          (echo "This pull request is from an unsafe fork and hasn't been approved to run tests!" && exit 1)
 
   remove-tag:
     needs: [check-tag]
@@ -53,5 +62,10 @@ jobs:
     name: C++ Bazel
     needs: [check-tag]
     uses: ./.github/workflows/cpp_bazel.yml
+    with:
+      # Note: this pattern is vulnerable to PWN requests for pull_request_target
+      # events. We carefully limit those workflows to require a human stamp
+      # before continuing.
+      checkout: ${{ github.event.pull_request.head.sha }}
     secrets: inherit
 
