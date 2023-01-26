@@ -1,13 +1,7 @@
 name: C++ Bazel
-run-name: C++ Bazel
 
 on:
   workflow_call:
-    inputs:
-      environment:
-        required: true
-        description: "The deployment environment to use for secrets."
-        type: string
     secrets:
       GAR_SERVICE_ACCOUNT:
         required: true
@@ -19,20 +13,17 @@ jobs:
       matrix:
         include:
           - { name: "Optimized", config: "opt" }
-          - { name: "Debug", config: "dbg" }
-          - { name: "ASAN", config: "asan" }
-          - { name: "MSAN", config: "kokoro-msan" }
-          - { name: "TSAN", config: "tsan" }
-          - { name: "UBSAN", config: "ubsan" }
-          - { name: "Opt", config: "opt" }
+          #- { name: "Debug", config: "dbg" }
+          #- { name: "ASAN", config: "asan" }
+          #- { name: "MSAN", config: "kokoro-msan" }
+          #- { name: "TSAN", config: "tsan" }
+          #- { name: "UBSAN", config: "ubsan" }
     name: ${{ matrix.name }}
     uses: ./.github/workflows/docker_bazel.yml
     with:
-      name: C++ Bazel / ${{ matrix.name}}
-      environment: ${{ inputs.environment }}
+      name: ${{ matrix.name }}
       image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:dbd2f15fb69734d72c3fd10cb819bbe2ce4890acf49e9a2f9403983fe48e8807
       flags: --distinct_host_configuration=false --config=${{ matrix.config }}
       targets: //pkg/... //src/... @com_google_protobuf_examples//...
       cache: cpp_bazel/${{ matrix.name }}
-    secrets:
-      GAR_SERVICE_ACCOUNT: ${{secrets.GAR_SERVICE_ACCOUNT}}
+    secrets: inherit
