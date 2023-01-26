@@ -1494,7 +1494,6 @@ bool MessageDifferencer::UnpackAnyField::UnpackAny(
       any.GetDescriptor()->file()->pool()->FindMessageTypeByName(
           full_type_name);
   if (desc == NULL) {
-    ABSL_LOG(INFO) << "Proto type '" << full_type_name << "' not found";
     return false;
   }
 
