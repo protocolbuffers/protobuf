@@ -453,7 +453,7 @@ ThreadSafeArena::ThreadCache& ThreadSafeArena::thread_cache() {
   return thread_cache;
 }
 #else
-ABSL_CONST_INIT PROTOBUF_THREAD_LOCAL
+PROTOBUF_THREAD_LOCAL
     ThreadSafeArena::ThreadCache ThreadSafeArena::thread_cache_;
 #endif
 
