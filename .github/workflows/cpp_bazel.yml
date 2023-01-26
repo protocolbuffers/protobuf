@@ -2,6 +2,11 @@ name: C++ Bazel
 
 on:
   workflow_call:
+    inputs:
+      checkout:
+        required: true
+        type: string
+
     secrets:
       GAR_SERVICE_ACCOUNT:
         required: true
@@ -22,6 +27,7 @@ jobs:
     uses: ./.github/workflows/docker_bazel.yml
     with:
       name: ${{ matrix.name }}
+      checkout: ${{ inputs.checkout }}
       image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:dbd2f15fb69734d72c3fd10cb819bbe2ce4890acf49e9a2f9403983fe48e8807
       flags: --distinct_host_configuration=false --config=${{ matrix.config }}
       targets: //pkg/... //src/... @com_google_protobuf_examples//...
