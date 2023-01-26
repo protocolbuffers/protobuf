@@ -1,0 +1,55 @@
+name: Tests
+
+on:
+  # postsubmit
+  push:
+    branches:
+      - gha
+
+  # safe presubmit
+  pull_request:
+    branches:
+      - gha
+
+  # unsafe presubmit
+  pull_request_target:
+    branches:
+      - gha
+    types: [labeled, opened, reopened, synchronize]
+
+jobs:
+  check-tag:
+    name: Check for Safety Tag
+
+    # Avoid running tests twice on PR updates.  If the PR is coming from our
+    # repository, it's safe and we can use `pull_request`.  Otherwise, we should
+    # use `pull_request_target`.
+    if: |
+      github.event_name == 'push' ||
+        (github.event_name == 'pull_request' &&
+         github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf') ||
+        (github.event_name == 'pull_request_target' &&
+         github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for safety approval
+        # Trivially pass for safe PRs, and explicitly error for unsafe ones
+        # unless this is specifically an event for adding the safe label.
+        run: ${{ github.event_name != 'pull_request_target' || github.event.label.name == 'safe for tests' }} || exit 1
+
+  remove-tag:
+    needs: [check-tag]
+    if: github.event.action == 'labeled'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: safe for tests
+
+  cpp-bazel:
+    name: C++ Bazel
+    needs: [check-tag]
+    uses: ./.github/workflows/cpp_bazel.yml
+    secrets: inherit
+
