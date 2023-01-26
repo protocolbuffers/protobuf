@@ -61,6 +61,8 @@ using type_info = ::type_info;
 #error "You cannot SWIG proto headers"
 #endif
 
+// NOOP
+
 namespace google {
 namespace protobuf {
 
