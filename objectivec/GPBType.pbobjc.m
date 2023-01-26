@@ -283,6 +283,7 @@ typedef struct GPBType__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBType class]
+                                     rootClass:[GPBTypeRoot class]
                                           file:GPBTypeRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
@@ -437,6 +438,7 @@ typedef struct GPBField__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBField class]
+                                     rootClass:[GPBTypeRoot class]
                                           file:GPBTypeRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
@@ -554,6 +556,7 @@ typedef struct GPBEnum__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBEnum class]
+                                     rootClass:[GPBTypeRoot class]
                                           file:GPBTypeRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
@@ -632,6 +635,7 @@ typedef struct GPBEnumValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBEnumValue class]
+                                     rootClass:[GPBTypeRoot class]
                                           file:GPBTypeRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
@@ -687,6 +691,7 @@ typedef struct GPBOption__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBOption class]
+                                     rootClass:[GPBTypeRoot class]
                                           file:GPBTypeRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))

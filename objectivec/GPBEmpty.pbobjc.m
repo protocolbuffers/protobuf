@@ -50,6 +50,7 @@ typedef struct GPBEmpty__storage_ {
   if (!descriptor) {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBEmpty class]
+                                     rootClass:[GPBEmptyRoot class]
                                           file:GPBEmptyRoot_FileDescriptor()
                                         fields:NULL
                                     fieldCount:0

@@ -202,14 +202,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 
 // fieldDescriptions have to be long lived, they are held as raw pointers.
 + (instancetype)allocDescriptorForClass:(Class)messageClass
-                                   file:(GPBFileDescriptor *)file
-                                 fields:(void *)fieldDescriptions
-                             fieldCount:(uint32_t)fieldCount
-                            storageSize:(uint32_t)storageSize
-                                  flags:(GPBDescriptorInitializationFlags)flags;
-
-// Old interface that took the rootClass.
-+ (instancetype)allocDescriptorForClass:(Class)messageClass
                               rootClass:(Class)rootClass
                                    file:(GPBFileDescriptor *)file
                                  fields:(void *)fieldDescriptions

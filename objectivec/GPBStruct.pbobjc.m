@@ -109,6 +109,7 @@ typedef struct GPBStruct__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBStruct class]
+                                     rootClass:[GPBStructRoot class]
                                           file:GPBStructRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
@@ -208,6 +209,7 @@ typedef struct GPBValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBValue class]
+                                     rootClass:[GPBStructRoot class]
                                           file:GPBStructRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
@@ -275,6 +277,7 @@ typedef struct GPBListValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBListValue class]
+                                     rootClass:[GPBStructRoot class]
                                           file:GPBStructRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))

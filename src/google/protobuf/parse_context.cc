@@ -677,12 +677,27 @@ const char* UnknownFieldParse(uint32_t tag, std::string* unknown,
 //   ABSL_LOG(FATAL) << "Invalid num_bits value";
 // }
 // ```
+template <typename V1Type, typename V2Type>
+PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1,
+                                                  V2Type value2) {
+  asm("" : "+r"(value1) : "r"(value2));
+  return value1;
+}
+
+// Falsely indicate that the specific value is modified at this location.  This
+// prevents code which depends on this value from being scheduled earlier.
+template <typename V1Type>
+PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1) {
+  asm("" : "+r"(value1));
+  return value1;
+}
+
 PROTOBUF_ALWAYS_INLINE inline uint64_t ExtractAndMergeTwoChunks(
     uint64_t data, uint64_t first_byte) {
   ABSL_DCHECK_LE(first_byte, 6);
   uint64_t first = Ubfx7(data, first_byte * 8);
   uint64_t second = Ubfx7(data, (first_byte + 1) * 8);
-  return ValueBarrier(first | (second << 7));
+  return ForceToRegister(first | (second << 7));
 }
 
 struct SlowPathEncodedInfo {
@@ -701,9 +716,9 @@ PROTOBUF_ALWAYS_INLINE inline SlowPathEncodedInfo ComputeLengthAndUpdateP(
   SlowPathEncodedInfo result;
   // Load the last two bytes of the encoded Varint.
   std::memcpy(&result.last8, p + 2, sizeof(result.last8));
-  uint64_t mask = ValueBarrier(0x8080808080808080);
+  uint64_t mask = ForceToRegister(0x8080808080808080);
   // Only set continuation bits remain
-  result.masked_cont_bits = ValueBarrier(mask & (~result.last8));
+  result.masked_cont_bits = ForceToRegister(mask & (~result.last8));
   // The first cleared continuation bit is the most significant 1 in the
   // reversed value.  Result is undefined for an input of 0 and we handle that
   // case below.
@@ -743,11 +758,9 @@ PROTOBUF_NOINLINE const char* VarintParseSlowArm64(const char* p, uint64_t* out,
                     merged_45 << kFirstResultBitChunk4;
   // This immediate ends in 14 zeroes since valid_chunk_bits is too low by 14.
   uint64_t result_mask = kResultMaskUnshifted << info.valid_chunk_bits;
-  // masked_cont_bits is 0 iff the Varint is invalid.
-  if (PROTOBUF_PREDICT_FALSE(!info.masked_cont_bits)) {
-    *out = 0;
-    return nullptr;
-  }
+  // masked_cont_bits is 0 iff the Varint is invalid.  In that case
+  info.valid_bits =
+      info.masked_cont_bits ? info.valid_bits : kValidBitsForInvalidVarint;
   // Test for early exit if Varint does not exceed 6 chunks.  Branching on one
   // bit is faster on ARM than via a compare and branch.
   if (PROTOBUF_PREDICT_FALSE((info.valid_bits & 0x20) != 0)) {
@@ -759,6 +772,11 @@ PROTOBUF_NOINLINE const char* VarintParseSlowArm64(const char* p, uint64_t* out,
     result |= merged_67 << kFirstResultBitChunk6;
     result |= merged_89 << kFirstResultBitChunk8;
     // Handle an invalid Varint with all 10 continuation bits set.
+    info.masked_cont_bits = ValueBarrier(info.masked_cont_bits);
+    if (PROTOBUF_PREDICT_FALSE(info.masked_cont_bits == 0)) {
+      *out = 0;
+      return nullptr;
+    }
   }
   // Mask off invalid data bytes.
   result &= ~result_mask;
@@ -777,8 +795,8 @@ PROTOBUF_NOINLINE const char* VarintParseSlowArm32(const char* p, uint32_t* out,
   uint64_t merged_34 = ExtractAndMergeTwoChunks(first8, /*first_chunk=*/3);
   first8 = ValueBarrier(first8, p);
   uint64_t result = Ubfx7(first8, /*start=*/0);
-  result = ValueBarrier(result | merged_12 << kFirstResultBitChunk1);
-  result = ValueBarrier(result | merged_34 << kFirstResultBitChunk3);
+  result = ForceToRegister(result | merged_12 << kFirstResultBitChunk1);
+  result = ForceToRegister(result | merged_34 << kFirstResultBitChunk3);
   uint64_t result_mask = kResultMaskUnshifted << info.valid_chunk_bits;
   result &= ~result_mask;
   // It is extremely unlikely that a Varint is invalid so checking that

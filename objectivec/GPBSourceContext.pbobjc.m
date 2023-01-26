@@ -63,6 +63,7 @@ typedef struct GPBSourceContext__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBSourceContext class]
+                                     rootClass:[GPBSourceContextRoot class]
                                           file:GPBSourceContextRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))

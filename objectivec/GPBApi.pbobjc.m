@@ -139,6 +139,7 @@ typedef struct GPBApi__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBApi class]
+                                     rootClass:[GPBApiRoot class]
                                           file:GPBApiRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
@@ -259,6 +260,7 @@ typedef struct GPBMethod__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBMethod class]
+                                     rootClass:[GPBApiRoot class]
                                           file:GPBApiRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
@@ -331,6 +333,7 @@ typedef struct GPBMixin__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBMixin class]
+                                     rootClass:[GPBApiRoot class]
                                           file:GPBApiRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))

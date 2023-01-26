@@ -49,7 +49,7 @@
 // description has to be long lived, it is held as a raw pointer.
 - (instancetype)initWithFieldDescription:(void *)description
                                     file:(GPBFileDescriptor *)file
-                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags;
+                          decriptorFlags:(GPBDescriptorInitializationFlags)decriptorFlags;
 
 @end
 
@@ -135,11 +135,15 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 @synthesize wireFormat = wireFormat_;
 
 + (instancetype)allocDescriptorForClass:(Class)messageClass
+                              rootClass:(Class)rootClass
                                    file:(GPBFileDescriptor *)file
                                  fields:(void *)fieldDescriptions
                              fieldCount:(uint32_t)fieldCount
                             storageSize:(uint32_t)storageSize
                                   flags:(GPBDescriptorInitializationFlags)flags {
+  // The rootClass is no longer used, but it is passed in to ensure it
+  // was started up during initialization also.
+  (void)rootClass;
   NSMutableArray *fields =
       (fieldCount ? [[NSMutableArray alloc] initWithCapacity:fieldCount] : nil);
   BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
@@ -153,7 +157,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
       desc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
     }
     GPBFieldDescriptor *fieldDescriptor =
-        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc file:file descriptorFlags:flags];
+        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc file:file decriptorFlags:flags];
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
   }
@@ -166,24 +170,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
                                                wireFormat:wireFormat];
   [fields release];
   return descriptor;
-}
-
-+ (instancetype)allocDescriptorForClass:(Class)messageClass
-                              rootClass:(__unused Class)rootClass
-                                   file:(GPBFileDescriptor *)file
-                                 fields:(void *)fieldDescriptions
-                             fieldCount:(uint32_t)fieldCount
-                            storageSize:(uint32_t)storageSize
-                                  flags:(GPBDescriptorInitializationFlags)flags {
-  // The rootClass is no longer used, but it is passed as [ROOT class] to
-  // ensure it was started up during initialization also when the message
-  // scopes extensions.
-  return [self allocDescriptorForClass:messageClass
-                                  file:file
-                                fields:fieldDescriptions
-                            fieldCount:fieldCount
-                           storageSize:storageSize
-                                 flags:flags];
 }
 
 - (instancetype)initWithClass:(Class)messageClass
@@ -480,10 +466,10 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 - (instancetype)initWithFieldDescription:(void *)description
                                     file:(GPBFileDescriptor *)file
-                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags {
+                          decriptorFlags:(GPBDescriptorInitializationFlags)decriptorFlags {
   if ((self = [super init])) {
     BOOL includesDefault =
-        (descriptorFlags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
+        (decriptorFlags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
     GPBMessageFieldDescription *coreDesc;
     if (includesDefault) {
       coreDesc = &(((GPBMessageFieldDescriptionWithDefault *)description)->core);
@@ -500,7 +486,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
     // If proto3 optionals weren't known (i.e. generated code from an
     // older version), compute the flag for the rest of the runtime.
-    if ((descriptorFlags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) == 0) {
+    if ((decriptorFlags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) == 0) {
       // If it was...
       //  - proto3 syntax
       //  - not repeated/map
@@ -518,7 +504,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
     // If the ClosedEnum flag wasn't known (i.e. generated code from an older
     // version), compute the flag for the rest of the runtime.
-    if ((descriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) == 0) {
+    if ((decriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) == 0) {
       // NOTE: This isn't correct, it is using the syntax of the file that
       // declared the field, not the syntax of the file that declared the
       // enum; but for older generated code, that's all we have and that happens
@@ -554,7 +540,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       // Note: Only fetch the class here, can't send messages to it because
       // that could cause cycles back to this class within +initialize if
       // two messages have each other in fields (i.e. - they build a graph).
-      if ((descriptorFlags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0) {
+      if ((decriptorFlags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0) {
         msgClass_ = coreDesc->dataTypeSpecific.clazz;
       } else {
         // Backwards compatibility for sources generated with older protoc.
