@@ -18,11 +18,11 @@ jobs:
       matrix:
         include:
           - { name: "Optimized", config: "opt" }
-          #- { name: "Debug", config: "dbg" }
-          #- { name: "ASAN", config: "asan" }
-          #- { name: "MSAN", config: "kokoro-msan" }
-          #- { name: "TSAN", config: "tsan" }
-          #- { name: "UBSAN", config: "ubsan" }
+          - { name: "Debug", config: "dbg" }
+          - { name: "ASAN", config: "asan" }
+          - { name: "MSAN", config: "kokoro-msan" }
+          - { name: "TSAN", config: "tsan" }
+          - { name: "UBSAN", config: "ubsan" }
     name: ${{ matrix.name }}
     uses: ./.github/workflows/docker_bazel.yml
     with:
