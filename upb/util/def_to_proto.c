@@ -568,58 +568,98 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(
   return proto;
 }
 
+static google_protobuf_DescriptorProto* upb_ToProto_ConvertMessageDef(
+    upb_ToProto_Context* const ctx, const upb_MessageDef* const m) {
+  if (UPB_SETJMP(ctx->err)) return NULL;
+  return msgdef_toproto(ctx, m);
+}
+
 google_protobuf_DescriptorProto* upb_MessageDef_ToProto(const upb_MessageDef* m,
-                                                        upb_Arena* a) {
+                                               upb_Arena* a) {
   upb_ToProto_Context ctx = {a};
-  if (UPB_SETJMP(ctx.err)) return NULL;
-  return msgdef_toproto(&ctx, m);
+  return upb_ToProto_ConvertMessageDef(&ctx, m);
+}
+
+google_protobuf_EnumDescriptorProto* upb_ToProto_ConvertEnumDef(
+    upb_ToProto_Context* const ctx, const upb_EnumDef* const e) {
+  if (UPB_SETJMP(ctx->err)) return NULL;
+  return enumdef_toproto(ctx, e);
 }
 
 google_protobuf_EnumDescriptorProto* upb_EnumDef_ToProto(const upb_EnumDef* e,
-                                                         upb_Arena* a) {
+                                                upb_Arena* a) {
   upb_ToProto_Context ctx = {a};
-  if (UPB_SETJMP(ctx.err)) return NULL;
-  return enumdef_toproto(&ctx, e);
+  return upb_ToProto_ConvertEnumDef(&ctx, e);
+}
+
+google_protobuf_EnumValueDescriptorProto* upb_ToProto_ConvertEnumValueDef(
+    upb_ToProto_Context* const ctx, const upb_EnumValueDef* e) {
+  if (UPB_SETJMP(ctx->err)) return NULL;
+  return enumvaldef_toproto(ctx, e);
 }
 
 google_protobuf_EnumValueDescriptorProto* upb_EnumValueDef_ToProto(
     const upb_EnumValueDef* e, upb_Arena* a) {
   upb_ToProto_Context ctx = {a};
-  if (UPB_SETJMP(ctx.err)) return NULL;
-  return enumvaldef_toproto(&ctx, e);
+  return upb_ToProto_ConvertEnumValueDef(&ctx, e);
 }
 
-google_protobuf_FieldDescriptorProto* upb_FieldDef_ToProto(
-    const upb_FieldDef* f, upb_Arena* a) {
-  upb_ToProto_Context ctx = {a};
-  if (UPB_SETJMP(ctx.err)) return NULL;
-  return fielddef_toproto(&ctx, f);
+google_protobuf_FieldDescriptorProto* upb_ToProto_ConvertFieldDef(
+    upb_ToProto_Context* const ctx, const upb_FieldDef* f) {
+  if (UPB_SETJMP(ctx->err)) return NULL;
+  return fielddef_toproto(ctx, f);
 }
 
-google_protobuf_OneofDescriptorProto* upb_OneofDef_ToProto(
-    const upb_OneofDef* o, upb_Arena* a) {
+google_protobuf_FieldDescriptorProto* upb_FieldDef_ToProto(const upb_FieldDef* f,
+                                                  upb_Arena* a) {
   upb_ToProto_Context ctx = {a};
-  if (UPB_SETJMP(ctx.err)) return NULL;
-  return oneofdef_toproto(&ctx, o);
+  return upb_ToProto_ConvertFieldDef(&ctx, f);
+}
+
+google_protobuf_OneofDescriptorProto* upb_ToProto_ConvertOneofDef(
+    upb_ToProto_Context* const ctx, const upb_OneofDef* o) {
+  if (UPB_SETJMP(ctx->err)) return NULL;
+  return oneofdef_toproto(ctx, o);
+}
+
+google_protobuf_OneofDescriptorProto* upb_OneofDef_ToProto(const upb_OneofDef* o,
+                                                  upb_Arena* a) {
+  upb_ToProto_Context ctx = {a};
+  return upb_ToProto_ConvertOneofDef(&ctx, o);
+}
+
+google_protobuf_FileDescriptorProto* upb_ToProto_ConvertFileDef(
+    upb_ToProto_Context* const ctx, const upb_FileDef* const f) {
+  if (UPB_SETJMP(ctx->err)) return NULL;
+  return filedef_toproto(ctx, f);
 }
 
 google_protobuf_FileDescriptorProto* upb_FileDef_ToProto(const upb_FileDef* f,
-                                                         upb_Arena* a) {
+                                                upb_Arena* a) {
   upb_ToProto_Context ctx = {a};
-  if (UPB_SETJMP(ctx.err)) return NULL;
-  return filedef_toproto(&ctx, f);
+  return upb_ToProto_ConvertFileDef(&ctx, f);
+}
+
+google_protobuf_MethodDescriptorProto* upb_ToProto_ConvertMethodDef(
+    upb_ToProto_Context* const ctx, const upb_MethodDef* m) {
+  if (UPB_SETJMP(ctx->err)) return NULL;
+  return methoddef_toproto(ctx, m);
 }
 
 google_protobuf_MethodDescriptorProto* upb_MethodDef_ToProto(
-    const upb_MethodDef* m, upb_Arena* a) {
+    const upb_MethodDef* const m, upb_Arena* a) {
   upb_ToProto_Context ctx = {a};
-  if (UPB_SETJMP(ctx.err)) return NULL;
-  return methoddef_toproto(&ctx, m);
+  return upb_ToProto_ConvertMethodDef(&ctx, m);
 }
 
-google_protobuf_ServiceDescriptorProto* upb_ServiceDef_ToProto(
-    const upb_ServiceDef* s, upb_Arena* a) {
+google_protobuf_ServiceDescriptorProto* upb_ToProto_ConvertServiceDef(
+    upb_ToProto_Context* const ctx, const upb_ServiceDef* const s) {
+  if (UPB_SETJMP(ctx->err)) return NULL;
+  return servicedef_toproto(ctx, s);
+}
+
+google_protobuf_ServiceDescriptorProto* upb_ServiceDef_ToProto(const upb_ServiceDef* s,
+                                                      upb_Arena* a) {
   upb_ToProto_Context ctx = {a};
-  if (UPB_SETJMP(ctx.err)) return NULL;
-  return servicedef_toproto(&ctx, s);
+  return upb_ToProto_ConvertServiceDef(&ctx, s);
 }
