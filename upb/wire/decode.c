@@ -937,6 +937,16 @@ int _upb_Decoder_GetVarintOp(const upb_MiniTableField* field) {
   return kVarintOps[field->descriptortype];
 }
 
+UPB_FORCEINLINE
+static void _upb_Decoder_CheckUnlinked(const upb_MiniTable* mt,
+                                       const upb_MiniTableField* field,
+                                       int* op) {
+  // If sub-message is not linked, treat as unknown.
+  if (field->mode & kUpb_LabelFlags_IsExtension) return;
+  const upb_MiniTableSub* sub = &mt->subs[field->submsg_index];
+  if (!sub->submsg) *op = kUpb_DecodeOp_UnknownField;
+}
+
 int _upb_Decoder_GetDelimitedOp(const upb_MiniTable* mt,
                                 const upb_MiniTableField* field) {
   enum { kRepeatedBase = 19 };
@@ -991,13 +1001,8 @@ int _upb_Decoder_GetDelimitedOp(const upb_MiniTable* mt,
   if (upb_FieldMode_Get(field) == kUpb_FieldMode_Array) ndx += kRepeatedBase;
   int op = kDelimitedOps[ndx];
 
-  // If sub-message is not linked, treat as unknown.
-  if (op == kUpb_DecodeOp_SubMessage &&
-      !(field->mode & kUpb_LabelFlags_IsExtension)) {
-    const upb_MiniTableSub* sub = &mt->subs[field->submsg_index];
-    if (!sub->submsg) {
-      op = kUpb_DecodeOp_UnknownField;
-    }
+  if (op == kUpb_DecodeOp_SubMessage) {
+    _upb_Decoder_CheckUnlinked(mt, field, &op);
   }
 
   return op;
@@ -1043,6 +1048,7 @@ static const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
       val->uint32_val = field->number;
       if (field->descriptortype == kUpb_FieldType_Group) {
         *op = kUpb_DecodeOp_SubMessage;
+        _upb_Decoder_CheckUnlinked(mt, field, op);
       } else if (field->descriptortype == kUpb_FakeFieldType_MessageSetItem) {
         *op = kUpb_DecodeOp_MessageSetItem;
       } else {

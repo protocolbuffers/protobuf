@@ -979,7 +979,12 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   UPB_ASSERT((uintptr_t)table->fields <= (uintptr_t)field &&
              (uintptr_t)field <
                  (uintptr_t)(table->fields + table->field_count));
+  // TODO: check these type invariants at runtime and return error to the
+  // caller if they are violated, instead of using an assert.
+  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
+             field->descriptortype == kUpb_FieldType_Group);
   if (sub->ext & kUpb_ExtMode_IsMapEntry) {
+    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message);
     field->mode = (field->mode & ~kUpb_FieldMode_Mask) | kUpb_FieldMode_Map;
   }
   upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];

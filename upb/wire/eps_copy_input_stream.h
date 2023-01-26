@@ -340,6 +340,7 @@ UPB_INLINE int upb_EpsCopyInputStream_PushLimit(upb_EpsCopyInputStream* e,
   int limit = size + (int)(ptr - e->end);
   int delta = e->limit - limit;
   _upb_EpsCopyInputStream_CheckLimit(e);
+  UPB_ASSERT(limit <= e->limit);
   e->limit = limit;
   e->limit_ptr = e->end + UPB_MIN(0, limit);
   _upb_EpsCopyInputStream_CheckLimit(e);

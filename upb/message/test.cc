@@ -603,4 +603,20 @@ TEST(MessageTest, MapField) {
 //                                         -1960166338, 16809991);
 // }
 //
+// TEST(FuzzTest, GroupMap) {
+//   // Groups should not be allowed as maps, but we previously failed to prevent
+//   // this.
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {.mini_descriptors = {"$$FF$", "%-C"},
+//        .enum_mini_descriptors = {},
+//        .extensions = "",
+//        .links = {1}},
+//       std::string(
+//           "\023\020\030\233\000\204\330\372#\000`"
+//           "a\000\000\001\000\000\000ccccccc\030s\273sssssssss\030\030\030\030"
+//           "\030\030\030\030\215\215\215\215\215\215\215\215\030\030\232\253\253"
+//           "\232*\334\227\273\231\207\373\t\0051\305\265\335\224\226"),
+//       0, 0);
+// }
+//
 // end:google_only
