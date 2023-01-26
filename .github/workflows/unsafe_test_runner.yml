@@ -1,0 +1,39 @@
+name: Tests
+
+on:
+  # Unsafe presubmit
+  pull_request_target:
+    branches:
+      - gha
+    types: [labeled, opened, reopened, synchronize]
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ toJSON(github) }}' '${{ toJSON(github.event.pull_request) }}'  '${{ toJSON(github.event.push) }}'
+  check-tag:
+    name: Check for Safety Tag
+    # If this is a PR within the repo, rely on the safe test runner.
+    if: >
+      github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf' &&
+      (github.event.action != 'label' || github.event.label.name == 'safe for tests')
+    runs-on: ubuntu-latest
+    steps:
+      - run: ${{ contains(github.event.pull_request.labels.*.name, 'safe for tests')) }} || exit 1
+
+  remove-tag:
+    needs: [check-tag]
+    steps:
+      - uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: safe for tests
+
+  run:
+    name: Tests
+    needs: [remove-tag]
+    uses: ./.github/workflows/run_all_tests.yml
+    with:
+      environment: test-docker
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{secrets.GAR_SERVICE_ACCOUNT}}

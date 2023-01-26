@@ -1,19 +1,29 @@
-name: Run a Docker-based workflow
+name: Run a Docker/Bazel workflow
 
 on:
   workflow_call:
     inputs:
+      name:
+        required: True
+        description: "The name to display for the test"
+        type: string
+      targets:
+        required: true
+        description: "The targets to test."
+        type: string
       environment:
         required: true
         description: "The deployment environment to use for secrets."
         type: string
       image:
-        required: true
+        required: false
+        default: 'us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1'
         description: "The docker image to use."
         type: string
-      run:
-        required: true
-        description: "The command to pass to `docker run`."
+      flags:
+        required: false
+        default: ''
+        description: "Extra flags to pass to Bazel."
         type: string
       cache:
         required: true
@@ -23,8 +33,11 @@ on:
       GAR_SERVICE_ACCOUNT:
         required: true
 
+run-name: ${{ inputs.name }}
+
 jobs:
   run:
+    name: ${{ inputs.name }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
@@ -52,4 +65,7 @@ jobs:
       - name: Pull Docker Image
         run: docker pull ${{ inputs.image }}
       - name: Test
-        run: docker run -v${{ github.workspace }}:/workspace ${{ inputs.image }} ${{ inputs.run }} $BAZEL_CACHE
+        run: >
+          docker run -v${{ github.workspace }}:/workspace ${{ inputs.image }}
+          test --keep_going --test_output=errors $BAZEL_CACHE
+          ${{ inputs.flags }} ${{ inputs.targets }}
