@@ -288,6 +288,31 @@ static void remove_filedef(upb_DefPool* s, upb_FileDef* file) {
   }
 }
 
+static const upb_FileDef* upb_DefBuilder_AddFileToPool(
+    upb_DefBuilder* const builder, upb_DefPool* const s,
+    const UPB_DESC(FileDescriptorProto) * const file_proto,
+    const upb_StringView name, upb_Status* const status) {
+  if (UPB_SETJMP(builder->err) != 0) {
+    UPB_ASSERT(!upb_Status_IsOk(status));
+    if (builder->file) {
+      remove_filedef(s, builder->file);
+      builder->file = NULL;
+    }
+  } else if (!builder->arena || !builder->tmp_arena) {
+    _upb_DefBuilder_OomErr(builder);
+  } else {
+    _upb_FileDef_Create(builder, file_proto);
+    upb_strtable_insert(&s->files, name.data, name.size,
+                        upb_value_constptr(builder->file), builder->arena);
+    UPB_ASSERT(upb_Status_IsOk(status));
+    upb_Arena_Fuse(s->arena, builder->arena);
+  }
+
+  if (builder->arena) upb_Arena_Free(builder->arena);
+  if (builder->tmp_arena) upb_Arena_Free(builder->tmp_arena);
+  return builder->file;
+}
+
 static const upb_FileDef* _upb_DefPool_AddFile(
     upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
     const upb_MiniTableFile* layout, upb_Status* status) {
@@ -323,25 +348,7 @@ static const upb_FileDef* _upb_DefPool_AddFile(
       .tmp_arena = upb_Arena_New(),
   };
 
-  if (UPB_SETJMP(ctx.err)) {
-    UPB_ASSERT(!upb_Status_IsOk(status));
-    if (ctx.file) {
-      remove_filedef(s, ctx.file);
-      ctx.file = NULL;
-    }
-  } else if (!ctx.arena || !ctx.tmp_arena) {
-    _upb_DefBuilder_OomErr(&ctx);
-  } else {
-    _upb_FileDef_Create(&ctx, file_proto);
-    upb_strtable_insert(&s->files, name.data, name.size,
-                        upb_value_constptr(ctx.file), ctx.arena);
-    UPB_ASSERT(upb_Status_IsOk(status));
-    upb_Arena_Fuse(s->arena, ctx.arena);
-  }
-
-  if (ctx.arena) upb_Arena_Free(ctx.arena);
-  if (ctx.tmp_arena) upb_Arena_Free(ctx.tmp_arena);
-  return ctx.file;
+  return upb_DefBuilder_AddFileToPool(&ctx, s, file_proto, name, status);
 }
 
 const upb_FileDef* upb_DefPool_AddFile(upb_DefPool* s,
