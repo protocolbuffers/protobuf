@@ -259,6 +259,10 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Thread local variables cannot be exposed through DLL interface but we can
   // wrap them in static functions.
   static ThreadCache& thread_cache();
+#elif defined(__cpp_inline_variables)
+  static inline PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_ = {
+      0, static_cast<uint64_t>(-1), nullptr};
+  static ThreadCache& thread_cache() { return thread_cache_; }
 #else
   ABSL_CONST_INIT static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
   static ThreadCache& thread_cache() { return thread_cache_; }

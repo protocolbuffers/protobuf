@@ -452,7 +452,7 @@ ThreadSafeArena::ThreadCache& ThreadSafeArena::thread_cache() {
   static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache;
   return thread_cache;
 }
-#else
+#elif !defined(__cpp_inline_variables)
 ABSL_CONST_INIT PROTOBUF_THREAD_LOCAL
     ThreadSafeArena::ThreadCache ThreadSafeArena::thread_cache_;
 #endif
