@@ -1164,6 +1164,11 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
                               Qfalse))) {
       options |= upb_JsonEncode_EmitDefaults;
     }
+
+    if (RTEST(rb_hash_lookup2(hash_args, ID2SYM(rb_intern("enums_as_integers")),
+                              Qfalse))) {
+      options |= upb_JsonEncode_FormatEnumsAsIntegers;
+    }
   }
 
   upb_Status_Clear(&status);

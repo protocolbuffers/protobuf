@@ -84,6 +84,34 @@ class EncodeDecodeTest < Test::Unit::TestCase
     )
 
     assert_match 'optional_int32', json
+
+
+    # Test for enums printing as ints.
+    msg = A::B::C::TestMessage.new({ optional_enum: 1 })
+    json = A::B::C::TestMessage.encode_json(
+      msg, 
+      { :enums_as_integers => true }
+    )
+
+    assert_match '"optionalEnum":1', json
+
+    # Test for default enum being printed as int.
+    msg = A::B::C::TestMessage.new({ optional_enum: 0 })
+    json = A::B::C::TestMessage.encode_json(
+      msg, 
+      { :enums_as_integers => true, :emit_defaults => true }
+    )
+
+    assert_match '"optionalEnum":0', json
+
+    # Test for repeated enums printing as ints.
+    msg = A::B::C::TestMessage.new({ repeated_enum: [0,1,2,3] })
+    json = A::B::C::TestMessage.encode_json(
+      msg, 
+      { :enums_as_integers => true }
+    )
+
+    assert_match '"repeatedEnum":[0,1,2,3]', json
   end
 
   def test_encode_wrong_msg
