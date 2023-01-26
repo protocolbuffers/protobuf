@@ -1695,15 +1695,6 @@ static const upb_MiniTable *messages_layout[27] = {
   &google_protobuf_GeneratedCodeInfo_Annotation_msg_init,
 };
 
-const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Type_enum_init = {
-    64,
-    0,
-    {
-        0x7fffe,
-        0x0,
-    },
-};
-
 const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Label_enum_init = {
     64,
     0,
@@ -1713,11 +1704,11 @@ const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Label_enum_init = {
     },
 };
 
-const upb_MiniTableEnum google_protobuf_FileOptions_OptimizeMode_enum_init = {
+const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Type_enum_init = {
     64,
     0,
     {
-        0xe,
+        0x7fffe,
         0x0,
     },
 };
@@ -1758,34 +1749,45 @@ const upb_MiniTableEnum google_protobuf_FieldOptions_OptionTargetType_enum_init 
     },
 };
 
-const upb_MiniTableEnum google_protobuf_MethodOptions_IdempotencyLevel_enum_init = {
+const upb_MiniTableEnum google_protobuf_FileOptions_OptimizeMode_enum_init = {
     64,
     0,
     {
-        0x7,
+        0xe,
         0x0,
     },
 };
 
-const upb_MiniTableEnum google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init = {
-    64,
-    0,
-    {
-        0x7,
-        0x0,
-    },
+const upb_MiniTableEnum
+    google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init = {
+        64,
+        0,
+        {
+            0x7,
+            0x0,
+        },
 };
 
-static const upb_MiniTableEnum *enums_layout[9] = {
-  &google_protobuf_FieldDescriptorProto_Type_enum_init,
-  &google_protobuf_FieldDescriptorProto_Label_enum_init,
-  &google_protobuf_FileOptions_OptimizeMode_enum_init,
-  &google_protobuf_FieldOptions_CType_enum_init,
-  &google_protobuf_FieldOptions_JSType_enum_init,
-  &google_protobuf_FieldOptions_OptionRetention_enum_init,
-  &google_protobuf_FieldOptions_OptionTargetType_enum_init,
-  &google_protobuf_MethodOptions_IdempotencyLevel_enum_init,
-  &google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init,
+const upb_MiniTableEnum
+    google_protobuf_MethodOptions_IdempotencyLevel_enum_init = {
+        64,
+        0,
+        {
+            0x7,
+            0x0,
+        },
+};
+
+static const upb_MiniTableEnum* enums_layout[9] = {
+    &google_protobuf_FieldDescriptorProto_Label_enum_init,
+    &google_protobuf_FieldDescriptorProto_Type_enum_init,
+    &google_protobuf_FieldOptions_CType_enum_init,
+    &google_protobuf_FieldOptions_JSType_enum_init,
+    &google_protobuf_FieldOptions_OptionRetention_enum_init,
+    &google_protobuf_FieldOptions_OptionTargetType_enum_init,
+    &google_protobuf_FileOptions_OptimizeMode_enum_init,
+    &google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init,
+    &google_protobuf_MethodOptions_IdempotencyLevel_enum_init,
 };
 
 const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
@@ -4063,6 +4065,14 @@ static void jsondec_wellknown(jsondec* d, upb_Message* msg,
   }
 }
 
+static bool upb_JsonDecoder_Decode(jsondec* const d, upb_Message* const msg,
+                                   const upb_MessageDef* const m) {
+  if (UPB_SETJMP(d->err)) return false;
+
+  jsondec_tomsg(d, msg, m);
+  return true;
+}
+
 bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
                     const upb_MessageDef* m, const upb_DefPool* symtab,
                     int options, upb_Arena* arena, upb_Status* status) {
@@ -4082,10 +4092,7 @@ bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
   d.debug_field = NULL;
   d.is_first = false;
 
-  if (UPB_SETJMP(d.err)) return false;
-
-  jsondec_tomsg(&d, msg, m);
-  return true;
+  return upb_JsonDecoder_Decode(&d, msg, m);
 }
 
 
@@ -4831,6 +4838,17 @@ static size_t jsonenc_nullz(jsonenc* e, size_t size) {
   return ret;
 }
 
+static size_t upb_JsonEncoder_Encode(jsonenc* const e,
+                                     const upb_Message* const msg,
+                                     const upb_MessageDef* const m,
+                                     const size_t size) {
+  if (UPB_SETJMP(e->err) != 0) return -1;
+
+  jsonenc_msgfield(e, msg, m);
+  if (e->arena) upb_Arena_Free(e->arena);
+  return jsonenc_nullz(e, size);
+}
+
 size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
                       const upb_DefPool* ext_pool, int options, char* buf,
                       size_t size, upb_Status* status) {
@@ -4845,11 +4863,7 @@ size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
   e.status = status;
   e.arena = NULL;
 
-  if (UPB_SETJMP(e.err)) return -1;
-
-  jsonenc_msgfield(&e, msg, m);
-  if (e.arena) upb_Arena_Free(e.arena);
-  return jsonenc_nullz(&e, size);
+  return upb_JsonEncoder_Encode(&e, msg, m, size);
 }
 
 
