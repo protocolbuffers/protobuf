@@ -1,0 +1,21 @@
+name: All Tests
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        description: "The deployment environment to use for secrets."
+        type: string
+    secrets:
+      GAR_SERVICE_ACCOUNT:
+        required: true
+
+jobs:
+  cpp-bazel:
+    uses: ./.github/workflows/cpp_bazel.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{secrets.GAR_SERVICE_ACCOUNT}}
+
