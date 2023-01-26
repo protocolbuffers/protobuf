@@ -13,16 +13,25 @@ on:
   # postsubmit
   push:
     branches:
+      - main
+      - '[0-9]+.x'
+      # For testing purposes so we can stage this on the `gha` branch.
       - gha
 
   # safe presubmit
   pull_request:
     branches:
+      - main
+      - '[0-9]+.x'
+      # For testing purposes so we can stage this on the `gha` branch.
       - gha
 
   # unsafe presubmit
   pull_request_target:
     branches:
+      - main
+      - '[0-9]+.x'
+      # For testing purposes so we can stage this on the `gha` branch.
       - gha
     types: [labeled, opened, reopened, synchronize]
 
