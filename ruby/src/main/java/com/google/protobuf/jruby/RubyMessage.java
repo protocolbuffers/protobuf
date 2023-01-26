@@ -306,11 +306,7 @@ public class RubyMessage extends RubyObject {
     if (methodName.startsWith(HAS_PREFIX) && methodName.endsWith(QUESTION_MARK)) {
       String strippedMethodName = methodName.substring(4, methodName.length() - 1);
       FieldDescriptor fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
-      if (fieldDescriptor != null
-          && (!proto3
-              || fieldDescriptor.getContainingOneof() == null
-              || fieldDescriptor.getContainingOneof().isSynthetic())
-          && fieldDescriptor.hasPresence()) {
+      if (fieldDescriptor != null && fieldDescriptor.hasPresence()) {
         return context.runtime.getTrue();
       }
       oneofDescriptor =
