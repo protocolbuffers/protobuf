@@ -630,17 +630,25 @@ inline const char* VarintParseSlowArm(const char* p, uint64_t* out,
   return VarintParseSlowArm64(p, out, first8);
 }
 
-// Moves data into a register and returns data.  This impacts the compiler's
-// scheduling and instruction selection decisions.
-static PROTOBUF_ALWAYS_INLINE inline uint64_t ForceToRegister(uint64_t data) {
-  asm("" : "+r"(data));
-  return data;
+// Falsely indicate that the specific value is modified at this location.  This
+// prevents code which depends on this value from being scheduled earlier.
+template <typename V1Type>
+PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1) {
+  asm("" : "+r"(value1));
+  return value1;
+}
+
+template <typename V1Type, typename V2Type>
+PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1,
+                                                  V2Type value2) {
+  asm("" : "+r"(value1) : "r"(value2));
+  return value1;
 }
 
 // Performs a 7 bit UBFX (Unsigned Bit Extract) starting at the indicated bit.
 static PROTOBUF_ALWAYS_INLINE inline uint64_t Ubfx7(uint64_t data,
                                                     uint64_t start) {
-  return ForceToRegister((data >> start) & 0x7f);
+  return ValueBarrier((data >> start) & 0x7f);
 }
 
 #endif  // __aarch64__
