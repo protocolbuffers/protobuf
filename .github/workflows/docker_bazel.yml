@@ -25,6 +25,10 @@ on:
         required: true
         description: "A unique path for where to store the bazel cache."
         type: string
+      checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
     secrets:
       GAR_SERVICE_ACCOUNT:
         required: true
@@ -36,6 +40,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.checkout }}
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v0
         with:
