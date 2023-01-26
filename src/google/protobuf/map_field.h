@@ -56,6 +56,8 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+// NOOP
+
 namespace google {
 namespace protobuf {
 class DynamicMessage;
