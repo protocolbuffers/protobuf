@@ -1264,6 +1264,8 @@ TEST_F(TextFormatTest, ParseExotic) {
       "repeated_double: -Infinity\n"
       "repeated_double: nan\n"
       "repeated_double: NaN\n"
+      "repeated_double: +123.0\n"
+      "repeated_double: +inf\n"
       "repeated_string: \"\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\"\"\n",
       &message));
 
@@ -1283,7 +1285,7 @@ TEST_F(TextFormatTest, ParseExotic) {
   EXPECT_EQ(uint64_t{18446744073709551615u}, message.repeated_uint64(0));
   EXPECT_EQ(uint64_t{9223372036854775808u}, message.repeated_uint64(1));
 
-  ASSERT_EQ(13, message.repeated_double_size());
+  ASSERT_EQ(15, message.repeated_double_size());
   EXPECT_EQ(123.0, message.repeated_double(0));
   EXPECT_EQ(123.5, message.repeated_double(1));
   EXPECT_EQ(0.125, message.repeated_double(2));
@@ -1301,6 +1303,9 @@ TEST_F(TextFormatTest, ParseExotic) {
             -std::numeric_limits<double>::infinity());
   EXPECT_TRUE(std::isnan(message.repeated_double(11)));
   EXPECT_TRUE(std::isnan(message.repeated_double(12)));
+  EXPECT_EQ(123.0, message.repeated_double(13));
+  EXPECT_EQ(message.repeated_double(14),
+            std::numeric_limits<double>::infinity());
 
   // Note:  Since these string literals have \0's in them, we must explicitly
   // pass their sizes to string's constructor.

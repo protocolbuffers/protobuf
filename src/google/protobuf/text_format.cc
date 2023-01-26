@@ -1192,15 +1192,17 @@ class TextFormat::Parser::ParserImpl {
   }
 
   // Consumes a double and saves its value in the value parameter.
-  // Note that since the tokenizer does not support negative numbers,
-  // we actually may consume an additional token (for the minus sign) in this
-  // method. Returns false if the token is not a double
-  // (signed or otherwise).
+  // We may additionally consume an extra token for a plus or minus sign
+  // since the tokenizer does not support unary prefixes (including negative
+  // numbers). Returns false if the token is not a double (signed or otherwise).
   bool ConsumeDouble(double* value) {
     bool negative = false;
 
     if (TryConsume("-")) {
       negative = true;
+    } else {
+      // Accept doubles prefixed with a unary +, such as +1.0, +inf.
+      TryConsume("+");
     }
 
     // A double can actually be an integer, according to the tokenizer.
