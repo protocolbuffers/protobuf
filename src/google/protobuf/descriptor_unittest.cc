@@ -3979,6 +3979,16 @@ class ValidationErrorTest : public testing::Test {
     BuildFileInTestPool(DescriptorProto::descriptor()->file());
   }
 
+  void BuildDescriptorMessagesInTestPoolWithErrors(
+      absl::string_view expected_errors) {
+    FileDescriptorProto file_proto;
+    DescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    MockErrorCollector error_collector;
+    EXPECT_TRUE(pool_.BuildFileCollectingErrors(file_proto, &error_collector) ==
+                nullptr);
+    EXPECT_EQ(error_collector.text_, expected_errors);
+  }
+
   DescriptorPool pool_;
 };
 

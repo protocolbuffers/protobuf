@@ -65,6 +65,7 @@
 #include "google/protobuf/port.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -1902,7 +1903,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     // in a .proto file.
     enum ErrorLocation {
       NAME,           // the symbol name, or the package name for files
-      NUMBER,         // field or extension range number
+      NUMBER,         // field, extension range or extension decl number
       TYPE,           // field type
       EXTENDEE,       // field extendee
       DEFAULT_VALUE,  // field default value
