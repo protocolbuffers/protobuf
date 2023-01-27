@@ -27,6 +27,7 @@ jobs:
             # TODO(b/262628111) Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b
+            emulate: "arm64"
 
     name: ${{ matrix.type }} ${{ matrix.version }}
     uses: ./.github/workflows/docker_bazel.yml
@@ -37,4 +38,5 @@ jobs:
       flags: ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
       targets: ${{ matrix.targets }}
       cache: python_bazel/${{ matrix.type }}_${{ matrix.version }}
+      emulate: ${{ matrix.emulate }}
     secrets: inherit

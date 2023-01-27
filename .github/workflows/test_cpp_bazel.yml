@@ -32,7 +32,8 @@ jobs:
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b"
-    name: ${{ matrix.name }}
+            emulate: "arm64"
+    name: ${{ matrix.config.name }}
     uses: ./.github/workflows/docker_bazel.yml
     with:
       name: ${{ matrix.config.name }}
@@ -41,4 +42,5 @@ jobs:
       flags: --distinct_host_configuration=false ${{ matrix.config.flags }}
       targets: ${{ matrix.targets }}
       cache: cpp_bazel/${{ matrix.config.name }}
+      emulate: ${{ matrix.emulate }}
     secrets: inherit
