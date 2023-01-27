@@ -380,7 +380,8 @@ namespace Google.Protobuf
             const int length = sizeof(double);
             if (!BitConverter.IsLittleEndian || state.bufferPos + length > state.bufferSize)
             {
-                return BitConverter.Int64BitsToDouble((long)ParseRawLittleEndian64(ref buffer, ref state));
+                ulong value = ParseRawLittleEndian64(ref buffer, ref state);
+                return Unsafe.As<ulong, double>(ref value);
             }
             // ReadUnaligned uses processor architecture for endianness.
             double result = Unsafe.ReadUnaligned<double>(ref MemoryMarshal.GetReference(buffer.Slice(state.bufferPos, length)));
@@ -396,30 +397,13 @@ namespace Google.Protobuf
             const int length = sizeof(float);
             if (!BitConverter.IsLittleEndian || state.bufferPos + length > state.bufferSize)
             {
-                return ParseFloatSlow(ref buffer, ref state);
+                uint value = ParseRawLittleEndian32(ref buffer, ref state);
+                return Unsafe.As<uint, float>(ref value);
             }
             // ReadUnaligned uses processor architecture for endianness.
             float result = Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(buffer.Slice(state.bufferPos, length)));
             state.bufferPos += length;
-            return result;  
-        }
-
-        private static unsafe float ParseFloatSlow(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
-        {
-            const int length = sizeof(float);
-            byte* stackBuffer = stackalloc byte[length];
-            Span<byte> tempSpan = new Span<byte>(stackBuffer, length);
-            for (int i = 0; i < length; i++)
-            {
-                tempSpan[i] = ReadRawByte(ref buffer, ref state);
-            }
-
-            // Content is little endian. Reverse if needed to match endianness of architecture.
-            if (!BitConverter.IsLittleEndian)
-            {
-                tempSpan.Reverse();
-            }
-            return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(tempSpan));
+            return result;
         }
 
         /// <summary>

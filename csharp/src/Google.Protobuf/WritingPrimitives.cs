@@ -63,50 +63,35 @@ namespace Google.Protobuf
         /// </summary>
         public static void WriteDouble(ref Span<byte> buffer, ref WriterInternalState state, double value)
         {
-            WriteRawLittleEndian64(ref buffer, ref state, (ulong)BitConverter.DoubleToInt64Bits(value));
+            const int length = sizeof(double);
+            if (!BitConverter.IsLittleEndian || state.position + length > buffer.Length)
+            {
+                WriteRawLittleEndian64(ref buffer, ref state, Unsafe.As<double, ulong>(ref value));
+            }
+            else
+            {
+                // WriteUnaligned uses processor architecture for endianness.
+                Unsafe.WriteUnaligned<double>(ref MemoryMarshal.GetReference(buffer.Slice(state.position, length)), value);
+                state.position += length;
+            }
         }
 
         /// <summary>
         /// Writes a float field value, without a tag, to the stream.
         /// </summary>
-        public static unsafe void WriteFloat(ref Span<byte> buffer, ref WriterInternalState state, float value)
+        public static void WriteFloat(ref Span<byte> buffer, ref WriterInternalState state, float value)
         {
             const int length = sizeof(float);
-            if (buffer.Length - state.position >= length)
+            if (!BitConverter.IsLittleEndian || state.position + length > buffer.Length)
             {
-                // if there's enough space in the buffer, write the float directly into the buffer
-                var floatSpan = buffer.Slice(state.position, length);
-                Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(floatSpan), value);
-
-                if (!BitConverter.IsLittleEndian)
-                {
-                    floatSpan.Reverse();
-                }
-                state.position += length;
+                WriteRawLittleEndian32(ref buffer, ref state, Unsafe.As<float, uint>(ref value));
             }
             else
             {
-                WriteFloatSlowPath(ref buffer, ref state, value);
+                // WriteUnaligned uses processor architecture for endianness.
+                Unsafe.WriteUnaligned<float>(ref MemoryMarshal.GetReference(buffer.Slice(state.position, length)), value);
+                state.position += length;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static unsafe void WriteFloatSlowPath(ref Span<byte> buffer, ref WriterInternalState state, float value)
-        {
-            const int length = sizeof(float);
-
-            // TODO(jtattermusch): deduplicate the code. Populating the span is the same as for the fastpath.
-            Span<byte> floatSpan = stackalloc byte[length];
-            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(floatSpan), value);
-            if (!BitConverter.IsLittleEndian)
-            {
-                floatSpan.Reverse();
-            }
-
-            WriteRawByte(ref buffer, ref state, floatSpan[0]);
-            WriteRawByte(ref buffer, ref state, floatSpan[1]);
-            WriteRawByte(ref buffer, ref state, floatSpan[2]);
-            WriteRawByte(ref buffer, ref state, floatSpan[3]);
         }
 
         /// <summary>
