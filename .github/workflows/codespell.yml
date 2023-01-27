@@ -10,7 +10,7 @@ jobs:
     name: Check for spelling errors
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: codespell-project/actions-codespell@master
         with:
           check_filenames: true
