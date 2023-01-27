@@ -59,9 +59,23 @@ jobs:
           --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.cache }}" >> $GITHUB_ENV
         if: ${{ inputs.cache }}
 
-      - name: Pull Docker Image
-        run: docker pull ${{ inputs.image }}
-      - name: Test
+      - name: Check docker cache
+        id: check-docker-cache
+        uses: actions/cache@v3
+        with:
+          path: ci/docker/
+          key: ${{ inputs.image }}
+      - name: Pull and store if cache miss
+        if: steps.check-docker-cache.outputs.cache-hit != 'true'
+        run: >
+          docker pull ${{ inputs.image }} &&
+          mkdir -p ci/docker/$(dirname ${{ inputs.image }}) &&
+          docker image save ${{ inputs.image }} --output ./ci/docker/${{ inputs.image }}.tar
+      - name: Use the cached image on cache hit
+        if: steps.check-docker-cache.outputs.cache-hit == 'true'
+        run: docker image load --input ./ci/docker/${{ inputs.image }}.tar
+
+      - name: Run tests
         run: >
           docker run -v${{ github.workspace }}:/workspace ${{ inputs.image }}
           test --keep_going --test_output=errors --test_timeout=600 $BAZEL_CACHE
