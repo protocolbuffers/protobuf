@@ -25,22 +25,22 @@ jobs:
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:dbd2f15fb69734d72c3fd10cb819bbe2ce4890acf49e9a2f9403983fe48e8807
           - targets: //pkg/... //src/... @com_google_protobuf_examples//...
 
-          # Override cases
+          # Override cases with custom images
           - config: { name: "TCMalloc" }
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:9d975616c3fd44d5a091aeb60ee94f37e22fb367d471d258fc18cb4a2387c943"
             targets: "//src/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b"
-            emulate: "arm64"
+          - config: { name: "Bazel4" }
+            targets: "//src/..."
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-20a3cc217eaa012bb120ea7cfa4c2234827d790b"
     name: ${{ matrix.config.name }}
-    uses: ./.github/workflows/docker_bazel.yml
+    uses: ./.github/workflows/tool_docker.yml
     with:
       name: ${{ matrix.config.name }}
       checkout: ${{ inputs.checkout }}
       image: ${{ matrix.image }}
-      flags: --distinct_host_configuration=false ${{ matrix.config.flags }}
-      targets: ${{ matrix.targets }}
-      cache: cpp_bazel/${{ matrix.config.name }}
-      emulate: ${{ matrix.emulate }}
+      bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
+      bazel-cache: cpp_bazel/${{ matrix.config.name }}
     secrets: inherit

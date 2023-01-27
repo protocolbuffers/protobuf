@@ -88,7 +88,7 @@ jobs:
   cpp-bazel:
     name: C++ Bazel
     needs: [check-tag]
-    uses: ./.github/workflows/test_cpp_bazel.yml
+    uses: ./.github/workflows/test_cpp.yml
     with:
       checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
@@ -96,7 +96,7 @@ jobs:
   python-bazel:
     name: Python Bazel
     needs: [check-tag]
-    uses: ./.github/workflows/test_python_bazel.yml
+    uses: ./.github/workflows/test_python.yml
     with:
       checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
@@ -110,7 +110,7 @@ jobs:
     secrets: inherit
 
   php-ext:
-    name: Ruby Install
+    name: PHP Extension
     needs: [check-tag]
     uses: ./.github/workflows/test_php_ext.yml
     with:

@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build-php:
-    name: Build PHP extension
+    name: Build
     runs-on: ubuntu-latest
     container: ${{ matrix.php-image }}
     strategy:
