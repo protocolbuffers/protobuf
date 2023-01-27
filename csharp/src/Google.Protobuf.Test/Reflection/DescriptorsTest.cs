@@ -445,10 +445,12 @@ namespace Google.Protobuf.Reflection
             }
 
             // Expect no oneof in the original proto3 unit test file to be synthetic.
+            // (This excludes oneofs with "lazy" in the name, due to internal differences.)
             foreach (var descriptor in ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.Descriptor.MessageTypes)
             {
-                Assert.AreEqual(descriptor.Oneofs.Count, descriptor.RealOneofCount);
-                foreach (var oneof in descriptor.Oneofs)
+                var nonLazyOneofs = descriptor.Oneofs.Where(d => !d.Name.Contains("lazy")).ToList();
+                Assert.AreEqual(nonLazyOneofs.Count, descriptor.RealOneofCount);
+                foreach (var oneof in nonLazyOneofs)
                 {
                     Assert.False(oneof.IsSynthetic);
                 }
