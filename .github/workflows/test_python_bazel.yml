@@ -8,10 +8,6 @@ on:
         description: "The SHA key for the commit we want to run over"
         type: string
 
-    secrets:
-      GAR_SERVICE_ACCOUNT:
-        required: true
-
 jobs:
   run:
     strategy:
@@ -38,7 +34,7 @@ jobs:
       name: ${{ matrix.type }} ${{matrix.version}}
       checkout: ${{ inputs.checkout }}
       image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-65526ea124d1034eac33e7c37cc6d65c5bef054f', matrix.version) }}
-      flags: ${{ matrix.flags }}
+      flags: ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
       targets: ${{ matrix.targets }}
       cache: python_bazel/${{ matrix.type }}_${{ matrix.version }}
     secrets: inherit

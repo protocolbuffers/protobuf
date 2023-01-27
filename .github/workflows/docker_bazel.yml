@@ -29,19 +29,16 @@ on:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
-    secrets:
-      GAR_SERVICE_ACCOUNT:
-        required: true
 
 jobs:
   run:
     name: ${{ inputs.name }}
-
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: ${{ inputs.checkout }}
+        #with:
+        #  ref: ${{ inputs.checkout }}
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v0
         with:
@@ -67,5 +64,5 @@ jobs:
       - name: Test
         run: >
           docker run -v${{ github.workspace }}:/workspace ${{ inputs.image }}
-          test --keep_going --test_output=errors $BAZEL_CACHE
+          test --keep_going --test_output=errors --test_timeout=600 $BAZEL_CACHE
           ${{ inputs.flags }} ${{ inputs.targets }}
