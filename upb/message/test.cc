@@ -25,6 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <string>
+#include <string_view>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
@@ -93,8 +96,8 @@ TEST(MessageTest, Extensions) {
   VerifyMessage(ext_msg2);
 
   // Test round-trip through JSON format.
-  size_t json_size =
-      upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, NULL, 0, status.ptr());
+  size_t json_size = upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, nullptr,
+                                    0, status.ptr());
   char* json_buf =
       static_cast<char*>(upb_Arena_Malloc(arena.ptr(), json_size + 1));
   upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, json_buf, json_size + 1,
@@ -153,8 +156,8 @@ TEST(MessageTest, MessageSet) {
   VerifyMessageSet(ext_msg2);
 
   // Test round-trip through JSON format.
-  size_t json_size =
-      upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, NULL, 0, status.ptr());
+  size_t json_size = upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, nullptr,
+                                    0, status.ptr());
   char* json_buf =
       static_cast<char*>(upb_Arena_Malloc(arena.ptr(), json_size + 1));
   upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, json_buf, json_size + 1,
@@ -309,13 +312,14 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   upb_test_EmptyMessage* empty_msg;
 
   // Succeeds, because we did not request required field checks.
-  test_msg = upb_test_TestRequiredFields_parse(NULL, 0, arena.ptr());
+  test_msg = upb_test_TestRequiredFields_parse(nullptr, 0, arena.ptr());
   EXPECT_NE(nullptr, test_msg);
 
   // Fails, because required fields are missing.
-  EXPECT_EQ(kUpb_DecodeStatus_MissingRequired,
-            upb_Decode(NULL, 0, test_msg, &upb_test_TestRequiredFields_msg_init,
-                       NULL, kUpb_DecodeOption_CheckRequired, arena.ptr()));
+  EXPECT_EQ(
+      kUpb_DecodeStatus_MissingRequired,
+      upb_Decode(nullptr, 0, test_msg, &upb_test_TestRequiredFields_msg_init,
+                 nullptr, kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
   upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
   size_t size;
@@ -328,7 +332,7 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   // payload is not empty.
   EXPECT_EQ(kUpb_DecodeStatus_MissingRequired,
             upb_Decode(serialized, size, test_msg,
-                       &upb_test_TestRequiredFields_msg_init, NULL,
+                       &upb_test_TestRequiredFields_msg_init, nullptr,
                        kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
   empty_msg = upb_test_EmptyMessage_new(arena.ptr());
@@ -337,9 +341,10 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   upb_test_TestRequiredFields_set_required_message(test_msg, empty_msg);
 
   // Succeeds, because required fields are present (though not in the input).
-  EXPECT_EQ(kUpb_DecodeStatus_Ok,
-            upb_Decode(NULL, 0, test_msg, &upb_test_TestRequiredFields_msg_init,
-                       NULL, kUpb_DecodeOption_CheckRequired, arena.ptr()));
+  EXPECT_EQ(
+      kUpb_DecodeStatus_Ok,
+      upb_Decode(nullptr, 0, test_msg, &upb_test_TestRequiredFields_msg_init,
+                 nullptr, kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
   // Serialize a complete payload.
   serialized =
@@ -348,7 +353,7 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   EXPECT_NE(0, size);
 
   upb_test_TestRequiredFields* test_msg2 = upb_test_TestRequiredFields_parse_ex(
-      serialized, size, NULL, kUpb_DecodeOption_CheckRequired, arena.ptr());
+      serialized, size, nullptr, kUpb_DecodeOption_CheckRequired, arena.ptr());
   EXPECT_NE(nullptr, test_msg2);
 
   // When we add an incomplete sub-message, this is not flagged by the parser.
@@ -357,7 +362,7 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
       test_msg2, upb_test_TestRequiredFields_new(arena.ptr()));
   EXPECT_EQ(kUpb_DecodeStatus_Ok,
             upb_Decode(serialized, size, test_msg2,
-                       &upb_test_TestRequiredFields_msg_init, NULL,
+                       &upb_test_TestRequiredFields_msg_init, nullptr,
                        kUpb_DecodeOption_CheckRequired, arena.ptr()));
 }
 
@@ -381,7 +386,7 @@ TEST(MessageTest, DecodeRequiredFieldsSubMessage) {
 
   // Parse error when verifying required fields, due to incomplete sub-message.
   EXPECT_EQ(nullptr, upb_test_SubMessageHasRequired_parse_ex(
-                         serialized, size, NULL,
+                         serialized, size, nullptr,
                          kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
   upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
@@ -394,7 +399,7 @@ TEST(MessageTest, DecodeRequiredFieldsSubMessage) {
 
   // No parse error; sub-message now is complete.
   EXPECT_NE(nullptr, upb_test_SubMessageHasRequired_parse_ex(
-                         serialized, size, NULL,
+                         serialized, size, nullptr,
                          kUpb_DecodeOption_CheckRequired, arena.ptr()));
 }
 
@@ -601,6 +606,12 @@ TEST(MessageTest, MapField) {
 // TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayloadRegressionMsan) {
 //   DecodeEncodeArbitrarySchemaAndPayload({{"%-#^#"}, {}, "", {}}, std::string(),
 //                                         -1960166338, 16809991);
+// }
+//
+// // This test encodes a map containing a msg wrapping another, empty msg.
+// TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayloadRegressionMapMap) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"%#G"}, {}, "", {}}, std::string("\022\002\022\000", 4), 0, 0);
 // }
 //
 // TEST(FuzzTest, GroupMap) {

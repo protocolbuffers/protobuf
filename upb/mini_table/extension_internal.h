@@ -35,7 +35,9 @@
 #include "upb/port/def.inc"
 
 struct upb_MiniTableExtension {
+  // Do not move this field. We need to be able to alias pointers.
   upb_MiniTableField field;
+
   const upb_MiniTable* extendee;
   upb_MiniTableSub sub;  // NULL unless submessage or proto2 enum
 };

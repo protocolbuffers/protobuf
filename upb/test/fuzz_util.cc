@@ -64,20 +64,6 @@ class Builder {
     return input_->links[link_++];
   }
 
-  const upb_MiniTable* NextNonMapEntryMiniTable() {
-    if (mini_tables_.empty()) return nullptr;
-    size_t start = NextLink() % mini_tables_.size();
-    size_t next = start;
-    do {
-      const upb_MiniTable* mini_table = mini_tables_[next];
-      if ((mini_table->ext & kUpb_ExtMode_IsMapEntry) == 0) {
-        return mini_table;
-      }
-      next = NextLink() % mini_tables_.size();
-    } while (next != start);
-    return nullptr;
-  }
-
   const upb_MiniTable* NextMiniTable() {
     return mini_tables_.empty()
                ? nullptr
@@ -168,31 +154,20 @@ bool Builder::LinkMessages() {
       upb_MiniTableField* field =
           const_cast<upb_MiniTableField*>(&table->fields[i]);
       if (link_ == input_->links.size()) link_ = 0;
-      switch (field->descriptortype) {
-        case kUpb_FieldType_Message: {
-          const upb_MiniTable* sub = NextMiniTable();
-          // We should always have at least one message.
-          assert(sub);
-          if (!upb_MiniTable_SetSubMessage(table, field, sub)) return false;
-          break;
+      if (field->descriptortype == kUpb_FieldType_Message ||
+          field->descriptortype == kUpb_FieldType_Group) {
+        if (!upb_MiniTable_SetSubMessage(table, field, NextMiniTable())) {
+          return false;
         }
-        case kUpb_FieldType_Group: {
-          const upb_MiniTable* sub = NextNonMapEntryMiniTable();
-          // sub will be nullptr if no non-map entry messages are available.
-          if (sub) {
-            if (!upb_MiniTable_SetSubMessage(table, field, sub)) return false;
-          }
-          break;
-        }
-        case kUpb_FieldType_Enum: {
-          auto* et = NextEnumTable();
-          if (et) {
-            if (!upb_MiniTable_SetSubEnum(table, field, et)) return false;
-          } else {
-            // We don't have any sub-enums.  Override the field type so that it
-            // is not needed.
-            field->descriptortype = kUpb_FieldType_Int32;
-          }
+      }
+      if (field->descriptortype == kUpb_FieldType_Enum) {
+        auto* et = NextEnumTable();
+        if (et) {
+          if (!upb_MiniTable_SetSubEnum(table, field, et)) return false;
+        } else {
+          // We don't have any sub-enums.  Override the field type so that it is
+          // not needed.
+          field->descriptortype = kUpb_FieldType_Int32;
         }
       }
     }
