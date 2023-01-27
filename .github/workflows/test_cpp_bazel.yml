@@ -18,19 +18,24 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - { name: "Optimized", config: "opt" }
-          - { name: "Debug", config: "dbg" }
-          - { name: "ASAN", config: "asan" }
-          - { name: "MSAN", config: "kokoro-msan" }
-          - { name: "TSAN", config: "tsan" }
-          - { name: "UBSAN", config: "ubsan" }
+          - { name: "Optimized", flags: "--config=opt" }
+          - { name: "Debug", flags: "--config=dbg" }
+          - { name: "ASAN", flags: "--config=asan" }
+          - { name: "MSAN", flags: "--config=kokoro-msan" }
+          - { name: "TSAN", flags: "--config=tsan" }
+          - { name: "UBSAN", flags: "--config=ubsan" }
+          - name: "TCMalloc"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:9d975616c3fd44d5a091aeb60ee94f37e22fb367d471d258fc18cb4a2387c943"
+          - name: "aarch64"
+            targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b"
     name: ${{ matrix.name }}
     uses: ./.github/workflows/docker_bazel.yml
     with:
       name: ${{ matrix.name }}
       checkout: ${{ inputs.checkout }}
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:dbd2f15fb69734d72c3fd10cb819bbe2ce4890acf49e9a2f9403983fe48e8807
-      flags: --distinct_host_configuration=false --config=${{ matrix.config }}
-      targets: //pkg/... //src/... @com_google_protobuf_examples//...
+      image: ${{ matrix.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:dbd2f15fb69734d72c3fd10cb819bbe2ce4890acf49e9a2f9403983fe48e8807' }}
+      flags: --distinct_host_configuration=false ${{ matrix.flags }}
+      targets: ${{ matrix.targets || '//pkg/... //src/... @com_google_protobuf_examples//...' }}
       cache: cpp_bazel/${{ matrix.name }}
     secrets: inherit
