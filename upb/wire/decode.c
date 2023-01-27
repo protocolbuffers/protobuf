@@ -587,14 +587,18 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
     *map_p = map;
   }
 
-  /* Parse map entry. */
+  // Parse map entry.
   memset(&ent, 0, sizeof(ent));
 
   if (entry->fields[1].descriptortype == kUpb_FieldType_Message ||
       entry->fields[1].descriptortype == kUpb_FieldType_Group) {
-    /* Create proactively to handle the case where it doesn't appear. */
-    ent.data.v.val =
-        upb_value_ptr(_upb_Message_New(entry->subs[0].submsg, &d->arena));
+    const upb_MiniTable* submsg_table = entry->subs[0].submsg;
+    // Any sub-message entry must be linked.  We do not allow dynamic tree
+    // shaking in this case.
+    UPB_ASSERT(submsg_table);
+
+    // Create proactively to handle the case where it doesn't appear. */
+    ent.data.v.val = upb_value_ptr(_upb_Message_New(submsg_table, &d->arena));
   }
 
   const char* start = ptr;
