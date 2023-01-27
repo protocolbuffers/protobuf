@@ -1,4 +1,4 @@
-name: PHP extension
+name: PHP Extension Tests
 
 on:
   workflow_call:

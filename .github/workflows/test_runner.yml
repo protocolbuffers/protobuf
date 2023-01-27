@@ -89,7 +89,7 @@ jobs:
   # pull_request_target events. We carefully limit those workflows to require a
   # human stamp before continuing.
   cpp-bazel:
-    name: C++ Bazel
+    name: C++
     needs: [check-tag]
     uses: ./.github/workflows/test_cpp.yml
     with:
@@ -97,7 +97,7 @@ jobs:
     secrets: inherit
 
   python-bazel:
-    name: Python Bazel
+    name: Python
     needs: [check-tag]
     uses: ./.github/workflows/test_python.yml
     with:

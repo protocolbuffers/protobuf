@@ -1,4 +1,4 @@
-name: Ruby Install
+name: Ruby Install Tests
 
 on:
   workflow_call:

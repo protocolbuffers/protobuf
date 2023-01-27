@@ -1,4 +1,4 @@
-name: C++ Bazel
+name: C++ Tests
 
 on:
   workflow_call:
@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  run:
+  linux:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
@@ -38,7 +38,7 @@ jobs:
     name: ${{ matrix.config.name }}
     uses: ./.github/workflows/tool_docker.yml
     with:
-      name: ${{ matrix.config.name }}
+      name: Linux ${{ matrix.config.name }}
       safe-checkout: ${{ inputs.safe-checkout }}
       image: ${{ matrix.image }}
       bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
