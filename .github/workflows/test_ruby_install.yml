@@ -1,15 +1,12 @@
-name: Ruby Install Tests
+name: Ruby Install
 
 on:
-  push:
-    branches:
-      - main
-      - '[0-9]+.x'
-  pull_request:
-    branches:
-      - main
-      - '[0-9]+.x'
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
 
 jobs:
   test_ruby_gems:
@@ -29,8 +26,12 @@ jobs:
           - { ruby: 2.6, bazel: 5.1.1}
           - { ruby: jruby-9.2, bazel: 5.1.1}
 
+    # TODO(b/266868629) Dockerize these instead of installing all the
+    # dependencies on each run.
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.checkout }}
       - name: Install bazel
         run: |
           sudo apt-get install -qy wget
