@@ -31,7 +31,7 @@ jobs:
         PLATFORM: ["ios", "macos", "tvos"]
         CONFIGURATION: ["Debug", "Release"]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Pod lib lint
       run:  |
         pod lib lint --verbose \
