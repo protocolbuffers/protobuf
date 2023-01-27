@@ -104,9 +104,6 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   ABSL_DCHECK(arena_ == nullptr);
   int n = rep_->allocated_size;
   void* const* elements = rep_->elements;
-  for (int i = 0; i < n; i++) {
-    delete static_cast<MessageLite*>(elements[i]);
-  }
   const size_t size = total_size_ * sizeof(elements[0]) + kRepHeaderSize;
   internal::SizedDelete(rep_, size);
   rep_ = nullptr;

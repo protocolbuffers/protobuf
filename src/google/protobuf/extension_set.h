@@ -718,7 +718,9 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename Iterator, typename KeyValueFunctor>
   static KeyValueFunctor ForEach(Iterator begin, Iterator end,
                                  KeyValueFunctor func) {
-    for (Iterator it = begin; it != end; ++it) func(it->first, it->second);
+    for (Iterator it = begin; it != end; ++it) {
+      func(it->first, it->second);
+    }
     return std::move(func);
   }
 

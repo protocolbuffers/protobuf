@@ -249,9 +249,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     if (rep_ != nullptr && arena_ == nullptr) {
       int n = rep_->allocated_size;
       void* const* elements = rep_->elements;
-      for (int i = 0; i < n; i++) {
-        TypeHandler::Delete(cast<TypeHandler>(elements[i]), nullptr);
-      }
       const size_t size = total_size_ * sizeof(elements[0]) + kRepHeaderSize;
       internal::SizedDelete(rep_, size);
     }
