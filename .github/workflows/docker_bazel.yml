@@ -21,6 +21,11 @@ on:
         default: ''
         description: "Extra flags to pass to Bazel."
         type: string
+      emulate:
+        required: false
+        default: ''
+        description: "Architecture to emulate using QEMU"
+        type: string
       cache:
         required: true
         description: "A unique path for where to store the bazel cache."
@@ -36,9 +41,20 @@ jobs:
     timeout-minutes: 120
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        #with:
-        #  ref: ${{ inputs.checkout }}
+      - name: Checkout pending changes
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.checkout }}
+
+      - name: Setup QEMU if we're emulating
+        if: ${{ inputs.emulate }}
+        id: qemu-arm64
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt@sha256:66ac1b854f9ce567503783aeee464ff1569076bf3613d122a5174890cbea34f9
+          platforms: ${{ inputs.emulate }}
+
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v0
         with:
