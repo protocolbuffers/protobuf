@@ -90,7 +90,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_cpp.yml
     with:
-      checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
   python-bazel:
@@ -98,7 +98,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_python.yml
     with:
-      checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
   ruby-install:
@@ -106,7 +106,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_ruby_install.yml
     with:
-      checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
   php-ext:
@@ -114,5 +114,5 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_php_ext.yml
     with:
-      checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit

@@ -12,7 +12,7 @@ on:
         default: 'us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1'
         description: "The docker image to use"
         type: string
-      checkout:
+      safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
@@ -42,7 +42,7 @@ jobs:
       - name: Checkout pending changes
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.checkout }}
+          ref: ${{ inputs.safe-checkout }}
 
       - name: Setup QEMU for possible emulation
         id: qemu-arm64
@@ -64,12 +64,18 @@ jobs:
         if: ${{ inputs.command && inputs.bazel}}
         run: echo "Invalid specification of both non-Bazel and Bazel command"; exit 1
       - name: Configure Bazel caching
-        if: ${{ inputs.bazel && !github.event.act_local_test }}
+        # Skip bazel cache for local act runs due to issue with credential files
+        # and nested docker images
+        if: ${{ !github.event.act_local_test }}
         run: >
           echo "BAZEL_CACHE=
           --google_credentials=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS)
           --remote_upload_local_results
           --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.cache }}" >> $GITHUB_ENV
+      - name: Configure Bazel cache updating
+        # External runs should never write to our caches.
+        if: ${{ !github.event.act_local_test && !inputs.safe-checkout }}
+        run: echo "BAZEL_CACHE=$BAZEL_CACHE --remote_upload_local_results" >> $GITHUB_ENV
       - name: Configure Bazel command
         if: ${{ inputs.bazel }}
         run: >

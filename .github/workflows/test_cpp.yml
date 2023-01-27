@@ -3,7 +3,7 @@ name: C++ Bazel
 on:
   workflow_call:
     inputs:
-      checkout:
+      safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
@@ -39,7 +39,7 @@ jobs:
     uses: ./.github/workflows/tool_docker.yml
     with:
       name: ${{ matrix.config.name }}
-      checkout: ${{ inputs.checkout }}
+      safe-checkout: ${{ inputs.safe-checkout }}
       image: ${{ matrix.image }}
       bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
       bazel-cache: cpp_bazel/${{ matrix.config.name }}

@@ -3,7 +3,7 @@ name: PHP extension
 on:
   workflow_call:
     inputs:
-      checkout:
+      safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
@@ -40,7 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.checkout }}
+          ref: ${{ inputs.safe-checkout }}
           submodules: recursive
       - name: Create package
         run: |
