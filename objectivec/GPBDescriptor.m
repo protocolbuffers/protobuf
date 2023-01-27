@@ -325,7 +325,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   return result;
 }
 
-- (id)copyWithZone:(__unused NSZone *)zone {
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
   return [self retain];
 }
 
@@ -393,6 +393,26 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   [package_ release];
   [objcPrefix_ release];
   [super dealloc];
+}
+
+- (BOOL)isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[GPBFileDescriptor class]]) {
+    return NO;
+  }
+  GPBFileDescriptor *otherFile = other;
+  // objcPrefix can be nil, otherwise, straight up compare.
+  return (syntax_ == otherFile->syntax_ && [package_ isEqual:otherFile->package_] &&
+          (objcPrefix_ == otherFile->objcPrefix_ ||
+           (otherFile->objcPrefix_ && [objcPrefix_ isEqual:otherFile->objcPrefix_])));
+}
+
+- (NSUInteger)hash {
+  // The prefix is recommended to be the same for a given package, so just hash
+  // the package.
+  return [package_ hash];
 }
 
 @end
