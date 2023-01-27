@@ -40,6 +40,9 @@ on:
       - gha
     types: [labeled, opened, reopened, synchronize]
 
+  # manual
+  workflow_dispatch:
+
 jobs:
   check-tag:
     name: Check for Safety
