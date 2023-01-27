@@ -50,9 +50,6 @@ jobs:
         if: ${{ inputs.emulate }}
         id: qemu-arm64
         uses: docker/setup-qemu-action@v1
-        with:
-          image: tonistiigi/binfmt@sha256:66ac1b854f9ce567503783aeee464ff1569076bf3613d122a5174890cbea34f9
-          platforms: ${{ inputs.emulate }}
 
 
       - name: Authenticate to Google Cloud
@@ -64,7 +61,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
       - name: Use gcloud CLI
         run: gcloud info
-      - name: Configure Docker
+      - name: Authenticate for GAR use
         run: gcloud auth configure-docker -q us-docker.pkg.dev
 
       - name: Set up Bazel caching
