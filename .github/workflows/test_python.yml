@@ -34,6 +34,6 @@ jobs:
       name: ${{ matrix.type }} ${{matrix.version}}
       safe-checkout: ${{ inputs.safe-checkout }}
       image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-65526ea124d1034eac33e7c37cc6d65c5bef054f', matrix.version) }}
-      bazel: ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
+      bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
       bazel-cache: python_bazel/${{ matrix.type }}_${{ matrix.version }}
     secrets: inherit
