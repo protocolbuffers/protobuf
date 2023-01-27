@@ -365,6 +365,7 @@ static PyObject* GetExtensionsByName(CMessageClass *self, void *closure) {
 // The _extensions_by_number dictionary is built on every access.
 // TODO(amauryfa): Migrate all users to pool.FindExtensionByNumber()
 static PyObject* GetExtensionsByNumber(CMessageClass *self, void *closure) {
+  ABSL_CHECK(false);
   if (self->message_descriptor == nullptr) {
     // This is the base Message object, simply raise AttributeError.
     PyErr_SetString(PyExc_AttributeError,
