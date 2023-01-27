@@ -72,14 +72,22 @@ jobs:
         with:
           labels: safe for tests
 
+  # Note: this pattern of passing the head sha is vulnerable to PWN requests for
+  # pull_request_target events. We carefully limit those workflows to require a
+  # human stamp before continuing.
   cpp-bazel:
     name: C++ Bazel
     needs: [check-tag]
     uses: ./.github/workflows/test_cpp_bazel.yml
     with:
-      # Note: this pattern is vulnerable to PWN requests for pull_request_target
-      # events. We carefully limit those workflows to require a human stamp
-      # before continuing.
+      checkout: ${{ github.event.pull_request.head.sha }}
+    secrets: inherit
+
+  python-bazel:
+    name: Python Bazel
+    needs: [check-tag]
+    uses: ./.github/workflows/test_python_bazel.yml
+    with:
       checkout: ${{ github.event.pull_request.head.sha }}
     secrets: inherit
 
