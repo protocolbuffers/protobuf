@@ -1,8 +1,12 @@
 name: PHP extension
 
 on:
-  - push
-  - pull_request
+  workflow_call:
+    inputs:
+      checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
 
 permissions:
   contents: read  #  to fetch code (actions/checkout)
@@ -17,6 +21,8 @@ jobs:
         php-image:
           - php:7.4-cli
           - php:8.1-cli
+    # TODO(b/266868629) Dockerize these instead of installing all the
+    # dependencies on each run.
     steps:
       - name: Install python3
         run: |
@@ -34,6 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          ref: ${{ inputs.checkout }}
           submodules: recursive
       - name: Create package
         run: |
