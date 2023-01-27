@@ -1,4 +1,4 @@
-name: Python Bazel
+name: Python Tests
 
 on:
   workflow_call:
@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  run:
+  linux:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
@@ -31,7 +31,7 @@ jobs:
     name: ${{ matrix.type }} ${{ matrix.version }}
     uses: ./.github/workflows/tool_docker.yml
     with:
-      name: ${{ matrix.type }} ${{matrix.version}}
+      name: Linux ${{ matrix.type }} ${{matrix.version}}
       safe-checkout: ${{ inputs.safe-checkout }}
       image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-65526ea124d1034eac33e7c37cc6d65c5bef054f', matrix.version) }}
       bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION

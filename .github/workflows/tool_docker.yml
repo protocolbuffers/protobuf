@@ -70,7 +70,6 @@ jobs:
         run: >
           echo "BAZEL_CACHE=
           --google_credentials=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS)
-          --remote_upload_local_results
           --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.cache }}" >> $GITHUB_ENV
       - name: Configure Bazel cache updating
         # External runs should never write to our caches.
