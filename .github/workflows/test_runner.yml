@@ -70,7 +70,7 @@ jobs:
   cpp-bazel:
     name: C++ Bazel
     needs: [check-tag]
-    uses: ./.github/workflows/cpp_bazel.yml
+    uses: ./.github/workflows/test_cpp_bazel.yml
     with:
       # Note: this pattern is vulnerable to PWN requests for pull_request_target
       # events. We carefully limit those workflows to require a human stamp
@@ -78,3 +78,18 @@ jobs:
       checkout: ${{ github.event.pull_request.head.sha }}
     secrets: inherit
 
+  ruby-install:
+    name: Ruby Install
+    needs: [check-tag]
+    uses: ./.github/workflows/test_ruby_install.yml
+    with:
+      checkout: ${{ github.event.pull_request.head.sha }}
+    secrets: inherit
+
+  php-ext:
+    name: Ruby Install
+    needs: [check-tag]
+    uses: ./.github/workflows/test_php_ext.yml
+    with:
+      checkout: ${{ github.event.pull_request.head.sha }}
+    secrets: inherit
