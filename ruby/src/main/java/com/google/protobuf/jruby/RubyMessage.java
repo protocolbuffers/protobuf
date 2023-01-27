@@ -455,11 +455,7 @@ public class RubyMessage extends RubyObject {
 
         fieldDescriptor = descriptor.findFieldByName(methodName);
 
-        if (fieldDescriptor != null
-            && (!proto3
-                || fieldDescriptor.getContainingOneof() == null
-                || fieldDescriptor.getContainingOneof().isSynthetic())
-            && fieldDescriptor.hasPresence()) {
+        if (fieldDescriptor != null && fieldDescriptor.hasPresence()) {
           return fields.containsKey(fieldDescriptor) ? runtime.getTrue() : runtime.getFalse();
         }
 
