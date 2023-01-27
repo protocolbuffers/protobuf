@@ -28,7 +28,7 @@
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "UpbWrappedGeneratedSrcsInfo", "upb_proto_library_aspect")
+load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 
 # begin:google_only
 # load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
@@ -204,11 +204,9 @@ def _upb_cc_proto_rule_impl(ctx):
 
     if _WrappedCcGeneratedSrcsInfo in dep:
         srcs = dep[_WrappedCcGeneratedSrcsInfo].srcs
-    elif UpbWrappedGeneratedSrcsInfo in dep:
-        srcs = dep[UpbWrappedGeneratedSrcsInfo].srcs
     else:
-        fail("proto_library rule must generate UpbWrappedGeneratedSrcsInfo or " +
-             "_WrappedCcGeneratedSrcsInfo (aspect should have handled this).")
+        fail("proto_library rule must generate _WrappedCcGeneratedSrcsInfo (aspect should have " +
+             "handled this).")
 
     if _UpbCcWrappedCcInfo in dep:
         cc_info = dep[_UpbCcWrappedCcInfo].cc_info
@@ -298,7 +296,6 @@ _upb_cc_proto_library_aspect = aspect(
     ],
     required_aspect_providers = [
         UpbWrappedCcInfo,
-        UpbWrappedGeneratedSrcsInfo,
     ],
     attr_aspects = ["deps"],
     fragments = ["cpp"],

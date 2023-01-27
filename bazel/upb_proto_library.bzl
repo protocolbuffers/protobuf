@@ -198,7 +198,7 @@ GeneratedSrcsInfo = provider(
 
 UpbWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info"])
 _UpbDefsWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info"])
-UpbWrappedGeneratedSrcsInfo = provider("Provider for generated sources", fields = ["srcs"])
+_UpbWrappedGeneratedSrcsInfo = provider("Provider for generated sources", fields = ["srcs"])
 _WrappedDefsGeneratedSrcsInfo = provider(
     "Provider for generated reflective sources",
     fields = ["srcs"],
@@ -248,10 +248,10 @@ def _upb_proto_rule_impl(ctx):
 
     if _WrappedDefsGeneratedSrcsInfo in dep:
         srcs = dep[_WrappedDefsGeneratedSrcsInfo].srcs
-    elif UpbWrappedGeneratedSrcsInfo in dep:
-        srcs = dep[UpbWrappedGeneratedSrcsInfo].srcs
+    elif _UpbWrappedGeneratedSrcsInfo in dep:
+        srcs = dep[_UpbWrappedGeneratedSrcsInfo].srcs
     else:
-        fail("proto_library rule must generate UpbWrappedGeneratedSrcsInfo or " +
+        fail("proto_library rule must generate _UpbWrappedGeneratedSrcsInfo or " +
              "_WrappedDefsGeneratedSrcsInfo (aspect should have handled this).")
 
     if _UpbDefsWrappedCcInfo in dep:
@@ -297,7 +297,7 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
     return [cc_provider(cc_info = cc_info), file_provider(srcs = files)]
 
 def upb_proto_library_aspect_impl(target, ctx):
-    return _upb_proto_aspect_impl(target, ctx, "upb", UpbWrappedCcInfo, UpbWrappedGeneratedSrcsInfo)
+    return _upb_proto_aspect_impl(target, ctx, "upb", UpbWrappedCcInfo, _UpbWrappedGeneratedSrcsInfo)
 
 def _upb_proto_reflection_library_aspect_impl(target, ctx):
     return _upb_proto_aspect_impl(target, ctx, "upbdefs", _UpbDefsWrappedCcInfo, _WrappedDefsGeneratedSrcsInfo)
@@ -339,7 +339,7 @@ upb_proto_library_aspect = aspect(
     implementation = upb_proto_library_aspect_impl,
     provides = [
         UpbWrappedCcInfo,
-        UpbWrappedGeneratedSrcsInfo,
+        _UpbWrappedGeneratedSrcsInfo,
     ],
     attr_aspects = ["deps"],
     fragments = ["cpp"],
@@ -392,7 +392,7 @@ _upb_proto_reflection_library_aspect = aspect(
     ],
     required_aspect_providers = [
         UpbWrappedCcInfo,
-        UpbWrappedGeneratedSrcsInfo,
+        _UpbWrappedGeneratedSrcsInfo,
     ],
     attr_aspects = ["deps"],
     fragments = ["cpp"],
