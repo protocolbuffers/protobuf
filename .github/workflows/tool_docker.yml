@@ -1,4 +1,4 @@
-name: Run a Docker/Bazel workflow
+name: Run a Docker workflow
 
 on:
   workflow_call:
@@ -7,32 +7,30 @@ on:
         required: True
         description: "The name to display for the test"
         type: string
-      targets:
-        required: true
-        description: "The targets to test."
-        type: string
       image:
         required: false
         default: 'us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1'
-        description: "The docker image to use."
-        type: string
-      flags:
-        required: false
-        default: ''
-        description: "Extra flags to pass to Bazel."
-        type: string
-      emulate:
-        required: false
-        default: ''
-        description: "Architecture to emulate using QEMU"
-        type: string
-      cache:
-        required: true
-        description: "A unique path for where to store the bazel cache."
+        description: "The docker image to use"
         type: string
       checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
+        type: string
+
+      # Non-Bazel options
+      command:
+        required: false
+        description: "A raw docker command to run"
+        type: string
+
+      # Bazel options
+      bazel:
+        required: false
+        description: "The Bazel command to run"
+        type: string
+      bazel-cache:
+        required: false
+        description: "A unique path for the Bazel cache"
         type: string
 
 jobs:
@@ -46,11 +44,9 @@ jobs:
         with:
           ref: ${{ inputs.checkout }}
 
-      - name: Setup QEMU if we're emulating
-        if: ${{ inputs.emulate }}
+      - name: Setup QEMU for possible emulation
         id: qemu-arm64
         uses: docker/setup-qemu-action@v1
-
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v0
@@ -64,13 +60,26 @@ jobs:
       - name: Authenticate for GAR use
         run: gcloud auth configure-docker -q us-docker.pkg.dev
 
-      - name: Set up Bazel caching
+      - name: Validate Docker command
+        if: ${{ inputs.command && inputs.bazel}}
+        run: echo "Invalid specification of both non-Bazel and Bazel command"; exit 1
+      - name: Configure Bazel caching
+        if: ${{ inputs.bazel && !github.event.act_local_test }}
         run: >
           echo "BAZEL_CACHE=
           --google_credentials=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS)
           --remote_upload_local_results
           --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.cache }}" >> $GITHUB_ENV
-        if: ${{ inputs.cache }}
+      - name: Configure Bazel command
+        if: ${{ inputs.bazel }}
+        run: >
+          echo "DOCKER_COMMAND=${{ inputs.bazel }}
+          --keep_going --test_output=errors --test_timeout=600
+          $BAZEL_CACHE" >> $GITHUB_ENV
+      - name: Configure Docker command
+        if: ${{ inputs.command }}
+        run: >
+          echo "DOCKER_COMMAND=${{ inputs.command }}" >> $GITHUB_ENV
 
       - name: Check docker cache
         id: check-docker-cache
@@ -88,8 +97,5 @@ jobs:
         if: steps.check-docker-cache.outputs.cache-hit == 'true'
         run: docker image load --input ./ci/docker/${{ inputs.image }}.tar
 
-      - name: Run tests
-        run: >
-          docker run -v${{ github.workspace }}:/workspace ${{ inputs.image }}
-          test --keep_going --test_output=errors --test_timeout=600 $BAZEL_CACHE
-          ${{ inputs.flags }} ${{ inputs.targets }}
+      - name: Run docker
+        run: docker run -v${{ github.workspace }}:/workspace ${{ inputs.image }} $DOCKER_COMMAND
