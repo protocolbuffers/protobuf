@@ -18,12 +18,12 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - { name: "Optimized", flags: "--config=opt" }
-          - { name: "Debug", flags: "--config=dbg" }
-          - { name: "ASAN", flags: "--config=asan" }
-          - { name: "MSAN", flags: "--config=kokoro-msan" }
-          - { name: "TSAN", flags: "--config=tsan" }
-          - { name: "UBSAN", flags: "--config=ubsan" }
+          - { name: Optimized, flags: --config=opt }
+          - { name: Debug, flags: --config=dbg }
+          - { name: ASAN, flags: --config=asan }
+          - { name: MSAN, flags: --config=kokoro-msan }
+          - { name: TSAN, flags: --config=tsan }
+          - { name: UBSAN, flags: --config=ubsan }
           - name: "TCMalloc"
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:9d975616c3fd44d5a091aeb60ee94f37e22fb367d471d258fc18cb4a2387c943"
           - name: "aarch64"
