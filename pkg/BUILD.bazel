@@ -362,6 +362,7 @@ cc_dist_library(
         "//src/google/protobuf:arena_align",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf:wkt_cc_proto",
+        "//src/google/protobuf:reflection_mode",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/json",
         "//src/google/protobuf/util:delimited_message_util",

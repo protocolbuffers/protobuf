@@ -1314,6 +1314,31 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "reflection_mode",
+    srcs = ["reflection_mode.cc"],
+    hdrs = ["reflection_mode.h"],
+    include_prefix = "google/protobuf",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":port_def",
+        ":protobuf",
+    ],
+)
+
+cc_test(
+    name = "reflection_mode_test",
+    srcs = ["reflection_mode_test.cc"],
+    deps = [
+        ":reflection_mode",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 ################################################################################
 # Helper targets for Kotlin tests
 ################################################################################
