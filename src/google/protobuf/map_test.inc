@@ -2708,9 +2708,7 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   UNITTEST::TestEnumMap to;
   EXPECT_TRUE(to.ParseFromString(data));
   EXPECT_EQ(0, to.unknown_map_field().size());
-  const UnknownFieldSet& unknown_field_set =
-      to.GetReflection()->GetUnknownFields(to);
-  EXPECT_EQ(1, unknown_field_set.field_count());
+  EXPECT_EQ(1, to.GetReflection()->GetUnknownFields(to).field_count());
   EXPECT_EQ(1, to.known_map_field().size());
   EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
 
@@ -2723,6 +2721,20 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   EXPECT_EQ(UNITTEST::E_PROTO2_MAP_ENUM_FOO, from.known_map_field().at(0));
   EXPECT_EQ(1, from.unknown_map_field().size());
   EXPECT_EQ(UNITTEST::E_PROTO2_MAP_ENUM_EXTRA, from.unknown_map_field().at(0));
+
+  // Test the same behavior with the reflection based parser.
+  to.Clear();
+  const char* ptr;
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                             false, &ptr, data);
+  ptr = WireFormat::_InternalParse(&to, ptr, &ctx);
+  ASSERT_TRUE(ptr);
+  ASSERT_TRUE(ctx.EndedAtLimit());
+
+  EXPECT_EQ(0, to.unknown_map_field().size());
+  EXPECT_EQ(1, to.GetReflection()->GetUnknownFields(to).field_count());
+  EXPECT_EQ(1, to.known_map_field().size());
+  EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
 }
 
 TEST(GeneratedMapFieldTest, StandardWireFormat) {
