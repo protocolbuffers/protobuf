@@ -124,6 +124,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
+  PROTOBUF_NDEBUG_INLINE void* AllocateFromStringBlock() {
+    SerialArena* arena;
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateFromStringBlock();
+    }
+    return GetSerialArenaFallback(0)->AllocateFromStringBlockFallback();
+  }
+
  private:
   friend class ArenaBenchmark;
   friend class TcParser;
