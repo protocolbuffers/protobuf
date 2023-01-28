@@ -28,7 +28,7 @@ jobs:
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b
 
-    name: ${{ matrix.type }} ${{ matrix.version }}
+    name: matrix${{ matrix.none }}
     uses: ./.github/workflows/tool_docker.yml
     with:
       name: Linux ${{ matrix.type }} ${{matrix.version}}
