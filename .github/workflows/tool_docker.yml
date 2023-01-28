@@ -16,6 +16,17 @@ on:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      run-flags:
+        required: false
+        description: "Additional flags to pass to docker run"
+        type: string
+      bazel-cache:
+        required: false
+        description: >
+          A unique path for the Bazel cache.  This will trigger the generation
+          of a BAZEL_CACHE environment variant that provides the appropriate
+          flags for any bazel command.
+        type: string
 
       # WARNING: loading from cache appears to be slower than pull!
       docker-cache:
@@ -34,10 +45,6 @@ on:
       bazel:
         required: false
         description: "The Bazel command to run"
-        type: string
-      bazel-cache:
-        required: false
-        description: "A unique path for the Bazel cache"
         type: string
 
 jobs:
@@ -75,15 +82,14 @@ jobs:
       - name: Configure Bazel caching
         # Skip bazel cache for local act runs due to issue with credential files
         # and nested docker images
-        if: ${{ !github.event.act_local_test }}
+        if: ${{ inputs.bazel-cache && !github.event.act_local_test }}
         run: >
           echo "BAZEL_CACHE=
           --google_credentials=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS)
-          --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.cache }}" >> $GITHUB_ENV
+          --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.bazel-cache }}" >> $GITHUB_ENV
       - name: Configure Bazel cache updating
-        # Only upload caches from push events.  These are safe and more likely
-        # to trigger cache hits.
-        if: ${{ inputs.bazel-cache && github.event_name == 'push' && !github.event.act_local_test }}
+        # External runs should never write to our caches.
+        if: ${{ inputs.bazel-cache && !inputs.safe-checkout && !github.event.act_local_test }}
         run: echo "BAZEL_CACHE=$BAZEL_CACHE --remote_upload_local_results" >> $GITHUB_ENV
       - name: Configure Bazel command
         if: ${{ inputs.bazel }}
@@ -91,10 +97,6 @@ jobs:
           echo "DOCKER_COMMAND=${{ inputs.bazel }}
           --keep_going --test_output=errors --test_timeout=600
           $BAZEL_CACHE" >> $GITHUB_ENV
-      - name: Configure Docker command
-        if: ${{ inputs.command }}
-        run: >
-          echo "DOCKER_COMMAND=${{ inputs.command }}" >> $GITHUB_ENV
 
       # Grab Docker image
       - name: Check docker cache
@@ -118,4 +120,8 @@ jobs:
         run: docker pull ${{ inputs.image }}
 
       - name: Run docker
-        run: docker run -v${{ github.workspace }}:/workspace ${{ inputs.image }} $DOCKER_COMMAND
+        run: >
+          docker run ${{ inputs.run-flags}}
+          -v${{ github.workspace }}:/workspace
+          ${{ inputs.image }}
+          ${{ inputs.command || '$DOCKER_COMMAND' }}

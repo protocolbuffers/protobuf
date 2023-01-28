@@ -35,7 +35,7 @@ jobs:
           - config: { name: "Bazel4" }
             targets: "//src/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-20a3cc217eaa012bb120ea7cfa4c2234827d790b"
-    name: ${{ matrix.config.name }}
+    name: mat${{ matrix.none }}
     uses: ./.github/workflows/tool_docker.yml
     with:
       name: Linux ${{ matrix.config.name }}
