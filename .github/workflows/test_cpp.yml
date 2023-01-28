@@ -51,3 +51,47 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_bazel/${{ matrix.config.name }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
+
+  cmake:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - command: >
+              /test.sh
+              -Dprotobuf_BUILD_CONFORMANCE=ON
+              -Dprotobuf_BUILD_EXAMPLES=ON
+              -DCMAKE_CXX_STANDARD=14
+          - name: Ninja
+            command: >
+              /test.sh
+              -G Ninja
+              -Dprotobuf_BUILD_CONFORMANCE=ON
+              -DCMAKE_CXX_STANDARD=14
+          - name: Shared
+            command: >
+              /test.sh
+              -Dprotobuf_BUILD_CONFORMANCE=ON
+              -Dprotobuf_BUILD_SHARED_LIBS=ON
+              -DCMAKE_CXX_STANDARD=14
+          - name: Install
+            command: >
+              /install.sh -DCMAKE_CXX_STANDARD=14 \&\& /test.sh
+              -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
+              -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
+              -Dprotobuf_BUILD_CONFORMANCE=ON
+              -DCMAKE_CXX_STANDARD=14
+    name: Linux CMake ${{ matrix.name}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: ./.github/actions/non-bazel-docker
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:cc23dbe065668158ca2732aa305a07bd0913a175b2079d27d9c16925d23f2335
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: ${{ matrix.command }}

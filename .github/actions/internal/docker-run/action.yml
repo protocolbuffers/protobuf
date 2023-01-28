@@ -18,8 +18,6 @@ inputs:
   docker-cache:
     required: false
     description: "Enabled caching of pulled docker images."
-    default: false
-    type: boolean
 
 runs:
   using: 'composite'
