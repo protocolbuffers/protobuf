@@ -1,0 +1,53 @@
+name: 'Run Docker'
+description: 'Run a docker image for Protobuf CI testing'
+inputs:
+  image:
+    required: true
+    description: "The docker image to use"
+    type: string
+  command:
+    required: true
+    description: "A raw docker command to run"
+    type: string
+  run-flags:
+    required: false
+    description: "Additional flags to pass to docker run"
+    type: string
+
+  # WARNING: loading from cache appears to be slower than pull!
+  docker-cache:
+    required: false
+    description: "Enabled caching of pulled docker images."
+    default: false
+    type: boolean
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check docker cache
+      if: ${{ inputs.docker-cache }}
+      id: check-docker-cache
+      uses: actions/cache@v3
+      with:
+        path: ci/docker/
+        key: ${{ inputs.image }}
+
+    - name: Pull and store if cache miss
+      if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit != 'true' }}
+      run: >
+        docker pull ${{ inputs.image }} &&
+        mkdir -p ci/docker/$(dirname ${{ inputs.image }}) &&
+        docker image save ${{ inputs.image }} --output ./ci/docker/${{ inputs.image }}.tar
+
+    - name: Use the cached image on cache hit
+      if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit == 'true' }}
+      run: docker image load --input ./ci/docker/${{ inputs.image }}.tar
+
+    - name: Pull fresh docker image
+      if: ${{ !inputs.docker-cache }}
+      run: docker pull ${{ inputs.image }}
+
+    - name: Run docker
+      run: >
+        docker run ${{ inputs.run-flags}} -v${{ github.workspace }}:/workspace
+        ${{ inputs.image }} ${{ inputs.command }}
