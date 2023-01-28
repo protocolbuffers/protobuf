@@ -36,22 +36,22 @@ runs:
       shell: bash
       if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit != 'true' }}
       run: >
-        docker pull -q ${{ inputs.image }} &&
+        time docker pull -q ${{ inputs.image }} &&
         mkdir -p ci/docker/$(dirname ${{ inputs.image }}) &&
-        docker image save ${{ inputs.image }} --output ./ci/docker/${{ inputs.image }}.tar
+        time docker image save ${{ inputs.image }} --output ./ci/docker/${{ inputs.image }}.tar
 
     - name: Use the cached image on cache hit
       shell: bash
       if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit == 'true' }}
-      run: docker image load --input ./ci/docker/${{ inputs.image }}.tar
+      run: time docker image load --input ./ci/docker/${{ inputs.image }}.tar
 
     - name: Pull fresh docker image
       shell: bash
       if: ${{ !inputs.docker-cache }}
-      run: docker pull -q ${{ inputs.image }}
+      run: time docker pull -q ${{ inputs.image }}
 
     - name: Run docker
       shell: bash
       run: >
-        docker run ${{ inputs.run-flags}} -v${{ github.workspace }}:/workspace
+        time docker run ${{ inputs.run-flags}} -v${{ github.workspace }}:/workspace
         ${{ inputs.image }} ${{ inputs.command }}
