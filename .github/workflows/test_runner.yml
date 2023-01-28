@@ -106,9 +106,9 @@ jobs:
     secrets: inherit
 
   ruby-install:
-    name: Ruby Install
+    name: Ruby
     needs: [check-tag]
-    uses: ./.github/workflows/test_ruby_install.yml
+    uses: ./.github/workflows/test_ruby.yml
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
