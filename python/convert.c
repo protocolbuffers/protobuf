@@ -272,9 +272,7 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
       return true;
     }
     case kUpb_CType_Message:
-      // TODO(b/238226055): Include ctype in error message.
-      PyErr_Format(PyExc_ValueError, "Message objects may not be assigned",
-                   upb_FieldDef_CType(f));
+      PyErr_Format(PyExc_ValueError, "Message objects may not be assigned");
       return false;
     default:
       PyErr_Format(PyExc_SystemError,
