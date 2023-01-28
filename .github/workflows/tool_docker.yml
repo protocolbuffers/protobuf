@@ -17,6 +17,13 @@ on:
         description: "The SHA key for the commit we want to run over"
         type: string
 
+      # WARNING: loading from cache appears to be slower than pull!
+      docker-cache:
+        required: false
+        description: "Enabled caching of pulled docker images."
+        default: false
+        type: boolean
+
       # Non-Bazel options
       command:
         required: false
@@ -44,6 +51,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
 
+      # Authentication
       - name: Setup QEMU for possible emulation
         id: qemu-arm64
         uses: docker/setup-qemu-action@v1
@@ -60,6 +68,7 @@ jobs:
       - name: Authenticate for GAR use
         run: gcloud auth configure-docker -q us-docker.pkg.dev
 
+      # Create the docker command
       - name: Validate Docker command
         if: ${{ inputs.command && inputs.bazel}}
         run: echo "Invalid specification of both non-Bazel and Bazel command"; exit 1
@@ -86,21 +95,26 @@ jobs:
         run: >
           echo "DOCKER_COMMAND=${{ inputs.command }}" >> $GITHUB_ENV
 
+      # Grab Docker image
       - name: Check docker cache
+        if: ${{ inputs.docker-cache }}
         id: check-docker-cache
         uses: actions/cache@v3
         with:
           path: ci/docker/
           key: ${{ inputs.image }}
       - name: Pull and store if cache miss
-        if: steps.check-docker-cache.outputs.cache-hit != 'true'
+        if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit != 'true' }}
         run: >
           docker pull ${{ inputs.image }} &&
           mkdir -p ci/docker/$(dirname ${{ inputs.image }}) &&
           docker image save ${{ inputs.image }} --output ./ci/docker/${{ inputs.image }}.tar
       - name: Use the cached image on cache hit
-        if: steps.check-docker-cache.outputs.cache-hit == 'true'
+        if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit == 'true' }}
         run: docker image load --input ./ci/docker/${{ inputs.image }}.tar
+      - name: Pull fresh docker image
+        if: ${{ !inputs.docker-cache }}
+        run: docker pull ${{ inputs.image }}
 
       - name: Run docker
         run: docker run -v${{ github.workspace }}:/workspace ${{ inputs.image }} $DOCKER_COMMAND
