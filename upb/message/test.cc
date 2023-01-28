@@ -630,4 +630,13 @@ TEST(MessageTest, MapField) {
 //       0, 0);
 // }
 //
+// TEST(FuzzTest, MapUnknownFieldSpanBuffers) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"$   3", "%# "}, {}, "", {1}},
+//       std::string(
+//           "\"\002\010\000\000\000\000\000\000\000\000\000\000\000\000\000\000",
+//           17),
+//       0, 0);
+// }
+//
 // end:google_only

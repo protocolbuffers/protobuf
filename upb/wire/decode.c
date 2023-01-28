@@ -34,6 +34,7 @@
 #include "upb/mini_table/enum_internal.h"
 #include "upb/wire/common_internal.h"
 #include "upb/wire/decode_internal.h"
+#include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/swap_internal.h"
@@ -601,16 +602,22 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
     ent.data.v.val = upb_value_ptr(_upb_Message_New(submsg_table, &d->arena));
   }
 
-  const char* start = ptr;
   ptr =
       _upb_Decoder_DecodeSubMessage(d, ptr, &ent.data, subs, field, val->size);
   // check if ent had any unknown fields
   size_t size;
   upb_Message_GetUnknown(&ent.data, &size);
   if (size != 0) {
+    char* buf;
+    size_t size;
     uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Delimited;
-    _upb_Decoder_AddUnknownVarints(d, msg, tag, (uint32_t)(ptr - start));
-    if (!_upb_Message_AddUnknown(msg, start, ptr - start, &d->arena)) {
+    upb_EncodeStatus status =
+        upb_Encode(&ent.data, entry, 0, &d->arena, &buf, &size);
+    if (status != kUpb_EncodeStatus_Ok) {
+      _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+    }
+    _upb_Decoder_AddUnknownVarints(d, msg, tag, size);
+    if (!_upb_Message_AddUnknown(msg, buf, size, &d->arena)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else {
