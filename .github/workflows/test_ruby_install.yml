@@ -23,8 +23,6 @@ jobs:
           - { name: JRuby 9.3, ruby: jruby-9.3.4.0, bazel: 5.1.1}
           - { name: Ruby 2.6 (Bazel6), ruby: ruby-2.6.0, bazel: 6.0.0}
           - { name: JRuby 9.2 (Bazel6), ruby: jruby-9.2.20.1, bazel: 6.0.0}
-          - { name: Ruby 2.6 (Bazel4), ruby: ruby-2.6.0, bazel: 4.2.3}
-          - { name: JRuby 9.2 (Bazel4), ruby: jruby-9.2.20.1, bazel: 4.2.3}
 
     name: mat${{ matrix.none }}
     uses: ./.github/workflows/tool_docker.yml
