@@ -10,59 +10,37 @@ on:
 
 jobs:
   test_ruby_gems:
-    name: Test ruby gems
-    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { ruby: 2.6, bazel: 6.0.0}
-          - { ruby: 2.7, bazel: 6.0.0}
-          - { ruby: 3.0, bazel: 6.0.0}
-          - { ruby: 3.1, bazel: 6.0.0}
-          - { ruby: 3.2, bazel: 6.0.0}
-          - { ruby: jruby-9.2, bazel: 6.0.0}
-          - { ruby: jruby-9.3, bazel: 6.0.0}
-          - { ruby: 2.6, bazel: 5.1.1}
-          - { ruby: jruby-9.2, bazel: 5.1.1}
+          - { name: Ruby 2.6, ruby: ruby-2.6.0, bazel: 5.1.1}
+          - { name: Ruby 2.7, ruby: ruby-2.7.0, bazel: 5.1.1}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, bazel: 5.1.1}
+          - { name: Ruby 3.1, ruby: ruby-3.1.0, bazel: 5.1.1}
+          - { name: Ruby 3.2, ruby: ruby-3.2.0, bazel: 5.1.1}
+          - { name: JRuby 9.2, ruby: jruby-9.2.20.1, bazel: 5.1.1}
+          - { name: JRuby 9.3, ruby: jruby-9.3.4.0, bazel: 5.1.1}
+          - { name: Ruby 2.6 (Bazel6), ruby: ruby-2.6.0, bazel: 6.0.0}
+          - { name: JRuby 9.2 (Bazel6), ruby: jruby-9.2.20.1, bazel: 6.0.0}
+          - { name: Ruby 2.6 (Bazel4), ruby: ruby-2.6.0, bazel: 4.2.3}
+          - { name: JRuby 9.2 (Bazel4), ruby: jruby-9.2.20.1, bazel: 4.2.3}
 
-    # TODO(b/266868629) Dockerize these instead of installing all the
-    # dependencies on each run.
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ inputs.safe-checkout }}
-      - name: Install bazel
-        run: |
-          sudo apt-get install -qy wget
-          mkdir $HOME/bin
-          wget -O $HOME/bin/bazel https://github.com/bazelbuild/bazel/releases/download/${{ matrix.bazel }}/bazel-${{ matrix.bazel }}-linux-x86_64
-          chmod a+x $HOME/bin/bazel
-      - name: Install git
-        run: |
-          sudo apt-get install -qy --no-install-recommends git
-      - name: Install ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Build cruby gem
-        run: $HOME/bin/bazel build ruby:release
-        if: ${{ !contains(matrix.ruby, 'jruby') }}
-      - name: Install cruby gem
-        run: gem install bazel-bin/ruby/google-protobuf-*
-        if: ${{ !contains(matrix.ruby, 'jruby') }}
-      - name: Build jruby gem
-        run: $HOME/bin/bazel build ruby:jruby_release
-        if: ${{ contains(matrix.ruby, 'jruby') }}
-      - name: Install jruby gem
-        run: gem install bazel-bin/ruby/google-protobuf-*
-        if: ${{ contains(matrix.ruby, 'jruby') }}
-      - name: Test installation
-        run: |
-          bazel run //:protoc -- --proto_path=$GITHUB_WORKSPACE/src --proto_path=$GITHUB_WORKSPACE/ruby/tests --proto_path=$GITHUB_WORKSPACE/ruby --ruby_out=$GITHUB_WORKSPACE/ruby tests/test_import_proto2.proto
-          bazel run //:protoc -- --proto_path=$GITHUB_WORKSPACE/src --proto_path=$GITHUB_WORKSPACE/ruby/tests --proto_path=$GITHUB_WORKSPACE/ruby --ruby_out=$GITHUB_WORKSPACE/ruby tests/basic_test.proto
-          ruby ruby/tests/basic.rb
+    name: mat${{ matrix.none }}
+    uses: ./.github/workflows/tool_docker.yml
+    with:
+      name: Linux ${{ matrix.name }}
+      safe-checkout: ${{ inputs.safe-checkout }}
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-a1ac107476f27e4b0e18e8b8510a5a0bd828399f
+      bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
+      run-flags: --entrypoint "/bin/bash"
+      command: >
+          -l -c "
+          bazel --version
+          ruby --version
+          bazel build //ruby:release //:protoc $BAZEL_CACHE &&
+          gem install bazel-bin/ruby/google-protobuf-* &&
+          bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto &&
+          bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto &&
+          ruby ruby/tests/basic.rb"
+    secrets: inherit
