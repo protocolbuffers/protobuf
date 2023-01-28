@@ -639,4 +639,14 @@ TEST(MessageTest, MapField) {
 //       0, 0);
 // }
 //
+// // Another test for mismatched submsg types.
+// TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayloadRegression22) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"$2222222222222222222222", "%,&"}, {}, "", {1}},
+//       std::string("\035\170\170\170\051\263\001\030\000\035\357\357\340\021\035"
+//                   "\025\331\035\035\035\035\035\035\035\035",
+//                   25),
+//       0, 0);
+// }
+//
 // end:google_only
