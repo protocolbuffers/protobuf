@@ -98,7 +98,8 @@ filegroup(
     srcs = select({
         "@rules_ruby//ruby/runtime:config_jruby": [":jruby_release"],
         "//conditions:default": [":ruby_release"],
-    })
+    }),
+    tags = ["manual"],
 )
 
 
