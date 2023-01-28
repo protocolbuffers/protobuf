@@ -36,8 +36,8 @@ jobs:
       run-flags: --entrypoint "/bin/bash"
       command: >
           -l -c "
-          bazel --version
-          ruby --version
+          bazel --version &&
+          ruby --version &&
           bazel build //ruby:release //:protoc $BAZEL_CACHE &&
           gem install bazel-bin/ruby/google-protobuf-* &&
           bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto &&

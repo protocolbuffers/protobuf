@@ -96,14 +96,6 @@ jobs:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
-  python-bazel:
-    name: Python
-    needs: [check-tag]
-    uses: ./.github/workflows/test_python.yml
-    with:
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-    secrets: inherit
-
   ruby-install:
     name: Ruby Install
     needs: [check-tag]
