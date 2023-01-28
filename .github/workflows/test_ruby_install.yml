@@ -25,22 +25,23 @@ jobs:
           - { name: JRuby 9.2 (Bazel6), ruby: jruby-9.2.20.1, bazel: 6.0.0}
           - { name: Ruby 2.6 (Bazel4), ruby: ruby-2.6.0, bazel: 4.2.3}
           - { name: JRuby 9.2 (Bazel4), ruby: jruby-9.2.20.1, bazel: 4.2.3}
-
-    name: mat${{ matrix.none }}
-    uses: ./.github/workflows/tool_docker.yml
-    with:
-      name: Linux ${{ matrix.name }}
-      safe-checkout: ${{ inputs.safe-checkout }}
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-a1ac107476f27e4b0e18e8b8510a5a0bd828399f
-      bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
-      run-flags: --entrypoint "/bin/bash"
-      command: >
-          -l -c "
-          bazel --version &&
-          ruby --version &&
-          bazel build //ruby:release //:protoc $BAZEL_CACHE &&
-          gem install bazel-bin/ruby/google-protobuf-* &&
-          bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto &&
-          bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto &&
-          ruby ruby/tests/basic.rb"
-    secrets: inherit
+    name: Linux ${{ matrix.name }}
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: ./.github/actions/bazel-docker.yml
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-a1ac107476f27e4b0e18e8b8510a5a0bd828399f
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_bazel/${{ matrix.config.name }}
+          bash: >
+            bazel --version &&
+            ruby --version &&
+            bazel build //ruby:release //:protoc $BAZEL_FLAGS &&
+            gem install bazel-bin/ruby/google-protobuf-* &&
+            bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto &&
+            bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto &&
+            ruby ruby/tests/basic.rb"

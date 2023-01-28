@@ -35,12 +35,18 @@ jobs:
           - config: { name: "Bazel4" }
             targets: "//src/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-20a3cc217eaa012bb120ea7cfa4c2234827d790b"
-    name: mat${{ matrix.none }}
-    uses: ./.github/workflows/tool_docker.yml
-    with:
-      name: Linux ${{ matrix.config.name }}
-      safe-checkout: ${{ inputs.safe-checkout }}
-      image: ${{ matrix.image }}
-      bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
-      bazel-cache: cpp_bazel/${{ matrix.config.name }}
-    secrets: inherit
+    name: Linux ${{ matrix.config.name }}
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Setup QEMU for possible emulation
+        uses: docker/setup-qemu-action@v1
+      - name: Run tests
+        uses: ./.github/actions/bazel-docker.yml
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_bazel/${{ matrix.config.name }}
+          bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
