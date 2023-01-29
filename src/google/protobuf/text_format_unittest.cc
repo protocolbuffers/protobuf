@@ -48,7 +48,9 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/die_if_null.h"
+#include "absl/log/scoped_mock_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -79,19 +81,19 @@ using ::testing::AllOf;
 using ::testing::HasSubstr;
 
 // A basic string with different escapable characters for testing.
-const std::string kEscapeTestString =
+constexpr absl::string_view kEscapeTestString =
     "\"A string with ' characters \n and \r newlines and \t tabs and \001 "
     "slashes \\ and  multiple   spaces";
 
 // A representation of the above string with all the characters escaped.
-const std::string kEscapeTestStringEscaped =
+constexpr absl::string_view kEscapeTestStringEscaped =
     "\"\\\"A string with \\' characters \\n and \\r newlines "
     "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
 class TextFormatTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
-    GOOGLE_ABSL_CHECK_OK(File::GetContents(
+    ABSL_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath(
             "third_party/protobuf/"
             "testdata/text_format_unittest_data_oneof_implemented.txt"),
@@ -113,7 +115,7 @@ std::string TextFormatTest::static_proto_text_format_;
 class TextFormatExtensionsTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
-    GOOGLE_ABSL_CHECK_OK(File::GetContents(
+    ABSL_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath("third_party/protobuf/testdata/"
                                   "text_format_unittest_extensions_data.txt"),
         &static_proto_text_format_, true));
@@ -879,7 +881,7 @@ TEST_F(TextFormatTest, ParseUnknownEnumFieldProto3) {
 TEST_F(TextFormatTest, ParseStringEscape) {
   // Create a parse string with escaped characters in it.
   std::string parse_string =
-      "optional_string: " + kEscapeTestStringEscaped + "\n";
+      absl::StrCat("optional_string: ", kEscapeTestStringEscaped, "\n");
 
   io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
   TextFormat::Parse(&input_stream, &proto_);
@@ -1463,13 +1465,14 @@ class TextFormatParserTest : public testing::Test {
     std::string text_;
 
     // implements ErrorCollector -------------------------------------
-    void AddError(int line, int column, const std::string& message) override {
+    void RecordError(int line, int column, absl::string_view message) override {
       absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line + 1, column + 1,
                                 message);
     }
 
-    void AddWarning(int line, int column, const std::string& message) override {
-      AddError(line, column, "WARNING:" + message);
+    void RecordWarning(int line, int column,
+                       absl::string_view message) override {
+      RecordError(line, column, absl::StrCat("WARNING:", message));
     }
   };
 
@@ -1881,38 +1884,33 @@ TEST_F(TextFormatParserTest, ExplicitDelimiters) {
 }
 
 TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
-  std::vector<std::string> errors;
-
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(
+        log,
+        Log(absl::LogSeverity::kError, testing::_,
+            "Error parsing text-format protobuf_unittest.TestAllTypes: "
+            "1:14: Message type \"protobuf_unittest.TestAllTypes\" has no field "
+            "named \"no_such_field\"."))
+        .Times(1);
+    log.StartCapturingLogs();
     unittest::TestAllTypes proto;
     EXPECT_FALSE(TextFormat::ParseFromString("no_such_field: 1", &proto));
-    errors = log.GetMessages(ERROR);
   }
-
-  ASSERT_EQ(1, errors.size());
-  EXPECT_EQ(
-      "Error parsing text-format protobuf_unittest.TestAllTypes: "
-      "1:14: Message type \"protobuf_unittest.TestAllTypes\" has no field "
-      "named \"no_such_field\".",
-      errors[0]);
 }
 
 TEST_F(TextFormatParserTest, FailsOnTokenizationError) {
-  std::vector<std::string> errors;
-
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log,
+                Log(absl::LogSeverity::kError, testing::_,
+                    "Error parsing text-format protobuf_unittest.TestAllTypes: "
+                    "1:1: Invalid control characters encountered in text."))
+        .Times(1);
+    log.StartCapturingLogs();
     unittest::TestAllTypes proto;
     EXPECT_FALSE(TextFormat::ParseFromString("\020", &proto));
-    errors = log.GetMessages(ERROR);
   }
-
-  ASSERT_EQ(1, errors.size());
-  EXPECT_EQ(
-      "Error parsing text-format protobuf_unittest.TestAllTypes: "
-      "1:1: Invalid control characters encountered in text.",
-      errors[0]);
 }
 
 TEST_F(TextFormatParserTest, ParseDeprecatedField) {

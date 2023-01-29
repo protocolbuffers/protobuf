@@ -89,15 +89,16 @@ class FileGenerator {
 
   void GenerateGlobalSource(io::Printer* p) const;
   void GenerateSourceForMessage(int idx, io::Printer* p) const;
-  void GenerateSourceForEnum(int idx, io::Printer* p) const;
+  void GenerateSourceForEnums(io::Printer* p) const;
 
  private:
   enum class GeneratedFileType : int { kHeader, kSource };
 
-  void GenerateFile(io::Printer* p, GeneratedFileType file_type,
-                    const std::vector<std::string>& ignored_warnings,
-                    const std::vector<const FileDescriptor*>& extra_files,
-                    std::function<void()> body) const;
+  void GenerateFile(
+      io::Printer* p, GeneratedFileType file_type,
+      const std::vector<std::string>& ignored_warnings,
+      const std::vector<const FileDescriptor*>& extra_files_to_import,
+      std::function<void()> body) const;
   void GenerateFile(io::Printer* p, GeneratedFileType file_type,
                     std::function<void()> body) const {
     GenerateFile(p, file_type, {}, {}, body);
@@ -121,6 +122,7 @@ class FileGenerator {
   const GenerationOptions& generation_options_;
   mutable CommonState* common_state_;
   const std::string root_class_name_;
+  const std::string file_descriptor_function_name_;
   const bool is_bundled_proto_;
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;

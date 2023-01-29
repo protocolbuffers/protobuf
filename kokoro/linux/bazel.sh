@@ -3,7 +3,7 @@
 set -ex
 
 if [[ -z "${CONTAINER_IMAGE}" ]]; then
-  CONTAINER_IMAGE=gcr.io/protobuf-build/bazel/linux@sha256:2bfd061284eff8234f2fcca16d71d43c69ccf3a22206628b54c204a6a9aac277
+  CONTAINER_IMAGE=us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1
 fi
 
 cd $(dirname $0)/../..
@@ -23,6 +23,10 @@ if [ -n "$BAZEL_ENV" ]; then
     ENVS+="--action_env=${env}"
   done
 fi
+
+# Setup GAR for docker images.
+gcloud components update --quiet
+gcloud auth configure-docker us-docker.pkg.dev --quiet
 
 function run {
   local CONFIG=$1

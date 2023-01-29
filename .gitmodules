@@ -5,10 +5,7 @@
 [submodule "third_party/abseil-cpp"]
 	path = third_party/abseil-cpp
 	url = https://github.com/abseil/abseil-cpp.git
-	branch = lts_2022_06_23
+	branch = lts_2023_01_24
 [submodule "third_party/jsoncpp"]
 	path = third_party/jsoncpp
 	url = https://github.com/open-source-parsers/jsoncpp.git
-[submodule "third_party/utf8_range"]
-	path = third_party/utf8_range
-	url = https://github.com/protocolbuffers/utf8_range.git

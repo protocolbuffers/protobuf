@@ -37,7 +37,7 @@
 #include <tuple>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
@@ -113,7 +113,7 @@ class RepeatedEnumFieldGenerator : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateCopyConstructorCode(io::Printer* /*printer*/) const override {
-    GOOGLE_ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
   }
   void GenerateDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(

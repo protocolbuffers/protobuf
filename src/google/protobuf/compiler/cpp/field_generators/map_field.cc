@@ -32,7 +32,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
@@ -65,10 +65,10 @@ void SetMessageVariables(
     default:
       (*variables)["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
   }
-  (*variables)["key_wire_type"] =
-      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type()));
-  (*variables)["val_wire_type"] =
-      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type()));
+  (*variables)["key_wire_type"] = absl::StrCat(
+      "TYPE_", absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type())));
+  (*variables)["val_wire_type"] = absl::StrCat(
+      "TYPE_", absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type())));
   (*variables)["map_classname"] = ClassName(descriptor->message_type(), false);
   (*variables)["number"] = absl::StrCat(descriptor->number());
   (*variables)["tag"] = absl::StrCat(internal::WireFormat::MakeTag(descriptor));

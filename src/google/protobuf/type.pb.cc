@@ -47,9 +47,12 @@ PROTOBUF_CONSTEXPR Field::Field(
   , /*decltype(_impl_.default_value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.kind_)*/0
   , /*decltype(_impl_.cardinality_)*/0
-  , /*decltype(_impl_.number_)*/0
-  , /*decltype(_impl_.oneof_index_)*/0
-  , /*decltype(_impl_.packed_)*/false
+  , /* ._impl_.number_ = */ 0
+
+  , /* ._impl_.oneof_index_ = */ 0
+
+  , /* ._impl_.packed_ = */ false
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct FieldDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -83,7 +86,8 @@ PROTOBUF_CONSTEXPR EnumValue::EnumValue(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.options_)*/{}
   , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.number_)*/0
+  , /* ._impl_.number_ = */ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct EnumValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EnumValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -461,7 +465,7 @@ Type::~Type() {
 }
 
 inline void Type::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fields_.~RepeatedPtrField();
   _impl_.oneofs_.~RepeatedPtrField();
   _impl_.options_.~RepeatedPtrField();
@@ -722,7 +726,7 @@ void Type::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_
   auto* const _this = static_cast<Type*>(&to_msg);
   auto& from = static_cast<const Type&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Type)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -800,9 +804,12 @@ Field::Field(const Field& from)
     , decltype(_impl_.default_value_){}
     , decltype(_impl_.kind_){}
     , decltype(_impl_.cardinality_){}
-    , decltype(_impl_.number_){}
-    , decltype(_impl_.oneof_index_){}
-    , decltype(_impl_.packed_){}
+    , decltype(_impl_.number_) {}
+
+    , decltype(_impl_.oneof_index_) {}
+
+    , decltype(_impl_.packed_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -854,9 +861,12 @@ inline void Field::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.default_value_){}
     , decltype(_impl_.kind_){0}
     , decltype(_impl_.cardinality_){0}
-    , decltype(_impl_.number_){0}
-    , decltype(_impl_.oneof_index_){0}
-    , decltype(_impl_.packed_){false}
+    , decltype(_impl_.number_) { 0 }
+
+    , decltype(_impl_.oneof_index_) { 0 }
+
+    , decltype(_impl_.packed_) { false }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -887,7 +897,7 @@ Field::~Field() {
 }
 
 inline void Field::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.type_url_.Destroy();
@@ -1073,7 +1083,8 @@ failure:
   // int32 number = 3;
   if (this->_internal_number() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_number(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        3, this->_internal_number(), target);
   }
 
   // string name = 4;
@@ -1099,13 +1110,15 @@ failure:
   // int32 oneof_index = 7;
   if (this->_internal_oneof_index() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(7, this->_internal_oneof_index(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        7, this->_internal_oneof_index(), target);
   }
 
   // bool packed = 8;
   if (this->_internal_packed() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(8, this->_internal_packed(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        8, this->_internal_packed(), target);
   }
 
   // repeated .google.protobuf.Option options = 9;
@@ -1201,17 +1214,19 @@ failure:
 
   // int32 number = 3;
   if (this->_internal_number() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_number());
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+        this->_internal_number());
   }
 
   // int32 oneof_index = 7;
   if (this->_internal_oneof_index() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_oneof_index());
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+        this->_internal_oneof_index());
   }
 
   // bool packed = 8;
   if (this->_internal_packed() != 0) {
-    total_size += 1 + 1;
+    total_size += 2;
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1228,7 +1243,7 @@ void Field::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF
   auto* const _this = static_cast<Field*>(&to_msg);
   auto& from = static_cast<const Field&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Field)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1384,7 +1399,7 @@ Enum::~Enum() {
 }
 
 inline void Enum::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.enumvalue_.~RepeatedPtrField();
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
@@ -1609,7 +1624,7 @@ void Enum::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_
   auto* const _this = static_cast<Enum*>(&to_msg);
   auto& from = static_cast<const Enum&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Enum)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1680,7 +1695,8 @@ EnumValue::EnumValue(const EnumValue& from)
   new (&_impl_) Impl_{
       decltype(_impl_.options_){from._impl_.options_}
     , decltype(_impl_.name_){}
-    , decltype(_impl_.number_){}
+    , decltype(_impl_.number_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -1701,7 +1717,8 @@ inline void EnumValue::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_{
       decltype(_impl_.options_){arena}
     , decltype(_impl_.name_){}
-    , decltype(_impl_.number_){0}
+    , decltype(_impl_.number_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -1720,7 +1737,7 @@ EnumValue::~EnumValue() {
 }
 
 inline void EnumValue::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
 }
@@ -1823,7 +1840,8 @@ failure:
   // int32 number = 2;
   if (this->_internal_number() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_number(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        2, this->_internal_number(), target);
   }
 
   // repeated .google.protobuf.Option options = 3;
@@ -1866,7 +1884,8 @@ failure:
 
   // int32 number = 2;
   if (this->_internal_number() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_number());
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+        this->_internal_number());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1883,7 +1902,7 @@ void EnumValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   auto* const _this = static_cast<EnumValue*>(&to_msg);
   auto& from = static_cast<const EnumValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValue)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1918,6 +1937,7 @@ void EnumValue::InternalSwap(EnumValue* other) {
       &_impl_.name_, lhs_arena,
       &other->_impl_.name_, rhs_arena
   );
+
   swap(_impl_.number_, other->_impl_.number_);
 }
 
@@ -1994,7 +2014,7 @@ Option::~Option() {
 }
 
 inline void Option::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.value_;
 }
@@ -2133,7 +2153,7 @@ void Option::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBU
   auto* const _this = static_cast<Option*>(&to_msg);
   auto& from = static_cast<const Option&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Option)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

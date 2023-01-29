@@ -38,7 +38,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
@@ -46,6 +46,7 @@
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
@@ -128,7 +129,7 @@ int OrderGroupForFieldDescriptor(const FieldDescriptor* descriptor) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return 0;
 }
 
@@ -150,6 +151,39 @@ struct ExtensionRangeOrdering {
   bool operator()(const Descriptor::ExtensionRange* a,
                   const Descriptor::ExtensionRange* b) const {
     return a->start < b->start;
+  }
+};
+
+// This is a reduced case of Descriptor::ExtensionRange with just start and end.
+struct SimpleExtensionRange {
+  SimpleExtensionRange(int start, int end) : start(start), end(end){};
+  int start;  // inclusive
+  int end;    // exclusive
+
+  // Descriptors expose extension ranges in the order they were defined in the
+  // file, but this reorders and merges the ranges that are contiguous (i.e. -
+  // [(21,30),(10,20)] -> [(10,30)])
+  static std::vector<SimpleExtensionRange> Normalize(
+      const Descriptor* descriptor) {
+    std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+    sorted_extensions.reserve(descriptor->extension_range_count());
+    for (int i = 0; i < descriptor->extension_range_count(); ++i) {
+      sorted_extensions.push_back(descriptor->extension_range(i));
+    }
+
+    std::sort(sorted_extensions.begin(), sorted_extensions.end(),
+              ExtensionRangeOrdering());
+
+    std::vector<SimpleExtensionRange> result;
+    result.reserve(sorted_extensions.size());
+    for (const auto ext : sorted_extensions) {
+      if (!result.empty() && result.back().end == ext->start) {
+        result.back().end = ext->end;
+      } else {
+        result.emplace_back(ext->start, ext->end);
+      }
+    }
+    return result;
   }
 };
 
@@ -181,9 +215,12 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
 
 }  // namespace
 
-MessageGenerator::MessageGenerator(const std::string& root_classname,
-                                   const Descriptor* descriptor)
+MessageGenerator::MessageGenerator(
+    const std::string& root_classname,
+    const std::string& file_descriptor_function_name,
+    const Descriptor* descriptor)
     : root_classname_(root_classname),
+      file_descriptor_function_name_(file_descriptor_function_name),
       descriptor_(descriptor),
       field_generators_(descriptor),
       class_name_(ClassName(descriptor_)),
@@ -384,14 +421,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   std::unique_ptr<const FieldDescriptor*[]> size_order_fields(
       SortFieldsByStorageSize(descriptor_));
 
-  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
-  sorted_extensions.reserve(descriptor_->extension_range_count());
-  for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
-    sorted_extensions.push_back(descriptor_->extension_range(i));
-  }
-
-  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
-            ExtensionRangeOrdering());
+  std::vector<SimpleExtensionRange> sorted_extensions(
+      SimpleExtensionRange::Normalize(descriptor_));
 
   printer->Print(
       // clang-format off
@@ -418,6 +449,18 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
       "  static GPBDescriptor *descriptor = nil;\n"
       "  if (!descriptor) {\n");
   // clang-format on
+
+  // If the message scopes extensions, trigger the root class
+  // +initialize/+extensionRegistry as that is where the runtime support for
+  // extensions lives.
+  if (descriptor_->extension_count() > 0) {
+    // clang-format off
+    printer->Print(
+        "    // Start up the root class to support the scoped extensions.\n"
+        "    __unused Class rootStartup = [$rootclass_name$ class];\n",
+        "rootclass_name", root_classname_);
+    // clang-format on
+  }
 
   TextFormatDecodeData text_format_decode_data;
   bool has_fields = descriptor_->field_count() > 0;
@@ -452,7 +495,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
 
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["classname"] = class_name_;
-  vars["rootclassname"] = root_classname_;
+  vars["file_descriptor_function_name"] = file_descriptor_function_name_;
   vars["fields"] = has_fields ? "fields" : "NULL";
   if (has_fields) {
     vars["fields_count"] = absl::StrCat("(uint32_t)(sizeof(fields) / sizeof(",
@@ -480,8 +523,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
       vars,
       "    GPBDescriptor *localDescriptor =\n"
       "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
-      "                                     rootClass:[$rootclassname$ class]\n"
-      "                                          file:$rootclassname$_FileDescriptor()\n"
+      "                                          file:$file_descriptor_function_name$()\n"
       "                                        fields:$fields$\n"
       "                                    fieldCount:$fields_count$\n"
       "                                   storageSize:sizeof($classname$__storage_)\n"
@@ -524,10 +566,10 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   }
   if (!sorted_extensions.empty()) {
     printer->Print("    static const GPBExtensionRange ranges[] = {\n");
-    for (int i = 0; i < sorted_extensions.size(); i++) {
+    for (const auto& extension_range : sorted_extensions) {
       printer->Print("      { .start = $start$, .end = $end$ },\n", "start",
-                     absl::StrCat(sorted_extensions[i]->start), "end",
-                     absl::StrCat(sorted_extensions[i]->end));
+                     absl::StrCat(extension_range.start), "end",
+                     absl::StrCat(extension_range.end));
     }
     // clang-format off
     printer->Print(

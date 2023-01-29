@@ -69,7 +69,7 @@ bool Generator::Generate(const FileDescriptor* file,
 
   struct Options cli_options;
 
-  for (int i = 0; i < options.size(); i++) {
+  for (size_t i = 0; i < options.size(); i++) {
     if (options[i].first == "file_extension") {
       cli_options.file_extension = options[i].second;
     } else if (options[i].first == "base_namespace") {
@@ -80,7 +80,7 @@ bool Generator::Generate(const FileDescriptor* file,
     } else if (options[i].first == "serializable") {
       cli_options.serializable = true;
     } else {
-      *error = "Unknown generator option: " + options[i].first;
+      *error = absl::StrCat("Unknown generator option: ", options[i].first);
       return false;
     }
   }

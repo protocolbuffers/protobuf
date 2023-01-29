@@ -38,7 +38,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/context.h"
@@ -186,7 +186,7 @@ static inline void ReportUnexpectedPackedFieldsCall(io::Printer* printer) {
   //     but this method should be overridden.
   //   - This FieldGenerator doesn't support packing, and this method
   //     should never have been called.
-  GOOGLE_ABSL_LOG(FATAL) << "GenerateBuilderParsingCodeFromPacked() "
+  ABSL_LOG(FATAL) << "GenerateBuilderParsingCodeFromPacked() "
                   << "called on field generator that does not support packing.";
 }
 
@@ -259,24 +259,26 @@ void SetCommonFieldVariables(
   // empty string.
   (*variables)["{"] = "";
   (*variables)["}"] = "";
-  (*variables)["kt_name"] =
-      IsForbiddenKotlin(info->name) ? info->name + "_" : info->name;
-  (*variables)["kt_capitalized_name"] = IsForbiddenKotlin(info->name)
-                                            ? info->capitalized_name + "_"
-                                            : info->capitalized_name;
+  (*variables)["kt_name"] = IsForbiddenKotlin(info->name)
+                                ? absl::StrCat(info->name, "_")
+                                : info->name;
+  (*variables)["kt_capitalized_name"] =
+      IsForbiddenKotlin(info->name) ? absl::StrCat(info->capitalized_name, "_")
+                                    : info->capitalized_name;
   if (!descriptor->is_repeated()) {
-    (*variables)["annotation_field_type"] = FieldTypeName(descriptor->type());
+    (*variables)["annotation_field_type"] =
+        std::string(FieldTypeName(descriptor->type()));
   } else if (GetJavaType(descriptor) == JAVATYPE_MESSAGE &&
              IsMapEntry(descriptor->message_type())) {
     (*variables)["annotation_field_type"] =
-        std::string(FieldTypeName(descriptor->type())) + "MAP";
+        absl::StrCat(FieldTypeName(descriptor->type()), "MAP");
   } else {
     (*variables)["annotation_field_type"] =
-        std::string(FieldTypeName(descriptor->type())) + "_LIST";
+        absl::StrCat(FieldTypeName(descriptor->type()), "_LIST");
     if (descriptor->is_packed()) {
       variables->insert(
           {"annotation_field_type",
-           absl::StrCat((*variables)["annotation_field_type"], "_PACKED")});
+           absl::StrCat(FieldTypeName(descriptor->type()), "_LIST_PACKED")});
     }
   }
 }
@@ -290,10 +292,11 @@ void SetCommonOneofVariables(
       absl::StrCat(descriptor->containing_oneof()->index());
   (*variables)["oneof_stored_type"] = GetOneofStoredType(descriptor);
   (*variables)["set_oneof_case_message"] =
-      info->name + "Case_ = " + absl::StrCat(descriptor->number());
-  (*variables)["clear_oneof_case_message"] = info->name + "Case_ = 0";
+      absl::StrCat(info->name, "Case_ = ", descriptor->number());
+  (*variables)["clear_oneof_case_message"] =
+      absl::StrCat(info->name, "Case_ = 0");
   (*variables)["has_oneof_case_message"] =
-      info->name + "Case_ == " + absl::StrCat(descriptor->number());
+      absl::StrCat(info->name, "Case_ == ", descriptor->number());
 }
 
 void PrintExtraFieldInfo(

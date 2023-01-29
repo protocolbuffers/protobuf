@@ -48,16 +48,16 @@ namespace java {
 namespace {
 
 const FieldDescriptor* KeyField(const FieldDescriptor* descriptor) {
-  GOOGLE_ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
   const Descriptor* message = descriptor->message_type();
-  GOOGLE_ABSL_CHECK(message->options().map_entry());
+  ABSL_CHECK(message->options().map_entry());
   return message->map_key();
 }
 
 const FieldDescriptor* ValueField(const FieldDescriptor* descriptor) {
-  GOOGLE_ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
   const Descriptor* message = descriptor->message_type();
-  GOOGLE_ABSL_CHECK(message->options().map_entry());
+  ABSL_CHECK(message->options().map_entry());
   return message->map_value();
 }
 
@@ -68,8 +68,8 @@ std::string TypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
-                 : PrimitiveTypeName(GetJavaType(field));
+    return std::string(boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
+                             : PrimitiveTypeName(GetJavaType(field)));
   }
 }
 
@@ -80,13 +80,13 @@ std::string KotlinTypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return KotlinTypeName(GetJavaType(field));
+    return std::string(KotlinTypeName(GetJavaType(field)));
   }
 }
 
 std::string WireType(const FieldDescriptor* field) {
-  return "com.google.protobuf.WireFormat.FieldType." +
-         std::string(FieldTypeName(field->type()));
+  return absl::StrCat("com.google.protobuf.WireFormat.FieldType.",
+                      FieldTypeName(field->type()));
 }
 
 void SetMessageVariables(
@@ -190,18 +190,18 @@ void SetMessageVariables(
       {"default_entry", absl::StrCat((*variables)["capitalized_name"],
                                      "DefaultEntryHolder.defaultEntry")});
   variables->insert({"map_field_parameter", (*variables)["default_entry"]});
-  (*variables)["descriptor"] =
-      name_resolver->GetImmutableClassName(descriptor->file()) + ".internal_" +
-      UniqueFileScopeIdentifier(descriptor->message_type()) + "_descriptor, ";
+  (*variables)["descriptor"] = absl::StrCat(
+      name_resolver->GetImmutableClassName(descriptor->file()), ".internal_",
+      UniqueFileScopeIdentifier(descriptor->message_type()), "_descriptor, ");
   (*variables)["ver"] = GeneratedCodeVersionSuffix();
 
   (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_builder"] =
-      GenerateSetBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      GenerateClearBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
 }
 
 }  // namespace

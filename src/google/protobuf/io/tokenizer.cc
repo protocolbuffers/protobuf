@@ -91,8 +91,8 @@
 #include "google/protobuf/io/tokenizer.h"
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/io/strtod.h"
@@ -568,8 +568,8 @@ void Tokenizer::ConsumeBlockComment(std::string* content) {
           "\"/*\" inside block comment.  Block comments cannot be nested.");
     } else if (current_char_ == '\0') {
       AddError("End-of-file inside block comment.");
-      error_collector_->AddError(start_line, start_column,
-                                 "  Comment started here.");
+      error_collector_->RecordError(start_line, start_column,
+                                    "  Comment started here.");
       if (content != NULL) StopRecording();
       break;
     }
@@ -687,7 +687,7 @@ bool Tokenizer::Next() {
               current_.line == previous_.line &&
               current_.column == previous_.end_column) {
             // We don't accept syntax like "blah.123".
-            error_collector_->AddError(
+            error_collector_->RecordError(
                 line_, column_ - 2,
                 "Need space between identifier and decimal point.");
           }
@@ -706,7 +706,7 @@ bool Tokenizer::Next() {
       } else {
         // Check if the high order bit is set.
         if (current_char_ & 0x80) {
-          error_collector_->AddError(
+          error_collector_->RecordError(
               line_, column_,
               absl::StrFormat("Interpreting non ascii codepoint %d.",
                               static_cast<unsigned char>(current_char_)));
@@ -1035,7 +1035,7 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
 double Tokenizer::ParseFloat(const std::string& text) {
   double result = 0;
   if (!TryParseFloat(text, &result)) {
-    GOOGLE_ABSL_LOG(DFATAL)
+    ABSL_DLOG(FATAL)
         << " Tokenizer::ParseFloat() passed text that could not have been"
            " tokenized as a float: "
         << absl::CEscape(text);
@@ -1130,8 +1130,8 @@ static inline bool IsTrailSurrogate(uint32_t code_point) {
 // Combine a head and trail surrogate into a single Unicode code point.
 static uint32_t AssembleUTF16(uint32_t head_surrogate,
                               uint32_t trail_surrogate) {
-  GOOGLE_ABSL_DCHECK(IsHeadSurrogate(head_surrogate));
-  GOOGLE_ABSL_DCHECK(IsTrailSurrogate(trail_surrogate));
+  ABSL_DCHECK(IsHeadSurrogate(head_surrogate));
+  ABSL_DCHECK(IsTrailSurrogate(trail_surrogate));
   return 0x10000 + (((head_surrogate - kMinHeadSurrogate) << 10) |
                     (trail_surrogate - kMinTrailSurrogate));
 }
@@ -1180,7 +1180,7 @@ void Tokenizer::ParseStringAppend(const std::string& text,
   // empty, it's invalid, so we'll just return).
   const size_t text_size = text.size();
   if (text_size == 0) {
-    GOOGLE_ABSL_LOG(DFATAL)
+    ABSL_DLOG(FATAL)
         << " Tokenizer::ParseStringAppend() passed text that could not"
            " have been tokenized as a string: "
         << absl::CEscape(text);

@@ -38,8 +38,8 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -93,7 +93,7 @@ void SetEnumVariables(
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
-        GenerateSetBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
     (*variables)["set_has_field_bit_to_local"] =
         GenerateSetBitToLocal(messageBitIndex);
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
@@ -114,9 +114,9 @@ void SetEnumVariables(
 
   // Note that these have a trailing ";".
   (*variables)["set_has_field_bit_builder"] =
-      GenerateSetBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      GenerateClearBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
 
@@ -345,7 +345,7 @@ void ImmutableEnumFieldGenerator::GenerateMergingCode(
         "  set$capitalized_name$Value(other.get$capitalized_name$Value());\n"
         "}\n");
   } else {
-    GOOGLE_ABSL_LOG(FATAL) << "Can't reach here.";
+    ABSL_LOG(FATAL) << "Can't reach here.";
   }
 }
 
@@ -429,7 +429,7 @@ ImmutableEnumOneofFieldGenerator::~ImmutableEnumOneofFieldGenerator() {}
 void ImmutableEnumOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -464,7 +464,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateMembers(
 
 void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"

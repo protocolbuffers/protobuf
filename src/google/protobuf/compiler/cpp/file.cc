@@ -375,7 +375,7 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
 void FileGenerator::DoIncludeFile(absl::string_view google3_name,
                                   bool do_export, io::Printer* p) {
   constexpr absl::string_view prefix = "third_party/protobuf/";
-  GOOGLE_ABSL_CHECK(absl::StartsWith(google3_name, prefix)) << google3_name;
+  ABSL_CHECK(absl::StartsWith(google3_name, prefix)) << google3_name;
 
   auto v = p->WithVars(
       {{"export_suffix", do_export ? "// IWYU pragma: export" : ""}});
@@ -1242,11 +1242,11 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/implicit_weak_message.h", p);
   }
   if (HasWeakFields(file_, options_)) {
-    GOOGLE_ABSL_CHECK(!options_.opensource_runtime);
+    ABSL_CHECK(!options_.opensource_runtime);
     IncludeFile("third_party/protobuf/weak_field_map.h", p);
   }
   if (HasLazyFields(file_, options_, &scc_analyzer_)) {
-    GOOGLE_ABSL_CHECK(!options_.opensource_runtime);
+    ABSL_CHECK(!options_.opensource_runtime);
     IncludeFile("third_party/protobuf/lazy_field.h", p);
   }
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {

@@ -145,7 +145,7 @@ FieldMask::~FieldMask() {
 }
 
 inline void FieldMask::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.paths_.~RepeatedPtrField();
 }
 
@@ -262,7 +262,7 @@ void FieldMask::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   auto* const _this = static_cast<FieldMask*>(&to_msg);
   auto& from = static_cast<const FieldMask&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldMask)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

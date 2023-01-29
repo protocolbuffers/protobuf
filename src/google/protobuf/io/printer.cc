@@ -44,8 +44,8 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -286,10 +286,10 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
 
 absl::string_view Printer::LookupVar(absl::string_view var) {
   auto result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
-  GOOGLE_ABSL_CHECK(result.has_value()) << "could not find " << var;
+  ABSL_CHECK(result.has_value()) << "could not find " << var;
 
   auto* view = result->AsString();
-  GOOGLE_ABSL_CHECK(view != nullptr)
+  ABSL_CHECK(view != nullptr)
       << "could not find " << var << "; found callback instead";
 
   return *view;
@@ -299,9 +299,9 @@ bool Printer::Validate(bool cond, Printer::PrintOptions opts,
                        absl::FunctionRef<std::string()> message) {
   if (!cond) {
     if (opts.checks_are_debug_only) {
-      GOOGLE_ABSL_LOG(DFATAL) << message();
+      ABSL_DLOG(FATAL) << message();
     } else {
-      GOOGLE_ABSL_LOG(FATAL) << message();
+      ABSL_LOG(FATAL) << message();
     }
   }
   return cond;
@@ -313,7 +313,7 @@ bool Printer::Validate(bool cond, Printer::PrintOptions opts,
 }
 
 // This function is outlined to isolate the use of
-// GOOGLE_ABSL_CHECK into the .cc file.
+// ABSL_CHECK into the .cc file.
 void Printer::Outdent() {
   PrintOptions opts;
   opts.checks_are_debug_only = true;
@@ -372,7 +372,7 @@ void Printer::Annotate(absl::string_view begin_varname,
     return;
   }
   if (begin->first > end->second) {
-    GOOGLE_ABSL_LOG(DFATAL) << "annotation has negative length from " << begin_varname
+    ABSL_DLOG(FATAL) << "annotation has negative length from " << begin_varname
                      << " to " << end_varname;
     return;
   }
@@ -691,14 +691,14 @@ void Printer::PrintImpl(absl::string_view format,
         }
       } else {
         const ValueView::Callback* fnc = sub->AsCallback();
-        GOOGLE_ABSL_CHECK(fnc != nullptr);
+        ABSL_CHECK(fnc != nullptr);
 
         Validate(
             prefix.empty() && suffix.empty(), opts,
             "substitution that resolves to callback cannot contain whitespace");
 
         range_start = sink_.bytes_written();
-        GOOGLE_ABSL_CHECK((*fnc)())
+        ABSL_CHECK((*fnc)())
             << "recursive call encountered while evaluating \"" << var << "\"";
         range_end = sink_.bytes_written();
       }

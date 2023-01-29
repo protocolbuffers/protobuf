@@ -38,6 +38,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -61,6 +63,8 @@ cc_library(
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
     ],
@@ -86,6 +90,8 @@ cc_library(
         ":importer",
         "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
     ],
@@ -109,6 +115,7 @@ cc_library(
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
+        "@com_google_absl//absl/log:initialize",
     ],
 )
 
@@ -190,6 +197,12 @@ filegroup(
     visibility = [
         "//src/google/protobuf/compiler/cpp:__pkg__",
     ],
+)
+
+filegroup(
+    name = "plugin_proto_src",
+    srcs = ["plugin.proto"],
+    visibility = ["@upb//:__subpackages__"],
 )
 
 exports_files(

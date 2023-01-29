@@ -39,7 +39,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -69,9 +69,9 @@ void SetPrimitiveVariables(
 
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
-  (*variables)["default_init"] =
-      "= " +
-      ImmutableDefaultValue(descriptor, name_resolver, context->options());
+  (*variables)["default_init"] = absl::StrCat(
+      "= ",
+      ImmutableDefaultValue(descriptor, name_resolver, context->options()));
   (*variables)["capitalized_type"] = "java.lang.String";
   (*variables)["tag"] =
       absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
@@ -109,9 +109,9 @@ void SetPrimitiveVariables(
 
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
-        GenerateSetBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
     (*variables)["clear_has_field_bit_message"] =
-        GenerateClearBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateClearBit(messageBitIndex), ";");
 
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
@@ -408,7 +408,7 @@ ImmutableStringOneofFieldLiteGenerator::
 void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -486,7 +486,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateFieldInfo(
 
 void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"

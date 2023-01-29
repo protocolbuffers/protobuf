@@ -161,7 +161,7 @@ class TestErrorCollector : public ErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) {
+  void RecordError(int line, int column, absl::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
@@ -1020,7 +1020,7 @@ TEST_F(TokenizerTest, ParseFloat) {
   EXPECT_EQ(0.0, Tokenizer::ParseFloat("1e-9999999999999999999999999999"));
   EXPECT_EQ(HUGE_VAL, Tokenizer::ParseFloat("1e+9999999999999999999999999999"));
 
-#if PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   // Test invalid integers that will never be tokenized as integers.
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseFloat("zxy"),
@@ -1031,7 +1031,7 @@ TEST_F(TokenizerTest, ParseFloat) {
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseFloat("-1.0"),
       "passed text that could not have been tokenized as a float");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 }
 
 TEST_F(TokenizerTest, ParseString) {
@@ -1075,11 +1075,11 @@ TEST_F(TokenizerTest, ParseString) {
   EXPECT_EQ("\\U00110000\\U00200000\\Uffffffff", output);
 
   // Test invalid strings that will never be tokenized as strings.
-#if PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseString("", &output),
       "passed text that could not have been tokenized as a string");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 }
 
 TEST_F(TokenizerTest, ParseStringAppend) {

@@ -40,27 +40,6 @@ if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
   get_filename_component(protobuf_SOURCE_DIR ${protobuf_SOURCE_DIR} DIRECTORY)
 endif()
 
-# Add C++14 flags
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-if(CYGWIN)
-  string(REGEX_MATCH "-std=gnu\\+\\+([0-9]+)" _protobuf_CXX_STD "${CMAKE_CXX_FLAGS}")
-endif()
-if(NOT _protobuf_CXX_STD)
-  set(_protobuf_CXX_STD "${CMAKE_CXX_STANDARD}")
-endif()
-if(_protobuf_CXX_STD LESS "14")
-  message(FATAL_ERROR "Protocol Buffers requires at least C++14, but is configured for C++${_protobuf_CXX_STD}")
-endif()
-if(CYGWIN)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++${_protobuf_CXX_STD}")
-else()
-  set(CMAKE_CXX_STANDARD ${_protobuf_CXX_STD})
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-
 # The Intel compiler isn't able to deal with noinline member functions of
 # template classes defined in headers.  As such it spams the output with
 #   warning #2196: routine is both "inline" and "noinline"
@@ -279,6 +258,9 @@ else (protobuf_BUILD_SHARED_LIBS)
   endif()
 endif (protobuf_BUILD_SHARED_LIBS)
 
+# Export all symbols on Windows when building shared libraries
+SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 if (MSVC)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Build with multiple processes
@@ -289,6 +271,7 @@ if (MSVC)
   # MSVC warning suppressions
   add_compile_options(
     /wd4065 # switch statement contains 'default' but no 'case' labels
+    /wd4146 # unary minus operator applied to unsigned type
     /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     /wd4267 # 'var' : conversion from 'size_t' to 'type', possible loss of data
@@ -339,6 +322,10 @@ endif (protobuf_UNICODE)
 
 set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
 set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
+
+if (protobuf_BUILD_TESTS)
+  include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)
+endif (protobuf_BUILD_TESTS)
 
 include(${protobuf_SOURCE_DIR}/cmake/abseil-cpp.cmake)
 

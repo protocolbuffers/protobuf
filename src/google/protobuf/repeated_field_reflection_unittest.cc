@@ -139,7 +139,7 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
     EXPECT_EQ(message.repeated_foreign_message(i).c(), Func(i, 7));
   }
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
   // Make sure types are checked correctly at runtime.
   const FieldDescriptor* fd_optional_int32 =
       desc->FindFieldByName("optional_int32");
@@ -150,7 +150,7 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
   EXPECT_DEATH(refl->GetRepeatedPtrField<TestAllTypes>(
                    message, fd_repeated_foreign_message),
                "wrong submessage type");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 }
 
 
@@ -166,7 +166,7 @@ TEST(RepeatedFieldReflectionTest, ExtensionFields) {
 
   const FieldDescriptor* fd_repeated_int64_extension =
       desc->file()->FindExtensionByName("repeated_int64_extension");
-  GOOGLE_ABSL_CHECK(fd_repeated_int64_extension != nullptr);
+  ABSL_CHECK(fd_repeated_int64_extension != nullptr);
 
   const RepeatedField<int64_t>& rf_int64_extension =
       refl->GetRepeatedField<int64_t>(extended_message,
@@ -421,7 +421,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   EXPECT_TRUE(rf_message.empty());
   EXPECT_TRUE(mrf_message.empty());
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 
   // Make sure types are checked correctly at runtime.
   const FieldDescriptor* fd_optional_int32 =
@@ -434,7 +434,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
                    message, fd_repeated_foreign_message),
                "");
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 }
 
 TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForEnums) {
@@ -539,7 +539,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForExtensionFields) {
 
   const FieldDescriptor* fd_repeated_int64_extension =
       desc->file()->FindExtensionByName("repeated_int64_extension");
-  GOOGLE_ABSL_CHECK(fd_repeated_int64_extension != nullptr);
+  ABSL_CHECK(fd_repeated_int64_extension != nullptr);
 
   const RepeatedFieldRef<int64_t> rf_int64_extension =
       refl->GetRepeatedFieldRef<int64_t>(extended_message,

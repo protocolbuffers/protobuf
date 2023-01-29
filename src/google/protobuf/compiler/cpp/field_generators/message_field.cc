@@ -36,7 +36,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -49,13 +49,13 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-std::string ReinterpretCast(const std::string& type,
-                            const std::string& expression,
+std::string ReinterpretCast(absl::string_view type,
+                            absl::string_view expression,
                             bool implicit_weak_field) {
   if (implicit_weak_field) {
-    return "reinterpret_cast< " + type + " >(" + expression + ")";
+    return absl::StrCat("reinterpret_cast< ", type, " >(", expression, ")");
   } else {
-    return expression;
+    return std::string(expression);
   }
 }
 

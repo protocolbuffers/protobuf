@@ -45,8 +45,10 @@ PROTOBUF_CONSTEXPR Method::Method(
   , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.request_type_url_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.response_type_url_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.request_streaming_)*/false
-  , /*decltype(_impl_.response_streaming_)*/false
+  , /* ._impl_.request_streaming_ = */ false
+
+  , /* ._impl_.response_streaming_ = */ false
+
   , /*decltype(_impl_.syntax_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct MethodDefaultTypeInternal {
@@ -293,7 +295,7 @@ Api::~Api() {
 }
 
 inline void Api::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.methods_.~RepeatedPtrField();
   _impl_.options_.~RepeatedPtrField();
   _impl_.mixins_.~RepeatedPtrField();
@@ -579,7 +581,7 @@ void Api::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_N
   auto* const _this = static_cast<Api*>(&to_msg);
   auto& from = static_cast<const Api&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Api)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -664,8 +666,10 @@ Method::Method(const Method& from)
     , decltype(_impl_.name_){}
     , decltype(_impl_.request_type_url_){}
     , decltype(_impl_.response_type_url_){}
-    , decltype(_impl_.request_streaming_){}
-    , decltype(_impl_.response_streaming_){}
+    , decltype(_impl_.request_streaming_) {}
+
+    , decltype(_impl_.response_streaming_) {}
+
     , decltype(_impl_.syntax_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
@@ -707,8 +711,10 @@ inline void Method::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.name_){}
     , decltype(_impl_.request_type_url_){}
     , decltype(_impl_.response_type_url_){}
-    , decltype(_impl_.request_streaming_){false}
-    , decltype(_impl_.response_streaming_){false}
+    , decltype(_impl_.request_streaming_) { false }
+
+    , decltype(_impl_.response_streaming_) { false }
+
     , decltype(_impl_.syntax_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
@@ -736,7 +742,7 @@ Method::~Method() {
 }
 
 inline void Method::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.request_type_url_.Destroy();
@@ -896,7 +902,8 @@ failure:
   // bool request_streaming = 3;
   if (this->_internal_request_streaming() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(3, this->_internal_request_streaming(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        3, this->_internal_request_streaming(), target);
   }
 
   // string response_type_url = 4;
@@ -912,7 +919,8 @@ failure:
   // bool response_streaming = 5;
   if (this->_internal_response_streaming() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(5, this->_internal_response_streaming(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        5, this->_internal_response_streaming(), target);
   }
 
   // repeated .google.protobuf.Option options = 6;
@@ -976,12 +984,12 @@ failure:
 
   // bool request_streaming = 3;
   if (this->_internal_request_streaming() != 0) {
-    total_size += 1 + 1;
+    total_size += 2;
   }
 
   // bool response_streaming = 5;
   if (this->_internal_response_streaming() != 0) {
-    total_size += 1 + 1;
+    total_size += 2;
   }
 
   // .google.protobuf.Syntax syntax = 7;
@@ -1004,7 +1012,7 @@ void Method::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBU
   auto* const _this = static_cast<Method*>(&to_msg);
   auto& from = static_cast<const Method&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Method)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1138,7 +1146,7 @@ Mixin::~Mixin() {
 }
 
 inline void Mixin::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   _impl_.root_.Destroy();
 }
@@ -1279,7 +1287,7 @@ void Mixin::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF
   auto* const _this = static_cast<Mixin*>(&to_msg);
   auto& from = static_cast<const Mixin&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Mixin)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

@@ -408,6 +408,7 @@ cc_dist_library(
         "//src/google/protobuf:lite_test_util",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/io:test_zero_copy_stream",
         "//src/google/protobuf/compiler:annotation_test_util",
         "//src/google/protobuf/compiler/cpp:unittest_lib",
     ],

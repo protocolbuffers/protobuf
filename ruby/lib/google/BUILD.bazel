@@ -27,6 +27,7 @@ java_binary(
     runtime_deps = [
         "//ruby/src/main/java:protobuf_java"
     ],
+    deploy_env = ["@rules_ruby//ruby/runtime:jruby_binary"],
     create_executable = False,
 )
 
@@ -37,6 +38,7 @@ genrule(
     outs = ["protobuf_java.jar"],
     cmd = "cp $< $@",
     tags = ["manual"],
+    visibility = ["//ruby:__subpackages__"],
 )
 
 ruby_library(

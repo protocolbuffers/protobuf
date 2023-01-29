@@ -21,7 +21,8 @@ namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/0
+    /* ._impl_.value_ = */ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct DoubleValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DoubleValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -35,7 +36,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
 PROTOBUF_CONSTEXPR FloatValue::FloatValue(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/0
+    /* ._impl_.value_ = */ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct FloatValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FloatValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -49,7 +51,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FloatValueDefaultTypeInternal _FloatValue_default_instance_;
 PROTOBUF_CONSTEXPR Int64Value::Int64Value(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/::int64_t{0}
+    /* ._impl_.value_ = */ ::int64_t{0}
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct Int64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -63,7 +66,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
 PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/::uint64_t{0u}
+    /* ._impl_.value_ = */ ::uint64_t{0u}
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct UInt64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -77,7 +81,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
 PROTOBUF_CONSTEXPR Int32Value::Int32Value(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/0
+    /* ._impl_.value_ = */ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct Int32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -91,7 +96,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
 PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/0u
+    /* ._impl_.value_ = */ 0u
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct UInt32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -105,7 +111,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
 PROTOBUF_CONSTEXPR BoolValue::BoolValue(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/false
+    /* ._impl_.value_ = */ false
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct BoolValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BoolValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -332,7 +339,8 @@ DoubleValue::DoubleValue(const DoubleValue& from)
 inline void DoubleValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){0}
+      decltype(_impl_.value_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -347,7 +355,7 @@ DoubleValue::~DoubleValue() {
 }
 
 inline void DoubleValue::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void DoubleValue::SetCachedSize(int size) const {
@@ -415,7 +423,8 @@ failure:
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteDoubleToArray(1, this->_internal_value(), target);
+    target = ::_pbi::WireFormatLite::WriteDoubleToArray(
+        1, this->_internal_value(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -440,7 +449,7 @@ failure:
   ::uint64_t raw_value;
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
-    total_size += 1 + 8;
+    total_size += 9;
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -457,7 +466,7 @@ void DoubleValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PR
   auto* const _this = static_cast<DoubleValue*>(&to_msg);
   auto& from = static_cast<const DoubleValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -485,6 +494,7 @@ bool DoubleValue::IsInitialized() const {
 void DoubleValue::InternalSwap(DoubleValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+
   swap(_impl_.value_, other->_impl_.value_);
 }
 
@@ -514,7 +524,8 @@ FloatValue::FloatValue(const FloatValue& from)
 inline void FloatValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){0}
+      decltype(_impl_.value_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -529,7 +540,7 @@ FloatValue::~FloatValue() {
 }
 
 inline void FloatValue::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void FloatValue::SetCachedSize(int size) const {
@@ -597,7 +608,8 @@ failure:
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteFloatToArray(1, this->_internal_value(), target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(
+        1, this->_internal_value(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -622,7 +634,7 @@ failure:
   ::uint32_t raw_value;
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
-    total_size += 1 + 4;
+    total_size += 5;
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -639,7 +651,7 @@ void FloatValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PRO
   auto* const _this = static_cast<FloatValue*>(&to_msg);
   auto& from = static_cast<const FloatValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -667,6 +679,7 @@ bool FloatValue::IsInitialized() const {
 void FloatValue::InternalSwap(FloatValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+
   swap(_impl_.value_, other->_impl_.value_);
 }
 
@@ -696,7 +709,8 @@ Int64Value::Int64Value(const Int64Value& from)
 inline void Int64Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){::int64_t{0}}
+      decltype(_impl_.value_) { ::int64_t{0} }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -711,7 +725,7 @@ Int64Value::~Int64Value() {
 }
 
 inline void Int64Value::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Int64Value::SetCachedSize(int size) const {
@@ -775,7 +789,8 @@ failure:
   // int64 value = 1;
   if (this->_internal_value() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt64ToArray(1, this->_internal_value(), target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(
+        1, this->_internal_value(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -796,7 +811,8 @@ failure:
 
   // int64 value = 1;
   if (this->_internal_value() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_value());
+    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
+        this->_internal_value());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -813,7 +829,7 @@ void Int64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PRO
   auto* const _this = static_cast<Int64Value*>(&to_msg);
   auto& from = static_cast<const Int64Value&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -837,6 +853,7 @@ bool Int64Value::IsInitialized() const {
 void Int64Value::InternalSwap(Int64Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+
   swap(_impl_.value_, other->_impl_.value_);
 }
 
@@ -866,7 +883,8 @@ UInt64Value::UInt64Value(const UInt64Value& from)
 inline void UInt64Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){::uint64_t{0u}}
+      decltype(_impl_.value_) { ::uint64_t{0u} }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -881,7 +899,7 @@ UInt64Value::~UInt64Value() {
 }
 
 inline void UInt64Value::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void UInt64Value::SetCachedSize(int size) const {
@@ -945,7 +963,8 @@ failure:
   // uint64 value = 1;
   if (this->_internal_value() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(1, this->_internal_value(), target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
+        1, this->_internal_value(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -966,7 +985,8 @@ failure:
 
   // uint64 value = 1;
   if (this->_internal_value() != 0) {
-    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_value());
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
+        this->_internal_value());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -983,7 +1003,7 @@ void UInt64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PR
   auto* const _this = static_cast<UInt64Value*>(&to_msg);
   auto& from = static_cast<const UInt64Value&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1007,6 +1027,7 @@ bool UInt64Value::IsInitialized() const {
 void UInt64Value::InternalSwap(UInt64Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+
   swap(_impl_.value_, other->_impl_.value_);
 }
 
@@ -1036,7 +1057,8 @@ Int32Value::Int32Value(const Int32Value& from)
 inline void Int32Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){0}
+      decltype(_impl_.value_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -1051,7 +1073,7 @@ Int32Value::~Int32Value() {
 }
 
 inline void Int32Value::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Int32Value::SetCachedSize(int size) const {
@@ -1115,7 +1137,8 @@ failure:
   // int32 value = 1;
   if (this->_internal_value() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_value(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        1, this->_internal_value(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1136,7 +1159,8 @@ failure:
 
   // int32 value = 1;
   if (this->_internal_value() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_value());
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+        this->_internal_value());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1153,7 +1177,7 @@ void Int32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PRO
   auto* const _this = static_cast<Int32Value*>(&to_msg);
   auto& from = static_cast<const Int32Value&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1177,6 +1201,7 @@ bool Int32Value::IsInitialized() const {
 void Int32Value::InternalSwap(Int32Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+
   swap(_impl_.value_, other->_impl_.value_);
 }
 
@@ -1206,7 +1231,8 @@ UInt32Value::UInt32Value(const UInt32Value& from)
 inline void UInt32Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){0u}
+      decltype(_impl_.value_) { 0u }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -1221,7 +1247,7 @@ UInt32Value::~UInt32Value() {
 }
 
 inline void UInt32Value::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void UInt32Value::SetCachedSize(int size) const {
@@ -1285,7 +1311,8 @@ failure:
   // uint32 value = 1;
   if (this->_internal_value() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(1, this->_internal_value(), target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(
+        1, this->_internal_value(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1306,7 +1333,8 @@ failure:
 
   // uint32 value = 1;
   if (this->_internal_value() != 0) {
-    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_value());
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(
+        this->_internal_value());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1323,7 +1351,7 @@ void UInt32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PR
   auto* const _this = static_cast<UInt32Value*>(&to_msg);
   auto& from = static_cast<const UInt32Value&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1347,6 +1375,7 @@ bool UInt32Value::IsInitialized() const {
 void UInt32Value::InternalSwap(UInt32Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+
   swap(_impl_.value_, other->_impl_.value_);
 }
 
@@ -1376,7 +1405,8 @@ BoolValue::BoolValue(const BoolValue& from)
 inline void BoolValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){false}
+      decltype(_impl_.value_) { false }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -1391,7 +1421,7 @@ BoolValue::~BoolValue() {
 }
 
 inline void BoolValue::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void BoolValue::SetCachedSize(int size) const {
@@ -1455,7 +1485,8 @@ failure:
   // bool value = 1;
   if (this->_internal_value() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(1, this->_internal_value(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        1, this->_internal_value(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1476,7 +1507,7 @@ failure:
 
   // bool value = 1;
   if (this->_internal_value() != 0) {
-    total_size += 1 + 1;
+    total_size += 2;
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1493,7 +1524,7 @@ void BoolValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   auto* const _this = static_cast<BoolValue*>(&to_msg);
   auto& from = static_cast<const BoolValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1517,6 +1548,7 @@ bool BoolValue::IsInitialized() const {
 void BoolValue::InternalSwap(BoolValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+
   swap(_impl_.value_, other->_impl_.value_);
 }
 
@@ -1577,7 +1609,7 @@ StringValue::~StringValue() {
 }
 
 inline void StringValue::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.Destroy();
 }
 
@@ -1688,7 +1720,7 @@ void StringValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PR
   auto* const _this = static_cast<StringValue*>(&to_msg);
   auto& from = static_cast<const StringValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1777,7 +1809,7 @@ BytesValue::~BytesValue() {
 }
 
 inline void BytesValue::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.Destroy();
 }
 
@@ -1883,7 +1915,7 @@ void BytesValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PRO
   auto* const _this = static_cast<BytesValue*>(&to_msg);
   auto& from = static_cast<const BytesValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

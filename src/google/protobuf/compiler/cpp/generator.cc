@@ -78,7 +78,7 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
       // Warning: there is some clever naming/splitting here to avoid extract
       // script rewrites.  The names of these variables must not be things that
       // the extract script will rewrite.  That's why we use "CHK" (for example)
-      // instead of "GOOGLE_ABSL_CHECK".
+      // instead of "ABSL_CHECK".
       //
       // These values are things the extract script would rewrite if we did not
       // split them.  It might not strictly matter since we don't generate
@@ -87,12 +87,12 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
       {"GOOGLE_PROTOBUF", is_oss ? "GOOGLE_PROTOBUF"
                                  : "GOOGLE3_PROTOBU"
                                    "F"},
-      {"CHK", is_oss ? "GOOGLE_ABSL_CHECK"
-                     : "ABSL_CHEC"
-                       "K"},
-      {"DCHK", is_oss ? "GOOGLE_ABSL_DCHECK"
-                      : "ABSL_DCHEC"
-                        "K"},
+      {"CHK",
+       "ABSL_CHEC"
+       "K"},
+      {"DCHK",
+       "ABSL_DCHEC"
+       "K"},
   };
 }
 }  // namespace
@@ -187,12 +187,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       } else if (value == "always") {
         file_options.tctable_mode = Options::kTCTableAlways;
       } else {
-        *error =
-            "Unknown value for experimental_tail_call_table_mode: " + value;
+        *error = absl::StrCat(
+            "Unknown value for experimental_tail_call_table_mode: ", value);
         return false;
       }
     } else {
-      *error = "Unknown generator option: " + key;
+      *error = absl::StrCat("Unknown generator option: ", key);
       return false;
     }
   }
@@ -300,7 +300,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     // pb.cc file. If we have more files than messages, then some files will
     // be generated as empty placeholders.
     if (file_options.num_cc_files > 0) {
-      GOOGLE_ABSL_CHECK_LE(num_cc_files, file_options.num_cc_files)
+      ABSL_CHECK_LE(num_cc_files, file_options.num_cc_files)
           << "There must be at least as many numbered .cc files as messages "
              "and extensions.";
       num_cc_files = file_options.num_cc_files;

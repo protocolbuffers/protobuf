@@ -38,8 +38,8 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
@@ -200,7 +200,7 @@ class ZeroCopyBufferedStream {
   // end of the buffer if at EOF; BufferAtLeast() should be called before
   // calling this function.
   char PeekChar() {
-    GOOGLE_ABSL_DCHECK(!Unread().empty());
+    ABSL_DCHECK(!Unread().empty());
     return Unread()[0];
   }
 
@@ -327,24 +327,24 @@ inline absl::string_view ZeroCopyBufferedStream::RawBuffer(size_t start,
                                                            size_t len) const {
   absl::string_view view = last_chunk_;
   if (using_buf_) {
-    GOOGLE_ABSL_DCHECK_LE(buffer_start_, start);
+    ABSL_DCHECK_LE(buffer_start_, start);
     start -= buffer_start_;
     view = absl::string_view(buf_.data(), buf_.size());
   }
 #if 0
     // This print statement is especially useful for trouble-shooting low-level
     // bugs in the buffering logic.
-    GOOGLE_ABSL_LOG(INFO) << absl::StreamFormat("%s(\"%s\")[%d:%d]/%d:%d @ %p",
+    ABSL_LOG(INFO) << absl::StreamFormat("%s(\"%s\")[%d:%d]/%d:%d @ %p",
                                     using_buf_ ? "buf_" : "last_chunk_",
                                     view, start, static_cast<int>(len),
                                     buffer_start_, cursor_, this);
 #endif
-  GOOGLE_ABSL_DCHECK_LE(start, view.size());
+  ABSL_DCHECK_LE(start, view.size());
   if (len == absl::string_view::npos) {
     return view.substr(start);
   }
 
-  GOOGLE_ABSL_DCHECK_LE(start + len, view.size());
+  ABSL_DCHECK_LE(start + len, view.size());
   return view.substr(start, len);
 }
 }  // namespace json_internal

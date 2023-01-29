@@ -40,8 +40,8 @@
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/type_resolver_util.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "conformance/conformance.pb.h"
@@ -187,14 +187,14 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
       return absl::InvalidArgumentError("unspecified output format");
 
     case conformance::PROTOBUF: {
-      GOOGLE_ABSL_CHECK(
+      ABSL_CHECK(
           test_message->SerializeToString(response.mutable_protobuf_payload()));
       break;
     }
 
     case conformance::JSON: {
       std::string proto_binary;
-      GOOGLE_ABSL_CHECK(test_message->SerializeToString(&proto_binary));
+      ABSL_CHECK(test_message->SerializeToString(&proto_binary));
       absl::Status status =
           BinaryToJsonString(resolver_.get(), type_url_, proto_binary,
                              response.mutable_json_payload());
@@ -208,7 +208,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
     case conformance::TEXT_FORMAT: {
       TextFormat::Printer printer;
       printer.SetHideUnknownFields(!request.print_unknown_fields());
-      GOOGLE_ABSL_CHECK(printer.PrintToString(*test_message,
+      ABSL_CHECK(printer.PrintToString(*test_message,
                                        response.mutable_text_payload()));
       break;
     }
@@ -234,7 +234,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   RETURN_IF_ERROR(ReadFd(STDIN_FILENO, &serialized_input[0], in_len));
 
   ConformanceRequest request;
-  GOOGLE_ABSL_CHECK(request.ParseFromString(serialized_input));
+  ABSL_CHECK(request.ParseFromString(serialized_input));
 
   absl::StatusOr<ConformanceResponse> response = RunTest(request);
   RETURN_IF_ERROR(response.status());
@@ -247,7 +247,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, serialized_output.data(), out_len));
 
   if (verbose_) {
-    GOOGLE_ABSL_LOG(INFO) << "conformance-cpp: request=" << request.ShortDebugString()
+    ABSL_LOG(INFO) << "conformance-cpp: request=" << request.ShortDebugString()
                    << ", response=" << response->ShortDebugString();
   }
   return false;
@@ -262,13 +262,13 @@ int main() {
   while (true) {
     auto is_done = harness.ServeConformanceRequest();
     if (!is_done.ok()) {
-      GOOGLE_ABSL_LOG(FATAL) << is_done.status();
+      ABSL_LOG(FATAL) << is_done.status();
     }
     if (*is_done) {
       break;
     }
     total_runs++;
   }
-  GOOGLE_ABSL_LOG(INFO) << "conformance-cpp: received EOF from test runner after "
+  ABSL_LOG(INFO) << "conformance-cpp: received EOF from test runner after "
                  << total_runs << " tests";
 }

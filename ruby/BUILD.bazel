@@ -4,8 +4,10 @@
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
 load("//conformance:defs.bzl", "conformance_test")
+load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
 
 ################################################################################
 # Ruby Runtime
@@ -18,6 +20,79 @@ ruby_library(
         "//visibility:public",
     ],
 )
+
+# Note: these can be greatly simplified using inline_sh_binary in Bazel 6,
+# but doesn't work prior to that due to https://github.com/bazelbuild/bazel/issues/15043.
+# Instead, we need to manually copy all of the srcs into gendir from a genrule.
+genrule(
+    name = "jruby_release",
+    srcs = [
+      "//ruby/lib/google:copy_jar",
+      "//ruby/lib/google:dist_files",
+      "//:well_known_ruby_protos",
+      "google-protobuf.gemspec",
+    ],
+    outs = ["google-protobuf-"+PROTOBUF_RUBY_VERSION+"-java.gem"],
+    cmd = """
+        set -eux
+        mkdir tmp
+        for src in $(SRCS); do
+            cp --parents -L "$$src" tmp
+        done
+        for wkt in $(execpaths //:well_known_ruby_protos); do
+            mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
+        done
+        mv "tmp/$(execpath //ruby/lib/google:copy_jar)" "tmp/ruby/lib/google"
+        cd tmp/ruby
+        chmod -R 777 ./
+        gem build google-protobuf.gemspec
+        cd ../..
+        mv tmp/ruby/google-protobuf-*.gem $@
+    """,
+    tags = ["manual"],
+    target_compatible_with = select({
+        "@rules_ruby//ruby/runtime:config_jruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+genrule(
+    name = "release",
+    srcs = [
+      "@utf8_range//:utf8_range_srcs",
+      "@utf8_range//:LICENSE",
+      "//:well_known_ruby_protos",
+      "//ruby/ext/google/protobuf_c:dist_files",
+      "//ruby/lib/google:dist_files",
+      "google-protobuf.gemspec",
+    ],
+    outs = ["google-protobuf-"+PROTOBUF_RUBY_VERSION+".gem"],
+    cmd = """
+        set -eux
+        mkdir tmp
+        for src in $(SRCS); do
+            cp --parents -L "$$src" "tmp"
+        done
+        mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+            mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        done
+        for wkt in $(execpaths //:well_known_ruby_protos); do
+            mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
+        done
+        cd tmp/ruby
+        chmod -R 777 ./
+        gem build google-protobuf.gemspec
+        cd ../..
+        mv tmp/ruby/google-protobuf-*.gem $@
+    """,
+    tags = ["manual"],
+    target_compatible_with = select({
+        "@rules_ruby//ruby/runtime:config_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
 
 ################################################################################
 # Tests

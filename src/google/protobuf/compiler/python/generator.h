@@ -36,7 +36,9 @@
 #define GOOGLE_PROTOBUF_COMPILER_PYTHON_GENERATOR_H__
 
 #include <string>
+#include <vector>
 
+#include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/code_generator.h"
 
@@ -90,7 +92,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   }
 
  private:
-  GeneratorOptions ParseParameter(const std::string& parameter,
+  GeneratorOptions ParseParameter(absl::string_view parameter,
                                   std::string* error) const;
   void PrintImports() const;
   void PrintFileDescriptor() const;
@@ -102,8 +104,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                             bool is_extension) const;
   void PrintFieldDescriptorsInDescriptor(
       const Descriptor& message_descriptor, bool is_extension,
-      const std::string& list_variable_name, int (Descriptor::*CountFn)() const,
-      const FieldDescriptor* (Descriptor::*GetterFn)(int)const) const;
+      absl::string_view list_variable_name, int (Descriptor::*CountFn)() const,
+      const FieldDescriptor* (Descriptor::*GetterFn)(int) const) const;
   void PrintFieldsInDescriptor(const Descriptor& message_descriptor) const;
   void PrintExtensionsInDescriptor(const Descriptor& message_descriptor) const;
   void PrintMessageDescriptors() const;
@@ -112,11 +114,11 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
   void PrintMessages() const;
   void PrintMessage(const Descriptor& message_descriptor,
-                    const std::string& prefix,
+                    absl::string_view prefix,
                     std::vector<std::string>* to_register,
                     bool is_nested) const;
   void PrintNestedMessages(const Descriptor& containing_descriptor,
-                           const std::string& prefix,
+                           absl::string_view prefix,
                            std::vector<std::string>* to_register) const;
 
   void FixForeignFieldsInDescriptors() const;
@@ -125,14 +127,14 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const Descriptor* containing_descriptor) const;
   void FixForeignFieldsInField(const Descriptor* containing_type,
                                const FieldDescriptor& field,
-                               const std::string& python_dict_name) const;
+                               absl::string_view python_dict_name) const;
   void AddMessageToFileDescriptor(const Descriptor& descriptor) const;
   void AddEnumToFileDescriptor(const EnumDescriptor& descriptor) const;
   void AddExtensionToFileDescriptor(const FieldDescriptor& descriptor) const;
   void AddServiceToFileDescriptor(const ServiceDescriptor& descriptor) const;
   std::string FieldReferencingExpression(
       const Descriptor* containing_type, const FieldDescriptor& field,
-      const std::string& python_dict_name) const;
+      absl::string_view python_dict_name) const;
   template <typename DescriptorT>
   void FixContainingTypeInDescriptor(
       const DescriptorT& descriptor,
@@ -153,7 +155,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const ServiceDescriptor& descriptor) const;
 
   void PrintEnumValueDescriptor(const EnumValueDescriptor& descriptor) const;
-  std::string OptionsValue(const std::string& serialized_options) const;
+  std::string OptionsValue(absl::string_view serialized_options) const;
   bool GeneratingDescriptorProto() const;
 
   template <typename DescriptorT>
@@ -167,7 +169,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   template <typename DescriptorT, typename DescriptorProtoT>
   void PrintSerializedPbInterval(const DescriptorT& descriptor,
                                  DescriptorProtoT& proto,
-                                 const std::string& name) const;
+                                 absl::string_view name) const;
 
   void FixAllDescriptorOptions() const;
   void FixOptionsForField(const FieldDescriptor& field) const;
@@ -179,7 +181,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   void SetSerializedPbInterval() const;
   void SetMessagePbInterval(const Descriptor& descriptor) const;
 
-  void CopyPublicDependenciesAliases(const std::string& copy_from,
+  void CopyPublicDependenciesAliases(absl::string_view copy_from,
                                      const FileDescriptor* file) const;
 
   // Very coarse-grained lock to ensure that Generate() is reentrant.

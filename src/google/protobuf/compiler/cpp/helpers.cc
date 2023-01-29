@@ -50,8 +50,8 @@
 #include "google/protobuf/dynamic_message.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -194,7 +194,7 @@ const absl::flat_hash_set<absl::string_view>& Keywords() {
   return *keywords;
 }
 
-std::string IntTypeName(const Options& options, const std::string& type) {
+std::string IntTypeName(const Options& options, absl::string_view type) {
   return absl::StrCat("::", type, "_t");
 }
 
@@ -288,7 +288,7 @@ void SetUnknownFieldsVariable(
   }
 }
 
-std::string UnderscoresToCamelCase(const std::string& input,
+std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool cap_next_letter) {
   std::string result;
   // Note:  I distrust ctype.h due to locales.
@@ -399,9 +399,9 @@ bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
 std::string ClassName(const Descriptor* descriptor) {
   const Descriptor* parent = descriptor->containing_type();
   std::string res;
-  if (parent) res += ClassName(parent) + "_";
-  res += descriptor->name();
-  if (IsMapEntryMessage(descriptor)) res += "_DoNotUse";
+  if (parent) absl::StrAppend(&res, ClassName(parent), "_");
+  absl::StrAppend(&res, descriptor->name());
+  if (IsMapEntryMessage(descriptor)) absl::StrAppend(&res, "_DoNotUse");
   return ResolveKeyword(res);
 }
 
@@ -409,8 +409,8 @@ std::string ClassName(const EnumDescriptor* enum_descriptor) {
   if (enum_descriptor->containing_type() == nullptr) {
     return ResolveKeyword(enum_descriptor->name());
   } else {
-    return ClassName(enum_descriptor->containing_type()) + "_" +
-           enum_descriptor->name();
+    return absl::StrCat(ClassName(enum_descriptor->containing_type()), "_",
+                        enum_descriptor->name());
   }
 }
 
@@ -439,7 +439,7 @@ std::string ExtensionName(const FieldDescriptor* d) {
 
 std::string QualifiedExtensionName(const FieldDescriptor* d,
                                    const Options& options) {
-  GOOGLE_ABSL_DCHECK(d->is_extension());
+  ABSL_DCHECK(d->is_extension());
   return QualifiedFileLevelSymbol(d->file(), ExtensionName(d), options);
 }
 
@@ -447,9 +447,9 @@ std::string QualifiedExtensionName(const FieldDescriptor* d) {
   return QualifiedExtensionName(d, Options());
 }
 
-std::string Namespace(const std::string& package) {
+std::string Namespace(absl::string_view package) {
   if (package.empty()) return "";
-  return "::" + DotsToColons(package);
+  return absl::StrCat("::", DotsToColons(package));
 }
 
 std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
@@ -491,13 +491,13 @@ std::string DefaultInstanceType(const Descriptor* descriptor,
 
 std::string DefaultInstanceName(const Descriptor* descriptor,
                                 const Options& /*options*/, bool split) {
-  return "_" + ClassName(descriptor, false) + (split ? "__Impl_Split" : "") +
-         "_default_instance_";
+  return absl::StrCat("_", ClassName(descriptor, false),
+                      (split ? "__Impl_Split" : ""), "_default_instance_");
 }
 
 std::string DefaultInstancePtr(const Descriptor* descriptor,
                                const Options& options, bool split) {
-  return DefaultInstanceName(descriptor, options, split) + "ptr_";
+  return absl::StrCat(DefaultInstanceName(descriptor, options, split), "ptr_");
 }
 
 std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
@@ -509,7 +509,8 @@ std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
 
 std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
                                         const Options& options, bool split) {
-  return QualifiedDefaultInstanceName(descriptor, options, split) + "ptr_";
+  return absl::StrCat(QualifiedDefaultInstanceName(descriptor, options, split),
+                      "ptr_");
 }
 
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -524,20 +525,21 @@ std::string FileDllExport(const FileDescriptor* file, const Options& options) {
 std::string SuperClassName(const Descriptor* descriptor,
                            const Options& options) {
   if (!HasDescriptorMethods(descriptor->file(), options)) {
-    return "::" + ProtobufNamespace(options) + "::MessageLite";
+    return absl::StrCat("::", ProtobufNamespace(options), "::MessageLite");
   }
   auto simple_base = SimpleBaseClass(descriptor, options);
   if (simple_base.empty()) {
-    return "::" + ProtobufNamespace(options) + "::Message";
+    return absl::StrCat("::", ProtobufNamespace(options), "::Message");
   }
-  return "::" + ProtobufNamespace(options) + "::internal::" + simple_base;
+  return absl::StrCat("::", ProtobufNamespace(options),
+                      "::internal::", simple_base);
 }
 
-std::string ResolveKeyword(const std::string& name) {
+std::string ResolveKeyword(absl::string_view name) {
   if (Keywords().count(name) > 0) {
-    return name + "_";
+    return absl::StrCat(name, "_");
   }
-  return name;
+  return std::string(name);
 }
 
 std::string FieldName(const FieldDescriptor* field) {
@@ -557,19 +559,19 @@ std::string FieldMemberName(const FieldDescriptor* field, bool split) {
     return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
   }
   // Oneof fields are never split.
-  GOOGLE_ABSL_CHECK(!split);
+  ABSL_CHECK(!split);
   return absl::StrCat(prefix, field->containing_oneof()->name(), "_.",
                       FieldName(field), "_");
 }
 
 std::string OneofCaseConstantName(const FieldDescriptor* field) {
-  GOOGLE_ABSL_DCHECK(field->containing_oneof());
+  ABSL_DCHECK(field->containing_oneof());
   std::string field_name = UnderscoresToCamelCase(field->name(), true);
-  return "k" + field_name;
+  return absl::StrCat("k", field_name);
 }
 
 std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
-  GOOGLE_ABSL_DCHECK(field->containing_oneof());
+  ABSL_DCHECK(field->containing_oneof());
   const std::string qualification =
       QualifiedClassName(field->containing_type());
   return absl::StrCat(qualification, "::", OneofCaseConstantName(field));
@@ -603,13 +605,13 @@ int EstimateAlignmentSize(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return 8;
   }
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return -1;  // Make compiler happy.
 }
 
 std::string FieldConstantName(const FieldDescriptor* field) {
   std::string field_name = UnderscoresToCamelCase(field->name(), true);
-  std::string result = "k" + field_name + "FieldNumber";
+  std::string result = absl::StrCat("k", field_name, "FieldNumber");
 
   if (!field->is_extension() &&
       field->containing_type()->FindFieldByCamelcaseName(
@@ -617,7 +619,7 @@ std::string FieldConstantName(const FieldDescriptor* field) {
     // This field's camelcase name is not unique.  As a hack, add the field
     // number to the constant name.  This makes the constant rather useless,
     // but what can we do?
-    result += "_" + absl::StrCat(field->number());
+    absl::StrAppend(&result, "_", field->number());
   }
 
   return result;
@@ -630,7 +632,7 @@ std::string FieldMessageTypeName(const FieldDescriptor* field,
   return QualifiedClassName(field->message_type(), options);
 }
 
-std::string StripProto(const std::string& filename) {
+std::string StripProto(absl::string_view filename) {
   /*
    * TODO(github/georgthegreat) remove this proxy method
    * once Google's internal codebase will become ready
@@ -665,7 +667,7 @@ const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
       // CppTypes are added.
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
@@ -697,7 +699,7 @@ std::string PrimitiveTypeName(const Options& options,
       // CppTypes are added.
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
@@ -745,7 +747,7 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
       // No default because we want the compiler to complain if any new
       // types are added.
   }
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
@@ -781,7 +783,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_INT32:
       return Int32ToString(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return absl::StrCat(field->default_value_uint32()) + "u";
+      return absl::StrCat(field->default_value_uint32(), "u");
     case FieldDescriptor::CPPTYPE_INT64:
       return Int64ToString(field->default_value_int64());
     case FieldDescriptor::CPPTYPE_UINT64:
@@ -826,22 +828,22 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
           "static_cast< $0 >($1)", ClassName(field->enum_type(), true),
           Int32ToString(field->default_value_enum()->number()));
     case FieldDescriptor::CPPTYPE_STRING:
-      return "\"" +
-             EscapeTrigraphs(absl::CEscape(field->default_value_string())) +
-             "\"";
+      return absl::StrCat(
+          "\"", EscapeTrigraphs(absl::CEscape(field->default_value_string())),
+          "\"");
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return "*" + FieldMessageTypeName(field, options) +
-             "::internal_default_instance()";
+      return absl::StrCat("*", FieldMessageTypeName(field, options),
+                          "::internal_default_instance()");
   }
   // Can't actually get here; make compiler happy.  (We could add a default
   // case above but then we wouldn't get the nice compiler warning when a
   // new type is added.)
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return "";
 }
 
 // Convert a file name into a valid identifier.
-std::string FilenameIdentifier(const std::string& filename) {
+std::string FilenameIdentifier(absl::string_view filename) {
   std::string result;
   for (int i = 0; i < filename.size(); i++) {
     if (absl::ascii_isalnum(filename[i])) {
@@ -856,14 +858,14 @@ std::string FilenameIdentifier(const std::string& filename) {
   return result;
 }
 
-std::string UniqueName(const std::string& name, const std::string& filename,
+std::string UniqueName(absl::string_view name, absl::string_view filename,
                        const Options& options) {
-  return name + "_" + FilenameIdentifier(filename);
+  return absl::StrCat(name, "_", FilenameIdentifier(filename));
 }
 
 // Return the qualified C++ name for a file level symbol.
 std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
-                                     const std::string& name,
+                                     absl::string_view name,
                                      const Options& options) {
   if (file->package().empty()) {
     return absl::StrCat("::", name);
@@ -879,11 +881,11 @@ std::string EscapeTrigraphs(absl::string_view to_escape) {
 // Escaped function name to eliminate naming conflict.
 std::string SafeFunctionName(const Descriptor* descriptor,
                              const FieldDescriptor* field,
-                             const std::string& prefix) {
+                             absl::string_view prefix) {
   // Do not use FieldName() since it will escape keywords.
   std::string name = field->name();
   absl::AsciiStrToLower(&name);
-  std::string function_name = prefix + name;
+  std::string function_name = absl::StrCat(prefix, name);
   if (descriptor->FindFieldByName(function_name)) {
     // Single underscore will also make it conflicting with the private data
     // member. We use double underscore to escape function names.
@@ -1115,13 +1117,13 @@ bool IsStringOrMessage(const FieldDescriptor* field) {
       return true;
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return false;
 }
 
 FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
                                          const Options& options) {
-  GOOGLE_ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
   if (options.opensource_runtime) {
     // Open-source protobuf release only supports STRING ctype.
     return FieldOptions::STRING;
@@ -1406,7 +1408,7 @@ void ListAllTypesForServices(const FileDescriptor* fd,
   }
 }
 
-bool GetBootstrapBasename(const Options& options, const std::string& basename,
+bool GetBootstrapBasename(const Options& options, absl::string_view basename,
                           std::string* bootstrap_basename) {
   if (options.opensource_runtime) {
     return false;
@@ -1422,12 +1424,10 @@ bool GetBootstrapBasename(const Options& options, const std::string& basename,
            "net/proto2/compiler/proto/plugin"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
-          {"third_party/protobuf/extension_declaration",
-           "third_party/protobuf/extension_declaration_bootstrap"},
       };
   auto iter = bootstrap_mapping->find(basename);
   if (iter == bootstrap_mapping->end()) {
-    *bootstrap_basename = basename;
+    *bootstrap_basename = std::string(basename);
     return false;
   } else {
     *bootstrap_basename = iter->second;
@@ -1634,7 +1634,7 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
     case EnforceOptimizeMode::kNoEnforcement:
       if (file->options().optimize_for() == FileOptions::CODE_SIZE) {
         if (HasBootstrapProblem(file, options, has_opt_codesize_extension)) {
-          GOOGLE_ABSL_LOG(WARNING)
+          ABSL_LOG(WARNING)
               << "Proto states optimize_for = CODE_SIZE, but we "
                  "cannot honor that because it contains custom option "
                  "extensions defined in the same proto.";
@@ -1644,7 +1644,7 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
       return file->options().optimize_for();
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Unknown optimization enforcement requested.";
+  ABSL_LOG(FATAL) << "Unknown optimization enforcement requested.";
   // The phony return below serves to silence a warning from GCC 8.
   return FileOptions::SPEED;
 }

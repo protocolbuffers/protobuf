@@ -17,8 +17,6 @@ cc_library(
     hdrs = [
         "callback.h",
         "common.h",
-        "logging.h",
-        "mathutil.h",
         "platform_macros.h",
         "port.h",
         "status_macros.h",
@@ -28,7 +26,9 @@ cc_library(
     linkopts = LINK_OPTS,
     deps = [
         "//src/google/protobuf:port_def",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -44,8 +44,6 @@ cc_library(
     textual_hdrs = [
         "callback.h",
         "common.h",
-        "logging.h",
-        "mathutil.h",
         "platform_macros.h",
         "port.h",
         "status_macros.h",
@@ -75,6 +73,7 @@ cc_test(
         ":lite",
         ":stubs",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

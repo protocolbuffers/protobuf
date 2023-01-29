@@ -58,5 +58,3 @@ Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.PackedInput.UnpackedOu
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.UnpackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.PackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.UnpackedInput.UnpackedOutput.ProtobufOutput
-Recommended.ValueRejectInfNumberValue.JsonOutput
-Recommended.ValueRejectNanNumberValue.JsonOutput

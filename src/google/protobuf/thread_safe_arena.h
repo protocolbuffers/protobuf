@@ -222,7 +222,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before
   // deleting.
-  SerialArena::Memory Free(size_t* space_allocated);
+  SizedPtr Free(size_t* space_allocated);
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4324)
@@ -260,7 +260,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // wrap them in static functions.
   static ThreadCache& thread_cache();
 #else
-  ABSL_CONST_INIT static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
+  PROTOBUF_CONSTINIT static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
   static ThreadCache& thread_cache() { return thread_cache_; }
 #endif
 

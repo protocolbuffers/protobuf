@@ -37,6 +37,7 @@
 #include <cstdint>
 #include <iostream>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -45,8 +46,8 @@
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
@@ -110,7 +111,7 @@ void MockCodeGenerator::ExpectGenerated(
     absl::string_view first_parsed_file_name,
     absl::string_view output_directory) {
   std::string content;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(
+  ABSL_CHECK_OK(File::GetContents(
       absl::StrCat(output_directory, "/", GetOutputFileName(name, file)),
       &content, true));
 
@@ -169,16 +170,16 @@ void MockCodeGenerator::CheckGeneratedAnnotations(
     absl::string_view name, absl::string_view file,
     absl::string_view output_directory) {
   std::string file_content;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(
+  ABSL_CHECK_OK(File::GetContents(
       absl::StrCat(output_directory, "/", GetOutputFileName(name, file)),
       &file_content, true));
   std::string meta_content;
-  GOOGLE_ABSL_CHECK_OK(
+  ABSL_CHECK_OK(
       File::GetContents(absl::StrCat(output_directory, "/",
                                      GetOutputFileName(name, file), ".pb.meta"),
                         &meta_content, true));
   GeneratedCodeInfo annotations;
-  GOOGLE_ABSL_CHECK(TextFormat::ParseFromString(meta_content, &annotations));
+  ABSL_CHECK(TextFormat::ParseFromString(meta_content, &annotations));
   ASSERT_EQ(7, annotations.annotation_size());
 
   CheckSingleAnnotation("first_annotation", "first", file_content,
@@ -219,40 +220,39 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
       if (command == "Error") {
         *error = "Saw message type MockCodeGenerator_Error.";
         return false;
-      } else if (command == "Exit") {
+      }
+      if (command == "Exit") {
         std::cerr << "Saw message type MockCodeGenerator_Exit." << std::endl;
         exit(123);
-      } else if (command == "Abort") {
-        std::cerr << "Saw message type MockCodeGenerator_Abort." << std::endl;
-        abort();
-      } else if (command == "HasSourceCodeInfo") {
+      }
+      ABSL_CHECK(command != "Abort")
+          << "Saw message type MockCodeGenerator_Abort.";
+      if (command == "HasSourceCodeInfo") {
         FileDescriptorProto file_descriptor_proto;
         file->CopySourceCodeInfoTo(&file_descriptor_proto);
         bool has_source_code_info =
             file_descriptor_proto.has_source_code_info() &&
             file_descriptor_proto.source_code_info().location_size() > 0;
-        std::cerr << "Saw message type MockCodeGenerator_HasSourceCodeInfo: "
-                  << has_source_code_info << "." << std::endl;
-        abort();
+        ABSL_LOG(FATAL)
+            << "Saw message type MockCodeGenerator_HasSourceCodeInfo: "
+            << has_source_code_info << ".";
       } else if (command == "HasJsonName") {
         FieldDescriptorProto field_descriptor_proto;
         file->message_type(i)->field(0)->CopyTo(&field_descriptor_proto);
-        std::cerr << "Saw json_name: " << field_descriptor_proto.has_json_name()
-                  << std::endl;
-        abort();
+        ABSL_LOG(FATAL) << "Saw json_name: "
+                        << field_descriptor_proto.has_json_name();
       } else if (command == "Annotate") {
         annotate = true;
       } else if (command == "ShowVersionNumber") {
         Version compiler_version;
         context->GetCompilerVersion(&compiler_version);
-        std::cerr << "Saw compiler_version: "
-                  << compiler_version.major() * 1000000 +
-                         compiler_version.minor() * 1000 +
-                         compiler_version.patch()
-                  << " " << compiler_version.suffix() << std::endl;
-        abort();
+        ABSL_LOG(FATAL) << "Saw compiler_version: "
+                        << compiler_version.major() * 1000000 +
+                               compiler_version.minor() * 1000 +
+                               compiler_version.patch()
+                        << " " << compiler_version.suffix();
       } else {
-        GOOGLE_ABSL_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;
+        ABSL_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;
       }
     }
   }

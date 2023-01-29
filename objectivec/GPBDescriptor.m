@@ -49,7 +49,7 @@
 // description has to be long lived, it is held as a raw pointer.
 - (instancetype)initWithFieldDescription:(void *)description
                                     file:(GPBFileDescriptor *)file
-                          decriptorFlags:(GPBDescriptorInitializationFlags)decriptorFlags;
+                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags;
 
 @end
 
@@ -135,15 +135,11 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 @synthesize wireFormat = wireFormat_;
 
 + (instancetype)allocDescriptorForClass:(Class)messageClass
-                              rootClass:(Class)rootClass
                                    file:(GPBFileDescriptor *)file
                                  fields:(void *)fieldDescriptions
                              fieldCount:(uint32_t)fieldCount
                             storageSize:(uint32_t)storageSize
                                   flags:(GPBDescriptorInitializationFlags)flags {
-  // The rootClass is no longer used, but it is passed in to ensure it
-  // was started up during initialization also.
-  (void)rootClass;
   NSMutableArray *fields =
       (fieldCount ? [[NSMutableArray alloc] initWithCapacity:fieldCount] : nil);
   BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
@@ -157,7 +153,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
       desc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
     }
     GPBFieldDescriptor *fieldDescriptor =
-        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc file:file decriptorFlags:flags];
+        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc file:file descriptorFlags:flags];
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
   }
@@ -170,6 +166,24 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
                                                wireFormat:wireFormat];
   [fields release];
   return descriptor;
+}
+
++ (instancetype)allocDescriptorForClass:(Class)messageClass
+                              rootClass:(__unused Class)rootClass
+                                   file:(GPBFileDescriptor *)file
+                                 fields:(void *)fieldDescriptions
+                             fieldCount:(uint32_t)fieldCount
+                            storageSize:(uint32_t)storageSize
+                                  flags:(GPBDescriptorInitializationFlags)flags {
+  // The rootClass is no longer used, but it is passed as [ROOT class] to
+  // ensure it was started up during initialization also when the message
+  // scopes extensions.
+  return [self allocDescriptorForClass:messageClass
+                                  file:file
+                                fields:fieldDescriptions
+                            fieldCount:fieldCount
+                           storageSize:storageSize
+                                 flags:flags];
 }
 
 - (instancetype)initWithClass:(Class)messageClass
@@ -311,7 +325,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   return result;
 }
 
-- (id)copyWithZone:(__unused NSZone *)zone {
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
   return [self retain];
 }
 
@@ -379,6 +393,26 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   [package_ release];
   [objcPrefix_ release];
   [super dealloc];
+}
+
+- (BOOL)isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[GPBFileDescriptor class]]) {
+    return NO;
+  }
+  GPBFileDescriptor *otherFile = other;
+  // objcPrefix can be nil, otherwise, straight up compare.
+  return (syntax_ == otherFile->syntax_ && [package_ isEqual:otherFile->package_] &&
+          (objcPrefix_ == otherFile->objcPrefix_ ||
+           (otherFile->objcPrefix_ && [objcPrefix_ isEqual:otherFile->objcPrefix_])));
+}
+
+- (NSUInteger)hash {
+  // The prefix is recommended to be the same for a given package, so just hash
+  // the package.
+  return [package_ hash];
 }
 
 @end
@@ -466,10 +500,10 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 - (instancetype)initWithFieldDescription:(void *)description
                                     file:(GPBFileDescriptor *)file
-                          decriptorFlags:(GPBDescriptorInitializationFlags)decriptorFlags {
+                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags {
   if ((self = [super init])) {
     BOOL includesDefault =
-        (decriptorFlags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
+        (descriptorFlags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
     GPBMessageFieldDescription *coreDesc;
     if (includesDefault) {
       coreDesc = &(((GPBMessageFieldDescriptionWithDefault *)description)->core);
@@ -486,7 +520,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
     // If proto3 optionals weren't known (i.e. generated code from an
     // older version), compute the flag for the rest of the runtime.
-    if ((decriptorFlags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) == 0) {
+    if ((descriptorFlags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) == 0) {
       // If it was...
       //  - proto3 syntax
       //  - not repeated/map
@@ -504,7 +538,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
     // If the ClosedEnum flag wasn't known (i.e. generated code from an older
     // version), compute the flag for the rest of the runtime.
-    if ((decriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) == 0) {
+    if ((descriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) == 0) {
       // NOTE: This isn't correct, it is using the syntax of the file that
       // declared the field, not the syntax of the file that declared the
       // enum; but for older generated code, that's all we have and that happens
@@ -540,7 +574,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       // Note: Only fetch the class here, can't send messages to it because
       // that could cause cycles back to this class within +initialize if
       // two messages have each other in fields (i.e. - they build a graph).
-      if ((decriptorFlags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0) {
+      if ((descriptorFlags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0) {
         msgClass_ = coreDesc->dataTypeSpecific.clazz;
       } else {
         // Backwards compatibility for sources generated with older protoc.
@@ -553,9 +587,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 #if defined(DEBUG) && DEBUG
       NSAssert((coreDesc->flags & GPBFieldHasEnumDescriptor) != 0,
                @"Field must have GPBFieldHasEnumDescriptor set");
-      NSAssert(((decriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) != 0) ||
-                   (((coreDesc->flags & GPBFieldClosedEnum) != 0) == enumDescriptor_.isClosed),
-               @"Internal error, ClosedEnum flag doesn't agree with EnumDescriptor");
 #endif  // DEBUG
     }
 

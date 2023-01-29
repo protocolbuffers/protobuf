@@ -31,6 +31,7 @@
 #include "google/protobuf/compiler/java/map_field_lite.h"
 
 #include <cstdint>
+#include <string>
 
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -49,16 +50,16 @@ namespace java {
 namespace {
 
 const FieldDescriptor* KeyField(const FieldDescriptor* descriptor) {
-  GOOGLE_ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
   const Descriptor* message = descriptor->message_type();
-  GOOGLE_ABSL_CHECK(message->options().map_entry());
+  ABSL_CHECK(message->options().map_entry());
   return message->map_key();
 }
 
 const FieldDescriptor* ValueField(const FieldDescriptor* descriptor) {
-  GOOGLE_ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
   const Descriptor* message = descriptor->message_type();
-  GOOGLE_ABSL_CHECK(message->options().map_entry());
+  ABSL_CHECK(message->options().map_entry());
   return message->map_value();
 }
 
@@ -69,8 +70,8 @@ std::string TypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
-                 : PrimitiveTypeName(GetJavaType(field));
+    return std::string(boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
+                             : PrimitiveTypeName(GetJavaType(field)));
   }
 }
 
@@ -81,13 +82,13 @@ std::string KotlinTypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return KotlinTypeName(GetJavaType(field));
+    return std::string(KotlinTypeName(GetJavaType(field)));
   }
 }
 
 std::string WireType(const FieldDescriptor* field) {
-  return "com.google.protobuf.WireFormat.FieldType." +
-         std::string(FieldTypeName(field->type()));
+  return absl::StrCat("com.google.protobuf.WireFormat.FieldType.",
+                      FieldTypeName(field->type()));
 }
 
 void SetMessageVariables(

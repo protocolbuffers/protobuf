@@ -74,7 +74,6 @@ typedef struct GPBDuration__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBDuration class]
-                                     rootClass:[GPBDurationRoot class]
                                           file:GPBDurationRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))

@@ -62,8 +62,7 @@ namespace io {
 // The latter will introduce an extra layer of buffering, harming performance.
 // Also, it's conceivable that FileInputStream could someday be enhanced
 // to use zero-copy file descriptors on OSs which support them.
-class PROTOBUF_EXPORT FileInputStream PROTOBUF_FUTURE_FINAL
-    : public ZeroCopyInputStream {
+class PROTOBUF_EXPORT FileInputStream final : public ZeroCopyInputStream {
  public:
   // Creates a stream that reads from the given Unix file descriptor.
   // If a block_size is given, it specifies the number of bytes that
@@ -98,7 +97,7 @@ class PROTOBUF_EXPORT FileInputStream PROTOBUF_FUTURE_FINAL
   int64_t ByteCount() const override;
 
  private:
-  class PROTOBUF_EXPORT CopyingFileInputStream PROTOBUF_FUTURE_FINAL
+  class PROTOBUF_EXPORT CopyingFileInputStream final
       : public CopyingInputStream {
    public:
     CopyingFileInputStream(int file_descriptor);
@@ -141,7 +140,7 @@ class PROTOBUF_EXPORT FileInputStream PROTOBUF_FUTURE_FINAL
 // harming performance.  Also, it's conceivable that FileOutputStream could
 // someday be enhanced to use zero-copy file descriptors on OSs which
 // support them.
-class PROTOBUF_EXPORT FileOutputStream PROTOBUF_FUTURE_FINAL
+class PROTOBUF_EXPORT FileOutputStream final
     : public CopyingOutputStreamAdaptor {
  public:
   // Creates a stream that writes to the given Unix file descriptor.
@@ -173,7 +172,7 @@ class PROTOBUF_EXPORT FileOutputStream PROTOBUF_FUTURE_FINAL
   int GetErrno() const { return copying_output_.GetErrno(); }
 
  private:
-  class PROTOBUF_EXPORT CopyingFileOutputStream PROTOBUF_FUTURE_FINAL
+  class PROTOBUF_EXPORT CopyingFileOutputStream final
       : public CopyingOutputStream {
    public:
     CopyingFileOutputStream(int file_descriptor);
@@ -207,8 +206,7 @@ class PROTOBUF_EXPORT FileOutputStream PROTOBUF_FUTURE_FINAL
 //
 // Note that for reading files (or anything represented by a file descriptor),
 // FileInputStream is more efficient.
-class PROTOBUF_EXPORT IstreamInputStream PROTOBUF_FUTURE_FINAL
-    : public ZeroCopyInputStream {
+class PROTOBUF_EXPORT IstreamInputStream final : public ZeroCopyInputStream {
  public:
   // Creates a stream that reads from the given C++ istream.
   // If a block_size is given, it specifies the number of bytes that
@@ -225,7 +223,7 @@ class PROTOBUF_EXPORT IstreamInputStream PROTOBUF_FUTURE_FINAL
   int64_t ByteCount() const override;
 
  private:
-  class PROTOBUF_EXPORT CopyingIstreamInputStream PROTOBUF_FUTURE_FINAL
+  class PROTOBUF_EXPORT CopyingIstreamInputStream final
       : public CopyingInputStream {
    public:
     CopyingIstreamInputStream(std::istream* input);
@@ -253,8 +251,7 @@ class PROTOBUF_EXPORT IstreamInputStream PROTOBUF_FUTURE_FINAL
 //
 // Note that for writing files (or anything represented by a file descriptor),
 // FileOutputStream is more efficient.
-class PROTOBUF_EXPORT OstreamOutputStream PROTOBUF_FUTURE_FINAL
-    : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT OstreamOutputStream final : public ZeroCopyOutputStream {
  public:
   // Creates a stream that writes to the given C++ ostream.
   // If a block_size is given, it specifies the size of the buffers
@@ -271,7 +268,7 @@ class PROTOBUF_EXPORT OstreamOutputStream PROTOBUF_FUTURE_FINAL
   int64_t ByteCount() const override;
 
  private:
-  class PROTOBUF_EXPORT CopyingOstreamOutputStream PROTOBUF_FUTURE_FINAL
+  class PROTOBUF_EXPORT CopyingOstreamOutputStream final
       : public CopyingOutputStream {
    public:
     CopyingOstreamOutputStream(std::ostream* output);
@@ -301,7 +298,7 @@ class PROTOBUF_EXPORT OstreamOutputStream PROTOBUF_FUTURE_FINAL
 // ConcatenatingInputStream may do odd things.  It is suggested that you do
 // not use ConcatenatingInputStream on streams that might produce read errors
 // other than end-of-stream.
-class PROTOBUF_EXPORT ConcatenatingInputStream PROTOBUF_FUTURE_FINAL
+class PROTOBUF_EXPORT ConcatenatingInputStream final
     : public ZeroCopyInputStream {
  public:
   // All streams passed in as well as the array itself must remain valid

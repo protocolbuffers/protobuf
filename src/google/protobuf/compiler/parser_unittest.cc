@@ -46,7 +46,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
@@ -72,11 +72,11 @@ class MockErrorCollector : public io::ErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddWarning(int line, int column, const std::string& message) override {
+  void RecordWarning(int line, int column, absl::string_view message) override {
     absl::SubstituteAndAppend(&warning_, "$0:$1: $2\n", line, column, message);
   }
 
-  void AddError(int line, int column, const std::string& message) override {
+  void RecordError(int line, int column, absl::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
@@ -90,16 +90,16 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
   ~MockValidationErrorCollector() override = default;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* descriptor, ErrorLocation location,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
     int line, column;
     if (location == DescriptorPool::ErrorCollector::IMPORT) {
       source_locations_.FindImport(descriptor, element_name, &line, &column);
     } else {
       source_locations_.Find(descriptor, location, &line, &column);
     }
-    wrapped_collector_->AddError(line, column, message);
+    wrapped_collector_->RecordError(line, column, message);
   }
 
  private:
@@ -2971,14 +2971,14 @@ class SourceInfoTest : public ParserTest {
     while (*text != '\0') {
       if (*text == '$') {
         ++text;
-        GOOGLE_ABSL_CHECK_NE('\0', *text);
+        ABSL_CHECK_NE('\0', *text);
         if (*text == '$') {
           text_without_markers_ += '$';
           ++column;
         } else {
           markers_[*text] = std::make_pair(line, column);
           ++text;
-          GOOGLE_ABSL_CHECK_EQ('$', *text);
+          ABSL_CHECK_EQ('$', *text);
         }
       } else if (*text == '\n') {
         ++line;

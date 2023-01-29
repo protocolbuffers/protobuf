@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT Timestamp final :
   }
   void UnsafeArenaSwap(Timestamp* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -192,17 +192,21 @@ class PROTOBUF_EXPORT Timestamp final :
   void clear_seconds() ;
   ::int64_t seconds() const;
   void set_seconds(::int64_t value);
+
   private:
   ::int64_t _internal_seconds() const;
   void _internal_set_seconds(::int64_t value);
+
   public:
   // int32 nanos = 2;
   void clear_nanos() ;
   ::int32_t nanos() const;
   void set_nanos(::int32_t value);
+
   private:
   ::int32_t _internal_nanos() const;
   void _internal_set_nanos(::int32_t value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Timestamp)
  private:
@@ -240,40 +244,42 @@ class PROTOBUF_EXPORT Timestamp final :
 inline void Timestamp::clear_seconds() {
   _impl_.seconds_ = ::int64_t{0};
 }
-inline ::int64_t Timestamp::_internal_seconds() const {
-  return _impl_.seconds_;
-}
 inline ::int64_t Timestamp::seconds() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.seconds)
   return _internal_seconds();
 }
-inline void Timestamp::_internal_set_seconds(::int64_t value) {
-
-  _impl_.seconds_ = value;
-}
 inline void Timestamp::set_seconds(::int64_t value) {
+  ;
   _internal_set_seconds(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.seconds)
+}
+inline ::int64_t Timestamp::_internal_seconds() const {
+  return _impl_.seconds_;
+}
+inline void Timestamp::_internal_set_seconds(::int64_t value) {
+  ;
+  _impl_.seconds_ = value;
 }
 
 // int32 nanos = 2;
 inline void Timestamp::clear_nanos() {
   _impl_.nanos_ = 0;
 }
-inline ::int32_t Timestamp::_internal_nanos() const {
-  return _impl_.nanos_;
-}
 inline ::int32_t Timestamp::nanos() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.nanos)
   return _internal_nanos();
 }
-inline void Timestamp::_internal_set_nanos(::int32_t value) {
-
-  _impl_.nanos_ = value;
-}
 inline void Timestamp::set_nanos(::int32_t value) {
+  ;
   _internal_set_nanos(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.nanos)
+}
+inline ::int32_t Timestamp::_internal_nanos() const {
+  return _impl_.nanos_;
+}
+inline void Timestamp::_internal_set_nanos(::int32_t value) {
+  ;
+  _impl_.nanos_ = value;
 }
 
 #ifdef __GNUC__

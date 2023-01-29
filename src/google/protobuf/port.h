@@ -57,6 +57,54 @@ class MessageLite;
 namespace internal {
 
 
+// See comments on `AllocateAtLeast` for information on size returning new.
+struct SizedPtr {
+  void* p;
+  size_t n;
+};
+
+// Debug hook allowing setting up test scenarios for AllocateAtLeast usage.
+using AllocateAtLeastHookFn = SizedPtr (*)(size_t, void*);
+
+// `AllocAtLeastHook` API
+constexpr bool HaveAllocateAtLeastHook();
+void SetAllocateAtLeastHook(AllocateAtLeastHookFn fn, void* context = nullptr);
+
+#if !defined(NDEBUG) && defined(ABSL_HAVE_THREAD_LOCAL) && \
+    defined(__cpp_inline_variables)
+
+// Hook data for current thread. These vars must not be accessed directly, use
+// the 'HaveAllocateAtLeastHook()` and `SetAllocateAtLeastHook()` API instead.
+inline thread_local AllocateAtLeastHookFn allocate_at_least_hook = nullptr;
+inline thread_local void* allocate_at_least_hook_context = nullptr;
+
+constexpr bool HaveAllocateAtLeastHook() { return true; }
+inline void SetAllocateAtLeastHook(AllocateAtLeastHookFn fn, void* context) {
+  allocate_at_least_hook = fn;
+  allocate_at_least_hook_context = context;
+}
+
+#else  // !NDEBUG && ABSL_HAVE_THREAD_LOCAL && __cpp_inline_variables
+
+constexpr bool HaveAllocateAtLeastHook() { return false; }
+inline void SetAllocateAtLeastHook(AllocateAtLeastHookFn fn, void* context) {}
+
+#endif  // !NDEBUG && ABSL_HAVE_THREAD_LOCAL && __cpp_inline_variables
+
+// Allocates at least `size` bytes. This function follows the c++ language
+// proposal from D0901R10 (http://wg21.link/D0901R10) and will be implemented
+// in terms of the new operator new semantics when available. The allocated
+// memory should be released by a call to `SizedDelete` or `::operator delete`.
+inline SizedPtr AllocateAtLeast(size_t size) {
+#if !defined(NDEBUG) && defined(ABSL_HAVE_THREAD_LOCAL) && \
+    defined(__cpp_inline_variables)
+  if (allocate_at_least_hook != nullptr) {
+    return allocate_at_least_hook(size, allocate_at_least_hook_context);
+  }
+#endif  // !NDEBUG && ABSL_HAVE_THREAD_LOCAL && __cpp_inline_variables
+  return {::operator new(size), size};
+}
+
 inline void SizedDelete(void* p, size_t size) {
 #if defined(__cpp_sized_deallocation)
   ::operator delete(p, size);

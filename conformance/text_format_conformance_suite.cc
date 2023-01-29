@@ -32,7 +32,8 @@
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
 #include "conformance_test.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
@@ -69,7 +70,7 @@ bool TextFormatConformanceTestSuite::ParseTextFormatResponse(
     parser.AllowFieldNumber(true);
   }
   if (!parser.ParseFromString(response.text_payload(), test_message)) {
-    GOOGLE_ABSL_LOG(ERROR) << "INTERNAL ERROR: internal text->protobuf transcode "
+    ABSL_LOG(ERROR) << "INTERNAL ERROR: internal text->protobuf transcode "
                     << "yielded unparseable proto. Text payload: "
                     << response.text_payload();
     return false;
@@ -126,7 +127,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
     }
 
     default:
-      GOOGLE_ABSL_LOG(FATAL) << test_name
+      ABSL_LOG(FATAL) << test_name
                       << ": unknown payload type: " << response.result_case();
   }
 
@@ -220,15 +221,15 @@ void TextFormatConformanceTestSuite::RunValidUnknownTextFormatTest(
   TestAllTypesProto3 prototype;
   ConformanceRequestSetting setting1(
       RECOMMENDED, conformance::PROTOBUF, conformance::TEXT_FORMAT,
-      conformance::TEXT_FORMAT_TEST, prototype, test_name + "_Drop",
-      serialized_input);
+      conformance::TEXT_FORMAT_TEST, prototype,
+      absl::StrCat(test_name, "_Drop"), serialized_input);
   setting1.SetPrototypeMessageForCompare(message);
   RunValidBinaryInputTest(setting1, "");
 
   ConformanceRequestSetting setting2(
       RECOMMENDED, conformance::PROTOBUF, conformance::TEXT_FORMAT,
-      conformance::TEXT_FORMAT_TEST, prototype, test_name + "_Print",
-      serialized_input);
+      conformance::TEXT_FORMAT_TEST, prototype,
+      absl::StrCat(test_name, "_Print"), serialized_input);
   setting2.SetPrototypeMessageForCompare(message);
   setting2.SetPrintUnknownFields(true);
   RunValidBinaryInputTest(setting2, serialized_input);
@@ -532,26 +533,27 @@ void TextFormatConformanceTestSuite::RunTextFormatPerformanceTests() {
 void TextFormatConformanceTestSuite::
     TestTextFormatPerformanceMergeMessageWithRepeatedField(
         const string& test_type_name, const string& message_field) {
-  string recursive_message = "recursive_message { " + message_field + " }";
+  string recursive_message =
+      absl::StrCat("recursive_message { ", message_field, " }");
 
   string input;
   for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
-    input.append(recursive_message);
+    absl::StrAppend(&input, recursive_message);
   }
 
   string expected = "recursive_message { ";
   for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
-    expected.append(message_field + " ");
+    absl::StrAppend(&expected, message_field, " ");
   }
-  expected.append("}");
+  absl::StrAppend(&expected, "}");
 
   RunValidTextFormatTestProto2WithExpected(
-      "TestTextFormatPerformanceMergeMessageWithRepeatedField" +
-          test_type_name + "Proto2",
+      absl::StrCat("TestTextFormatPerformanceMergeMessageWithRepeatedField",
+                   test_type_name, "Proto2"),
       RECOMMENDED, input, expected);
   RunValidTextFormatTestWithExpected(
-      "TestTextFormatPerformanceMergeMessageWithRepeatedField" +
-          test_type_name + "Proto3",
+      absl::StrCat("TestTextFormatPerformanceMergeMessageWithRepeatedField",
+                   test_type_name, "Proto3"),
       RECOMMENDED, input, expected);
 }
 

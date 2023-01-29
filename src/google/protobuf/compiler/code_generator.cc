@@ -34,11 +34,14 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 
+#include <utility>
+
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 
 namespace google {
@@ -82,7 +85,7 @@ io::ZeroCopyOutputStream* GeneratorContext::OpenForAppend(
 
 io::ZeroCopyOutputStream* GeneratorContext::OpenForInsert(
     const std::string& filename, const std::string& insertion_point) {
-  GOOGLE_ABSL_LOG(FATAL) << "This GeneratorContext does not support insertion.";
+  ABSL_LOG(FATAL) << "This GeneratorContext does not support insertion.";
   return nullptr;  // make compiler happy
 }
 
@@ -94,7 +97,7 @@ io::ZeroCopyOutputStream* GeneratorContext::OpenForInsertWithGeneratedCodeInfo(
 
 void GeneratorContext::ListParsedFiles(
     std::vector<const FileDescriptor*>* output) {
-  GOOGLE_ABSL_LOG(FATAL) << "This GeneratorContext does not support ListParsedFiles";
+  ABSL_LOG(FATAL) << "This GeneratorContext does not support ListParsedFiles";
 }
 
 void GeneratorContext::GetCompilerVersion(Version* version) const {
@@ -106,26 +109,24 @@ void GeneratorContext::GetCompilerVersion(Version* version) const {
 
 // Parses a set of comma-delimited name/value pairs.
 void ParseGeneratorParameter(
-    const std::string& text,
+    absl::string_view text,
     std::vector<std::pair<std::string, std::string> >* output) {
-  std::vector<std::string> parts = absl::StrSplit(text, ",", absl::SkipEmpty());
+  std::vector<absl::string_view> parts =
+      absl::StrSplit(text, ',', absl::SkipEmpty());
 
-  for (int i = 0; i < parts.size(); i++) {
-    std::string::size_type equals_pos = parts[i].find_first_of('=');
-    std::pair<std::string, std::string> value;
-    if (equals_pos == std::string::npos) {
-      value.first = parts[i];
-      value.second = "";
+  for (absl::string_view part : parts) {
+    auto equals_pos = part.find_first_of('=');
+    if (equals_pos == absl::string_view::npos) {
+      output->emplace_back(part, "");
     } else {
-      value.first = parts[i].substr(0, equals_pos);
-      value.second = parts[i].substr(equals_pos + 1);
+      output->emplace_back(part.substr(0, equals_pos),
+                           part.substr(equals_pos + 1));
     }
-    output->push_back(value);
   }
 }
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
-std::string StripProto(const std::string& filename) {
+std::string StripProto(absl::string_view filename) {
   if (absl::EndsWith(filename, ".protodevel")) {
     return std::string(absl::StripSuffix(filename, ".protodevel"));
   } else {

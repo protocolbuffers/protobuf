@@ -393,7 +393,7 @@ class PROTOBUF_EXPORT TcParser final {
     static_assert(sizeof(FieldType) == 1 || sizeof(FieldType) == 4 ||
                       sizeof(FieldType) == 8,
                   "");
-    std::abort();  // unreachable
+    ABSL_LOG(FATAL) << "This should be unreachable";
   }
 
   // Functions referenced by generated fast tables (closed enum):
@@ -777,7 +777,7 @@ Parse64FallbackPair(const char* p, int64_t res1) {
   //
   // Just as importantly, by keeping results in res1, res2, and res3, we take
   // advantage of the superscalar abilities of the CPU.
-  GOOGLE_ABSL_DCHECK_EQ(res1 >> 7, -1);
+  ABSL_DCHECK_EQ(res1 >> 7, -1);
   uint64_t ones = res1;  // save the high 1 bits from res1 (input to SHLD)
   int64_t res2, res3;    // accumulated result chunks
 
@@ -805,22 +805,24 @@ Parse64FallbackPair(const char* p, int64_t res1) {
   // correctly, so all we have to do is check that the expected case is true.
   if (PROTOBUF_PREDICT_TRUE(ptr[9] == 1)) goto done10;
 
-  // A value of 0, however, represents an over-serialized varint. This case
-  // should not happen, but if does (say, due to a nonconforming serializer),
-  // deassert the continuation bit that came from ptr[8].
-  if (ptr[9] == 0) {
+  if (PROTOBUF_PREDICT_FALSE(ptr[9] & 0x80)) {
+    // If the continue bit is set, it is an unterminated varint.
+    return {nullptr, 0};
+  }
+
+  // A zero value of the first bit of the 10th byte represents an
+  // over-serialized varint. This case should not happen, but if does (say, due
+  // to a nonconforming serializer), deassert the continuation bit that came
+  // from ptr[8].
+  if ((ptr[9] & 1) == 0) {
 #if defined(__GCC_ASM_FLAG_OUTPUTS__) && defined(__x86_64__)
     // Use a small instruction since this is an uncommon code path.
     asm("btcq $63,%0" : "+r"(res3));
 #else
     res3 ^= static_cast<uint64_t>(1) << 63;
 #endif
-    goto done10;
   }
-
-  // If the 10th byte/ptr[9] itself has any other value, then it is too big to
-  // fit in 64 bits. If the continue bit is set, it is an unterminated varint.
-  return {nullptr, 0};
+  goto done10;
 
 done2:
   return {p + 2, res1 & res2};
@@ -963,7 +965,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastTV32S1(PROTOBUF_TC_PARAM_DECL) {
               if (PROTOBUF_PREDICT_FALSE(ptr[6] & 0x80)) {
                 if (PROTOBUF_PREDICT_FALSE(ptr[7] & 0x80)) {
                   if (PROTOBUF_PREDICT_FALSE(ptr[8] & 0x80)) {
-                    if (ptr[9] & 0xFE) return Error(PROTOBUF_TC_PARAM_PASS);
+                    if (ptr[9] & 0x80) return Error(PROTOBUF_TC_PARAM_PASS);
                     *out = RotateLeft(res, 28);
                     ptr += 10;
                     PROTOBUF_MUSTTAIL return ToTagDispatch(

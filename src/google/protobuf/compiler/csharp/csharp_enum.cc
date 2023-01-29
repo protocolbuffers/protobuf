@@ -35,7 +35,7 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
@@ -79,10 +79,10 @@ void EnumGenerator::Generate(io::Printer* printer) {
       // Make sure we don't get any duplicate names due to prefix removal.
       while (!used_names.insert(name).second) {
         // It's possible we'll end up giving this warning multiple times, but that's better than not at all.
-        GOOGLE_ABSL_LOG(WARNING) << "Duplicate enum value " << name << " (originally "
+        ABSL_LOG(WARNING) << "Duplicate enum value " << name << " (originally "
                           << original_name << ") in " << descriptor_->name()
                           << "; adding underscore to distinguish";
-        name += "_";
+        absl::StrAppend(&name, "_");
       }
       int number = descriptor_->value(i)->number();
       if (!used_number.insert(number).second) {

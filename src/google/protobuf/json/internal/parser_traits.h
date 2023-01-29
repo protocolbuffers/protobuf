@@ -35,13 +35,11 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/message.h"
 #include "absl/base/attributes.h"
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
@@ -153,11 +151,11 @@ struct ParseProto2Descriptor : Proto2Descriptor {
           RETURN_IF_ERROR(body(desc, wrapper));
 
           if (f->is_repeated()) {
-            msg.msg_->GetReflection()->AddString(msg.msg_, f,
-                                                 dynamic->SerializeAsString());
+            msg.msg_->GetReflection()->AddString(
+                msg.msg_, f, dynamic->SerializePartialAsString());
           } else {
-            msg.msg_->GetReflection()->SetString(msg.msg_, f,
-                                                 dynamic->SerializeAsString());
+            msg.msg_->GetReflection()->SetString(
+                msg.msg_, f, dynamic->SerializePartialAsString());
           }
           return absl::OkStatus();
         });

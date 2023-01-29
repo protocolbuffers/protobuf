@@ -21,8 +21,10 @@ namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR Timestamp::Timestamp(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.seconds_)*/::int64_t{0}
-  , /*decltype(_impl_.nanos_)*/0
+    /* ._impl_.seconds_ = */ ::int64_t{0}
+
+  , /* ._impl_.nanos_ = */ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct TimestampDefaultTypeInternal {
   PROTOBUF_CONSTEXPR TimestampDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -128,8 +130,10 @@ Timestamp::Timestamp(const Timestamp& from)
 inline void Timestamp::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.seconds_){::int64_t{0}}
-    , decltype(_impl_.nanos_){0}
+      decltype(_impl_.seconds_) { ::int64_t{0} }
+
+    , decltype(_impl_.nanos_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -144,7 +148,7 @@ Timestamp::~Timestamp() {
 }
 
 inline void Timestamp::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Timestamp::SetCachedSize(int size) const {
@@ -219,13 +223,15 @@ failure:
   // int64 seconds = 1;
   if (this->_internal_seconds() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt64ToArray(1, this->_internal_seconds(), target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(
+        1, this->_internal_seconds(), target);
   }
 
   // int32 nanos = 2;
   if (this->_internal_nanos() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_nanos(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
+        2, this->_internal_nanos(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -246,12 +252,14 @@ failure:
 
   // int64 seconds = 1;
   if (this->_internal_seconds() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_seconds());
+    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
+        this->_internal_seconds());
   }
 
   // int32 nanos = 2;
   if (this->_internal_nanos() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_nanos());
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+        this->_internal_nanos());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -268,7 +276,7 @@ void Timestamp::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   auto* const _this = static_cast<Timestamp*>(&to_msg);
   auto& from = static_cast<const Timestamp&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

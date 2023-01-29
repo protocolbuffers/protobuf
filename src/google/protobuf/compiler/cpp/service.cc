@@ -212,12 +212,12 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
             ::$proto_ns$::RpcController* controller,
             const ::$proto_ns$::Message* request,
             ::$proto_ns$::Message* response, ::google::protobuf::Closure* done) {
-          GOOGLE_ABSL_DCHECK_EQ(method->service(), $file_level_service_descriptors$[$index$]);
+          ABSL_DCHECK_EQ(method->service(), $file_level_service_descriptors$[$index$]);
           switch (method->index()) {
             $cases$;
 
             default:
-              GOOGLE_ABSL_LOG(FATAL) << "Bad method index; this should never happen.";
+              ABSL_LOG(FATAL) << "Bad method index; this should never happen.";
               break;
           }
         }
@@ -253,12 +253,12 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
       R"cc(
         const ::$proto_ns$::Message& $classname$::Get$which$Prototype(
             const ::$proto_ns$::MethodDescriptor* method) const {
-          GOOGLE_ABSL_DCHECK_EQ(method->service(), descriptor());
+          ABSL_DCHECK_EQ(method->service(), descriptor());
           switch (method->index()) {
             $cases$;
 
             default:
-              GOOGLE_ABSL_LOG(FATAL) << "Bad method index; this should never happen.";
+              ABSL_LOG(FATAL) << "Bad method index; this should never happen.";
               return *::$proto_ns$::MessageFactory::generated_factory()
                           ->GetPrototype(method->$which_type$_type());
           }

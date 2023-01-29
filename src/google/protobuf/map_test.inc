@@ -51,8 +51,8 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
@@ -75,6 +75,9 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+using ::testing::ElementsAre;
+using ::testing::Pair;
 
 namespace google {
 namespace protobuf {
@@ -327,7 +330,7 @@ TEST_F(MapImplTest, MutableAt) {
   ExpectSingleElement(key, value2);
 }
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 
 TEST_F(MapImplTest, MutableAtNonExistDeathTest) {
   EXPECT_DEATH(map_.at(0), "");
@@ -349,11 +352,16 @@ TEST_F(MapImplTest, UsageErrors) {
   MapValueRef value;
   EXPECT_DEATH(
       value.SetFloatValue(0.1),
-      "Protocol Buffer map usage error:\n"
-      "MapValue[Const]*Ref::type MapValue[Const]*Ref is not initialized.");
+      testing::AnyOf(
+        testing::HasSubstr(
+          "Protocol Buffer map usage error:\n"
+          "MapValueRef::type MapValueRef is not initialized."),
+        testing::HasSubstr(
+          "Protocol Buffer map usage error:\n"
+          "MapValueConstRef::type MapValueConstRef is not initialized.")));
 }
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 TEST_F(MapImplTest, MapKeyAssignment) {
   MapKey from, to;
@@ -526,7 +534,7 @@ static void TestOldVersusNewIterator(int skip, Map<int, int>* m) {
   }
   if (it == m->end()) return;
   const IteratorType old = it;
-  GOOGLE_ABSL_LOG(INFO) << "skip=" << skip << ", old->first=" << old->first;
+  ABSL_LOG(INFO) << "skip=" << skip << ", old->first=" << old->first;
   const int target_size =
       initial_size < 100 ? initial_size * 5 : initial_size * 5 / 4;
   for (int i = 0; m->size() <= target_size; i++) {
@@ -554,8 +562,8 @@ static void TestOldVersusNewIterator(int skip, Map<int, int>* m) {
 
 // Create and test an n-element Map, with emphasis on iterator correctness.
 static void StressTestIterators(int n) {
-  GOOGLE_ABSL_LOG(INFO) << "StressTestIterators " << n;
-  GOOGLE_ABSL_CHECK_GT(n, 0);
+  ABSL_LOG(INFO) << "StressTestIterators " << n;
+  ABSL_CHECK_GT(n, 0);
   // Create a random-looking map of size n.  Use non-negative integer keys.
   Map<int, int> m;
   uint32_t frog = 123987 + n;
@@ -567,7 +575,7 @@ static void StressTestIterators(int n) {
     frog += counter++;
     last_key =
         static_cast<int>(frog) >= 0 ? static_cast<int>(frog) : last_key ^ 1;
-    GOOGLE_ABSL_DCHECK_GE(last_key, 0);
+    ABSL_DCHECK_GE(last_key, 0);
     m[last_key] = last_key ^ 1;
   }
   // Test it.
@@ -813,24 +821,6 @@ TEST_F(MapImplTest, Emplace) {
       m, UnorderedElementsAre(Pair(1, "one"), Pair(2, "two"), Pair(42, "aaa")));
 }
 
-#ifndef PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
-
-TEST_F(MapImplTest, EmplaceKeyOnly) {
-  using ::testing::Pair;
-  using ::testing::UnorderedElementsAre;
-
-  Map<int32_t, std::string> m;
-
-  m.emplace(1);
-  EXPECT_EQ(m.size(), 1);
-
-  const int32_t key = 42;
-  m.emplace(key);
-  EXPECT_THAT(m, UnorderedElementsAre(Pair(1, ""), Pair(42, "")));
-}
-
-#else
-
 TEST_F(MapImplTest, ValueTypeHasMoveConstructor) {
   using vt = typename Map<ConstructorTag, ConstructorTag>::value_type;
   ConstructorTag l, r;
@@ -840,8 +830,6 @@ TEST_F(MapImplTest, ValueTypeHasMoveConstructor) {
   EXPECT_EQ(pair.first.invoked_constructor, ConstructorType::kCopy);
   EXPECT_EQ(pair.second.invoked_constructor, ConstructorType::kMove);
 }
-
-#endif  // !PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
 
 TEST_F(MapImplTest, TryEmplaceExisting) {
   Map<int32_t, CountedInstance> m;
@@ -1380,10 +1368,10 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   EXPECT_EQ(m.at(key), 1);
   EXPECT_EQ(cm.at(key), 1);
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
   EXPECT_DEATH(m.at(miss_key), "");
   EXPECT_DEATH(cm.at(miss_key), "");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
   EXPECT_EQ(m.count(key), 1);
   EXPECT_EQ(cm.count(key), 1);
@@ -1418,12 +1406,32 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   EXPECT_THAT(m, UnorderedElementsAre(Pair("ABC", 1), Pair("DEF", 2)));
 }
 
+// Emulate a non-Abseil string_view (e.g. STL when Abseil's alias is disabled).
+class CustomStringView {
+  public:
+    CustomStringView(absl::string_view str) : str_(std::string(str)) {}
+
+    const char* data() const { return str_.data(); }
+    size_t size() const { return str_.size(); }
+
+    bool operator==(const CustomStringView& other) const {
+      return other.str_ == str_;
+    }
+    bool operator==(absl::string_view other) const { return other == str_; }
+    explicit operator std::string() const { return str_; }
+    friend std::ostream& operator<<(std::ostream& out, const CustomStringView& view) {
+      return out << view.str_;
+    }
+
+  private:
+    std::string str_;
+};
+
 TEST_F(MapImplTest, TransparentLookupForString) {
   TestTransparent("ABC", "LKJ");
   TestTransparent(std::string("ABC"), std::string("LKJ"));
-#if defined(__cpp_lib_string_view)
-  TestTransparent(std::string_view("ABC"), std::string_view("LKJ"));
-#endif  // defined(__cpp_lib_string_view)
+  TestTransparent(absl::string_view("ABC"), absl::string_view("LKJ"));
+  TestTransparent(CustomStringView("ABC"), CustomStringView("LKJ"));
 
   // std::reference_wrapper
   std::string abc = "ABC", lkj = "LKJ";
@@ -2310,8 +2318,8 @@ class MyMapEntry
                                 internal::WireFormatLite::TYPE_INT32> {
  public:
   constexpr MyMapEntry() {}
-  MyMapEntry(Arena*) { std::abort(); }
-  Metadata GetMetadata() const override { std::abort(); }
+  MyMapEntry(Arena*) { ABSL_CHECK(false); }
+  Metadata GetMetadata() const override { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };
@@ -2322,7 +2330,7 @@ class MyMapEntryLite
                                     internal::WireFormatLite::TYPE_INT32> {
  public:
   constexpr MyMapEntryLite() {}
-  explicit MyMapEntryLite(Arena*) { std::abort(); }
+  explicit MyMapEntryLite(Arena*) { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };
@@ -2700,9 +2708,7 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   UNITTEST::TestEnumMap to;
   EXPECT_TRUE(to.ParseFromString(data));
   EXPECT_EQ(0, to.unknown_map_field().size());
-  const UnknownFieldSet& unknown_field_set =
-      to.GetReflection()->GetUnknownFields(to);
-  EXPECT_EQ(1, unknown_field_set.field_count());
+  EXPECT_EQ(1, to.GetReflection()->GetUnknownFields(to).field_count());
   EXPECT_EQ(1, to.known_map_field().size());
   EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
 
@@ -2715,6 +2721,20 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   EXPECT_EQ(UNITTEST::E_PROTO2_MAP_ENUM_FOO, from.known_map_field().at(0));
   EXPECT_EQ(1, from.unknown_map_field().size());
   EXPECT_EQ(UNITTEST::E_PROTO2_MAP_ENUM_EXTRA, from.unknown_map_field().at(0));
+
+  // Test the same behavior with the reflection based parser.
+  to.Clear();
+  const char* ptr;
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                             false, &ptr, data);
+  ptr = WireFormat::_InternalParse(&to, ptr, &ctx);
+  ASSERT_TRUE(ptr);
+  ASSERT_TRUE(ctx.EndedAtLimit());
+
+  EXPECT_EQ(0, to.unknown_map_field().size());
+  EXPECT_EQ(1, to.GetReflection()->GetUnknownFields(to).field_count());
+  EXPECT_EQ(1, to.known_map_field().size());
+  EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
 }
 
 TEST(GeneratedMapFieldTest, StandardWireFormat) {
@@ -3263,9 +3283,9 @@ class MapFieldInDynamicMessageTest : public testing::Test {
 
   void SetUp() override {
     map_descriptor_ = pool_->FindMessageTypeByName(
-        std::string(UNITTEST_PACKAGE_NAME) + ".TestMap");
+        absl::StrCat(UNITTEST_PACKAGE_NAME, ".TestMap"));
     recursive_map_descriptor_ = pool_->FindMessageTypeByName(
-        std::string(UNITTEST_PACKAGE_NAME) + ".TestRecursiveMapMessage");
+        absl::StrCat(UNITTEST_PACKAGE_NAME, ".TestRecursiveMapMessage"));
     ASSERT_TRUE(map_descriptor_ != nullptr);
     ASSERT_TRUE(recursive_map_descriptor_ != nullptr);
     map_prototype_ = factory_.GetPrototype(map_descriptor_);
@@ -3659,6 +3679,35 @@ TEST(WireFormatForMapFieldTest, MapParseHelpers) {
   }
 }
 
+std::string WriteVarint(int number, uint64_t v) {
+  uint8_t buf[16];
+  return std::string(buf, WireFormatLite::WriteUInt64ToArray(number, v, buf));
+}
+
+std::string WriteString(int number, const std::string& str) {
+  uint8_t buf[100];
+  return std::string(buf, WireFormatLite::WriteStringToArray(number, str, buf));
+}
+
+TEST(WireFormatForMapFieldTest, BoolWorksWithOverlongValues) {
+  // map<bool, bool> map_bool_bool = 13;
+  for (uint64_t v : {uint64_t{1}, uint64_t{1000}, uint64_t{100000},
+                     uint64_t{1} << 32, uint64_t{1} << 63}) {
+    SCOPED_TRACE(v);
+    std::string payload =
+        WriteString(13, WriteVarint(1, v) + WriteVarint(2, v));
+    UNITTEST::TestMap obj;
+    ASSERT_TRUE(obj.ParseFromString(payload));
+    EXPECT_THAT(obj.map_bool_bool(), ElementsAre(Pair(true, true)));
+
+    io::ArrayInputStream raw_input(payload.data(), payload.size());
+    io::CodedInputStream input(&raw_input);
+    obj.Clear();
+    ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &obj));
+    EXPECT_THAT(obj.map_bool_bool(), ElementsAre(Pair(true, true)));
+  }
+}
+
 // Deterministic Serialization Test ==========================================
 
 template <typename T>
@@ -3770,9 +3819,10 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
   UNITTEST::TestMaps t;
   const std::string filename = "golden_message_maps";
   std::string golden;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(
-      TestUtil::GetTestDataPath("third_party/protobuf/testdata/" + filename),
-      &golden, true));
+  ABSL_CHECK_OK(
+      File::GetContents(TestUtil::GetTestDataPath(absl::StrCat(
+                            "third_party/protobuf/testdata/", filename)),
+                        &golden, true));
   t.ParseFromString(golden);
   *(p.mutable_m()) = t;
   std::vector<std::string> v;
@@ -3812,7 +3862,7 @@ TEST(TextFormatMapTest, DynamicMessage) {
   tester.SetMapFieldsViaReflection(message.get());
 
   std::string expected_text;
-  GOOGLE_ABSL_CHECK_OK(
+  ABSL_CHECK_OK(
       File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
@@ -3828,7 +3878,7 @@ TEST(TextFormatMapTest, Sorted) {
   tester.SetMapFieldsViaReflection(&message);
 
   std::string expected_text;
-  GOOGLE_ABSL_CHECK_OK(
+  ABSL_CHECK_OK(
       File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
@@ -3848,12 +3898,12 @@ TEST(TextFormatMapTest, Sorted) {
 
 TEST(TextFormatMapTest, ParseCorruptedString) {
   std::string serialized_message;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(
+  ABSL_CHECK_OK(File::GetContents(
       TestUtil::GetTestDataPath(
           "third_party/protobuf/testdata/golden_message_maps"),
       &serialized_message, true));
   UNITTEST::TestMaps message;
-  GOOGLE_ABSL_CHECK(message.ParseFromString(serialized_message));
+  ABSL_CHECK(message.ParseFromString(serialized_message));
   TestParseCorruptedString<UNITTEST::TestMaps, true>(message);
   TestParseCorruptedString<UNITTEST::TestMaps, false>(message);
 }
@@ -3915,7 +3965,7 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
   const Reflection* map_entry_reflection = iter->GetReflection();
   const FieldDescriptor* value_field_desc = iter->GetDescriptor()->map_value();
   map_entry_reflection->SetInt32(&(*iter), value_field_desc, 2);
-  GOOGLE_ABSL_LOG(INFO) << iter->DebugString();
+  ABSL_LOG(INFO) << iter->DebugString();
 
   // In previous implementation, the new change won't be reflected in text
   // format, because the previous iterator has been invalidated.

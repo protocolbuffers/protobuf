@@ -52,6 +52,7 @@ class ExtensionGenerator;
 class MessageGenerator {
  public:
   MessageGenerator(const std::string& root_classname,
+                   const std::string& file_descriptor_function_name,
                    const Descriptor* descriptor);
   ~MessageGenerator() = default;
 
@@ -73,6 +74,7 @@ class MessageGenerator {
 
  private:
   const std::string root_classname_;
+  const std::string file_descriptor_function_name_;
   const Descriptor* descriptor_;
   FieldGeneratorMap field_generators_;
   const std::string class_name_;

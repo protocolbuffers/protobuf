@@ -53,6 +53,7 @@ import sys
 
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
+from google.protobuf import message_factory
 from google.protobuf import symbol_database
 
 
@@ -409,7 +410,7 @@ def _CreateMessageFromTypeUrl(type_url, descriptor_pool):
     raise TypeError(
         'Can not find message descriptor by type_url: {0}'.format(type_url)
       ) from e
-  message_class = db.GetPrototype(message_descriptor)
+  message_class = message_factory.GetMessageClass(message_descriptor)
   return message_class()
 
 

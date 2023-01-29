@@ -267,7 +267,7 @@ Struct::~Struct() {
 }
 
 inline void Struct::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fields_.Destruct();
   _impl_.fields_.~MapField();
 }
@@ -404,7 +404,7 @@ void Struct::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBU
   auto* const _this = static_cast<Struct*>(&to_msg);
   auto& from = static_cast<const Struct&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -551,7 +551,7 @@ Value::~Value() {
 }
 
 inline void Value::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (has_kind()) {
     clear_kind();
   }
@@ -712,7 +712,8 @@ failure:
   // double number_value = 2;
   if (kind_case() == kNumberValue) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteDoubleToArray(2, this->_internal_number_value(), target);
+    target = ::_pbi::WireFormatLite::WriteDoubleToArray(
+        2, this->_internal_number_value(), target);
   }
 
   // string string_value = 3;
@@ -728,7 +729,8 @@ failure:
   // bool bool_value = 4;
   if (kind_case() == kBoolValue) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(4, this->_internal_bool_value(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        4, this->_internal_bool_value(), target);
   }
 
   // .google.protobuf.Struct struct_value = 5;
@@ -770,7 +772,7 @@ failure:
     }
     // double number_value = 2;
     case kNumberValue: {
-      total_size += 1 + 8;
+      total_size += 9;
       break;
     }
     // string string_value = 3;
@@ -782,7 +784,7 @@ failure:
     }
     // bool bool_value = 4;
     case kBoolValue: {
-      total_size += 1 + 1;
+      total_size += 2;
       break;
     }
     // .google.protobuf.Struct struct_value = 5;
@@ -817,7 +819,7 @@ void Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF
   auto* const _this = static_cast<Value*>(&to_msg);
   auto& from = static_cast<const Value&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -918,7 +920,7 @@ ListValue::~ListValue() {
 }
 
 inline void ListValue::SharedDtor() {
-  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.values_.~RepeatedPtrField();
 }
 
@@ -1030,7 +1032,7 @@ void ListValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   auto* const _this = static_cast<ListValue*>(&to_msg);
   auto& from = static_cast<const ListValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
-  GOOGLE_ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

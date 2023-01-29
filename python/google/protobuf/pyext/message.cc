@@ -42,7 +42,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -252,10 +252,10 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   if (WKT_classes == nullptr) {
     ScopedPyObjectPtr well_known_types(
         PyImport_ImportModule(PROTOBUF_PYTHON_INTERNAL ".well_known_types"));
-    GOOGLE_ABSL_DCHECK(well_known_types != nullptr);
+    ABSL_DCHECK(well_known_types != nullptr);
 
     WKT_classes = PyObject_GetAttrString(well_known_types.get(), "WKTBASES");
-    GOOGLE_ABSL_DCHECK(WKT_classes != nullptr);
+    ABSL_DCHECK(WKT_classes != nullptr);
   }
 
   PyObject* well_known_class = PyDict_GetItemString(
@@ -680,7 +680,7 @@ bool IsValidUTF8(PyObject* obj) {
 bool AllowInvalidUTF8(const FieldDescriptor* field) { return false; }
 
 PyObject* CheckString(PyObject* arg, const FieldDescriptor* descriptor) {
-  GOOGLE_ABSL_DCHECK(descriptor->type() == FieldDescriptor::TYPE_STRING ||
+  ABSL_DCHECK(descriptor->type() == FieldDescriptor::TYPE_STRING ||
               descriptor->type() == FieldDescriptor::TYPE_BYTES);
   if (descriptor->type() == FieldDescriptor::TYPE_STRING) {
     if (!PyBytes_Check(arg) && !PyUnicode_Check(arg)) {
@@ -784,7 +784,7 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
 namespace cmessage {
 
 PyMessageFactory* GetFactoryForMessage(CMessage* message) {
-  GOOGLE_ABSL_DCHECK(PyObject_TypeCheck(message, CMessage_Type));
+  ABSL_DCHECK(PyObject_TypeCheck(message, CMessage_Type));
   return reinterpret_cast<CMessageClass*>(Py_TYPE(message))->py_message_factory;
 }
 
@@ -856,7 +856,7 @@ int AssureWritable(CMessage* self) {
   }
 
   // Toplevel messages are always mutable.
-  GOOGLE_ABSL_DCHECK(self->parent);
+  ABSL_DCHECK(self->parent);
 
   if (AssureWritable(self->parent) == -1) {
     return -1;
@@ -988,7 +988,7 @@ int DeleteRepeatedField(
   }
 
   Arena* arena = Arena::InternalGetArenaForAllocation(message);
-  GOOGLE_ABSL_DCHECK_EQ(arena, nullptr)
+  ABSL_DCHECK_EQ(arena, nullptr)
       << "python protobuf is expected to be allocated from heap";
   // Remove items, starting from the end.
   for (; length > to; length--) {
@@ -1001,10 +1001,10 @@ int DeleteRepeatedField(
     //
     // To work around a debug hardening (PROTOBUF_FORCE_COPY_IN_RELEASE),
     // explicitly use UnsafeArenaReleaseLast. To not break rare use cases where
-    // arena is used, we fallback to ReleaseLast (but GOOGLE_ABSL_DCHECK to find/fix
+    // arena is used, we fallback to ReleaseLast (but ABSL_DCHECK to find/fix
     // it).
     //
-    // Note that arena is likely null and GOOGLE_ABSL_DCHECK and ReleaesLast might be
+    // Note that arena is likely null and ABSL_DCHECK and ReleaesLast might be
     // redundant. The current approach takes extra cautious path not to disrupt
     // production.
     Message* sub_message =
@@ -1269,8 +1269,8 @@ static void Dealloc(CMessage* self) {
     PyObject_ClearWeakRefs(reinterpret_cast<PyObject*>(self));
   }
   // At this point all dependent objects have been removed.
-  GOOGLE_ABSL_DCHECK(!self->child_submessages || self->child_submessages->empty());
-  GOOGLE_ABSL_DCHECK(!self->composite_fields || self->composite_fields->empty());
+  ABSL_DCHECK(!self->child_submessages || self->child_submessages->empty());
+  ABSL_DCHECK(!self->composite_fields || self->composite_fields->empty());
   delete self->child_submessages;
   delete self->composite_fields;
   if (self->unknown_field_set) {
@@ -1715,7 +1715,7 @@ static PyObject* InternalSerializeToString(
     coded_out.SetSerializationDeterministic(deterministic);
   }
   self->message->SerializeWithCachedSizes(&coded_out);
-  GOOGLE_ABSL_CHECK(!coded_out.HadError());
+  ABSL_CHECK(!coded_out.HadError());
   return result;
 }
 

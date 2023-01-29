@@ -57,9 +57,9 @@ absl::Status ZeroCopyBufferedStream::Advance(size_t bytes) {
   }
 
   if (using_buf_) {
-    GOOGLE_ABSL_DCHECK_LE(cursor_, buffer_start_ + buf_.size());
+    ABSL_DCHECK_LE(cursor_, buffer_start_ + buf_.size());
   } else {
-    GOOGLE_ABSL_DCHECK_LE(cursor_, last_chunk_.size());
+    ABSL_DCHECK_LE(cursor_, last_chunk_.size());
   }
 
   return absl::OkStatus();
@@ -85,12 +85,12 @@ absl::StatusOr<BufferingGuard> ZeroCopyBufferedStream::BufferAtLeast(
     }
     guard = BufferingGuard(this);
   }
-  GOOGLE_ABSL_DCHECK_GE(Unread().size(), bytes);
+  ABSL_DCHECK_GE(Unread().size(), bytes);
   return BufferingGuard(this);
 }
 
 void ZeroCopyBufferedStream::DownRefBuffer() {
-  GOOGLE_ABSL_DCHECK_GT(outstanding_buffer_borrows_, 0);
+  ABSL_DCHECK_GT(outstanding_buffer_borrows_, 0);
 
   --outstanding_buffer_borrows_;
   if (outstanding_buffer_borrows_ > 0 || !using_buf_) {
@@ -103,7 +103,7 @@ void ZeroCopyBufferedStream::DownRefBuffer() {
   size_t last_chunk_in_buf = virtual_buf_len - last_chunk_.size();
   // If we are inside of `last_chunk_`, set the cursor there; otherwise, we have
   // a dangling reference somewhere.
-  GOOGLE_ABSL_DCHECK_LE(last_chunk_in_buf, virtual_buf_len) << absl::StrFormat(
+  ABSL_DCHECK_LE(last_chunk_in_buf, virtual_buf_len) << absl::StrFormat(
       "%d, %d, %d", buf_.size(), last_chunk_.size(), buffer_start_);
   if (cursor_ <= last_chunk_in_buf) {
     cursor_ = 0;

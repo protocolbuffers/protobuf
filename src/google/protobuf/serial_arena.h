@@ -40,13 +40,14 @@
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_config.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -65,11 +66,11 @@ struct ArenaBlock {
 
   ArenaBlock(ArenaBlock* next, size_t size)
       : next(next), cleanup_nodes(nullptr), size(size) {
-    GOOGLE_ABSL_DCHECK_GT(size, sizeof(ArenaBlock));
+    ABSL_DCHECK_GT(size, sizeof(ArenaBlock));
   }
 
   char* Pointer(size_t n) {
-    GOOGLE_ABSL_DCHECK_LE(n, size);
+    ABSL_DCHECK_LE(n, size);
     return reinterpret_cast<char*>(this) + n;
   }
   char* Limit() { return Pointer(size & static_cast<size_t>(-8)); }
@@ -104,11 +105,6 @@ struct FirstSerialArena {
 // used.
 class PROTOBUF_EXPORT SerialArena {
  public:
-  struct Memory {
-    void* ptr;
-    size_t size;
-  };
-
   void CleanupList();
   uint64_t SpaceAllocated() const {
     return space_allocated_.load(std::memory_order_relaxed);
@@ -145,8 +141,8 @@ class PROTOBUF_EXPORT SerialArena {
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n) {
-    GOOGLE_ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
+    ABSL_DCHECK_GE(limit_, ptr());
 
     if (alloc_client == AllocationClient::kArray) {
       if (void* res = TryAllocateFromCachedBlock(n)) {
@@ -237,8 +233,8 @@ class PROTOBUF_EXPORT SerialArena {
  public:
   // Allocate space if the current region provides enough space.
   bool MaybeAllocateAligned(size_t n, void** out) {
-    GOOGLE_ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
+    ABSL_DCHECK_GE(limit_, ptr());
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) return false;
     *out = AllocateFromExisting(n);
     return true;
@@ -249,7 +245,7 @@ class PROTOBUF_EXPORT SerialArena {
   // and the memory returned is uninitialized.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void* MaybeAllocateWithCleanup() {
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(limit_, ptr());
     static_assert(!std::is_trivially_destructible<T>::value,
                   "This function is only for non-trivial types.");
 
@@ -291,7 +287,7 @@ class PROTOBUF_EXPORT SerialArena {
     PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
     void* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
     set_ptr(ptr() + n);
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(limit_, ptr());
     AddCleanupFromExisting(ret, destructor);
     return ret;
   }
@@ -303,7 +299,7 @@ class PROTOBUF_EXPORT SerialArena {
 
     PROTOBUF_UNPOISON_MEMORY_REGION(limit_ - n, n);
     limit_ -= n;
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(limit_, ptr());
     cleanup::CreateNode(tag, limit_, elem, destructor);
   }
 
@@ -314,10 +310,10 @@ class PROTOBUF_EXPORT SerialArena {
   // future allocations.
   // The `parent` arena must outlive the serial arena, which is guaranteed
   // because the parent manages the lifetime of the serial arenas.
-  static SerialArena* New(SerialArena::Memory mem, ThreadSafeArena& parent);
+  static SerialArena* New(SizedPtr mem, ThreadSafeArena& parent);
   // Free SerialArena returning the memory passed in to New
   template <typename Deallocator>
-  Memory Free(Deallocator deallocator);
+  SizedPtr Free(Deallocator deallocator);
 
   // Members are declared here to track sizeof(SerialArena) and hotness
   // centrally. They are (roughly) laid out in descending order of hotness.

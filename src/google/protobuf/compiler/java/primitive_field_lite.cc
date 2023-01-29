@@ -37,7 +37,7 @@
 #include <cstdint>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
@@ -70,14 +70,14 @@ void SetPrimitiveVariables(
     Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
-  (*variables)["type"] = PrimitiveTypeName(javaType);
-  (*variables)["boxed_type"] = BoxedPrimitiveTypeName(javaType);
-  (*variables)["kt_type"] = KotlinTypeName(javaType);
+  (*variables)["type"] = std::string(PrimitiveTypeName(javaType));
+  (*variables)["boxed_type"] = std::string(BoxedPrimitiveTypeName(javaType));
+  (*variables)["kt_type"] = std::string(KotlinTypeName(javaType));
   variables->insert({"field_type", (*variables)["type"]});
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
-  (*variables)["capitalized_type"] = GetCapitalizedType(
-      descriptor, /* immutable = */ true, context->options());
+  (*variables)["capitalized_type"] = std::string(GetCapitalizedType(
+      descriptor, /* immutable = */ true, context->options()));
   (*variables)["tag"] =
       absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = absl::StrCat(
@@ -126,7 +126,7 @@ void SetPrimitiveVariables(
 
   if (javaType == JAVATYPE_BYTES) {
     (*variables)["bytes_default"] =
-        absl::AsciiStrToUpper(name) + "_DEFAULT_VALUE";
+        absl::StrCat(absl::AsciiStrToUpper(name), "_DEFAULT_VALUE");
   }
 
   if (IsReferenceType(javaType)) {
@@ -157,9 +157,9 @@ void SetPrimitiveVariables(
 
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
-        GenerateSetBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
     (*variables)["clear_has_field_bit_message"] =
-        GenerateClearBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateClearBit(messageBitIndex), ";");
 
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
@@ -182,7 +182,7 @@ void SetPrimitiveVariables(
       default:
         variables->insert(
             {"is_field_present_message",
-             absl::StrCat(name, "_ != " + (*variables)["default"])});
+             absl::StrCat(name, "_ != ", (*variables)["default"])});
         break;
     }
   }
@@ -394,7 +394,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateInitializationCode(
 }
 
 std::string ImmutablePrimitiveFieldLiteGenerator::GetBoxedType() const {
-  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
+  return std::string(BoxedPrimitiveTypeName(GetJavaType(descriptor_)));
 }
 
 // ===================================================================
@@ -416,7 +416,7 @@ ImmutablePrimitiveOneofFieldLiteGenerator::
 void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -464,7 +464,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateFieldInfo(
 
 void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(HasHazzer(descriptor_));
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -796,7 +796,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateInitializationCode(
 }
 
 std::string RepeatedImmutablePrimitiveFieldLiteGenerator::GetBoxedType() const {
-  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
+  return std::string(BoxedPrimitiveTypeName(GetJavaType(descriptor_)));
 }
 
 }  // namespace java

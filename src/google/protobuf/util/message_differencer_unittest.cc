@@ -46,8 +46,10 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/functional/bind_front.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/any_test.pb.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
@@ -1856,7 +1858,7 @@ TEST(MessageDifferencerTest, PrintMapKeysTest) {
       diff_with_any);
 }
 
-static const char* const kIgnoredFields[] = {"rm.b", "rm.m.b"};
+static constexpr absl::string_view kIgnoredFields[] = {"rm.b", "rm.m.b"};
 
 class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
  public:
@@ -1865,12 +1867,12 @@ class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
                  const std::vector<util::MessageDifferencer::SpecificField>&
                      parent_fields) override {
     std::string name = "";
-    for (int i = 0; i < parent_fields.size(); ++i) {
-      name += parent_fields[i].field->name() + ".";
+    for (size_t i = 0; i < parent_fields.size(); ++i) {
+      absl::StrAppend(&name, parent_fields[i].field->name(), ".");
     }
-    name += field->name();
-    for (int i = 0; i < ABSL_ARRAYSIZE(kIgnoredFields); ++i) {
-      if (name.compare(kIgnoredFields[i]) == 0) {
+    absl::StrAppend(&name, field->name());
+    for (size_t i = 0; i < ABSL_ARRAYSIZE(kIgnoredFields); ++i) {
+      if (name == kIgnoredFields[i]) {
         return true;
       }
     }
@@ -2440,8 +2442,9 @@ class ComparisonTest : public testing::Test {
     }
 
     if (!map_field_.empty() && !map_key_.empty()) {
-      d->TreatAsMap(GetFieldDescriptor(message, map_field_),
-                    GetFieldDescriptor(message, map_field_ + "." + map_key_));
+      d->TreatAsMap(
+          GetFieldDescriptor(message, map_field_),
+          GetFieldDescriptor(message, absl::StrCat(map_field_, ".", map_key_)));
     }
   }
 

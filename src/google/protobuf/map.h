@@ -46,17 +46,15 @@
 #include <type_traits>
 #include <utility>
 
-#if defined(__cpp_lib_string_view)
-#include <string_view>
-#endif  // defined(__cpp_lib_string_view)
-
 #if !defined(GOOGLE_PROTOBUF_NO_RDTSC) && defined(__APPLE__)
 #include <mach/mach_time.h>
 #endif
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/container/btree_map.h"
+#include "absl/hash/hash.h"
 #include "absl/meta/type_traits.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/map_type_handler.h"
@@ -229,52 +227,69 @@ struct TransparentSupport {
   using key_arg = key_type;
 };
 
-#if defined(__cpp_lib_string_view)
-// If std::string_view is available, we add transparent support for std::string
-// keys. We use std::hash<std::string_view> as it supports the input types we
-// care about. The lookup functions accept arbitrary `K`. This will include any
-// key type that is convertible to std::string_view.
+// We add transparent support for std::string keys. We use
+// std::hash<absl::string_view> as it supports the input types we care about.
+// The lookup functions accept arbitrary `K`. This will include any key type
+// that is convertible to absl::string_view.
 template <>
 struct TransparentSupport<std::string> {
-  static std::string_view ImplicitConvert(std::string_view str) { return str; }
-  // If the element is not convertible to std::string_view, try to convert to
-  // std::string first.
-  // The template makes this overload lose resolution when both have the same
-  // rank otherwise.
-  template <typename = void>
-  static std::string_view ImplicitConvert(const std::string& str) {
-    return str;
+  // If the element is not convertible to absl::string_view, try to convert to
+  // std::string first, and then fallback to support for converting from
+  // std::string_view. The ranked overload pattern is used to specify our
+  // order of preference.
+  struct Rank0 {};
+  struct Rank1 : Rank0 {};
+  struct Rank2 : Rank1 {};
+  template <typename T, typename = std::enable_if_t<
+                            std::is_convertible<T, absl::string_view>::value>>
+  static absl::string_view ImplicitConvertImpl(T&& str, Rank2) {
+    absl::string_view ref = str;
+    return ref;
+  }
+  template <typename T, typename = std::enable_if_t<
+                            std::is_convertible<T, const std::string&>::value>>
+  static absl::string_view ImplicitConvertImpl(T&& str, Rank1) {
+    const std::string& ref = str;
+    return ref;
+  }
+  template <typename T>
+  static absl::string_view ImplicitConvertImpl(T&& str, Rank0) {
+    return {str.data(), str.size()};
   }
 
-  struct hash : private std::hash<std::string_view> {
+  template <typename T>
+  static absl::string_view ImplicitConvert(T&& str) {
+    return ImplicitConvertImpl(std::forward<T>(str), Rank2{});
+  }
+
+  struct hash : public absl::Hash<absl::string_view> {
     using is_transparent = void;
 
     template <typename T>
-    size_t operator()(const T& str) const {
-      return base()(ImplicitConvert(str));
+    size_t operator()(T&& str) const {
+      return absl::Hash<absl::string_view>::operator()(
+          ImplicitConvert(std::forward<T>(str)));
     }
-
-   private:
-    const std::hash<std::string_view>& base() const { return *this; }
   };
   struct less {
     using is_transparent = void;
 
     template <typename T, typename U>
-    bool operator()(const T& t, const U& u) const {
-      return ImplicitConvert(t) < ImplicitConvert(u);
+    bool operator()(T&& t, U&& u) const {
+      return ImplicitConvert(std::forward<T>(t)) <
+             ImplicitConvert(std::forward<U>(u));
     }
   };
 
   template <typename T, typename U>
-  static bool Equals(const T& t, const U& u) {
-    return ImplicitConvert(t) == ImplicitConvert(u);
+  static bool Equals(T&& t, U&& u) {
+    return ImplicitConvert(std::forward<T>(t)) ==
+           ImplicitConvert(std::forward<U>(u));
   }
 
   template <typename K>
   using key_arg = K;
 };
-#endif  // defined(__cpp_lib_string_view)
 
 struct NodeBase {
   // Align the node to allow KeyNode to predict the location of the key.
@@ -300,7 +315,7 @@ inline bool TableEntryIsTooLong(NodeBase* node) {
     node = node->next;
   } while (node != nullptr);
   // Invariant: no linked list ever is more than kMaxLength in length.
-  GOOGLE_ABSL_DCHECK_LE(count, kMaxLength);
+  ABSL_DCHECK_LE(count, kMaxLength);
   return count >= kMaxLength;
 }
 
@@ -339,21 +354,21 @@ inline bool TableEntryIsNonEmptyList(TableEntryPtr entry) {
   return !TableEntryIsEmpty(entry) && TableEntryIsList(entry);
 }
 inline NodeBase* TableEntryToNode(TableEntryPtr entry) {
-  GOOGLE_ABSL_DCHECK(TableEntryIsList(entry));
+  ABSL_DCHECK(TableEntryIsList(entry));
   return reinterpret_cast<NodeBase*>(static_cast<uintptr_t>(entry));
 }
 inline TableEntryPtr NodeToTableEntry(NodeBase* node) {
-  GOOGLE_ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
+  ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
   return static_cast<TableEntryPtr>(reinterpret_cast<uintptr_t>(node));
 }
 template <typename Tree>
 Tree* TableEntryToTree(TableEntryPtr entry) {
-  GOOGLE_ABSL_DCHECK(TableEntryIsTree(entry));
+  ABSL_DCHECK(TableEntryIsTree(entry));
   return reinterpret_cast<Tree*>(static_cast<uintptr_t>(entry) - 1);
 }
 template <typename Tree>
 TableEntryPtr TreeToTableEntry(Tree* node) {
-  GOOGLE_ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
+  ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
   return static_cast<TableEntryPtr>(reinterpret_cast<uintptr_t>(node) | 1);
 }
 
@@ -538,8 +553,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   TableEntryPtr* CreateEmptyTable(size_type n) {
-    GOOGLE_ABSL_DCHECK_GE(n, size_type{kMinTableSize});
-    GOOGLE_ABSL_DCHECK_EQ(n & (n - 1), 0u);
+    ABSL_DCHECK_GE(n, size_type{kMinTableSize});
+    ABSL_DCHECK_EQ(n & (n - 1), 0u);
     TableEntryPtr* result = AllocFor<TableEntryPtr>(alloc_).allocate(n);
     memset(result, 0, n * sizeof(result[0]));
     return result;
@@ -668,7 +683,7 @@ class KeyMapBase : public UntypedMapBase {
     // Advance through buckets, looking for the first that isn't empty.
     // If nothing non-empty is found then leave node_ == nullptr.
     void SearchFrom(size_type start_bucket) {
-      GOOGLE_ABSL_DCHECK(m_->index_of_first_non_null_ == m_->num_buckets_ ||
+      ABSL_DCHECK(m_->index_of_first_non_null_ == m_->num_buckets_ ||
                   !m_->TableEntryIsEmpty(m_->index_of_first_non_null_));
       for (size_type i = start_bucket; i < m_->num_buckets_; ++i) {
         TableEntryPtr entry = m_->table_[i];
@@ -678,7 +693,7 @@ class KeyMapBase : public UntypedMapBase {
           node_ = static_cast<KeyNode*>(TableEntryToNode(entry));
         } else {
           Tree* tree = TableEntryToTree<Tree>(entry);
-          GOOGLE_ABSL_DCHECK(!tree->empty());
+          ABSL_DCHECK(!tree->empty());
           node_ = static_cast<KeyNode*>(tree->begin()->second);
         }
         return;
@@ -717,12 +732,12 @@ class KeyMapBase : public UntypedMapBase {
     TreeIterator tree_it;
     const bool is_list = revalidate_if_necessary(b, node, &tree_it);
     if (is_list) {
-      GOOGLE_ABSL_DCHECK(TableEntryIsNonEmptyList(b));
+      ABSL_DCHECK(TableEntryIsNonEmptyList(b));
       auto* head = TableEntryToNode(table_[b]);
       head = EraseFromLinkedList(node, head);
       table_[b] = NodeToTableEntry(head);
     } else {
-      GOOGLE_ABSL_DCHECK(this->TableEntryIsTree(b));
+      ABSL_DCHECK(this->TableEntryIsTree(b));
       Tree* tree = internal::TableEntryToTree<Tree>(this->table_[b]);
       if (tree_it != tree->begin()) {
         auto* prev = std::prev(tree_it)->second;
@@ -775,13 +790,13 @@ class KeyMapBase : public UntypedMapBase {
   // Requires count(*KeyPtrFromNodePtr(node)) == 0 and that b is the correct
   // bucket.  num_elements_ is not modified.
   void InsertUnique(size_type b, KeyNode* node) {
-    GOOGLE_ABSL_DCHECK(index_of_first_non_null_ == num_buckets_ ||
+    ABSL_DCHECK(index_of_first_non_null_ == num_buckets_ ||
                 !TableEntryIsEmpty(index_of_first_non_null_));
     // In practice, the code that led to this point may have already
     // determined whether we are inserting into an empty list, a short list,
     // or whatever.  But it's probably cheap enough to recompute that here;
     // it's likely that we're inserting into an empty or short list.
-    GOOGLE_ABSL_DCHECK(FindHelper(node->key()).node == nullptr);
+    ABSL_DCHECK(FindHelper(node->key()).node == nullptr);
     if (TableEntryIsEmpty(b)) {
       InsertUniqueInList(b, node);
       index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
@@ -791,7 +806,7 @@ class KeyMapBase : public UntypedMapBase {
       if (TableEntryIsNonEmptyList(b)) {
         TreeConvert(b);
       }
-      GOOGLE_ABSL_DCHECK(TableEntryIsTree(b))
+      ABSL_DCHECK(TableEntryIsTree(b))
           << (void*)table_[b] << " " << (uintptr_t)table_[b];
       InsertUniqueInTree(b, node);
       index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
@@ -864,7 +879,7 @@ class KeyMapBase : public UntypedMapBase {
       return;
     }
 
-    GOOGLE_ABSL_DCHECK_GE(new_num_buckets, kMinTableSize);
+    ABSL_DCHECK_GE(new_num_buckets, kMinTableSize);
     const auto old_table = table_;
     const size_type old_table_size = num_buckets_;
     num_buckets_ = new_num_buckets;
@@ -898,12 +913,12 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   void TreeConvert(size_type b) {
-    GOOGLE_ABSL_DCHECK(!TableEntryIsTree(b));
+    ABSL_DCHECK(!TableEntryIsTree(b));
     Tree* tree =
         Arena::Create<Tree>(alloc_.arena(), typename Tree::key_compare(),
                             typename Tree::allocator_type(alloc_));
     size_type count = CopyListToTree(b, tree);
-    GOOGLE_ABSL_DCHECK_EQ(count, tree->size());
+    ABSL_DCHECK_EQ(count, tree->size());
     table_[b] = TreeToTableEntry(tree);
     // Relink the nodes.
     NodeBase* next = nullptr;
@@ -981,42 +996,9 @@ class KeyMapBase : public UntypedMapBase {
 
 }  // namespace internal
 
-#ifdef PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
 // This is the class for Map's internal value_type.
 template <typename Key, typename T>
 using MapPair = std::pair<const Key, T>;
-#else
-// This is the class for Map's internal value_type. Instead of using
-// std::pair as value_type, we use this class which provides us more control of
-// its process of construction and destruction.
-template <typename Key, typename T>
-struct PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG MapPair {
-  using first_type = const Key;
-  using second_type = T;
-
-  MapPair(const Key& other_first, const T& other_second)
-      : first(other_first), second(other_second) {}
-  explicit MapPair(const Key& other_first) : first(other_first), second() {}
-  explicit MapPair(Key&& other_first)
-      : first(std::move(other_first)), second() {}
-  MapPair(const MapPair& other) : first(other.first), second(other.second) {}
-
-  ~MapPair() {}
-
-  // Implicitly convertible to std::pair of compatible types.
-  template <typename T1, typename T2>
-  operator std::pair<T1, T2>() const {  // NOLINT(runtime/explicit)
-    return std::pair<T1, T2>(first, second);
-  }
-
-  const Key first;
-  T second;
-
- private:
-  friend class Arena;
-  friend class Map<Key, T>;
-};
-#endif
 
 // Map is an associative container type used to store protobuf map
 // fields.  Each Map instance may or may not use a different hash function, a
@@ -1088,7 +1070,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
  private:
-#ifdef PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
   static_assert(!std::is_const<mapped_type>::value &&
                     !std::is_const<key_type>::value,
                 "We do not support const types.");
@@ -1101,9 +1082,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   static_assert(!std::is_reference<mapped_type>::value &&
                     !std::is_reference<key_type>::value,
                 "We do not support reference types.");
-#endif  // PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
-#ifdef PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
     static_assert(alignof(internal::NodeBase) >= alignof(mapped_type),
                   "Alignment of mapped type is too high.");
     static_assert(
@@ -1119,7 +1098,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                       internal::is_internal_map_value_type<mapped_type>>::value,
                   "We only support scalar, Message, and designated internal "
                   "mapped types.");
-#endif  // PROTOBUF_FUTURE_CONTAINER_STATIC_ASSERTS
   }
 
   template <typename P>
@@ -1254,14 +1232,14 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   template <typename K = key_type>
   const T& at(const key_arg<K>& key) const {
     const_iterator it = find(key);
-    GOOGLE_ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
+    ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
   }
 
   template <typename K = key_type>
   T& at(const key_arg<K>& key) {
     iterator it = find(key);
-    GOOGLE_ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
+    ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
   }
 
@@ -1365,7 +1343,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   iterator erase(iterator pos) {
     auto next = std::next(pos);
-    GOOGLE_ABSL_DCHECK_EQ(pos.m_, static_cast<Base*>(this));
+    ABSL_DCHECK_EQ(pos.m_, static_cast<Base*>(this));
     auto* node = static_cast<Node*>(pos.node_);
     this->erase_no_destroy(pos.bucket_index_, node);
     DestroyNode(node);

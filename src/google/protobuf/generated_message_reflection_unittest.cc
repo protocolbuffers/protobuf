@@ -51,7 +51,7 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
@@ -101,7 +101,7 @@ using ::testing::Property;
 const FieldDescriptor* F(const std::string& name) {
   const FieldDescriptor* result =
       unittest::TestAllTypes::descriptor()->FindFieldByName(name);
-  GOOGLE_ABSL_CHECK(result != nullptr);
+  ABSL_CHECK(result != nullptr);
   return result;
 }
 
@@ -1273,7 +1273,7 @@ TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
   EXPECT_TRUE(released == nullptr);
 }
 
-#if PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {
   unittest::TestAllTypes message;
@@ -1320,7 +1320,7 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Problem     : Field does not match message type.");
 }
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 
 using internal::IsDescendant;

@@ -145,7 +145,7 @@ class PROTOBUF_EXPORT Api final :
   }
   void UnsafeArenaSwap(Api* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -400,7 +400,7 @@ class PROTOBUF_EXPORT Method final :
   }
   void UnsafeArenaSwap(Method* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -521,17 +521,21 @@ class PROTOBUF_EXPORT Method final :
   void clear_request_streaming() ;
   bool request_streaming() const;
   void set_request_streaming(bool value);
+
   private:
   bool _internal_request_streaming() const;
   void _internal_set_request_streaming(bool value);
+
   public:
   // bool response_streaming = 5;
   void clear_response_streaming() ;
   bool response_streaming() const;
   void set_response_streaming(bool value);
+
   private:
   bool _internal_response_streaming() const;
   void _internal_set_response_streaming(bool value);
+
   public:
   // .google.protobuf.Syntax syntax = 7;
   void clear_syntax() ;
@@ -630,7 +634,7 @@ class PROTOBUF_EXPORT Mixin final :
   }
   void UnsafeArenaSwap(Mixin* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -1148,20 +1152,21 @@ inline void Method::set_allocated_request_type_url(std::string* request_type_url
 inline void Method::clear_request_streaming() {
   _impl_.request_streaming_ = false;
 }
-inline bool Method::_internal_request_streaming() const {
-  return _impl_.request_streaming_;
-}
 inline bool Method::request_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.request_streaming)
   return _internal_request_streaming();
 }
-inline void Method::_internal_set_request_streaming(bool value) {
-
-  _impl_.request_streaming_ = value;
-}
 inline void Method::set_request_streaming(bool value) {
+  ;
   _internal_set_request_streaming(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_streaming)
+}
+inline bool Method::_internal_request_streaming() const {
+  return _impl_.request_streaming_;
+}
+inline void Method::_internal_set_request_streaming(bool value) {
+  ;
+  _impl_.request_streaming_ = value;
 }
 
 // string response_type_url = 4;
@@ -1213,20 +1218,21 @@ inline void Method::set_allocated_response_type_url(std::string* response_type_u
 inline void Method::clear_response_streaming() {
   _impl_.response_streaming_ = false;
 }
-inline bool Method::_internal_response_streaming() const {
-  return _impl_.response_streaming_;
-}
 inline bool Method::response_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.response_streaming)
   return _internal_response_streaming();
 }
-inline void Method::_internal_set_response_streaming(bool value) {
-
-  _impl_.response_streaming_ = value;
-}
 inline void Method::set_response_streaming(bool value) {
+  ;
   _internal_set_response_streaming(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_streaming)
+}
+inline bool Method::_internal_response_streaming() const {
+  return _impl_.response_streaming_;
+}
+inline void Method::_internal_set_response_streaming(bool value) {
+  ;
+  _impl_.response_streaming_ = value;
 }
 
 // repeated .google.protobuf.Option options = 6;

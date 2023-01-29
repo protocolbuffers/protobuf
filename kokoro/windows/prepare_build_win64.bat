@@ -44,4 +44,7 @@ set BAZEL_FLAGS=--enable_runfiles --keep_going --test_output=errors ^
   --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/%KOKORO_JOB_NAME%
 
 @rem Regenerate stale CMake configs.
+@rem LINT.IfChange(staleness_tests)
 bazel test //src:cmake_lists_staleness_test || call bazel-bin\src\cmake_lists_staleness_test.exe --fix
+bazel test //src/google/protobuf:well_known_types_staleness_test || call bazel-bin\src\google\protobuf\well_known_types_staleness_test.exe --fix
+@rem LINT.ThenChange(//depot/google3/third_party/protobuf/github/regenerate_stale_files.sh)

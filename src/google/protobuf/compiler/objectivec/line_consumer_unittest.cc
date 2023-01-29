@@ -55,7 +55,7 @@ class TestLineCollector : public LineConsumer {
   bool ConsumeLine(absl::string_view line, std::string* out_error) override {
     if (reject_ && *reject_ == line) {
       if (!skip_msg_) {
-        *out_error = std::string("Rejected '") + *reject_ + "'";
+        *out_error = absl::StrCat("Rejected '", *reject_, "'");
       }
       return false;
     }

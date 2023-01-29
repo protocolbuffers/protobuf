@@ -118,12 +118,12 @@ class PROTOBUF_EXPORT Any final :
   // implements Any -----------------------------------------------
 
   bool PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message) {
-    GOOGLE_ABSL_DCHECK_NE(&message, this);
+    ABSL_DCHECK_NE(&message, this);
     return _impl_._any_metadata_.PackFrom(GetArena(), message);
   }
   bool PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message,
                 ::absl::string_view type_url_prefix) {
-    GOOGLE_ABSL_DCHECK_NE(&message, this);
+    ABSL_DCHECK_NE(&message, this);
     return _impl_._any_metadata_.PackFrom(GetArena(), message, type_url_prefix);
   }
   bool UnpackTo(::PROTOBUF_NAMESPACE_ID::Message* message) const {
@@ -168,7 +168,7 @@ class PROTOBUF_EXPORT Any final :
   }
   void UnsafeArenaSwap(Any* other) {
     if (other == this) return;
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 

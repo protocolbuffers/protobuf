@@ -187,7 +187,7 @@ with info about your project (name and website) so we can add an entry for you.
 1.  ygot
 
     *   Website: https://github.com/openconfig/ygot
-    *   Extensions: 1040
+    *   Extensions: 1040, 1179, 1180
 
 1.  go-grpcmw
 

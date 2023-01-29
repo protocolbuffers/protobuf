@@ -80,6 +80,7 @@ message TestMessageSetExtension3 {
     optional TestMessageSetExtension3 message_set_extension = 195273129;
   }
   optional NestedTestInt msg = 35;
+  required int32 required_int = 36;
 }
 
 // This message was used to generate

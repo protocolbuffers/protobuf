@@ -32,7 +32,7 @@
 
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
@@ -59,8 +59,8 @@ const char* kOuterClassNameSuffix = "OuterClass";
 //   Full name   : foo.Bar.Baz
 //   Package name: foo
 //   After strip : Bar.Baz
-std::string StripPackageName(const std::string& full_name,
-                             const FileDescriptor* file) {
+absl::string_view StripPackageName(absl::string_view full_name,
+                                   const FileDescriptor* file) {
   if (file->package().empty()) {
     return full_name;
   } else {
@@ -72,7 +72,8 @@ std::string StripPackageName(const std::string& full_name,
 // Get the name of a message's Java class without package name prefix.
 std::string ClassNameWithoutPackage(const Descriptor* descriptor,
                                     bool immutable) {
-  return StripPackageName(descriptor->full_name(), descriptor->file());
+  return std::string(
+      StripPackageName(descriptor->full_name(), descriptor->file()));
 }
 
 std::string ClassNameWithoutPackageKotlin(const Descriptor* descriptor) {
@@ -80,7 +81,7 @@ std::string ClassNameWithoutPackageKotlin(const Descriptor* descriptor) {
   const Descriptor* temp = descriptor->containing_type();
 
   while (temp) {
-    result = temp->name() + "Kt." + result;
+    result = absl::StrCat(temp->name(), "Kt.", result);
     temp = temp->containing_type();
   }
   return result;
@@ -94,23 +95,23 @@ std::string ClassNameWithoutPackage(const EnumDescriptor* descriptor,
   if (message_descriptor == NULL) {
     return descriptor->name();
   } else {
-    return ClassNameWithoutPackage(message_descriptor, immutable) + "." +
-           descriptor->name();
+    return absl::StrCat(ClassNameWithoutPackage(message_descriptor, immutable),
+                        ".", descriptor->name());
   }
 }
 
 // Get the name of a service's Java class without package name prefix.
 std::string ClassNameWithoutPackage(const ServiceDescriptor* descriptor,
                                     bool immutable) {
-  std::string full_name =
+  absl::string_view full_name =
       StripPackageName(descriptor->full_name(), descriptor->file());
   // We don't allow nested service definitions.
-  GOOGLE_ABSL_CHECK(full_name.find('.') == std::string::npos);
-  return full_name;
+  ABSL_CHECK(!absl::StrContains(full_name, '.'));
+  return std::string(full_name);
 }
 
 // Return true if a and b are equals (case insensitive).
-NameEquality CheckNameEquality(const std::string& a, const std::string& b) {
+NameEquality CheckNameEquality(absl::string_view a, absl::string_view b) {
   if (absl::AsciiStrToUpper(a) == absl::AsciiStrToUpper(b)) {
     if (a == b) {
       return NameEquality::EXACT_EQUAL;
@@ -122,7 +123,7 @@ NameEquality CheckNameEquality(const std::string& a, const std::string& b) {
 
 // Check whether a given message or its nested types has the given class name.
 bool MessageHasConflictingClassName(const Descriptor* message,
-                                    const std::string& classname,
+                                    absl::string_view classname,
                                     NameEquality equality_mode) {
   if (CheckNameEquality(message->name(), classname) == equality_mode) {
     return true;
@@ -181,18 +182,18 @@ std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
 std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
                                                 bool immutable, bool kotlin) {
   if (kotlin) {
-    return GetFileImmutableClassName(file) + "Kt";
+    return absl::StrCat(GetFileImmutableClassName(file), "Kt");
   } else if (immutable) {
     return GetFileImmutableClassName(file);
   } else {
-    return "Mutable" + GetFileImmutableClassName(file);
+    return absl::StrCat("Mutable", GetFileImmutableClassName(file));
   }
 }
 
 // Check whether there is any type defined in the proto file that has
 // the given class name.
 bool ClassNameResolver::HasConflictingClassName(const FileDescriptor* file,
-                                                const std::string& classname,
+                                                absl::string_view classname,
                                                 NameEquality equality_mode) {
   for (int i = 0; i < file->enum_type_count(); i++) {
     if (CheckNameEquality(file->enum_type(i)->name(), classname) ==
@@ -220,7 +221,7 @@ std::string ClassNameResolver::GetDescriptorClassName(
   if (options_.opensource_runtime) {
     return GetFileImmutableClassName(file);
   } else {
-    return GetFileImmutableClassName(file) + "InternalDescriptors";
+    return absl::StrCat(GetFileImmutableClassName(file), "InternalDescriptors");
   }
 }
 
@@ -240,14 +241,14 @@ std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
 // Get the full name of a Java class by prepending the Java package name
 // or outer class name.
 std::string ClassNameResolver::GetClassFullName(
-    const std::string& name_without_package, const FileDescriptor* file,
+    absl::string_view name_without_package, const FileDescriptor* file,
     bool immutable, bool is_own_file) {
   return GetClassFullName(name_without_package, file, immutable, is_own_file,
                           false);
 }
 
 std::string ClassNameResolver::GetClassFullName(
-    const std::string& name_without_package, const FileDescriptor* file,
+    absl::string_view name_without_package, const FileDescriptor* file,
     bool immutable, bool is_own_file, bool kotlin) {
   std::string result;
   if (is_own_file) {
@@ -256,10 +257,10 @@ std::string ClassNameResolver::GetClassFullName(
     result = GetClassName(file, immutable, kotlin);
   }
   if (!result.empty()) {
-    result += '.';
+    absl::StrAppend(&result, ".");
   }
-  result += name_without_package;
-  if (kotlin) result += "Kt";
+  absl::StrAppend(&result, name_without_package);
+  if (kotlin) absl::StrAppend(&result, "Kt");
   return result;
 }
 
@@ -301,13 +302,13 @@ std::string ClassNameResolver::GetClassName(const ServiceDescriptor* descriptor,
 
 // Get the Java Class style full name of a message.
 std::string ClassNameResolver::GetJavaClassFullName(
-    const std::string& name_without_package, const FileDescriptor* file,
+    absl::string_view name_without_package, const FileDescriptor* file,
     bool immutable) {
   return GetJavaClassFullName(name_without_package, file, immutable, false);
 }
 
 std::string ClassNameResolver::GetJavaClassFullName(
-    const std::string& name_without_package, const FileDescriptor* file,
+    absl::string_view name_without_package, const FileDescriptor* file,
     bool immutable, bool kotlin) {
   std::string result;
   if (MultipleJavaFiles(file, immutable)) {
@@ -328,14 +329,15 @@ std::string ClassNameResolver::GetExtensionIdentifierName(
 
 std::string ClassNameResolver::GetExtensionIdentifierName(
     const FieldDescriptor* descriptor, bool immutable, bool kotlin) {
-  return GetClassName(descriptor->containing_type(), immutable, kotlin) + "." +
-         descriptor->name();
+  return absl::StrCat(
+      GetClassName(descriptor->containing_type(), immutable, kotlin), ".",
+      descriptor->name());
 }
 
 std::string ClassNameResolver::GetKotlinFactoryName(
     const Descriptor* descriptor) {
   std::string name = ToCamelCase(descriptor->name(), /* lower_first = */ true);
-  return IsForbiddenKotlin(name) ? name + "_" : name;
+  return IsForbiddenKotlin(name) ? absl::StrCat(name, "_") : name;
 }
 
 std::string ClassNameResolver::GetJavaImmutableClassName(
@@ -370,14 +372,14 @@ std::string ClassNameResolver::GetJavaMutableClassName(
 
 std::string ClassNameResolver::GetDowngradedFileClassName(
     const FileDescriptor* file) {
-  return "Downgraded" + GetFileClassName(file, false);
+  return absl::StrCat("Downgraded", GetFileClassName(file, false));
 }
 
 std::string ClassNameResolver::GetDowngradedClassName(
     const Descriptor* descriptor) {
-  return FileJavaPackage(descriptor->file(), true, options_) + "." +
-         GetDowngradedFileClassName(descriptor->file()) + "." +
-         ClassNameWithoutPackage(descriptor, false);
+  return absl::StrCat(FileJavaPackage(descriptor->file(), true, options_), ".",
+                      GetDowngradedFileClassName(descriptor->file()), ".",
+                      ClassNameWithoutPackage(descriptor, false));
 }
 
 }  // namespace java
