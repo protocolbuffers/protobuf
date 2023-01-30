@@ -22,10 +22,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Setup QEMU for possible emulation
+      uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # v2.1.0
+
     - name: Check docker cache
       if: ${{ inputs.docker-cache }}
       id: check-docker-cache
-      uses: actions/cache@v3
+      uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
       with:
         path: ci/docker/
         key: ${{ inputs.image }}
