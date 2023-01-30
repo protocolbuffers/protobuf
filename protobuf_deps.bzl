@@ -101,7 +101,7 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "a868059c8c6dd6ad45a205cca04084c652cfe1852e6df2d5aca036f6e5438380",
+            sha256 = "d972340d27ed992fff431b6c03c0e3113c9db5baef446ce21cccc63c5f1ca42d",
             strip_prefix = "rules_python-0.14.0",
             url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.14.0.tar.gz",
         )
