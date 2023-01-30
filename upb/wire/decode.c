@@ -31,6 +31,7 @@
 
 #include "upb/collections/array_internal.h"
 #include "upb/collections/map_internal.h"
+#include "upb/mini_table/common.h"
 #include "upb/mini_table/enum_internal.h"
 #include "upb/wire/common_internal.h"
 #include "upb/wire/decode_internal.h"
@@ -581,7 +582,12 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   upb_Map** map_p = UPB_PTR_AT(msg, field->offset, upb_Map*);
   upb_Map* map = *map_p;
   upb_MapEntry ent;
+  UPB_ASSERT(upb_MiniTableField_Type(field) == kUpb_FieldType_Message);
   const upb_MiniTable* entry = subs[field->submsg_index].submsg;
+
+  UPB_ASSERT(entry->field_count == 2);
+  UPB_ASSERT(!upb_IsRepeatedOrMap(&entry->fields[0]));
+  UPB_ASSERT(!upb_IsRepeatedOrMap(&entry->fields[1]));
 
   if (!map) {
     map = _upb_Decoder_CreateMap(d, entry);

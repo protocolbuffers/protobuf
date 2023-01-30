@@ -649,4 +649,10 @@ TEST(MessageTest, MapField) {
 //       0, 0);
 // }
 //
+// TEST(FuzzTest, ExtensionWithoutExt) {
+//   DecodeEncodeArbitrarySchemaAndPayload({{"$ 3", "", "%#F"}, {}, "", {2, 1}},
+//                                         std::string("\022\002\010\000", 4), 0,
+//                                         0);
+// }
+//
 // end:google_only
