@@ -12,19 +12,19 @@ def _github_archive(repo, commit, **kwargs):
 
 def upb_deps():
     maybe(
-        http_archive,
+        _github_archive,
         name = "com_google_absl",
-        url = "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.rc3.tar.gz",
-        strip_prefix = "abseil-cpp-20230125.rc3",
-        sha256 = "48d08cc8517d4607d7abd06e4bdbe83d30e502d9de07c2dfe57b6b2fe5ccfdf5",
+        repo = "https://github.com/abseil/abseil-cpp",
+        commit = "78be63686ba732b25052be15f8d6dee891c05749",  # Abseil LTS 20230125
+        sha256 = "4f356a07b9ec06ef51f943928508566e992f621ed5fa4dd588865d7bed1284cd",
     )
 
     maybe(
         _github_archive,
         name = "com_google_protobuf",
         repo = "https://github.com/protocolbuffers/protobuf",
-        commit = "c80e7efac72510a2bc3e9365520055f6d6656c1d",
-        sha256 = "2f87a4c6a356a9df533ae2272a2f67a7f12c920b06452c171d3a379c73fbe102",
+        commit = "214d3bf409bd16ba4123f5748f5b4c146960dda1",
+        sha256 = "33d40494cbba14142b41f4f560175a315b8740954151b80b29dcdabca30de001",
         patches = ["@upb//bazel:protobuf.patch"],
     )
 
@@ -46,14 +46,12 @@ def upb_deps():
         sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
     )
 
-    rules_python_version = "0.14.0"  # Latest @ November 20, 2022
-
     maybe(
-        http_archive,
+        _github_archive,
         name = "rules_python",
-        strip_prefix = "rules_python-{}".format(rules_python_version),
-        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/{}.tar.gz".format(rules_python_version),
-        sha256 = "a868059c8c6dd6ad45a205cca04084c652cfe1852e6df2d5aca036f6e5438380",
+        repo = "https://github.com/bazelbuild/rules_python",
+        commit = "912a5051f51581784fd64094f6bdabf93f6d698f",  # 0.14.0
+        sha256 = "a3e4b4ade7c4a52e757b16a16e94d0b2640333062180cba577d81fac087a501d",
     )
 
     maybe(
