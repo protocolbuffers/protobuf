@@ -140,22 +140,46 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
                              fieldCount:(uint32_t)fieldCount
                             storageSize:(uint32_t)storageSize
                                   flags:(GPBDescriptorInitializationFlags)flags {
+  // Compute the unknown flags by this version of the runtime and then check the passed in flags
+  // (from the generated code) to detect when sources from a newer version are being used with an
+  // older runtime.
+  GPBDescriptorInitializationFlags unknownFlags =
+      ~(GPBDescriptorInitializationFlag_FieldsWithDefault |
+        GPBDescriptorInitializationFlag_WireFormat | GPBDescriptorInitializationFlag_UsesClassRefs |
+        GPBDescriptorInitializationFlag_Proto3OptionalKnown |
+        GPBDescriptorInitializationFlag_ClosedEnumSupportKnown);
+  if ((flags & unknownFlags) != 0) {
+    GPBRuntimeMatchFailure();
+  }
   NSMutableArray *fields =
       (fieldCount ? [[NSMutableArray alloc] initWithCapacity:fieldCount] : nil);
   BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
 
   void *desc;
+  GPBFieldFlags mergedFieldFlags = GPBFieldNone;
   for (uint32_t i = 0; i < fieldCount; ++i) {
     // Need correctly typed pointer for array indexing below to work.
     if (fieldsIncludeDefault) {
       desc = &(((GPBMessageFieldDescriptionWithDefault *)fieldDescriptions)[i]);
+      mergedFieldFlags |=
+          (((GPBMessageFieldDescriptionWithDefault *)fieldDescriptions)[i]).core.flags;
     } else {
       desc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
+      mergedFieldFlags |= (((GPBMessageFieldDescription *)fieldDescriptions)[i]).flags;
     }
     GPBFieldDescriptor *fieldDescriptor =
         [[GPBFieldDescriptor alloc] initWithFieldDescription:desc file:file descriptorFlags:flags];
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
+  }
+  // No real value in checking all the fields individually, just check the combined flags at the
+  // end.
+  GPBFieldFlags unknownFieldFlags =
+      ~(GPBFieldRequired | GPBFieldRepeated | GPBFieldPacked | GPBFieldOptional |
+        GPBFieldHasDefaultValue | GPBFieldClearHasIvarOnZero | GPBFieldTextFormatNameCustom |
+        GPBFieldHasEnumDescriptor | GPBFieldMapKeyMask | GPBFieldClosedEnum);
+  if ((mergedFieldFlags & unknownFieldFlags) != 0) {
+    GPBRuntimeMatchFailure();
   }
 
   BOOL wireFormat = (flags & GPBDescriptorInitializationFlag_WireFormat) != 0;
@@ -834,6 +858,14 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
                                  count:(uint32_t)valueCount
                           enumVerifier:(GPBEnumValidationFunc)enumVerifier
                                  flags:(GPBEnumDescriptorInitializationFlags)flags {
+  // Compute the unknown flags by this version of the runtime and then check the passed in flags
+  // (from the generated code) to detect when sources from a newer version are being used with an
+  // older runtime.
+  GPBEnumDescriptorInitializationFlags unknownFlags =
+      ~(GPBEnumDescriptorInitializationFlag_IsClosed);
+  if ((flags & unknownFlags) != 0) {
+    GPBRuntimeMatchFailure();
+  }
   GPBEnumDescriptor *descriptor = [[self alloc] initWithName:name
                                                   valueNames:valueNames
                                                       values:values
@@ -1072,6 +1104,15 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 - (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc
                                usesClassRefs:(BOOL)usesClassRefs {
+  // Compute the unknown options by this version of the runtime and then check the passed in
+  // descriptor's options (from the generated code) to detect when sources from a newer version are
+  // being used with an older runtime.
+  GPBExtensionOptions unknownOptions =
+      ~(GPBExtensionRepeated | GPBExtensionPacked | GPBExtensionSetWireFormat);
+  if ((desc->options & unknownOptions) != 0) {
+    GPBRuntimeMatchFailure();
+  }
+
   if ((self = [super init])) {
     description_ = desc;
     if (!usesClassRefs) {

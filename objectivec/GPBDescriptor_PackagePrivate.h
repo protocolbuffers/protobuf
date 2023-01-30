@@ -263,6 +263,8 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 typedef NS_OPTIONS(uint32_t, GPBEnumDescriptorInitializationFlags) {
   GPBEnumDescriptorInitializationFlag_None = 0,
 
+  // Available: 1 << 0
+
   // Marks this enum as a closed enum.
   GPBEnumDescriptorInitializationFlag_IsClosed = 1 << 1,
 };
