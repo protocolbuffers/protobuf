@@ -243,6 +243,16 @@ cc_library(
 )
 
 cc_library(
+    name = "string_block",
+    hdrs = ["string_block.h"],
+    include_prefix = "google/protobuf",
+    deps = [
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/log:absl_check",
+    ],
+)
+
+cc_library(
     name = "arena",
     srcs = [
         "arena.cc",
@@ -264,6 +274,7 @@ cc_library(
         ":arena_allocation_policy",
         ":arena_cleanup",
         ":arena_config",
+        ":string_block",
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",

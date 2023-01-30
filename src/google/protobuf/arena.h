@@ -681,6 +681,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend struct internal::ArenaTestPeer;
 };
 
+template <>
+inline void* Arena::AllocateInternal<std::string, false>() {
+  return impl_.AllocateFromStringBlock();
+}
+
 }  // namespace protobuf
 }  // namespace google
 
