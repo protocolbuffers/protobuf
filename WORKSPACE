@@ -9,10 +9,10 @@ local_repository(
 
 http_archive(
     name = "com_google_googletest",
-    sha256 = "ea54c9845568cb31c03f2eddc7a40f7f83912d04ab977ff50ec33278119548dd",
+    sha256 = "833bfaf9f8f508a4ef4a35e25131112ed55bf9ff5c073e272397ff38eb4d90ec",
     strip_prefix = "googletest-4c9a3bb62bf3ba1f1010bf96f9c8ed767b363774",
     urls = [
-        "https://github.com/google/googletest/archive/4c9a3bb62bf3ba1f1010bf96f9c8ed767b363774.tar.gz",
+        "https://github.com/google/googletest/archive/4c9a3bb62bf3ba1f1010bf96f9c8ed767b363774.zip",
     ],
 )
 
