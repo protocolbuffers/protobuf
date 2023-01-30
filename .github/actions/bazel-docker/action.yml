@@ -57,7 +57,7 @@ runs:
     - name: Configure Bazel cache writing
       shell: bash
       # External runs should never write to our caches.
-      if: ${{ github.event_name == 'push' && inputs.bazel-cache && !github.event.act_local_test }}
+      if: ${{ github.event_name != 'pull_request_target' && inputs.bazel-cache && !github.event.act_local_test }}
       run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --remote_upload_local_results" >> $GITHUB_ENV
 
     - name: Run Bash Docker
