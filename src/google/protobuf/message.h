@@ -213,13 +213,10 @@ struct Metadata {
 namespace internal {
 template <class To>
 inline To* GetPointerAtOffset(void* message, uint32_t offset) {
-  return reinterpret_cast<To*>(reinterpret_cast<char*>(message) + offset);
 }
 
 template <class To>
 const To* GetConstPointerAtOffset(const void* message, uint32_t offset) {
-  return reinterpret_cast<const To*>(reinterpret_cast<const char*>(message) +
-                                     offset);
 }
 
 template <class To>

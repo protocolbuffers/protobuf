@@ -2185,9 +2185,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   inline const std::string& CLASS::name() const { return all_names_[0]; } \
   inline const std::string& CLASS::full_name() const { return all_names_[1]; }
 
-// Arrays take an index parameter, obviously.
-#define PROTOBUF_DEFINE_ARRAY_ACCESSOR(CLASS, FIELD, TYPE) \
-  inline TYPE CLASS::FIELD(int index) const { return FIELD##s_ + index; }
 
 #define PROTOBUF_DEFINE_OPTIONS_ACCESSOR(CLASS, TYPE) \
   inline const TYPE& CLASS::options() const { return *options_; }
