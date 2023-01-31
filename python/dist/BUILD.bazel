@@ -75,14 +75,6 @@ config_setting(
     ],
 )
 
-selects.config_setting_group(
-    name = "linux_aarch64",
-    match_any = [
-        ":linux_aarch64_release",
-        ":linux_aarch64_local",
-    ],
-)
-
 config_setting(
     name = "linux_x86_64_release",
     values = {"cpu": "linux-x86_64"},
@@ -93,14 +85,6 @@ config_setting(
     constraint_values = [
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
-    ],
-)
-
-selects.config_setting_group(
-    name = "linux_x86_64",
-    match_any = [
-        ":linux_x86_64_release",
-        ":linux_x86_64_local",
     ],
 )
 
@@ -262,8 +246,10 @@ py_wheel(
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
     platform = select({
-        ":linux_x86_64": "linux_x86_64",
-        ":linux_aarch64": "linux_aarch64",
+        ":linux_x86_64_local": "linux_x86_64",
+        ":linux_x86_64_release": "manylinux2014_x86_64",
+        ":linux_aarch64_local": "linux_aarch64",
+        ":linux_aarch64_release": "manylinux2014_aarch64",
         ":osx_universal2": "macosx_10_9_universal2",
         ":osx_aarch64": "macosx_11_0_arm64",
         ":windows_x86_32": "win32",
