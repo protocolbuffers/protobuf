@@ -208,15 +208,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
                             storageSize:(uint32_t)storageSize
                                   flags:(GPBDescriptorInitializationFlags)flags;
 
-// Old interface that took the rootClass.
-+ (instancetype)allocDescriptorForClass:(Class)messageClass
-                              rootClass:(Class)rootClass
-                                   file:(GPBFileDescriptor *)file
-                                 fields:(void *)fieldDescriptions
-                             fieldCount:(uint32_t)fieldCount
-                            storageSize:(uint32_t)storageSize
-                                  flags:(GPBDescriptorInitializationFlags)flags;
-
 // Called right after init to provide extra information to avoid init having
 // an explosion of args. These pointers are recorded, so they are expected
 // to live for the lifetime of the app.
@@ -228,7 +219,14 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 - (void)setupContainingMessageClass:(Class)msgClass;
 - (void)setupMessageClassNameSuffix:(NSString *)suffix;
 
-// Deprecated. Use setupContainingMessageClass instead.
+// Deprecated, these remain to support older versions of source generation.
++ (instancetype)allocDescriptorForClass:(Class)messageClass
+                              rootClass:(Class)rootClass
+                                   file:(GPBFileDescriptor *)file
+                                 fields:(void *)fieldDescriptions
+                             fieldCount:(uint32_t)fieldCount
+                            storageSize:(uint32_t)storageSize
+                                  flags:(GPBDescriptorInitializationFlags)flags;
 - (void)setupContainingMessageClassName:(const char *)msgClassName;
 
 @end
@@ -285,13 +283,13 @@ typedef NS_OPTIONS(uint32_t, GPBEnumDescriptorInitializationFlags) {
                           enumVerifier:(GPBEnumValidationFunc)enumVerifier
                                  flags:(GPBEnumDescriptorInitializationFlags)flags
                    extraTextFormatInfo:(const char *)extraTextFormatInfo;
-// Deprecated. Calls above with `flags = 0`
+
+// Deprecated, these remain to support older versions of source generation.
 + (instancetype)allocDescriptorForName:(NSString *)name
                             valueNames:(const char *)valueNames
                                 values:(const int32_t *)values
                                  count:(uint32_t)valueCount
                           enumVerifier:(GPBEnumValidationFunc)enumVerifier;
-// Deprecated. Calls above with `flags = 0`
 + (instancetype)allocDescriptorForName:(NSString *)name
                             valueNames:(const char *)valueNames
                                 values:(const int32_t *)values
