@@ -228,6 +228,13 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
   }
 }
 
+void GPBRuntimeMatchFailure(void) {
+  [NSException raise:NSInternalInconsistencyException
+              format:@"Proto generation source appears to have been from a"
+                     @" version newer that this runtime (%d).",
+                     GOOGLE_PROTOBUF_OBJC_VERSION];
+}
+
 // This api is no longer used for version checks. 30001 is the last version
 // using this old versioning model. When that support is removed, this function
 // can be removed (along with the declaration in GPBUtilities_PackagePrivate.h).

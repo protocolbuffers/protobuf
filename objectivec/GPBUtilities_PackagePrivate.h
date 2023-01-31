@@ -66,6 +66,12 @@ GPB_INLINE void GPB_DEBUG_CHECK_RUNTIME_VERSIONS(void) {
 #endif
 }
 
+// Helper called within the library when the runtime detects something that
+// indicates a older runtime is being used with newer generated code. Normally
+// GPB_DEBUG_CHECK_RUNTIME_VERSIONS() gates this with a better message; this
+// is just a final safety net to prevent otherwise hard to diagnose errors.
+void GPBRuntimeMatchFailure(void);
+
 // Legacy version of the checks, remove when GOOGLE_PROTOBUF_OBJC_GEN_VERSION
 // goes away (see more info in GPBBootstrap.h).
 void GPBCheckRuntimeVersionInternal(int32_t version);
