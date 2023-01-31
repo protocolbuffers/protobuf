@@ -1,0 +1,46 @@
+name: C++ Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        config:
+          - { name: Optimized, flags: --config=opt }
+          - { name: Debug, flags: --config=dbg }
+          - { name: ASAN, flags: --config=asan }
+          - { name: MSAN, flags: --config=kokoro-msan }
+          - { name: TSAN, flags: --config=tsan }
+          - { name: UBSAN, flags: --config=ubsan }
+        include:
+          # Set defaults
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:dbd2f15fb69734d72c3fd10cb819bbe2ce4890acf49e9a2f9403983fe48e8807
+          - targets: //pkg/... //src/... @com_google_protobuf_examples//...
+
+          # Override cases with custom images
+          - config: { name: "TCMalloc" }
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:9d975616c3fd44d5a091aeb60ee94f37e22fb367d471d258fc18cb4a2387c943"
+            targets: "//src/..."
+          - config: { name: "aarch64" }
+            targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b"
+          - config: { name: "Bazel4" }
+            targets: "//src/..."
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-3b71de326b62f67bf754c4dc4016d6a2fa9dd664"
+    name: mat${{ matrix.none }}
+    uses: ./.github/workflows/tool_docker.yml
+    with:
+      name: Linux ${{ matrix.config.name }}
+      safe-checkout: ${{ inputs.safe-checkout }}
+      image: ${{ matrix.image }}
+      bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
+      bazel-cache: cpp_bazel/${{ matrix.config.name }}
+    secrets: inherit
