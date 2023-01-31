@@ -126,7 +126,7 @@ __attribute__((objc_subclassing_restricted))
  * Describes a proto file.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBFileDescriptor : NSObject
+@interface GPBFileDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -152,7 +152,7 @@ __attribute__((objc_subclassing_restricted))
  * Describes a oneof field.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBOneofDescriptor : NSObject
+@interface GPBOneofDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -186,7 +186,7 @@ __attribute__((objc_subclassing_restricted))
  * Describes a proto field.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBFieldDescriptor : NSObject
+@interface GPBFieldDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -239,7 +239,7 @@ __attribute__((objc_subclassing_restricted))
  * Describes a proto enum.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBEnumDescriptor : NSObject
+@interface GPBEnumDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

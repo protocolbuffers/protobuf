@@ -207,6 +207,13 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   [super dealloc];
 }
 
+// No need to provide -hash/-isEqual: as the instances are singletons and the
+// default from NSObject is fine.
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+  // Immutable.
+  return [self retain];
+}
+
 - (void)setupOneofs:(const char **)oneofNames
               count:(uint32_t)count
       firstHasIndex:(int32_t)firstHasIndex {
@@ -325,10 +332,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   return result;
 }
 
-- (instancetype)copyWithZone:(__unused NSZone *)zone {
-  return [self retain];
-}
-
 - (GPBFieldDescriptor *)fieldWithNumber:(uint32_t)fieldNumber {
   for (GPBFieldDescriptor *descriptor in fields_) {
     if (GPBFieldNumber(descriptor) == fieldNumber) {
@@ -415,6 +418,11 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   return [package_ hash];
 }
 
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+  // Immutable.
+  return [self retain];
+}
+
 @end
 
 @implementation GPBOneofDescriptor
@@ -438,6 +446,13 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 - (void)dealloc {
   [fields_ release];
   [super dealloc];
+}
+
+// No need to provide -hash/-isEqual: as the instances are singletons and the
+// default from NSObject is fine.
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+  // Immutable.
+  return [self retain];
 }
 
 - (NSString *)name {
@@ -615,6 +630,13 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     [defaultValue_.valueData release];
   }
   [super dealloc];
+}
+
+// No need to provide -hash/-isEqual: as the instances are singletons and the
+// default from NSObject is fine.
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+  // Immutable.
+  return [self retain];
 }
 
 - (GPBDataType)dataType {
@@ -881,6 +903,13 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   [super dealloc];
 }
 
+// No need to provide -hash/-isEqual: as the instances are singletons and the
+// default from NSObject is fine.
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+  // Immutable.
+  return [self retain];
+}
+
 - (BOOL)isClosed {
   return (flags_ & GPBEnumDescriptorInitializationFlag_IsClosed) != 0;
 }
@@ -1082,6 +1111,8 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   [super dealloc];
 }
 
+// No need to provide -hash/-isEqual: as the instances are singletons and the
+// default from NSObject is fine.
 - (instancetype)copyWithZone:(__unused NSZone *)zone {
   // Immutable.
   return [self retain];
