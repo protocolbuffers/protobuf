@@ -43,10 +43,9 @@ syntax = "proto3";
 
 // Import the proto file containing the extension. We don't use it,
 // but the import is what caused the issue.
-import "old_extensions2.proto";
+import "csharp/protos/old_extensions2.proto";
 
 option csharp_namespace = "Google.Protobuf.TestProtos.OldGenerator";
 
 // We don't use this message other than to get its descriptor.
-message TestMessage {
-}
+message TestMessage {}
