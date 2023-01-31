@@ -119,11 +119,10 @@ module BasicTest
 
       m = OneofMessage.new
       assert !m.has_my_oneof?
+      assert !m.has_a?
       m.a = "foo"
       assert m.has_my_oneof?
-      assert_raise NoMethodError do
-        m.has_a?
-      end
+      assert m.has_a?
       assert_true OneofMessage.descriptor.lookup('a').has?(m)
 
       m = TestSingularFields.new
@@ -716,24 +715,16 @@ module BasicTest
 
   def test_oneof_fields_respond_to? # regression test for issue 9202
     msg = proto_module::OneofMessage.new
-    # `has_` prefix + "?" suffix actions should only work for oneofs fields.
+    # `has_` prefix + "?" suffix actions should work for oneofs fields and members.
     assert msg.has_my_oneof?
     assert msg.respond_to? :has_my_oneof?
-    assert !msg.respond_to?( :has_a? )
-    assert_raise NoMethodError do
-      msg.has_a?
-    end
-    assert !msg.respond_to?( :has_b? )
-    assert_raise NoMethodError do
-      msg.has_b?
-    end
-    assert !msg.respond_to?( :has_c? )
-    assert_raise NoMethodError do
-      msg.has_c?
-    end
-    assert !msg.respond_to?( :has_d? )
-    assert_raise NoMethodError do
-      msg.has_d?
-    end
+    assert msg.respond_to?( :has_a? )
+    assert !msg.has_a?
+    assert msg.respond_to?( :has_b? )
+    assert !msg.has_b?
+    assert msg.respond_to?( :has_c? )
+    assert !msg.has_c?
+    assert msg.respond_to?( :has_d? )
+    assert !msg.has_d?
   end
 end
