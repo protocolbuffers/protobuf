@@ -11,7 +11,7 @@
             "objectivec": "3.22-dev",
             "php": "3.22-dev",
             "python": "4.22-dev",
-            "ruby": "4.22-dev"
+            "ruby": "3.22-dev"
         }
     }
 }
