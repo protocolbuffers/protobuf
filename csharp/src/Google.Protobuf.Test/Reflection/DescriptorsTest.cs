@@ -91,13 +91,11 @@ namespace Google.Protobuf.Reflection
 
         private void TestFileDescriptor(FileDescriptor file, FileDescriptor importedFile, FileDescriptor importedPublicFile)
         {
-            // TODO(jonskeet): Reinstate after regeneration
-            // Assert.AreEqual("csharp/protos/unittest_proto3.proto", file.Name);
+            Assert.AreEqual("csharp/protos/unittest_proto3.proto", file.Name);
             Assert.AreEqual("protobuf_unittest3", file.Package);
 
             Assert.AreEqual("UnittestProto", file.Proto.Options.JavaOuterClassname);
-            // TODO(jonskeet): Reinstate after regeneration
-            // Assert.AreEqual("csharp/protos/unittest_proto3.proto", file.Proto.Name);
+            Assert.AreEqual("csharp/protos/unittest_proto3.proto", file.Proto.Name);
 
             // unittest_proto3.proto doesn't have any public imports, but unittest_import_proto3.proto does.
             Assert.AreEqual(0, file.PublicDependencies.Count);
