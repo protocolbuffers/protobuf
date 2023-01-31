@@ -88,8 +88,33 @@ jobs:
           submodules: recursive
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: ./.github/actions/non-bazel-docker
+        uses: ./.github/actions/docker
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:cc23dbe065668158ca2732aa305a07bd0913a175b2079d27d9c16925d23f2335
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: ${{ matrix.command }}
+
+  non-linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: MacOS
+            os: macos-12
+            bazel: //src/...
+          - name: Windows
+            os: windows-2019
+            bazel: //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
+    name: ${{ matrix.name }} Bazel
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: ./.github/actions/bazel
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel: test ${{ matrix.bazel }}
+          bazel-cache: cpp_${{ matrix.os }}
