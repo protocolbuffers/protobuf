@@ -35,7 +35,7 @@ jobs:
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-75e79f791b96e056086f43ace729cf3ebf9a9f5d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: cpp_bazel/${{ matrix.config.name }}
+          bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >
             bazel --version;
             ruby --version;
