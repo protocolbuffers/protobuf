@@ -460,6 +460,10 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
         "    __unused Class rootStartup = [$rootclass_name$ class];\n",
         "rootclass_name", root_classname_);
     // clang-format on
+  } else {
+    // The Root class has a debug runtime check, so if not starting that
+    // up, add the check.
+    printer->Print("    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
   }
 
   TextFormatDecodeData text_format_decode_data;
