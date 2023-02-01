@@ -1,6 +1,6 @@
 name: Setup CI Runner
-# TODO(b/267357823) Consider moving this to it's own repository and include
-# a call to actions/checkout.
+# TODO(b/267357823) Consider moving this to it's own repository so we can
+# include the call to actions/checkout.
 description: Setup any platform-specific adjustments we need to make for CI
 runs:
   using: 'composite'

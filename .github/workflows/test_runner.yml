@@ -105,7 +105,7 @@ jobs:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
-  ruby-install:
+  ruby:
     name: Ruby
     needs: [check-tag]
     uses: ./.github/workflows/test_ruby.yml
@@ -125,6 +125,14 @@ jobs:
     name: PHP Extension
     needs: [check-tag]
     uses: ./.github/workflows/test_php_ext.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  objectivec:
+    name: Objective-c
+    needs: [check-tag]
+    uses: ./.github/workflows/test_objectivec.yml
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit

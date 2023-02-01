@@ -42,7 +42,7 @@ runs:
       run: >
         echo "BAZEL_FLAGS=$BAZEL_FLAGS
         --google_credentials='${{ inputs.credentials-file }}'
-        --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.bazel-cache }}" >> $GITHUB_ENV
+        --remote_cache='https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.bazel-cache }}'" >> $GITHUB_ENV
 
     - name: Configure Bazel cache writing
       # External runs should never write to our caches.

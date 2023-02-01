@@ -34,7 +34,7 @@ jobs:
             version: 8.0.5-dbg
             command: composer test_valgrind
 
-    name: Linux PHP ${{ matrix.name}}
+    name: Linux ${{ matrix.name}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -48,3 +48,51 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-6e95c0e221e4bd52e3b4dc1398c6336985196931
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: ${{ matrix.command }}
+
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ['7.4', '8.0']
+
+    name: MacOS PHP ${{ matrix.version }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Install dependencies
+        run: |
+          brew cleanup
+          brew install coreutils php@${{ matrix.version }}
+          brew services restart php@${{ matrix.version }}
+          # Configure path
+          PHP_FOLDER=$(find $HOMEBREW_PREFIX -type d -regex ".*php.*/7.4.[0-9_.]*" | sort -n | tail -n 1)
+          test ! -z "$PHP_FOLDER"
+          export PATH="$PHP_FOLDER/bin:$PATH"
+          echo "PATH=$PHP_FOLDER/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Check PHP version
+        run: php --version | grep ${{ matrix.version }} || (echo "Invalid PHP version - $(php --version)" && exit 1)
+
+      - name: Run tests
+        uses: ./.github/actions/bazel
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: php_macos/${{ matrix.version }}
+          bash: |
+            pushd php
+            rm -rf vendor
+            php -v
+            php -m
+            composer update
+            composer test_c
+            popd
+
+            bazelisk $BAZEL_STARTUP_FLAGS \
+              test $BAZEL_FLAGS \
+              --action_env=PATH --test_env=PATH \
+              //php:conformance_test_c

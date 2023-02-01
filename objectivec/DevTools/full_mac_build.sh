@@ -8,8 +8,6 @@ set -eu
 # Some base locations.
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/../.."
-readonly BazelFlags="--announce_rc --macos_minimum_os=10.9 \
-  $(${ScriptDir}/../../kokoro/common/bazel_flags.sh)"
 
 # Invoke with BAZEL=bazelisk to use that instead.
 readonly BazelBin="${BAZEL:=bazel}"
@@ -32,6 +30,8 @@ OPTIONS:
    -r, --regenerate-descriptors
          Run generate_descriptor_proto.sh to regenerate all the checked in
          proto sources.
+   --bazel-flags
+         A set of flags to pass to any Bazel instances
    --core-only
          Skip some of the core protobuf build/checks to shorten the build time.
    --skip-xcode
@@ -72,6 +72,8 @@ DO_XCODE_DEBUG=yes
 DO_XCODE_RELEASE=yes
 DO_OBJC_CONFORMANCE_TESTS=yes
 XCODE_QUIET=no
+BAZEL_FLAGS="--announce_rc --macos_minimum_os=10.9"
+
 while [[ $# != 0 ]]; do
   case "${1}" in
     -h | --help )
@@ -83,6 +85,10 @@ while [[ $# != 0 ]]; do
       ;;
     -r | --regenerate-descriptors )
       REGEN_DESCRIPTORS=yes
+      ;;
+    --bazel-flags )
+      BAZEL_FLAGS="$BAZEL_FLAGS $1"
+      shift
       ;;
     --core-only )
       CORE_ONLY=yes
@@ -181,16 +187,16 @@ fi
 
 if [[ "${CORE_ONLY}" == "yes" ]] ; then
   header "Building core Only"
-  "${BazelBin}" build //:protoc //:protobuf //:protobuf_lite $BazelFlags
+  "${BazelBin}" build //:protoc //:protobuf //:protobuf_lite $BAZEL_FLAGS
 else
   header "Building"
   # Can't issue these together, when fully parallel, something sometimes chokes
   # at random.
-  "${BazelBin}" test //src/... $BazelFlags
+  "${BazelBin}" test //src/... $BAZEL_FLAGS
 fi
 
 # Ensure the WKT sources checked in are current.
-BAZEL="${BazelBin}" objectivec/generate_well_known_types.sh --check-only $BazelFlags
+BAZEL="${BazelBin}" objectivec/generate_well_known_types.sh --check-only $BAZEL_FLAGS
 
 header "Checking on the ObjC Runtime Code"
 # Some of the kokoro machines don't have python3 yet, so fall back to python if need be.
@@ -317,7 +323,7 @@ fi
 
 if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
   header "Running ObjC Conformance Tests"
-  "${BazelBin}" test //objectivec:conformance_test $BazelFlags
+  "${BazelBin}" test //objectivec:conformance_test $BAZEL_FLAGS
 fi
 
 echo ""

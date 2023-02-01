@@ -1,0 +1,43 @@
+name: Objective-c Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+jobs:
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: OS X
+            flags: --core-only --skip-xcode-ios --skip-xcode-tvos
+          - name: iOS Debug
+            flags: --core-only --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-release
+          - name: iOS Release
+            flags: --core-only --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-debug
+
+    name: ${{ matrix.name}}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Select pinned Xcode version
+        uses: maxim-lobanov/setup-xcode@9a697e2b393340c3cacd97468baa318e4c883d98 # v1.5.1
+        with:
+          xcode-version: '14.1'
+
+      - name: Run tests
+        uses: ./.github/actions/bazel
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: objectivec_macos/${{ matrix.name }}
+          bash: |
+            objectivec/DevTools/full_mac_build.sh ${{ matrix.flags }} --bazel-flags=\"$BAZEL_FLAGS\"
