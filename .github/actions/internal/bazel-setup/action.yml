@@ -21,6 +21,10 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Initialize BAZEL environment variable
+      shell: bash
+      run: echo "BAZEL=bazelisk" >> $GITHUB_ENV
+
     - name: Initialize Windows startup flags
       if: runner.os == 'Windows'
       shell: bash
@@ -40,9 +44,9 @@ runs:
       # and nested docker images
       if: ${{ inputs.bazel-cache && !github.event.act_local_test }}
       shell: bash
-      run: >
+      run: >-
         echo "BAZEL_FLAGS=$BAZEL_FLAGS
-        --google_credentials='${{ inputs.credentials-file }}'
+        --google_credentials=${{ inputs.credentials-file }}
         --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.bazel-cache }}" >> $GITHUB_ENV
 
     - name: Configure Bazel cache writing

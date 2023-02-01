@@ -128,3 +128,11 @@ jobs:
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
+
+  objectivec:
+    name: Objective-c
+    needs: [check-tag]
+    uses: ./.github/workflows/test_objectivec.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit

@@ -43,3 +43,53 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
+
+
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        type: [ Pure, C++]
+        # TODO(b/267550843) Consider expanding this set of versions.
+        version: [ "3.10" ]
+        include:
+          - type: Pure
+            targets: //python/... @upb//python/... //python:python_version
+          - type: C++
+            targets: //python/... //python:python_version
+            flags: --define=use_fast_cpp_protos=true
+
+    name: MacOS ${{ matrix.type }} ${{ matrix.version }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Pin Python version
+        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4.5.0
+        with:
+          python-version: ${{ matrix.version }}
+          cache: pip
+
+      - name: Validate version
+        run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
+
+      - name: Create and start virtual environment
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+
+      - name: Run tests
+        uses: ./.github/actions/bazel
+        env:
+          KOKORO_PYTHON_VERSION: ${{ matrix.version }}
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: python_macos/${{ matrix.type }}_${{ matrix.version }}
+          bazel: >-
+            test ${{ matrix.targets }} ${{ matrix.flags }}
+            --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
+            --macos_minimum_os=10.9

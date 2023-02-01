@@ -8,11 +8,11 @@ set -eu
 # Some base locations.
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/../.."
-readonly BazelFlags="--announce_rc --macos_minimum_os=10.9 \
-  $(${ScriptDir}/../../kokoro/common/bazel_flags.sh)"
+readonly BazelFlags="${BAZEL_FLAGS:---announce_rc --macos_minimum_os=10.9 \
+  $(${ScriptDir}/../../kokoro/common/bazel_flags.sh)}"
 
 # Invoke with BAZEL=bazelisk to use that instead.
-readonly BazelBin="${BAZEL:=bazel}"
+readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS:-}"
 
 printUsage() {
   NAME=$(basename "${0}")
@@ -61,7 +61,6 @@ header() {
   echo "========================================================================"
 }
 
-BAZEL=bazel
 DO_CLEAN=no
 REGEN_DESCRIPTORS=no
 CORE_ONLY=no
@@ -132,7 +131,7 @@ cd "${ProtoRootDir}"
 
 if [[ "${DO_CLEAN}" == "yes" ]] ; then
   header "Cleaning"
-  "${BazelBin}" clean
+  ${BazelBin} clean
   if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
     XCODEBUILD_CLEAN_BASE_IOS=(
       xcodebuild
@@ -181,16 +180,16 @@ fi
 
 if [[ "${CORE_ONLY}" == "yes" ]] ; then
   header "Building core Only"
-  "${BazelBin}" build //:protoc //:protobuf //:protobuf_lite $BazelFlags
+  ${BazelBin} build //:protoc //:protobuf //:protobuf_lite $BazelFlags
 else
   header "Building"
   # Can't issue these together, when fully parallel, something sometimes chokes
   # at random.
-  "${BazelBin}" test //src/... $BazelFlags
+  ${BazelBin} test //src/... $BazelFlags
 fi
 
 # Ensure the WKT sources checked in are current.
-BAZEL="${BazelBin}" objectivec/generate_well_known_types.sh --check-only $BazelFlags
+objectivec/generate_well_known_types.sh --check-only $BazelFlags
 
 header "Checking on the ObjC Runtime Code"
 # Some of the kokoro machines don't have python3 yet, so fall back to python if need be.
@@ -317,7 +316,7 @@ fi
 
 if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
   header "Running ObjC Conformance Tests"
-  "${BazelBin}" test //objectivec:conformance_test $BazelFlags
+  ${BazelBin} test //objectivec:conformance_test $BazelFlags
 fi
 
 echo ""
