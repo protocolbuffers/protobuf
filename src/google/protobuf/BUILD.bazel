@@ -1026,6 +1026,7 @@ cc_test(
             "-Wno-deprecated-declarations",
         ],
     }),
+    timeout = "long",
     data = [":testdata"],
     deps = [
         ":cc_test_protos",

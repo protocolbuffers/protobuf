@@ -1,15 +1,19 @@
-name: PHP extension
+name: PHP Extension Tests
 
 on:
-  - push
-  - pull_request
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
 
 permissions:
   contents: read  #  to fetch code (actions/checkout)
 
 jobs:
   build-php:
-    name: Build PHP extension
+    name: Build
     runs-on: ubuntu-latest
     container: ${{ matrix.php-image }}
     strategy:
@@ -17,6 +21,8 @@ jobs:
         php-image:
           - php:7.4-cli
           - php:8.1-cli
+    # TODO(b/266868629) Dockerize these instead of installing all the
+    # dependencies on each run.
     steps:
       - name: Install python3
         run: |
@@ -32,8 +38,9 @@ jobs:
         run: |
           apt-get install -qy --no-install-recommends git
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
+          ref: ${{ inputs.safe-checkout }}
           submodules: recursive
       - name: Create package
         run: |

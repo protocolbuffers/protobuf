@@ -1,0 +1,44 @@
+name: Ruby Install Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+jobs:
+  test_ruby_gems:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Ruby 2.6, ruby: ruby-2.6.0, bazel: 5.1.1}
+          - { name: Ruby 2.7, ruby: ruby-2.7.0, bazel: 5.1.1}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, bazel: 5.1.1}
+          - { name: Ruby 3.1, ruby: ruby-3.1.0, bazel: 5.1.1}
+          - { name: Ruby 3.2, ruby: ruby-3.2.0, bazel: 5.1.1}
+          - { name: JRuby 9.2, ruby: jruby-9.2.20.1, bazel: 5.1.1}
+          - { name: JRuby 9.3, ruby: jruby-9.3.4.0, bazel: 5.1.1}
+          - { name: Ruby 2.6 (Bazel6), ruby: ruby-2.6.0, bazel: 6.0.0}
+          - { name: JRuby 9.2 (Bazel6), ruby: jruby-9.2.20.1, bazel: 6.0.0}
+
+    name: mat${{ matrix.none }}
+    uses: ./.github/workflows/tool_docker.yml
+    with:
+      name: Linux ${{ matrix.name }}
+      safe-checkout: ${{ inputs.safe-checkout }}
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-75e79f791b96e056086f43ace729cf3ebf9a9f5d
+      bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
+      run-flags: --entrypoint "/bin/bash"
+      command: >
+          -l -c "
+          bazel --version &&
+          ruby --version &&
+          bazel build //ruby:release //:protoc $BAZEL_CACHE &&
+          gem install bazel-bin/ruby/google-protobuf-* &&
+          bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto &&
+          bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto &&
+          ruby ruby/tests/basic.rb"
+    secrets: inherit
