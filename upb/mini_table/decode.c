@@ -675,7 +675,7 @@ static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
                               name, expected_num, (int)f->number);
   }
 
-  if (upb_IsRepeatedOrMap(f) || f->presence < 0) {
+  if (upb_IsRepeatedOrMap(f)) {
     upb_MtDecoder_ErrorFormat(
         d, "map %s cannot be repeated or map, or be in oneof", name);
   }
@@ -703,6 +703,13 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   if (UPB_UNLIKELY(d->table->field_count != 2)) {
     upb_MtDecoder_ErrorFormat(d, "%hu fields in map", d->table->field_count);
     UPB_UNREACHABLE();
+  }
+
+  upb_LayoutItem* end = UPB_PTRADD(d->vec.data, d->vec.size);
+  for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
+    if (item->type == kUpb_LayoutItemType_OneofCase) {
+      upb_MtDecoder_ErrorFormat(d, "Map entry cannot have oneof");
+    }
   }
 
   upb_MtDecoder_ValidateEntryField(d, &d->table->fields[0], 1);

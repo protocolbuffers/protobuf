@@ -655,4 +655,8 @@ TEST(MessageTest, MapField) {
 //                                         0);
 // }
 //
+// TEST(FuzzTest, MapFieldVerify) {
+//   DecodeEncodeArbitrarySchemaAndPayload({{"%  ^!"}, {}, "", {}}, "", 0, 0);
+// }
+//
 // end:google_only
