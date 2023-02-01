@@ -1,0 +1,58 @@
+name: 'Run Docker'
+description: 'Run a docker image for Protobuf CI testing'
+inputs:
+  image:
+    required: true
+    description: "The docker image to use"
+    type: string
+  command:
+    required: true
+    description: "A raw docker command to run"
+    type: string
+  run-flags:
+    required: false
+    description: "Additional flags to pass to docker run"
+    type: string
+
+  # WARNING: loading from cache appears to be slower than pull!
+  docker-cache:
+    required: false
+    description: "Enabled caching of pulled docker images."
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup QEMU for possible emulation
+      uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # v2.1.0
+
+    - name: Check docker cache
+      if: ${{ inputs.docker-cache }}
+      id: check-docker-cache
+      uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ci/docker/
+        key: ${{ inputs.image }}
+
+    - name: Pull and store if cache miss
+      shell: bash
+      if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit != 'true' }}
+      run: >
+        time docker pull -q ${{ inputs.image }} &&
+        mkdir -p ci/docker/$(dirname ${{ inputs.image }}) &&
+        time docker image save ${{ inputs.image }} --output ./ci/docker/${{ inputs.image }}.tar
+
+    - name: Use the cached image on cache hit
+      shell: bash
+      if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit == 'true' }}
+      run: time docker image load --input ./ci/docker/${{ inputs.image }}.tar
+
+    - name: Pull fresh docker image
+      shell: bash
+      if: ${{ !inputs.docker-cache }}
+      run: time docker pull -q ${{ inputs.image }}
+
+    - name: Run docker
+      shell: bash
+      run: >
+        time docker run ${{ inputs.run-flags}} -v${{ github.workspace }}:/workspace
+        ${{ inputs.image }} ${{ inputs.command }}

@@ -1,0 +1,76 @@
+name: 'Docker Bazel Run'
+description: 'Run a Bazel-based docker image for Protobuf CI testing'
+inputs:
+  credentials:
+    required: true
+    description: "The GCP credentials to use for reading the docker image"
+    type: string
+  image:
+    required: false
+    default: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1
+    description: "The docker image to use"
+    type: string
+  bazel-cache:
+    required: false
+    description: >
+      A unique path for the Bazel cache.  This will trigger the generation
+      of a BAZEL_CACHE environment variable inside the container that provides
+      the appropriate flags for any bazel command.
+    type: string
+  bazel:
+    required: false
+    description: "The Bazel command to run"
+    type: string
+  bash:
+    required: false
+    description: "A bash command to run.  $BAZEL_FLAGS will be available to use for bazel runs."
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Authenticate
+      id: auth
+      uses: ./.github/actions/internal/docker-auth
+      with:
+        credentials: ${{ inputs.credentials }}
+
+    - name: Validate inputs
+      if: ${{ inputs.bash && inputs.bazel}}
+      shell: bash
+      run: echo "Invalid specification of both non-Bazel and Bazel command"; exit 1
+
+    - name: Initialize Bazel flags
+      shell: bash
+      run: echo "BAZEL_FLAGS=--keep_going --test_output=errors --test_timeout=600" >> $GITHUB_ENV
+
+    - name: Configure Bazel caching
+      shell: bash
+      # Skip bazel cache for local act runs due to issue with credential files
+      # and nested docker images
+      if: ${{ inputs.bazel-cache && !github.event.act_local_test }}
+      run: >
+        echo "BAZEL_FLAGS=$BAZEL_FLAGS
+        --google_credentials=/workspace/$(basename ${{ steps.auth.outputs.credentials-file }})
+        --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.bazel-cache }}" >> $GITHUB_ENV
+
+    - name: Configure Bazel cache writing
+      shell: bash
+      # External PRs should never write to our caches.
+      if: ${{ github.event_name != 'pull_request_target' && inputs.bazel-cache && !github.event.act_local_test }}
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --remote_upload_local_results" >> $GITHUB_ENV
+
+    - name: Run Bash Docker
+      uses: ./.github/actions/internal/docker-run
+      if: ${{ inputs.bash }}
+      with:
+        image: ${{ inputs.image }}
+        run-flags: --entrypoint "/bin/bash"
+        command: -l -c "${{ inputs.bash }}"
+
+    - name: Run Bazel Docker
+      uses: ./.github/actions/internal/docker-run
+      if: ${{ !inputs.bash }}
+      with:
+        image: ${{ inputs.image }}
+        command: ${{ inputs.bazel }} $BAZEL_FLAGS

@@ -1,0 +1,50 @@
+name: PHP Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: 7.3 Debug
+            version: 7.3.28-dbg
+            command: composer test \&\& composer test_c
+          - name: 7.4 Debug
+            version: 7.4.18-dbg
+            command: composer test \&\& composer test_c
+          - name: 8.0 Optimized
+            version: 8.0.5
+            command: composer test \&\& composer test_c
+          - name: 8.0 Debug
+            version: 8.0.5-dbg
+            command: composer test \&\& composer test_c
+          - name: 8.0 Memory Leak
+            version: 8.0.5-dbg
+            # Run specialized memory leak & multirequest tests.
+            command: composer test_c \&\& tests/multirequest.sh \&\& tests/memory_leak_test.sh
+          - name: 8.0 Valgrind
+            version: 8.0.5-dbg
+            command: composer test_valgrind
+
+    name: Linux PHP ${{ matrix.name}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: ./.github/actions/non-bazel-docker
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-6e95c0e221e4bd52e3b4dc1398c6336985196931
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: ${{ matrix.command }}
