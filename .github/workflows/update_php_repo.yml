@@ -42,7 +42,7 @@ jobs:
           rm -rf protobuf
       - name: Push Changes
         run: |
-          git commit -a -m "$VERSION sync"
+          git commit -a -m "${{ env.VERSION }} sync"
           git push --force origin master
-          git tag -a $VERSION_TAG -m "Tag release $VERSION_TAG"
-          git push origin $VERSION_TAG
+          git tag -a ${{ env.VERSION_TAG }} -m "Tag release ${{ env.VERSION_TAG }}"
+          git push origin ${{ env.VERSION_TAG }}
