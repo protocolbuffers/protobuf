@@ -1,0 +1,32 @@
+name: 'Docker Non-Bazel Run'
+description: 'Run a docker image for Protobuf CI testing with a non-Bazel build system'
+inputs:
+  credentials:
+    required: true
+    description: "The GCP credentials to use for reading the docker image"
+    type: string
+  command:
+    required: true
+    description: A command to run in the docker image
+  image:
+    required: false
+    default: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1
+    description: "The docker image to use"
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Update stale files using Bazel
+      uses: ./.github/actions/bazel-docker
+      with:
+        image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1
+        credentials: ${{ inputs.credentials }}
+        bazel-cache: regenerate-stale-files
+        bash: ./regenerate_stale_files.sh $BAZEL_FLAGS
+
+    - name: Run Docker
+      uses: ./.github/actions/internal/docker-run
+      with:
+        image: ${{ inputs.image }}
+        command: ${{ inputs.command }}

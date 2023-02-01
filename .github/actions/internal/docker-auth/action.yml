@@ -1,0 +1,29 @@
+name: 'Authenticate Docker'
+description: 'Authenticate a workflow for Protobuf CI testing'
+inputs:
+  credentials:
+    required: true
+    description: "The GCP credentials to use for reading the docker image"
+    type: string
+
+outputs:
+  credentials-file:
+    description: "Credentials file generated for GCP"
+    value: ${{ steps.auth.outputs.credentials_file_path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Authenticate to Google Cloud
+      id: auth
+      uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d # v1.0.0
+      with:
+        credentials_json: ${{ inputs.credentials }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@d51b5346f85640ec2aa2fa057354d2b82c2fcbce # v1.0.1
+    - name: Use gcloud CLI
+      shell: bash
+      run: gcloud info
+    - name: Authenticate for GAR use
+      shell: bash
+      run: gcloud auth configure-docker -q us-docker.pkg.dev

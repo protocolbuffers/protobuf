@@ -105,6 +105,14 @@ jobs:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
+  php:
+    name: PHP
+    needs: [check-tag]
+    uses: ./.github/workflows/test_php.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
   php-ext:
     name: PHP Extension
     needs: [check-tag]
