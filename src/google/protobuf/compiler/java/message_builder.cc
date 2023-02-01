@@ -73,6 +73,23 @@ std::string MapValueImmutableClassdName(const Descriptor* descriptor,
   ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
 }
+
+bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
+  if (!descriptor->is_repeated() || IsMapField(descriptor)) {
+    return false;
+  }
+  // TODO(b/255468704): update this to migrate repeated fields to use
+  // ProtobufList (which tracks immutability internally). That allows us to use
+  // the presence bit to skip work on the repeated field if it is not populated.
+  // Once all repeated fields are held in ProtobufLists, this method shouldn't
+  // be needed.
+  switch (descriptor->type()) {
+    case FieldDescriptor::TYPE_STRING:
+      return false;
+    default:
+      return true;
+  }
+}
 }  // namespace
 
 MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
@@ -506,8 +523,7 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   // Handle the repeated fields first so that the "mutable bits" are cleared.
   bool has_repeated_fields = false;
   for (int i = 0; i < descriptor_->field_count(); ++i) {
-    if (descriptor_->field(i)->is_repeated() &&
-        !IsMapField(descriptor_->field(i))) {
+    if (BitfieldTracksMutability(descriptor_->field(i))) {
       has_repeated_fields = true;
       printer->Print("buildPartialRepeatedFields(result);\n");
       break;
@@ -543,8 +559,7 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
         "classname", name_resolver_->GetImmutableClassName(descriptor_));
     printer->Indent();
     for (int i = 0; i < descriptor_->field_count(); ++i) {
-      if (descriptor_->field(i)->is_repeated() &&
-          !IsMapField(descriptor_->field(i))) {
+      if (BitfieldTracksMutability(descriptor_->field(i))) {
         const ImmutableFieldGenerator& field =
             field_generators_.get(descriptor_->field(i));
         field.GenerateBuildingCode(printer);
@@ -610,8 +625,7 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
 
     // Skip repeated fields because they are currently handled
     // in separate buildPartial sub-methods.
-    if (descriptor_->field(next)->is_repeated() &&
-        !IsMapField(descriptor_->field(next))) {
+    if (BitfieldTracksMutability(descriptor_->field(next))) {
       continue;
     }
     // Skip fields without presence bits in the builder
