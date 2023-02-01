@@ -113,7 +113,7 @@ cc_library(
     deps = [
         "//:eps_copy_input_stream",
         "//:port",
-        "//:reflection",
+        "//:upb",
         "//:wire_reader",
         "//:wire_types",
     ],

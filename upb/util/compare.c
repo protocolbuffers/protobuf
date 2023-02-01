@@ -27,10 +27,12 @@
 
 #include "upb/util/compare.h"
 
+#include <stdlib.h>
+
+#include "upb/upb.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
-
 // Must be last.
 #include "upb/port/def.inc"
 
