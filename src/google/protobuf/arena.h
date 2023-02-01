@@ -140,7 +140,7 @@ struct ArenaOptions {
   void* (*block_alloc)(size_t) = nullptr;
   // A function pointer to a dealloc method that takes ownership of the blocks
   // from the arena. By default, it contains a ptr to a wrapper function that
-  // calls free.
+  // callsa free.
   void (*block_dealloc)(void*, size_t) = nullptr;
 
  private:
