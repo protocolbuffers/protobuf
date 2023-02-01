@@ -35,9 +35,6 @@ runs:
       with:
         credentials: ${{ inputs.credentials }}
 
-    - name: Setup Runner
-      uses: ./.github/actions/internal/setup-runner
-
     - name: Setup Bazel
       id: bazel
       uses: ./.github/actions/internal/bazel-setup

@@ -39,9 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci-checkout@v1
         with:
-          ref: ${{ inputs.safe-checkout }}
+          safe-checkout: ${{ inputs.safe-checkout }}
       - name: Run tests
         uses: ./.github/actions/bazel-docker
         with:
@@ -83,10 +83,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci-checkout@v1
         with:
-          submodules: recursive
-          ref: ${{ inputs.safe-checkout }}
+          safe-checkout: ${{ inputs.safe-checkout }}
       - name: Run tests
         uses: ./.github/actions/docker
         with:
@@ -109,9 +108,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci-checkout@v1
         with:
-          ref: ${{ inputs.safe-checkout }}
+          safe-checkout: ${{ inputs.safe-checkout }}
       - name: Run tests
         uses: ./.github/actions/bazel
         with:

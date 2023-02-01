@@ -37,11 +37,10 @@ jobs:
       - name: Install git
         run: |
           apt-get install -qy --no-install-recommends git
-      - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci-checkout@v1
         with:
-          ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
+          safe-checkout: ${{ inputs.safe-checkout }}
       - name: Create package
         run: |
           cd $GITHUB_WORKSPACE
