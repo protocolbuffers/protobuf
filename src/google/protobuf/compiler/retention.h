@@ -34,16 +34,22 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
+// Must appear last
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 
 // Returns a FileDescriptorProto for this file, with all RETENTION_SOURCE
 // options stripped out.
-FileDescriptorProto StripSourceRetentionOptions(const FileDescriptor& file);
+PROTOC_EXPORT FileDescriptorProto
+StripSourceRetentionOptions(const FileDescriptor& file);
 
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_RETENTION_H__
