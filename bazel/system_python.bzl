@@ -195,6 +195,10 @@ def _populate_package(ctx, path, python3, python_version):
         if int(python_version[idx]) < int(v):
             supported = False
             break
+    if "win" in ctx.os.name:
+        # buildifier: disable=print
+        print("WARNING: python is not supported on Windows")
+        supported = False
 
     build_file = _build_file.format(
         interpreter = python3,
