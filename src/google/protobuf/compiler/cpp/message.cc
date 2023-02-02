@@ -326,7 +326,7 @@ bool IsCrossFileMaybeMap(const FieldDescriptor* field) {
 }
 
 bool IsRequired(const std::vector<const FieldDescriptor*>& v) {
-  return v.front()->is_required();
+  return FieldIsRequired(v.front());
 }
 
 bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
@@ -585,7 +585,7 @@ MessageGenerator::MessageGenerator(
                           inlined_string_indices_);
 
   for (int i = 0; i < descriptor->field_count(); i++) {
-    if (descriptor->field(i)->is_required()) {
+    if (FieldIsRequired(descriptor->field(i))) {
       ++num_required_fields_;
     }
   }
@@ -1506,7 +1506,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     if (!HasSimpleBaseClass(descriptor_, options_)) {
       format(
           "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;\n"
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+          "bool IsInitialized() const final { return true; }\n"
+#else
           "bool IsInitialized() const final;\n"
+#endif
           "\n"
           "::size_t ByteSizeLong() const final;\n");
 
@@ -3333,7 +3337,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
       if (field->is_repeated()) {
         generator.GenerateMergingCode(p);
-      } else if (field->is_optional() && !HasHasbit(field)) {
+      } else if (FieldIsOptional(field) && !HasHasbit(field)) {
         // Merge semantics without true field presence: primitive fields are
         // merged only if non-zero (numeric) or non-empty (string).
         bool have_enclosing_if =
@@ -3554,7 +3558,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
 
     format.Indent();
     have_enclosing_if = true;
-  } else if (field->is_optional() && !HasHasbit(field)) {
+  } else if (FieldIsOptional(field) && !HasHasbit(field)) {
     have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
   }
 
@@ -3936,7 +3940,7 @@ std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
   std::vector<uint32_t> masks(array_size, 0);
 
   for (auto field : FieldRange(descriptor_)) {
-    if (!field->is_required()) {
+    if (!FieldIsRequired(field)) {
       continue;
     }
 
@@ -3980,7 +3984,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     format.Indent();
     format("::size_t total_size = 0;\n");
     for (auto field : optimized_order_) {
-      if (field->is_required()) {
+      if (FieldIsRequired(field)) {
         format("\n");
         field_generators_.get(field).GenerateIfHasField(p);
         format.Indent();
@@ -4024,7 +4028,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     // Oneof fields cannot be required, so optimized_order_ contains all of the
     // fields that we need to potentially emit.
     for (auto field : optimized_order_) {
-      if (!field->is_required()) continue;
+      if (!FieldIsRequired(field)) continue;
       PrintFieldComment(format, field);
       field_generators_.get(field).GenerateByteSize(p);
       format("\n");
@@ -4037,7 +4041,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   } else {
     // num_required_fields_ <= 1: no need to be tricky
     for (auto field : optimized_order_) {
-      if (!field->is_required()) continue;
+      if (!FieldIsRequired(field)) continue;
       PrintFieldComment(format, field);
       field_generators_.get(field).GenerateIfHasField(p);
       format.Indent();
@@ -4195,6 +4199,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(p);
   format("bool $classname$::IsInitialized() const {\n");
@@ -4261,6 +4266,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
   format(
       "  return true;\n"
       "}\n");
+#endif
 }
 
 }  // namespace cpp

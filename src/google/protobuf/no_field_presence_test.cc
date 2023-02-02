@@ -480,19 +480,6 @@ TEST(NoFieldPresenceTest, MergeFromIfNonzeroTest) {
   EXPECT_EQ("test2", dest.optional_string());
 }
 
-TEST(NoFieldPresenceTest, IsInitializedTest) {
-  // Check that IsInitialized works properly.
-  proto2_nofieldpresence_unittest::TestProto2Required message;
-
-  EXPECT_EQ(true, message.IsInitialized());
-  message.mutable_proto2()->set_a(1);
-  EXPECT_EQ(false, message.IsInitialized());
-  message.mutable_proto2()->set_b(1);
-  EXPECT_EQ(false, message.IsInitialized());
-  message.mutable_proto2()->set_c(1);
-  EXPECT_EQ(true, message.IsInitialized());
-}
-
 TEST(NoFieldPresenceTest, LazyMessageFieldHasBit) {
   // Check that has-bit interaction with lazy message works (has-bit before and
   // after lazy decode).

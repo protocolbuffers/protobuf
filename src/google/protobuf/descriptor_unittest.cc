@@ -3800,6 +3800,10 @@ TEST(CustomOptions, UnusedImportError) {
 // custom options defined in the file are incompatible with those
 // compiled in the binary. See http://b/19276250.
 TEST(CustomOptions, OptionsWithIncompatibleDescriptors) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Test skipped as it depends on required field support";
+#endif
+
   DescriptorPool pool;
 
   FileDescriptorProto file_proto;

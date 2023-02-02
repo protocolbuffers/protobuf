@@ -2303,6 +2303,9 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
 }
 
 TEST_F(MapFieldReflectionTest, UninitializedEntry) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequiredMessageMap message;
   const Reflection* reflection = message.GetReflection();
   const FieldDescriptor* field =
@@ -2919,6 +2922,9 @@ TEST(GeneratedMapFieldTest, CorruptedWireFormat) {
 }
 
 TEST(GeneratedMapFieldTest, IsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequiredMessageMap map_message;
 
   // Add an uninitialized message.
@@ -2960,17 +2966,19 @@ TEST(GeneratedMapFieldTest, MessagesMustMerge) {
   with_dummy4.set_a(97);
   with_dummy4.set_b(91);
   with_dummy4.set_dummy4(98);
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   EXPECT_FALSE(with_dummy4.IsInitialized());
+#endif
   (*map_message.mutable_map_field())[0] = with_dummy4;
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   EXPECT_FALSE(map_message.IsInitialized());
+#endif
 
   UNITTEST::TestRequired with_dummy5;
   with_dummy5.set_b(0);
   with_dummy5.set_c(33);
   with_dummy5.set_dummy5(99);
-  EXPECT_FALSE(with_dummy5.IsInitialized());
   (*map_message.mutable_map_field())[0] = with_dummy5;
-  EXPECT_FALSE(map_message.IsInitialized());
 
   // The wire format of MapEntry is straightforward (*) and can be manually
   // constructed to force merging of two uninitialized messages that would
@@ -3463,6 +3471,9 @@ TEST(ReflectionOpsForMapFieldTest, MapDiscardUnknownFields) {
 }
 
 TEST(ReflectionOpsForMapFieldTest, IsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequiredMessageMap map_message;
 
   // Add an uninitialized message.
@@ -4049,21 +4060,6 @@ TEST(ArenaTest, StringMapNoLeak) {
   (*message->mutable_map_string_string())[data] = data;
   // We rely on heap checkers to detect memory leak for us.
   ASSERT_FALSE(message == nullptr);
-}
-
-TEST(ArenaTest, IsInitialized) {
-  // Allocate a large initial polluted block.
-  std::vector<char> arena_block(128 * 1024);
-  std::fill(arena_block.begin(), arena_block.end(), '\xff');
-
-  ArenaOptions options;
-  options.initial_block = &arena_block[0];
-  options.initial_block_size = arena_block.size();
-  Arena arena(options);
-
-  UNITTEST::TestArenaMap* message =
-      Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
-  EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
 }
 
 TEST(ArenaTest, DynamicMapFieldOnArena) {

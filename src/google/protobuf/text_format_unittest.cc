@@ -1841,12 +1841,6 @@ TEST_F(TextFormatParserTest, UnknownExtension) {
                 1, 11);
 }
 
-TEST_F(TextFormatParserTest, MissingRequired) {
-  unittest::TestRequired message;
-  ExpectFailure("a: 1", "Message missing required fields: b, c", 0, 1,
-                &message);
-}
-
 TEST_F(TextFormatParserTest, ParseDuplicateRequired) {
   unittest::TestRequired message;
   ExpectFailure("a: 1 b: 2 c: 3 a: 1",

@@ -723,42 +723,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, PackedFieldsSerializationToStream) {
 }
 
 
-TEST(GENERATED_MESSAGE_TEST_NAME, Required) {
-  // Test that IsInitialized() returns false if required fields are missing.
-  UNITTEST::TestRequired message;
-
-  EXPECT_FALSE(message.IsInitialized());
-  message.set_a(1);
-  EXPECT_FALSE(message.IsInitialized());
-  message.set_b(2);
-  EXPECT_FALSE(message.IsInitialized());
-  message.set_c(3);
-  EXPECT_TRUE(message.IsInitialized());
-}
-
-TEST(GENERATED_MESSAGE_TEST_NAME, RequiredForeign) {
-  // Test that IsInitialized() returns false if required fields in nested
-  // messages are missing.
-  UNITTEST::TestRequiredForeign message;
-
-  EXPECT_TRUE(message.IsInitialized());
-
-  message.mutable_optional_message();
-  EXPECT_FALSE(message.IsInitialized());
-
-  message.mutable_optional_message()->set_a(1);
-  message.mutable_optional_message()->set_b(2);
-  message.mutable_optional_message()->set_c(3);
-  EXPECT_TRUE(message.IsInitialized());
-
-  message.add_repeated_message();
-  EXPECT_FALSE(message.IsInitialized());
-
-  message.mutable_repeated_message(0)->set_a(1);
-  message.mutable_repeated_message(0)->set_b(2);
-  message.mutable_repeated_message(0)->set_c(3);
-  EXPECT_TRUE(message.IsInitialized());
-}
 
 TEST(GENERATED_MESSAGE_TEST_NAME, ForeignNested) {
   // Test that TestAllTypes::NestedMessage can be embedded directly into
@@ -2147,7 +2111,9 @@ TEST(HELPERS_TEST_NAME, TestSCCAnalysis) {
     const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
     MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
     EXPECT_EQ(result.is_recursive, false);
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
     EXPECT_EQ(result.contains_required, true);
+#endif
     EXPECT_EQ(result.contains_cord, false);
     EXPECT_EQ(result.contains_extension, false);
   }

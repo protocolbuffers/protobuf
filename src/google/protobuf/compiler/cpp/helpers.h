@@ -401,10 +401,27 @@ bool ShouldSplit(const FieldDescriptor* field, const Options& options);
 bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
                                          const Options& options);
 
+inline bool FieldIsRequired(const FieldDescriptor* field) {
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  return field->is_required();
+#else
+  return false;
+#endif  // PROTOBUF_ENFORCE_REQUIRED_FIELDS
+}
+
+inline bool FieldIsOptional(const FieldDescriptor* field) {
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  return field->is_optional();
+#else
+  return field->is_optional() || field->is_required();
+#endif  // PROTOBUF_ENFORCE_REQUIRED_FIELDS
+}
+
 inline bool IsFieldUsed(const FieldDescriptor* /* field */,
                         const Options& /* options */) {
   return true;
 }
+
 
 // Does the file contain any definitions that need extension_set.h?
 bool HasExtensionsOrExtendableMessage(const FileDescriptor* file);
