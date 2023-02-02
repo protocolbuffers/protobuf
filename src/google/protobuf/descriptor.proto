@@ -638,6 +638,7 @@ message FieldOptions {
     RETENTION_UNKNOWN = 0;
     RETENTION_RUNTIME = 1;
     RETENTION_SOURCE = 2;
+    RETENTION_DUMMY = 3;
   }
 
   optional OptionRetention retention = 17;
