@@ -94,3 +94,35 @@ upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field) {
   }
   return field->descriptortype;
 }
+
+static bool upb_MiniTable_Is_Oneof(const upb_MiniTableField* f) {
+  return f->presence < 0;
+}
+
+const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
+                                                 const upb_MiniTableField* f) {
+  if (UPB_UNLIKELY(!upb_MiniTable_Is_Oneof(f))) {
+    return NULL;
+  }
+  const upb_MiniTableField* ptr = &m->fields[0];
+  const upb_MiniTableField* end = &m->fields[m->field_count];
+  while (++ptr < end) {
+    if (ptr->presence == (*f).presence) {
+      return ptr;
+    }
+  }
+  return NULL;
+}
+
+bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
+                                  const upb_MiniTableField** f) {
+  const upb_MiniTableField* ptr = *f;
+  const upb_MiniTableField* end = &m->fields[m->field_count];
+  while (++ptr < end) {
+    if (ptr->presence == (*f)->presence) {
+      *f = ptr;
+      return true;
+    }
+  }
+  return false;
+}

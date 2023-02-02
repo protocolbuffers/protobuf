@@ -159,13 +159,32 @@ cc_test(
 
 cc_test(
     name = "test_generated_code",
-    srcs = ["test_generated_code.cc"],
+    srcs = [
+        "test_generated_code.cc",
+    ],
     deps = [
         ":empty_upb_proto_reflection",
         ":test_messages_proto2_upb_proto",
         ":test_messages_proto3_upb_proto",
         ":test_upb_proto",
         "//:upb",
+        "//:port",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "test_mini_table_oneof",
+    srcs = [
+        "test_mini_table_oneof.cc",
+    ],
+    deps = [
+        ":empty_upb_proto_reflection",
+        ":test_messages_proto2_upb_proto",
+        ":test_messages_proto3_upb_proto",
+        ":test_upb_proto",
+        "//:upb",
+        "//:mini_table_internal",
         "//:port",
         "@com_google_googletest//:gtest_main",
     ],
