@@ -204,8 +204,9 @@ pkg_files(
 # NOTE: This package currently only works for macos and ubuntu, MSVC users
 # should use a binary wheel.
 pkg_tar(
-    name = "source_wheel",
+    name = "source_tarball",
     srcs = [
+        "MANIFEST.in",
         "setup.py",
         ":generated_wkt",
         ":generated_wkt_compiler",
@@ -217,8 +218,22 @@ pkg_tar(
         "@com_google_protobuf//python:python_source_files",
     ],
     extension = "tar.gz",
-    package_dir = "protobuf-%s" % PROTOBUF_PYTHON_VERSION,
-    package_file_name = "protobuf-%s.tar.gz" % PROTOBUF_PYTHON_VERSION,
+    package_dir = "protobuf",
+    package_file_name = "protobuf.tar.gz",
+)
+
+genrule(
+    name = "source_wheel",
+    srcs = [":source_tarball"],
+    outs = ["protobuf-%s.tar.gz" % PROTOBUF_PYTHON_VERSION],
+    cmd = """
+        set -eux
+        tar -xzvf $(location :source_tarball)
+        cd protobuf/
+        python3 setup.py sdist
+        cd ..
+        mv protobuf/dist/*.tar.gz $@
+    """,
 )
 
 py_wheel(
