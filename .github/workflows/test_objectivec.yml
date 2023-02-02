@@ -49,6 +49,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
+            exit 1;
             xcodebuild \
                 -project "objectivec/${{ matrix.xc_project }}" \
                 -scheme ProtocolBuffers \
