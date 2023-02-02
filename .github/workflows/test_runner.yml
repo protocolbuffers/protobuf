@@ -129,6 +129,14 @@ jobs:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
+  csharp:
+    name: C#
+    needs: [check-tag]
+    uses: ./.github/workflows/test_csharp.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
   objectivec:
     name: Objective-c
     needs: [check-tag]

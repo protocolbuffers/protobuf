@@ -50,7 +50,7 @@ jobs:
           bazel-cache: cpp_linux/${{ matrix.config.name }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
 
-  cmake:
+  linux-cmake:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
@@ -93,7 +93,6 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:cc23dbe065668158ca2732aa305a07bd0913a175b2079d27d9c16925d23f2335
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: ${{ matrix.command }}
-
   non-linux:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
@@ -118,3 +117,104 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: test ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.os }}
+
+  windows-cmake:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: Visual Studio
+            flags: >-
+              -Dprotobuf_BUILD_SHARED_LIBS=OFF
+              -Dprotobuf_BUILD_EXAMPLES=ON
+          - name: Shared
+            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON
+
+    name: Windows CMake ${{ matrix.name}}
+    runs-on: windows-2019
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup MSVC
+        uses: microsoft/setup-msbuild@d3ea839497466fb4c6b91ce85831f3a251a2fe3f # v1.0.0
+        with:
+          vs-version: '15'
+          msbuild-architecture: x64
+
+      - name: Configure CMake
+        uses: ./.github/actions/bash
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: |
+            cmake . -G "Visual Studio 16 2019" -A x64 \
+              -Dprotobuf_BUILD_CONFORMANCE=OFF \
+              -Dprotobuf_WITH_ZLIB=OFF \
+              ${{ matrix.flags }}
+
+      - name: Build for Windows 15 2017
+        run: >-
+          msbuild.exe protobuf.sln /maxcpucount:8 /p:BuildInParallel=true
+          /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0
+
+      - name: Run Tests
+        run: ctest --verbose -C Debug
+
+  windows-cmake-install:
+    name: Windows CMake Install
+    runs-on: windows-2019
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup MSVC
+        uses: microsoft/setup-msbuild@d3ea839497466fb4c6b91ce85831f3a251a2fe3f # v1.0.0
+        with:
+          vs-version: '15'
+          msbuild-architecture: x64
+
+      - name: Configure CMake for Install
+        uses: ./.github/actions/bash
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: |
+            mkdir build
+            pushd build
+            cmake .. -G "Visual Studio 16 2019" -A x64 \
+              -Dprotobuf_BUILD_CONFORMANCE=OFF \
+              -Dprotobuf_WITH_ZLIB=OFF
+            popd
+
+      - name: Build and Install Protobuf for Windows 15 2017
+        run: |
+          pushd build
+          msbuild.exe INSTALL.vcxproj /p:Platform=x64 /p:VisualStudioVersion=15.0 /maxcpucount:8 /p:BuildInParallel=true
+          popd
+
+      - name: Clear CMake cache
+        shell: bash
+        run: rm -rf build/*
+
+      - name: Configure CMake
+        uses: ./.github/actions/bash
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: |
+            cmake . -G "Visual Studio 16 2019" -A x64 \
+              -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON \
+              -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF \
+              -Dprotobuf_BUILD_CONFORMANCE=OFF
+
+      - name: Build for Windows 15 2017
+        run: >-
+          msbuild.exe protobuf.sln /maxcpucount:8 /p:BuildInParallel=true
+          /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0
+
+      - name: Run Tests
+        run: ctest --verbose -C Debug
