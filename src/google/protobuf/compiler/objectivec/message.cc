@@ -282,6 +282,10 @@ void MessageGenerator::DetermineForwardDeclarations(
 void MessageGenerator::DetermineObjectiveCClassDefinitions(
     absl::btree_set<std::string>* fwd_decls) const {
   if (!IsMapEntryMessage(descriptor_)) {
+    // Forward declare this class, as a linker symbol, so the symbol can be used
+    // to reference the class instead of calling +class later.
+    fwd_decls->insert(ObjCClassDeclaration(class_name_));
+
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
       field_generators_.get(fieldDescriptor)
@@ -499,6 +503,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
 
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["classname"] = class_name_;
+  vars["class_reference"] = ObjCClass(class_name_);
   vars["file_descriptor_function_name"] = file_descriptor_function_name_;
   vars["fields"] = has_fields ? "fields" : "NULL";
   if (has_fields) {
@@ -526,7 +531,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   printer->Print(
       vars,
       "    GPBDescriptor *localDescriptor =\n"
-      "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
+      "        [GPBDescriptor allocDescriptorForClass:$class_reference$\n"
       "                                          file:$file_descriptor_function_name$()\n"
       "                                        fields:$fields$\n"
       "                                    fieldCount:$fields_count$\n"
