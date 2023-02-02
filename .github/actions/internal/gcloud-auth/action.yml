@@ -1,9 +1,9 @@
-name: 'Authenticate Docker'
+name: 'Authenticate for GCP'
 description: 'Authenticate a workflow for Protobuf CI testing'
 inputs:
   credentials:
     required: true
-    description: "The GCP credentials to use for reading the docker image"
+    description: "The GCP credentials to use for GCP"
     type: string
 
 outputs:
@@ -24,6 +24,3 @@ runs:
     - name: Use gcloud CLI
       shell: bash
       run: gcloud info
-    - name: Authenticate for GAR use
-      shell: bash
-      run: gcloud auth configure-docker -q us-docker.pkg.dev

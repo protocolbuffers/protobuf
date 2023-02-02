@@ -17,6 +17,9 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Setup Runner
+      uses: ./.github/actions/internal/setup-runner
+
     - name: Update stale files using Bazel
       uses: ./.github/actions/bazel-docker
       with:

@@ -22,6 +22,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Authenticate for GAR use
+      shell: bash
+      run: gcloud auth configure-docker -q us-docker.pkg.dev
+
     - name: Setup QEMU for possible emulation
       uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # v2.1.0
 

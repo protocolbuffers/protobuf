@@ -43,7 +43,7 @@ jobs:
           submodules: recursive
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: ./.github/actions/non-bazel-docker
+        uses: ./.github/actions/docker
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-6e95c0e221e4bd52e3b4dc1398c6336985196931
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
