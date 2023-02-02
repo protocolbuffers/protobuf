@@ -118,6 +118,26 @@ jobs:
           bazel: test ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.os }}
 
+  macos-cmake:
+    name: MacOS CMake
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Configure CMake
+        uses: ./.github/actions/bash
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: cmake . -DCMAKE_CXX_STANDARD=14
+      - name: Build
+        run: cmake --build . --parallel 8
+      - name: Test
+        run: ctest --verbose -C Debug
+
   windows-cmake:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
