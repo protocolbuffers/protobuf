@@ -1615,14 +1615,7 @@ static std::string EscapePhpdoc(absl::string_view input) {
   for (std::string::size_type i = 0; i < input.size(); i++) {
     char c = input[i];
     switch (c) {
-      // "/*" is allowed, do nothing
-      // case '*':
-      //   if (prev == '/') {
-      //     result.append("&#42;");
-      //   } else {
-      //     result.push_back(c);
-      //   }
-      //   break;
+      // NOTE: "/*" is allowed, do not escape it
       case '/':
         // Escape "*/" with "{@*}".
         if (prev == '*') {
