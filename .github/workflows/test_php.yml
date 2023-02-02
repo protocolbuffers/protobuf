@@ -34,7 +34,7 @@ jobs:
             version: 8.0.5-dbg
             command: composer test_valgrind
 
-    name: Linux PHP ${{ matrix.name}}
+    name: Linux ${{ matrix.name}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -43,8 +43,59 @@ jobs:
           submodules: recursive
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: ./.github/actions/non-bazel-docker
+        uses: ./.github/actions/docker
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-6e95c0e221e4bd52e3b4dc1398c6336985196931
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: ${{ matrix.command }}
+
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ['7.4', '8.0']
+
+    name: MacOS PHP ${{ matrix.version }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Install dependencies
+        run: brew install coreutils # For sha256sum
+
+      - name: Pin PHP version
+        uses: shivammathur/setup-php@d30ad8b1843ace22e6698ab99bbafaa747b6bd0d # 2.24.0
+        with:
+          php-version: ${{ matrix.version }}
+
+      - name: Check PHP version
+        run: php --version | grep ${{ matrix.version }} || (echo "Invalid PHP version - $(php --version)" && exit 1)
+
+      - name: Run tests
+        uses: ./.github/actions/bazel
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: php_macos/${{ matrix.version }}
+          bash: |
+            pushd php
+            rm -rf vendor
+            php -v
+            php -m
+            composer update
+            composer test_c
+            popd
+
+      - name: Run conformance tests
+        uses: ./.github/actions/bazel
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: php_macos/${{ matrix.version }}
+          bash: >-
+            bazelisk $BAZEL_STARTUP_FLAGS \
+              test $BAZEL_FLAGS \
+              --action_env=PATH --test_env=PATH \
+              //php:conformance_test_c

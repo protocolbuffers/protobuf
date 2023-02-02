@@ -10,7 +10,7 @@ readonly ObjCDir="${ScriptDir}"
 readonly ProtoRootDir="${ObjCDir}/.."
 
 # Invoke with BAZEL=bazelisk to use that instead.
-readonly BazelBin="${BAZEL:=bazel}"
+readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS:-}"
 
 # Flag for continuous integration to check that everything is current.
 CHECK_ONLY=0
@@ -30,7 +30,7 @@ __EOF__
 fi
 
 # Make sure the compiler is current.
-"${BazelBin}" build //:protoc $@
+${BazelBin} build //:protoc $@
 
 cd src
 declare -a RUNTIME_PROTO_FILES=( \

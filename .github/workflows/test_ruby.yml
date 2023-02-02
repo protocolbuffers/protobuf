@@ -39,6 +39,36 @@ jobs:
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION
 
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: [ "2.7", "3.0", "3.1", "3.2" ]
+
+    name: MacOS Ruby ${{ matrix.version }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Pin Ruby version
+        uses: ruby/setup-ruby@ee26e27437bde475b19a6bf8cb73c9fa658876a2 # v1.134.0
+        with:
+          ruby-version: ${{ matrix.version }}
+
+      - name: Validate version
+        run: ruby --version | grep ${{ matrix.version }} || (echo "Invalid Ruby version - $(ruby --version)" && exit 1)
+
+      - name: Run tests
+        uses: ./.github/actions/bazel
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: ruby_macos/${{ matrix.version }}
+          bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }}
+
   test_ruby_gems:
     strategy:
       fail-fast: false

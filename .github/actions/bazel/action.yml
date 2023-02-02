@@ -3,12 +3,7 @@ description: 'Run a Bazel-based docker image for Protobuf CI testing'
 inputs:
   credentials:
     required: true
-    description: "The GCP credentials to use for reading the docker image"
-    type: string
-  image:
-    required: false
-    default: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1
-    description: "The docker image to use"
+    description: The GCP credentials to use for reading the docker image
     type: string
   bazel-cache:
     required: true
@@ -17,13 +12,20 @@ inputs:
       of a BAZEL_CACHE environment variable inside the container that provides
       the appropriate flags for any bazel command.
     type: string
+  version:
+    required: false
+    description: A pinned Bazel version to use
+    default: '5.1.1'
+    type: string
   bazel:
     required: false
-    description: "The Bazel command to run"
+    description: The Bazel command to run
     type: string
   bash:
     required: false
-    description: "A bash command to run.  $BAZEL_FLAGS will be available to use for bazel runs."
+    description: >
+      A bash command to run.  $BAZEL_FLAGS and $BAZEL_STARTUP_FLAGS will be
+      available to use for bazel runs.
     type: string
 
 runs:
@@ -42,7 +44,7 @@ runs:
       id: bazel
       uses: ./.github/actions/internal/bazel-setup
       with:
-        credentials-file: /workspace/$(basename ${{ steps.auth.outputs.credentials-file }})
+        credentials-file: ${{ steps.auth.outputs.credentials-file }}
         bazel-cache: ${{ inputs.bazel-cache }}
 
     - name: Validate inputs
@@ -50,17 +52,22 @@ runs:
       shell: bash
       run: echo "Invalid specification of both non-Bazel and Bazel command"; exit 1
 
-    - name: Run Bash Docker
-      uses: ./.github/actions/internal/docker-run
-      if: ${{ inputs.bash }}
-      with:
-        image: ${{ inputs.image }}
-        run-flags: --entrypoint "/bin/bash"
-        command: -l -c "${{ inputs.bash }}"
+    - name: Pin Bazel version
+      shell: bash
+      run: echo "USE_BAZEL_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
 
-    - name: Run Bazel Docker
-      uses: ./.github/actions/internal/docker-run
+    - name: Output Bazel version
+      shell: bash
+      run: bazelisk version
+
+    - name: Run Bash
+      if: ${{ inputs.bash }}
+      run: ${{ inputs.bash }}
+      shell: bash
+
+    - name: Run Bazel
       if: ${{ !inputs.bash }}
-      with:
-        image: ${{ inputs.image }}
-        command: ${{ inputs.bazel }} ${{ steps.bazel.outputs.bazel-flags }}
+      run: >-
+        bazelisk ${{ steps.bazel.outputs.bazel-startup-flags }}
+        ${{ inputs.bazel }} ${{ steps.bazel.outputs.bazel-flags }}
+      shell: bash
