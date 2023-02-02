@@ -20,6 +20,7 @@ jobs:
           - { name: MSAN, flags: --config=kokoro-msan }
           - { name: TSAN, flags: --config=tsan }
           - { name: UBSAN, flags: --config=ubsan }
+          - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
           # Set defaults
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:dbd2f15fb69734d72c3fd10cb819bbe2ce4890acf49e9a2f9403983fe48e8807
