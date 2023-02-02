@@ -65,8 +65,9 @@ namespace ProtobufUnittest {
             "bzNPcHRpb25hbEV4dGVuc2lvbnMyPAoPZXh0X25vX29wdGlvbmFsEh8uZ29v",
             "Z2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGIjN2akBIAEoBTJBChFleHRf",
             "d2l0aF9vcHRpb25hbBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u",
-            "cxiJzdmpASABKAWIAQE6DMDozM0KCMjozM0KEEIlCiFjb20uZ29vZ2xlLnBy",
-            "b3RvYnVmLnRlc3RpbmcucHJvdG9QAWIGcHJvdG8z"));
+            "cxiJzdmpASABKAWIAQE6DMDozM0KCMjozM0KEEI4CiFjb20uZ29vZ2xlLnBy",
+            "b3RvYnVmLnRlc3RpbmcucHJvdG9QAaoCEFByb3RvYnVmVW5pdHRlc3RiBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
