@@ -722,6 +722,8 @@ typedef struct {
 //
 // The unknown data is removed from message after field value is set
 // using upb_Message_SetMessage.
+//
+// WARNING!: See b/267655898
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,

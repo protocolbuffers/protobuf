@@ -31,6 +31,7 @@
 #include "upb/collections/array_internal.h"
 #include "upb/collections/map.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/field_internal.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -185,6 +186,7 @@ upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
   return ret;
 }
 
+// Warning: See TODO(b/267655898)
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,
@@ -195,7 +197,10 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   // Callers should check that message is not set first before calling
   // PromotoUnknownToMessage.
   UPB_ASSERT(mini_table->subs[field->submsg_index].submsg == sub_mini_table);
-  UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
+  bool is_oneof = _upb_MiniTableField_InOneOf(field);
+  if (!is_oneof || _upb_getoneofcase_field(msg, field) == field->number) {
+    UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
+  }
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;
   do {
@@ -223,6 +228,9 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     }
   } while (unknown.status == kUpb_FindUnknown_Ok);
   if (message) {
+    if (is_oneof) {
+      *_upb_oneofcase_field(msg, field) = field->number;
+    }
     upb_Message_SetMessage(msg, mini_table, field, message);
     ret.message = message;
   }
