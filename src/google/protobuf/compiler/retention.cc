@@ -42,6 +42,7 @@ namespace protobuf {
 namespace compiler {
 
 namespace {
+
 // Recursively strips any options with source retention from the message.
 void StripMessage(Message& m) {
   const Reflection* reflection = m.GetReflection();
@@ -62,41 +63,105 @@ void StripMessage(Message& m) {
     }
   }
 }
+
+// Converts the descriptor to a dynamic message if necessary, and then strips
+// out all source-retention options.
+//
+// The options message may have custom options set on it, and these would
+// ordinarily appear as unknown fields since they are not linked into protoc.
+// Using a dynamic message allows us to see these custom options. To convert
+// back and forth between the generated type and the dynamic message, we have
+// to serialize one and parse that into the other.
+void ConvertToDynamicMessageAndStripOptions(Message& m,
+                                            const DescriptorPool& pool) {
+  // We need to look up the descriptor in the pool so that we can get a
+  // descriptor which knows about any custom options that were used in the
+  // .proto file.
+  const Descriptor* descriptor = pool.FindMessageTypeByName(m.GetTypeName());
+
+  if (descriptor == nullptr) {
+    // If the pool does not contain the descriptor, then this proto file does
+    // not transitively depend on descriptor.proto, in which case we know there
+    // are no custom options to worry about.
+    StripMessage(m);
+  } else {
+    DynamicMessageFactory factory;
+    std::unique_ptr<Message> dynamic_message(
+        factory.GetPrototype(descriptor)->New());
+    std::string serialized;
+    ABSL_CHECK(m.SerializeToString(&serialized));
+    ABSL_CHECK(dynamic_message->ParseFromString(serialized));
+    StripMessage(*dynamic_message);
+    ABSL_CHECK(dynamic_message->SerializeToString(&serialized));
+    ABSL_CHECK(m.ParseFromString(serialized));
+  }
+}
+
+// Returns a const reference to the descriptor pool associated with the given
+// descriptor.
+template <typename DescriptorType>
+const google::protobuf::DescriptorPool& GetPool(const DescriptorType& descriptor) {
+  return *descriptor.file()->pool();
+}
+
+// Specialization for FileDescriptor.
+const google::protobuf::DescriptorPool& GetPool(const FileDescriptor& descriptor) {
+  return *descriptor.pool();
+}
+
+// Returns the options associated with the given descriptor, with all
+// source-retention options stripped out.
+template <typename DescriptorType>
+auto StripLocalOptions(const DescriptorType& descriptor) {
+  auto options = descriptor.options();
+  ConvertToDynamicMessageAndStripOptions(options, GetPool(descriptor));
+  return options;
+}
+
 }  // namespace
 
 FileDescriptorProto StripSourceRetentionOptions(const FileDescriptor& file) {
   FileDescriptorProto file_proto;
   file.CopyTo(&file_proto);
-
-  // We need to look up the descriptor in file.pool() so that we can get a
-  // descriptor which knows about any custom options that were used in the
-  // .proto file.
-  const Descriptor* descriptor =
-      file.pool()->FindMessageTypeByName(FileDescriptorProto().GetTypeName());
-
-  if (descriptor == nullptr) {
-    // If the pool does not contain the descriptor for FileDescriptorProto,
-    // then this proto file does not transitively depend on descriptor.proto,
-    // in which case we know there are no custom options to worry about.
-    StripMessage(file_proto);
-  } else {
-    // The options message may have custom options set on it, and these would
-    // ordinarily appear as unknown fields since they are not linked into
-    // protoc. Using a dynamic message allows us to see these custom options.
-    // To convert back and forth between the generated type and the dynamic
-    // message, we have to serialize one and parse that into the other.
-    DynamicMessageFactory factory;
-    std::unique_ptr<Message> dynamic_message(
-        factory.GetPrototype(descriptor)->New());
-    std::string serialized;
-    ABSL_CHECK(file_proto.SerializeToString(&serialized));
-    ABSL_CHECK(dynamic_message->ParseFromString(serialized));
-    StripMessage(*dynamic_message);
-    ABSL_CHECK(dynamic_message->SerializeToString(&serialized));
-    ABSL_CHECK(file_proto.ParseFromString(serialized));
-  }
-
+  ConvertToDynamicMessageAndStripOptions(file_proto, *file.pool());
   return file_proto;
+}
+
+EnumOptions StripLocalSourceRetentionOptions(const EnumDescriptor& descriptor) {
+  return StripLocalOptions(descriptor);
+}
+
+EnumValueOptions StripLocalSourceRetentionOptions(
+    const EnumValueDescriptor& descriptor) {
+  return StripLocalOptions(descriptor);
+}
+
+FieldOptions StripLocalSourceRetentionOptions(
+    const FieldDescriptor& descriptor) {
+  return StripLocalOptions(descriptor);
+}
+
+FileOptions StripLocalSourceRetentionOptions(const FileDescriptor& descriptor) {
+  return StripLocalOptions(descriptor);
+}
+
+MessageOptions StripLocalSourceRetentionOptions(const Descriptor& descriptor) {
+  return StripLocalOptions(descriptor);
+}
+
+MethodOptions StripLocalSourceRetentionOptions(
+    const MethodDescriptor& descriptor) {
+  return StripLocalOptions(descriptor);
+}
+
+OneofOptions StripLocalSourceRetentionOptions(
+    const OneofDescriptor& descriptor) {
+  return StripLocalOptions(descriptor);
+}
+
+ServiceOptions StripLocalSourceRetentionOptions(
+    const ServiceDescriptor& descriptor) {
+  return StripLocalOptions(descriptor);
 }
 
 }  // namespace compiler
