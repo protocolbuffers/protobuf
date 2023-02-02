@@ -141,6 +141,20 @@ class RepeatedFieldTest < Test::Unit::TestCase
   end
 
 
+  def test_each_index
+    m = TestMessage.new
+    5.times{|i| m.repeated_string << 'string' }
+
+    expected = 0
+    m.repeated_string.each_index do |idx|
+      assert_equal expected, idx
+      expected += 1
+      assert_equal 'string', m.repeated_string[idx]
+    end
+    assert_equal 5, expected
+  end
+
+
   def test_empty?
     m = TestMessage.new
     assert_equal true, m.repeated_string.empty?

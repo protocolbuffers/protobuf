@@ -117,7 +117,6 @@ module Google
       end
 
       # array aliases into enumerable
-      alias_method :each_index, :each_with_index
       alias_method :slice, :[]
       alias_method :values_at, :select
       alias_method :map, :collect
@@ -168,7 +167,7 @@ module Google
       end
 
 
-      %w(collect! compact! delete_if fill flatten! insert reverse!
+      %w(collect! compact! delete_if each_index fill flatten! insert reverse!
         rotate! select! shuffle! sort! sort_by! uniq!).each do |method_name|
         define_array_wrapper_with_result_method(method_name)
       end
