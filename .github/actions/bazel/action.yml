@@ -52,24 +52,22 @@ runs:
       shell: bash
       run: echo "Invalid specification of both non-Bazel and Bazel command"; exit 1
 
+    - name: Pin Bazel version
+      shell: bash
+      run: echo "USE_BAZEL_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+
     - name: Output Bazel version
-      env:
-        USE_BAZEL_VERSION: ${{ inputs.version }}
       shell: bash
       run: bazelisk version
 
     - name: Run Bash
-      env:
-        USE_BAZEL_VERSION: ${{ inputs.version }}
       if: ${{ inputs.bash }}
       run: ${{ inputs.bash }}
       shell: bash
 
     - name: Run Bazel
-      env:
-        USE_BAZEL_VERSION: ${{ inputs.version }}
       if: ${{ !inputs.bash }}
-      run: >
+      run: >-
         bazelisk ${{ steps.bazel.outputs.bazel-startup-flags }}
         ${{ inputs.bazel }} ${{ steps.bazel.outputs.bazel-flags }}
       shell: bash
