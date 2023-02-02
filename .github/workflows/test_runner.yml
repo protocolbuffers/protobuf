@@ -89,7 +89,7 @@ jobs:
   # Note: this pattern of passing the head sha is vulnerable to PWN requests for
   # pull_request_target events. We carefully limit those workflows to require a
   # human stamp before continuing.
-  cpp-bazel:
+  cpp:
     name: C++
     needs: [check-tag]
     uses: ./.github/workflows/test_cpp.yml
@@ -97,10 +97,18 @@ jobs:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
-  ruby-install:
-    name: Ruby Install
+  python:
+    name: Python
     needs: [check-tag]
-    uses: ./.github/workflows/test_ruby_install.yml
+    uses: ./.github/workflows/test_python.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  ruby:
+    name: Ruby
+    needs: [check-tag]
+    uses: ./.github/workflows/test_ruby.yml
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit

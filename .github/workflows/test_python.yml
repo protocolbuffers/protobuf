@@ -1,0 +1,45 @@
+name: Python Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        type: [ Pure, C++]
+        version: [ "3.7", "3.8", "3.9", "3.10" ]
+        include:
+          - type: Pure
+            targets: //python/... @upb//python/... //python:python_version
+            flags: --define=use_fast_cpp_protos=false
+          - type: C++
+            targets: //python/... //python:python_version
+            flags: --define=use_fast_cpp_protos=true
+          - type: C++
+            version: aarch64
+            targets: //python/... //python:aarch64_test
+            # TODO(b/262628111) Enable this once conformance tests are fixed.
+            flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b
+
+    name: Linux ${{ matrix.type }} ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: ./.github/actions/bazel-docker
+        with:
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-65526ea124d1034eac33e7c37cc6d65c5bef054f', matrix.version) }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
+          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
