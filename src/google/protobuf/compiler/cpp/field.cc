@@ -175,25 +175,25 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
   if (field->real_containing_oneof()) {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return MakeOneofMessageGenerator(field, options, scc);
+        return MakeSingularMessageGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_STRING:
-        return MakeSinguarStringGenerator(field, options, scc);
+        return MakeSingularStringGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_ENUM:
         return MakeOneofEnumGenerator(field, options, scc);
       default:
-        return MakeSinguarPrimitiveGenerator(field, options, scc);
+        return MakeSingularPrimitiveGenerator(field, options, scc);
     }
   }
 
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return MakeSinguarMessageGenerator(field, options, scc);
+      return MakeSingularMessageGenerator(field, options, scc);
     case FieldDescriptor::CPPTYPE_STRING:
-      return MakeSinguarStringGenerator(field, options, scc);
+      return MakeSingularStringGenerator(field, options, scc);
     case FieldDescriptor::CPPTYPE_ENUM:
-      return MakeSinguarEnumGenerator(field, options, scc);
+      return MakeSingularEnumGenerator(field, options, scc);
     default:
-      return MakeSinguarPrimitiveGenerator(field, options, scc);
+      return MakeSingularPrimitiveGenerator(field, options, scc);
   }
 }
 

@@ -566,7 +566,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
 }
 }  // namespace
 
-std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeSingularPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
   return absl::make_unique<SingularPrimitive>(desc, options);

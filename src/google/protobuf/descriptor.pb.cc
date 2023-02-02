@@ -62,8 +62,10 @@ PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.options_)*/nullptr
-  , /*decltype(_impl_.source_code_info_)*/nullptr} {}
+  , /*decltype(_impl_.options_)*/ nullptr
+
+  , /*decltype(_impl_.source_code_info_)*/ nullptr
+} {}
 struct FileDescriptorProtoDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FileDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FileDescriptorProtoDefaultTypeInternal() {}
@@ -78,7 +80,8 @@ PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRang
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.options_)*/nullptr
+  , /*decltype(_impl_.options_)*/ nullptr
+
   , /*decltype(_impl_.start_)*/ 0
 
   , /*decltype(_impl_.end_)*/ 0
@@ -127,7 +130,8 @@ PROTOBUF_CONSTEXPR DescriptorProto::DescriptorProto(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.options_)*/nullptr} {}
+  , /*decltype(_impl_.options_)*/ nullptr
+} {}
 struct DescriptorProtoDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DescriptorProtoDefaultTypeInternal() {}
@@ -177,7 +181,8 @@ PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.options_)*/nullptr
+  , /*decltype(_impl_.options_)*/ nullptr
+
   , /*decltype(_impl_.number_)*/ 0
 
   , /*decltype(_impl_.oneof_index_)*/ 0
@@ -204,7 +209,8 @@ PROTOBUF_CONSTEXPR OneofDescriptorProto::OneofDescriptorProto(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.options_)*/nullptr} {}
+  , /*decltype(_impl_.options_)*/ nullptr
+} {}
 struct OneofDescriptorProtoDefaultTypeInternal {
   PROTOBUF_CONSTEXPR OneofDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~OneofDescriptorProtoDefaultTypeInternal() {}
@@ -244,7 +250,8 @@ PROTOBUF_CONSTEXPR EnumDescriptorProto::EnumDescriptorProto(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.options_)*/nullptr} {}
+  , /*decltype(_impl_.options_)*/ nullptr
+} {}
 struct EnumDescriptorProtoDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EnumDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EnumDescriptorProtoDefaultTypeInternal() {}
@@ -263,7 +270,8 @@ PROTOBUF_CONSTEXPR EnumValueDescriptorProto::EnumValueDescriptorProto(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.options_)*/nullptr
+  , /*decltype(_impl_.options_)*/ nullptr
+
   , /*decltype(_impl_.number_)*/ 0
 } {}
 struct EnumValueDescriptorProtoDefaultTypeInternal {
@@ -285,7 +293,8 @@ PROTOBUF_CONSTEXPR ServiceDescriptorProto::ServiceDescriptorProto(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.options_)*/nullptr} {}
+  , /*decltype(_impl_.options_)*/ nullptr
+} {}
 struct ServiceDescriptorProtoDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ServiceDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ServiceDescriptorProtoDefaultTypeInternal() {}
@@ -312,7 +321,8 @@ PROTOBUF_CONSTEXPR MethodDescriptorProto::MethodDescriptorProto(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.options_)*/nullptr
+  , /*decltype(_impl_.options_)*/ nullptr
+
   , /*decltype(_impl_.client_streaming_)*/ false
 
   , /*decltype(_impl_.server_streaming_)*/ false
@@ -1830,11 +1840,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.FileDescriptorProto file = 1;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_file_size()); i < n; i++) {
-    const auto& repfield = this->_internal_file(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(1, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.file_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        1, msg, msg.GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1854,10 +1862,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.FileDescriptorProto file = 1;
-  total_size += 1UL * this->_internal_file_size();
-  for (const auto& msg : this->_impl_.file_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_file_size();
+  for (const auto& msg : _impl_.file_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1890,8 +1897,9 @@ void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
 }
 
 bool FileDescriptorSet::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.file_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.file_)) {
     return false;
+  }
   return true;
 }
 
@@ -1935,12 +1943,10 @@ class FileDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::FileOptions&
-FileDescriptorProto::_Internal::options(const FileDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::FileOptions& FileDescriptorProto::_Internal::options(const FileDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
-const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo&
-FileDescriptorProto::_Internal::source_code_info(const FileDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo& FileDescriptorProto::_Internal::source_code_info(const FileDescriptorProto* msg) {
   return *msg->_impl_.source_code_info_;
 }
 FileDescriptorProto::FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -1971,8 +1977,10 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
 
     , decltype(_impl_.edition_) {}
 
-    , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.source_code_info_){nullptr}};
+    , decltype(_impl_.options_) { nullptr }
+
+    , decltype(_impl_.source_code_info_) { nullptr }
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -2003,10 +2011,10 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
   if ((from._impl_._has_bits_[0] & 0x00000008u) != 0) {
     _this->_impl_.edition_.Set(from._internal_edition(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000010u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000010u) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::FileOptions(*from._impl_.options_);
   }
-  if ((from._impl_._has_bits_[0] & 0x00000020u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000020u) {
     _this->_impl_.source_code_info_ = new ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo(*from._impl_.source_code_info_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
@@ -2034,8 +2042,10 @@ inline void FileDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.edition_) {}
 
-    , decltype(_impl_.options_){nullptr}
-    , decltype(_impl_.source_code_info_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
+    , decltype(_impl_.source_code_info_) { nullptr }
+
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -2077,8 +2087,10 @@ inline void FileDescriptorProto::SharedDtor() {
   _impl_.package_.Destroy();
   _impl_.syntax_.Destroy();
   _impl_.edition_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
-  if (this != internal_default_instance()) delete _impl_.source_code_info_;
+  if (this != internal_default_instance()) 
+  delete _impl_.options_;
+  if (this != internal_default_instance()) 
+  delete _impl_.source_code_info_;
 }
 
 void FileDescriptorProto::SetCachedSize(int size) const {
@@ -2366,48 +2378,40 @@ failure:
   }
 
   // repeated .google.protobuf.DescriptorProto message_type = 4;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_message_type_size()); i < n; i++) {
-    const auto& repfield = this->_internal_message_type(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.message_type_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        4, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_enum_type_size()); i < n; i++) {
-    const auto& repfield = this->_internal_enum_type(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(5, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.enum_type_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        5, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_service_size()); i < n; i++) {
-    const auto& repfield = this->_internal_service(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(6, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.service_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        6, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_extension_size()); i < n; i++) {
-    const auto& repfield = this->_internal_extension(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(7, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.extension_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        7, msg, msg.GetCachedSize(), target, stream);
   }
 
   // optional .google.protobuf.FileOptions options = 8;
   if (cached_has_bits & 0x00000010u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(8, _Internal::options(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        8, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
   if (cached_has_bits & 0x00000020u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(9, _Internal::source_code_info(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        9, _Internal::source_code_info(this),
         _Internal::source_code_info(this).GetCachedSize(), target, stream);
   }
 
@@ -2464,31 +2468,27 @@ failure:
   }
 
   // repeated .google.protobuf.DescriptorProto message_type = 4;
-  total_size += 1UL * this->_internal_message_type_size();
-  for (const auto& msg : this->_impl_.message_type_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_message_type_size();
+  for (const auto& msg : _impl_.message_type_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-  total_size += 1UL * this->_internal_enum_type_size();
-  for (const auto& msg : this->_impl_.enum_type_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_enum_type_size();
+  for (const auto& msg : _impl_.enum_type_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-  total_size += 1UL * this->_internal_service_size();
-  for (const auto& msg : this->_impl_.service_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_service_size();
+  for (const auto& msg : _impl_.service_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-  total_size += 1UL * this->_internal_extension_size();
-  for (const auto& msg : this->_impl_.extension_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_extension_size();
+  for (const auto& msg : _impl_.extension_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated int32 public_dependency = 10;
@@ -2539,16 +2539,14 @@ failure:
 
     // optional .google.protobuf.FileOptions options = 8;
     if (cached_has_bits & 0x00000010u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.options_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.options_);
     }
 
     // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
     if (cached_has_bits & 0x00000020u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.source_code_info_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.source_code_info_);
     }
 
   }
@@ -2611,16 +2609,20 @@ void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
 }
 
 bool FileDescriptorProto::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.message_type_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.message_type_)) {
     return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.enum_type_))
+  }
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.enum_type_)) {
     return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.service_))
+  }
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.service_)) {
     return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.extension_))
+  }
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.extension_)) {
     return false;
-  if ((_impl_._has_bits_[0] & 0x00000010u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+  }
+  if (_impl_._has_bits_[0] & 0x00000010u && !_impl_.options_->IsInitialized()) {
+    return false;
   }
   return true;
 }
@@ -2678,8 +2680,7 @@ class DescriptorProto_ExtensionRange::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions&
-DescriptorProto_ExtensionRange::_Internal::options(const DescriptorProto_ExtensionRange* msg) {
+const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions& DescriptorProto_ExtensionRange::_Internal::options(const DescriptorProto_ExtensionRange* msg) {
   return *msg->_impl_.options_;
 }
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -2693,14 +2694,15 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorP
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
     , decltype(_impl_.start_) {}
 
     , decltype(_impl_.end_) {}
   };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000001u) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions(*from._impl_.options_);
   }
   ::memcpy(&_impl_.start_, &from._impl_.start_,
@@ -2714,7 +2716,8 @@ inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
     , decltype(_impl_.start_) { 0 }
 
     , decltype(_impl_.end_) { 0 }
@@ -2733,7 +2736,8 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
 
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.options_;
+  if (this != internal_default_instance()) 
+  delete _impl_.options_;
 }
 
 void DescriptorProto_ExtensionRange::SetCachedSize(int size) const {
@@ -2843,8 +2847,8 @@ failure:
 
   // optional .google.protobuf.ExtensionRangeOptions options = 3;
   if (cached_has_bits & 0x00000001u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::options(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -2868,9 +2872,8 @@ failure:
   if (cached_has_bits & 0x00000007u) {
     // optional .google.protobuf.ExtensionRangeOptions options = 3;
     if (cached_has_bits & 0x00000001u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.options_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.options_);
     }
 
     // optional int32 start = 1;
@@ -2929,8 +2932,8 @@ void DescriptorProto_ExtensionRange::CopyFrom(const DescriptorProto_ExtensionRan
 }
 
 bool DescriptorProto_ExtensionRange::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+  if (_impl_._has_bits_[0] & 0x00000001u && !_impl_.options_->IsInitialized()) {
+    return false;
   }
   return true;
 }
@@ -3202,8 +3205,7 @@ class DescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::MessageOptions&
-DescriptorProto::_Internal::options(const DescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::MessageOptions& DescriptorProto::_Internal::options(const DescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 DescriptorProto::DescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -3227,7 +3229,8 @@ DescriptorProto::DescriptorProto(const DescriptorProto& from)
     , decltype(_impl_.reserved_name_){from._impl_.reserved_name_}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}};
+    , decltype(_impl_.options_) { nullptr }
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -3237,7 +3240,7 @@ DescriptorProto::DescriptorProto(const DescriptorProto& from)
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000002u) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::MessageOptions(*from._impl_.options_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
@@ -3258,7 +3261,8 @@ inline void DescriptorProto::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.reserved_name_){arena}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -3286,7 +3290,8 @@ inline void DescriptorProto::SharedDtor() {
   _impl_.reserved_range_.~RepeatedPtrField();
   _impl_.reserved_name_.~RepeatedPtrField();
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  if (this != internal_default_instance()) 
+  delete _impl_.options_;
 }
 
 void DescriptorProto::SetCachedSize(int size) const {
@@ -3506,66 +3511,52 @@ failure:
   }
 
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_field_size()); i < n; i++) {
-    const auto& repfield = this->_internal_field(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.field_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        2, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_nested_type_size()); i < n; i++) {
-    const auto& repfield = this->_internal_nested_type(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.nested_type_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        3, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_enum_type_size()); i < n; i++) {
-    const auto& repfield = this->_internal_enum_type(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.enum_type_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        4, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_extension_range_size()); i < n; i++) {
-    const auto& repfield = this->_internal_extension_range(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(5, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.extension_range_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        5, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_extension_size()); i < n; i++) {
-    const auto& repfield = this->_internal_extension(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(6, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.extension_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        6, msg, msg.GetCachedSize(), target, stream);
   }
 
   // optional .google.protobuf.MessageOptions options = 7;
   if (cached_has_bits & 0x00000002u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(7, _Internal::options(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        7, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_oneof_decl_size()); i < n; i++) {
-    const auto& repfield = this->_internal_oneof_decl(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(8, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.oneof_decl_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        8, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_reserved_range_size()); i < n; i++) {
-    const auto& repfield = this->_internal_reserved_range(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(9, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.reserved_range_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        9, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated string reserved_name = 10;
@@ -3593,52 +3584,45 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
-  total_size += 1UL * this->_internal_field_size();
-  for (const auto& msg : this->_impl_.field_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_field_size();
+  for (const auto& msg : _impl_.field_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
-  total_size += 1UL * this->_internal_nested_type_size();
-  for (const auto& msg : this->_impl_.nested_type_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_nested_type_size();
+  for (const auto& msg : _impl_.nested_type_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-  total_size += 1UL * this->_internal_enum_type_size();
-  for (const auto& msg : this->_impl_.enum_type_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_enum_type_size();
+  for (const auto& msg : _impl_.enum_type_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-  total_size += 1UL * this->_internal_extension_range_size();
-  for (const auto& msg : this->_impl_.extension_range_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_extension_range_size();
+  for (const auto& msg : _impl_.extension_range_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-  total_size += 1UL * this->_internal_extension_size();
-  for (const auto& msg : this->_impl_.extension_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_extension_size();
+  for (const auto& msg : _impl_.extension_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
-  total_size += 1UL * this->_internal_oneof_decl_size();
-  for (const auto& msg : this->_impl_.oneof_decl_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_oneof_decl_size();
+  for (const auto& msg : _impl_.oneof_decl_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
-  total_size += 1UL * this->_internal_reserved_range_size();
-  for (const auto& msg : this->_impl_.reserved_range_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_reserved_range_size();
+  for (const auto& msg : _impl_.reserved_range_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated string reserved_name = 10;
@@ -3657,9 +3641,8 @@ failure:
 
     // optional .google.protobuf.MessageOptions options = 7;
     if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.options_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.options_);
     }
 
   }
@@ -3710,20 +3693,26 @@ void DescriptorProto::CopyFrom(const DescriptorProto& from) {
 }
 
 bool DescriptorProto::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.field_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.field_)) {
     return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.nested_type_))
+  }
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.nested_type_)) {
     return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.enum_type_))
+  }
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.enum_type_)) {
     return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.extension_range_))
+  }
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.extension_range_)) {
     return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.extension_))
+  }
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.extension_)) {
     return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.oneof_decl_))
+  }
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.oneof_decl_)) {
     return false;
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+  }
+  if (_impl_._has_bits_[0] & 0x00000002u && !_impl_.options_->IsInitialized()) {
+    return false;
   }
   return true;
 }
@@ -3870,11 +3859,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        999, msg, msg.GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 536870912)
@@ -3900,10 +3887,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_impl_.uninterpreted_option_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{2} * _internal_uninterpreted_option_size();
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -3941,8 +3927,9 @@ bool ExtensionRangeOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_)) {
     return false;
+  }
   return true;
 }
 
@@ -4001,8 +3988,7 @@ class FieldDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::FieldOptions&
-FieldDescriptorProto::_Internal::options(const FieldDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::FieldOptions& FieldDescriptorProto::_Internal::options(const FieldDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 FieldDescriptorProto::FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -4026,7 +4012,8 @@ FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
 
     , decltype(_impl_.json_name_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
     , decltype(_impl_.number_) {}
 
     , decltype(_impl_.oneof_index_) {}
@@ -4072,7 +4059,7 @@ FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
   if ((from._impl_._has_bits_[0] & 0x00000010u) != 0) {
     _this->_impl_.json_name_.Set(from._internal_json_name(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000020u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000020u) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::FieldOptions(*from._impl_.options_);
   }
   ::memcpy(&_impl_.number_, &from._impl_.number_,
@@ -4096,7 +4083,8 @@ inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.json_name_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
     , decltype(_impl_.number_) { 0 }
 
     , decltype(_impl_.oneof_index_) { 0 }
@@ -4144,7 +4132,8 @@ inline void FieldDescriptorProto::SharedDtor() {
   _impl_.type_name_.Destroy();
   _impl_.default_value_.Destroy();
   _impl_.json_name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  if (this != internal_default_instance()) 
+  delete _impl_.options_;
 }
 
 void FieldDescriptorProto::SetCachedSize(int size) const {
@@ -4418,8 +4407,8 @@ failure:
 
   // optional .google.protobuf.FieldOptions options = 8;
   if (cached_has_bits & 0x00000020u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(8, _Internal::options(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        8, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -4495,9 +4484,8 @@ failure:
 
     // optional .google.protobuf.FieldOptions options = 8;
     if (cached_has_bits & 0x00000020u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.options_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.options_);
     }
 
     // optional int32 number = 3;
@@ -4602,8 +4590,8 @@ void FieldDescriptorProto::CopyFrom(const FieldDescriptorProto& from) {
 }
 
 bool FieldDescriptorProto::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000020u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+  if (_impl_._has_bits_[0] & 0x00000020u && !_impl_.options_->IsInitialized()) {
+    return false;
   }
   return true;
 }
@@ -4653,8 +4641,7 @@ class OneofDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::OneofOptions&
-OneofDescriptorProto::_Internal::options(const OneofDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::OneofOptions& OneofDescriptorProto::_Internal::options(const OneofDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 OneofDescriptorProto::OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -4670,7 +4657,8 @@ OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from)
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}};
+    , decltype(_impl_.options_) { nullptr }
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -4680,7 +4668,7 @@ OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from)
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000002u) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::OneofOptions(*from._impl_.options_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
@@ -4693,7 +4681,8 @@ inline void OneofDescriptorProto::SharedCtor(::_pb::Arena* arena) {
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -4713,7 +4702,8 @@ OneofDescriptorProto::~OneofDescriptorProto() {
 inline void OneofDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  if (this != internal_default_instance()) 
+  delete _impl_.options_;
 }
 
 void OneofDescriptorProto::SetCachedSize(int size) const {
@@ -4810,8 +4800,8 @@ failure:
 
   // optional .google.protobuf.OneofOptions options = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(2, _Internal::options(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        2, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -4841,9 +4831,8 @@ failure:
 
     // optional .google.protobuf.OneofOptions options = 2;
     if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.options_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.options_);
     }
 
   }
@@ -4886,8 +4875,8 @@ void OneofDescriptorProto::CopyFrom(const OneofDescriptorProto& from) {
 }
 
 bool OneofDescriptorProto::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+  if (_impl_._has_bits_[0] & 0x00000002u && !_impl_.options_->IsInitialized()) {
+    return false;
   }
   return true;
 }
@@ -5158,8 +5147,7 @@ class EnumDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::EnumOptions&
-EnumDescriptorProto::_Internal::options(const EnumDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::EnumOptions& EnumDescriptorProto::_Internal::options(const EnumDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 EnumDescriptorProto::EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -5178,7 +5166,8 @@ EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
     , decltype(_impl_.reserved_name_){from._impl_.reserved_name_}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}};
+    , decltype(_impl_.options_) { nullptr }
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -5188,7 +5177,7 @@ EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000002u) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::EnumOptions(*from._impl_.options_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
@@ -5204,7 +5193,8 @@ inline void EnumDescriptorProto::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.reserved_name_){arena}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -5227,7 +5217,8 @@ inline void EnumDescriptorProto::SharedDtor() {
   _impl_.reserved_range_.~RepeatedPtrField();
   _impl_.reserved_name_.~RepeatedPtrField();
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  if (this != internal_default_instance()) 
+  delete _impl_.options_;
 }
 
 void EnumDescriptorProto::SetCachedSize(int size) const {
@@ -5372,26 +5363,22 @@ failure:
   }
 
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_value_size()); i < n; i++) {
-    const auto& repfield = this->_internal_value(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.value_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        2, msg, msg.GetCachedSize(), target, stream);
   }
 
   // optional .google.protobuf.EnumOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::options(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_reserved_range_size()); i < n; i++) {
-    const auto& repfield = this->_internal_reserved_range(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.reserved_range_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        4, msg, msg.GetCachedSize(), target, stream);
   }
 
   // repeated string reserved_name = 5;
@@ -5419,17 +5406,15 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-  total_size += 1UL * this->_internal_value_size();
-  for (const auto& msg : this->_impl_.value_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_value_size();
+  for (const auto& msg : _impl_.value_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
-  total_size += 1UL * this->_internal_reserved_range_size();
-  for (const auto& msg : this->_impl_.reserved_range_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_reserved_range_size();
+  for (const auto& msg : _impl_.reserved_range_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated string reserved_name = 5;
@@ -5448,9 +5433,8 @@ failure:
 
     // optional .google.protobuf.EnumOptions options = 3;
     if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.options_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.options_);
     }
 
   }
@@ -5496,10 +5480,11 @@ void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
 }
 
 bool EnumDescriptorProto::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.value_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.value_)) {
     return false;
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+  }
+  if (_impl_._has_bits_[0] & 0x00000002u && !_impl_.options_->IsInitialized()) {
+    return false;
   }
   return true;
 }
@@ -5542,8 +5527,7 @@ class EnumValueDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::EnumValueOptions&
-EnumValueDescriptorProto::_Internal::options(const EnumValueDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::EnumValueOptions& EnumValueDescriptorProto::_Internal::options(const EnumValueDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 EnumValueDescriptorProto::EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -5559,7 +5543,8 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProt
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
     , decltype(_impl_.number_) {}
   };
 
@@ -5571,7 +5556,7 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProt
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000002u) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::EnumValueOptions(*from._impl_.options_);
   }
   _this->_impl_.number_ = from._impl_.number_;
@@ -5585,7 +5570,8 @@ inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* arena) {
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
     , decltype(_impl_.number_) { 0 }
 
   };
@@ -5607,7 +5593,8 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 inline void EnumValueDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  if (this != internal_default_instance()) 
+  delete _impl_.options_;
 }
 
 void EnumValueDescriptorProto::SetCachedSize(int size) const {
@@ -5722,8 +5709,8 @@ failure:
 
   // optional .google.protobuf.EnumValueOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::options(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -5753,9 +5740,8 @@ failure:
 
     // optional .google.protobuf.EnumValueOptions options = 3;
     if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.options_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.options_);
     }
 
     // optional int32 number = 2;
@@ -5808,8 +5794,8 @@ void EnumValueDescriptorProto::CopyFrom(const EnumValueDescriptorProto& from) {
 }
 
 bool EnumValueDescriptorProto::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+  if (_impl_._has_bits_[0] & 0x00000002u && !_impl_.options_->IsInitialized()) {
+    return false;
   }
   return true;
 }
@@ -5851,8 +5837,7 @@ class ServiceDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::ServiceOptions&
-ServiceDescriptorProto::_Internal::options(const ServiceDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::ServiceOptions& ServiceDescriptorProto::_Internal::options(const ServiceDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 ServiceDescriptorProto::ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -5869,7 +5854,8 @@ ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& fro
     , decltype(_impl_.method_){from._impl_.method_}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}};
+    , decltype(_impl_.options_) { nullptr }
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -5879,7 +5865,7 @@ ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& fro
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000002u) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::ServiceOptions(*from._impl_.options_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
@@ -5893,7 +5879,8 @@ inline void ServiceDescriptorProto::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.method_){arena}
     , decltype(_impl_.name_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -5914,7 +5901,8 @@ inline void ServiceDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.method_.~RepeatedPtrField();
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  if (this != internal_default_instance()) 
+  delete _impl_.options_;
 }
 
 void ServiceDescriptorProto::SetCachedSize(int size) const {
@@ -6025,17 +6013,15 @@ failure:
   }
 
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_method_size()); i < n; i++) {
-    const auto& repfield = this->_internal_method(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.method_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        2, msg, msg.GetCachedSize(), target, stream);
   }
 
   // optional .google.protobuf.ServiceOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::options(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -6056,10 +6042,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
-  total_size += 1UL * this->_internal_method_size();
-  for (const auto& msg : this->_impl_.method_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_method_size();
+  for (const auto& msg : _impl_.method_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -6072,9 +6057,8 @@ failure:
 
     // optional .google.protobuf.ServiceOptions options = 3;
     if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.options_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.options_);
     }
 
   }
@@ -6118,10 +6102,11 @@ void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
 }
 
 bool ServiceDescriptorProto::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.method_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.method_)) {
     return false;
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+  }
+  if (_impl_._has_bits_[0] & 0x00000002u && !_impl_.options_->IsInitialized()) {
+    return false;
   }
   return true;
 }
@@ -6171,8 +6156,7 @@ class MethodDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::MethodOptions&
-MethodDescriptorProto::_Internal::options(const MethodDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::MethodOptions& MethodDescriptorProto::_Internal::options(const MethodDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 MethodDescriptorProto::MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -6192,7 +6176,8 @@ MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
 
     , decltype(_impl_.output_type_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
     , decltype(_impl_.client_streaming_) {}
 
     , decltype(_impl_.server_streaming_) {}
@@ -6220,7 +6205,7 @@ MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
   if ((from._impl_._has_bits_[0] & 0x00000004u) != 0) {
     _this->_impl_.output_type_.Set(from._internal_output_type(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000008u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000008u) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::MethodOptions(*from._impl_.options_);
   }
   ::memcpy(&_impl_.client_streaming_, &from._impl_.client_streaming_,
@@ -6240,7 +6225,8 @@ inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.output_type_) {}
 
-    , decltype(_impl_.options_){nullptr}
+    , decltype(_impl_.options_) { nullptr }
+
     , decltype(_impl_.client_streaming_) { false }
 
     , decltype(_impl_.server_streaming_) { false }
@@ -6274,7 +6260,8 @@ inline void MethodDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.input_type_.Destroy();
   _impl_.output_type_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  if (this != internal_default_instance()) 
+  delete _impl_.options_;
 }
 
 void MethodDescriptorProto::SetCachedSize(int size) const {
@@ -6442,8 +6429,8 @@ failure:
 
   // optional .google.protobuf.MethodOptions options = 4;
   if (cached_has_bits & 0x00000008u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(4, _Internal::options(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        4, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -6499,9 +6486,8 @@ failure:
 
     // optional .google.protobuf.MethodOptions options = 4;
     if (cached_has_bits & 0x00000008u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.options_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.options_);
     }
 
     // optional bool client_streaming = 5 [default = false];
@@ -6567,8 +6553,8 @@ void MethodDescriptorProto::CopyFrom(const MethodDescriptorProto& from) {
 }
 
 bool MethodDescriptorProto::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000008u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+  if (_impl_._has_bits_[0] & 0x00000008u && !_impl_.options_->IsInitialized()) {
+    return false;
   }
   return true;
 }
@@ -7417,11 +7403,9 @@ failure:
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        999, msg, msg.GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 536870912)
@@ -7447,10 +7431,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_impl_.uninterpreted_option_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{2} * _internal_uninterpreted_option_size();
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -7675,8 +7658,9 @@ bool FileOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_)) {
     return false;
+  }
   return true;
 }
 
@@ -7977,11 +7961,9 @@ failure:
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        999, msg, msg.GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 536870912)
@@ -8007,10 +7989,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_impl_.uninterpreted_option_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{2} * _internal_uninterpreted_option_size();
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -8095,8 +8076,9 @@ bool MessageOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_)) {
     return false;
+  }
   return true;
 }
 
@@ -8508,11 +8490,9 @@ failure:
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        999, msg, msg.GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 536870912)
@@ -8538,10 +8518,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_impl_.uninterpreted_option_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{2} * _internal_uninterpreted_option_size();
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -8675,8 +8654,9 @@ bool FieldOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_)) {
     return false;
+  }
   return true;
 }
 
@@ -8817,11 +8797,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        999, msg, msg.GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 536870912)
@@ -8847,10 +8825,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_impl_.uninterpreted_option_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{2} * _internal_uninterpreted_option_size();
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -8888,8 +8865,9 @@ bool OneofOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_)) {
     return false;
+  }
   return true;
 }
 
@@ -9110,11 +9088,9 @@ failure:
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        999, msg, msg.GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 536870912)
@@ -9140,10 +9116,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_impl_.uninterpreted_option_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{2} * _internal_uninterpreted_option_size();
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -9212,8 +9187,9 @@ bool EnumOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_)) {
     return false;
+  }
   return true;
 }
 
@@ -9389,11 +9365,9 @@ failure:
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        999, msg, msg.GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 536870912)
@@ -9419,10 +9393,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_impl_.uninterpreted_option_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{2} * _internal_uninterpreted_option_size();
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // optional bool deprecated = 1 [default = false];
@@ -9469,8 +9442,9 @@ bool EnumValueOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_)) {
     return false;
+  }
   return true;
 }
 
@@ -9642,11 +9616,9 @@ failure:
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        999, msg, msg.GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 536870912)
@@ -9672,10 +9644,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_impl_.uninterpreted_option_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{2} * _internal_uninterpreted_option_size();
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // optional bool deprecated = 33 [default = false];
@@ -9722,8 +9693,9 @@ bool ServiceOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_)) {
     return false;
+  }
   return true;
 }
 
@@ -9928,11 +9900,9 @@ failure:
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        999, msg, msg.GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 536870912)
@@ -9958,10 +9928,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_impl_.uninterpreted_option_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{2} * _internal_uninterpreted_option_size();
+  for (const auto& msg : _impl_.uninterpreted_option_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -10023,8 +9992,9 @@ bool MethodOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.uninterpreted_option_)) {
     return false;
+  }
   return true;
 }
 
@@ -10602,11 +10572,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_name_size()); i < n; i++) {
-    const auto& repfield = this->_internal_name(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.name_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        2, msg, msg.GetCachedSize(), target, stream);
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -10670,10 +10638,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-  total_size += 1UL * this->_internal_name_size();
-  for (const auto& msg : this->_impl_.name_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_name_size();
+  for (const auto& msg : _impl_.name_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -10766,8 +10733,9 @@ void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
 }
 
 bool UninterpretedOption::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.name_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.name_)) {
     return false;
+  }
   return true;
 }
 
@@ -11307,11 +11275,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_location_size()); i < n; i++) {
-    const auto& repfield = this->_internal_location(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(1, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.location_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        1, msg, msg.GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -11331,10 +11297,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
-  total_size += 1UL * this->_internal_location_size();
-  for (const auto& msg : this->_impl_.location_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_location_size();
+  for (const auto& msg : _impl_.location_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -11869,11 +11834,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_annotation_size()); i < n; i++) {
-    const auto& repfield = this->_internal_annotation(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(1, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.annotation_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        1, msg, msg.GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -11893,10 +11856,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
-  total_size += 1UL * this->_internal_annotation_size();
-  for (const auto& msg : this->_impl_.annotation_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_annotation_size();
+  for (const auto& msg : _impl_.annotation_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);

@@ -51,7 +51,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeSingularPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
@@ -59,7 +59,7 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
-std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeSingularEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
@@ -71,7 +71,7 @@ std::unique_ptr<FieldGeneratorBase> MakeOneofEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
-std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeSingularStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
@@ -79,15 +79,11 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
-std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeSingularMessageGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedMessageGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc);
-
-std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 

@@ -54,7 +54,8 @@ PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.compiler_version_)*/nullptr} {}
+  , /*decltype(_impl_.compiler_version_)*/ nullptr
+} {}
 struct CodeGeneratorRequestDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorRequestDefaultTypeInternal() {}
@@ -81,7 +82,8 @@ PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.generated_code_info_)*/nullptr} {}
+  , /*decltype(_impl_.generated_code_info_)*/ nullptr
+} {}
 struct CodeGeneratorResponse_FileDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponse_FileDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponse_FileDefaultTypeInternal() {}
@@ -637,8 +639,7 @@ class CodeGeneratorRequest::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::compiler::Version&
-CodeGeneratorRequest::_Internal::compiler_version(const CodeGeneratorRequest* msg) {
+const ::PROTOBUF_NAMESPACE_ID::compiler::Version& CodeGeneratorRequest::_Internal::compiler_version(const CodeGeneratorRequest* msg) {
   return *msg->_impl_.compiler_version_;
 }
 void CodeGeneratorRequest::clear_proto_file() {
@@ -659,7 +660,8 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
     , decltype(_impl_.proto_file_){from._impl_.proto_file_}
     , decltype(_impl_.parameter_) {}
 
-    , decltype(_impl_.compiler_version_){nullptr}};
+    , decltype(_impl_.compiler_version_) { nullptr }
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.parameter_.InitDefault();
@@ -669,7 +671,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_impl_.parameter_.Set(from._internal_parameter(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000002u) {
     _this->_impl_.compiler_version_ = new ::PROTOBUF_NAMESPACE_ID::compiler::Version(*from._impl_.compiler_version_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
@@ -684,7 +686,8 @@ inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.proto_file_){arena}
     , decltype(_impl_.parameter_) {}
 
-    , decltype(_impl_.compiler_version_){nullptr}
+    , decltype(_impl_.compiler_version_) { nullptr }
+
   };
   _impl_.parameter_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -706,7 +709,8 @@ inline void CodeGeneratorRequest::SharedDtor() {
   _impl_.file_to_generate_.~RepeatedPtrField();
   _impl_.proto_file_.~RepeatedPtrField();
   _impl_.parameter_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.compiler_version_;
+  if (this != internal_default_instance()) 
+  delete _impl_.compiler_version_;
 }
 
 void CodeGeneratorRequest::SetCachedSize(int size) const {
@@ -845,17 +849,15 @@ failure:
 
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::compiler_version(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::compiler_version(this),
         _Internal::compiler_version(this).GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_proto_file_size()); i < n; i++) {
-    const auto& repfield = this->_internal_proto_file(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(15, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.proto_file_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        15, msg, msg.GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -881,10 +883,9 @@ failure:
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  total_size += 1UL * this->_internal_proto_file_size();
-  for (const auto& msg : this->_impl_.proto_file_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_proto_file_size();
+  for (const auto& msg : _impl_.proto_file_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -897,9 +898,8 @@ failure:
 
     // optional .google.protobuf.compiler.Version compiler_version = 3;
     if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.compiler_version_);
+      total_size +=
+          1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.compiler_version_);
     }
 
   }
@@ -944,8 +944,9 @@ void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
 }
 
 bool CodeGeneratorRequest::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.proto_file_))
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(_impl_.proto_file_)) {
     return false;
+  }
   return true;
 }
 
@@ -989,12 +990,13 @@ class CodeGeneratorResponse_File::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo&
-CodeGeneratorResponse_File::_Internal::generated_code_info(const CodeGeneratorResponse_File* msg) {
+const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& CodeGeneratorResponse_File::_Internal::generated_code_info(const CodeGeneratorResponse_File* msg) {
   return *msg->_impl_.generated_code_info_;
 }
 void CodeGeneratorResponse_File::clear_generated_code_info() {
-  if (_impl_.generated_code_info_ != nullptr) _impl_.generated_code_info_->Clear();
+  if (_impl_.generated_code_info_ != nullptr) {
+    _impl_.generated_code_info_->Clear();
+  }
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -1014,7 +1016,8 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorRespon
 
     , decltype(_impl_.content_) {}
 
-    , decltype(_impl_.generated_code_info_){nullptr}};
+    , decltype(_impl_.generated_code_info_) { nullptr }
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -1038,7 +1041,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorRespon
   if ((from._impl_._has_bits_[0] & 0x00000004u) != 0) {
     _this->_impl_.content_.Set(from._internal_content(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000008u) != 0) {
+  if (from._impl_._has_bits_[0] & 0x00000008u) {
     _this->_impl_.generated_code_info_ = new ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo(*from._impl_.generated_code_info_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
@@ -1055,7 +1058,8 @@ inline void CodeGeneratorResponse_File::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.content_) {}
 
-    , decltype(_impl_.generated_code_info_){nullptr}
+    , decltype(_impl_.generated_code_info_) { nullptr }
+
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -1085,7 +1089,8 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.insertion_point_.Destroy();
   _impl_.content_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.generated_code_info_;
+  if (this != internal_default_instance()) 
+  delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.generated_code_info_);
 }
 
 void CodeGeneratorResponse_File::SetCachedSize(int size) const {
@@ -1230,8 +1235,8 @@ failure:
 
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
   if (cached_has_bits & 0x00000008u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(16, _Internal::generated_code_info(this),
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        16, _Internal::generated_code_info(this),
         _Internal::generated_code_info(this).GetCachedSize(), target, stream);
   }
 
@@ -1273,9 +1278,8 @@ failure:
 
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     if (cached_has_bits & 0x00000008u) {
-      total_size += 2 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *_impl_.generated_code_info_);
+      total_size +=
+          2 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(*_impl_.generated_code_info_);
     }
 
   }
@@ -1534,11 +1538,9 @@ failure:
   }
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_file_size()); i < n; i++) {
-    const auto& repfield = this->_internal_file(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(15, repfield, repfield.GetCachedSize(), target, stream);
+  for (const auto& msg : _impl_.file_) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::InternalWriteMessage(
+        15, msg, msg.GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1558,10 +1560,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  total_size += 1UL * this->_internal_file_size();
-  for (const auto& msg : this->_impl_.file_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  total_size += std::size_t{1} * _internal_file_size();
+  for (const auto& msg : _impl_.file_) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   cached_has_bits = _impl_._has_bits_[0];

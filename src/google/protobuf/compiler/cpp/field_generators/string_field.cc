@@ -916,7 +916,7 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
 }
 }  // namespace
 
-std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeSingularStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
   return absl::make_unique<SingularString>(desc, options);

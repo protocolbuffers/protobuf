@@ -502,7 +502,7 @@ void RepeatedEnumFieldGenerator::GenerateCopyAggregateInitializer(
 }
 }  // namespace
 
-std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
+std::unique_ptr<FieldGeneratorBase> MakeSingularEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
   return absl::make_unique<EnumFieldGenerator>(desc, options);
