@@ -63,6 +63,9 @@
 #include <ctype.h>
 #endif
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -521,3 +524,5 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

@@ -19,7 +19,6 @@ COPTS = select({
     "//conditions:default": [
         "-DHAVE_ZLIB",
         "-Woverloaded-virtual",
-        "-Wno-sign-compare",
         "-Wno-nonnull",
         "-Werror",
     ],

@@ -44,6 +44,9 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -137,3 +140,5 @@ std::string StripProto(absl::string_view filename) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

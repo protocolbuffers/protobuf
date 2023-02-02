@@ -51,6 +51,9 @@
 #include "google/protobuf/io/io_win32.h"
 #endif
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
 
@@ -210,3 +213,5 @@ bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

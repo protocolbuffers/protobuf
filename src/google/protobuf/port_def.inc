@@ -1009,6 +1009,8 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 //   int index = ...
 //   int value = vec[index];
 #pragma GCC diagnostic ignored "-Wsign-conversion"
+// -Wsign-compare causes a lot of warnings from uses of ABSL_CHECK_EQ.
+#pragma GCC diagnostic ignored "-Wsign-compare"
 #endif  // __GNUC__
 
 // Silence some MSVC warnings in all our code.

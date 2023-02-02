@@ -49,6 +49,9 @@
 #include "google/protobuf/descriptor.pb.h"
 
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -204,3 +207,5 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
