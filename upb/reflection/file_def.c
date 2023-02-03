@@ -305,8 +305,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   // Create extensions.
   exts = UPB_DESC(FileDescriptorProto_extension)(file_proto, &n);
   file->top_lvl_ext_count = n;
-  file->top_lvl_exts =
-      _upb_FieldDefs_New(ctx, n, exts, file->package, NULL, NULL);
+  file->top_lvl_exts = _upb_Extensions_New(ctx, n, exts, file->package, NULL);
 
   // Create messages.
   msgs = UPB_DESC(FileDescriptorProto_message_type)(file_proto, &n);

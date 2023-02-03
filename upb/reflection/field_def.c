@@ -713,6 +713,24 @@ static void _upb_FieldDef_CreateNotExt(upb_DefBuilder* ctx, const char* prefix,
   UPB_ASSERT(false);  // It should be impossible to reach this point.
 }
 
+upb_FieldDef* _upb_Extensions_New(
+    upb_DefBuilder* ctx, int n,
+    const UPB_DESC(FieldDescriptorProto) * const* protos, const char* prefix,
+    upb_MessageDef* m) {
+  _upb_DefType_CheckPadding(sizeof(upb_FieldDef));
+  upb_FieldDef* defs =
+      (upb_FieldDef*)_upb_DefBuilder_Alloc(ctx, sizeof(upb_FieldDef) * n);
+
+  for (int i = 0; i < n; i++) {
+    upb_FieldDef* f = &defs[i];
+
+    _upb_FieldDef_CreateExt(ctx, prefix, protos[i], m, f);
+    f->index_ = i;
+  }
+
+  return defs;
+}
+
 upb_FieldDef* _upb_FieldDefs_New(
     upb_DefBuilder* ctx, int n,
     const UPB_DESC(FieldDescriptorProto) * const* protos, const char* prefix,
@@ -721,28 +739,17 @@ upb_FieldDef* _upb_FieldDefs_New(
   upb_FieldDef* defs =
       (upb_FieldDef*)_upb_DefBuilder_Alloc(ctx, sizeof(upb_FieldDef) * n);
 
-  // If we are creating extensions then is_sorted will be NULL.
-  // If we are not creating extensions then is_sorted will be non-NULL.
-  if (is_sorted) {
-    uint32_t previous = 0;
-    for (int i = 0; i < n; i++) {
-      upb_FieldDef* f = &defs[i];
+  uint32_t previous = 0;
+  for (int i = 0; i < n; i++) {
+    upb_FieldDef* f = &defs[i];
 
-      _upb_FieldDef_CreateNotExt(ctx, prefix, protos[i], m, f);
-      f->index_ = i;
-      if (!ctx->layout) f->layout_index = i;
+    _upb_FieldDef_CreateNotExt(ctx, prefix, protos[i], m, f);
+    f->index_ = i;
+    if (!ctx->layout) f->layout_index = i;
 
-      const uint32_t current = f->number_;
-      if (previous > current) *is_sorted = false;
-      previous = current;
-    }
-  } else {
-    for (int i = 0; i < n; i++) {
-      upb_FieldDef* f = &defs[i];
-
-      _upb_FieldDef_CreateExt(ctx, prefix, protos[i], m, f);
-      f->index_ = i;
-    }
+    const uint32_t current = f->number_;
+    if (previous > current) *is_sorted = false;
+    previous = current;
   }
 
   return defs;

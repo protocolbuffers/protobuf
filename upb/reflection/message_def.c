@@ -370,7 +370,6 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
 
   if (!ctx->layout) {
     m->layout = _upb_MessageDef_MakeMiniTable(ctx, m);
-    if (!m->layout) _upb_DefBuilder_OomErr(ctx);
   }
 
 #ifndef NDEBUG
@@ -637,8 +636,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
     UPB_ASSERT(n_field == m->layout->field_count);
   } else {
     /* Allocate now (to allow cross-linking), populate later. */
-    m->layout = _upb_DefBuilder_Alloc(
-        ctx, sizeof(*m->layout) + sizeof(_upb_FastTable_Entry));
+    m->layout = _upb_DefBuilder_Alloc(ctx, sizeof(*m->layout));
   }
 
   UPB_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
@@ -681,7 +679,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   const UPB_DESC(FieldDescriptorProto)* const* exts =
       UPB_DESC(DescriptorProto_extension)(msg_proto, &n_ext);
   m->nested_ext_count = n_ext;
-  m->nested_exts = _upb_FieldDefs_New(ctx, n_ext, exts, m->full_name, m, NULL);
+  m->nested_exts = _upb_Extensions_New(ctx, n_ext, exts, m->full_name, m);
 
   const UPB_DESC(DescriptorProto)* const* msgs =
       UPB_DESC(DescriptorProto_nested_type)(msg_proto, &n_msg);
