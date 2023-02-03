@@ -53,6 +53,8 @@ VALUE MessageOrEnum_GetDescriptor(VALUE klass) {
 // -----------------------------------------------------------------------------
 
 typedef struct {
+  // IMPORTANT: WB_PROTECTED objects must only use the RB_OBJ_WRITE()
+  // macro to update VALUE references, as to trigger write barriers.
   VALUE arena;
   const upb_Message* msg;  // Can get as mutable when non-frozen.
   const upb_MessageDef*
@@ -65,9 +67,9 @@ static void Message_mark(void* _self) {
 }
 
 static rb_data_type_t Message_type = {
-    "Message",
+    "Google::Protobuf::Message",
     {Message_mark, RUBY_DEFAULT_FREE, NULL},
-    .flags = RUBY_TYPED_FREE_IMMEDIATELY,
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
 static Message* ruby_to_Message(VALUE msg_rb) {
@@ -105,7 +107,7 @@ upb_Message* Message_GetMutable(VALUE msg_rb, const upb_MessageDef** m) {
 void Message_InitPtr(VALUE self_, upb_Message* msg, VALUE arena) {
   Message* self = ruby_to_Message(self_);
   self->msg = msg;
-  self->arena = arena;
+  RB_OBJ_WRITE(self_, &self->arena, arena);
   ObjectCache_Add(msg, self_);
 }
 
