@@ -5448,6 +5448,7 @@ upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
   return ret;
 }
 
+// Warning: See TODO(b/267655898)
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,
@@ -5458,7 +5459,10 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   // Callers should check that message is not set first before calling
   // PromotoUnknownToMessage.
   UPB_ASSERT(mini_table->subs[field->submsg_index].submsg == sub_mini_table);
-  UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
+  bool is_oneof = _upb_MiniTableField_InOneOf(field);
+  if (!is_oneof || _upb_getoneofcase_field(msg, field) == field->number) {
+    UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
+  }
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;
   do {
@@ -5486,6 +5490,9 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     }
   } while (unknown.status == kUpb_FindUnknown_Ok);
   if (message) {
+    if (is_oneof) {
+      *_upb_oneofcase_field(msg, field) = field->number;
+    }
     upb_Message_SetMessage(msg, mini_table, field, message);
     ret.message = message;
   }
@@ -5805,6 +5812,38 @@ upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field) {
     }
   }
   return field->descriptortype;
+}
+
+static bool upb_MiniTable_Is_Oneof(const upb_MiniTableField* f) {
+  return f->presence < 0;
+}
+
+const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
+                                                 const upb_MiniTableField* f) {
+  if (UPB_UNLIKELY(!upb_MiniTable_Is_Oneof(f))) {
+    return NULL;
+  }
+  const upb_MiniTableField* ptr = &m->fields[0];
+  const upb_MiniTableField* end = &m->fields[m->field_count];
+  while (++ptr < end) {
+    if (ptr->presence == (*f).presence) {
+      return ptr;
+    }
+  }
+  return NULL;
+}
+
+bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
+                                  const upb_MiniTableField** f) {
+  const upb_MiniTableField* ptr = *f;
+  const upb_MiniTableField* end = &m->fields[m->field_count];
+  while (++ptr < end) {
+    if (ptr->presence == (*f)->presence) {
+      *f = ptr;
+      return true;
+    }
+  }
+  return false;
 }
 
 
