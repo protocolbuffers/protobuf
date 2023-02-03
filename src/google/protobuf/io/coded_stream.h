@@ -114,6 +114,7 @@
 #include <atomic>
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -1048,15 +1049,9 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 #endif  /// __BMI2__ && __LZCNT__
 
-  PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeWriteSize(uint32_t value,
+  PROTOBUF_ALWAYS_INLINE  uint8_t* UnsafeWriteSize(uint32_t value,
                                                          uint8_t* ptr) {
-    while (PROTOBUF_PREDICT_FALSE(value >= 0x80)) {
-      *ptr = static_cast<uint8_t>(value | 0x80);
-      value >>= 7;
-      ++ptr;
-    }
-    *ptr++ = static_cast<uint8_t>(value);
-    return ptr;
+    return UnsafeVarint(value, ptr);
   }
 
   template <int S>
@@ -1295,6 +1290,10 @@ class PROTOBUF_EXPORT CodedOutputStream {
   void WriteVarint64(uint64_t value);
   // Like WriteVarint64()  but writing directly to the target array.
   static uint8_t* WriteVarint64ToArray(uint64_t value, uint8_t* target);
+  // Like WriteVarint*()  but writting directly to target only for
+  // ZeroCopyOutputStream
+  template<typename T>
+  static uint8_t* WriteVarintToArrayStream(T value, uint8_t* target);
 
   // Equivalent to WriteVarint32() except when the value is negative,
   // in which case it must be sign-extended to a full 10 bytes.
@@ -1772,11 +1771,7 @@ inline void CodedOutputStream::InitEagerly(Stream* stream) {
 
 inline uint8_t* CodedOutputStream::WriteVarint32ToArray(uint32_t value,
                                                         uint8_t* target) {
-#if defined(__BMI2__) && defined(__LZCNT__)
-    return EpsCopyOutputStream::UnsafeVarintBMI2(value, target);
-#else
-    return EpsCopyOutputStream::UnsafeVarintNoneBMI2(value, target);
-#endif
+  return EpsCopyOutputStream::UnsafeVarintNoneBMI2(value, target);
 }
 
 inline uint8_t* CodedOutputStream::WriteVarint32ToArrayOutOfLine(
@@ -1791,6 +1786,13 @@ inline uint8_t* CodedOutputStream::WriteVarint32ToArrayOutOfLine(
 
 inline uint8_t* CodedOutputStream::WriteVarint64ToArray(uint64_t value,
                                                         uint8_t* target) {
+  return EpsCopyOutputStream::UnsafeVarintNoneBMI2(value, target);
+}
+
+template <typename T>
+inline uint8_t* CodedOutputStream::WriteVarintToArrayStream(T value, uint8_t *target) {
+  static_assert(std::is_unsigned<T>::value,
+                  "Varint serialization must be unsigned");
 #if defined(__BMI2__) && defined(__LZCNT__)
     return EpsCopyOutputStream::UnsafeVarintBMI2(value, target);
 #else
@@ -1844,12 +1846,12 @@ inline uint8_t* CodedOutputStream::WriteLittleEndian64ToArray(uint64_t value,
 
 inline void CodedOutputStream::WriteVarint32(uint32_t value) {
   cur_ = impl_.EnsureSpace(cur_);
-  SetCur(WriteVarint32ToArray(value, Cur()));
+  SetCur(WriteVarintToArrayStream(value, Cur()));
 }
 
 inline void CodedOutputStream::WriteVarint64(uint64_t value) {
   cur_ = impl_.EnsureSpace(cur_);
-  SetCur(WriteVarint64ToArray(value, Cur()));
+  SetCur(WriteVarintToArrayStream(value, Cur()));
 }
 
 inline void CodedOutputStream::WriteTag(uint32_t value) {
