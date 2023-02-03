@@ -49,6 +49,87 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: ${{ matrix.command }}
 
+  linux-32bit:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ['7.4', '8.0']
+        suffix: [ '', '-zts']
+        test: ['test', 'test_c']
+        exclude:
+          - suffix: '-zts'
+            test: 'test'
+        include:
+          - suffix: '-zts'
+            suffix_name: ' Thread Safe'
+          - test: 'test_c'
+            test_name: ' Extension'
+
+    name: Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
+    runs-on: ubuntu-latest
+    env:
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:6651a299483f7368876db7aed0802ad4ebf038d626d8995ba7df08978ff43210
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Cross compile protoc for i386
+        id: cross-compile
+        uses: ./.github/actions/cross-compile-protoc
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-i386
+
+      - name: Run tests
+        uses: ./.github/actions/docker
+        with:
+          image: ${{ env.image }}
+          skip-staleness-check: true
+          platform: linux/386
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -c '
+            cd /workspace/php && php -v && php -m;
+            composer update --ignore-platform-reqs;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            PATH="/usr/local/php-${{ matrix.version }}${{matrix.suffix}}/bin:$PATH"
+            composer ${{ matrix.test }}'
+
+  linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Cross compile protoc for aarch64
+        id: cross-compile
+        uses: ./.github/actions/cross-compile-protoc
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-aarch64
+
+      - name: Run tests
+        uses: ./.github/actions/docker
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64:0cc100b6e03d14c1e8f71ae794dc162ed122fe31@sha256:77b70feba68dced1f0fd21b52a08d3d2e0c5c797bfe68435a0038ce87ecfd310
+          platform: linux/arm64
+          skip-staleness-check: true
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            -c '
+            cd php;
+            composer update --ignore-platform-reqs;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            composer test;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            composer test_c'
+
   macos:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
