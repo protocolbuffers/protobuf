@@ -869,10 +869,6 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   }
 
   std::vector<upb::EnumDefPtr> this_file_enums = SortedEnums(file);
-  std::sort(this_file_enums.begin(), this_file_enums.end(),
-            [](upb::EnumDefPtr a, upb::EnumDefPtr b) {
-              return a.full_name() < b.full_name();
-            });
 
   for (auto enumdesc : this_file_enums) {
     output("typedef enum {\n");
