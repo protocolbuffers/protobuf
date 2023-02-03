@@ -97,6 +97,14 @@ jobs:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
+  java:
+    name: Java
+    needs: [check-tag]
+    uses: ./.github/workflows/test_java.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
   python:
     name: Python
     needs: [check-tag]
