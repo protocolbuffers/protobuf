@@ -1276,12 +1276,14 @@ class TextFormat::Parser::ParserImpl {
     if (allow_partial_) {
       value->AppendPartialToString(serialized_value);
     } else {
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
       if (!value->IsInitialized()) {
         ReportError(absl::StrCat(
             "Value of type \"", value_descriptor->full_name(),
             "\" stored in google.protobuf.Any has missing required fields"));
         return false;
       }
+#endif  //! PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
       value->AppendToString(serialized_value);
     }
     return true;
@@ -1718,6 +1720,7 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* /* input */,
                                         Message* output,
                                         ParserImpl* parser_impl) {
   if (!parser_impl->Parse(output)) return false;
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   if (!allow_partial_ && !output->IsInitialized()) {
     std::vector<std::string> missing_fields;
     output->FindInitializationErrors(&missing_fields);
@@ -1726,6 +1729,7 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* /* input */,
                                           absl::StrJoin(missing_fields, ", ")));
     return false;
   }
+#endif  // PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   return true;
 }
 

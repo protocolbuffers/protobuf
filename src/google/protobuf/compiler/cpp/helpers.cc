@@ -1297,7 +1297,8 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
                          MessageSCCAnalyzer* scc_analyzer) {
   return UsingImplicitWeakFields(field->file(), options) &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
-         !field->is_required() && !field->is_map() && !field->is_extension() &&
+         !FieldIsRequired(field) && !field->is_map() &&
+         !field->is_extension() &&
          !IsWellKnownMessage(field->message_type()->file()) &&
          field->message_type()->file()->name() !=
              "net/proto2/proto/descriptor.proto" &&
@@ -1322,7 +1323,7 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
     }
     for (int j = 0; j < descriptor->field_count(); j++) {
       const FieldDescriptor* field = descriptor->field(j);
-      if (field->is_required()) {
+      if (FieldIsRequired(field)) {
         result.contains_required = true;
       }
       if (field->options().weak()) {

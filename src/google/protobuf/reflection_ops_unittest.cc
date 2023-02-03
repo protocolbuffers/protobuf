@@ -334,6 +334,9 @@ TEST(ReflectionOpsTest, DiscardUnknownExtensions) {
 }
 
 TEST(ReflectionOpsTest, IsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   unittest::TestRequired message;
 
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
@@ -354,6 +357,9 @@ TEST(ReflectionOpsTest, IsInitialized) {
 }
 
 TEST(ReflectionOpsTest, ForeignIsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   unittest::TestRequiredForeign message;
 
   // Starts out initialized because the foreign message is itself an optional
@@ -391,6 +397,9 @@ TEST(ReflectionOpsTest, ForeignIsInitialized) {
 }
 
 TEST(ReflectionOpsTest, ExtensionIsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   unittest::TestAllExtensions message;
 
   // Starts out initialized because the foreign message is itself an optional
@@ -429,6 +438,9 @@ TEST(ReflectionOpsTest, ExtensionIsInitialized) {
 }
 
 TEST(ReflectionOpsTest, OneofIsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   unittest::TestRequiredOneof message;
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
   EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
@@ -461,11 +473,17 @@ static std::string FindInitializationErrors(const Message& message) {
 }
 
 TEST(ReflectionOpsTest, FindInitializationErrors) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   unittest::TestRequired message;
   EXPECT_EQ("a,b,c", FindInitializationErrors(message));
 }
 
 TEST(ReflectionOpsTest, FindForeignInitializationErrors) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   unittest::TestRequiredForeign message;
   message.mutable_optional_message();
   message.add_repeated_message();
@@ -484,6 +502,9 @@ TEST(ReflectionOpsTest, FindForeignInitializationErrors) {
 }
 
 TEST(ReflectionOpsTest, FindExtensionInitializationErrors) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   unittest::TestAllExtensions message;
   message.MutableExtension(unittest::TestRequired::single);
   message.AddExtension(unittest::TestRequired::multi);
@@ -502,6 +523,9 @@ TEST(ReflectionOpsTest, FindExtensionInitializationErrors) {
 }
 
 TEST(ReflectionOpsTest, FindOneofInitializationErrors) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   unittest::TestRequiredOneof message;
   message.mutable_foo_message();
   EXPECT_EQ("foo_message.required_double", FindInitializationErrors(message));

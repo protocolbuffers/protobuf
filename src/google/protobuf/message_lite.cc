@@ -110,6 +110,8 @@ inline absl::string_view as_string_view(const void* data, int size) {
   return absl::string_view(static_cast<const char*>(data), size);
 }
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+
 // Returns true if all required fields are present / have values.
 inline bool CheckFieldPresence(const internal::ParseContext& ctx,
                                const MessageLite& msg,
@@ -120,6 +122,8 @@ inline bool CheckFieldPresence(const internal::ParseContext& ctx,
   }
   return msg.IsInitializedWithErrors();
 }
+
+#endif  //! PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
 
 }  // namespace
 
@@ -138,7 +142,11 @@ bool MergeFromImpl(absl::string_view input, MessageLite* msg,
   ptr = msg->_InternalParse(ptr, &ctx);
   // ctx has an explicit limit set (length of string_view).
   if (PROTOBUF_PREDICT_TRUE(ptr && ctx.EndedAtLimit())) {
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
     return CheckFieldPresence(ctx, *msg, parse_flags);
+#else
+    return true;
+#endif
   }
   return false;
 }
@@ -152,7 +160,11 @@ bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
   ptr = msg->_InternalParse(ptr, &ctx);
   // ctx has no explicit limit (hence we end on end of stream)
   if (PROTOBUF_PREDICT_TRUE(ptr && ctx.EndedAtEndOfStream())) {
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
     return CheckFieldPresence(ctx, *msg, parse_flags);
+#else
+    return true;
+#endif
   }
   return false;
 }
@@ -167,7 +179,11 @@ bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (PROTOBUF_PREDICT_TRUE(ctx.EndedAtLimit())) {
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
     return CheckFieldPresence(ctx, *msg, parse_flags);
+#else
+    return true;
+#endif
   }
   return false;
 }
@@ -239,7 +255,11 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   } else {
     input->SetConsumed();
   }
-  return CheckFieldPresence(ctx, *this, parse_flags);
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  return CheckFieldPresence(ctx, *msg, parse_flags);
+#else
+  return true;
+#endif
 }
 
 bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {

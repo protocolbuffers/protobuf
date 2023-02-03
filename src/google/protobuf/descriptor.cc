@@ -4762,13 +4762,14 @@ void DescriptorBuilder::AllocateOptionsImpl(
     absl::string_view option_name, internal::FlatAllocator& alloc) {
   auto* options = alloc.AllocateArray<typename DescriptorT::OptionsType>(1);
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   if (!orig_options.IsInitialized()) {
     AddError(absl::StrCat(name_scope, ".", element_name), orig_options,
              DescriptorPool::ErrorCollector::OPTION_NAME,
              "Uninterpreted option is missing name or value.");
     return;
   }
-
+#endif
   // Avoid using MergeFrom()/CopyFrom() in this class to make it -fno-rtti
   // friendly. Without RTTI, MergeFrom() and CopyFrom() will fallback to the
   // reflection based method, which requires the Descriptor. However, we are in

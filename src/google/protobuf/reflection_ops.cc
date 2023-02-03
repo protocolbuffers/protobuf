@@ -192,6 +192,8 @@ void ReflectionOps::Clear(Message* message) {
   }
 }
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+
 bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
                                   bool check_descendants) {
   const Descriptor* descriptor = message.GetDescriptor();
@@ -329,6 +331,7 @@ bool ReflectionOps::IsInitialized(const Message& message) {
 
   return true;
 }
+#endif  // !PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
 
 static bool IsMapValueMessageTyped(const FieldDescriptor* map_field) {
   return map_field->message_type()->field(1)->cpp_type() ==
@@ -394,6 +397,8 @@ static std::string SubMessagePrefix(const std::string& prefix,
   return result;
 }
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+
 void ReflectionOps::FindInitializationErrors(const Message& message,
                                              const std::string& prefix,
                                              std::vector<std::string>* errors) {
@@ -435,6 +440,8 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
     }
   }
 }
+
+#endif  // !PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
 
 void GenericSwap(Message* lhs, Message* rhs) {
 #ifndef PROTOBUF_FORCE_COPY_IN_SWAP

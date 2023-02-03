@@ -387,7 +387,11 @@ class PROTOBUF_EXPORT ExtensionSet {
   void SwapExtension(const MessageLite* extendee, ExtensionSet* other,
                      int number);
   void UnsafeShallowSwapExtension(ExtensionSet* other, int number);
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  bool IsInitialized(const MessageLite* extendee) const { return true; }
+#else
   bool IsInitialized(const MessageLite* extendee) const;
+#endif
 
   // Lite parser
   const char* ParseField(uint64_t tag, const char* ptr,
@@ -558,8 +562,12 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
                                                    Arena* arena) = 0;
 
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+    bool IsInitialized(const MessageLite*, Arena*) const { return true; }
+#else
     virtual bool IsInitialized(const MessageLite* prototype,
                                Arena* arena) const = 0;
+#endif
 
     PROTOBUF_DEPRECATED_MSG("Please use ByteSizeLong() instead")
     virtual int ByteSize() const { return internal::ToIntSize(ByteSizeLong()); }
@@ -655,8 +663,15 @@ class PROTOBUF_EXPORT ExtensionSet {
     int GetSize() const;
     void Free();
     size_t SpaceUsedExcludingSelfLong() const;
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+    bool IsInitialized(const ExtensionSet*, const MessageLite*, int,
+                       Arena*) const {
+      return true;
+    }
+#else
     bool IsInitialized(const ExtensionSet* ext_set, const MessageLite* extendee,
                        int number, Arena* arena) const;
+#endif
   };
 
   // The Extension struct is small enough to be passed by value, so we use it

@@ -199,6 +199,9 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequired message;
 
   {
@@ -212,6 +215,9 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageNotInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequiredForeign source, message;
   source.mutable_optional_message()->set_dummy2(100);
   std::string serialized = source.SerializePartialAsString();
@@ -231,6 +237,9 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageNotInitialized) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestChildExtension source, message;
   auto* r = source.mutable_optional_extension()->MutableExtension(
       UNITTEST::TestRequired::single);
@@ -288,7 +297,9 @@ TEST(MESSAGE_TEST_NAME, UninitializedAndTooDeep) {
 
   UNITTEST::TestRequiredForeign pass;
   ASSERT_TRUE(pass.ParsePartialFromString(data));
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   ASSERT_FALSE(pass.IsInitialized());
+#endif
 
   io::ArrayInputStream array_stream(data.data(), data.size());
   io::CodedInputStream input_stream(&array_stream);
@@ -297,8 +308,11 @@ TEST(MESSAGE_TEST_NAME, UninitializedAndTooDeep) {
   UNITTEST::TestRequiredForeign fail;
   EXPECT_FALSE(fail.ParsePartialFromCodedStream(&input_stream));
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  ASSERT_FALSE(pass.IsInitialized());
   UNITTEST::TestRequiredForeign fail_uninitialized;
   EXPECT_FALSE(fail_uninitialized.ParseFromString(data));
+#endif
 }
 
 TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
@@ -467,12 +481,16 @@ TEST(MESSAGE_TEST_NAME, UninitializedAndMalformed) {
 
   // Should parse correctly.
   EXPECT_TRUE(p1.ParsePartialFromString(serialized));
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   EXPECT_FALSE(p1.IsInitialized());
+#endif
 
   // Overwriting the last byte to 0xFF results in malformed wire.
   serialized[serialized.size() - 1] = 0xFF;
   EXPECT_FALSE(p2.ParseFromString(serialized));
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   EXPECT_FALSE(p2.IsInitialized());
+#endif
 }
 
 inline UNITTEST::NestedTestAllTypes InitNestedProto(int depth) {
@@ -653,6 +671,9 @@ TEST(MESSAGE_TEST_NAME, BypassInitializationCheckOnParse) {
 }
 
 TEST(MESSAGE_TEST_NAME, InitializationErrorString) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequired message;
   EXPECT_EQ("a, b, c", message.InitializationErrorString());
 }
@@ -681,6 +702,9 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
 
 TEST(MESSAGE_TEST_NAME, SerializeFailsIfNotInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequired message;
   std::string data;
   EXPECT_DEBUG_DEATH(
@@ -691,6 +715,9 @@ TEST(MESSAGE_TEST_NAME, SerializeFailsIfNotInitialized) {
 }
 
 TEST(MESSAGE_TEST_NAME, CheckInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequired message;
   EXPECT_DEATH(message.CheckInitialized(),
                absl::StrCat("Message of type \"", UNITTEST_PACKAGE_NAME,
@@ -806,6 +833,9 @@ TEST(MESSAGE_TEST_NAME, BypassInitializationCheckOnSerialize) {
 }
 
 TEST(MESSAGE_TEST_NAME, FindInitializationErrors) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequired message;
   std::vector<std::string> errors;
   message.FindInitializationErrors(&errors);
@@ -993,6 +1023,9 @@ TEST(MESSAGE_TEST_NAME, MergeFrom) {
 }
 
 TEST(MESSAGE_TEST_NAME, IsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestIsInitialized msg;
   EXPECT_TRUE(msg.IsInitialized());
   UNITTEST::TestIsInitialized::SubMessage* sub_message =

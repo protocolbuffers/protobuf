@@ -68,17 +68,27 @@ class PROTOBUF_EXPORT ReflectionOps {
   static void Copy(const Message& from, Message* to);
   static void Merge(const Message& from, Message* to);
   static void Clear(Message* message);
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   static bool IsInitialized(const Message& message);
   static bool IsInitialized(const Message& message, bool check_fields,
                             bool check_descendants);
+#else   // !PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  static bool IsInitialized(const Message&) { return true; }
+  static bool IsInitialized(const Message&, bool, bool) { return true; }
+#endif  // !PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   static void DiscardUnknownFields(Message* message);
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   // Finds all unset required fields in the message and adds their full
   // paths (e.g. "foo.bar[5].baz") to *names.  "prefix" will be attached to
   // the front of each name.
   static void FindInitializationErrors(const Message& message,
                                        const std::string& prefix,
                                        std::vector<std::string>* errors);
+#else   // !PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  static void FindInitializationErrors(const Message&, const std::string&,
+                                       std::vector<std::string>*) {}
+#endif  // !PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
 };
 
 }  // namespace internal

@@ -718,10 +718,12 @@ TEST_P(JsonTest, TestParsingAnyWithRequiredFields) {
   ASSERT_OK(m);
 
   protobuf_unittest::TestRequired t;
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   // Can't use UnpackTo directly, since that checks IsInitialized.
   ASSERT_FALSE(m->value().UnpackTo(&t));
-
   t.Clear();
+#endif
+
   EXPECT_TRUE(t.ParsePartialFromString(m->value().value()));
   EXPECT_EQ(t.a(), 5);
   EXPECT_EQ(t.dummy2(), 6);

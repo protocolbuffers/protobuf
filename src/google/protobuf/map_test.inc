@@ -2303,6 +2303,9 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
 }
 
 TEST_F(MapFieldReflectionTest, UninitializedEntry) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequiredMessageMap message;
   const Reflection* reflection = message.GetReflection();
   const FieldDescriptor* field =
@@ -2919,6 +2922,9 @@ TEST(GeneratedMapFieldTest, CorruptedWireFormat) {
 }
 
 TEST(GeneratedMapFieldTest, IsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequiredMessageMap map_message;
 
   // Add an uninitialized message.
@@ -2960,17 +2966,25 @@ TEST(GeneratedMapFieldTest, MessagesMustMerge) {
   with_dummy4.set_a(97);
   with_dummy4.set_b(91);
   with_dummy4.set_dummy4(98);
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   EXPECT_FALSE(with_dummy4.IsInitialized());
+#endif
   (*map_message.mutable_map_field())[0] = with_dummy4;
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   EXPECT_FALSE(map_message.IsInitialized());
+#endif
 
   UNITTEST::TestRequired with_dummy5;
   with_dummy5.set_b(0);
   with_dummy5.set_c(33);
   with_dummy5.set_dummy5(99);
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   EXPECT_FALSE(with_dummy5.IsInitialized());
+#endif
   (*map_message.mutable_map_field())[0] = with_dummy5;
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   EXPECT_FALSE(map_message.IsInitialized());
+#endif
 
   // The wire format of MapEntry is straightforward (*) and can be manually
   // constructed to force merging of two uninitialized messages that would
@@ -3463,6 +3477,9 @@ TEST(ReflectionOpsForMapFieldTest, MapDiscardUnknownFields) {
 }
 
 TEST(ReflectionOpsForMapFieldTest, IsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   UNITTEST::TestRequiredMessageMap map_message;
 
   // Add an uninitialized message.
@@ -4052,6 +4069,9 @@ TEST(ArenaTest, StringMapNoLeak) {
 }
 
 TEST(ArenaTest, IsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   // Allocate a large initial polluted block.
   std::vector<char> arena_block(128 * 1024);
   std::fill(arena_block.begin(), arena_block.end(), '\xff');

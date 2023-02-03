@@ -135,6 +135,7 @@ std::string Message::GetTypeName() const {
 
 void Message::Clear() { ReflectionOps::Clear(this); }
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
 bool Message::IsInitialized() const {
   return ReflectionOps::IsInitialized(*this);
 }
@@ -154,6 +155,7 @@ void Message::CheckInitialized() const {
       << "Message of type \"" << GetDescriptor()->full_name()
       << "\" is missing required fields: " << InitializationErrorString();
 }
+#endif  // !PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
 
 void Message::DiscardUnknownFields() {
   return ReflectionOps::DiscardUnknownFields(this);
