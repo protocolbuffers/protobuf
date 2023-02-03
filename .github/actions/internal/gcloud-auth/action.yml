@@ -26,16 +26,17 @@ runs:
       run: gcloud info
 
     - name: Store credentials path
-      if: ${{ runner.os != 'Windows' }}
       shell: bash
-      run: echo "credentials-file=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
-    - name: Store credentials path (Windows)
+      run: echo "CREDENTIALS_FILE=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
+
+    - name: Fix credentials path (Windows)
       if: ${{ runner.os == 'Windows' }}
       # Bash commands in windows don't like the backslash in the file path.
+      # Assume we're running in the root directory and grab the base name.
       shell: bash
-      run: echo "credentials-file='${{ steps.auth.outputs.credentials_file_path }}'" >> $GITHUB_ENV
+      run: echo "CREDENTIALS_FILE="$(basename ${CREDENTIALS_FILE//\\//}) >> $GITHUB_ENV
 
     - name: Output credentials file
       id: output
       shell: bash
-      run: echo "credentials-file=${{ env.credentials-file }}" >> $GITHUB_OUTPUT
+      run: echo "credentials-file=${{ env.CREDENTIALS_FILE }}" >> $GITHUB_OUTPUT
