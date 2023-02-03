@@ -163,10 +163,9 @@ class MessageFactory(object):
     Returns:
       A class describing the passed in descriptor.
     """
-    # TODO(b/258832141): add this warning
-    # warnings.warn('MessageFactory class is deprecated. Please use '
-    #               'GetMessageClass() instead of MessageFactory.GetPrototype. '
-    #               'MessageFactory class will be removed after 2024.')
+    warnings.warn('MessageFactory class is deprecated. Please use '
+                  'GetMessageClass() instead of MessageFactory.GetPrototype. '
+                  'MessageFactory class will be removed after 2024.')
     return GetMessageClass(descriptor)
 
   def CreatePrototype(self, descriptor):
@@ -181,10 +180,9 @@ class MessageFactory(object):
     Returns:
       A class describing the passed in descriptor.
     """
-    # TODO(b/258832141): add this warning
-    # warnings.warn('Directly call CreatePrototype is wrong. Please use '
-    #               'GetMessageClass() method instead. Directly use '
-    #               'CreatePrototype will raise error after July 2023.')
+    warnings.warn('Directly call CreatePrototype is wrong. Please use '
+                  'GetMessageClass() method instead. Directly use '
+                  'CreatePrototype will raise error after July 2023.')
     return _InternalCreateMessageClass(descriptor)
 
   def GetMessages(self, files):
@@ -201,11 +199,10 @@ class MessageFactory(object):
       any dependent messages as well as any messages defined in the same file as
       a specified message.
     """
-    # TODO(b/258832141): add this warning
-    # warnings.warn('MessageFactory class is deprecated. Please use '
-    #               'GetMessageClassesForFiles() instead of '
-    #               'MessageFactory.GetMessages(). MessageFactory class '
-    #               'will be removed after 2024.')
+    warnings.warn('MessageFactory class is deprecated. Please use '
+                  'GetMessageClassesForFiles() instead of '
+                  'MessageFactory.GetMessages(). MessageFactory class '
+                  'will be removed after 2024.')
     return GetMessageClassesForFiles(files, self.pool)
 
 
