@@ -30,9 +30,10 @@
 
 syntax = "proto2";
 
-package google.protobuf.internal;
+package protobuf_unittest;
 
 import "google/protobuf/descriptor.proto";
+
 
 // Retention attributes set directly on custom options
 extend google.protobuf.FileOptions {

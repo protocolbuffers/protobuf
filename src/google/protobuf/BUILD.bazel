@@ -607,6 +607,7 @@ proto_library(
         "unittest_proto3_arena_lite.proto",
         "unittest_proto3_lite.proto",
         "unittest_proto3_optional.proto",
+        "unittest_retention.proto",
         "unittest_well_known_types.proto",
     ],
     strip_import_prefix = "/src",
@@ -1017,6 +1018,7 @@ cc_test(
 
 cc_test(
     name = "map_test",
+    timeout = "long",
     srcs = [
         "map_test.cc",
         "map_test.inc",
@@ -1027,7 +1029,6 @@ cc_test(
             "-Wno-deprecated-declarations",
         ],
     }),
-    timeout = "long",
     data = [":testdata"],
     deps = [
         ":cc_test_protos",
@@ -1278,26 +1279,12 @@ cc_test(
     ],
 )
 
-proto_library(
-    name = "unittest_retention_proto",
-    testonly = True,
-    srcs = ["unittest_retention.proto"],
-    strip_import_prefix = "/src",
-    deps = [":descriptor_proto"],
-)
-
-cc_proto_library(
-    name = "unittest_retention_cc_proto",
-    testonly = True,
-    deps = ["unittest_retention_proto"],
-)
-
 cc_test(
     name = "retention_test",
     srcs = ["retention_test.cc"],
     deps = [
+        ":cc_test_protos",
         ":protobuf",
-        ":unittest_retention_cc_proto",
         "//src/google/protobuf/compiler:retention",
         "@com_google_googletest//:gtest_main",
     ],
