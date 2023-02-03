@@ -275,9 +275,10 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // exact same class).
   virtual void MergeFrom(const Message& from);
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   // Verifies that IsInitialized() returns true.  ABSL_CHECK-fails otherwise,
   // with a nice error message.
-  void CheckInitialized() const;
+  void CheckInitialized() const {}
 
   // Slowly build a list of all required fields that are not set.
   // This is much, much slower than IsInitialized() as it is implemented
@@ -288,6 +289,11 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Like FindInitializationErrors, but joins all the strings, delimited by
   // commas, and returns them.
   std::string InitializationErrorString() const override;
+#else
+  void CheckInitialized() const {}
+  void FindInitializationErrors(std::vector<std::string>* errors) const {}
+  std::string InitializationErrorString() const override { return ""; }
+#endif
 
   // Clears all unknown fields from this message and all embedded messages.
   // Normally, if unknown tag numbers are encountered when parsing a message,
@@ -349,10 +355,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   std::string GetTypeName() const override;
   void Clear() override;
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
   // Returns whether all required fields have been set. Note that required
   // fields no longer exist starting in proto3.
   bool IsInitialized() const override;
-
+#else
+  bool IsInitialized() const override { return true; }
+#endif
   void CheckTypeAndMergeFrom(const MessageLite& other) override;
   // Reflective parser
   const char* _InternalParse(const char* ptr,

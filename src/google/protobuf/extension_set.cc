@@ -1213,6 +1213,7 @@ void ExtensionSet::UnsafeShallowSwapExtension(ExtensionSet* other, int number) {
   }
 }
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
 bool ExtensionSet::IsInitialized(const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
@@ -1231,6 +1232,7 @@ bool ExtensionSet::IsInitialized(const MessageLite* extendee) const {
   }
   return true;
 }
+#endif
 
 const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
                                      const MessageLite* extendee,
@@ -1567,6 +1569,7 @@ void ExtensionSet::Extension::Free() {
 // Defined in extension_set_heavy.cc.
 // int ExtensionSet::Extension::SpaceUsedExcludingSelf() const
 
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
 bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
                                             const MessageLite* extendee,
                                             int number, Arena* arena) const {
@@ -1591,6 +1594,7 @@ bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
       << "extendee: " << extendee->GetTypeName() << "; number: " << number;
   return lazymessage_value->IsInitialized(prototype, arena);
 }
+#endif
 
 // Dummy key method to avoid weak vtable.
 void ExtensionSet::LazyMessageExtension::UnusedKeyMethod() {}

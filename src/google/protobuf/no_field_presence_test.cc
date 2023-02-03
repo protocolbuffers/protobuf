@@ -481,6 +481,9 @@ TEST(NoFieldPresenceTest, MergeFromIfNonzeroTest) {
 }
 
 TEST(NoFieldPresenceTest, IsInitializedTest) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   // Check that IsInitialized works properly.
   proto2_nofieldpresence_unittest::TestProto2Required message;
 

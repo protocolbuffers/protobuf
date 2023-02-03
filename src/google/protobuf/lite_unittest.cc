@@ -892,6 +892,9 @@ TYPED_TEST(LiteTest, AllLite40) {
 }
 
 TYPED_TEST(LiteTest, AllLite41) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   {
     // IsInitialized
     protobuf_unittest::TestRequiredMessageMapLite map_message;

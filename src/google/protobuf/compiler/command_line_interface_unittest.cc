@@ -2723,6 +2723,9 @@ TEST_P(EncodeDecodeTest, Decode) {
 }
 
 TEST_P(EncodeDecodeTest, Partial) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   RedirectStdinFromText("");
   EXPECT_TRUE(
       Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +

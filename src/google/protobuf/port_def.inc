@@ -1071,3 +1071,4 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #  undef __has_builtin
 #  undef PROTOBUF_has_builtin_DEFINED_
 #endif
+

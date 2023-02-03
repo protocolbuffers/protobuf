@@ -1842,6 +1842,9 @@ TEST_F(TextFormatParserTest, UnknownExtension) {
 }
 
 TEST_F(TextFormatParserTest, MissingRequired) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   unittest::TestRequired message;
   ExpectFailure("a: 1", "Message missing required fields: b, c", 0, 1,
                 &message);

@@ -724,6 +724,9 @@ TEST(ExtensionSetTest, UnpackedToPackedParsing) {
 }
 
 TEST(ExtensionSetTest, IsInitialized) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   // Test that IsInitialized() returns false if required fields in nested
   // extensions are missing.
   unittest::TestAllExtensions message;

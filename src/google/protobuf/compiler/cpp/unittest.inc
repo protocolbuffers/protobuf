@@ -724,6 +724,9 @@ TEST(GENERATED_MESSAGE_TEST_NAME, PackedFieldsSerializationToStream) {
 
 
 TEST(GENERATED_MESSAGE_TEST_NAME, Required) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   // Test that IsInitialized() returns false if required fields are missing.
   UNITTEST::TestRequired message;
 
@@ -737,6 +740,9 @@ TEST(GENERATED_MESSAGE_TEST_NAME, Required) {
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, RequiredForeign) {
+#ifdef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
+  GTEST_SKIP() << "Required fields are not enforced";
+#endif
   // Test that IsInitialized() returns false if required fields in nested
   // messages are missing.
   UNITTEST::TestRequiredForeign message;
@@ -2147,7 +2153,9 @@ TEST(HELPERS_TEST_NAME, TestSCCAnalysis) {
     const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
     MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
     EXPECT_EQ(result.is_recursive, false);
+#ifndef PROTOBUF_IGNORE_REQUIRED_ATTRIBUTE
     EXPECT_EQ(result.contains_required, true);
+#endif
     EXPECT_EQ(result.contains_cord, false);
     EXPECT_EQ(result.contains_extension, false);
   }
