@@ -20,6 +20,8 @@ on:
     branches:
       - main
       - '[0-9]+.x'
+      # The 21.x and 22.x branches still use Kokoro
+      - '!2[12].x'
       # For testing purposes so we can stage this on the `gha` branch.
       - gha
 
@@ -28,6 +30,8 @@ on:
     branches:
       - main
       - '[0-9]+.x'
+      # The 21.x and 22.x branches still use Kokoro
+      - '!2[12].x'
       # For testing purposes so we can stage this on the `gha` branch.
       - gha
 
@@ -36,6 +40,8 @@ on:
     branches:
       - main
       - '[0-9]+.x'
+      # The 21.x and 22.x branches still use Kokoro
+      - '!2[12].x'
       # For testing purposes so we can stage this on the `gha` branch.
       - gha
     types: [labeled, opened, reopened, synchronize]
