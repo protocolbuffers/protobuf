@@ -634,12 +634,6 @@ class PROTOBUF_EXPORT CodedInputStream {
 // use of this class, ie. keep ptr a local variable, eliminates the need to
 // for the compiler to sync the ptr value between register and memory.
 class PROTOBUF_EXPORT EpsCopyOutputStream {
-#if defined(__BMI2__) && defined(__LZCNT__)
-#define UnsafeVarint UnsafeVarintBMI2
-#else
-#define UnsafeVarint UnsafeVarintNoneBMI2
-#endif
-
  public:
   enum { kSlopBytes = 16 };
 
@@ -898,6 +892,18 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
   static uint64_t ZigZagEncode64(int64_t v) {
     return (static_cast<uint64_t>(v) << 1) ^ static_cast<uint64_t>(v >> 63);
+  }
+
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8_t* UnsafeVarint(T value, uint8_t* ptr) {
+    if(!stream_)
+      return UnsafeVarintNoneBMI2(value, ptr);
+
+#if defined(__BMI2__) && defined(__LZCNT__)
+    return UnsafeVarintBMI2(value, ptr);
+#else
+    return UnsafeVarintNoneBMI2(value, ptr);
+#endif
   }
 
   template <typename T>
@@ -1766,7 +1772,11 @@ inline void CodedOutputStream::InitEagerly(Stream* stream) {
 
 inline uint8_t* CodedOutputStream::WriteVarint32ToArray(uint32_t value,
                                                         uint8_t* target) {
-  return EpsCopyOutputStream::UnsafeVarint(value, target);
+#if defined(__BMI2__) && defined(__LZCNT__)
+    return EpsCopyOutputStream::UnsafeVarintBMI2(value, target);
+#else
+    return EpsCopyOutputStream::UnsafeVarintNoneBMI2(value, target);
+#endif
 }
 
 inline uint8_t* CodedOutputStream::WriteVarint32ToArrayOutOfLine(
@@ -1781,7 +1791,11 @@ inline uint8_t* CodedOutputStream::WriteVarint32ToArrayOutOfLine(
 
 inline uint8_t* CodedOutputStream::WriteVarint64ToArray(uint64_t value,
                                                         uint8_t* target) {
-  return EpsCopyOutputStream::UnsafeVarint(value, target);
+#if defined(__BMI2__) && defined(__LZCNT__)
+    return EpsCopyOutputStream::UnsafeVarintBMI2(value, target);
+#else
+    return EpsCopyOutputStream::UnsafeVarintNoneBMI2(value, target);
+#endif
 }
 
 inline void CodedOutputStream::WriteVarint32SignExtended(int32_t value) {
