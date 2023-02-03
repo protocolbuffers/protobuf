@@ -5,6 +5,8 @@ set -ex
 # go to the repo root
 cd $(dirname $0)/../../..
 
+git submodule update --init --recursive
+
 # there is no php testing docker image readily available, so we build
 # our own. It's a aarch64 image, but that's fine since qemu will
 # automatically be used to run the commands in the dockerfile.

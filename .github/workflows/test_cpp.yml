@@ -80,6 +80,16 @@ jobs:
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
               -Dprotobuf_BUILD_CONFORMANCE=ON
               -DCMAKE_CXX_STANDARD=14
+          - name: 32-bit
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:6651a299483f7368876db7aed0802ad4ebf038d626d8995ba7df08978ff43210
+            platform: linux/386
+            command: >-
+              /bin/bash -c '
+              cd /workspace;
+              cmake . -DCMAKE_CXX_STANDARD=14;
+              cmake --build . --parallel 20;
+              ctest --verbose --parallel 20'
+
     name: Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
     steps:
@@ -91,7 +101,8 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/docker
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:cc23dbe065668158ca2732aa305a07bd0913a175b2079d27d9c16925d23f2335
+          image: ${{ matrix.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:cc23dbe065668158ca2732aa305a07bd0913a175b2079d27d9c16925d23f2335' }}
+          platform: ${{ matrix.platform }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: ${{ matrix.command }}
   non-linux:

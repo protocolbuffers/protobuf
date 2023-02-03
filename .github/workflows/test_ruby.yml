@@ -34,10 +34,41 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/bazel-docker
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-75e79f791b96e056086f43ace729cf3ebf9a9f5d
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-{1}-75e79f791b96e056086f43ace729cf3ebf9a9f5d', matrix.ruby, matrix.bazel) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION
+
+  linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Cross compile protoc for aarch64
+        id: cross-compile
+        uses: ./.github/actions/cross-compile-protoc
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-aarch64
+
+      - name: Run tests
+        uses: ./.github/actions/docker
+        with:
+          image: arm64v8/ruby:2.7.3-buster
+          skip-staleness-check: true
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -c '
+            gem install bundler;
+            cd /workspace/ruby;
+            bundle;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
+            rake clobber_package gem;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
 
   macos:
     strategy:
