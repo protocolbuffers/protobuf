@@ -26,16 +26,13 @@ jobs:
 
     name: ${{ matrix.name}}
     runs-on: macos-12
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
-
-      - name: Select pinned Xcode version
-        uses: maxim-lobanov/setup-xcode@9a697e2b393340c3cacd97468baa318e4c883d98 # v1.5.1
-        with:
-          xcode-version: '14.1'
 
       - name: Run tests
         uses: ./.github/actions/bazel
