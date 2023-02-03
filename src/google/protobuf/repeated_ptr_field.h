@@ -1183,6 +1183,9 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   iterator erase(const_iterator first, const_iterator last);
 
   // Gets the arena on which this RepeatedPtrField stores its elements.
+  inline Arena* GetArena();
+
+  ABSL_DEPRECATED("This will be removed in a future release")
   inline Arena* GetArena() const;
 
   // For internal use only.
@@ -1542,6 +1545,11 @@ inline void RepeatedPtrField<Element>::UnsafeArenaSwap(
 template <typename Element>
 inline void RepeatedPtrField<Element>::SwapElements(int index1, int index2) {
   RepeatedPtrFieldBase::SwapElements(index1, index2);
+}
+
+template <typename Element>
+inline Arena* RepeatedPtrField<Element>::GetArena() {
+  return RepeatedPtrFieldBase::GetArena();
 }
 
 template <typename Element>
