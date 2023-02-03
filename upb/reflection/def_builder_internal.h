@@ -127,23 +127,6 @@ UPB_INLINE upb_FileDef* _upb_DefBuilder_File(const upb_DefBuilder* ctx) {
 void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
                                     bool full);
 
-// Verify a relative identifier string. The loop is branchless for speed.
-UPB_INLINE void _upb_DefBuilder_CheckIdentNotFull(upb_DefBuilder* ctx,
-                                                  upb_StringView name) {
-  bool good = name.size > 0;
-
-  for (size_t i = 0; i < name.size; i++) {
-    const char c = name.data[i];
-    const char d = c | 0x20;  // force lowercase
-    const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
-    const bool is_numer = ('0' <= c) & (c <= '9') & (i != 0);
-
-    good &= is_alpha | is_numer;
-  }
-
-  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, false);
-}
-
 // Verify a full identifier string. This is slightly more complicated than
 // verifying a relative identifier string because we must track '.' chars.
 UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,

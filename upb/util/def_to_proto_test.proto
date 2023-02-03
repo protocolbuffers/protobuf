@@ -117,3 +117,8 @@ message MessageSetItem {
     optional MessageSetItem message_set_extension = 2147483646;
   }
 }
+
+message UnusualDefaults {
+  optional bytes foo = 1 [default = "\\X"];
+  optional string bar = 2 [default = "\\X"];
+}

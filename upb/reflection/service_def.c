@@ -100,7 +100,6 @@ static void create_service(upb_DefBuilder* ctx,
   s->file = _upb_DefBuilder_File(ctx);
 
   name = UPB_DESC(ServiceDescriptorProto_name)(svc_proto);
-  _upb_DefBuilder_CheckIdentNotFull(ctx, name);
   const char* package = _upb_FileDef_RawPackage(s->file);
   s->full_name = _upb_DefBuilder_MakeFullName(ctx, package, name);
   _upb_DefBuilder_Add(ctx, s->full_name,

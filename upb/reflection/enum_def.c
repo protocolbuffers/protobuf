@@ -238,7 +238,6 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   e->file = _upb_DefBuilder_File(ctx);
 
   name = UPB_DESC(EnumDescriptorProto_name)(enum_proto);
-  _upb_DefBuilder_CheckIdentNotFull(ctx, name);
 
   e->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
   _upb_DefBuilder_Add(ctx, e->full_name,

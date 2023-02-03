@@ -610,7 +610,6 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->is_sorted = true;
 
   name = UPB_DESC(DescriptorProto_name)(msg_proto);
-  _upb_DefBuilder_CheckIdentNotFull(ctx, name);
 
   m->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
   _upb_DefBuilder_Add(ctx, m->full_name, _upb_DefType_Pack(m, UPB_DEFTYPE_MSG));

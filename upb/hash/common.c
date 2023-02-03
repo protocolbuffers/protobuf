@@ -80,7 +80,7 @@ char* upb_strdup2(const char* s, size_t len, upb_Arena* a) {
   n = len + 1;
   p = upb_Arena_Malloc(a, n);
   if (p) {
-    memcpy(p, s, len);
+    if (len != 0) memcpy(p, s, len);
     p[len] = 0;
   }
   return p;

@@ -73,9 +73,27 @@ void _upb_DefBuilder_OomErr(upb_DefBuilder* ctx) {
   _upb_DefBuilder_FailJmp(ctx);
 }
 
+// Verify a relative identifier string. The loop is branchless for speed.
+static void _upb_DefBuilder_CheckIdentNotFull(upb_DefBuilder* ctx,
+                                              upb_StringView name) {
+  bool good = name.size > 0;
+
+  for (size_t i = 0; i < name.size; i++) {
+    const char c = name.data[i];
+    const char d = c | 0x20;  // force lowercase
+    const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
+    const bool is_numer = ('0' <= c) & (c <= '9') & (i != 0);
+
+    good &= is_alpha | is_numer;
+  }
+
+  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, false);
+}
+
 const char* _upb_DefBuilder_MakeFullName(upb_DefBuilder* ctx,
                                          const char* prefix,
                                          upb_StringView name) {
+  _upb_DefBuilder_CheckIdentNotFull(ctx, name);
   if (prefix) {
     // ret = prefix + '.' + name;
     size_t n = strlen(prefix);
@@ -191,7 +209,7 @@ static bool TryGetChar(const char** src, const char* end, char* ch) {
   return true;
 }
 
-static char TryGetHexDigit(const char** src, const char* end) {
+static int TryGetHexDigit(const char** src, const char* end) {
   char ch;
   if (!TryGetChar(src, end, &ch)) return -1;
   if ('0' <= ch && ch <= '9') {
@@ -208,10 +226,10 @@ static char TryGetHexDigit(const char** src, const char* end) {
 static char upb_DefBuilder_ParseHexEscape(upb_DefBuilder* ctx,
                                           const upb_FieldDef* f,
                                           const char** src, const char* end) {
-  char hex_digit = TryGetHexDigit(src, end);
+  int hex_digit = TryGetHexDigit(src, end);
   if (hex_digit < 0) {
     _upb_DefBuilder_Errf(
-        ctx, "\\x cannot be followed by non-hex digit in field '%s' default",
+        ctx, "\\x must be followed by at least one hex digit (field='%s')",
         upb_FieldDef_FullName(f));
     return 0;
   }

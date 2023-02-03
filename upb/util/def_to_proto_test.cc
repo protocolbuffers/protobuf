@@ -27,6 +27,9 @@
 
 #include "upb/util/def_to_proto.h"
 
+#include <memory>
+#include <string>
+
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.upbdefs.h"
 #include "gmock/gmock.h"
@@ -34,8 +37,12 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "upb/reflection/def.hpp"
+#include "upb/test/parse_text_proto.h"
 #include "upb/upb.hpp"
+#include "upb/util/def_to_proto_test.h"
 #include "upb/util/def_to_proto_test.upbdefs.h"
+
+namespace upb_test {
 
 // Loads and retrieves a descriptor for `msgdef` into the given `pool`.
 const google::protobuf::Descriptor* AddMessageDescriptor(
@@ -144,3 +151,130 @@ TEST(DefToProto, TestRuntimeReflection) {
       upb_util_def_to_proto_test_proto_upbdefinit.filename);
   CheckFile(file, file_desc);
 }
+
+// Fuzz test regressions.
+
+TEST(FuzzTest, EmptyPackage) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(file { package: "" })pb"));
+}
+
+TEST(FuzzTest, EmptyName) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(file { name: "" })pb"));
+}
+
+TEST(FuzzTest, EmptyPackage2) {
+  RoundTripDescriptor(
+      ParseTextProtoOrDie(R"pb(file { name: "n" package: "" })pb"));
+}
+
+TEST(FuzzTest, FileNameEmbeddedNull) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(file { name: "\000" })pb"));
+}
+
+TEST(FuzzTest, EditionEmbeddedNull) {
+  RoundTripDescriptor(
+      ParseTextProtoOrDie(R"pb(file { name: "n" edition: "\000" })pb"));
+}
+
+TEST(FuzzTest, NanValue) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             enum_type {
+               value {
+                 number: 0
+                 options { uninterpreted_option { double_value: nan } }
+               }
+             }
+           })pb"));
+}
+
+TEST(FuzzTest, EnumValueEmbeddedNull) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "\035"
+             enum_type {
+               name: "f"
+               value { name: "\000" number: 0 }
+             }
+           })pb"));
+}
+
+TEST(FuzzTest, EnumValueNoNumber) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "\035"
+             enum_type {
+               name: "f"
+               value { name: "abc" }
+             }
+           })pb"));
+}
+
+TEST(FuzzTest, DefaultWithUnterminatedHex) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "\035"
+             message_type {
+               name: "A"
+               field {
+                 name: "f"
+                 number: 1
+                 label: LABEL_OPTIONAL
+                 type: TYPE_BYTES
+                 default_value: "\\x"
+               }
+             }
+           })pb"));
+}
+
+TEST(FuzzTest, DefaultWithValidHexEscape) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "\035"
+             message_type {
+               name: "A"
+               field {
+                 name: "f"
+                 number: 1
+                 label: LABEL_OPTIONAL
+                 type: TYPE_BYTES
+                 default_value: "\\x03"
+               }
+             }
+           })pb"));
+}
+
+TEST(FuzzTest, DefaultWithValidHexEscapePrintable) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "\035"
+             message_type {
+               name: "A"
+               field {
+                 name: "f"
+                 number: 1
+                 label: LABEL_OPTIONAL
+                 type: TYPE_BYTES
+                 default_value: "\\x23"  # 0x32 = '#'
+               }
+             }
+           })pb"));
+}
+
+// begin:google_only
+// TEST(FuzzTest, DependencyWithEmbeddedNull) {
+//   RoundTripDescriptor(ParseTextProtoOrDie(R"pb(file {
+//                                                  name: "a"
+//                                                  dependency: "a\000"
+//                                                  options { cc_api_version: 0 }
+//                                                  weak_dependency: 0
+//                                                })pb"));
+// }
+// end:google_only
+
+TEST(FuzzTest, PackageStartsWithNumber) {
+  RoundTripDescriptor(
+      ParseTextProtoOrDie(R"pb(file { name: "" package: "0" })pb"));
+}
+
+}  // namespace upb_test

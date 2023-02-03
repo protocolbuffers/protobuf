@@ -318,12 +318,6 @@ static const upb_FileDef* _upb_DefPool_AddFile(
     const upb_MiniTableFile* layout, upb_Status* status) {
   const upb_StringView name = UPB_DESC(FileDescriptorProto_name)(file_proto);
 
-  if (name.size == 0) {
-    upb_Status_SetErrorFormat(status,
-                              "missing name in google_protobuf_FileDescriptorProto");
-    return NULL;
-  }
-
   // Determine whether we already know about this file.
   {
     upb_value v;

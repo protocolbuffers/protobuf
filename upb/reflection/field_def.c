@@ -549,7 +549,14 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   }
 
   const upb_StringView name = UPB_DESC(FieldDescriptorProto_name)(field_proto);
-  _upb_DefBuilder_CheckIdentNotFull(ctx, name);
+
+  f->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
+  f->label_ = (int)UPB_DESC(FieldDescriptorProto_label)(field_proto);
+  f->number_ = UPB_DESC(FieldDescriptorProto_number)(field_proto);
+  f->is_proto3_optional =
+      UPB_DESC(FieldDescriptorProto_proto3_optional)(field_proto);
+  f->msgdef = m;
+  f->scope.oneof = NULL;
 
   f->has_json_name = UPB_DESC(FieldDescriptorProto_has_json_name)(field_proto);
   if (f->has_json_name) {
@@ -560,14 +567,6 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
     f->json_name = make_json_name(name.data, name.size, ctx->arena);
   }
   if (!f->json_name) _upb_DefBuilder_OomErr(ctx);
-
-  f->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
-  f->label_ = (int)UPB_DESC(FieldDescriptorProto_label)(field_proto);
-  f->number_ = UPB_DESC(FieldDescriptorProto_number)(field_proto);
-  f->is_proto3_optional =
-      UPB_DESC(FieldDescriptorProto_proto3_optional)(field_proto);
-  f->msgdef = m;
-  f->scope.oneof = NULL;
 
   const bool has_type = UPB_DESC(FieldDescriptorProto_has_type)(field_proto);
   const bool has_type_name =

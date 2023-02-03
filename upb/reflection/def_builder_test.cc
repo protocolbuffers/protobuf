@@ -55,7 +55,9 @@ TEST(DefBuilder, TestIdents) {
   upb_StringView sv;
   upb_Status status;
   upb_DefBuilder ctx;
+  upb::Arena arena;
   ctx.status = &status;
+  ctx.arena = arena.ptr();
   upb_Status_Clear(&status);
 
   for (const auto& test : FullIdentTests) {
@@ -77,7 +79,7 @@ TEST(DefBuilder, TestIdents) {
     if (UPB_SETJMP(ctx.err)) {
       EXPECT_FALSE(test.ok);
     } else {
-      _upb_DefBuilder_CheckIdentNotFull(&ctx, sv);
+      _upb_DefBuilder_MakeFullName(&ctx, "abc", sv);
       EXPECT_TRUE(test.ok);
     }
   }

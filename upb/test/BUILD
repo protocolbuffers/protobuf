@@ -33,6 +33,17 @@ load(
     "upb_proto_reflection_library",
 )
 
+cc_library(
+    name = "parse_text_proto",
+    testonly = 1,
+    hdrs = ["parse_text_proto.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@com_google_googletest//:gtest",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
 proto_library(
     name = "empty_proto",
     srcs = ["empty.proto"],
