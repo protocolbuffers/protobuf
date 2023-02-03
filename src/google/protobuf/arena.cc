@@ -521,7 +521,7 @@ void ThreadSafeArena::InitializeWithPolicy(const AllocationPolicy& policy) {
   }
   new (p) AllocationPolicy{policy};
   // Low bits store flags, so they mustn't be overwritten.
-  ABSL_DCHECK_EQ(0, reinterpret_cast<uintptr_t>(p) & 3);
+  ABSL_DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(p) & 3);
   alloc_policy_.set_policy(reinterpret_cast<AllocationPolicy*>(p));
   ABSL_DCHECK_POLICY_FLAGS_();
 
