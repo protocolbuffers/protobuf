@@ -1,4 +1,4 @@
-name: Auto-generate checked-in files
+name: Auto-generate stale checked-in files
 
 on:
   push:
