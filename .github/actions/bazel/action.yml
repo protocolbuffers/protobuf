@@ -47,6 +47,27 @@ runs:
         credentials-file: ${{ steps.auth.outputs.credentials-file }}
         bazel-cache: ${{ inputs.bazel-cache }}
 
+    - name: Get Linux bazelisk path
+      if: runner.os == 'Linux'
+      shell: bash
+      run: echo "BAZELISK_PATH=~/.cache/bazelisk" >> $GITHUB_ENV
+
+    - name: Get MacOS bazelisk path
+      if: runner.os == 'macOS'
+      shell: bash
+      run: echo "BAZELISK_PATH=~/Library/Caches/bazelisk" >> $GITHUB_ENV
+
+    - name: Get Windows bazelisk path
+      if: runner.os == 'Windows'
+      shell: bash
+      run: echo "BAZELISK_PATH=$LOCALAPPDATA\bazelisk" >> $GITHUB_ENV
+
+    - name: Cache Bazelisk
+      uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ env.BAZELISK_PATH }}
+        key: bazel-${{ runner.os }}-${{ inputs.version }}
+
     - name: Validate inputs
       if: ${{ (inputs.bash && inputs.bazel) || (!inputs.bash && !inputs.bazel) }}
       shell: bash
