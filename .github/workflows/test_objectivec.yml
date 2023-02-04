@@ -38,5 +38,6 @@ jobs:
         uses: ./.github/actions/bazel
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 6.0.0
           bazel-cache: objectivec_macos/${{ matrix.config }}
           bash: objectivec/DevTools/full_mac_build.sh ${{ matrix.flags }}

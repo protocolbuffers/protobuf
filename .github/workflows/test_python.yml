@@ -51,7 +51,7 @@ jobs:
       matrix:
         type: [ Pure, C++]
         # TODO(b/267550843) Consider expanding this set of versions.
-        version: [ "3.10" ]
+        version: [ "3.7", "3.8", "3.9", "3.10", "3.7", "3.8", "3.9", "3.10", "3.7", "3.8", "3.9", "3.10" ]
         include:
           - type: Pure
             targets: //python/... @upb//python/... //python:python_version
@@ -88,6 +88,7 @@ jobs:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 6.0.0
           bazel-cache: python_macos/${{ matrix.type }}_${{ matrix.version }}
           bazel: >-
             test ${{ matrix.targets }} ${{ matrix.flags }}

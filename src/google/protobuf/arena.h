@@ -143,6 +143,8 @@ struct ArenaOptions {
   // calls free.
   void (*block_dealloc)(void*, size_t) = nullptr;
 
+  int tmp4;
+
  private:
   internal::AllocationPolicy AllocationPolicy() const {
     internal::AllocationPolicy res;

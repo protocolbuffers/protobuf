@@ -407,6 +407,7 @@ class Message(object):
     self.ParseFromString(serialized)
 
   def __reduce__(self):
+    message_descriptor = None
     message_descriptor = self.DESCRIPTOR
     if message_descriptor.containing_type is None:
       return type(self), (), self.__getstate__()
