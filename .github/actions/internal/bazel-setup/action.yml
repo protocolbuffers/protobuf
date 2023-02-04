@@ -39,6 +39,13 @@ runs:
       shell: bash
       run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --enable_runfiles" >> $GITHUB_ENV
 
+    - name: Initialize MacOS-specific Bazel flags
+      if: runner.os == 'macOS'
+      shell: bash
+      # Disable XCode locator due to flaky timeouts.
+      # See https://github.com/bazelbuild/rules_swift/issues/950
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --action_env=BAZEL_USE_CPP_ONLY_TOOLCHAIN=1" >> $GITHUB_ENV
+
     - name: Configure Bazel caching
       # Skip bazel cache for local act runs due to issue with credential files
       # and nested docker images
