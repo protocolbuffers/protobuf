@@ -158,6 +158,8 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 #if defined(DEBUG) && DEBUG
   NSAssert((flags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0,
            @"Internal error: all fields should have class refs");
+  NSAssert((flags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) != 0,
+           @"Internal error: proto3 optional should be known");
 #endif
 
   NSMutableArray *fields =
@@ -217,8 +219,16 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30003,
                            time_to_remove_non_class_ref_support);
 
-  if (fixClassRefs) {
+  BOOL fixProto3Optional = (flags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) == 0;
+  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30004,
+                           time_to_remove_proto3_optional_fallback);
+
+  if (fixClassRefs || fixProto3Optional) {
     BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    GPBFileSyntax fileSyntax = file.syntax;
+#pragma clang diagnostic pop
 
     for (uint32_t i = 0; i < fieldCount; ++i) {
       GPBMessageFieldDescription *coreDesc;
@@ -228,14 +238,29 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
         coreDesc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
       }
 
-      if (GPBDataTypeIsMessage(coreDesc->dataType)) {
+      if (fixClassRefs && GPBDataTypeIsMessage(coreDesc->dataType)) {
         const char *className = coreDesc->dataTypeSpecific.className;
         Class msgClass = objc_getClass(className);
         NSAssert(msgClass, @"Class %s not defined", className);
         coreDesc->dataTypeSpecific.clazz = msgClass;
       }
+
+      if (fixProto3Optional) {
+        // If it was...
+        //  - proto3 syntax
+        //  - not repeated/map
+        //  - not in a oneof (negative has index)
+        //  - not a message (the flag doesn't make sense for messages)
+        BOOL clearOnZero = ((fileSyntax == GPBFileSyntaxProto3) &&
+                            ((coreDesc->flags & (GPBFieldRepeated | GPBFieldMapKeyMask)) == 0) &&
+                            (coreDesc->hasIndex >= 0) && !GPBDataTypeIsMessage(coreDesc->dataType));
+        if (clearOnZero) {
+          coreDesc->flags |= GPBFieldClearHasIvarOnZero;
+        }
+      }
     }
-    flags |= GPBDescriptorInitializationFlag_UsesClassRefs;
+    flags |= (GPBDescriptorInitializationFlag_UsesClassRefs |
+              GPBDescriptorInitializationFlag_Proto3OptionalKnown);
   }
 
   // Use a local GPBFileDescription with just the syntax to allow legacy generation initialization,
@@ -678,23 +703,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     GPBDataType dataType = coreDesc->dataType;
     BOOL isMessage = GPBDataTypeIsMessage(dataType);
     BOOL isMapOrArray = GPBFieldIsMapOrArray(self);
-
-    // If proto3 optionals weren't known (i.e. generated code from an
-    // older version), compute the flag for the rest of the runtime.
-    if ((descriptorFlags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) == 0) {
-      GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30004,
-                               time_to_remove_proto3_optional_fallback);
-      // If it was...
-      //  - proto3 syntax
-      //  - not repeated/map
-      //  - not in a oneof (negative has index)
-      //  - not a message (the flag doesn't make sense for messages)
-      BOOL clearOnZero = ((fileSyntax == GPBFileSyntaxProto3) && !isMapOrArray &&
-                          (coreDesc->hasIndex >= 0) && !isMessage);
-      if (clearOnZero) {
-        coreDesc->flags |= GPBFieldClearHasIvarOnZero;
-      }
-    }
 
     // If the ClosedEnum flag wasn't known (i.e. generated code from an older
     // version), compute the flag for the rest of the runtime.
