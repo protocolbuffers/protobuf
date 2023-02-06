@@ -57,11 +57,12 @@ jobs:
     # repository, it's safe and we can use `pull_request`.  Otherwise, we should
     # use `pull_request_target`.
     if: |
-      github.event_name == 'push' ||
-        (github.event_name == 'pull_request' &&
-         github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf') ||
-        (github.event_name == 'pull_request_target' &&
-         github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
+      (github.event_name == 'push' &&
+       github.event.repository.full_name == 'protocolbuffers/protobuf') ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf') ||
+      (github.event_name == 'pull_request_target' &&
+       github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
 
     runs-on: ubuntu-latest
     outputs:
