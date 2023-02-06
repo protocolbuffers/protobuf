@@ -950,6 +950,10 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #undef STRICT
 #pragma push_macro("timezone")
 #undef timezone
+#pragma push_macro("TRUE")
+#undef TRUE
+#pragma push_macro("FALSE")
+#undef FALSE
 #endif  // _WIN32
 
 #ifdef __APPLE__
