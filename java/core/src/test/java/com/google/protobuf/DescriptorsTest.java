@@ -297,6 +297,7 @@ public class DescriptorsTest {
     assertThat(enumType.getName()).isEqualTo("ForeignEnum");
     assertThat(enumType.getFullName()).isEqualTo("protobuf_unittest.ForeignEnum");
     assertThat(enumType.getFile()).isEqualTo(UnittestProto.getDescriptor());
+    assertThat(enumType.isClosed()).isTrue();
     assertThat(enumType.getContainingType()).isNull();
     assertThat(enumType.getOptions()).isEqualTo(DescriptorProtos.EnumOptions.getDefaultInstance());
 
