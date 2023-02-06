@@ -154,6 +154,12 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   if ((flags & unknownFlags) != 0) {
     GPBRuntimeMatchFailure();
   }
+
+#if defined(DEBUG) && DEBUG
+  NSAssert((flags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0,
+           @"Internal error: all fields should have class refs");
+#endif
+
   NSMutableArray *fields =
       (fieldCount ? [[NSMutableArray alloc] initWithCapacity:fieldCount] : nil);
   BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
@@ -206,6 +212,31 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
                                   flags:(GPBDescriptorInitializationFlags)flags {
   GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30006,
                            time_to_remove_this_old_version_shim);
+
+  BOOL fixClassRefs = (flags & GPBDescriptorInitializationFlag_UsesClassRefs) == 0;
+  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30003,
+                           time_to_remove_non_class_ref_support);
+
+  if (fixClassRefs) {
+    BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
+
+    for (uint32_t i = 0; i < fieldCount; ++i) {
+      GPBMessageFieldDescription *coreDesc;
+      if (fieldsIncludeDefault) {
+        coreDesc = &((((GPBMessageFieldDescriptionWithDefault *)fieldDescriptions)[i]).core);
+      } else {
+        coreDesc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
+      }
+
+      if (GPBDataTypeIsMessage(coreDesc->dataType)) {
+        const char *className = coreDesc->dataTypeSpecific.className;
+        Class msgClass = objc_getClass(className);
+        NSAssert(msgClass, @"Class %s not defined", className);
+        coreDesc->dataTypeSpecific.clazz = msgClass;
+      }
+    }
+    flags |= GPBDescriptorInitializationFlag_UsesClassRefs;
+  }
 
   // Use a local GPBFileDescription with just the syntax to allow legacy generation initialization,
   // then clear the ivar and wire in the GPBFileDescriptor.
@@ -702,16 +733,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       // Note: Only fetch the class here, can't send messages to it because
       // that could cause cycles back to this class within +initialize if
       // two messages have each other in fields (i.e. - they build a graph).
-      if ((descriptorFlags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0) {
-        msgClass_ = coreDesc->dataTypeSpecific.clazz;
-      } else {
-        GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30003,
-                                 time_to_remove_non_class_ref_support);
-        // Backwards compatibility for sources generated with older protoc.
-        const char *className = coreDesc->dataTypeSpecific.className;
-        msgClass_ = objc_getClass(className);
-        NSAssert(msgClass_, @"Class %s not defined", className);
-      }
+      msgClass_ = coreDesc->dataTypeSpecific.clazz;
     } else if (dataType == GPBDataTypeEnum) {
       enumDescriptor_ = coreDesc->dataTypeSpecific.enumDescFunc();
 #if defined(DEBUG) && DEBUG
@@ -1194,26 +1216,12 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     GPBRuntimeMatchFailure();
   }
 
+#if defined(DEBUG) && DEBUG
+  NSAssert(usesClassRefs, @"Internal error: all extensions should have class refs");
+#endif
+
   if ((self = [super init])) {
     description_ = desc;
-    if (!usesClassRefs) {
-      GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30003,
-                               time_to_remove_this_support);
-      // Legacy without class ref support.
-      const char *className = description_->messageOrGroupClass.name;
-      if (className) {
-        Class clazz = objc_lookUpClass(className);
-        NSAssert(clazz != Nil, @"Class %s not defined", className);
-        description_->messageOrGroupClass.clazz = clazz;
-      }
-
-      const char *extendedClassName = description_->extendedClass.name;
-      if (extendedClassName) {
-        Class clazz = objc_lookUpClass(extendedClassName);
-        NSAssert(clazz, @"Class %s not defined", extendedClassName);
-        description_->extendedClass.clazz = clazz;
-      }
-    }
 
     GPBDataType type = description_->dataType;
     if (type == GPBDataTypeBytes) {
@@ -1229,7 +1237,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       }
     } else if (type == GPBDataTypeMessage || type == GPBDataTypeGroup) {
       // The default is looked up in -defaultValue instead since extensions
-      // aren't common, we avoid the hit startup hit and it avoid initialization
+      // aren't common, we avoid the hit startup hit and it avoids initialization
       // order issues.
     } else {
       defaultValue_ = description_->defaultValue;
@@ -1241,7 +1249,22 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 - (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc {
   GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30003,
                            time_to_remove_this_old_version_shim);
-  return [self initWithExtensionDescription:desc usesClassRefs:NO];
+
+  const char *className = desc->messageOrGroupClass.name;
+  if (className) {
+    Class clazz = objc_lookUpClass(className);
+    NSAssert(clazz != Nil, @"Class %s not defined", className);
+    desc->messageOrGroupClass.clazz = clazz;
+  }
+
+  const char *extendedClassName = desc->extendedClass.name;
+  if (extendedClassName) {
+    Class clazz = objc_lookUpClass(extendedClassName);
+    NSAssert(clazz, @"Class %s not defined", extendedClassName);
+    desc->extendedClass.clazz = clazz;
+  }
+
+  return [self initWithExtensionDescription:desc usesClassRefs:YES];
 }
 
 - (void)dealloc {
