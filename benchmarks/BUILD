@@ -249,4 +249,5 @@ genrule(
     cmd = "size $$($$OSTYPE == 'linux-gnu' ? '--format=GNU -d' : '') $(SRCS) > $@",
     # "size" sometimes isn't available remotely.
     local = 1,
+    tags = ["no-remote-exec"],
 )
