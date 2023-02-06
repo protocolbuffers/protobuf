@@ -49,6 +49,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
+#include "absl/meta/type_traits.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -70,6 +71,15 @@ class PROTOBUF_EXPORT AnnotationCollector {
   // specific to derived types of AnnotationCollector.
   using Annotation = std::pair<std::pair<size_t, size_t>, std::string>;
 
+  // The semantic meaning of an annotation. This enum mirrors
+  // google.protobuf.GeneratedCodeInfo.Annotation.Semantic, and the enumerator values
+  // should match it.
+  enum Semantic {
+    kNone = 0,
+    kSet = 1,
+    kAlias = 2,
+  };
+
   virtual ~AnnotationCollector() = default;
 
   // Records that the bytes in file_path beginning with begin_offset and ending
@@ -77,6 +87,13 @@ class PROTOBUF_EXPORT AnnotationCollector {
   virtual void AddAnnotation(size_t begin_offset, size_t end_offset,
                              const std::string& file_path,
                              const std::vector<int>& path) = 0;
+
+  virtual void AddAnnotation(size_t begin_offset, size_t end_offset,
+                             const std::string& file_path,
+                             const std::vector<int>& path,
+                             absl::optional<Semantic> semantic) {
+    AddAnnotation(begin_offset, end_offset, file_path, path);
+  }
 
   // TODO(gerbens) I don't see why we need virtuals here. Just a vector of
   // range, payload pairs stored in a context should suffice.
@@ -92,9 +109,28 @@ class PROTOBUF_EXPORT AnnotationCollector {
 //   optional string source_file = 2;
 //   optional int32 begin = 3;
 //   optional int32 end = 4;
+//   optional int32 semantic = 5;
 // }
 template <typename AnnotationProto>
 class AnnotationProtoCollector : public AnnotationCollector {
+ private:
+  // Some users of this type use it with a proto that does not have a
+  // "semantic" field. Therefore, we need to detect it with SFINAE.
+
+  // go/ranked-overloads
+  struct Rank0 {};
+  struct Rank1 : Rank0 {};
+
+  template <typename Proto>
+  static auto SetSemantic(Proto* p, int semantic, Rank1)
+      -> decltype(p->set_semantic(
+          static_cast<typename Proto::Semantic>(semantic))) {
+    return p->set_semantic(static_cast<typename Proto::Semantic>(semantic));
+  }
+
+  template <typename Proto>
+  static void SetSemantic(Proto*, int, Rank0) {}
+
  public:
   explicit AnnotationProtoCollector(AnnotationProto* annotation_proto)
       : annotation_proto_(annotation_proto) {}
@@ -102,6 +138,12 @@ class AnnotationProtoCollector : public AnnotationCollector {
   void AddAnnotation(size_t begin_offset, size_t end_offset,
                      const std::string& file_path,
                      const std::vector<int>& path) override {
+    AddAnnotation(begin_offset, end_offset, file_path, path, absl::nullopt);
+  }
+
+  void AddAnnotation(size_t begin_offset, size_t end_offset,
+                     const std::string& file_path, const std::vector<int>& path,
+                     absl::optional<Semantic> semantic) override {
     auto* annotation = annotation_proto_->add_annotation();
     for (int i = 0; i < path.size(); ++i) {
       annotation->add_path(path[i]);
@@ -109,6 +151,10 @@ class AnnotationProtoCollector : public AnnotationCollector {
     annotation->set_source_file(file_path);
     annotation->set_begin(begin_offset);
     annotation->set_end(end_offset);
+
+    if (semantic.has_value()) {
+      SetSemantic(annotation, *semantic, Rank1{});
+    }
   }
 
   void AddAnnotationNew(Annotation& a) override {
@@ -875,6 +921,7 @@ auto Printer::ValueImpl<owned>::ToStringOrCallback(Cb&& cb, Rank2)
 struct Printer::AnnotationRecord {
   std::vector<int> path;
   std::string file_path;
+  absl::optional<AnnotationCollector::Semantic> semantic;
 
   // AnnotationRecord's constructors are *not* marked as explicit,
   // specifically so that it is possible to construct a
@@ -887,15 +934,18 @@ struct Printer::AnnotationRecord {
       std::enable_if_t<std::is_convertible<const String&, std::string>::value,
                        int> = 0>
   AnnotationRecord(  // NOLINT(google-explicit-constructor)
-      const String& file_path)
-      : file_path(file_path) {}
+      const String& file_path,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt)
+      : file_path(file_path), semantic(semantic) {}
 
   template <typename Desc,
             // This SFINAE clause excludes char* from matching this
             // constructor.
             std::enable_if_t<std::is_class<Desc>::value, int> = 0>
-  AnnotationRecord(const Desc* desc)  // NOLINT(google-explicit-constructor)
-      : file_path(desc->file()->name()) {
+  AnnotationRecord(  // NOLINT(google-explicit-constructor)
+      const Desc* desc,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt)
+      : file_path(desc->file()->name()), semantic(semantic) {
     desc->GetLocationPath(&path);
   }
 };

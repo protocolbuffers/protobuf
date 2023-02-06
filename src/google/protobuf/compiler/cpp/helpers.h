@@ -757,6 +757,8 @@ inline bool HasImplData(const Descriptor* desc, const Options& options) {
   return !HasSimpleBaseClass(desc, options);
 }
 
+// DO NOT USE IN NEW CODE! Use io::Printer directly instead. See b/242326974.
+//
 // Formatter is a functor class which acts as a closure around printer and
 // the variable map. It's much like printer->Print except it supports both named
 // variables that are substituted using a key value map and direct arguments. In
