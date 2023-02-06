@@ -7105,6 +7105,7 @@ TEST_F(ValidationErrorTest, PackageTooLong) {
       "aaaaaaaa: NAME: Package name is too long\n");
 }
 
+
 // ===================================================================
 // DescriptorDatabase
 
