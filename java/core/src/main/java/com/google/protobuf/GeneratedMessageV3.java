@@ -2407,10 +2407,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         isOneofField =
             descriptor.getContainingOneof() != null
                 && !descriptor.getContainingOneof().isSynthetic();
-        hasHasMethod =
-            descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO2
-                || descriptor.hasOptionalKeyword()
-                || (!isOneofField && descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE);
+        hasHasMethod = descriptor.hasPresence();
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
                 descriptor,
