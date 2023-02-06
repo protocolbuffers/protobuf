@@ -30,7 +30,7 @@ MATCHER_P(EqualsProtoTreatNansAsEqual, proto,
   google::protobuf::util::MessageDifferencer differencer;
   differencer.set_field_comparator(&comparator);
   differencer.ReportDifferencesToString(&differences);
-  bool eq = differencer.Equals(proto, arg);
+  bool eq = differencer.Compare(proto, arg);
   if (!eq) {
     *result_listener << differences;
   }

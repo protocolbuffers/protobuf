@@ -270,6 +270,17 @@ TEST(FuzzTest, DefaultWithValidHexEscapePrintable) {
 //                                                  weak_dependency: 0
 //                                                })pb"));
 // }
+//
+// TEST(FuzzTest, NanInOptions) {
+//   RoundTripDescriptor(
+//       ParseTextProtoOrDie(R"pb(file {
+//                                  name: ""
+//                                  service {
+//                                    name: "A"
+//                                    options { failure_detection_delay: nan }
+//                                  }
+//                                })pb"));
+// }
 // end:google_only
 
 TEST(FuzzTest, PackageStartsWithNumber) {
