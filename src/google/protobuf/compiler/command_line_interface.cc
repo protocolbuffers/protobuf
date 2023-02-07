@@ -1033,6 +1033,14 @@ void VisitDescriptors(const std::vector<const FileDescriptor*>& descriptors,
   VisitImpl<VisitorImpl>{VisitorImpl(visitor)}.Visit(descriptors);
 }
 
+bool HasReservedFieldNumber(const FieldDescriptor* field) {
+  if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
+      field->number() <= FieldDescriptor::kLastReservedNumber) {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace {
@@ -1129,18 +1137,28 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   bool validation_error = false;  // Defer exiting so we log more warnings.
 
   VisitDescriptors(parsed_files, [&](const FieldDescriptor* field) {
-    if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
-        field->number() <= FieldDescriptor::kLastReservedNumber) {
+    if (HasReservedFieldNumber(field)) {
+      const char* error_link = nullptr;
       validation_error = true;
+      std::string error;
+      if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
+          field->number() <= FieldDescriptor::kLastReservedNumber) {
+        error = absl::Substitute(
+            "Field numbers $0 through $1 are reserved "
+            "for the protocol buffer library implementation.",
+            FieldDescriptor::kFirstReservedNumber,
+            FieldDescriptor::kLastReservedNumber);
+      } else {
+        error = absl::Substitute(
+            "Field number $0 is reserved for specific purposes.",
+            field->number());
+      }
+      if (error_link) {
+        absl::StrAppend(&error, "(See ", error_link, ")");
+      }
       static_cast<DescriptorPool::ErrorCollector*>(error_collector.get())
-          ->RecordError(
-              field->file()->name(), field->full_name(), nullptr,
-              DescriptorPool::ErrorCollector::NUMBER,
-              absl::Substitute("Field numbers $0 through $1 are reserved "
-                               "for the protocol "
-                               "buffer library implementation.",
-                               FieldDescriptor::kFirstReservedNumber,
-                               FieldDescriptor::kLastReservedNumber));
+          ->RecordError(field->file()->name(), field->full_name(), nullptr,
+                        DescriptorPool::ErrorCollector::NUMBER, error);
     }
   });
 
