@@ -5638,12 +5638,6 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
   }
 }
 
-namespace {
-bool IsAllowedReservedField(const FieldDescriptorProto& field) {
-  return false;
-}
-}  // namespace
-
 void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                                               Descriptor* parent,
                                               FieldDescriptor* result,
@@ -5871,21 +5865,6 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              absl::Substitute("Field numbers cannot be greater than $0.",
                               FieldDescriptor::kMaxNumber));
-  } else if (result->number() >= FieldDescriptor::kFirstReservedNumber &&
-             result->number() <= FieldDescriptor::kLastReservedNumber &&
-             !IsAllowedReservedField(proto)) {
-    message_hints_[parent].RequestHintOnFieldNumbers(
-        proto, DescriptorPool::ErrorCollector::NUMBER);
-    AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
-             absl::Substitute(
-                 "Field numbers $0 through $1 are reserved for the protocol "
-                 "buffer library implementation$2.",
-                 FieldDescriptor::kFirstReservedNumber,
-                 FieldDescriptor::kLastReservedNumber,
-                 absl::StartsWith(proto.type_name(), ".")
-                     ? ""
-                     : ", and the type name must be fully qualified with a `.` "
-                       "prefix"));
   }
 
   if (is_extension) {
