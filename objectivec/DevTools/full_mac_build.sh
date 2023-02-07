@@ -49,6 +49,9 @@ OPTIONS:
          Skip the invoke of Xcode to test the runtime on tvOS.
    --skip-objc-conformance
          Skip the Objective C conformance tests (run on OS X).
+   --skip-xcpretty
+         By default, if xcpretty is installed, it will be used, this option will
+         skip it even it it is installed.
    --xcode-quiet
          Pass -quiet to xcodebuild.
 
@@ -61,6 +64,16 @@ header() {
   echo "    ${@}"
   echo "========================================================================"
 }
+
+xcodebuild_xcpretty() {
+  set -o pipefail && xcodebuild "${@}" | xcpretty
+}
+
+if hash xcpretty >/dev/null 2>&1 ; then
+  XCODEBUILD=xcodebuild_xcpretty
+else
+  XCODEBUILD=xcodebuild
+fi
 
 DO_CLEAN=no
 REGEN_DESCRIPTORS=no
@@ -109,6 +122,9 @@ while [[ $# != 0 ]]; do
       ;;
     --skip-objc-conformance )
       DO_OBJC_CONFORMANCE_TESTS=no
+      ;;
+    --skip-xcpretty )
+      XCODEBUILD=xcodebuild
       ;;
     --xcode-quiet )
       XCODE_QUIET=yes
@@ -210,7 +226,7 @@ readonly XCODE_VERSION="${XCODE_VERSION_LINE/Xcode /}"  # drop the prefix.
 
 if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
   XCODEBUILD_TEST_BASE_IOS=(
-    xcodebuild
+    "${XCODEBUILD}"
       -project objectivec/ProtocolBuffers_iOS.xcodeproj
       -scheme ProtocolBuffers
   )
@@ -241,18 +257,18 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
   esac
   if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
     header "Doing Xcode iOS build/tests - Debug"
-    time "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Debug test
+    "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Debug test
   fi
   if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
     header "Doing Xcode iOS build/tests - Release"
-    time "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Release test
+    "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Release test
   fi
   # Don't leave the simulator in the developer's face.
   killall Simulator 2> /dev/null || true
 fi
 if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
   XCODEBUILD_TEST_BASE_OSX=(
-    xcodebuild
+    "${XCODEBUILD}"
       -project objectivec/ProtocolBuffers_OSX.xcodeproj
       -scheme ProtocolBuffers
       # Since the ObjC 2.0 Runtime is required, 32bit OS X isn't supported.
@@ -269,16 +285,16 @@ if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
   esac
   if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
     header "Doing Xcode OS X build/tests - Debug"
-    time "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Debug test
+    "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Debug test
   fi
   if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
     header "Doing Xcode OS X build/tests - Release"
-    time "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Release test
+    "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Release test
   fi
 fi
 if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
   XCODEBUILD_TEST_BASE_TVOS=(
-    xcodebuild
+    "${XCODEBUILD}"
       -project objectivec/ProtocolBuffers_tvOS.xcodeproj
       -scheme ProtocolBuffers
   )
@@ -305,11 +321,11 @@ if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
   fi
   if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
     header "Doing Xcode tvOS build/tests - Debug"
-    time "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Debug test
+    "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Debug test
   fi
   if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
     header "Doing Xcode tvOS build/tests - Release"
-    time "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Release test
+    "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Release test
   fi
 fi
 
