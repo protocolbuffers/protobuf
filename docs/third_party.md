@@ -206,3 +206,4 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [super-linter: Protocol Buffer lint as GitHub Action](https://github.com/github/super-linter)
 * [protoc-gen-fieldmask - A plugin to generate static type fieldmask paths](https://github.com/idodod/protoc-gen-fieldmask)
 * [protoc-gen-bq-schema - A protoc plugin to generate BigQuery schema files](https://github.com/GoogleCloudPlatform/protoc-gen-bq-schema)
+* [protobuf-decoder-explainer - Web page which decodes and explains pasted binary Protocol Buffers](https://github.com/jamesdbrock/protobuf-decoder-explainer)
