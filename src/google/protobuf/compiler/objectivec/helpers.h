@@ -103,11 +103,11 @@ std::string DefaultValue(const FieldDescriptor* field);
 std::string BuildFlagsString(FlagType type,
                              const std::vector<std::string>& strings);
 
-// Returns a symbol that can be used in C code to refer to an Objective C
+// Returns a symbol that can be used in C code to refer to an Objective-C
 // class without initializing the class.
 std::string ObjCClass(absl::string_view class_name);
 
-// Declares an Objective C class without initializing the class so that it can
+// Declares an Objective-C class without initializing the class so that it can
 // be refrerred to by ObjCClass.
 std::string ObjCClassDeclaration(absl::string_view class_name);
 

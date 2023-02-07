@@ -356,8 +356,8 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
     if (!fwd_decls.empty()) {
       p->Print(
           // clang-format off
-          "#pragma mark - Objective C Class declarations\n"
-          "// Forward declarations of Objective C classes that we can use as\n"
+          "#pragma mark - Objective-C Class declarations\n"
+          "// Forward declarations of Objective-C classes that we can use as\n"
           "// static values in struct initializers.\n"
           "// We don't use [Foo class] because it is not a static value.\n"
           "$fwd_decls$\n"
@@ -406,8 +406,8 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
     if (!fwd_decls.empty()) {
       p->Print(
           // clang-format off
-              "#pragma mark - Objective C Class declarations\n"
-              "// Forward declarations of Objective C classes that we can use as\n"
+              "#pragma mark - Objective-C Class declarations\n"
+              "// Forward declarations of Objective-C classes that we can use as\n"
               "// static values in struct initializers.\n"
               "// We don't use [Foo class] because it is not a static value.\n"
               "$fwd_decls$\n"
@@ -450,8 +450,8 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
     if (!fwd_decls.empty()) {
       p->Print(
           // clang-format off
-          "#pragma mark - Objective C Class declarations\n"
-          "// Forward declarations of Objective C classes that we can use as\n"
+          "#pragma mark - Objective-C Class declarations\n"
+          "// Forward declarations of Objective-C classes that we can use as\n"
           "// static values in struct initializers.\n"
           "// We don't use [Foo class] because it is not a static value.\n"
           "$fwd_decls$\n"
