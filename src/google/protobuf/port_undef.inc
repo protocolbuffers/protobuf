@@ -163,6 +163,8 @@
 #pragma pop_macro("STRICT")
 #pragma pop_macro("STATUS_PENDING")
 #pragma pop_macro("timezone")
+#pragma pop_macro("TRUE")
+#pragma pop_macro("FALSE")
 #endif
 
 #ifdef __APPLE__
