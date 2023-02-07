@@ -433,17 +433,16 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
 }
 
 void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m) {
-  if (ctx->layout) {
-    /* create_fielddef() below depends on this being set. */
+  if (ctx->layout == NULL) {
+    m->layout = _upb_MessageDef_MakeMiniTable(ctx, m);
+  } else {
     UPB_ASSERT(ctx->msg_count < ctx->layout->msg_count);
     m->layout = ctx->layout->msgs[ctx->msg_count++];
     UPB_ASSERT(m->field_count == m->layout->field_count);
+
     // We don't need the result of this call, but it will assign layout_index
     // for all the fields in O(n lg n) time.
     _upb_FieldDefs_Sorted(m->fields, m->field_count, ctx->tmp_arena);
-  } else {
-    /* Allocate now (to allow cross-linking), populate later. */
-    m->layout = _upb_MessageDef_MakeMiniTable(ctx, m);
   }
 
   for (int i = 0; i < m->nested_msg_count; i++) {
