@@ -32,8 +32,9 @@ OPTIONS:
    -r, --regenerate-descriptors
          Run generate_descriptor_proto.sh to regenerate all the checked in
          proto sources.
-   --core-only
-         Skip some of the core protobuf build/checks to shorten the build time.
+   --full-build
+         By default only protoc is built within protobuf, this option will
+         enable a full build/test of the entire protobuf project.
    --skip-xcode
          Skip the invoke of Xcode to test the runtime on both iOS and OS X.
    --skip-xcode-ios
@@ -63,7 +64,7 @@ header() {
 
 DO_CLEAN=no
 REGEN_DESCRIPTORS=no
-CORE_ONLY=no
+FULL_BUILD=no
 DO_XCODE_IOS_TESTS=yes
 DO_XCODE_OSX_TESTS=yes
 DO_XCODE_TVOS_TESTS=yes
@@ -83,8 +84,8 @@ while [[ $# != 0 ]]; do
     -r | --regenerate-descriptors )
       REGEN_DESCRIPTORS=yes
       ;;
-    --core-only )
-      CORE_ONLY=yes
+    --full-build )
+      FULL_BUILD=yes
       ;;
     --skip-xcode )
       DO_XCODE_IOS_TESTS=no
@@ -178,14 +179,12 @@ if [[ "${REGEN_DESCRIPTORS}" == "yes" ]] ; then
   ./generate_descriptor_proto.sh
 fi
 
-if [[ "${CORE_ONLY}" == "yes" ]] ; then
-  header "Building core Only"
-  time ${BazelBin} build //:protoc //:protobuf //:protobuf_lite $BazelFlags
+if [[ "${FULL_BUILD}" == "yes" ]] ; then
+  header "Build/Test: everything"
+  time ${BazelBin} test //:protoc //:protobuf //src/... $BazelFlags
 else
-  header "Building"
-  # Can't issue these together, when fully parallel, something sometimes chokes
-  # at random.
-  time ${BazelBin} test //src/... $BazelFlags
+  header "Building: protoc"
+  time ${BazelBin} build //:protoc $BazelFlags
 fi
 
 # Ensure the WKT sources checked in are current.

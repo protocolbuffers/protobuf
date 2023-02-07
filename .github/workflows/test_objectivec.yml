@@ -16,13 +16,13 @@ jobs:
         include:
           - name: OS X
             config: osx
-            flags: --core-only --skip-xcode-ios --skip-xcode-tvos
+            flags: --skip-xcode-ios --skip-xcode-tvos
           - name: iOS Debug
             config: ios_debug
-            flags: --core-only --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-release
+            flags: --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-release
           - name: iOS Release
             config: ios_release
-            flags: --core-only --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-debug
+            flags: --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-debug
 
     name: ${{ matrix.name}}
     runs-on: macos-12
