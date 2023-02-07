@@ -93,15 +93,18 @@ class FileGenerator {
 
  private:
   enum class GeneratedFileType : int { kHeader, kSource };
+  struct GeneratedFileOptions {
+    std::vector<std::string> ignored_warnings;
+    std::vector<const FileDescriptor*> extra_files_to_import;
+  };
 
-  void GenerateFile(
-      io::Printer* p, GeneratedFileType file_type,
-      const std::vector<std::string>& ignored_warnings,
-      const std::vector<const FileDescriptor*>& extra_files_to_import,
-      std::function<void()> body) const;
+  void GenerateFile(io::Printer* p, GeneratedFileType file_type,
+                    const GeneratedFileOptions& file_options,
+                    std::function<void()> body) const;
   void GenerateFile(io::Printer* p, GeneratedFileType file_type,
                     std::function<void()> body) const {
-    GenerateFile(p, file_type, {}, {}, body);
+    GeneratedFileOptions file_options;
+    GenerateFile(p, file_type, file_options, body);
   }
 
   void PrintRootImplementation(
