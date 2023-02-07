@@ -347,11 +347,19 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     _upb_FieldDef_Resolve(ctx, file->package, f);
   }
 
-  if (!ctx->layout) {
-    for (int i = 0; i < file->top_lvl_msg_count; i++) {
-      upb_MessageDef* m = (upb_MessageDef*)upb_FileDef_TopLevelMessage(file, i);
-      _upb_MessageDef_LinkMiniTable(ctx, m);
-    }
+  for (int i = 0; i < file->top_lvl_msg_count; i++) {
+    upb_MessageDef* m = (upb_MessageDef*)upb_FileDef_TopLevelMessage(file, i);
+    _upb_MessageDef_CreateMiniTable(ctx, (upb_MessageDef*)m);
+  }
+
+  for (int i = 0; i < file->top_lvl_ext_count; i++) {
+    upb_FieldDef* f = (upb_FieldDef*)upb_FileDef_TopLevelExtension(file, i);
+    _upb_FieldDef_BuildMiniTableExtension(ctx, f);
+  }
+
+  for (int i = 0; i < file->top_lvl_msg_count; i++) {
+    upb_MessageDef* m = (upb_MessageDef*)upb_FileDef_TopLevelMessage(file, i);
+    _upb_MessageDef_LinkMiniTable(ctx, m);
   }
 
   if (file->ext_count) {

@@ -697,19 +697,6 @@ static void _upb_FieldDef_CreateNotExt(upb_DefBuilder* ctx, const char* prefix,
   }
 
   _upb_MessageDef_InsertField(ctx, m, f);
-
-  if (!ctx->layout) return;
-
-  const upb_MiniTable* mt = upb_MessageDef_MiniTable(m);
-  const upb_MiniTableField* fields = mt->fields;
-  for (int i = 0; i < mt->field_count; i++) {
-    if (fields[i].number == f->number_) {
-      f->layout_index = i;
-      return;
-    }
-  }
-
-  UPB_ASSERT(false);  // It should be impossible to reach this point.
 }
 
 upb_FieldDef* _upb_Extensions_New(
@@ -744,7 +731,13 @@ upb_FieldDef* _upb_FieldDefs_New(
 
     _upb_FieldDef_CreateNotExt(ctx, prefix, protos[i], m, f);
     f->index_ = i;
-    if (!ctx->layout) f->layout_index = i;
+    if (!ctx->layout) {
+      // Speculate that the def fields are sorted.  We will always sort the
+      // MiniTable fields, so if defs are sorted then indices will match.
+      //
+      // If this is incorrect, we will overwrite later.
+      f->layout_index = i;
+    }
 
     const uint32_t current = f->number_;
     if (previous > current) *is_sorted = false;
@@ -804,6 +797,9 @@ static int _upb_FieldDef_Compare(const void* p1, const void* p2) {
   return (v1 < v2) ? -1 : (v1 > v2);
 }
 
+// _upb_FieldDefs_Sorted() is mostly a pure function of its inputs, but has one
+// critical side effect that we depend on: it sets layout_index appropriately
+// for non-sorted lists of fields.
 const upb_FieldDef** _upb_FieldDefs_Sorted(const upb_FieldDef* f, int n,
                                            upb_Arena* a) {
   // TODO(salo): Replace this arena alloc with a persistent scratch buffer.
@@ -861,7 +857,10 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
         "field number %u in extension %s has no extension range in message %s",
         (unsigned)f->number_, f->full_name, upb_MessageDef_FullName(m));
   }
+}
 
+void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
+                                           const upb_FieldDef* f) {
   const upb_MiniTableExtension* ext = _upb_FieldDef_ExtensionMiniTable(f);
 
   if (ctx->layout) {
@@ -880,8 +879,8 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
       sub.subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
     }
     bool ok2 = upb_MiniTableExtension_Build(desc.data, desc.size, mut_ext,
-                                            upb_MessageDef_MiniTable(m), sub,
-                                            ctx->status);
+                                            upb_MessageDef_MiniTable(f->msgdef),
+                                            sub, ctx->status);
     if (!ok2) _upb_DefBuilder_Errf(ctx, "Could not build extension mini table");
   }
 
