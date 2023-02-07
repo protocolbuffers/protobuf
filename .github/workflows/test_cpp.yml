@@ -91,7 +91,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/docker
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7d5efe13c7a94f742e2f54af0550ffeec7a695e5f981ff3a0197af478f9f2a86
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e8282f42b1c1c0e6227d746e861954fd6fad0bd2e7424e6ceb23c249289a4016
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: ${{ matrix.command }} ${{ env.CCACHE_CMAKE_FLAGS }}
 
@@ -113,7 +113,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/docker
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7d5efe13c7a94f742e2f54af0550ffeec7a695e5f981ff3a0197af478f9f2a86
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e8282f42b1c1c0e6227d746e861954fd6fad0bd2e7424e6ceb23c249289a4016
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} \&\&
