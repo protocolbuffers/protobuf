@@ -34,9 +34,22 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
 
+      - name: Setup ccache
+        uses: ./.github/actions/ccache
+        with:
+          cache-prefix: objectivec_macos_${{ matrix.config }}
+          support-modules: true
+
       - name: Run tests
         uses: ./.github/actions/bazel
+        env:
+          CC: ${{ github.workspace }}/ci/clang_wrapper
+          CXX: ${{ github.workspace }}/ci/clang_wrapper++
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: objectivec_macos/${{ matrix.config }}
           bash: objectivec/DevTools/full_mac_build.sh ${{ matrix.flags }}
+
+      - name: Report ccache stats
+        shell: bash
+        run: ccache -s -v
