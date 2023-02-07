@@ -321,9 +321,7 @@ internal_py_test(
 internal_py_test(
     name = "message_test",
     srcs = ["google/protobuf/internal/message_test.py"],
-    data = glob(["testdata/golden_pickle_*"]) + [
-        "//src/google/protobuf:testdata",
-    ],
+    data = ["//src/google/protobuf:testdata"],
 )
 
 internal_py_test(

@@ -95,6 +95,6 @@ filegroup(
     srcs = glob([
         "*_test.cc",
         "*unittest.cc",
-    ]),
+    ], allow_empty = True),
     visibility = ["//pkg:__pkg__"],
 )

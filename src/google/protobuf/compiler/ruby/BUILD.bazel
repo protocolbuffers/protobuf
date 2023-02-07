@@ -65,6 +65,6 @@ filegroup(
     srcs = glob([
         "*_test.cc",
         "*unittest.cc",
-    ]),
+    ], allow_empty = True),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )
