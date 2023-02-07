@@ -68,7 +68,7 @@ jobs:
     name: Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
     runs-on: ubuntu-latest
     env:
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:6651a299483f7368876db7aed0802ad4ebf038d626d8995ba7df08978ff43210
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:97f50ab24582380012d7ddef5f82f08e19b9dff55d09a4a8d90a87421ae66a45
     steps:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -92,7 +92,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -c '
-            cd /workspace/php && php -v && php -m;
+            cd php && php -v && php -m;
             composer update --ignore-platform-reqs;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
             PATH="/usr/local/php-${{ matrix.version }}${{matrix.suffix}}/bin:$PATH"

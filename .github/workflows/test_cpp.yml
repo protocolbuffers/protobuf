@@ -56,39 +56,23 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - command: >
+          - command: >-
               /test.sh
               -Dprotobuf_BUILD_CONFORMANCE=ON
               -Dprotobuf_BUILD_EXAMPLES=ON
               -DCMAKE_CXX_STANDARD=14
           - name: Ninja
-            command: >
+            command: >-
               /test.sh
               -G Ninja
               -Dprotobuf_BUILD_CONFORMANCE=ON
               -DCMAKE_CXX_STANDARD=14
           - name: Shared
-            command: >
+            command: >-
               /test.sh
               -Dprotobuf_BUILD_CONFORMANCE=ON
               -Dprotobuf_BUILD_SHARED_LIBS=ON
               -DCMAKE_CXX_STANDARD=14
-          - name: Install
-            command: >
-              /install.sh -DCMAKE_CXX_STANDARD=14 \&\& /test.sh
-              -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
-              -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
-              -Dprotobuf_BUILD_CONFORMANCE=ON
-              -DCMAKE_CXX_STANDARD=14
-          - name: 32-bit
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:6651a299483f7368876db7aed0802ad4ebf038d626d8995ba7df08978ff43210
-            platform: linux/386
-            command: >-
-              /bin/bash -c '
-              cd /workspace;
-              cmake . -DCMAKE_CXX_STANDARD=14;
-              cmake --build . --parallel 20;
-              ctest --verbose --parallel 20'
 
     name: Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
@@ -98,13 +82,78 @@ jobs:
         with:
           submodules: recursive
           ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup ccache
+        uses: ./.github/actions/ccache
+        with:
+          cache-prefix: linux-cmake-${{ matrix.name }}
+
       - name: Run tests
         uses: ./.github/actions/docker
         with:
-          image: ${{ matrix.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:cc23dbe065668158ca2732aa305a07bd0913a175b2079d27d9c16925d23f2335' }}
-          platform: ${{ matrix.platform }}
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7d5efe13c7a94f742e2f54af0550ffeec7a695e5f981ff3a0197af478f9f2a86
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: ${{ matrix.command }}
+          command: ${{ matrix.command }} ${{ env.CCACHE_CMAKE_FLAGS }}
+
+  linux-cmake-install:
+    name: Linux CMake Install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup ccache
+        uses: ./.github/actions/ccache
+        with:
+          cache-prefix: linux-cmake-install
+
+      - name: Run tests
+        uses: ./.github/actions/docker
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7d5efe13c7a94f742e2f54af0550ffeec7a695e5f981ff3a0197af478f9f2a86
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} \&\&
+            /test.sh
+            ${{ env.CCACHE_CMAKE_FLAGS }}
+            -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
+            -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
+            -Dprotobuf_BUILD_CONFORMANCE=ON
+            -DCMAKE_CXX_STANDARD=14
+
+  linux-cmake-32-bit:
+    name: Linux CMake 32-bit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup ccache
+        uses: ./.github/actions/ccache
+        with:
+          cache-prefix: linux-cmake-32-bit
+
+      - name: Run tests
+        uses: ./.github/actions/docker
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:f99f051daa8b12f4ebad5927f389bc71372f771ab080290ab451cbaf1648f9ea
+          platform: linux/386
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+              /bin/bash -c '
+              cd /workspace;
+              ccache -z;
+              cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }};
+              cmake --build . --parallel 20;
+              ctest --verbose --parallel 20;
+              ccache -s'
+
   non-linux:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
@@ -140,15 +189,24 @@ jobs:
           submodules: recursive
           ref: ${{ inputs.safe-checkout }}
 
+      - name: Setup ccache
+        uses: ./.github/actions/ccache
+        with:
+          cache-prefix: macos-cmake
+
       - name: Configure CMake
         uses: ./.github/actions/bash
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: cmake . -DCMAKE_CXX_STANDARD=14
+          command: cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }}
       - name: Build
         run: cmake --build . --parallel 8
       - name: Test
         run: ctest --verbose -C Debug
+
+      - name: Report ccache stats
+        shell: bash
+        run: ccache -s -v
 
   windows-cmake:
     strategy:
@@ -172,10 +230,15 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup MSVC
-        uses: microsoft/setup-msbuild@d3ea839497466fb4c6b91ce85831f3a251a2fe3f # v1.0.0
+        uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89 # v1.12.1
         with:
-          vs-version: '15'
-          msbuild-architecture: x64
+          arch: x64
+          vsversion: '2019'
+
+      - name: Setup ccache
+        uses: ./.github/actions/ccache
+        with:
+          cache-prefix: windows-cmake-${{ matrix.name }}
 
       - name: Configure CMake
         uses: ./.github/actions/bash
@@ -183,6 +246,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
             cmake . -G "Visual Studio 16 2019" -A x64 \
+              ${{ env.CCACHE_CMAKE_FLAGS }} \
               -Dprotobuf_BUILD_CONFORMANCE=OFF \
               -Dprotobuf_WITH_ZLIB=OFF \
               ${{ matrix.flags }}
@@ -191,9 +255,13 @@ jobs:
         run: >-
           msbuild.exe protobuf.sln /maxcpucount:8 /p:BuildInParallel=true
           /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0
+          ${{ env.CCACHE_MSBUILD_FLAGS }}
 
       - name: Run Tests
         run: ctest --verbose -C Debug
+
+      - name: Report ccache stats
+        run: ${{ github.workspace }}\ccache.exe -s -v
 
   windows-cmake-install:
     name: Windows CMake Install
@@ -206,10 +274,15 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup MSVC
-        uses: microsoft/setup-msbuild@d3ea839497466fb4c6b91ce85831f3a251a2fe3f # v1.0.0
+        uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89 # v1.12.1
         with:
-          vs-version: '15'
-          msbuild-architecture: x64
+          arch: x64
+          vsversion: '2019'
+
+      - name: Setup ccache
+        uses: ./.github/actions/ccache
+        with:
+          cache-prefix: windows-cmake
 
       - name: Configure CMake for Install
         uses: ./.github/actions/bash
@@ -219,6 +292,7 @@ jobs:
             mkdir build
             pushd build
             cmake .. -G "Visual Studio 16 2019" -A x64 \
+              ${{ env.CCACHE_CMAKE_FLAGS }} \
               -Dprotobuf_BUILD_CONFORMANCE=OFF \
               -Dprotobuf_WITH_ZLIB=OFF
             popd
@@ -226,7 +300,7 @@ jobs:
       - name: Build and Install Protobuf for Windows 15 2017
         run: |
           pushd build
-          msbuild.exe INSTALL.vcxproj /p:Platform=x64 /p:VisualStudioVersion=15.0 /maxcpucount:8 /p:BuildInParallel=true
+          msbuild.exe INSTALL.vcxproj /p:Platform=x64 /p:VisualStudioVersion=15.0 /maxcpucount:8 /p:BuildInParallel=true ${{ env.CCACHE_MSBUILD_FLAGS }}
           popd
 
       - name: Clear CMake cache
@@ -234,19 +308,23 @@ jobs:
         run: rm -rf build/*
 
       - name: Configure CMake
-        uses: ./.github/actions/bash
-        with:
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: |
-            cmake . -G "Visual Studio 16 2019" -A x64 \
-              -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON \
-              -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF \
-              -Dprotobuf_BUILD_CONFORMANCE=OFF
+        shell: bash
+        run: |
+          cmake . -G "Visual Studio 16 2019" -A x64 \
+            ${{ env.CCACHE_CMAKE_FLAGS }} \
+            -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON \
+            -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF \
+            -Dprotobuf_BUILD_CONFORMANCE=OFF \
+            -Dprotobuf_WITH_ZLIB=OFF
 
       - name: Build for Windows 15 2017
         run: >-
           msbuild.exe protobuf.sln /maxcpucount:8 /p:BuildInParallel=true
           /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0
+          ${{ env.CCACHE_MSBUILD_FLAGS }}
 
       - name: Run Tests
         run: ctest --verbose -C Debug
+
+      - name: Report ccache stats
+        run: ${{ github.workspace }}\ccache.exe -s -v

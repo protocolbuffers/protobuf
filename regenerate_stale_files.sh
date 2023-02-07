@@ -5,6 +5,8 @@
 
 set -ex
 
+echo "::group::Regenerate stale files"
+
 # Cd to the repo root.
 cd $(dirname -- "$0")
 
@@ -20,3 +22,5 @@ ${BazelBin} test src/google/protobuf:well_known_types_staleness_test "$@" || ./b
 # so just regenerating in place should be harmless. 
 ${BazelBin} build src/google/protobuf/compiler:protoc "$@"
 (export PROTOC=$PWD/bazel-bin/protoc && cd csharp && ./generate_protos.sh)
+
+echo "::endgroup::"
