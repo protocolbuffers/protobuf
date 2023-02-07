@@ -34,6 +34,8 @@ runs:
           ${{ format('ccache-{0}-{1}-{2}', inputs.cache-prefix, github.ref, github.sha) }}
           ${{ format('ccache-{0}-{1}', inputs.cache-prefix, github.ref) }}
           ${{ format('ccache-{0}-{1}', inputs.cache-prefix, github.base_ref) }}
+          ${{ format('ccache-{0}-refs/heads/{1}', inputs.cache-prefix, github.ref) }}
+          ${{ format('ccache-{0}-refs/heads/{1}', inputs.cache-prefix, github.base_ref) }}
 
     - name: Configure ccache environment variables
       shell: bash
