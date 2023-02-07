@@ -859,17 +859,19 @@ done10:
 // Notes:
 // 1) if data_offset is negative, it's read from data.offset()
 // 2) if hasbit_idx is negative, it's read from data.hasbit_idx()
-template <int data_offset, int hasbit_idx>
+template <int unused_data_offset, int unused_hasbit_idx>
 PROTOBUF_NOINLINE const char* TcParser::FastTV8S1(PROTOBUF_TC_PARAM_DECL) {
   using TagType = uint8_t;
+  asm volatile("" : : "n"(unused_data_offset), "n"(unused_hasbit_idx));
 
   // Special case for a varint bool field with a tag of 1 byte:
   // The coded_tag() field will actually contain the value too and we can check
   // both at the same time.
   auto coded_tag = data.coded_tag<uint16_t>();
+  int data_offset = data.offset();
+  int hasbit_idx = data.hasbit_idx();
   if (PROTOBUF_PREDICT_TRUE(coded_tag == 0x0000 || coded_tag == 0x0100)) {
-    auto& field =
-        RefAt<bool>(msg, data_offset >= 0 ? data_offset : data.offset());
+    auto& field = RefAt<bool>(msg, data_offset);
     // Note: we use `data.data` because Clang generates suboptimal code when
     // using coded_tag.
     // In x86_64 this uses the CH register to read the second byte out of
@@ -880,22 +882,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastTV8S1(PROTOBUF_TC_PARAM_DECL) {
     field = static_cast<bool>(value);
 
     ptr += sizeof(TagType) + 1;  // Consume the tag and the value.
-    if (hasbit_idx < 0) {
-      hasbits |= (uint64_t{1} << data.hasbit_idx());
-    } else {
-      if (hasbit_idx < 32) {
-        // `& 31` avoids a compiler warning when hasbit_idx is negative.
-        hasbits |= (uint64_t{1} << (hasbit_idx & 31));
-      } else {
-        static_assert(hasbit_idx == 63 || (hasbit_idx < 32),
-                      "hard-coded hasbit_idx should be 0-31, or the special"
-                      "value 63, which indicates the field has no has-bit.");
-        // TODO(jorg): investigate whether higher hasbit indices are worth
-        // supporting. Something like:
-        // auto& hasblock = TcParser::RefAt<uint32_t>(msg, hasbit_idx / 32 * 4);
-        // hasblock |= uint32_t{1} << (hasbit_idx % 32);
-      }
-    }
+    hasbits |= (uint64_t{1} << hasbit_idx);
 
     PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
   }
@@ -906,10 +893,13 @@ PROTOBUF_NOINLINE const char* TcParser::FastTV8S1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
 }
 
-template <typename FieldType, int data_offset, int hasbit_idx>
+template <typename FieldType, int unused_data_offset, int unused_hasbit_idx>
 PROTOBUF_NOINLINE const char* TcParser::FastTV64S1(PROTOBUF_TC_PARAM_DECL) {
   using TagType = uint8_t;
+  asm volatile("" : : "n"(unused_data_offset), "n"(unused_hasbit_idx));
   // super-early success test...
+  int data_offset = data.offset();
+  int hasbit_idx = data.hasbit_idx();
   if (PROTOBUF_PREDICT_TRUE(((data.data) & 0x80FF) == 0)) {
     ptr += sizeof(TagType);  // Consume tag
     if (hasbit_idx < 32) {
@@ -940,9 +930,12 @@ PROTOBUF_NOINLINE const char* TcParser::FastTV64S1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
 }
 
-template <typename FieldType, int data_offset, int hasbit_idx>
+template <typename FieldType, int unused_data_offset, int unused_hasbit_idx>
 PROTOBUF_NOINLINE const char* TcParser::FastTV32S1(PROTOBUF_TC_PARAM_DECL) {
   using TagType = uint8_t;
+  asm volatile("" : : "n"(unused_data_offset), "n"(unused_hasbit_idx));
+  int data_offset = data.offset();
+  int hasbit_idx = data.hasbit_idx();
   // super-early success test...
   if (PROTOBUF_PREDICT_TRUE(((data.data) & 0x80FF) == 0)) {
     ptr += sizeof(TagType);  // Consume tag
