@@ -2,6 +2,7 @@
 #
 # Helper to do build so you don't have to remember all the steps/args.
 
+echo "::group::Run full mac build"
 
 set -eu
 
@@ -179,16 +180,16 @@ fi
 
 if [[ "${CORE_ONLY}" == "yes" ]] ; then
   header "Building core Only"
-  ${BazelBin} build //:protoc //:protobuf //:protobuf_lite $BazelFlags
+  time ${BazelBin} build //:protoc //:protobuf //:protobuf_lite $BazelFlags
 else
   header "Building"
   # Can't issue these together, when fully parallel, something sometimes chokes
   # at random.
-  ${BazelBin} test //src/... $BazelFlags
+  time ${BazelBin} test //src/... $BazelFlags
 fi
 
 # Ensure the WKT sources checked in are current.
-objectivec/generate_well_known_types.sh --check-only $BazelFlags
+time objectivec/generate_well_known_types.sh --check-only $BazelFlags
 
 header "Checking on the ObjC Runtime Code"
 # Some of the kokoro machines don't have python3 yet, so fall back to python if need be.
@@ -241,11 +242,11 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
   esac
   if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
     header "Doing Xcode iOS build/tests - Debug"
-    "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Debug test
+    time "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Debug test
   fi
   if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
     header "Doing Xcode iOS build/tests - Release"
-    "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Release test
+    time "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Release test
   fi
   # Don't leave the simulator in the developer's face.
   killall Simulator 2> /dev/null || true
@@ -269,11 +270,11 @@ if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
   esac
   if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
     header "Doing Xcode OS X build/tests - Debug"
-    "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Debug test
+    time "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Debug test
   fi
   if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
     header "Doing Xcode OS X build/tests - Release"
-    "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Release test
+    time "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Release test
   fi
 fi
 if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
@@ -305,18 +306,20 @@ if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
   fi
   if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
     header "Doing Xcode tvOS build/tests - Debug"
-    "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Debug test
+    time "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Debug test
   fi
   if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
     header "Doing Xcode tvOS build/tests - Release"
-    "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Release test
+    time "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Release test
   fi
 fi
 
 if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
   header "Running ObjC Conformance Tests"
-  ${BazelBin} test //objectivec:conformance_test $BazelFlags
+  time ${BazelBin} test //objectivec:conformance_test $BazelFlags
 fi
 
 echo ""
 echo "$(basename "${0}"): Success!"
+
+echo "::endgroup::"
