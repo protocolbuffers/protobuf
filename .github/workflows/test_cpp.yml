@@ -202,7 +202,7 @@ jobs:
       - name: Build
         run: cmake --build . --parallel 8
       - name: Test
-        run: ctest --verbose -C Debug
+        run: ctest --verbose --parallel 20 -C Debug
 
       - name: Report ccache stats
         shell: bash
@@ -258,7 +258,7 @@ jobs:
           ${{ env.CCACHE_MSBUILD_FLAGS }}
 
       - name: Run Tests
-        run: ctest --verbose -C Debug
+        run: ctest --verbose --parallel 20 -C Debug
 
       - name: Report ccache stats
         run: ${{ github.workspace }}\ccache.exe -s -v
@@ -324,7 +324,7 @@ jobs:
           ${{ env.CCACHE_MSBUILD_FLAGS }}
 
       - name: Run Tests
-        run: ctest --verbose -C Debug
+        run: ctest --verbose --parallel 20 -C Debug
 
       - name: Report ccache stats
         run: ${{ github.workspace }}\ccache.exe -s -v
