@@ -2207,6 +2207,12 @@ void MessageDifferencer::StreamReporter::ReportDeleted(
 void MessageDifferencer::StreamReporter::ReportModified(
     const Message& message1, const Message& message2,
     const std::vector<SpecificField>& field_path) {
+  ReportModifiedWithKey(message1, message2, field_path, "");
+}
+
+void MessageDifferencer::StreamReporter::ReportModifiedWithKey(
+    const Message& message1, const Message& message2,
+    const std::vector<SpecificField>& field_path, const std::string& key) {
   if (!report_modified_aggregates_ && field_path.back().field == NULL) {
     if (field_path.back().unknown_field_type == UnknownField::TYPE_GROUP) {
       // Any changes to the subfields have already been printed.
@@ -2226,6 +2232,9 @@ void MessageDifferencer::StreamReporter::ReportModified(
     printer_->Print(" -> ");
     PrintPath(field_path, false);
   }
+  Print("{");
+  Print(key);
+  Print("}");
   printer_->Print(": ");
   PrintValue(message1, field_path, true);
   printer_->Print(" -> ");

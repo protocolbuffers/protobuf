@@ -697,6 +697,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
     void ReportModified(const Message& message1, const Message& message2,
                         const std::vector<SpecificField>& field_path) override;
 
+    void ReportModifiedWithKey(const Message& message1, const Message& message2,
+                               const std::vector<SpecificField>& field_path,
+                               const std::string& key);
+
     void ReportMoved(const Message& message1, const Message& message2,
                      const std::vector<SpecificField>& field_path) override;
 
