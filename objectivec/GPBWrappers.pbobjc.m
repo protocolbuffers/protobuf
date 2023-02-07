@@ -34,20 +34,11 @@ GPBObjCClassDeclaration(GPBUInt64Value);
 
 @end
 
-#pragma mark - GPBWrappersRoot_FileDescriptor
-
-static GPBFileDescriptor *GPBWrappersRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
-  if (!descriptor) {
-    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
-  }
-  return descriptor;
-}
+static GPBFileDescription GPBWrappersRoot_FileDescription = {
+  .package = "google.protobuf",
+  .prefix = "GPB",
+  .syntax = GPBFileSyntaxProto3
+};
 
 #pragma mark - GPBDoubleValue
 
@@ -79,7 +70,8 @@ typedef struct GPBDoubleValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBDoubleValue)
-                                          file:GPBWrappersRoot_FileDescriptor()
+                                   messageName:@"DoubleValue"
+                               fileDescription:&GPBWrappersRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBDoubleValue__storage_)
@@ -124,7 +116,8 @@ typedef struct GPBFloatValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBFloatValue)
-                                          file:GPBWrappersRoot_FileDescriptor()
+                                   messageName:@"FloatValue"
+                               fileDescription:&GPBWrappersRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBFloatValue__storage_)
@@ -169,7 +162,8 @@ typedef struct GPBInt64Value__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBInt64Value)
-                                          file:GPBWrappersRoot_FileDescriptor()
+                                   messageName:@"Int64Value"
+                               fileDescription:&GPBWrappersRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBInt64Value__storage_)
@@ -214,7 +208,8 @@ typedef struct GPBUInt64Value__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBUInt64Value)
-                                          file:GPBWrappersRoot_FileDescriptor()
+                                   messageName:@"UInt64Value"
+                               fileDescription:&GPBWrappersRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBUInt64Value__storage_)
@@ -259,7 +254,8 @@ typedef struct GPBInt32Value__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBInt32Value)
-                                          file:GPBWrappersRoot_FileDescriptor()
+                                   messageName:@"Int32Value"
+                               fileDescription:&GPBWrappersRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBInt32Value__storage_)
@@ -304,7 +300,8 @@ typedef struct GPBUInt32Value__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBUInt32Value)
-                                          file:GPBWrappersRoot_FileDescriptor()
+                                   messageName:@"UInt32Value"
+                               fileDescription:&GPBWrappersRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBUInt32Value__storage_)
@@ -348,7 +345,8 @@ typedef struct GPBBoolValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBBoolValue)
-                                          file:GPBWrappersRoot_FileDescriptor()
+                                   messageName:@"BoolValue"
+                               fileDescription:&GPBWrappersRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBBoolValue__storage_)
@@ -393,7 +391,8 @@ typedef struct GPBStringValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBStringValue)
-                                          file:GPBWrappersRoot_FileDescriptor()
+                                   messageName:@"StringValue"
+                               fileDescription:&GPBWrappersRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBStringValue__storage_)
@@ -438,7 +437,8 @@ typedef struct GPBBytesValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBBytesValue)
-                                          file:GPBWrappersRoot_FileDescriptor()
+                                   messageName:@"BytesValue"
+                               fileDescription:&GPBWrappersRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBBytesValue__storage_)

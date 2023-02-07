@@ -31,20 +31,11 @@ GPBObjCClassDeclaration(GPBValue);
 
 @end
 
-#pragma mark - GPBStructRoot_FileDescriptor
-
-static GPBFileDescriptor *GPBStructRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
-  if (!descriptor) {
-    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
-  }
-  return descriptor;
-}
+static GPBFileDescription GPBStructRoot_FileDescription = {
+  .package = "google.protobuf",
+  .prefix = "GPB",
+  .syntax = GPBFileSyntaxProto3
+};
 
 #pragma mark - Enum GPBNullValue
 
@@ -111,7 +102,8 @@ typedef struct GPBStruct__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBStruct)
-                                          file:GPBStructRoot_FileDescriptor()
+                                   messageName:@"Struct"
+                               fileDescription:&GPBStructRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBStruct__storage_)
@@ -211,7 +203,8 @@ typedef struct GPBValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBValue)
-                                          file:GPBStructRoot_FileDescriptor()
+                                   messageName:@"Value"
+                               fileDescription:&GPBStructRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBValue__storage_)
@@ -279,7 +272,8 @@ typedef struct GPBListValue__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBListValue)
-                                          file:GPBStructRoot_FileDescriptor()
+                                   messageName:@"ListValue"
+                               fileDescription:&GPBStructRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBListValue__storage_)

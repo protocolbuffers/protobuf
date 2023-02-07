@@ -26,20 +26,11 @@ GPBObjCClassDeclaration(GPBFieldMask);
 
 @end
 
-#pragma mark - GPBFieldMaskRoot_FileDescriptor
-
-static GPBFileDescriptor *GPBFieldMaskRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
-  if (!descriptor) {
-    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
-  }
-  return descriptor;
-}
+static GPBFileDescription GPBFieldMaskRoot_FileDescription = {
+  .package = "google.protobuf",
+  .prefix = "GPB",
+  .syntax = GPBFileSyntaxProto3
+};
 
 #pragma mark - GPBFieldMask
 
@@ -71,7 +62,8 @@ typedef struct GPBFieldMask__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBFieldMask)
-                                          file:GPBFieldMaskRoot_FileDescriptor()
+                                   messageName:@"FieldMask"
+                               fileDescription:&GPBFieldMaskRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBFieldMask__storage_)

@@ -30,20 +30,11 @@ GPBObjCClassDeclaration(GPBSourceContext);
 
 @end
 
-#pragma mark - GPBApiRoot_FileDescriptor
-
-static GPBFileDescriptor *GPBApiRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
-  if (!descriptor) {
-    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
-  }
-  return descriptor;
-}
+static GPBFileDescription GPBApiRoot_FileDescription = {
+  .package = "google.protobuf",
+  .prefix = "GPB",
+  .syntax = GPBFileSyntaxProto3
+};
 
 #pragma mark - GPBApi
 
@@ -141,7 +132,8 @@ typedef struct GPBApi__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBApi)
-                                          file:GPBApiRoot_FileDescriptor()
+                                   messageName:@"Api"
+                               fileDescription:&GPBApiRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBApi__storage_)
@@ -262,7 +254,8 @@ typedef struct GPBMethod__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBMethod)
-                                          file:GPBApiRoot_FileDescriptor()
+                                   messageName:@"Method"
+                               fileDescription:&GPBApiRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBMethod__storage_)
@@ -335,7 +328,8 @@ typedef struct GPBMixin__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBMixin)
-                                          file:GPBApiRoot_FileDescriptor()
+                                   messageName:@"Mixin"
+                               fileDescription:&GPBApiRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBMixin__storage_)
