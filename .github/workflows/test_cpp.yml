@@ -253,7 +253,7 @@ jobs:
 
       - name: Build for Windows 15 2017
         run: >-
-          msbuild.exe protobuf.sln /maxcpucount:8 /p:BuildInParallel=true
+          msbuild.exe protobuf.sln /p:MultiProcessorCompilation=true /p:CL_MPCount=8 /maxcpucount:8 /p:BuildInParallel=true
           /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0
           ${{ env.CCACHE_MSBUILD_FLAGS }}
 
@@ -300,7 +300,7 @@ jobs:
       - name: Build and Install Protobuf for Windows 15 2017
         run: |
           pushd build
-          msbuild.exe INSTALL.vcxproj /p:Platform=x64 /p:VisualStudioVersion=15.0 /maxcpucount:8 /p:BuildInParallel=true ${{ env.CCACHE_MSBUILD_FLAGS }}
+          msbuild.exe INSTALL.vcxproj /p:Platform=x64 /p:VisualStudioVersion=15.0 /p:MultiProcessorCompilation=true /p:CL_MPCount=8 /maxcpucount:8 /p:BuildInParallel=true ${{ env.CCACHE_MSBUILD_FLAGS }}
           popd
 
       - name: Clear CMake cache
@@ -319,7 +319,7 @@ jobs:
 
       - name: Build for Windows 15 2017
         run: >-
-          msbuild.exe protobuf.sln /maxcpucount:8 /p:BuildInParallel=true
+          msbuild.exe protobuf.sln /p:MultiProcessorCompilation=true /p:CL_MPCount=8 /maxcpucount:8 /p:BuildInParallel=true
           /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0
           ${{ env.CCACHE_MSBUILD_FLAGS }}
 
