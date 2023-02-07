@@ -74,7 +74,7 @@ jobs:
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
         # unless this is specifically an event for adding the safe label.
         run: >
-          ${{ github.event_name != 'pull_request_target' || github.event.label.name == 'safe for tests' }} ||
+          ${{ github.event_name != 'pull_request_target' || github.event.label.name == ':a: safe for tests' }} ||
           (echo "This pull request is from an unsafe fork and hasn't been approved to run tests!" && exit 1)
 
       - name: Cache safe commit
