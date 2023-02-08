@@ -17,6 +17,9 @@ outputs:
   bazel-startup-flags:
     description: Bazel startup flags that should be sent to all Bazel invocations
     value: ${{ steps.output.outputs.bazel-startup-flags }}
+  repository-cache:
+    description: The location of our cached Bazel repository cache.
+    value: ${{ steps.output.outputs.repository-cache }}
 
 runs:
   using: 'composite'
@@ -66,3 +69,10 @@ runs:
       run: |
         echo "bazel-flags=$BAZEL_FLAGS" >> $GITHUB_OUTPUT
         echo "bazel-startup-flags=$BAZEL_STARTUP_FLAGS" >> $GITHUB_OUTPUT
+        echo "repository-cache=.repository_cache" >> $GITHUB_OUTPUT
+
+    - name: Restore Bazel repository cache
+      uses: actions/cache/restore@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
+        key: bazel-repository-cache-${{ github.base_ref || github.ref_name }}-${{ runner.os }}

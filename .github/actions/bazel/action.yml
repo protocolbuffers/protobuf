@@ -63,10 +63,22 @@ runs:
       run: echo "BAZELISK_PATH=$LOCALAPPDATA\bazelisk" >> $GITHUB_ENV
 
     - name: Cache Bazelisk
+      if: ${{ github.event_name == 'push' }}
       uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
       with:
         path: ${{ env.BAZELISK_PATH }}
         key: bazel-${{ runner.os }}-${{ inputs.version }}
+
+    - name: Restore Bazelisk
+      if: ${{ github.event_name != 'push' }}
+      uses: actions/cache/restore@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ env.BAZELISK_PATH }}
+        key: bazel-${{ runner.os }}-${{ inputs.version }}
+
+    - name: Hook up repository Cache
+      shell: bash
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache=$(pwd)/${{ steps.bazel.outputs.repository-cache }}" >> $GITHUB_ENV
 
     - name: Validate inputs
       if: ${{ (inputs.bash && inputs.bazel) || (!inputs.bash && !inputs.bazel) }}
@@ -90,5 +102,15 @@ runs:
       if: ${{ !inputs.bash }}
       run: >-
         bazelisk ${{ steps.bazel.outputs.bazel-startup-flags }}
-        ${{ inputs.bazel }} ${{ steps.bazel.outputs.bazel-flags }}
+        ${{ inputs.bazel }} $BAZEL_FLAGS
       shell: bash
+
+    # Create a new cache for each push event.  This will be seeded by the
+    # latest cache on that branch, but can include any updates.
+    - name: Save Bazel repository cache
+      if: ${{ github.event_name == 'push' }}
+      uses: actions/cache/save@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
+        key: bazel-repository-cache-${{ github.ref_name }}-${{ runner.os }}-${{ github.sha }}
+        #restore-keys: bazel-repository-cache-${{ github.ref_name }}-${{ runner.os }}

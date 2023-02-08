@@ -45,6 +45,10 @@ runs:
         credentials-file: /workspace/$(basename ${{ steps.auth.outputs.credentials-file }})
         bazel-cache: ${{ inputs.bazel-cache }}
 
+    - name: Hook up repository Cache
+      shell: bash
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache='/workspace/${{ steps.bazel.outputs.repository-cache }}'" >> $GITHUB_ENV
+
     - name: Validate inputs
       if: ${{ (inputs.bash && inputs.bazel) || (!inputs.bash && !inputs.bazel) }}
       shell: bash
@@ -63,4 +67,14 @@ runs:
       if: ${{ !inputs.bash }}
       with:
         image: ${{ inputs.image }}
-        command: ${{ inputs.bazel }} ${{ steps.bazel.outputs.bazel-flags }}
+        command: ${{ inputs.bazel }} ${{ env.BAZEL_FLAGS }}
+
+    # Create a new cache for each push event.  This will be seeded by the
+    # latest cache on that branch, but can include any updates.
+    - name: Save Bazel repository cache
+      if: ${{ github.event_name == 'push' }}
+      uses: actions/cache/save@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
+        key: bazel-repository-cache-${{ github.ref_name }}-${{ runner.os }}-${{ github.sha }}
+        #restore-keys: bazel-repository-cache-${{ github.ref_name }}-${{ runner.os }}
