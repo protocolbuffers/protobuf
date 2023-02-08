@@ -809,9 +809,11 @@ void RepeatedMessageFieldGenerator::GenerateAccessorDeclarations(
       "$type$* ${1$_internal_add_$name$$}$();\n"
       "public:\n",
       descriptor_);
+  format("$deprecated_attr$const $type$& ${1$$name$$}$(int index) const;\n",
+         descriptor_);
+  format("$deprecated_attr$$type$* ${1$add_$name$$}$();\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
   format(
-      "$deprecated_attr$const $type$& ${1$$name$$}$(int index) const;\n"
-      "$deprecated_attr$$type$* ${1$add_$name$$}$();\n"
       "$deprecated_attr$const ::$proto_ns$::RepeatedPtrField< $type$ >&\n"
       "    ${1$$name$$}$() const;\n",
       descriptor_);
