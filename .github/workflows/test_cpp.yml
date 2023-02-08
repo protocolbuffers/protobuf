@@ -213,11 +213,60 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - name: Visual Studio
+          - name: Ninja
             flags: >-
+              -G Ninja
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
-          - name: Shared
+          - name: Ninja Shared
+            flags: -G Ninja -Dprotobuf_BUILD_SHARED_LIBS=ON
+
+    name: Windows CMake ${{ matrix.name}}
+    runs-on: windows-2019
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89 # v1.12.1
+        with:
+          arch: x64
+          vsversion: '2019'
+
+      - name: Setup ccache
+        uses: ./.github/actions/ccache
+        with:
+          cache-prefix: windows-cmake-${{ matrix.name }}
+
+      - name: Configure CMake
+        uses: ./.github/actions/bash
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: |
+            cmake . ${{ env.CCACHE_CMAKE_FLAGS }} \
+              -Dprotobuf_BUILD_CONFORMANCE=OFF \
+              -Dprotobuf_WITH_ZLIB=OFF \
+              ${{ matrix.flags }}
+
+      - name: Build
+        shell: bash
+        run: VERBOSE=1 cmake --build . --parallel 20
+      - name: Test
+        run: ctest --verbose --parallel 20 -C Debug
+      - name: Report ccache stats
+        run: ${{ github.workspace }}\ccache.exe -s -v
+
+  windows-msvc-cmake:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: Visual Studio
+            flags: -Dprotobuf_BUILD_SHARED_LIBS=OFF
+          - name: Visual Studio Shared
             flags: -Dprotobuf_BUILD_SHARED_LIBS=ON
 
     name: Windows CMake ${{ matrix.name}}
@@ -291,17 +340,17 @@ jobs:
           command: |
             mkdir build
             pushd build
-            cmake .. -G "Visual Studio 16 2019" -A x64 \
+            cmake .. -G Ninja \
               ${{ env.CCACHE_CMAKE_FLAGS }} \
               -Dprotobuf_BUILD_CONFORMANCE=OFF \
               -Dprotobuf_WITH_ZLIB=OFF
             popd
-
-      - name: Build and Install Protobuf for Windows 15 2017
-        run: |
-          pushd build
-          msbuild.exe INSTALL.vcxproj /p:Platform=x64 /p:VisualStudioVersion=15.0 /p:MultiProcessorCompilation=true /p:CL_MPCount=8 /maxcpucount:8 /p:BuildInParallel=true ${{ env.CCACHE_MSBUILD_FLAGS }}
-          popd
+      - name: Build
+        shell: bash
+        run: VERBOSE=1 cmake --build build --parallel 20
+      - name: Build
+        shell: bash
+        run: cd build && ninja install
 
       - name: Clear CMake cache
         shell: bash
@@ -310,21 +359,17 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
-          cmake . -G "Visual Studio 16 2019" -A x64 \
+          cmake . -G Ninja \
             ${{ env.CCACHE_CMAKE_FLAGS }} \
             -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON \
             -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF \
             -Dprotobuf_BUILD_CONFORMANCE=OFF \
             -Dprotobuf_WITH_ZLIB=OFF
 
-      - name: Build for Windows 15 2017
-        run: >-
-          msbuild.exe protobuf.sln /p:MultiProcessorCompilation=true /p:CL_MPCount=8 /maxcpucount:8 /p:BuildInParallel=true
-          /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0
-          ${{ env.CCACHE_MSBUILD_FLAGS }}
-
-      - name: Run Tests
+      - name: Build
+        shell: bash
+        run: VERBOSE=1 cmake --build . --parallel 8
+      - name: Test
         run: ctest --verbose --parallel 20 -C Debug
-
       - name: Report ccache stats
         run: ${{ github.workspace }}\ccache.exe -s -v
