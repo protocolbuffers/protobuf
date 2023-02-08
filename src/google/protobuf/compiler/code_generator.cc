@@ -56,6 +56,7 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                                 std::string* error) const {
   // Default implementation is just to call the per file method, and prefix any
   // error string with the file to provide context.
+  std::string noop = "a";
   bool succeeded = true;
   for (int i = 0; i < files.size(); i++) {
     const FileDescriptor* file = files[i];
@@ -66,7 +67,7 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
           "description.";
     }
     if (error && !error->empty()) {
-      *error = absl::StrCat(file->name(), ": ", *error);
+      *error = absl::StrCat(file->name(), ": ", *error, noop);
       break;
     }
     if (!succeeded) {
