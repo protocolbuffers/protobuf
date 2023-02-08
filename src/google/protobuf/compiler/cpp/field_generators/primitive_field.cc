@@ -167,7 +167,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      /* .$field_$ = */ $kDefault$
+      /*decltype($field_$)*/ $kDefault$
     )cc");
   }
 
@@ -340,7 +340,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      /* .$field_$ = */ {}
+      /*decltype($field_$)*/ {}
     )cc");
     InitCachedSize(p);
   }

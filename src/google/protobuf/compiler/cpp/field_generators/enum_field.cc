@@ -53,7 +53,6 @@ void SetEnumVariables(
     const FieldDescriptor* descriptor,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
     const Options& options) {
-  SetCommonFieldVariables(descriptor, variables, options);
   const EnumValueDescriptor* default_value = descriptor->default_value_enum();
   (*variables)["type"] = QualifiedClassName(descriptor->enum_type(), options);
   (*variables)["default"] = Int32ToString(default_value->number());
@@ -244,7 +243,6 @@ void EnumFieldGenerator::GenerateCopyAggregateInitializer(
 EnumOneofFieldGenerator::EnumOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
     : EnumFieldGenerator(descriptor, options) {
-  SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
 void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(

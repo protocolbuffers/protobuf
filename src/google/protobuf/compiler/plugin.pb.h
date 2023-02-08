@@ -255,15 +255,22 @@ class PROTOC_EXPORT Version final :
   bool has_suffix() const;
   void clear_suffix() ;
   const std::string& suffix() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_suffix(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_suffix(Arg_&& arg, Args_... args);
   std::string* mutable_suffix();
   PROTOBUF_NODISCARD std::string* release_suffix();
-  void set_allocated_suffix(std::string* suffix);
+  void set_allocated_suffix(std::string* ptr);
+
   private:
   const std::string& _internal_suffix() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_suffix(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_suffix(
+      const std::string& value);
   std::string* _internal_mutable_suffix();
+
   public:
   // optional int32 major = 1;
   bool has_major() const;
@@ -461,19 +468,21 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   void set_file_to_generate(int index, const std::string& value);
   void set_file_to_generate(int index, std::string&& value);
   void set_file_to_generate(int index, const char* value);
+  void set_file_to_generate(int index, const char* value, std::size_t size);
   void set_file_to_generate(int index, absl::string_view value);
-  void set_file_to_generate(int index, const char* value, ::size_t size);
   std::string* add_file_to_generate();
   void add_file_to_generate(const std::string& value);
   void add_file_to_generate(std::string&& value);
   void add_file_to_generate(const char* value);
+  void add_file_to_generate(const char* value, std::size_t size);
   void add_file_to_generate(absl::string_view value);
-  void add_file_to_generate(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& file_to_generate() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_file_to_generate();
+
   private:
   const std::string& _internal_file_to_generate(int index) const;
   std::string* _internal_add_file_to_generate();
+
   public:
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   int proto_file_size() const;
@@ -497,15 +506,22 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   bool has_parameter() const;
   void clear_parameter() ;
   const std::string& parameter() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_parameter(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_parameter(Arg_&& arg, Args_... args);
   std::string* mutable_parameter();
   PROTOBUF_NODISCARD std::string* release_parameter();
-  void set_allocated_parameter(std::string* parameter);
+  void set_allocated_parameter(std::string* ptr);
+
   private:
   const std::string& _internal_parameter() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_parameter(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_parameter(
+      const std::string& value);
   std::string* _internal_mutable_parameter();
+
   public:
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   bool has_compiler_version() const;
@@ -676,43 +692,64 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   bool has_name() const;
   void clear_name() ;
   const std::string& name() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_name(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* name);
+  void set_allocated_name(std::string* ptr);
+
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
   std::string* _internal_mutable_name();
+
   public:
   // optional string insertion_point = 2;
   bool has_insertion_point() const;
   void clear_insertion_point() ;
   const std::string& insertion_point() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_insertion_point(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_insertion_point(Arg_&& arg, Args_... args);
   std::string* mutable_insertion_point();
   PROTOBUF_NODISCARD std::string* release_insertion_point();
-  void set_allocated_insertion_point(std::string* insertion_point);
+  void set_allocated_insertion_point(std::string* ptr);
+
   private:
   const std::string& _internal_insertion_point() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point(
+      const std::string& value);
   std::string* _internal_mutable_insertion_point();
+
   public:
   // optional string content = 15;
   bool has_content() const;
   void clear_content() ;
   const std::string& content() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_content(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_content(Arg_&& arg, Args_... args);
   std::string* mutable_content();
   PROTOBUF_NODISCARD std::string* release_content();
-  void set_allocated_content(std::string* content);
+  void set_allocated_content(std::string* ptr);
+
   private:
   const std::string& _internal_content() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_content(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_content(
+      const std::string& value);
   std::string* _internal_mutable_content();
+
   public:
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
   bool has_generated_code_info() const;
@@ -922,15 +959,22 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   bool has_error() const;
   void clear_error() ;
   const std::string& error() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_error(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_error(Arg_&& arg, Args_... args);
   std::string* mutable_error();
   PROTOBUF_NODISCARD std::string* release_error();
-  void set_allocated_error(std::string* error);
+  void set_allocated_error(std::string* ptr);
+
   private:
   const std::string& _internal_error() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_error(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_error(
+      const std::string& value);
   std::string* _internal_mutable_error();
+
   public:
   // optional uint64 supported_features = 2;
   bool has_supported_features() const;
@@ -991,7 +1035,6 @@ inline ::int32_t Version::major() const {
   return _internal_major();
 }
 inline void Version::set_major(::int32_t value) {
-  ;
   _internal_set_major(value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.major)
 }
@@ -1017,7 +1060,6 @@ inline ::int32_t Version::minor() const {
   return _internal_minor();
 }
 inline void Version::set_minor(::int32_t value) {
-  ;
   _internal_set_minor(value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.minor)
 }
@@ -1043,7 +1085,6 @@ inline ::int32_t Version::patch() const {
   return _internal_patch();
 }
 inline void Version::set_patch(::int32_t value) {
-  ;
   _internal_set_patch(value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.patch)
 }
@@ -1068,11 +1109,11 @@ inline const std::string& Version::suffix() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.suffix)
   return _internal_suffix();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Version::set_suffix(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000001u;
- _impl_.suffix_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Version::set_suffix(Arg_&& arg,
+                                                     Args_... args) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.suffix_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.suffix)
 }
 inline std::string* Version::mutable_suffix() {
@@ -1085,11 +1126,13 @@ inline const std::string& Version::_internal_suffix() const {
 }
 inline void Version::_internal_set_suffix(const std::string& value) {
   _impl_._has_bits_[0] |= 0x00000001u;
+
+
   _impl_.suffix_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Version::_internal_mutable_suffix() {
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.suffix_.Mutable(GetArenaForAllocation());
+  return _impl_.suffix_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Version::release_suffix() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.Version.suffix)
@@ -1097,24 +1140,24 @@ inline std::string* Version::release_suffix() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* p = _impl_.suffix_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  auto* released = _impl_.suffix_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   _impl_.suffix_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
 }
-inline void Version::set_allocated_suffix(std::string* suffix) {
-  if (suffix != nullptr) {
+inline void Version::set_allocated_suffix(std::string* value) {
+  if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.suffix_.SetAllocated(suffix, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.suffix_.IsDefault()) {
-    _impl_.suffix_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.suffix_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.suffix_.IsDefault()) {
+          _impl_.suffix_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.Version.suffix)
 }
 
@@ -1157,21 +1200,20 @@ inline void CodeGeneratorRequest::set_file_to_generate(int index, std::string&& 
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value) {
-  ABSL_DCHECK(value != nullptr);  _impl_.file_to_generate_.Mutable(index)->assign(value);
+  ABSL_DCHECK(value != nullptr);
+  _impl_.file_to_generate_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+}
+inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value,
+                              std::size_t size) {
+  _impl_.file_to_generate_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, absl::string_view value) {
   _impl_.file_to_generate_.Mutable(index)->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
-inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value, ::size_t size) {
-  _impl_.file_to_generate_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline std::string* CodeGeneratorRequest::_internal_add_file_to_generate() {
-  return _impl_.file_to_generate_.Add();
-}
+inline std::string* CodeGeneratorRequest::_internal_add_file_to_generate() { return _impl_.file_to_generate_.Add(); }
 inline void CodeGeneratorRequest::add_file_to_generate(const std::string& value) {
   _impl_.file_to_generate_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
@@ -1181,24 +1223,24 @@ inline void CodeGeneratorRequest::add_file_to_generate(std::string&& value) {
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::add_file_to_generate(const char* value) {
-  ABSL_DCHECK(value != nullptr);  _impl_.file_to_generate_.Add()->assign(value);
+  ABSL_DCHECK(value != nullptr);
+  _impl_.file_to_generate_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+}
+inline void CodeGeneratorRequest::add_file_to_generate(const char* value, std::size_t size) {
+  _impl_.file_to_generate_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::add_file_to_generate(absl::string_view value) {
   _impl_.file_to_generate_.Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline void CodeGeneratorRequest::add_file_to_generate(const char* value, ::size_t size) {
-  _impl_.file_to_generate_.Add()->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
 CodeGeneratorRequest::file_to_generate() const {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _impl_.file_to_generate_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
-CodeGeneratorRequest::mutable_file_to_generate() {
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* CodeGeneratorRequest::mutable_file_to_generate() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return &_impl_.file_to_generate_;
 }
@@ -1216,11 +1258,11 @@ inline const std::string& CodeGeneratorRequest::parameter() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.parameter)
   return _internal_parameter();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void CodeGeneratorRequest::set_parameter(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000001u;
- _impl_.parameter_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorRequest::set_parameter(Arg_&& arg,
+                                                     Args_... args) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.parameter_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 inline std::string* CodeGeneratorRequest::mutable_parameter() {
@@ -1233,11 +1275,13 @@ inline const std::string& CodeGeneratorRequest::_internal_parameter() const {
 }
 inline void CodeGeneratorRequest::_internal_set_parameter(const std::string& value) {
   _impl_._has_bits_[0] |= 0x00000001u;
+
+
   _impl_.parameter_.Set(value, GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorRequest::_internal_mutable_parameter() {
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.parameter_.Mutable(GetArenaForAllocation());
+  return _impl_.parameter_.Mutable( GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorRequest::release_parameter() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.parameter)
@@ -1245,24 +1289,24 @@ inline std::string* CodeGeneratorRequest::release_parameter() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* p = _impl_.parameter_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  auto* released = _impl_.parameter_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   _impl_.parameter_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
 }
-inline void CodeGeneratorRequest::set_allocated_parameter(std::string* parameter) {
-  if (parameter != nullptr) {
+inline void CodeGeneratorRequest::set_allocated_parameter(std::string* value) {
+  if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.parameter_.SetAllocated(parameter, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.parameter_.IsDefault()) {
-    _impl_.parameter_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.parameter_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.parameter_.IsDefault()) {
+          _impl_.parameter_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 
@@ -1407,11 +1451,11 @@ inline const std::string& CodeGeneratorResponse_File::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.name)
   return _internal_name();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void CodeGeneratorResponse_File::set_name(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000001u;
- _impl_.name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_name(Arg_&& arg,
+                                                     Args_... args) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
 inline std::string* CodeGeneratorResponse_File::mutable_name() {
@@ -1424,11 +1468,13 @@ inline const std::string& CodeGeneratorResponse_File::_internal_name() const {
 }
 inline void CodeGeneratorResponse_File::_internal_set_name(const std::string& value) {
   _impl_._has_bits_[0] |= 0x00000001u;
+
+
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorResponse_File::_internal_mutable_name() {
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_.Mutable(GetArenaForAllocation());
+  return _impl_.name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorResponse_File::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.name)
@@ -1436,24 +1482,24 @@ inline std::string* CodeGeneratorResponse_File::release_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* p = _impl_.name_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  auto* released = _impl_.name_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   _impl_.name_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
 }
-inline void CodeGeneratorResponse_File::set_allocated_name(std::string* name) {
-  if (name != nullptr) {
+inline void CodeGeneratorResponse_File::set_allocated_name(std::string* value) {
+  if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_.SetAllocated(name, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.name_.IsDefault()) {
+          _impl_.name_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
 
@@ -1470,11 +1516,11 @@ inline const std::string& CodeGeneratorResponse_File::insertion_point() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
   return _internal_insertion_point();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void CodeGeneratorResponse_File::set_insertion_point(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000002u;
- _impl_.insertion_point_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_insertion_point(Arg_&& arg,
+                                                     Args_... args) {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_.insertion_point_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 inline std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
@@ -1487,11 +1533,13 @@ inline const std::string& CodeGeneratorResponse_File::_internal_insertion_point(
 }
 inline void CodeGeneratorResponse_File::_internal_set_insertion_point(const std::string& value) {
   _impl_._has_bits_[0] |= 0x00000002u;
+
+
   _impl_.insertion_point_.Set(value, GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorResponse_File::_internal_mutable_insertion_point() {
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.insertion_point_.Mutable(GetArenaForAllocation());
+  return _impl_.insertion_point_.Mutable( GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorResponse_File::release_insertion_point() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
@@ -1499,24 +1547,24 @@ inline std::string* CodeGeneratorResponse_File::release_insertion_point() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* p = _impl_.insertion_point_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  auto* released = _impl_.insertion_point_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   _impl_.insertion_point_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
 }
-inline void CodeGeneratorResponse_File::set_allocated_insertion_point(std::string* insertion_point) {
-  if (insertion_point != nullptr) {
+inline void CodeGeneratorResponse_File::set_allocated_insertion_point(std::string* value) {
+  if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.insertion_point_.SetAllocated(insertion_point, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.insertion_point_.IsDefault()) {
-    _impl_.insertion_point_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.insertion_point_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.insertion_point_.IsDefault()) {
+          _impl_.insertion_point_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 
@@ -1533,11 +1581,11 @@ inline const std::string& CodeGeneratorResponse_File::content() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.content)
   return _internal_content();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void CodeGeneratorResponse_File::set_content(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000004u;
- _impl_.content_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_content(Arg_&& arg,
+                                                     Args_... args) {
+  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_.content_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 inline std::string* CodeGeneratorResponse_File::mutable_content() {
@@ -1550,11 +1598,13 @@ inline const std::string& CodeGeneratorResponse_File::_internal_content() const 
 }
 inline void CodeGeneratorResponse_File::_internal_set_content(const std::string& value) {
   _impl_._has_bits_[0] |= 0x00000004u;
+
+
   _impl_.content_.Set(value, GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorResponse_File::_internal_mutable_content() {
   _impl_._has_bits_[0] |= 0x00000004u;
-  return _impl_.content_.Mutable(GetArenaForAllocation());
+  return _impl_.content_.Mutable( GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorResponse_File::release_content() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.content)
@@ -1562,24 +1612,24 @@ inline std::string* CodeGeneratorResponse_File::release_content() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000004u;
-  auto* p = _impl_.content_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  auto* released = _impl_.content_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   _impl_.content_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
 }
-inline void CodeGeneratorResponse_File::set_allocated_content(std::string* content) {
-  if (content != nullptr) {
+inline void CodeGeneratorResponse_File::set_allocated_content(std::string* value) {
+  if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
-  _impl_.content_.SetAllocated(content, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.content_.IsDefault()) {
-    _impl_.content_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.content_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.content_.IsDefault()) {
+          _impl_.content_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 
@@ -1684,11 +1734,11 @@ inline const std::string& CodeGeneratorResponse::error() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.error)
   return _internal_error();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void CodeGeneratorResponse::set_error(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000001u;
- _impl_.error_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse::set_error(Arg_&& arg,
+                                                     Args_... args) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.error_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 inline std::string* CodeGeneratorResponse::mutable_error() {
@@ -1701,11 +1751,13 @@ inline const std::string& CodeGeneratorResponse::_internal_error() const {
 }
 inline void CodeGeneratorResponse::_internal_set_error(const std::string& value) {
   _impl_._has_bits_[0] |= 0x00000001u;
+
+
   _impl_.error_.Set(value, GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorResponse::_internal_mutable_error() {
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.error_.Mutable(GetArenaForAllocation());
+  return _impl_.error_.Mutable( GetArenaForAllocation());
 }
 inline std::string* CodeGeneratorResponse::release_error() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.error)
@@ -1713,24 +1765,24 @@ inline std::string* CodeGeneratorResponse::release_error() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* p = _impl_.error_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  auto* released = _impl_.error_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   _impl_.error_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
 }
-inline void CodeGeneratorResponse::set_allocated_error(std::string* error) {
-  if (error != nullptr) {
+inline void CodeGeneratorResponse::set_allocated_error(std::string* value) {
+  if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.error_.SetAllocated(error, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.error_.IsDefault()) {
-    _impl_.error_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.error_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.error_.IsDefault()) {
+          _impl_.error_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 
@@ -1748,7 +1800,6 @@ inline ::uint64_t CodeGeneratorResponse::supported_features() const {
   return _internal_supported_features();
 }
 inline void CodeGeneratorResponse::set_supported_features(::uint64_t value) {
-  ;
   _internal_set_supported_features(value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
 }
