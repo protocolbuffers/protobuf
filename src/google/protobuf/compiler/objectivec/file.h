@@ -96,6 +96,7 @@ class FileGenerator {
   struct GeneratedFileOptions {
     std::vector<std::string> ignored_warnings;
     std::vector<const FileDescriptor*> extra_files_to_import;
+    std::vector<std::string> extra_system_headers;
   };
 
   void GenerateFile(io::Printer* p, GeneratedFileType file_type,
