@@ -153,7 +153,7 @@ jobs:
     secrets: inherit
 
   objectivec:
-    name: Objective-c
+    name: Objective-C
     needs: [check-tag]
     uses: ./.github/workflows/test_objectivec.yml
     with:

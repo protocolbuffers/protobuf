@@ -1,4 +1,4 @@
-name: Objective-c Tests
+name: Objective-C Tests
 
 on:
   workflow_call:
@@ -9,14 +9,16 @@ on:
         type: string
 
 jobs:
-  macos:
+  xcode:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - name: OS X
+          - name: macOS
             config: osx
-            flags: --skip-xcode-ios --skip-xcode-tvos
+            flags: --skip-xcode-ios --skip-xcode-tvos --skip-objc-conformance
+          # The iOS simulator takes a while to start up, so Debug & Release are run in
+          # parallel to get the testing done faster.
           - name: iOS Debug
             config: ios_debug
             flags: --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-release
@@ -24,7 +26,7 @@ jobs:
             config: ios_release
             flags: --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-debug
 
-    name: ${{ matrix.name}}
+    name: Xcode ${{ matrix.name}}
     runs-on: macos-12
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
@@ -55,13 +57,16 @@ jobs:
         run: ccache -s -v
 
   pod-lib-lint:
-    runs-on: macos-latest
     strategy:
-      fail-fast: false
+      fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         # Add back 'watchos'. See CocoaPods/CocoaPods#11558
         PLATFORM: ["ios", "macos", "tvos"]
         CONFIGURATION: ["Debug", "Release"]
+    name: CocoaPods ${{ matrix.PLATFORM}} ${{ matrix.CONFIGURATION}}
+    runs-on: macos-12
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -73,3 +78,25 @@ jobs:
             --configuration=${{ matrix.CONFIGURATION }} \
             --platforms=${{ matrix.PLATFORM }} \
             Protobuf.podspec
+
+  bazel:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          # TODO: Could add iOS to atleast build the objc_library targets for that.
+          - name: macOS
+            bazel: //objectivec/...
+    name: Bazel ${{ matrix.name }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: ./.github/actions/bazel
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel: test ${{ matrix.bazel }}
+          bazel-cache: objc_${{ matrix.name }}
