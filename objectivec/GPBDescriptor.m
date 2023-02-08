@@ -160,6 +160,8 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
            @"Internal error: all fields should have class refs");
   NSAssert((flags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) != 0,
            @"Internal error: proto3 optional should be known");
+  NSAssert((flags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) != 0,
+           @"Internal error: close enum should be known");
 #endif
 
   NSMutableArray *fields =
@@ -223,7 +225,11 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30004,
                            time_to_remove_proto3_optional_fallback);
 
-  if (fixClassRefs || fixProto3Optional) {
+  BOOL fixClosedEnums = (flags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) == 0;
+  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30005,
+                           time_to_remove_closed_enum_fallback);
+
+  if (fixClassRefs || fixProto3Optional || fixClosedEnums) {
     BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -258,9 +264,24 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
           coreDesc->flags |= GPBFieldClearHasIvarOnZero;
         }
       }
+
+      if (fixClosedEnums) {
+        // NOTE: This isn't correct, it is using the syntax of the file that
+        // declared the field, not the syntax of the file that declared the
+        // enum; but for older generated code, that's all we have and that happens
+        // to be what the runtime was doing (even though it was wrong). This is
+        // only wrong in the rare cases an enum is declared in a proto3 syntax
+        // file but used for a field in the proto2 syntax file.
+        BOOL isClosedEnum =
+            (coreDesc->dataType == GPBDataTypeEnum && fileSyntax != GPBFileSyntaxProto3);
+        if (isClosedEnum) {
+          coreDesc->flags |= GPBFieldClosedEnum;
+        }
+      }
     }
     flags |= (GPBDescriptorInitializationFlag_UsesClassRefs |
-              GPBDescriptorInitializationFlag_Proto3OptionalKnown);
+              GPBDescriptorInitializationFlag_Proto3OptionalKnown |
+              GPBDescriptorInitializationFlag_ClosedEnumSupportKnown);
   }
 
   // Use a local GPBFileDescription with just the syntax to allow legacy generation initialization,
@@ -703,23 +724,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     GPBDataType dataType = coreDesc->dataType;
     BOOL isMessage = GPBDataTypeIsMessage(dataType);
     BOOL isMapOrArray = GPBFieldIsMapOrArray(self);
-
-    // If the ClosedEnum flag wasn't known (i.e. generated code from an older
-    // version), compute the flag for the rest of the runtime.
-    if ((descriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) == 0) {
-      GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30005,
-                               time_to_remove_closed_enum_fallback);
-      // NOTE: This isn't correct, it is using the syntax of the file that
-      // declared the field, not the syntax of the file that declared the
-      // enum; but for older generated code, that's all we have and that happens
-      // to be what the runtime was doing (even though it was wrong). This is
-      // only wrong in the rare cases an enum is declared in a proto3 syntax
-      // file but used for a field in the proto2 syntax file.
-      BOOL isClosedEnum = (dataType == GPBDataTypeEnum && fileSyntax != GPBFileSyntaxProto3);
-      if (isClosedEnum) {
-        coreDesc->flags |= GPBFieldClosedEnum;
-      }
-    }
 
     if (isMapOrArray) {
       // map<>/repeated fields get a *Count property (inplace of a has*) to
