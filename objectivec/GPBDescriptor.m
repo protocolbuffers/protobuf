@@ -49,8 +49,7 @@
 // Single initializer
 // description has to be long lived, it is held as a raw pointer.
 - (instancetype)initWithFieldDescription:(void *)description
-                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags
-                              fileSyntax:(GPBFileSyntax)fileSyntax;
+                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags;
 
 @end
 
@@ -162,6 +161,11 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
            @"Internal error: proto3 optional should be known");
   NSAssert((flags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) != 0,
            @"Internal error: close enum should be known");
+
+  // `messageName` and `fileDescription` should both be set or both be unset depending on if this is
+  // being called from current code generation or legacy code generation.
+  NSAssert((messageName == nil) == (fileDescription == NULL),
+           @"name and fileDescription should always be provided together");
 #endif
 
   NSMutableArray *fields =
@@ -181,9 +185,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
       mergedFieldFlags |= (((GPBMessageFieldDescription *)fieldDescriptions)[i]).flags;
     }
     GPBFieldDescriptor *fieldDescriptor =
-        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc
-                                             descriptorFlags:flags
-                                                  fileSyntax:fileDescription->syntax];
+        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc descriptorFlags:flags];
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
   }
@@ -284,21 +286,13 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
               GPBDescriptorInitializationFlag_ClosedEnumSupportKnown);
   }
 
-  // Use a local GPBFileDescription with just the syntax to allow legacy generation initialization,
-  // then clear the ivar and wire in the GPBFileDescriptor.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  GPBFileDescription localDesc = {NULL, NULL, file.syntax};
-#pragma clang diagnostic pop
-
   GPBDescriptor *result = [self allocDescriptorForClass:messageClass
                                             messageName:nil
-                                        fileDescription:&localDesc
+                                        fileDescription:NULL
                                                  fields:fieldDescriptions
                                              fieldCount:fieldCount
                                             storageSize:storageSize
                                                   flags:flags];
-  result->fileDescription_ = NULL;
   objc_setAssociatedObject(result, &kFileDescriptorCacheKey, file,
                            OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   return result;
@@ -332,12 +326,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
                    wireFormat:(BOOL)wireFormat {
   if ((self = [super init])) {
     messageClass_ = messageClass;
-#if defined(DEBUG) && DEBUG
-    // If `messageName` is set, then `fileDescription` also must be set. `fileDescription` gets
-    // hotwired for legacy startup, so it can be non NULL without `messageName` having been set.
-    NSAssert((messageName == nil) || (fileDescription != NULL),
-             @"messageName and fileDescription should always be provided together");
-#endif
     messageName_ = [messageName copy];
     fileDescription_ = fileDescription;
     fields_ = [fields retain];
@@ -706,8 +694,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 @synthesize containingOneof = containingOneof_;
 
 - (instancetype)initWithFieldDescription:(void *)description
-                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags
-                              fileSyntax:(GPBFileSyntax)fileSyntax {
+                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags {
   if ((self = [super init])) {
     BOOL includesDefault =
         (descriptorFlags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
