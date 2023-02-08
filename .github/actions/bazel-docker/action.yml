@@ -45,6 +45,10 @@ runs:
         credentials-file: /workspace/$(basename ${{ steps.auth.outputs.credentials-file }})
         bazel-cache: ${{ inputs.bazel-cache }}
 
+    - name: Hook up repository Cache
+      shell: bash
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache='/workspace/${{ env.REPOSITORY_CACHE_PATH }}'" >> $GITHUB_ENV
+
     - name: Validate inputs
       if: ${{ (inputs.bash && inputs.bazel) || (!inputs.bash && !inputs.bazel) }}
       shell: bash
@@ -63,4 +67,9 @@ runs:
       if: ${{ !inputs.bash }}
       with:
         image: ${{ inputs.image }}
-        command: ${{ inputs.bazel }} ${{ steps.bazel.outputs.bazel-flags }}
+        command: ${{ inputs.bazel }} ${{ env.BAZEL_FLAGS }}
+
+    - name: Save Bazel repository cache
+      # Only allow repository cache updates during post-submits.
+      if: ${{ github.event_name == 'push' }}
+      uses: ./.github/actions/internal/repository-cache-save
