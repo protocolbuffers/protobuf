@@ -26,20 +26,11 @@ GPBObjCClassDeclaration(GPBSourceContext);
 
 @end
 
-#pragma mark - GPBSourceContextRoot_FileDescriptor
-
-static GPBFileDescriptor *GPBSourceContextRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
-  if (!descriptor) {
-    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
-  }
-  return descriptor;
-}
+static GPBFileDescription GPBSourceContextRoot_FileDescription = {
+  .package = "google.protobuf",
+  .prefix = "GPB",
+  .syntax = GPBFileSyntaxProto3
+};
 
 #pragma mark - GPBSourceContext
 
@@ -71,7 +62,8 @@ typedef struct GPBSourceContext__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBSourceContext)
-                                          file:GPBSourceContextRoot_FileDescriptor()
+                                   messageName:@"SourceContext"
+                               fileDescription:&GPBSourceContextRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBSourceContext__storage_)

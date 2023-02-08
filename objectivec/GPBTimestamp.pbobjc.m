@@ -26,20 +26,11 @@ GPBObjCClassDeclaration(GPBTimestamp);
 
 @end
 
-#pragma mark - GPBTimestampRoot_FileDescriptor
-
-static GPBFileDescriptor *GPBTimestampRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
-  if (!descriptor) {
-    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
-  }
-  return descriptor;
-}
+static GPBFileDescription GPBTimestampRoot_FileDescription = {
+  .package = "google.protobuf",
+  .prefix = "GPB",
+  .syntax = GPBFileSyntaxProto3
+};
 
 #pragma mark - GPBTimestamp
 
@@ -82,7 +73,8 @@ typedef struct GPBTimestamp__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBTimestamp)
-                                          file:GPBTimestampRoot_FileDescriptor()
+                                   messageName:@"Timestamp"
+                               fileDescription:&GPBTimestampRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBTimestamp__storage_)

@@ -26,20 +26,11 @@ GPBObjCClassDeclaration(GPBAny);
 
 @end
 
-#pragma mark - GPBAnyRoot_FileDescriptor
-
-static GPBFileDescriptor *GPBAnyRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
-  if (!descriptor) {
-    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
-  }
-  return descriptor;
-}
+static GPBFileDescription GPBAnyRoot_FileDescription = {
+  .package = "google.protobuf",
+  .prefix = "GPB",
+  .syntax = GPBFileSyntaxProto3
+};
 
 #pragma mark - GPBAny
 
@@ -82,7 +73,8 @@ typedef struct GPBAny__storage_ {
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBAny)
-                                          file:GPBAnyRoot_FileDescriptor()
+                                   messageName:@"Any"
+                               fileDescription:&GPBAnyRoot_FileDescription
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBAny__storage_)

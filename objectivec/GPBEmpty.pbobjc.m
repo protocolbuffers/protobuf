@@ -26,20 +26,11 @@ GPBObjCClassDeclaration(GPBEmpty);
 
 @end
 
-#pragma mark - GPBEmptyRoot_FileDescriptor
-
-static GPBFileDescriptor *GPBEmptyRoot_FileDescriptor(void) {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety of the singleton.
-  static GPBFileDescriptor *descriptor = NULL;
-  if (!descriptor) {
-    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
-                                                 objcPrefix:@"GPB"
-                                                     syntax:GPBFileSyntaxProto3];
-  }
-  return descriptor;
-}
+static GPBFileDescription GPBEmptyRoot_FileDescription = {
+  .package = "google.protobuf",
+  .prefix = "GPB",
+  .syntax = GPBFileSyntaxProto3
+};
 
 #pragma mark - GPBEmpty
 
@@ -58,7 +49,8 @@ typedef struct GPBEmpty__storage_ {
     GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:GPBObjCClass(GPBEmpty)
-                                          file:GPBEmptyRoot_FileDescriptor()
+                                   messageName:@"Empty"
+                               fileDescription:&GPBEmptyRoot_FileDescription
                                         fields:NULL
                                     fieldCount:0
                                    storageSize:sizeof(GPBEmpty__storage_)
