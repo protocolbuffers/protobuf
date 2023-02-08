@@ -20,8 +20,8 @@ jobs:
       - uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
         with:
           path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
-          key: bazel-repository-cache-${{ github.ref_name }}-${{ runner.os }}-reset-${{ github.sha }}
+          key: repository-cache-${{ github.ref_name }}-${{ runner.os }}-reset-${{ github.sha }}
 
       - run: |
-        mkdir -p '${{ github.workspace }}/.repository_cache'
-        touch '${{ github.workspace }}/.repository_cache/reset_file'
+        mkdir -p '${{ github.workspace }}/.repository-cache'
+        touch '${{ github.workspace }}/.repository-cache/reset_file'

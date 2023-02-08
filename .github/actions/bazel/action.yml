@@ -78,7 +78,7 @@ runs:
 
     - name: Hook up repository Cache
       shell: bash
-      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache=$(pwd)/${{ steps.bazel.outputs.repository-cache }}" >> $GITHUB_ENV
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache=$(pwd)/${{ env.REPOSITORY_CACHE_PATH }}" >> $GITHUB_ENV
 
     - name: Validate inputs
       if: ${{ (inputs.bash && inputs.bazel) || (!inputs.bash && !inputs.bazel) }}
@@ -105,12 +105,9 @@ runs:
         ${{ inputs.bazel }} $BAZEL_FLAGS
       shell: bash
 
-    # Create a new cache for each push event.  This will be seeded by the
-    # latest cache on that branch, but can include any updates.
     - name: Save Bazel repository cache
+      # Only allow repository cache updates during post-submits.
       if: ${{ github.event_name == 'push' }}
-      uses: actions/cache/save@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      uses: ./.github/actions/internal/repository-cache-save
       with:
-        path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
-        key: bazel-repository-cache-${{ github.ref_name }}-${{ runner.os }}-${{ github.sha }}
-        #restore-keys: bazel-repository-cache-${{ github.ref_name }}-${{ runner.os }}
+        bazel-cache: ${{ inputs.bazel-cache }}
