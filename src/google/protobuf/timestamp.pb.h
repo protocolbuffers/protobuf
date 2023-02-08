@@ -249,7 +249,6 @@ inline ::int64_t Timestamp::seconds() const {
   return _internal_seconds();
 }
 inline void Timestamp::set_seconds(::int64_t value) {
-  ;
   _internal_set_seconds(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.seconds)
 }
@@ -270,7 +269,6 @@ inline ::int32_t Timestamp::nanos() const {
   return _internal_nanos();
 }
 inline void Timestamp::set_nanos(::int32_t value) {
-  ;
   _internal_set_nanos(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.nanos)
 }

@@ -360,19 +360,21 @@ class PROTOBUF_EXPORT Type final :
   void set_oneofs(int index, const std::string& value);
   void set_oneofs(int index, std::string&& value);
   void set_oneofs(int index, const char* value);
+  void set_oneofs(int index, const char* value, std::size_t size);
   void set_oneofs(int index, absl::string_view value);
-  void set_oneofs(int index, const char* value, ::size_t size);
   std::string* add_oneofs();
   void add_oneofs(const std::string& value);
   void add_oneofs(std::string&& value);
   void add_oneofs(const char* value);
+  void add_oneofs(const char* value, std::size_t size);
   void add_oneofs(absl::string_view value);
-  void add_oneofs(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& oneofs() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_oneofs();
+
   private:
   const std::string& _internal_oneofs(int index) const;
   std::string* _internal_add_oneofs();
+
   public:
   // repeated .google.protobuf.Option options = 4;
   int options_size() const;
@@ -395,15 +397,22 @@ class PROTOBUF_EXPORT Type final :
   // string name = 1;
   void clear_name() ;
   const std::string& name() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_name(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* name);
+  void set_allocated_name(std::string* ptr);
+
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
   std::string* _internal_mutable_name();
+
   public:
   // .google.protobuf.SourceContext source_context = 5;
   bool has_source_context() const;
@@ -662,54 +671,82 @@ class PROTOBUF_EXPORT Field final :
   // string name = 4;
   void clear_name() ;
   const std::string& name() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_name(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* name);
+  void set_allocated_name(std::string* ptr);
+
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
   std::string* _internal_mutable_name();
+
   public:
   // string type_url = 6;
   void clear_type_url() ;
   const std::string& type_url() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_type_url(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_type_url();
   PROTOBUF_NODISCARD std::string* release_type_url();
-  void set_allocated_type_url(std::string* type_url);
+  void set_allocated_type_url(std::string* ptr);
+
   private:
   const std::string& _internal_type_url() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(
+      const std::string& value);
   std::string* _internal_mutable_type_url();
+
   public:
   // string json_name = 10;
   void clear_json_name() ;
   const std::string& json_name() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_json_name(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_json_name(Arg_&& arg, Args_... args);
   std::string* mutable_json_name();
   PROTOBUF_NODISCARD std::string* release_json_name();
-  void set_allocated_json_name(std::string* json_name);
+  void set_allocated_json_name(std::string* ptr);
+
   private:
   const std::string& _internal_json_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(
+      const std::string& value);
   std::string* _internal_mutable_json_name();
+
   public:
   // string default_value = 11;
   void clear_default_value() ;
   const std::string& default_value() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_default_value(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_default_value(Arg_&& arg, Args_... args);
   std::string* mutable_default_value();
   PROTOBUF_NODISCARD std::string* release_default_value();
-  void set_allocated_default_value(std::string* default_value);
+  void set_allocated_default_value(std::string* ptr);
+
   private:
   const std::string& _internal_default_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(
+      const std::string& value);
   std::string* _internal_mutable_default_value();
+
   public:
   // .google.protobuf.Field.Kind kind = 1;
   void clear_kind() ;
@@ -946,15 +983,22 @@ class PROTOBUF_EXPORT Enum final :
   // string name = 1;
   void clear_name() ;
   const std::string& name() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_name(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* name);
+  void set_allocated_name(std::string* ptr);
+
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
   std::string* _internal_mutable_name();
+
   public:
   // .google.protobuf.SourceContext source_context = 4;
   bool has_source_context() const;
@@ -1146,15 +1190,22 @@ class PROTOBUF_EXPORT EnumValue final :
   // string name = 1;
   void clear_name() ;
   const std::string& name() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_name(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* name);
+  void set_allocated_name(std::string* ptr);
+
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
   std::string* _internal_mutable_name();
+
   public:
   // int32 number = 2;
   void clear_number() ;
@@ -1309,15 +1360,22 @@ class PROTOBUF_EXPORT Option final :
   // string name = 1;
   void clear_name() ;
   const std::string& name() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_name(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* name);
+  void set_allocated_name(std::string* ptr);
+
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
   std::string* _internal_mutable_name();
+
   public:
   // .google.protobuf.Any value = 2;
   bool has_value() const;
@@ -1377,11 +1435,11 @@ inline const std::string& Type::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.name)
   return _internal_name();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Type::set_name(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Type::set_name(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Type.name)
 }
 inline std::string* Type::mutable_name() {
@@ -1393,24 +1451,26 @@ inline const std::string& Type::_internal_name() const {
   return _impl_.name_.Get();
 }
 inline void Type::_internal_set_name(const std::string& value) {
+  ;
+
 
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Type::_internal_mutable_name() {
-
-  return _impl_.name_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Type::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Type.name)
   return _impl_.name_.Release();
 }
-inline void Type::set_allocated_name(std::string* name) {
-  _impl_.name_.SetAllocated(name, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void Type::set_allocated_name(std::string* value) {
+  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.name_.IsDefault()) {
+          _impl_.name_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Type.name)
 }
 
@@ -1489,21 +1549,20 @@ inline void Type::set_oneofs(int index, std::string&& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Type.oneofs)
 }
 inline void Type::set_oneofs(int index, const char* value) {
-  ABSL_DCHECK(value != nullptr);  _impl_.oneofs_.Mutable(index)->assign(value);
+  ABSL_DCHECK(value != nullptr);
+  _impl_.oneofs_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.Type.oneofs)
+}
+inline void Type::set_oneofs(int index, const char* value,
+                              std::size_t size) {
+  _impl_.oneofs_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Type.oneofs)
 }
 inline void Type::set_oneofs(int index, absl::string_view value) {
   _impl_.oneofs_.Mutable(index)->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.Type.oneofs)
 }
-inline void Type::set_oneofs(int index, const char* value, ::size_t size) {
-  _impl_.oneofs_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Type.oneofs)
-}
-inline std::string* Type::_internal_add_oneofs() {
-  return _impl_.oneofs_.Add();
-}
+inline std::string* Type::_internal_add_oneofs() { return _impl_.oneofs_.Add(); }
 inline void Type::add_oneofs(const std::string& value) {
   _impl_.oneofs_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
@@ -1513,24 +1572,24 @@ inline void Type::add_oneofs(std::string&& value) {
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(const char* value) {
-  ABSL_DCHECK(value != nullptr);  _impl_.oneofs_.Add()->assign(value);
+  ABSL_DCHECK(value != nullptr);
+  _impl_.oneofs_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.Type.oneofs)
+}
+inline void Type::add_oneofs(const char* value, std::size_t size) {
+  _impl_.oneofs_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(absl::string_view value) {
   _impl_.oneofs_.Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.Type.oneofs)
-}
-inline void Type::add_oneofs(const char* value, ::size_t size) {
-  _impl_.oneofs_.Add()->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:google.protobuf.Type.oneofs)
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
 Type::oneofs() const {
   // @@protoc_insertion_point(field_list:google.protobuf.Type.oneofs)
   return _impl_.oneofs_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
-Type::mutable_oneofs() {
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* Type::mutable_oneofs() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.oneofs)
   return &_impl_.oneofs_;
 }
@@ -1728,7 +1787,6 @@ inline ::int32_t Field::number() const {
   return _internal_number();
 }
 inline void Field::set_number(::int32_t value) {
-  ;
   _internal_set_number(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.number)
 }
@@ -1748,11 +1806,11 @@ inline const std::string& Field::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.name)
   return _internal_name();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Field::set_name(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Field::set_name(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.name)
 }
 inline std::string* Field::mutable_name() {
@@ -1764,24 +1822,26 @@ inline const std::string& Field::_internal_name() const {
   return _impl_.name_.Get();
 }
 inline void Field::_internal_set_name(const std::string& value) {
+  ;
+
 
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Field::_internal_mutable_name() {
-
-  return _impl_.name_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Field::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Field.name)
   return _impl_.name_.Release();
 }
-inline void Field::set_allocated_name(std::string* name) {
-  _impl_.name_.SetAllocated(name, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void Field::set_allocated_name(std::string* value) {
+  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.name_.IsDefault()) {
+          _impl_.name_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.name)
 }
 
@@ -1793,11 +1853,11 @@ inline const std::string& Field::type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.type_url)
   return _internal_type_url();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Field::set_type_url(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.type_url_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Field::set_type_url(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.type_url)
 }
 inline std::string* Field::mutable_type_url() {
@@ -1809,24 +1869,26 @@ inline const std::string& Field::_internal_type_url() const {
   return _impl_.type_url_.Get();
 }
 inline void Field::_internal_set_type_url(const std::string& value) {
+  ;
+
 
   _impl_.type_url_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Field::_internal_mutable_type_url() {
-
-  return _impl_.type_url_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.type_url_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Field::release_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Field.type_url)
   return _impl_.type_url_.Release();
 }
-inline void Field::set_allocated_type_url(std::string* type_url) {
-  _impl_.type_url_.SetAllocated(type_url, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.type_url_.IsDefault()) {
-    _impl_.type_url_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void Field::set_allocated_type_url(std::string* value) {
+  _impl_.type_url_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.type_url_.IsDefault()) {
+          _impl_.type_url_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.type_url)
 }
 
@@ -1839,7 +1901,6 @@ inline ::int32_t Field::oneof_index() const {
   return _internal_oneof_index();
 }
 inline void Field::set_oneof_index(::int32_t value) {
-  ;
   _internal_set_oneof_index(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.oneof_index)
 }
@@ -1860,7 +1921,6 @@ inline bool Field::packed() const {
   return _internal_packed();
 }
 inline void Field::set_packed(bool value) {
-  ;
   _internal_set_packed(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.packed)
 }
@@ -1920,11 +1980,11 @@ inline const std::string& Field::json_name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.json_name)
   return _internal_json_name();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Field::set_json_name(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.json_name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Field::set_json_name(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.json_name)
 }
 inline std::string* Field::mutable_json_name() {
@@ -1936,24 +1996,26 @@ inline const std::string& Field::_internal_json_name() const {
   return _impl_.json_name_.Get();
 }
 inline void Field::_internal_set_json_name(const std::string& value) {
+  ;
+
 
   _impl_.json_name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Field::_internal_mutable_json_name() {
-
-  return _impl_.json_name_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.json_name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Field::release_json_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Field.json_name)
   return _impl_.json_name_.Release();
 }
-inline void Field::set_allocated_json_name(std::string* json_name) {
-  _impl_.json_name_.SetAllocated(json_name, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.json_name_.IsDefault()) {
-    _impl_.json_name_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void Field::set_allocated_json_name(std::string* value) {
+  _impl_.json_name_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.json_name_.IsDefault()) {
+          _impl_.json_name_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.json_name)
 }
 
@@ -1965,11 +2027,11 @@ inline const std::string& Field::default_value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.default_value)
   return _internal_default_value();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Field::set_default_value(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.default_value_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Field::set_default_value(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.default_value)
 }
 inline std::string* Field::mutable_default_value() {
@@ -1981,24 +2043,26 @@ inline const std::string& Field::_internal_default_value() const {
   return _impl_.default_value_.Get();
 }
 inline void Field::_internal_set_default_value(const std::string& value) {
+  ;
+
 
   _impl_.default_value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Field::_internal_mutable_default_value() {
-
-  return _impl_.default_value_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.default_value_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Field::release_default_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Field.default_value)
   return _impl_.default_value_.Release();
 }
-inline void Field::set_allocated_default_value(std::string* default_value) {
-  _impl_.default_value_.SetAllocated(default_value, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.default_value_.IsDefault()) {
-    _impl_.default_value_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void Field::set_allocated_default_value(std::string* value) {
+  _impl_.default_value_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.default_value_.IsDefault()) {
+          _impl_.default_value_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.default_value)
 }
 
@@ -2014,11 +2078,11 @@ inline const std::string& Enum::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.name)
   return _internal_name();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Enum::set_name(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Enum::set_name(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.name)
 }
 inline std::string* Enum::mutable_name() {
@@ -2030,24 +2094,26 @@ inline const std::string& Enum::_internal_name() const {
   return _impl_.name_.Get();
 }
 inline void Enum::_internal_set_name(const std::string& value) {
+  ;
+
 
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Enum::_internal_mutable_name() {
-
-  return _impl_.name_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Enum::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Enum.name)
   return _impl_.name_.Release();
 }
-inline void Enum::set_allocated_name(std::string* name) {
-  _impl_.name_.SetAllocated(name, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void Enum::set_allocated_name(std::string* value) {
+  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.name_.IsDefault()) {
+          _impl_.name_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Enum.name)
 }
 
@@ -2243,11 +2309,11 @@ inline const std::string& EnumValue::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.name)
   return _internal_name();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void EnumValue::set_name(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void EnumValue::set_name(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValue.name)
 }
 inline std::string* EnumValue::mutable_name() {
@@ -2259,24 +2325,26 @@ inline const std::string& EnumValue::_internal_name() const {
   return _impl_.name_.Get();
 }
 inline void EnumValue::_internal_set_name(const std::string& value) {
+  ;
+
 
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* EnumValue::_internal_mutable_name() {
-
-  return _impl_.name_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* EnumValue::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValue.name)
   return _impl_.name_.Release();
 }
-inline void EnumValue::set_allocated_name(std::string* name) {
-  _impl_.name_.SetAllocated(name, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void EnumValue::set_allocated_name(std::string* value) {
+  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.name_.IsDefault()) {
+          _impl_.name_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValue.name)
 }
 
@@ -2289,7 +2357,6 @@ inline ::int32_t EnumValue::number() const {
   return _internal_number();
 }
 inline void EnumValue::set_number(::int32_t value) {
-  ;
   _internal_set_number(value);
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValue.number)
 }
@@ -2353,11 +2420,11 @@ inline const std::string& Option::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Option.name)
   return _internal_name();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Option::set_name(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Option::set_name(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Option.name)
 }
 inline std::string* Option::mutable_name() {
@@ -2369,24 +2436,26 @@ inline const std::string& Option::_internal_name() const {
   return _impl_.name_.Get();
 }
 inline void Option::_internal_set_name(const std::string& value) {
+  ;
+
 
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Option::_internal_mutable_name() {
-
-  return _impl_.name_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Option::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Option.name)
   return _impl_.name_.Release();
 }
-inline void Option::set_allocated_name(std::string* name) {
-  _impl_.name_.SetAllocated(name, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void Option::set_allocated_name(std::string* value) {
+  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.name_.IsDefault()) {
+          _impl_.name_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Option.name)
 }
 

@@ -462,15 +462,22 @@ class PROTOBUF_EXPORT Value final :
   bool has_string_value() const;
   void clear_string_value() ;
   const std::string& string_value() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_string_value(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_string_value(Arg_&& arg, Args_... args);
   std::string* mutable_string_value();
   PROTOBUF_NODISCARD std::string* release_string_value();
-  void set_allocated_string_value(std::string* string_value);
+  void set_allocated_string_value(std::string* ptr);
+
   private:
   const std::string& _internal_string_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(
+      const std::string& value);
   std::string* _internal_mutable_string_value();
+
   public:
   // bool bool_value = 4;
   bool has_bool_value() const;
@@ -815,7 +822,6 @@ inline double Value::number_value() const {
   return _internal_number_value();
 }
 inline void Value::set_number_value(double value) {
-  ;
   _internal_set_number_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Value.number_value)
 }
@@ -850,14 +856,16 @@ inline const std::string& Value::string_value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.string_value)
   return _internal_string_value();
 }
-template <typename ArgT0, typename... ArgT>
-inline void Value::set_string_value(ArgT0&& arg0, ArgT... args) {
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
+                                                     Args_... args) {
   if (kind_case() != kStringValue) {
     clear_kind();
+
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
   }
-  _impl_.kind_.string_value_.Set( static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
 inline std::string* Value::mutable_string_value() {
@@ -866,43 +874,46 @@ inline std::string* Value::mutable_string_value() {
   return _s;
 }
 inline const std::string& Value::_internal_string_value() const {
-  if (kind_case() == kStringValue) {
-    return _impl_.kind_.string_value_.Get();
+  if (kind_case() != kStringValue) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited();
   }
-  return ::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited();
+  return _impl_.kind_.string_value_.Get();
 }
 inline void Value::_internal_set_string_value(const std::string& value) {
   if (kind_case() != kStringValue) {
     clear_kind();
+
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
   }
+
+
   _impl_.kind_.string_value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Value::_internal_mutable_string_value() {
   if (kind_case() != kStringValue) {
     clear_kind();
+
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
   }
-  return _impl_.kind_.string_value_.Mutable(      GetArenaForAllocation());
+  return _impl_.kind_.string_value_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Value::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
-  if (kind_case() == kStringValue) {
-    clear_has_kind();
-    return _impl_.kind_.string_value_.Release();
-  } else {
+  if (kind_case() != kStringValue) {
     return nullptr;
   }
+  clear_has_kind();
+  return _impl_.kind_.string_value_.Release();
 }
-inline void Value::set_allocated_string_value(std::string* string_value) {
+inline void Value::set_allocated_string_value(std::string* value) {
   if (has_kind()) {
     clear_kind();
   }
-  if (string_value != nullptr) {
+  if (value != nullptr) {
     set_has_string_value();
-    _impl_.kind_.string_value_.InitAllocated(string_value, GetArenaForAllocation());
+    _impl_.kind_.string_value_.InitAllocated(value, GetArenaForAllocation());
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.string_value)
 }
@@ -925,7 +936,6 @@ inline bool Value::bool_value() const {
   return _internal_bool_value();
 }
 inline void Value::set_bool_value(bool value) {
-  ;
   _internal_set_bool_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Value.bool_value)
 }
