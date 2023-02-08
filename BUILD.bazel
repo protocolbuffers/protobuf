@@ -194,10 +194,6 @@ alias(
 
 cc_library(
     name = "protobuf",
-    hdrs = glob([
-        "src/**/*.h",
-        "src/**/*.inc",
-    ]),
     copts = COPTS,
     include_prefix = "google/protobuf/io",
     linkopts = LINK_OPTS,

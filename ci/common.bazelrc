@@ -1,3 +1,6 @@
+# Fail if a glob doesn't match anything (https://github.com/bazelbuild/bazel/issues/8195)
+build --incompatible_disallow_empty_glob
+
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt

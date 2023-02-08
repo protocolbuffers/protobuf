@@ -119,7 +119,6 @@ pkg_files(
         "ProtocolBuffers_iOS.xcodeproj/**/*",
         "ProtocolBuffers_OSX.xcodeproj/**/*",
         "ProtocolBuffers_tvOS.xcodeproj/**/*",
-        "Tests/CocoaPods/**/*",
         "Tests/*.pddm",
         "Tests/*.txt",
         "Tests/*.plist",

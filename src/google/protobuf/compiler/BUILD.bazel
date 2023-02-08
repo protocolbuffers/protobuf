@@ -376,7 +376,7 @@ filegroup(
     srcs = glob([
         "*_test.cc",
         "*unittest.cc",
-    ]) + [
+    ], allow_empty = True) + [
         "//src/google/protobuf/compiler/cpp:test_srcs",
         "//src/google/protobuf/compiler/csharp:test_srcs",
         "//src/google/protobuf/compiler/java:test_srcs",
