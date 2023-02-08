@@ -359,12 +359,34 @@ bool Parse(T& message, absl::string_view bytes) {
 }
 
 template <typename T>
+bool Parse(T& message, absl::string_view bytes,
+           const ::protos::ExtensionRegistry& extension_registry) {
+  _upb_Message_Clear(message.msg(), T::minitable());
+  auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
+  return upb_Decode(bytes.data(), bytes.size(), message.msg(), T::minitable(),
+                    /* extreg= */
+                    ::protos::internal::GetUpbExtensions(extension_registry),
+                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
+}
+
+template <typename T>
 bool Parse(Ptr<T>& message, absl::string_view bytes) {
   _upb_Message_Clear(message->msg(), T::minitable());
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
   return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
                     /* extreg= */ nullptr, /* options= */ 0,
                     arena) == kUpb_DecodeStatus_Ok;
+}
+
+template <typename T>
+bool Parse(Ptr<T>& message, absl::string_view bytes,
+           const ::protos::ExtensionRegistry& extension_registry) {
+  _upb_Message_Clear(message->msg(), T::minitable());
+  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
+                    /* extreg= */
+                    ::protos::internal::GetUpbExtensions(extension_registry),
+                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
 }
 
 template <typename T>
@@ -377,12 +399,34 @@ bool Parse(std::unique_ptr<T>& message, absl::string_view bytes) {
 }
 
 template <typename T>
+bool Parse(std::unique_ptr<T>& message, absl::string_view bytes,
+           const ::protos::ExtensionRegistry& extension_registry) {
+  _upb_Message_Clear(message->msg(), T::minitable());
+  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
+                    /* extreg= */
+                    ::protos::internal::GetUpbExtensions(extension_registry),
+                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
+}
+
+template <typename T>
 bool Parse(std::shared_ptr<T>& message, absl::string_view bytes) {
   _upb_Message_Clear(message->msg(), T::minitable());
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
   return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
                     /* extreg= */ nullptr, /* options= */ 0,
                     arena) == kUpb_DecodeStatus_Ok;
+}
+
+template <typename T>
+bool Parse(std::shared_ptr<T>& message, absl::string_view bytes,
+           const ::protos::ExtensionRegistry& extension_registry) {
+  _upb_Message_Clear(message->msg(), T::minitable());
+  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
+                    /* extreg= */
+                    ::protos::internal::GetUpbExtensions(extension_registry),
+                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
 }
 
 template <typename T>
