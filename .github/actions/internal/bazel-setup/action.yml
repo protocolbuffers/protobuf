@@ -66,3 +66,8 @@ runs:
       run: |
         echo "bazel-flags=$BAZEL_FLAGS" >> $GITHUB_OUTPUT
         echo "bazel-startup-flags=$BAZEL_STARTUP_FLAGS" >> $GITHUB_OUTPUT
+
+    - name: Restore Bazel repository cache
+      uses: ./.github/actions/internal/repository-cache-restore
+      with:
+        bazel-cache: ${{ inputs.bazel-cache }}

@@ -25,17 +25,15 @@ runs:
       with:
         path: .ccache
         # Always push to a cache key unique to this commit.
-        key: ${{ format('ccache-{0}-{1}-{2}', inputs.cache-prefix, github.ref, github.sha) }}
+        key: ${{ format('ccache-{0}-{1}-{2}', inputs.cache-prefix, github.ref_name, github.sha) }}
         # Select a cache to restore from with the follow order of preference:
         # 1) The exact same commit we're running over
         # 2) The latest cache from the current ref branch
         # 3) The latest push to the base ref of a pull request
         restore-keys: |
-          ${{ format('ccache-{0}-{1}-{2}', inputs.cache-prefix, github.ref, github.sha) }}
-          ${{ format('ccache-{0}-{1}', inputs.cache-prefix, github.ref) }}
+          ${{ format('ccache-{0}-{1}-{2}', inputs.cache-prefix, github.ref_name, github.sha) }}
+          ${{ format('ccache-{0}-{1}', inputs.cache-prefix, github.ref_name) }}
           ${{ format('ccache-{0}-{1}', inputs.cache-prefix, github.base_ref) }}
-          ${{ format('ccache-{0}-refs/heads/{1}', inputs.cache-prefix, github.ref) }}
-          ${{ format('ccache-{0}-refs/heads/{1}', inputs.cache-prefix, github.base_ref) }}
 
     - name: Configure ccache environment variables
       shell: bash
