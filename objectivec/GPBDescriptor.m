@@ -38,7 +38,8 @@
 
 @interface GPBDescriptor ()
 - (instancetype)initWithClass:(Class)messageClass
-                         file:(GPBFileDescriptor *)file
+                  messageName:(NSString *)messageName
+              fileDescription:(GPBFileDescription *)fileDescription
                        fields:(NSArray *)fields
                   storageSize:(uint32_t)storage
                    wireFormat:(BOOL)wireFormat;
@@ -48,8 +49,8 @@
 // Single initializer
 // description has to be long lived, it is held as a raw pointer.
 - (instancetype)initWithFieldDescription:(void *)description
-                                    file:(GPBFileDescriptor *)file
-                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags;
+                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags
+                              fileSyntax:(GPBFileSyntax)fileSyntax;
 
 @end
 
@@ -72,6 +73,7 @@
 static const char kTextFormatExtraValueKey = 0;
 static const char kParentClassValueKey = 0;
 static const char kClassNameSuffixKey = 0;
+static const char kFileDescriptorCacheKey = 0;
 
 // Utility function to generate selectors on the fly.
 static SEL SelFromStrings(const char *prefix, const char *middle, const char *suffix,
@@ -122,7 +124,8 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 
 @implementation GPBDescriptor {
   Class messageClass_;
-  GPBFileDescriptor *file_;
+  NSString *messageName_;
+  const GPBFileDescription *fileDescription_;
   BOOL wireFormat_;
 }
 
@@ -131,11 +134,11 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 @synthesize oneofs = oneofs_;
 @synthesize extensionRanges = extensionRanges_;
 @synthesize extensionRangesCount = extensionRangesCount_;
-@synthesize file = file_;
 @synthesize wireFormat = wireFormat_;
 
 + (instancetype)allocDescriptorForClass:(Class)messageClass
-                                   file:(GPBFileDescriptor *)file
+                            messageName:(NSString *)messageName
+                        fileDescription:(GPBFileDescription *)fileDescription
                                  fields:(void *)fieldDescriptions
                              fieldCount:(uint32_t)fieldCount
                             storageSize:(uint32_t)storageSize
@@ -168,7 +171,9 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
       mergedFieldFlags |= (((GPBMessageFieldDescription *)fieldDescriptions)[i]).flags;
     }
     GPBFieldDescriptor *fieldDescriptor =
-        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc file:file descriptorFlags:flags];
+        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc
+                                             descriptorFlags:flags
+                                                  fileSyntax:fileDescription->syntax];
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
   }
@@ -184,12 +189,42 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 
   BOOL wireFormat = (flags & GPBDescriptorInitializationFlag_WireFormat) != 0;
   GPBDescriptor *descriptor = [[self alloc] initWithClass:messageClass
-                                                     file:file
+                                              messageName:messageName
+                                          fileDescription:fileDescription
                                                    fields:fields
                                               storageSize:storageSize
                                                wireFormat:wireFormat];
   [fields release];
   return descriptor;
+}
+
++ (instancetype)allocDescriptorForClass:(Class)messageClass
+                                   file:(GPBFileDescriptor *)file
+                                 fields:(void *)fieldDescriptions
+                             fieldCount:(uint32_t)fieldCount
+                            storageSize:(uint32_t)storageSize
+                                  flags:(GPBDescriptorInitializationFlags)flags {
+  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30006,
+                           time_to_remove_this_old_version_shim);
+
+  // Use a local GPBFileDescription with just the syntax to allow legacy generation initialization,
+  // then clear the ivar and wire in the GPBFileDescriptor.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  GPBFileDescription localDesc = {NULL, NULL, file.syntax};
+#pragma clang diagnostic pop
+
+  GPBDescriptor *result = [self allocDescriptorForClass:messageClass
+                                            messageName:nil
+                                        fileDescription:&localDesc
+                                                 fields:fieldDescriptions
+                                             fieldCount:fieldCount
+                                            storageSize:storageSize
+                                                  flags:flags];
+  result->fileDescription_ = NULL;
+  objc_setAssociatedObject(result, &kFileDescriptorCacheKey, file,
+                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  return result;
 }
 
 + (instancetype)allocDescriptorForClass:(Class)messageClass
@@ -213,13 +248,21 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 }
 
 - (instancetype)initWithClass:(Class)messageClass
-                         file:(GPBFileDescriptor *)file
+                  messageName:(NSString *)messageName
+              fileDescription:(GPBFileDescription *)fileDescription
                        fields:(NSArray *)fields
                   storageSize:(uint32_t)storageSize
                    wireFormat:(BOOL)wireFormat {
   if ((self = [super init])) {
     messageClass_ = messageClass;
-    file_ = file;
+#if defined(DEBUG) && DEBUG
+    // If `messageName` is set, then `fileDescription` also must be set. `fileDescription` gets
+    // hotwired for legacy startup, so it can be non NULL without `messageName` having been set.
+    NSAssert((messageName == nil) || (fileDescription != NULL),
+             @"messageName and fileDescription should always be provided together");
+#endif
+    messageName_ = [messageName copy];
+    fileDescription_ = fileDescription;
     fields_ = [fields retain];
     storageSize_ = storageSize;
     wireFormat_ = wireFormat;
@@ -228,6 +271,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 }
 
 - (void)dealloc {
+  [messageName_ release];
   [fields_ release];
   [oneofs_ release];
   [super dealloc];
@@ -292,6 +336,8 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 }
 
 - (void)setupMessageClassNameSuffix:(NSString *)suffix {
+  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30007,
+                           time_to_remove_this_old_version_shim);
   if (suffix.length) {
     objc_setAssociatedObject(self, &kClassNameSuffixKey, suffix, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
@@ -301,12 +347,54 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   return NSStringFromClass(messageClass_);
 }
 
+- (GPBFileDescriptor *)file {
+  @synchronized(self) {
+    GPBFileDescriptor *result = objc_getAssociatedObject(self, &kFileDescriptorCacheKey);
+    if (!result) {
+#if defined(DEBUG) && DEBUG
+      NSAssert(fileDescription_ != NULL, @"Internal error in generation/startup");
+#endif
+      // `package` and `prefix` can both be NULL if there wasn't one for the file.
+      NSString *package = fileDescription_->package ? @(fileDescription_->package) : @"";
+      if (fileDescription_->prefix) {
+        result = [[GPBFileDescriptor alloc] initWithPackage:package
+                                                 objcPrefix:@(fileDescription_->prefix)
+                                                     syntax:fileDescription_->syntax];
+
+      } else {
+        result = [[GPBFileDescriptor alloc] initWithPackage:package
+                                                     syntax:fileDescription_->syntax];
+      }
+      objc_setAssociatedObject(result, &kFileDescriptorCacheKey, result,
+                               OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    return result;
+  }
+}
+
 - (GPBDescriptor *)containingType {
   Class parentClass = objc_getAssociatedObject(self, &kParentClassValueKey);
   return [parentClass descriptor];
 }
 
 - (NSString *)fullName {
+  GPBDescriptor *parent = self.containingType;
+  if (messageName_) {
+    if (parent) {
+      return [NSString stringWithFormat:@"%@.%@", parent.fullName, messageName_];
+    }
+    if (fileDescription_->package) {
+      return [NSString stringWithFormat:@"%s.%@", fileDescription_->package, messageName_];
+    }
+    return messageName_;
+  }
+
+  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30007,
+                           time_to_remove_this_old_approach);
+  // NOTE: When this code path is removed, this also means this api can't return nil any more but
+  // that would be a breaking code change (not longer a Swift optional), so changing that will be
+  // harder.
+
   NSString *className = NSStringFromClass(self.messageClass);
   GPBFileDescriptor *file = self.file;
   NSString *objcPrefix = file.objcPrefix;
@@ -314,7 +402,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
     NSAssert(0, @"Class didn't have correct prefix? (%@ - %@)", className, objcPrefix);
     return nil;
   }
-  GPBDescriptor *parent = self.containingType;
 
   NSString *name = nil;
   if (parent) {
@@ -542,8 +629,8 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 @synthesize containingOneof = containingOneof_;
 
 - (instancetype)initWithFieldDescription:(void *)description
-                                    file:(GPBFileDescriptor *)file
-                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags {
+                         descriptorFlags:(GPBDescriptorInitializationFlags)descriptorFlags
+                              fileSyntax:(GPBFileSyntax)fileSyntax {
   if ((self = [super init])) {
     BOOL includesDefault =
         (descriptorFlags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
@@ -571,11 +658,8 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       //  - not repeated/map
       //  - not in a oneof (negative has index)
       //  - not a message (the flag doesn't make sense for messages)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-      BOOL clearOnZero = ((file.syntax == GPBFileSyntaxProto3) && !isMapOrArray &&
+      BOOL clearOnZero = ((fileSyntax == GPBFileSyntaxProto3) && !isMapOrArray &&
                           (coreDesc->hasIndex >= 0) && !isMessage);
-#pragma clang diagnostic pop
       if (clearOnZero) {
         coreDesc->flags |= GPBFieldClearHasIvarOnZero;
       }
@@ -592,10 +676,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       // to be what the runtime was doing (even though it was wrong). This is
       // only wrong in the rare cases an enum is declared in a proto3 syntax
       // file but used for a field in the proto2 syntax file.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-      BOOL isClosedEnum = (dataType == GPBDataTypeEnum && file.syntax != GPBFileSyntaxProto3);
-#pragma clang diagnostic pop
+      BOOL isClosedEnum = (dataType == GPBDataTypeEnum && fileSyntax != GPBFileSyntaxProto3);
       if (isClosedEnum) {
         coreDesc->flags |= GPBFieldClosedEnum;
       }
