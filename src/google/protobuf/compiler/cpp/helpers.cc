@@ -211,9 +211,9 @@ bool IsLazy(const FieldDescriptor* field, const Options& options,
 
 // Returns true if "field" is a message field that is backed by LazyField per
 // profile (go/pdlazy).
-inline bool IsEagerlyVerifiedLazyByProfile(const FieldDescriptor* field,
-                                           const Options& options,
-                                           MessageSCCAnalyzer* scc_analyzer) {
+inline bool IsLazyByProfile(const FieldDescriptor* field,
+                            const Options& options,
+                            MessageSCCAnalyzer* scc_analyzer) {
   return false;
 }
 
