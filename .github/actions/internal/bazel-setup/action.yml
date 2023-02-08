@@ -17,6 +17,9 @@ outputs:
   bazel-startup-flags:
     description: Bazel startup flags that should be sent to all Bazel invocations
     value: ${{ steps.output.outputs.bazel-startup-flags }}
+  repository-cache:
+    description: The location of our cached Bazel repository cache.
+    value: ${{ steps.output.outputs.repository-cache }}
 
 runs:
   using: 'composite'
