@@ -204,7 +204,7 @@ else
 fi
 
 # Ensure the WKT sources checked in are current.
-time objectivec/generate_well_known_types.sh --check-only $BazelFlags
+objectivec/generate_well_known_types.sh --check-only
 
 header "Checking on the ObjC Runtime Code"
 # Some of the kokoro machines don't have python3 yet, so fall back to python if need be.

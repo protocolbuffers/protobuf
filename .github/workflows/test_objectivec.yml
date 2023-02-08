@@ -100,3 +100,41 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: test ${{ matrix.bazel }}
           bazel-cache: objc_${{ matrix.name }}
+
+  # To support some Apple build systems that can't really generated code during a
+  # build, some things are checked in generated. This validates that things are
+  # current, but these validations can be done on linux so they CI cost is lower.
+  source_validations:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: Validate Sources
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Build protoc
+        uses: ./.github/actions/bazel
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel: build //:protoc
+          bazel-cache: objc_source_validations
+      - name: Check WKTs
+        run: objectivec/generate_well_known_types.sh --check-only
+      - name: Check Templated Sources
+        run:  |
+          set -eu
+          # Run the PDDM unittests.
+          objectivec/DevTools/pddm_tests.py
+          # Now check that the sources are current.
+          if ! objectivec/DevTools/pddm.py --dry-run objectivec/*.[hm] objectivec/Tests/*.[hm] ; then
+            echo ""
+            echo "Update by running:"
+            echo "   objectivec/DevTools/pddm.py objectivec/*.[hm] objectivec/Tests/*.[hm]"
+            exit 1
+          fi
+      # While testing things, ensure the version numbers constansts in the generator sources
+      # and the runtime source match.
+      - name: Check generator version vs runtime version
+        run: objectivec/DevTools/check_version_stamps.sh
