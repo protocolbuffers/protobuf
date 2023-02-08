@@ -540,10 +540,10 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Interface of a lazily parsed singular message extension.
   class PROTOBUF_EXPORT LazyMessageExtension {
    public:
-    LazyMessageExtension() {}
+    LazyMessageExtension() = default;
     LazyMessageExtension(const LazyMessageExtension&) = delete;
     LazyMessageExtension& operator=(const LazyMessageExtension&) = delete;
-    virtual ~LazyMessageExtension() {}
+    virtual ~LazyMessageExtension() = default;
 
     virtual LazyMessageExtension* New(Arena* arena) const = 0;
     virtual const MessageLite& GetMessage(const MessageLite& prototype,
