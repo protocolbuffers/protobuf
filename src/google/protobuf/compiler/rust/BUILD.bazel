@@ -1,0 +1,22 @@
+################################################################################
+# Protocol Buffers Compiler - Rust code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "rust",
+    hdrs = ["generator.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/rust",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/log:absl_check",
+    ],
+)
