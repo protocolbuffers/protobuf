@@ -20,7 +20,10 @@ runs:
       shell: bash
       run: brew install ccache
 
-    - name: Setup fixed path ccache caching
+    # For pull requests, store intermediate ccache results and fallback to the
+    # latest push results on the base branch.
+    - name: Setup ccache caching (pull_request)
+      if: ${{ github.event_name == 'pull_request' }}
       uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
       with:
         path: .ccache
@@ -35,6 +38,23 @@ runs:
           ${{ format('ccache-{0}-{1}', inputs.cache-prefix, github.ref_name) }}
           ${{ format('ccache-{0}-{1}', inputs.cache-prefix, github.base_ref) }}
 
+    # Fork PRs will never write to the ccache, but can reuse existing ones.
+    - name: Setup ccache caching (pull_request_target)
+      if: ${{ github.event_name == 'pull_request_target' }}
+      uses: actions/cache/restore@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: .ccache
+        key: ${{ format('ccache-{0}-{1}-{2}', inputs.cache-prefix, github.ref_name, github.sha) }}
+        restore-keys: ${{ format('ccache-{0}-{1}', inputs.cache-prefix, github.base_ref) }}
+
+     # For push events, start fresh to avoid unbounded cache growth.
+    - name: Setup ccache caching (push)
+      if: ${{ github.event_name == 'push' }}
+      uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: .ccache
+        key: ${{ format('ccache-{0}-{1}-{2}', inputs.cache-prefix, github.ref_name, github.sha) }}
+
     - name: Configure ccache environment variables
       shell: bash
       run: |
@@ -45,7 +65,7 @@ runs:
         echo "CCACHE_MAXSIZE=600M" >> $GITHUB_ENV
         echo "CCACHE_SLOPPINESS=clang_index_store,include_file_ctime,include_file_mtime,file_macro,time_macros" >> $GITHUB_ENV
         echo "CCACHE_DIRECT=true" >> $GITHUB_ENV
-        echo "CCACHE_CMAKE_FLAGS=-Dprotobuf_ALLOW_CCACHE=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache $CCACHE_CMAKE_FLAGS" >> $GITHUB_ENV
+        echo "CCACHE_CMAKE_FLAGS=-Dprotobuf_ALLOW_CCACHE=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $GITHUB_ENV
 
     - name: Enable module support
       if: ${{ inputs.support-modules }}
@@ -55,11 +75,6 @@ runs:
         echo "CCACHE_DEPEND=true" >> $GITHUB_ENV
 
     - name: Zero out ccache
-      if: ${{ runner.os == 'macOS' }}
+      if: ${{ runner.os != 'Linux' }}
       shell: bash
       run: ccache -z
-
-    - name: Zero out ccache
-      if: ${{ runner.os == 'Windows' }}
-      shell: pwsh
-      run: ${{ github.workspace }}\ccache.exe -z
