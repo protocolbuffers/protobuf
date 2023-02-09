@@ -113,6 +113,34 @@ sh_test(
     ],
 )
 
+# -------------------------------------------------------------------
+# Validation of pddm expansion.
+
+py_binary(
+    name = "pddm",
+    srcs = ["DevTools/pddm.py"],
+)
+
+py_test(
+    name = "pddm_tests",
+    size = "small",
+    srcs = [
+        "DevTools/pddm.py",
+        "DevTools/pddm_tests.py",
+    ],
+)
+
+sh_test(
+    name = "sources_pddm_expansion_test",
+    size = "small",
+    srcs = ["DevTools/sources_pddm_expansion_test.sh"],
+    data = [":pddm"] + glob([
+        "**/*.h",
+        "**/*.m",
+        "**/*.pddm",
+    ]),
+)
+
 ################################################################################
 # Distribution files
 ################################################################################
