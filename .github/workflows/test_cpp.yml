@@ -179,9 +179,34 @@ jobs:
           bazel: test ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.os }}
 
-  macos-cmake:
-    name: MacOS CMake
-    runs-on: macos-12
+  non-linux-cmake:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: MacOS CMake
+            os: macos-12
+            flags: -DCMAKE_CXX_STANDARD=14
+          - name: Windows CMake
+            os: windows-2019-8core
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -Dprotobuf_BUILD_SHARED_LIBS=OFF
+              -Dprotobuf_BUILD_EXAMPLES=ON
+          - name: Windows CMake Shared
+            os: windows-2019-8core
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -Dprotobuf_BUILD_SHARED_LIBS=ON
+          - name: Windows CMake Install
+            os: windows-2019-8core
+            install-flags: -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
+              -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -192,139 +217,46 @@ jobs:
       - name: Setup ccache
         uses: ./.github/actions/ccache
         with:
-          cache-prefix: macos-cmake
+          cache-prefix: ${{ matrix.name }}
+
+      # Install phase.
+      - name: Configure CMake for install
+        if: matrix.install-flags
+        uses: ./.github/actions/bash
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: cmake . ${{ matrix.install-flags }} ${{ env.CCACHE_CMAKE_FLAGS }}
+      - name: Build for install
+        if: matrix.install-flags
+        shell: bash
+        run: VERBOSE=1 cmake --build build --parallel 20
+      - name: Install
+        if: matrix.install-flags
+        shell: bash
+        run: cmake --build . --target install
+      - name: Report and clear ccache stats
+        if: matrix.install-flags
+        shell: bash
+        run: ccache -s -v && ccache -z
+      - name: Clear CMake cache
+        if: matrix.install-flags
+        shell: bash
+        run: cmake --build . --target install
 
       - name: Configure CMake
         uses: ./.github/actions/bash
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }}
+          command: cmake . ${{ matrix.flags }} ${{ env.CCACHE_CMAKE_FLAGS }}
+
       - name: Build
-        run: cmake --build . --parallel 8
+        shell: bash
+        run: VERBOSE=1 cmake --build . --parallel 20
+
       - name: Test
+        shell: bash
         run: ctest --verbose --parallel 20 -C Debug
 
       - name: Report ccache stats
         shell: bash
         run: ccache -s -v
-
-  windows-cmake:
-    strategy:
-      fail-fast: false   # Don't cancel all jobs if one fails.
-      matrix:
-        include:
-          - name: Visual Studio
-            flags: >-
-              -Dprotobuf_BUILD_SHARED_LIBS=OFF
-              -Dprotobuf_BUILD_EXAMPLES=ON
-          - name: Shared
-            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON
-
-    name: Windows CMake ${{ matrix.name}}
-    runs-on: windows-2019
-    steps:
-      - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-        with:
-          submodules: recursive
-          ref: ${{ inputs.safe-checkout }}
-
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89 # v1.12.1
-        with:
-          arch: x64
-          vsversion: '2019'
-
-      - name: Setup ccache
-        uses: ./.github/actions/ccache
-        with:
-          cache-prefix: windows-cmake-${{ matrix.name }}
-
-      - name: Configure CMake
-        uses: ./.github/actions/bash
-        with:
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: |
-            cmake . -G "Visual Studio 16 2019" -A x64 \
-              ${{ env.CCACHE_CMAKE_FLAGS }} \
-              -Dprotobuf_BUILD_CONFORMANCE=OFF \
-              -Dprotobuf_WITH_ZLIB=OFF \
-              ${{ matrix.flags }}
-
-      - name: Build for Windows 15 2017
-        run: >-
-          msbuild.exe protobuf.sln /p:MultiProcessorCompilation=true /p:CL_MPCount=8 /maxcpucount:8 /p:BuildInParallel=true
-          /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0
-          ${{ env.CCACHE_MSBUILD_FLAGS }}
-
-      - name: Run Tests
-        run: ctest --verbose --parallel 20 -C Debug
-
-      - name: Report ccache stats
-        run: ${{ github.workspace }}\ccache.exe -s -v
-
-  windows-cmake-install:
-    name: Windows CMake Install
-    runs-on: windows-2019
-    steps:
-      - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-        with:
-          submodules: recursive
-          ref: ${{ inputs.safe-checkout }}
-
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89 # v1.12.1
-        with:
-          arch: x64
-          vsversion: '2019'
-
-      - name: Setup ccache
-        uses: ./.github/actions/ccache
-        with:
-          cache-prefix: windows-cmake
-
-      - name: Configure CMake for Install
-        uses: ./.github/actions/bash
-        with:
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: |
-            mkdir build
-            pushd build
-            cmake .. -G "Visual Studio 16 2019" -A x64 \
-              ${{ env.CCACHE_CMAKE_FLAGS }} \
-              -Dprotobuf_BUILD_CONFORMANCE=OFF \
-              -Dprotobuf_WITH_ZLIB=OFF
-            popd
-
-      - name: Build and Install Protobuf for Windows 15 2017
-        run: |
-          pushd build
-          msbuild.exe INSTALL.vcxproj /p:Platform=x64 /p:VisualStudioVersion=15.0 /p:MultiProcessorCompilation=true /p:CL_MPCount=8 /maxcpucount:8 /p:BuildInParallel=true ${{ env.CCACHE_MSBUILD_FLAGS }}
-          popd
-
-      - name: Clear CMake cache
-        shell: bash
-        run: rm -rf build/*
-
-      - name: Configure CMake
-        shell: bash
-        run: |
-          cmake . -G "Visual Studio 16 2019" -A x64 \
-            ${{ env.CCACHE_CMAKE_FLAGS }} \
-            -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON \
-            -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF \
-            -Dprotobuf_BUILD_CONFORMANCE=OFF \
-            -Dprotobuf_WITH_ZLIB=OFF
-
-      - name: Build for Windows 15 2017
-        run: >-
-          msbuild.exe protobuf.sln /p:MultiProcessorCompilation=true /p:CL_MPCount=8 /maxcpucount:8 /p:BuildInParallel=true
-          /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0
-          ${{ env.CCACHE_MSBUILD_FLAGS }}
-
-      - name: Run Tests
-        run: ctest --verbose --parallel 20 -C Debug
-
-      - name: Report ccache stats
-        run: ${{ github.workspace }}\ccache.exe -s -v

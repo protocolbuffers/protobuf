@@ -23,7 +23,10 @@ runs:
     - name: Setup fixed path ccache caching
       uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
       with:
-        path: .ccache
+        path: |
+          .ccache/**
+          !.ccache/lock
+          !.ccache/tmp
         # Always push to a cache key unique to this commit.
         key: ${{ format('ccache-{0}-{1}-{2}', inputs.cache-prefix, github.ref_name, github.sha) }}
         # Select a cache to restore from with the follow order of preference:
@@ -42,10 +45,10 @@ runs:
         echo "CCACHE_DIR=${{ github.workspace }}/.ccache" >> $GITHUB_ENV
         echo "CCACHE_COMPRESS=true" >> $GITHUB_ENV
         echo "CCACHE_COMPRESSLEVEL=6" >> $GITHUB_ENV
-        echo "CCACHE_MAXSIZE=600M" >> $GITHUB_ENV
+        echo "CCACHE_MAXSIZE=200M" >> $GITHUB_ENV
         echo "CCACHE_SLOPPINESS=clang_index_store,include_file_ctime,include_file_mtime,file_macro,time_macros" >> $GITHUB_ENV
         echo "CCACHE_DIRECT=true" >> $GITHUB_ENV
-        echo "CCACHE_CMAKE_FLAGS=-Dprotobuf_ALLOW_CCACHE=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache $CCACHE_CMAKE_FLAGS" >> $GITHUB_ENV
+        echo "CCACHE_CMAKE_FLAGS=-Dprotobuf_ALLOW_CCACHE=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $GITHUB_ENV
 
     - name: Enable module support
       if: ${{ inputs.support-modules }}
@@ -55,11 +58,6 @@ runs:
         echo "CCACHE_DEPEND=true" >> $GITHUB_ENV
 
     - name: Zero out ccache
-      if: ${{ runner.os == 'macOS' }}
+      if: ${{ runner.os != 'Linux' }}
       shell: bash
       run: ccache -z
-
-    - name: Zero out ccache
-      if: ${{ runner.os == 'Windows' }}
-      shell: pwsh
-      run: ${{ github.workspace }}\ccache.exe -z

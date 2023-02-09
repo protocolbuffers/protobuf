@@ -10,6 +10,16 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89 # v1.12.1
+      with:
+        arch: x64
+        vsversion: '2019'
+
+    - name: Install ccache
+      shell: bash
+      run: choco install ccache --version=4.7.4
+
     - name: Configure ccache environment variables
       shell: pwsh
       run: |
@@ -17,20 +27,3 @@ runs:
         $cllocation = (Get-Command cl.exe).Path
         echo "CCACHE_COMPILER=$cllocation" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
         echo "CCACHE_COMPILERTYPE=msvc" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-
-    - name: Download ccache
-      shell: bash
-      run: |
-        curl -kLSs "https://github.com/ccache/ccache/releases/download/v${{ inputs.ccache-version }}/ccache-${{ inputs.ccache-version }}-windows-x86_64.zip" -o ccache.zip
-        unzip ccache.zip
-        cp ccache-${{ inputs.ccache-version }}-windows-x86_64/ccache.exe ccache.exe
-        cp ccache.exe cl.exe
-        rm ccache.zip
-
-    - name: Configure msbuild flags
-      shell: bash
-      run: echo "CCACHE_MSBUILD_FLAGS=/p:CLToolExe=cl.exe /p:CLToolPath=${{ github.workspace}}" >> $GITHUB_ENV
-
-    - name: Configure cmake flags
-      shell: bash
-      run: echo "CCACHE_CMAKE_FLAGS=-Dprotobuf_ALLOW_CCACHE=ON" >> $GITHUB_ENV
