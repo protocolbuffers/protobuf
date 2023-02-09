@@ -86,9 +86,14 @@ jobs:
         include:
           # TODO: Could add iOS to atleast build the objc_library targets for that.
           - name: macOS
-            bazel: //objectivec/...
+            os: macos-12
+            bazel: --test_tag_filters=-skip_macos_ci //objectivec/...
+          # Linux CI is used for to run tests that don't actually have to run on a Mac.
+          - name: linux
+            os: ubuntu-latest
+            bazel: --build_tests_only --test_tag_filters=-only_macos_ci //objectivec/...
     name: Bazel ${{ matrix.name }}
-    runs-on: macos-12
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0

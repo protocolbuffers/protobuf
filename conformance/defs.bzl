@@ -8,6 +8,7 @@ def conformance_test(
         testee,
         failure_list = None,
         text_format_failure_list = None,
+        tags = [],
         **kwargs):
     """Conformance test runner.
 
@@ -17,6 +18,7 @@ def conformance_test(
       failure_list: a text file with known failures, one per line.
       text_format_failure_list: a text file with known failures (one per line)
           for the text format conformance suite.
+      tags: a list of strings to also apply to the test as tags.
       **kwargs: common arguments to pass to sh_test.
     """
     args = ["--testee %s" % _strip_bazel(testee)]
@@ -38,7 +40,7 @@ def conformance_test(
         deps = [
             "@bazel_tools//tools/bash/runfiles",
         ],
-        tags = ["conformance"],
+        tags = ["conformance"] + tags,
         **kwargs
     )
 

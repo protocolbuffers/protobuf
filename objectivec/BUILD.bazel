@@ -2,6 +2,17 @@ load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//conformance:defs.bzl", "conformance_test")
 
+# NOTE:
+#
+# - `"skip_macos_ci"` can be added to the `tags` of a testing target to have
+#   the CI skip testing the target on a Mac host. The target will then be
+#   tested from a linux host instead. This is done to only use Mac host when
+#   required, but still allow the target to be manually tested by developers
+#   locally.
+# - `"only_macos_ci"` can be used to only run some targets on macOS (and not a
+#   linux host), `target_compatible_with` does not work for this, see:
+#   https://github.com/bazelbuild/bazel/issues/12897
+
 objc_library(
     name = "objectivec",
     hdrs = [
@@ -88,13 +99,6 @@ objc_library(
         "GPBWireFormat.m",
         "GPBWrappers.pbobjc.m",
     ],
-    target_compatible_with = select({
-        "@platforms//os:macos": [],
-        "@platforms//os:ios": [],
-        "@platforms//os:tvos": [],
-        "@platforms//os:watchos": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
     visibility = ["//visibility:public"],
 )
 
@@ -106,7 +110,7 @@ conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_objc.txt",
     testee = "//conformance:conformance_objc",
-    target_compatible_with = ["@platforms//os:macos"],
+    tags = ["only_macos_ci"],
 )
 
 # -------------------------------------------------------------------
@@ -136,6 +140,7 @@ py_test(
         "DevTools/pddm.py",
         "DevTools/pddm_tests.py",
     ],
+    tags = ["skip_macos_ci"],
 )
 
 sh_test(
@@ -147,6 +152,7 @@ sh_test(
         "**/*.m",
         "**/*.pddm",
     ]),
+    tags = ["skip_macos_ci"],
 )
 
 ################################################################################
