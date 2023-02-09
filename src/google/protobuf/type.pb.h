@@ -436,9 +436,11 @@ class PROTOBUF_EXPORT Type final :
   void clear_syntax() ;
   ::PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::Syntax _internal_syntax() const;
   void _internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Type)
  private:
@@ -752,17 +754,21 @@ class PROTOBUF_EXPORT Field final :
   void clear_kind() ;
   ::PROTOBUF_NAMESPACE_ID::Field_Kind kind() const;
   void set_kind(::PROTOBUF_NAMESPACE_ID::Field_Kind value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::Field_Kind _internal_kind() const;
   void _internal_set_kind(::PROTOBUF_NAMESPACE_ID::Field_Kind value);
+
   public:
   // .google.protobuf.Field.Cardinality cardinality = 2;
   void clear_cardinality() ;
   ::PROTOBUF_NAMESPACE_ID::Field_Cardinality cardinality() const;
   void set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::Field_Cardinality _internal_cardinality() const;
   void _internal_set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality value);
+
   public:
   // int32 number = 3;
   void clear_number() ;
@@ -1022,9 +1028,11 @@ class PROTOBUF_EXPORT Enum final :
   void clear_syntax() ;
   ::PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::Syntax _internal_syntax() const;
   void _internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Enum)
  private:
@@ -1718,20 +1726,20 @@ inline void Type::set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceCo
 inline void Type::clear_syntax() {
   _impl_.syntax_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::Syntax Type::_internal_syntax() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::Syntax >(_impl_.syntax_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::Syntax Type::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.syntax)
   return _internal_syntax();
 }
-inline void Type::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
-  
-  _impl_.syntax_ = value;
-}
 inline void Type::set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
-  _internal_set_syntax(value);
+   _internal_set_syntax(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Type.syntax)
+}
+inline ::PROTOBUF_NAMESPACE_ID::Syntax Type::_internal_syntax() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::Syntax>(_impl_.syntax_);
+}
+inline void Type::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
+  ;
+  _impl_.syntax_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1742,40 +1750,40 @@ inline void Type::set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
 inline void Field::clear_kind() {
   _impl_.kind_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::Field_Kind Field::_internal_kind() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::Field_Kind >(_impl_.kind_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::Field_Kind Field::kind() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.kind)
   return _internal_kind();
 }
-inline void Field::_internal_set_kind(::PROTOBUF_NAMESPACE_ID::Field_Kind value) {
-  
-  _impl_.kind_ = value;
-}
 inline void Field::set_kind(::PROTOBUF_NAMESPACE_ID::Field_Kind value) {
-  _internal_set_kind(value);
+   _internal_set_kind(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.kind)
+}
+inline ::PROTOBUF_NAMESPACE_ID::Field_Kind Field::_internal_kind() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::Field_Kind>(_impl_.kind_);
+}
+inline void Field::_internal_set_kind(::PROTOBUF_NAMESPACE_ID::Field_Kind value) {
+  ;
+  _impl_.kind_ = value;
 }
 
 // .google.protobuf.Field.Cardinality cardinality = 2;
 inline void Field::clear_cardinality() {
   _impl_.cardinality_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::Field_Cardinality Field::_internal_cardinality() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::Field_Cardinality >(_impl_.cardinality_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::Field_Cardinality Field::cardinality() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.cardinality)
   return _internal_cardinality();
 }
-inline void Field::_internal_set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality value) {
-  
-  _impl_.cardinality_ = value;
-}
 inline void Field::set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality value) {
-  _internal_set_cardinality(value);
+   _internal_set_cardinality(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.cardinality)
+}
+inline ::PROTOBUF_NAMESPACE_ID::Field_Cardinality Field::_internal_cardinality() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::Field_Cardinality>(_impl_.cardinality_);
+}
+inline void Field::_internal_set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality value) {
+  ;
+  _impl_.cardinality_ = value;
 }
 
 // int32 number = 3;
@@ -2281,20 +2289,20 @@ inline void Enum::set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceCo
 inline void Enum::clear_syntax() {
   _impl_.syntax_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::Syntax Enum::_internal_syntax() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::Syntax >(_impl_.syntax_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::Syntax Enum::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.syntax)
   return _internal_syntax();
 }
-inline void Enum::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
-  
-  _impl_.syntax_ = value;
-}
 inline void Enum::set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
-  _internal_set_syntax(value);
+   _internal_set_syntax(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.syntax)
+}
+inline ::PROTOBUF_NAMESPACE_ID::Syntax Enum::_internal_syntax() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::Syntax>(_impl_.syntax_);
+}
+inline void Enum::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
+  ;
+  _impl_.syntax_ = value;
 }
 
 // -------------------------------------------------------------------

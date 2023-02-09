@@ -443,9 +443,11 @@ class PROTOBUF_EXPORT Value final :
   void clear_null_value() ;
   ::PROTOBUF_NAMESPACE_ID::NullValue null_value() const;
   void set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::NullValue _internal_null_value() const;
   void _internal_set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value);
+
   public:
   // double number_value = 2;
   bool has_number_value() const;
@@ -782,15 +784,19 @@ inline void Value::clear_null_value() {
     clear_has_kind();
   }
 }
-inline ::PROTOBUF_NAMESPACE_ID::NullValue Value::_internal_null_value() const {
-  if (kind_case() == kNullValue) {
-    return static_cast< ::PROTOBUF_NAMESPACE_ID::NullValue >(_impl_.kind_.null_value_);
-  }
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::NullValue >(0);
-}
 inline ::PROTOBUF_NAMESPACE_ID::NullValue Value::null_value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.null_value)
   return _internal_null_value();
+}
+inline void Value::set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value) {
+   _internal_set_null_value(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.Value.null_value)
+}
+inline ::PROTOBUF_NAMESPACE_ID::NullValue Value::_internal_null_value() const {
+  if (kind_case() == kNullValue) {
+    return static_cast<::PROTOBUF_NAMESPACE_ID::NullValue>(_impl_.kind_.null_value_);
+  }
+  return static_cast<::PROTOBUF_NAMESPACE_ID::NullValue>(0);
 }
 inline void Value::_internal_set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value) {
   if (kind_case() != kNullValue) {
@@ -798,10 +804,6 @@ inline void Value::_internal_set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue v
     set_has_null_value();
   }
   _impl_.kind_.null_value_ = value;
-}
-inline void Value::set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value) {
-  _internal_set_null_value(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.Value.null_value)
 }
 
 // double number_value = 2;

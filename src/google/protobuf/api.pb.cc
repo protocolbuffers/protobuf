@@ -33,7 +33,8 @@ PROTOBUF_CONSTEXPR Api::Api(
   }
 
   , /*decltype(_impl_.source_context_)*/nullptr
-  , /*decltype(_impl_.syntax_)*/0
+  , /*decltype(_impl_.syntax_)*/ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct ApiDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -64,7 +65,8 @@ PROTOBUF_CONSTEXPR Method::Method(
 
   , /*decltype(_impl_.response_streaming_)*/ false
 
-  , /*decltype(_impl_.syntax_)*/0
+  , /*decltype(_impl_.syntax_)*/ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct MethodDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MethodDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -259,7 +261,8 @@ Api::Api(const Api& from)
     , decltype(_impl_.version_) {}
 
     , decltype(_impl_.source_context_){nullptr}
-    , decltype(_impl_.syntax_){}
+    , decltype(_impl_.syntax_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -295,7 +298,8 @@ inline void Api::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.version_) {}
 
     , decltype(_impl_.source_context_){nullptr}
-    , decltype(_impl_.syntax_){0}
+    , decltype(_impl_.syntax_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -519,7 +523,7 @@ failure:
   if (this->_internal_syntax() != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      7, this->_internal_syntax(), target);
+        7, this->_internal_syntax(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -581,7 +585,7 @@ failure:
   // .google.protobuf.Syntax syntax = 7;
   if (this->_internal_syntax() != 0) {
     total_size += 1 +
-      ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
+                  ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -686,7 +690,8 @@ Method::Method(const Method& from)
 
     , decltype(_impl_.response_streaming_) {}
 
-    , decltype(_impl_.syntax_){}
+    , decltype(_impl_.syntax_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -731,7 +736,8 @@ inline void Method::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.response_streaming_) { false }
 
-    , decltype(_impl_.syntax_){0}
+    , decltype(_impl_.syntax_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -945,7 +951,7 @@ failure:
   if (this->_internal_syntax() != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      7, this->_internal_syntax(), target);
+        7, this->_internal_syntax(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1002,7 +1008,7 @@ failure:
   // .google.protobuf.Syntax syntax = 7;
   if (this->_internal_syntax() != 0) {
     total_size += 1 +
-      ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
+                  ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);

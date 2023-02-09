@@ -321,9 +321,11 @@ class PROTOBUF_EXPORT Api final :
   void clear_syntax() ;
   ::PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::Syntax _internal_syntax() const;
   void _internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Api)
  private:
@@ -576,9 +578,11 @@ class PROTOBUF_EXPORT Method final :
   void clear_syntax() ;
   ::PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::Syntax _internal_syntax() const;
   void _internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Method)
  private:
@@ -1091,20 +1095,20 @@ Api::mixins() const {
 inline void Api::clear_syntax() {
   _impl_.syntax_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::Syntax Api::_internal_syntax() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::Syntax >(_impl_.syntax_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::Syntax Api::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.syntax)
   return _internal_syntax();
 }
-inline void Api::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
-  
-  _impl_.syntax_ = value;
-}
 inline void Api::set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
-  _internal_set_syntax(value);
+   _internal_set_syntax(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Api.syntax)
+}
+inline ::PROTOBUF_NAMESPACE_ID::Syntax Api::_internal_syntax() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::Syntax>(_impl_.syntax_);
+}
+inline void Api::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
+  ;
+  _impl_.syntax_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1333,20 +1337,20 @@ Method::options() const {
 inline void Method::clear_syntax() {
   _impl_.syntax_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::Syntax Method::_internal_syntax() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::Syntax >(_impl_.syntax_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::Syntax Method::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.syntax)
   return _internal_syntax();
 }
-inline void Method::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
-  
-  _impl_.syntax_ = value;
-}
 inline void Method::set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
-  _internal_set_syntax(value);
+   _internal_set_syntax(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.syntax)
+}
+inline ::PROTOBUF_NAMESPACE_ID::Syntax Method::_internal_syntax() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::Syntax>(_impl_.syntax_);
+}
+inline void Method::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
+  ;
+  _impl_.syntax_ = value;
 }
 
 // -------------------------------------------------------------------

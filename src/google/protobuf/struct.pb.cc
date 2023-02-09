@@ -705,7 +705,7 @@ failure:
   if (kind_case() == kNullValue) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      1, this->_internal_null_value(), target);
+        1, this->_internal_null_value(), target);
   }
 
   // double number_value = 2;
@@ -764,7 +764,7 @@ failure:
     // .google.protobuf.NullValue null_value = 1;
     case kNullValue: {
       total_size += 1 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_null_value());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_null_value());
       break;
     }
     // double number_value = 2;

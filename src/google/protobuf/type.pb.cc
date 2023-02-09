@@ -29,7 +29,8 @@ PROTOBUF_CONSTEXPR Type::Type(
   }
 
   , /*decltype(_impl_.source_context_)*/nullptr
-  , /*decltype(_impl_.syntax_)*/0
+  , /*decltype(_impl_.syntax_)*/ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct TypeDefaultTypeInternal {
   PROTOBUF_CONSTEXPR TypeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -60,8 +61,10 @@ PROTOBUF_CONSTEXPR Field::Field(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
-  , /*decltype(_impl_.kind_)*/0
-  , /*decltype(_impl_.cardinality_)*/0
+  , /*decltype(_impl_.kind_)*/ 0
+
+  , /*decltype(_impl_.cardinality_)*/ 0
+
   , /*decltype(_impl_.number_)*/ 0
 
   , /*decltype(_impl_.oneof_index_)*/ 0
@@ -88,7 +91,8 @@ PROTOBUF_CONSTEXPR Enum::Enum(
   }
 
   , /*decltype(_impl_.source_context_)*/nullptr
-  , /*decltype(_impl_.syntax_)*/0
+  , /*decltype(_impl_.syntax_)*/ 0
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct EnumDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EnumDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -444,7 +448,8 @@ Type::Type(const Type& from)
     , decltype(_impl_.name_) {}
 
     , decltype(_impl_.source_context_){nullptr}
-    , decltype(_impl_.syntax_){}
+    , decltype(_impl_.syntax_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -471,7 +476,8 @@ inline void Type::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.name_) {}
 
     , decltype(_impl_.source_context_){nullptr}
-    , decltype(_impl_.syntax_){0}
+    , decltype(_impl_.syntax_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -672,7 +678,7 @@ failure:
   if (this->_internal_syntax() != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      6, this->_internal_syntax(), target);
+        6, this->_internal_syntax(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -727,7 +733,7 @@ failure:
   // .google.protobuf.Syntax syntax = 6;
   if (this->_internal_syntax() != 0) {
     total_size += 1 +
-      ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
+                  ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -822,8 +828,10 @@ Field::Field(const Field& from)
 
     , decltype(_impl_.default_value_) {}
 
-    , decltype(_impl_.kind_){}
-    , decltype(_impl_.cardinality_){}
+    , decltype(_impl_.kind_) {}
+
+    , decltype(_impl_.cardinality_) {}
+
     , decltype(_impl_.number_) {}
 
     , decltype(_impl_.oneof_index_) {}
@@ -879,8 +887,10 @@ inline void Field::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.default_value_) {}
 
-    , decltype(_impl_.kind_){0}
-    , decltype(_impl_.cardinality_){0}
+    , decltype(_impl_.kind_) { 0 }
+
+    , decltype(_impl_.cardinality_) { 0 }
+
     , decltype(_impl_.number_) { 0 }
 
     , decltype(_impl_.oneof_index_) { 0 }
@@ -1090,14 +1100,14 @@ failure:
   if (this->_internal_kind() != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      1, this->_internal_kind(), target);
+        1, this->_internal_kind(), target);
   }
 
   // .google.protobuf.Field.Cardinality cardinality = 2;
   if (this->_internal_cardinality() != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      2, this->_internal_cardinality(), target);
+        2, this->_internal_cardinality(), target);
   }
 
   // int32 number = 3;
@@ -1211,13 +1221,13 @@ failure:
   // .google.protobuf.Field.Kind kind = 1;
   if (this->_internal_kind() != 0) {
     total_size += 1 +
-      ::_pbi::WireFormatLite::EnumSize(this->_internal_kind());
+                  ::_pbi::WireFormatLite::EnumSize(this->_internal_kind());
   }
 
   // .google.protobuf.Field.Cardinality cardinality = 2;
   if (this->_internal_cardinality() != 0) {
     total_size += 1 +
-      ::_pbi::WireFormatLite::EnumSize(this->_internal_cardinality());
+                  ::_pbi::WireFormatLite::EnumSize(this->_internal_cardinality());
   }
 
   // int32 number = 3;
@@ -1355,7 +1365,8 @@ Enum::Enum(const Enum& from)
     , decltype(_impl_.name_) {}
 
     , decltype(_impl_.source_context_){nullptr}
-    , decltype(_impl_.syntax_){}
+    , decltype(_impl_.syntax_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -1381,7 +1392,8 @@ inline void Enum::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.name_) {}
 
     , decltype(_impl_.source_context_){nullptr}
-    , decltype(_impl_.syntax_){0}
+    , decltype(_impl_.syntax_) { 0 }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -1556,7 +1568,7 @@ failure:
   if (this->_internal_syntax() != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      5, this->_internal_syntax(), target);
+        5, this->_internal_syntax(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1605,7 +1617,7 @@ failure:
   // .google.protobuf.Syntax syntax = 5;
   if (this->_internal_syntax() != 0) {
     total_size += 1 +
-      ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
+                  ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
