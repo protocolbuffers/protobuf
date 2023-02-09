@@ -125,10 +125,10 @@ struct TcFieldData {
   uint64_t data;
 };
 
-struct TcParseTableBase;
 
 // TailCallParseFunc is the function pointer type used in the tailcall table.
-typedef const char* (*TailCallParseFunc)(PROTOBUF_TC_PARAM_DECL);
+struct TcParseTableBase;  // Needed by the macro below.
+using TailCallParseFunc = const char* (*)(PROTOBUF_TC_PARAM_DECL);
 
 namespace field_layout {
 struct Offset {

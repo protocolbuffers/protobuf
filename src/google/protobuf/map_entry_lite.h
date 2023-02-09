@@ -110,24 +110,24 @@ template <typename Derived, typename Base, typename Key, typename Value,
           WireFormatLite::FieldType kValueFieldType>
 class MapEntryImpl : public Base {
  public:
-  typedef MapEntryFuncs<Key, Value, kKeyFieldType, kValueFieldType> Funcs;
+  using Funcs = MapEntryFuncs<Key, Value, kKeyFieldType, kValueFieldType>;
 
  protected:
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
-  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
-  typedef MapTypeHandler<kValueFieldType, Value> ValueTypeHandler;
+  using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;
+  using ValueTypeHandler = MapTypeHandler<kValueFieldType, Value>;
 
   // Define internal memory layout. Strings and messages are stored as
   // pointers, while other types are stored as values.
-  typedef typename KeyTypeHandler::TypeOnMemory KeyOnMemory;
-  typedef typename ValueTypeHandler::TypeOnMemory ValueOnMemory;
+  using KeyOnMemory = typename KeyTypeHandler::TypeOnMemory;
+  using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
 
   // Enum type cannot be used for MapTypeHandler::Read. Define a type
   // which will replace Enum with int.
-  typedef typename KeyTypeHandler::MapEntryAccessorType KeyMapEntryAccessorType;
-  typedef
-      typename ValueTypeHandler::MapEntryAccessorType ValueMapEntryAccessorType;
+  using KeyMapEntryAccessorType = typename KeyTypeHandler::MapEntryAccessorType;
+  using ValueMapEntryAccessorType =
+      typename ValueTypeHandler::MapEntryAccessorType;
 
   // Constants for field number.
   static const int kKeyFieldNumber = 1;
@@ -142,10 +142,10 @@ class MapEntryImpl : public Base {
 
  public:
   // Work-around for a compiler bug (see repeated_field.h).
-  typedef void MapEntryHasMergeTypeTrait;
-  typedef Derived EntryType;
-  typedef Key EntryKeyType;
-  typedef Value EntryValueType;
+  using MapEntryHasMergeTypeTrait = void;
+  using EntryType = Derived;
+  using EntryKeyType = Key;
+  using EntryValueType = Value;
   static const WireFormatLite::FieldType kEntryKeyFieldType = kKeyFieldType;
   static const WireFormatLite::FieldType kEntryValueFieldType = kValueFieldType;
 
@@ -310,12 +310,12 @@ class MapEntryImpl : public Base {
           value_ptr_ = &(*map_)[key_];
           if (PROTOBUF_PREDICT_TRUE(map_size != map_->size())) {
             using T =
-                typename MapIf<ValueTypeHandler::kIsEnum, int*, Value*>::type;
+                std::conditional_t<ValueTypeHandler::kIsEnum, int*, Value*>;
             ptr = ValueTypeHandler::Read(ptr + 1, ctx,
                                          reinterpret_cast<T>(value_ptr_));
             if (PROTOBUF_PREDICT_FALSE(!ptr ||
                                        !Derived::ValidateValue(value_ptr_))) {
-              map_->erase(key_);  // Failure! Undo insertion.
+              map_->erase(key_);  // Failure! Undo insertion.I
               return nullptr;
             }
             if (PROTOBUF_PREDICT_TRUE(ctx->Done(&ptr))) return ptr;
@@ -389,16 +389,16 @@ class MapEntryImpl : public Base {
       return result;
     }
 
-    typedef MoveHelper<KeyTypeHandler::kIsEnum, KeyTypeHandler::kIsMessage,
-                       KeyTypeHandler::kWireType ==
-                           WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-                       Key>
-        KeyMover;
-    typedef MoveHelper<ValueTypeHandler::kIsEnum, ValueTypeHandler::kIsMessage,
-                       ValueTypeHandler::kWireType ==
-                           WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-                       Value>
-        ValueMover;
+    using KeyMover =
+        MoveHelper<KeyTypeHandler::kIsEnum, KeyTypeHandler::kIsMessage,
+                   KeyTypeHandler::kWireType ==
+                       WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                   Key>;
+    using ValueMover =
+        MoveHelper<ValueTypeHandler::kIsEnum, ValueTypeHandler::kIsMessage,
+                   ValueTypeHandler::kWireType ==
+                       WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                   Value>;
 
     MapField* const mf_;
     Map* const map_;
@@ -425,8 +425,8 @@ class MapEntryImpl : public Base {
 
  private:
   friend class ::PROTOBUF_NAMESPACE_ID::Arena;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   template <typename C, typename K, typename V, WireFormatLite::FieldType,
             WireFormatLite::FieldType>
   friend class ::PROTOBUF_NAMESPACE_ID::internal::MapEntry;
@@ -445,9 +445,8 @@ template <typename T, typename Key, typename Value,
 class MapEntryLite : public MapEntryImpl<T, MessageLite, Key, Value,
                                          kKeyFieldType, kValueFieldType> {
  public:
-  typedef MapEntryImpl<T, MessageLite, Key, Value, kKeyFieldType,
-                       kValueFieldType>
-      SuperType;
+  using SuperType =
+      MapEntryImpl<T, MessageLite, Key, Value, kKeyFieldType, kValueFieldType>;
   constexpr MapEntryLite() {}
   MapEntryLite(const MapEntryLite&) = delete;
   MapEntryLite& operator=(const MapEntryLite&) = delete;

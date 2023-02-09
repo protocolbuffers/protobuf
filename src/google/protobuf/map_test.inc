@@ -507,7 +507,7 @@ TEST_F(MapImplTest, CopyIteratorStressTest) {
 template <typename T, typename U>
 static void TestValidityForAllKeysExcept(int key_to_avoid, const T& check_map,
                                          const U& map) {
-  typedef typename U::value_type value_type;  // a key-value pair
+  using value_type = typename U::value_type;  // a key-value pair
   for (typename U::const_iterator it = map.begin(); it != map.end(); ++it) {
     const int key = it->first;
     if (key == key_to_avoid) continue;
@@ -1462,8 +1462,6 @@ static int Int(const std::string& value) {
 // This class is a friend, so no anonymous namespace.
 class MapFieldReflectionTest : public testing::Test {
  protected:
-  typedef FieldDescriptor FD;
-
   int MapSize(const Reflection* reflection, const FieldDescriptor* field,
               const Message& message) {
     return reflection->MapSize(message, field);

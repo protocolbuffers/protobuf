@@ -62,8 +62,8 @@ namespace util {
 
 // Utility functions for Timestamp and Duration.
 class PROTOBUF_EXPORT TimeUtil {
-  typedef google::protobuf::Timestamp Timestamp;
-  typedef google::protobuf::Duration Duration;
+  using Timestamp = google::protobuf::Timestamp;
+  using Duration = google::protobuf::Duration;
 
  public:
   // The min/max Timestamp/Duration values we support.

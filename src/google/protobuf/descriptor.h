@@ -262,7 +262,7 @@ class PROTOBUF_EXPORT SymbolBaseN : public SymbolBase {};
 // Use DescriptorPool to construct your own descriptors.
 class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
  public:
-  typedef DescriptorProto Proto;
+  using Proto = DescriptorProto;
 #ifndef SWIG
   Descriptor(const Descriptor&) = delete;
   Descriptor& operator=(const Descriptor&) = delete;
@@ -416,9 +416,9 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // A range of field numbers which are designated for third-party
   // extensions.
   struct ExtensionRange {
-    typedef DescriptorProto_ExtensionRange Proto;
+    using Proto = DescriptorProto_ExtensionRange;
 
-    typedef ExtensionRangeOptions OptionsType;
+    using OptionsType = ExtensionRangeOptions;
 
     // See Descriptor::CopyTo().
     void CopyTo(DescriptorProto_ExtensionRange* proto) const;
@@ -534,7 +534,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
-  typedef MessageOptions OptionsType;
+  using OptionsType = MessageOptions;
 
   // Allows tests to test CopyTo(proto, true).
   friend class descriptor_unittest::DescriptorTest;
@@ -631,7 +631,7 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 136);
 // Use DescriptorPool to construct your own descriptors.
 class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
  public:
-  typedef FieldDescriptorProto Proto;
+  using Proto = FieldDescriptorProto;
 
 #ifndef SWIG
   FieldDescriptor(const FieldDescriptor&) = delete;
@@ -894,7 +894,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
-  typedef FieldOptions OptionsType;
+  using OptionsType = FieldOptions;
 
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
@@ -1007,7 +1007,7 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 72);
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
  public:
-  typedef OneofDescriptorProto Proto;
+  using Proto = OneofDescriptorProto;
 
 #ifndef SWIG
   OneofDescriptor(const OneofDescriptor&) = delete;
@@ -1055,7 +1055,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
-  typedef OneofOptions OptionsType;
+  using OptionsType = OneofOptions;
 
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
@@ -1094,7 +1094,7 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(OneofDescriptor, 40);
 // to construct your own descriptors.
 class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
  public:
-  typedef EnumDescriptorProto Proto;
+  using Proto = EnumDescriptorProto;
 
 #ifndef SWIG
   EnumDescriptor(const EnumDescriptor&) = delete;
@@ -1197,7 +1197,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
-  typedef EnumOptions OptionsType;
+  using OptionsType = EnumOptions;
 
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
@@ -1279,7 +1279,7 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 72);
 class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
                                             private internal::SymbolBaseN<1> {
  public:
-  typedef EnumValueDescriptorProto Proto;
+  using Proto = EnumValueDescriptorProto;
 
 #ifndef SWIG
   EnumValueDescriptor(const EnumValueDescriptor&) = delete;
@@ -1326,7 +1326,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
 
  private:
   friend class Symbol;
-  typedef EnumValueOptions OptionsType;
+  using OptionsType = EnumValueOptions;
 
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
@@ -1364,7 +1364,7 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumValueDescriptor, 32);
 // descriptors.
 class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
  public:
-  typedef ServiceDescriptorProto Proto;
+  using Proto = ServiceDescriptorProto;
 
 #ifndef SWIG
   ServiceDescriptor(const ServiceDescriptor&) = delete;
@@ -1414,7 +1414,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
-  typedef ServiceOptions OptionsType;
+  using OptionsType = ServiceOptions;
 
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
@@ -1453,7 +1453,7 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(ServiceDescriptor, 48);
 // own descriptors.
 class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
  public:
-  typedef MethodDescriptorProto Proto;
+  using Proto = MethodDescriptorProto;
 
 #ifndef SWIG
   MethodDescriptor(const MethodDescriptor&) = delete;
@@ -1506,7 +1506,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
-  typedef MethodOptions OptionsType;
+  using OptionsType = MethodOptions;
 
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
@@ -1545,7 +1545,7 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(MethodDescriptor, 64);
 // descriptor->file().  Use DescriptorPool to construct your own descriptors.
 class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
  public:
-  typedef FileDescriptorProto Proto;
+  using Proto = FileDescriptorProto;
 
 #ifndef SWIG
   FileDescriptor(const FileDescriptor&) = delete;
@@ -1693,7 +1693,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
-  typedef FileOptions OptionsType;
+  using OptionsType = FileOptions;
 
   bool is_placeholder_;
   // Indicates the FileDescriptor is completed building. Used to verify

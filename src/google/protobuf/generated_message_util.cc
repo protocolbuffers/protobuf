@@ -114,9 +114,9 @@ struct PrimitiveTypeHelper;
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_BOOL> {
-  typedef bool Type;
+  using Type = bool;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteBoolNoTag(Get<bool>(ptr), output);
+    WireFormatLite::WriteBoolNoTag(Get<Type>(ptr), output);
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteBoolNoTagToArray(Get<Type>(ptr), buffer);
@@ -125,9 +125,9 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_BOOL> {
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_INT32> {
-  typedef int32_t Type;
+  using Type = int32_t;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteInt32NoTag(Get<int32_t>(ptr), output);
+    WireFormatLite::WriteInt32NoTag(Get<Type>(ptr), output);
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteInt32NoTagToArray(Get<Type>(ptr), buffer);
@@ -136,9 +136,9 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_INT32> {
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_SINT32> {
-  typedef int32_t Type;
+  using Type = int32_t;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteSInt32NoTag(Get<int32_t>(ptr), output);
+    WireFormatLite::WriteSInt32NoTag(Get<Type>(ptr), output);
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteSInt32NoTagToArray(Get<Type>(ptr), buffer);
@@ -147,9 +147,9 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_SINT32> {
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_UINT32> {
-  typedef uint32_t Type;
+  using Type = uint32_t;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteUInt32NoTag(Get<uint32_t>(ptr), output);
+    WireFormatLite::WriteUInt32NoTag(Get<Type>(ptr), output);
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteUInt32NoTagToArray(Get<Type>(ptr), buffer);
@@ -157,9 +157,9 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_UINT32> {
 };
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_INT64> {
-  typedef int64_t Type;
+  using Type = int64_t;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteInt64NoTag(Get<int64_t>(ptr), output);
+    WireFormatLite::WriteInt64NoTag(Get<Type>(ptr), output);
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteInt64NoTagToArray(Get<Type>(ptr), buffer);
@@ -168,9 +168,9 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_INT64> {
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_SINT64> {
-  typedef int64_t Type;
+  using Type = int64_t;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteSInt64NoTag(Get<int64_t>(ptr), output);
+    WireFormatLite::WriteSInt64NoTag(Get<Type>(ptr), output);
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteSInt64NoTagToArray(Get<Type>(ptr), buffer);
@@ -178,9 +178,9 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_SINT64> {
 };
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_UINT64> {
-  typedef uint64_t Type;
+  using Type = uint64_t;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteUInt64NoTag(Get<uint64_t>(ptr), output);
+    WireFormatLite::WriteUInt64NoTag(Get<Type>(ptr), output);
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteUInt64NoTagToArray(Get<Type>(ptr), buffer);
@@ -189,9 +189,9 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_UINT64> {
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED32> {
-  typedef uint32_t Type;
+  using Type = uint32_t;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteFixed32NoTag(Get<uint32_t>(ptr), output);
+    WireFormatLite::WriteFixed32NoTag(Get<Type>(ptr), output);
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteFixed32NoTagToArray(Get<Type>(ptr), buffer);
@@ -200,9 +200,9 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED32> {
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED64> {
-  typedef uint64_t Type;
+  using Type = uint64_t;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteFixed64NoTag(Get<uint64_t>(ptr), output);
+    WireFormatLite::WriteFixed64NoTag(Get<Type>(ptr), output);
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteFixed64NoTagToArray(Get<Type>(ptr), buffer);
@@ -216,27 +216,27 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_ENUM>
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_SFIXED32>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED32> {
-  typedef int32_t Type;
+  using Type = int32_t;
 };
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_SFIXED64>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED64> {
-  typedef int64_t Type;
+  using Type = int64_t;
 };
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_FLOAT>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED32> {
-  typedef float Type;
+  using Type = float;
 };
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_DOUBLE>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED64> {
-  typedef double Type;
+  using Type = double;
 };
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {
-  typedef std::string Type;
+  using Type = std::string;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
     const Type& value = *static_cast<const Type*>(ptr);
     output->WriteVarint32(value.size());

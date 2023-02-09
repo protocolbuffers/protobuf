@@ -128,17 +128,17 @@
 namespace google {
 namespace protobuf {
 
-typedef unsigned int uint;
+using uint = unsigned int;
 
-typedef int8_t int8;
-typedef int16_t int16;
-typedef int32_t int32;
-typedef int64_t int64;
+using int8 = int8_t;
+using int16 = int16_t;
+using int32 = int32_t;
+using int64 = int64_t;
 
-typedef uint8_t uint8;
-typedef uint16_t uint16;
-typedef uint32_t uint32;
-typedef uint64_t uint64;
+using uint8 = uint8_t;
+using uint16 = uint16_t;
+using uint32 = uint32_t;
+using uint64 = uint64_t;
 
 static const int32 kint32max = 0x7FFFFFFF;
 static const int32 kint32min = -kint32max - 1;

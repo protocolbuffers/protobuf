@@ -1713,19 +1713,20 @@ TEST(RepeatedPtrField, IteratorConstruct_String) {
 }
 
 TEST(RepeatedPtrField, IteratorConstruct_Proto) {
-  typedef TestAllTypes::NestedMessage Nested;
-  std::vector<Nested> values;
-  values.push_back(Nested());
+  std::vector<TestAllTypes::NestedMessage> values;
+  values.push_back(TestAllTypes::NestedMessage());
   values.back().set_bb(1);
-  values.push_back(Nested());
+  values.push_back(TestAllTypes::NestedMessage());
   values.back().set_bb(2);
 
-  RepeatedPtrField<Nested> field(values.begin(), values.end());
+  RepeatedPtrField<TestAllTypes::NestedMessage> field(values.begin(),
+                                                      values.end());
   ASSERT_EQ(values.size(), field.size());
   EXPECT_EQ(values[0].bb(), field.Get(0).bb());
   EXPECT_EQ(values[1].bb(), field.Get(1).bb());
 
-  RepeatedPtrField<Nested> other(field.begin(), field.end());
+  RepeatedPtrField<TestAllTypes::NestedMessage> other(field.begin(),
+                                                      field.end());
   ASSERT_EQ(values.size(), other.size());
   EXPECT_EQ(values[0].bb(), other.Get(0).bb());
   EXPECT_EQ(values[1].bb(), other.Get(1).bb());
@@ -2435,9 +2436,8 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
   std::list<double> halves;
   std::list<int> fibonacci;
   std::vector<std::string> words;
-  typedef TestAllTypes::NestedMessage Nested;
-  Nested nesteds[2];
-  std::vector<Nested*> nested_ptrs;
+  TestAllTypes::NestedMessage nesteds[2];
+  std::vector<TestAllTypes::NestedMessage*> nested_ptrs;
   TestAllTypes protobuffer;
 
   void SetUp() override {
@@ -2474,9 +2474,9 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
               RepeatedFieldBackInserter(
                   protobuffer.mutable_repeated_nested_message()));
 
-    nested_ptrs.push_back(new Nested);
+    nested_ptrs.push_back(new TestAllTypes::NestedMessage);
     nested_ptrs.back()->set_bb(170);
-    nested_ptrs.push_back(new Nested);
+    nested_ptrs.push_back(new TestAllTypes::NestedMessage);
     nested_ptrs.back()->set_bb(47110);
     std::copy(nested_ptrs.begin(), nested_ptrs.end(),
               RepeatedFieldBackInserter(
@@ -2538,10 +2538,10 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, Nesteds) {
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        AllocatedRepeatedPtrFieldWithStringIntData) {
-  std::vector<Nested*> data;
+  std::vector<TestAllTypes::NestedMessage*> data;
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
-    Nested* new_data = new Nested;
+    auto* new_data = new TestAllTypes::NestedMessage;
     new_data->set_bb(i);
     data.push_back(new_data);
 
@@ -2576,7 +2576,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithStringIntData) {
-  std::vector<Nested*> data;
+  std::vector<TestAllTypes::NestedMessage*> data;
   Arena arena;
   auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
@@ -2621,12 +2621,14 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {
 
 TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
   auto make_nested = [](int32_t x) {
-    Nested ret;
+    TestAllTypes::NestedMessage ret;
     ret.set_bb(x);
     return ret;
   };
-  std::vector<Nested> src = {make_nested(3), make_nested(5), make_nested(7)};
-  std::vector<Nested> copy = src;  // copy since move leaves in undefined state
+  std::vector<TestAllTypes::NestedMessage> src = {
+      make_nested(3), make_nested(5), make_nested(7)};
+  std::vector<TestAllTypes::NestedMessage> copy =
+      src;  // copy since move leaves in undefined state
   TestAllTypes testproto;
   std::move(
       copy.begin(), copy.end(),

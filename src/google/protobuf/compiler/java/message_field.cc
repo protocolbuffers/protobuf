@@ -52,10 +52,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
-
-
 namespace {
-
 void SetMessageVariables(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,

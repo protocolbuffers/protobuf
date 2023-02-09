@@ -89,18 +89,15 @@
 
 namespace google {
 namespace protobuf {
-
+namespace {
 using internal::DynamicMapField;
 using internal::ExtensionSet;
-using internal::MapField;
 
 
 using internal::ArenaStringPtr;
 
 // ===================================================================
 // Some helper tables and functions...
-
-namespace {
 
 bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
 
@@ -112,33 +109,32 @@ inline bool InRealOneof(const FieldDescriptor* field) {
 
 // Compute the byte size of the in-memory representation of the field.
 int FieldSpaceUsed(const FieldDescriptor* field) {
-  typedef FieldDescriptor FD;  // avoid line wrapping
-  if (field->label() == FD::LABEL_REPEATED) {
+  if (field->label() == FieldDescriptor::LABEL_REPEATED) {
     switch (field->cpp_type()) {
-      case FD::CPPTYPE_INT32:
+      case FieldDescriptor::CPPTYPE_INT32:
         return sizeof(RepeatedField<int32_t>);
-      case FD::CPPTYPE_INT64:
+      case FieldDescriptor::CPPTYPE_INT64:
         return sizeof(RepeatedField<int64_t>);
-      case FD::CPPTYPE_UINT32:
+      case FieldDescriptor::CPPTYPE_UINT32:
         return sizeof(RepeatedField<uint32_t>);
-      case FD::CPPTYPE_UINT64:
+      case FieldDescriptor::CPPTYPE_UINT64:
         return sizeof(RepeatedField<uint64_t>);
-      case FD::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_DOUBLE:
         return sizeof(RepeatedField<double>);
-      case FD::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_FLOAT:
         return sizeof(RepeatedField<float>);
-      case FD::CPPTYPE_BOOL:
+      case FieldDescriptor::CPPTYPE_BOOL:
         return sizeof(RepeatedField<bool>);
-      case FD::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_ENUM:
         return sizeof(RepeatedField<int>);
-      case FD::CPPTYPE_MESSAGE:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           return sizeof(DynamicMapField);
         } else {
           return sizeof(RepeatedPtrField<Message>);
         }
 
-      case FD::CPPTYPE_STRING:
+      case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
@@ -148,27 +144,27 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
     }
   } else {
     switch (field->cpp_type()) {
-      case FD::CPPTYPE_INT32:
+      case FieldDescriptor::CPPTYPE_INT32:
         return sizeof(int32_t);
-      case FD::CPPTYPE_INT64:
+      case FieldDescriptor::CPPTYPE_INT64:
         return sizeof(int64_t);
-      case FD::CPPTYPE_UINT32:
+      case FieldDescriptor::CPPTYPE_UINT32:
         return sizeof(uint32_t);
-      case FD::CPPTYPE_UINT64:
+      case FieldDescriptor::CPPTYPE_UINT64:
         return sizeof(uint64_t);
-      case FD::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_DOUBLE:
         return sizeof(double);
-      case FD::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_FLOAT:
         return sizeof(float);
-      case FD::CPPTYPE_BOOL:
+      case FieldDescriptor::CPPTYPE_BOOL:
         return sizeof(bool);
-      case FD::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_ENUM:
         return sizeof(int);
 
-      case FD::CPPTYPE_MESSAGE:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
         return sizeof(Message*);
 
-      case FD::CPPTYPE_STRING:
+      case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:

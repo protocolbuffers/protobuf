@@ -31,6 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
 #define GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
 
+#include <type_traits>
+
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -44,22 +46,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-
-// Used for compile time type selection. MapIf::type will be TrueType if Flag is
-// true and FalseType otherwise.
-template <bool Flag, typename TrueType, typename FalseType>
-struct MapIf;
-
-template <typename TrueType, typename FalseType>
-struct MapIf<true, TrueType, FalseType> {
-  typedef TrueType type;
-};
-
-template <typename TrueType, typename FalseType>
-struct MapIf<false, TrueType, FalseType> {
-  typedef FalseType type;
-};
-
 template <typename Type, bool is_arena_constructable>
 class MapArenaMessageCreator {
  public:
@@ -86,16 +72,18 @@ class MapArenaMessageCreator<Type, false> {
 template <WireFormatLite::FieldType field_type, typename Type>
 class MapWireFieldTypeTraits {};
 
-#define TYPE_TRAITS(FieldType, CType, WireFormatType, IsMessage, IsEnum)   \
-  template <typename Type>                                                 \
-  class MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType, Type> {   \
-   public:                                                                 \
-    static const bool kIsMessage = IsMessage;                              \
-    static const bool kIsEnum = IsEnum;                                    \
-    typedef typename MapIf<kIsMessage, Type*, CType>::type TypeOnMemory;   \
-    typedef typename MapIf<kIsEnum, int, Type>::type MapEntryAccessorType; \
-    static const WireFormatLite::WireType kWireType =                      \
-        WireFormatLite::WIRETYPE_##WireFormatType;                         \
+#define TYPE_TRAITS(FieldType, CType, WireFormatType, IsMessage, IsEnum) \
+  template <typename Type>                                               \
+  class MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType, Type> { \
+   public:                                                               \
+    static const bool kIsMessage = IsMessage;                            \
+    static const bool kIsEnum = IsEnum;                                  \
+    using TypeOnMemory =                                                 \
+        typename std::conditional<kIsMessage, Type*, CType>::type;       \
+    using MapEntryAccessorType =                                         \
+        typename std::conditional<kIsEnum, int, Type>::type;             \
+    static const WireFormatLite::WireType kWireType =                    \
+        WireFormatLite::WIRETYPE_##WireFormatType;                       \
   };
 
 TYPE_TRAITS(MESSAGE, Type, LENGTH_DELIMITED, true, false)
@@ -126,12 +114,13 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
  public:
   // Enum type cannot be used for MapTypeHandler::Read. Define a type which will
   // replace Enum with int.
-  typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE,
-                                          Type>::MapEntryAccessorType
-      MapEntryAccessorType;
+  using MapEntryAccessorType =
+      typename MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE,
+                                      Type>::MapEntryAccessorType;
   // Internal stored type in MapEntryLite for given wire field type.
-  typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE,
-                                          Type>::TypeOnMemory TypeOnMemory;
+  using TypeOnMemory =
+      typename MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE,
+                                      Type>::TypeOnMemory;
   // Corresponding wire type for field type.
   static constexpr WireFormatLite::WireType kWireType =
       MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE, Type>::kWireType;
@@ -175,11 +164,12 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   template <typename Type>                                                     \
   class MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type> {               \
    public:                                                                     \
-    typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,  \
-                                            Type>::MapEntryAccessorType        \
-        MapEntryAccessorType;                                                  \
-    typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,  \
-                                            Type>::TypeOnMemory TypeOnMemory;  \
+    using MapEntryAccessorType =                                               \
+        typename MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,      \
+                                        Type>::MapEntryAccessorType;           \
+    using TypeOnMemory =                                                       \
+        typename MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,      \
+                                        Type>::TypeOnMemory;                   \
     static const WireFormatLite::WireType kWireType =                          \
         MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,               \
                                Type>::kWireType;                               \
@@ -694,8 +684,8 @@ PRIMITIVE_HANDLER_FUNCTIONS(BOOL)
 template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
 struct MapEntryFuncs {
-  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
-  typedef MapTypeHandler<kValueFieldType, Value> ValueTypeHandler;
+  using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;
+  using ValueTypeHandler = MapTypeHandler<kValueFieldType, Value>;
   enum : int {
     kKeyFieldNumber = 1,
     kValueFieldNumber = 2

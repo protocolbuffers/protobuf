@@ -261,15 +261,15 @@ class RepeatedField final {
   void SwapElements(int index1, int index2);
 
   // STL-like iterator support
-  typedef internal::RepeatedIterator<Element> iterator;
-  typedef internal::RepeatedIterator<const Element> const_iterator;
-  typedef Element value_type;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
-  typedef value_type* pointer;
-  typedef const value_type* const_pointer;
-  typedef int size_type;
-  typedef ptrdiff_t difference_type;
+  using iterator = internal::RepeatedIterator<Element>;
+  using const_iterator = internal::RepeatedIterator<const Element>;
+  using value_type = Element;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
+  using size_type = int;
+  using difference_type = ptrdiff_t;
 
   iterator begin();
   const_iterator begin() const;
@@ -279,8 +279,8 @@ class RepeatedField final {
   const_iterator cend() const;
 
   // Reverse iterator support
-  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-  typedef std::reverse_iterator<iterator> reverse_iterator;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
   reverse_iterator rbegin() { return reverse_iterator(end()); }
   const_reverse_iterator rbegin() const {
     return const_reverse_iterator(end());
@@ -452,7 +452,7 @@ class RepeatedField final {
   }
 
   friend class Arena;
-  typedef void InternalArenaConstructable_;
+  using InternalArenaConstructable_ = void;
 
   // Destroys all elements in [begin, end).
   // This function does nothing if `Element` is trivial.

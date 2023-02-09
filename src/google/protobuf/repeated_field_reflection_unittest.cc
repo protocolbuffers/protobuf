@@ -332,10 +332,9 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
                                         &TestAllTypes::repeated_string);
 
   // Test iterators for message fields.
-  typedef RepeatedFieldRef<ForeignMessage>::iterator MessageIterator;
   int index = 0;
-  for (MessageIterator it = rf_foreign_message.begin();
-       it != rf_foreign_message.end(); ++it) {
+  for (auto it = rf_foreign_message.begin(); it != rf_foreign_message.end();
+       ++it) {
     EXPECT_EQ(message.repeated_foreign_message(index).c(), it->c());
     ++index;
   }
@@ -343,8 +342,8 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
 
   // Test iterator operators that are not usually used in regular for-loops.
   // Including: post increment, assign, ==.
-  MessageIterator old_it = rf_foreign_message.begin();
-  MessageIterator new_it = old_it++;
+  auto old_it = rf_foreign_message.begin();
+  auto new_it = old_it++;
   EXPECT_FALSE(old_it == new_it);
   // Check that old_it++ increments old_it once.
   for (index = 1; old_it != rf_foreign_message.end(); ++old_it, ++index) {

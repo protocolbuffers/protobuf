@@ -34,6 +34,8 @@
 //
 // This file makes extensive use of RFC 3092.  :)
 
+#include "google/protobuf/descriptor.h"
+
 #include <limits>
 #include <memory>
 #include <vector>
@@ -75,9 +77,9 @@ using ::testing::AnyOf;
 
 namespace google {
 namespace protobuf {
-
-// Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace descriptor_unittest {
+using Fd = google::protobuf::FieldDescriptor;
+using Fdp = google::protobuf::FieldDescriptorProto;
 
 // Some helpers to make assembling descriptors faster.
 DescriptorProto* AddMessage(FileDescriptorProto* file,
@@ -2587,168 +2589,154 @@ class MiscTest : public testing::Test {
 TEST_F(MiscTest, TypeNames) {
   // Test that correct type names are returned.
 
-  typedef FieldDescriptor FD;  // avoid ugly line wrapping
-
-  EXPECT_STREQ("double", GetTypeNameForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_STREQ("float", GetTypeNameForFieldType(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", GetTypeNameForFieldType(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", GetTypeNameForFieldType(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", GetTypeNameForFieldType(FD::TYPE_INT32));
-  EXPECT_STREQ("fixed64", GetTypeNameForFieldType(FD::TYPE_FIXED64));
-  EXPECT_STREQ("fixed32", GetTypeNameForFieldType(FD::TYPE_FIXED32));
-  EXPECT_STREQ("bool", GetTypeNameForFieldType(FD::TYPE_BOOL));
-  EXPECT_STREQ("string", GetTypeNameForFieldType(FD::TYPE_STRING));
-  EXPECT_STREQ("group", GetTypeNameForFieldType(FD::TYPE_GROUP));
-  EXPECT_STREQ("message", GetTypeNameForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_STREQ("bytes", GetTypeNameForFieldType(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", GetTypeNameForFieldType(FD::TYPE_UINT32));
-  EXPECT_STREQ("enum", GetTypeNameForFieldType(FD::TYPE_ENUM));
-  EXPECT_STREQ("sfixed32", GetTypeNameForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("sfixed64", GetTypeNameForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("sint32", GetTypeNameForFieldType(FD::TYPE_SINT32));
-  EXPECT_STREQ("sint64", GetTypeNameForFieldType(FD::TYPE_SINT64));
+  EXPECT_STREQ("double", GetTypeNameForFieldType(Fd::TYPE_DOUBLE));
+  EXPECT_STREQ("float", GetTypeNameForFieldType(Fd::TYPE_FLOAT));
+  EXPECT_STREQ("int64", GetTypeNameForFieldType(Fd::TYPE_INT64));
+  EXPECT_STREQ("uint64", GetTypeNameForFieldType(Fd::TYPE_UINT64));
+  EXPECT_STREQ("int32", GetTypeNameForFieldType(Fd::TYPE_INT32));
+  EXPECT_STREQ("fixed64", GetTypeNameForFieldType(Fd::TYPE_FIXED64));
+  EXPECT_STREQ("fixed32", GetTypeNameForFieldType(Fd::TYPE_FIXED32));
+  EXPECT_STREQ("bool", GetTypeNameForFieldType(Fd::TYPE_BOOL));
+  EXPECT_STREQ("string", GetTypeNameForFieldType(Fd::TYPE_STRING));
+  EXPECT_STREQ("group", GetTypeNameForFieldType(Fd::TYPE_GROUP));
+  EXPECT_STREQ("message", GetTypeNameForFieldType(Fd::TYPE_MESSAGE));
+  EXPECT_STREQ("bytes", GetTypeNameForFieldType(Fd::TYPE_BYTES));
+  EXPECT_STREQ("uint32", GetTypeNameForFieldType(Fd::TYPE_UINT32));
+  EXPECT_STREQ("enum", GetTypeNameForFieldType(Fd::TYPE_ENUM));
+  EXPECT_STREQ("sfixed32", GetTypeNameForFieldType(Fd::TYPE_SFIXED32));
+  EXPECT_STREQ("sfixed64", GetTypeNameForFieldType(Fd::TYPE_SFIXED64));
+  EXPECT_STREQ("sint32", GetTypeNameForFieldType(Fd::TYPE_SINT32));
+  EXPECT_STREQ("sint64", GetTypeNameForFieldType(Fd::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, StaticTypeNames) {
   // Test that correct type names are returned.
 
-  typedef FieldDescriptor FD;  // avoid ugly line wrapping
-
-  EXPECT_STREQ("double", FD::TypeName(FD::TYPE_DOUBLE));
-  EXPECT_STREQ("float", FD::TypeName(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", FD::TypeName(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", FD::TypeName(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", FD::TypeName(FD::TYPE_INT32));
-  EXPECT_STREQ("fixed64", FD::TypeName(FD::TYPE_FIXED64));
-  EXPECT_STREQ("fixed32", FD::TypeName(FD::TYPE_FIXED32));
-  EXPECT_STREQ("bool", FD::TypeName(FD::TYPE_BOOL));
-  EXPECT_STREQ("string", FD::TypeName(FD::TYPE_STRING));
-  EXPECT_STREQ("group", FD::TypeName(FD::TYPE_GROUP));
-  EXPECT_STREQ("message", FD::TypeName(FD::TYPE_MESSAGE));
-  EXPECT_STREQ("bytes", FD::TypeName(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", FD::TypeName(FD::TYPE_UINT32));
-  EXPECT_STREQ("enum", FD::TypeName(FD::TYPE_ENUM));
-  EXPECT_STREQ("sfixed32", FD::TypeName(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("sfixed64", FD::TypeName(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("sint32", FD::TypeName(FD::TYPE_SINT32));
-  EXPECT_STREQ("sint64", FD::TypeName(FD::TYPE_SINT64));
+  EXPECT_STREQ("double", Fd::TypeName(Fd::TYPE_DOUBLE));
+  EXPECT_STREQ("float", Fd::TypeName(Fd::TYPE_FLOAT));
+  EXPECT_STREQ("int64", Fd::TypeName(Fd::TYPE_INT64));
+  EXPECT_STREQ("uint64", Fd::TypeName(Fd::TYPE_UINT64));
+  EXPECT_STREQ("int32", Fd::TypeName(Fd::TYPE_INT32));
+  EXPECT_STREQ("fixed64", Fd::TypeName(Fd::TYPE_FIXED64));
+  EXPECT_STREQ("fixed32", Fd::TypeName(Fd::TYPE_FIXED32));
+  EXPECT_STREQ("bool", Fd::TypeName(Fd::TYPE_BOOL));
+  EXPECT_STREQ("string", Fd::TypeName(Fd::TYPE_STRING));
+  EXPECT_STREQ("group", Fd::TypeName(Fd::TYPE_GROUP));
+  EXPECT_STREQ("message", Fd::TypeName(Fd::TYPE_MESSAGE));
+  EXPECT_STREQ("bytes", Fd::TypeName(Fd::TYPE_BYTES));
+  EXPECT_STREQ("uint32", Fd::TypeName(Fd::TYPE_UINT32));
+  EXPECT_STREQ("enum", Fd::TypeName(Fd::TYPE_ENUM));
+  EXPECT_STREQ("sfixed32", Fd::TypeName(Fd::TYPE_SFIXED32));
+  EXPECT_STREQ("sfixed64", Fd::TypeName(Fd::TYPE_SFIXED64));
+  EXPECT_STREQ("sint32", Fd::TypeName(Fd::TYPE_SINT32));
+  EXPECT_STREQ("sint64", Fd::TypeName(Fd::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, CppTypes) {
   // Test that CPP types are assigned correctly.
 
-  typedef FieldDescriptor FD;  // avoid ugly line wrapping
-
-  EXPECT_EQ(FD::CPPTYPE_DOUBLE, GetCppTypeForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_EQ(FD::CPPTYPE_FLOAT, GetCppTypeForFieldType(FD::TYPE_FLOAT));
-  EXPECT_EQ(FD::CPPTYPE_INT64, GetCppTypeForFieldType(FD::TYPE_INT64));
-  EXPECT_EQ(FD::CPPTYPE_UINT64, GetCppTypeForFieldType(FD::TYPE_UINT64));
-  EXPECT_EQ(FD::CPPTYPE_INT32, GetCppTypeForFieldType(FD::TYPE_INT32));
-  EXPECT_EQ(FD::CPPTYPE_UINT64, GetCppTypeForFieldType(FD::TYPE_FIXED64));
-  EXPECT_EQ(FD::CPPTYPE_UINT32, GetCppTypeForFieldType(FD::TYPE_FIXED32));
-  EXPECT_EQ(FD::CPPTYPE_BOOL, GetCppTypeForFieldType(FD::TYPE_BOOL));
-  EXPECT_EQ(FD::CPPTYPE_STRING, GetCppTypeForFieldType(FD::TYPE_STRING));
-  EXPECT_EQ(FD::CPPTYPE_MESSAGE, GetCppTypeForFieldType(FD::TYPE_GROUP));
-  EXPECT_EQ(FD::CPPTYPE_MESSAGE, GetCppTypeForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_EQ(FD::CPPTYPE_STRING, GetCppTypeForFieldType(FD::TYPE_BYTES));
-  EXPECT_EQ(FD::CPPTYPE_UINT32, GetCppTypeForFieldType(FD::TYPE_UINT32));
-  EXPECT_EQ(FD::CPPTYPE_ENUM, GetCppTypeForFieldType(FD::TYPE_ENUM));
-  EXPECT_EQ(FD::CPPTYPE_INT32, GetCppTypeForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_EQ(FD::CPPTYPE_INT64, GetCppTypeForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_EQ(FD::CPPTYPE_INT32, GetCppTypeForFieldType(FD::TYPE_SINT32));
-  EXPECT_EQ(FD::CPPTYPE_INT64, GetCppTypeForFieldType(FD::TYPE_SINT64));
+  EXPECT_EQ(Fd::CPPTYPE_DOUBLE, GetCppTypeForFieldType(Fd::TYPE_DOUBLE));
+  EXPECT_EQ(Fd::CPPTYPE_FLOAT, GetCppTypeForFieldType(Fd::TYPE_FLOAT));
+  EXPECT_EQ(Fd::CPPTYPE_INT64, GetCppTypeForFieldType(Fd::TYPE_INT64));
+  EXPECT_EQ(Fd::CPPTYPE_UINT64, GetCppTypeForFieldType(Fd::TYPE_UINT64));
+  EXPECT_EQ(Fd::CPPTYPE_INT32, GetCppTypeForFieldType(Fd::TYPE_INT32));
+  EXPECT_EQ(Fd::CPPTYPE_UINT64, GetCppTypeForFieldType(Fd::TYPE_FIXED64));
+  EXPECT_EQ(Fd::CPPTYPE_UINT32, GetCppTypeForFieldType(Fd::TYPE_FIXED32));
+  EXPECT_EQ(Fd::CPPTYPE_BOOL, GetCppTypeForFieldType(Fd::TYPE_BOOL));
+  EXPECT_EQ(Fd::CPPTYPE_STRING, GetCppTypeForFieldType(Fd::TYPE_STRING));
+  EXPECT_EQ(Fd::CPPTYPE_MESSAGE, GetCppTypeForFieldType(Fd::TYPE_GROUP));
+  EXPECT_EQ(Fd::CPPTYPE_MESSAGE, GetCppTypeForFieldType(Fd::TYPE_MESSAGE));
+  EXPECT_EQ(Fd::CPPTYPE_STRING, GetCppTypeForFieldType(Fd::TYPE_BYTES));
+  EXPECT_EQ(Fd::CPPTYPE_UINT32, GetCppTypeForFieldType(Fd::TYPE_UINT32));
+  EXPECT_EQ(Fd::CPPTYPE_ENUM, GetCppTypeForFieldType(Fd::TYPE_ENUM));
+  EXPECT_EQ(Fd::CPPTYPE_INT32, GetCppTypeForFieldType(Fd::TYPE_SFIXED32));
+  EXPECT_EQ(Fd::CPPTYPE_INT64, GetCppTypeForFieldType(Fd::TYPE_SFIXED64));
+  EXPECT_EQ(Fd::CPPTYPE_INT32, GetCppTypeForFieldType(Fd::TYPE_SINT32));
+  EXPECT_EQ(Fd::CPPTYPE_INT64, GetCppTypeForFieldType(Fd::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, CppTypeNames) {
   // Test that correct CPP type names are returned.
 
-  typedef FieldDescriptor FD;  // avoid ugly line wrapping
-
-  EXPECT_STREQ("double", GetCppTypeNameForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_STREQ("float", GetCppTypeNameForFieldType(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_INT32));
-  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(FD::TYPE_FIXED64));
-  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(FD::TYPE_FIXED32));
-  EXPECT_STREQ("bool", GetCppTypeNameForFieldType(FD::TYPE_BOOL));
-  EXPECT_STREQ("string", GetCppTypeNameForFieldType(FD::TYPE_STRING));
-  EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_GROUP));
-  EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_STREQ("string", GetCppTypeNameForFieldType(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(FD::TYPE_UINT32));
-  EXPECT_STREQ("enum", GetCppTypeNameForFieldType(FD::TYPE_ENUM));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_SINT32));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_SINT64));
+  EXPECT_STREQ("double", GetCppTypeNameForFieldType(Fd::TYPE_DOUBLE));
+  EXPECT_STREQ("float", GetCppTypeNameForFieldType(Fd::TYPE_FLOAT));
+  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(Fd::TYPE_INT64));
+  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(Fd::TYPE_UINT64));
+  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(Fd::TYPE_INT32));
+  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(Fd::TYPE_FIXED64));
+  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(Fd::TYPE_FIXED32));
+  EXPECT_STREQ("bool", GetCppTypeNameForFieldType(Fd::TYPE_BOOL));
+  EXPECT_STREQ("string", GetCppTypeNameForFieldType(Fd::TYPE_STRING));
+  EXPECT_STREQ("message", GetCppTypeNameForFieldType(Fd::TYPE_GROUP));
+  EXPECT_STREQ("message", GetCppTypeNameForFieldType(Fd::TYPE_MESSAGE));
+  EXPECT_STREQ("string", GetCppTypeNameForFieldType(Fd::TYPE_BYTES));
+  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(Fd::TYPE_UINT32));
+  EXPECT_STREQ("enum", GetCppTypeNameForFieldType(Fd::TYPE_ENUM));
+  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(Fd::TYPE_SFIXED32));
+  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(Fd::TYPE_SFIXED64));
+  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(Fd::TYPE_SINT32));
+  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(Fd::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, StaticCppTypeNames) {
   // Test that correct CPP type names are returned.
 
-  typedef FieldDescriptor FD;  // avoid ugly line wrapping
-
-  EXPECT_STREQ("int32", FD::CppTypeName(FD::CPPTYPE_INT32));
-  EXPECT_STREQ("int64", FD::CppTypeName(FD::CPPTYPE_INT64));
-  EXPECT_STREQ("uint32", FD::CppTypeName(FD::CPPTYPE_UINT32));
-  EXPECT_STREQ("uint64", FD::CppTypeName(FD::CPPTYPE_UINT64));
-  EXPECT_STREQ("double", FD::CppTypeName(FD::CPPTYPE_DOUBLE));
-  EXPECT_STREQ("float", FD::CppTypeName(FD::CPPTYPE_FLOAT));
-  EXPECT_STREQ("bool", FD::CppTypeName(FD::CPPTYPE_BOOL));
-  EXPECT_STREQ("enum", FD::CppTypeName(FD::CPPTYPE_ENUM));
-  EXPECT_STREQ("string", FD::CppTypeName(FD::CPPTYPE_STRING));
-  EXPECT_STREQ("message", FD::CppTypeName(FD::CPPTYPE_MESSAGE));
+  EXPECT_STREQ("int32", Fd::CppTypeName(Fd::CPPTYPE_INT32));
+  EXPECT_STREQ("int64", Fd::CppTypeName(Fd::CPPTYPE_INT64));
+  EXPECT_STREQ("uint32", Fd::CppTypeName(Fd::CPPTYPE_UINT32));
+  EXPECT_STREQ("uint64", Fd::CppTypeName(Fd::CPPTYPE_UINT64));
+  EXPECT_STREQ("double", Fd::CppTypeName(Fd::CPPTYPE_DOUBLE));
+  EXPECT_STREQ("float", Fd::CppTypeName(Fd::CPPTYPE_FLOAT));
+  EXPECT_STREQ("bool", Fd::CppTypeName(Fd::CPPTYPE_BOOL));
+  EXPECT_STREQ("enum", Fd::CppTypeName(Fd::CPPTYPE_ENUM));
+  EXPECT_STREQ("string", Fd::CppTypeName(Fd::CPPTYPE_STRING));
+  EXPECT_STREQ("message", Fd::CppTypeName(Fd::CPPTYPE_MESSAGE));
 }
 
 TEST_F(MiscTest, MessageType) {
   // Test that message_type() is nullptr for non-aggregate fields
 
-  typedef FieldDescriptor FD;  // avoid ugly line wrapping
-
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_FLOAT));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_INT64));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_UINT64));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_INT32));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_FIXED64));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_FIXED32));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_BOOL));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_STRING));
-  EXPECT_TRUE(nullptr != GetMessageDescriptorForFieldType(FD::TYPE_GROUP));
-  EXPECT_TRUE(nullptr != GetMessageDescriptorForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_BYTES));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_UINT32));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_ENUM));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_SINT32));
-  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(FD::TYPE_SINT64));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_DOUBLE));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_FLOAT));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_INT64));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_UINT64));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_INT32));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_FIXED64));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_FIXED32));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_BOOL));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_STRING));
+  EXPECT_TRUE(nullptr != GetMessageDescriptorForFieldType(Fd::TYPE_GROUP));
+  EXPECT_TRUE(nullptr != GetMessageDescriptorForFieldType(Fd::TYPE_MESSAGE));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_BYTES));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_UINT32));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_ENUM));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_SFIXED32));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_SFIXED64));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_SINT32));
+  EXPECT_TRUE(nullptr == GetMessageDescriptorForFieldType(Fd::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, EnumType) {
   // Test that enum_type() is nullptr for non-enum fields
 
-  typedef FieldDescriptor FD;  // avoid ugly line wrapping
-
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_FLOAT));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_INT64));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_UINT64));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_INT32));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_FIXED64));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_FIXED32));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_BOOL));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_STRING));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_GROUP));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_BYTES));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_UINT32));
-  EXPECT_TRUE(nullptr != GetEnumDescriptorForFieldType(FD::TYPE_ENUM));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_SINT32));
-  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(FD::TYPE_SINT64));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_DOUBLE));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_FLOAT));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_INT64));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_UINT64));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_INT32));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_FIXED64));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_FIXED32));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_BOOL));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_STRING));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_GROUP));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_MESSAGE));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_BYTES));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_UINT32));
+  EXPECT_TRUE(nullptr != GetEnumDescriptorForFieldType(Fd::TYPE_ENUM));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_SFIXED32));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_SFIXED64));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_SINT32));
+  EXPECT_TRUE(nullptr == GetEnumDescriptorForFieldType(Fd::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, DefaultValues) {
@@ -2762,54 +2750,52 @@ TEST_F(MiscTest, DefaultValues) {
 
   DescriptorProto* message_proto = AddMessage(&file_proto, "TestMessage");
 
-  typedef FieldDescriptorProto FD;  // avoid ugly line wrapping
-  const FD::Label label = FD::LABEL_OPTIONAL;
+  auto label = Fdp::LABEL_OPTIONAL;
 
   // Create fields of every CPP type with default values.
-  AddField(message_proto, "int32", 1, label, FD::TYPE_INT32)
+  AddField(message_proto, "int32", 1, label, Fdp::TYPE_INT32)
       ->set_default_value("-1");
-  AddField(message_proto, "int64", 2, label, FD::TYPE_INT64)
+  AddField(message_proto, "int64", 2, label, Fdp::TYPE_INT64)
       ->set_default_value("-1000000000000");
-  AddField(message_proto, "uint32", 3, label, FD::TYPE_UINT32)
+  AddField(message_proto, "uint32", 3, label, Fdp::TYPE_UINT32)
       ->set_default_value("42");
-  AddField(message_proto, "uint64", 4, label, FD::TYPE_UINT64)
+  AddField(message_proto, "uint64", 4, label, Fdp::TYPE_UINT64)
       ->set_default_value("2000000000000");
-  AddField(message_proto, "float", 5, label, FD::TYPE_FLOAT)
+  AddField(message_proto, "float", 5, label, Fdp::TYPE_FLOAT)
       ->set_default_value("4.5");
-  AddField(message_proto, "double", 6, label, FD::TYPE_DOUBLE)
+  AddField(message_proto, "double", 6, label, Fdp::TYPE_DOUBLE)
       ->set_default_value("10e100");
-  AddField(message_proto, "bool", 7, label, FD::TYPE_BOOL)
+  AddField(message_proto, "bool", 7, label, Fdp::TYPE_BOOL)
       ->set_default_value("true");
-  AddField(message_proto, "string", 8, label, FD::TYPE_STRING)
+  AddField(message_proto, "string", 8, label, Fdp::TYPE_STRING)
       ->set_default_value("hello");
-  AddField(message_proto, "data", 9, label, FD::TYPE_BYTES)
+  AddField(message_proto, "data", 9, label, Fdp::TYPE_BYTES)
       ->set_default_value("\\001\\002\\003");
-  AddField(message_proto, "data2", 10, label, FD::TYPE_BYTES)
+  AddField(message_proto, "data2", 10, label, Fdp::TYPE_BYTES)
       ->set_default_value("\\X01\\X2\\X3");
-  AddField(message_proto, "data3", 11, label, FD::TYPE_BYTES)
+  AddField(message_proto, "data3", 11, label, Fdp::TYPE_BYTES)
       ->set_default_value("\\x01\\x2\\x3");
 
-  FieldDescriptorProto* enum_field =
-      AddField(message_proto, "enum", 12, label, FD::TYPE_ENUM);
+  auto* enum_field = AddField(message_proto, "enum", 12, label, Fdp::TYPE_ENUM);
   enum_field->set_type_name("DummyEnum");
   enum_field->set_default_value("B");
 
   // Strings are allowed to have empty defaults.  (At one point, due to
   // a bug, empty defaults for strings were rejected.  Oops.)
-  AddField(message_proto, "empty_string", 13, label, FD::TYPE_STRING)
+  AddField(message_proto, "empty_string", 13, label, Fdp::TYPE_STRING)
       ->set_default_value("");
 
   // Add a second set of fields with implicit default values.
-  AddField(message_proto, "implicit_int32", 21, label, FD::TYPE_INT32);
-  AddField(message_proto, "implicit_int64", 22, label, FD::TYPE_INT64);
-  AddField(message_proto, "implicit_uint32", 23, label, FD::TYPE_UINT32);
-  AddField(message_proto, "implicit_uint64", 24, label, FD::TYPE_UINT64);
-  AddField(message_proto, "implicit_float", 25, label, FD::TYPE_FLOAT);
-  AddField(message_proto, "implicit_double", 26, label, FD::TYPE_DOUBLE);
-  AddField(message_proto, "implicit_bool", 27, label, FD::TYPE_BOOL);
-  AddField(message_proto, "implicit_string", 28, label, FD::TYPE_STRING);
-  AddField(message_proto, "implicit_data", 29, label, FD::TYPE_BYTES);
-  AddField(message_proto, "implicit_enum", 30, label, FD::TYPE_ENUM)
+  AddField(message_proto, "implicit_int32", 21, label, Fdp::TYPE_INT32);
+  AddField(message_proto, "implicit_int64", 22, label, Fdp::TYPE_INT64);
+  AddField(message_proto, "implicit_uint32", 23, label, Fdp::TYPE_UINT32);
+  AddField(message_proto, "implicit_uint64", 24, label, Fdp::TYPE_UINT64);
+  AddField(message_proto, "implicit_float", 25, label, Fdp::TYPE_FLOAT);
+  AddField(message_proto, "implicit_double", 26, label, Fdp::TYPE_DOUBLE);
+  AddField(message_proto, "implicit_bool", 27, label, Fdp::TYPE_BOOL);
+  AddField(message_proto, "implicit_string", 28, label, Fdp::TYPE_STRING);
+  AddField(message_proto, "implicit_data", 29, label, Fdp::TYPE_BYTES);
+  AddField(message_proto, "implicit_enum", 30, label, Fdp::TYPE_ENUM)
       ->set_type_name("DummyEnum");
 
   // Build it.

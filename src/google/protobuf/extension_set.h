@@ -90,16 +90,16 @@ class InternalMetadata;
 // #include wire_format_lite.h.  Also, ensures that we use only one byte to
 // store these values, which is important to keep the layout of
 // ExtensionSet::Extension small.
-typedef uint8_t FieldType;
+using FieldType = uint8_t;
 
 // A function which, given an integer value, returns true if the number
 // matches one of the defined values for the corresponding enum type.  This
 // is used with RegisterEnumExtension, below.
-typedef bool EnumValidityFunc(int number);
+using EnumValidityFunc = bool (*)(int number);
 
 // Version of the above which takes an argument.  This is needed to deal with
 // extensions that are not compiled in.
-typedef bool EnumValidityFuncWithArg(const void* arg, int number);
+using EnumValidityFuncWithArg = bool (*)(const void* arg, int number);
 
 // Information about a registered extension.
 struct ExtensionInfo {
@@ -123,7 +123,7 @@ struct ExtensionInfo {
   bool is_packed = false;
 
   struct EnumValidityCheck {
-    EnumValidityFuncWithArg* func;
+    EnumValidityFuncWithArg func;
     const void* arg;
   };
 
@@ -200,7 +200,7 @@ class PROTOBUF_EXPORT ExtensionSet {
                                 LazyEagerVerifyFnType verify_func);
   static void RegisterEnumExtension(const MessageLite* extendee, int number,
                                     FieldType type, bool is_repeated,
-                                    bool is_packed, EnumValidityFunc* is_valid);
+                                    bool is_packed, EnumValidityFunc is_valid);
   static void RegisterMessageExtension(const MessageLite* extendee, int number,
                                        FieldType type, bool is_repeated,
                                        bool is_packed,
@@ -946,8 +946,8 @@ inline void ExtensionSet::AddString(int number, FieldType type,
 //
 //   class TypeTraits {
 //    public:
-//     typedef ? ConstType;
-//     typedef ? MutableType;
+//     using ConstType = ?;
+//     using MutableType = ?;
 //     // TypeTraits for singular fields and repeated fields will define the
 //     // symbol "Singular" or "Repeated" respectively. These two symbols will
 //     // be used in extension accessors to distinguish between singular
@@ -956,8 +956,8 @@ inline void ExtensionSet::AddString(int number, FieldType type,
 //     // user is passing a repeated extension to a singular accessor, or the
 //     // opposite. In that case the C++ compiler will generate an error
 //     // message "no matching member function" to inform the user.
-//     typedef ? Singular
-//     typedef ? Repeated
+//     using Singular = ?;
+//     using Repeated = ?;
 //
 //     static inline ConstType Get(int number, const ExtensionSet& set);
 //     static inline void Set(int number, ConstType value, ExtensionSet* set);
@@ -999,9 +999,9 @@ inline void ExtensionSet::AddString(int number, FieldType type,
 template <typename Type>
 class PrimitiveTypeTraits {
  public:
-  typedef Type ConstType;
-  typedef Type MutableType;
-  typedef PrimitiveTypeTraits<Type> Singular;
+  using ConstType = Type;
+  using MutableType = Type;
+  using Singular = PrimitiveTypeTraits<Type>;
 
   static inline ConstType Get(int number, const ExtensionSet& set,
                               ConstType default_value);
@@ -1021,11 +1021,11 @@ class PrimitiveTypeTraits {
 template <typename Type>
 class RepeatedPrimitiveTypeTraits {
  public:
-  typedef Type ConstType;
-  typedef Type MutableType;
-  typedef RepeatedPrimitiveTypeTraits<Type> Repeated;
+  using ConstType = Type;
+  using MutableType = Type;
+  using Repeated = RepeatedPrimitiveTypeTraits<Type>;
 
-  typedef RepeatedField<Type> RepeatedFieldType;
+  using RepeatedFieldType = RepeatedField<Type>;
 
   static inline Type Get(int number, const ExtensionSet& set, int index);
   static inline const Type* GetPtr(int number, const ExtensionSet& set,
@@ -1147,9 +1147,9 @@ PROTOBUF_DEFINE_PRIMITIVE_TYPE(bool, Bool)
 // Strings support both Set() and Mutable().
 class PROTOBUF_EXPORT StringTypeTraits {
  public:
-  typedef const std::string& ConstType;
-  typedef std::string* MutableType;
-  typedef StringTypeTraits Singular;
+  using ConstType = const std::string&;
+  using MutableType = std::string*;
+  using Singular = StringTypeTraits;
 
   static inline const std::string& Get(int number, const ExtensionSet& set,
                                        ConstType default_value) {
@@ -1177,11 +1177,11 @@ class PROTOBUF_EXPORT StringTypeTraits {
 
 class PROTOBUF_EXPORT RepeatedStringTypeTraits {
  public:
-  typedef const std::string& ConstType;
-  typedef std::string* MutableType;
-  typedef RepeatedStringTypeTraits Repeated;
+  using ConstType = const std::string&;
+  using MutableType = std::string*;
+  using Repeated = RepeatedStringTypeTraits;
 
-  typedef RepeatedPtrField<std::string> RepeatedFieldType;
+  using RepeatedFieldType = RepeatedPtrField<std::string>;
 
   static inline const std::string& Get(int number, const ExtensionSet& set,
                                        int index) {
@@ -1244,9 +1244,9 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
 template <typename Type, bool IsValid(int)>
 class EnumTypeTraits {
  public:
-  typedef Type ConstType;
-  typedef Type MutableType;
-  typedef EnumTypeTraits<Type, IsValid> Singular;
+  using ConstType = Type;
+  using MutableType = Type;
+  using Singular = EnumTypeTraits<Type, IsValid>;
 
   static inline ConstType Get(int number, const ExtensionSet& set,
                               ConstType default_value) {
@@ -1275,11 +1275,11 @@ class EnumTypeTraits {
 template <typename Type, bool IsValid(int)>
 class RepeatedEnumTypeTraits {
  public:
-  typedef Type ConstType;
-  typedef Type MutableType;
-  typedef RepeatedEnumTypeTraits<Type, IsValid> Repeated;
+  using ConstType = Type;
+  using MutableType = Type;
+  using Repeated = RepeatedEnumTypeTraits<Type, IsValid>;
 
-  typedef RepeatedField<Type> RepeatedFieldType;
+  using RepeatedFieldType = RepeatedField<Type>;
 
   static inline ConstType Get(int number, const ExtensionSet& set, int index) {
     return static_cast<Type>(set.GetRepeatedEnum(number, index));
@@ -1349,9 +1349,9 @@ class RepeatedEnumTypeTraits {
 template <typename Type>
 class MessageTypeTraits {
  public:
-  typedef const Type& ConstType;
-  typedef Type* MutableType;
-  typedef MessageTypeTraits<Type> Singular;
+  using ConstType = const Type&;
+  using MutableType = Type*;
+  using Singular = MessageTypeTraits<Type>;
 
   static inline ConstType Get(int number, const ExtensionSet& set,
                               ConstType default_value) {
@@ -1407,11 +1407,11 @@ class RepeatedMessageGenericTypeTraits;
 template <typename Type>
 class RepeatedMessageTypeTraits {
  public:
-  typedef const Type& ConstType;
-  typedef Type* MutableType;
-  typedef RepeatedMessageTypeTraits<Type> Repeated;
+  using ConstType = const Type&;
+  using MutableType = Type*;
+  using Repeated = RepeatedMessageTypeTraits<Type>;
 
-  typedef RepeatedPtrField<Type> RepeatedFieldType;
+  using RepeatedFieldType = RepeatedPtrField<Type>;
 
   static inline ConstType Get(int number, const ExtensionSet& set, int index) {
     return static_cast<const Type&>(set.GetRepeatedMessage(number, index));
@@ -1493,8 +1493,8 @@ template <typename ExtendeeType, typename TypeTraitsType, FieldType field_type,
           bool is_packed>
 class ExtensionIdentifier {
  public:
-  typedef TypeTraitsType TypeTraits;
-  typedef ExtendeeType Extendee;
+  using TypeTraits = TypeTraitsType;
+  using Extendee = ExtendeeType;
 
   ExtensionIdentifier(int number, typename TypeTraits::ConstType default_value,
                       LazyEagerVerifyFnType verify_func = nullptr)

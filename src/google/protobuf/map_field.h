@@ -548,25 +548,25 @@ template <typename Derived, typename Key, typename T,
 class MapField : public TypeDefinedMapFieldBase<Key, T> {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
-  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
-  typedef MapTypeHandler<kValueFieldType, T> ValueTypeHandler;
+  using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;
+  using ValueTypeHandler = MapTypeHandler<kValueFieldType, T>;
 
   // Define message type for internal repeated field.
-  typedef Derived EntryType;
+  using EntryType = Derived;
 
   // Define abbreviation for parent MapFieldLite
-  typedef MapFieldLite<Derived, Key, T, kKeyFieldType, kValueFieldType>
-      MapFieldLiteType;
+  using MapFieldLiteType =
+      MapFieldLite<Derived, Key, T, kKeyFieldType, kValueFieldType>;
 
   // Enum needs to be handled differently from other types because it has
   // different exposed type in Map's api and repeated field's api. For
   // details see the comment in the implementation of
   // SyncMapWithRepeatedFieldNoLock.
   static constexpr bool kIsValueEnum = ValueTypeHandler::kIsEnum;
-  typedef typename MapIf<kIsValueEnum, T, const T&>::type CastValueType;
+  using CastValueType = std::conditional_t<kIsValueEnum, T, const T&>;
 
  public:
-  typedef Map<Key, T> MapType;
+  using MapType = Map<Key, T>;
 
   MapField() : impl_() {}
   MapField(const MapField&) = delete;
@@ -632,8 +632,8 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
  private:
   MapFieldLiteType impl_;
 
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
 
   // Implements MapFieldBase
   void SyncRepeatedFieldWithMapNoLock() const override;
@@ -664,7 +664,7 @@ template <typename T, typename Key, typename Value,
           WireFormatLite::FieldType kValueFieldType>
 struct MapEntryToMapField<
     MapEntry<T, Key, Value, kKeyFieldType, kValueFieldType>> {
-  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType> MapFieldType;
+  using MapFieldType = MapField<T, Key, Value, kKeyFieldType, kValueFieldType>;
 };
 
 class PROTOBUF_EXPORT DynamicMapField

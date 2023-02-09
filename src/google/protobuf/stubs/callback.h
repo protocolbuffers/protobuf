@@ -145,7 +145,7 @@ namespace internal {
 
 class PROTOBUF_EXPORT FunctionClosure0 : public Closure {
  public:
-  typedef void (*FunctionType)();
+  using FunctionType = void (*)();
 
   FunctionClosure0(FunctionType function, bool self_deleting)
     : function_(function), self_deleting_(self_deleting) {}
@@ -165,7 +165,7 @@ class PROTOBUF_EXPORT FunctionClosure0 : public Closure {
 template <typename Class>
 class MethodClosure0 : public Closure {
  public:
-  typedef void (Class::*MethodType)();
+  using MethodType = void (Class::*)();
 
   MethodClosure0(Class* object, MethodType method, bool self_deleting)
     : object_(object), method_(method), self_deleting_(self_deleting) {}
@@ -186,7 +186,7 @@ class MethodClosure0 : public Closure {
 template <typename Arg1>
 class FunctionClosure1 : public Closure {
  public:
-  typedef void (*FunctionType)(Arg1 arg1);
+  using FunctionType = void (*)(Arg1 arg1);
 
   FunctionClosure1(FunctionType function, bool self_deleting,
                    Arg1 arg1)
@@ -209,7 +209,7 @@ class FunctionClosure1 : public Closure {
 template <typename Class, typename Arg1>
 class MethodClosure1 : public Closure {
  public:
-  typedef void (Class::*MethodType)(Arg1 arg1);
+  using MethodType = void (Class::*)(Arg1 arg1);
 
   MethodClosure1(Class* object, MethodType method, bool self_deleting,
                  Arg1 arg1)
@@ -233,7 +233,7 @@ class MethodClosure1 : public Closure {
 template <typename Arg1, typename Arg2>
 class FunctionClosure2 : public Closure {
  public:
-  typedef void (*FunctionType)(Arg1 arg1, Arg2 arg2);
+  void (*)(Arg1 arg1, Arg2 arg2);
 
   FunctionClosure2(FunctionType function, bool self_deleting,
                    Arg1 arg1, Arg2 arg2)
@@ -257,7 +257,7 @@ class FunctionClosure2 : public Closure {
 template <typename Class, typename Arg1, typename Arg2>
 class MethodClosure2 : public Closure {
  public:
-  typedef void (Class::*MethodType)(Arg1 arg1, Arg2 arg2);
+  using MethodType = void (Class::*)(Arg1 arg1, Arg2 arg2);
 
   MethodClosure2(Class* object, MethodType method, bool self_deleting,
                  Arg1 arg1, Arg2 arg2)
@@ -282,7 +282,7 @@ class MethodClosure2 : public Closure {
 template<typename R>
 class FunctionResultCallback_0_0 : public ResultCallback<R> {
  public:
-  typedef R (*FunctionType)();
+  using FunctionType = R (*)();
 
   FunctionResultCallback_0_0(FunctionType function, bool self_deleting)
       : function_(function), self_deleting_(self_deleting) {}
@@ -303,7 +303,7 @@ class FunctionResultCallback_0_0 : public ResultCallback<R> {
 template<typename R, typename P1>
 class FunctionResultCallback_1_0 : public ResultCallback<R> {
  public:
-  typedef R (*FunctionType)(P1);
+  using FunctionType = R (*)(P1);
 
   FunctionResultCallback_1_0(FunctionType function, bool self_deleting,
                              P1 p1)
@@ -326,7 +326,7 @@ class FunctionResultCallback_1_0 : public ResultCallback<R> {
 template<typename R, typename Arg1>
 class FunctionResultCallback_0_1 : public ResultCallback1<R, Arg1> {
  public:
-  typedef R (*FunctionType)(Arg1 arg1);
+  using FunctionType = R (*)(Arg1 arg1);
 
   FunctionResultCallback_0_1(FunctionType function, bool self_deleting)
       : function_(function), self_deleting_(self_deleting) {}
@@ -347,7 +347,7 @@ class FunctionResultCallback_0_1 : public ResultCallback1<R, Arg1> {
 template<typename R, typename P1, typename A1>
 class FunctionResultCallback_1_1 : public ResultCallback1<R, A1> {
  public:
-  typedef R (*FunctionType)(P1, A1);
+  using FunctionType = R (*)(P1, A1);
 
   FunctionResultCallback_1_1(FunctionType function, bool self_deleting,
                              P1 p1)
@@ -369,14 +369,14 @@ class FunctionResultCallback_1_1 : public ResultCallback1<R, A1> {
 
 template <typename T>
 struct InternalConstRef {
-  typedef typename std::remove_reference<T>::type base_type;
-  typedef const base_type& type;
+  using base_type = std::remove_reference_t<T>;
+  using type = const base_type&;
 };
 
 template<typename R, typename T>
 class MethodResultCallback_0_0 : public ResultCallback<R> {
  public:
-  typedef R (T::*MethodType)();
+  using MethodType = R (T::*)();
   MethodResultCallback_0_0(T* object, MethodType method, bool self_deleting)
       : object_(object),
         method_(method),
@@ -400,7 +400,7 @@ template <typename R, typename T, typename P1, typename P2, typename P3,
           typename P4, typename P5, typename P6, typename A1, typename A2>
 class MethodResultCallback_6_2 : public ResultCallback2<R, A1, A2> {
  public:
-  typedef R (T::*MethodType)(P1, P2, P3, P4, P5, P6, A1, A2);
+  using MethodType = R (T::*)(P1, P2, P3, P4, P5, P6, A1, A2);
   MethodResultCallback_6_2(T* object, MethodType method, bool self_deleting,
                            P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
       : object_(object),

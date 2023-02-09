@@ -110,7 +110,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
     return data_ == nullptr ? 0 : static_cast<int>(data_->size());
   }
 
-  typedef void InternalArenaConstructable_;
+  using InternalArenaConstructable_ = void;
 
  private:
   // This std::string is allocated on the heap, but we use a raw pointer so that
@@ -126,7 +126,7 @@ extern ImplicitWeakMessageDefaultType implicit_weak_message_default_instance;
 template <typename ImplicitWeakType>
 class ImplicitWeakTypeHandler {
  public:
-  typedef MessageLite Type;
+  using Type = MessageLite;
   static constexpr bool Moveable = false;
 
   static inline MessageLite* NewFromPrototype(const MessageLite* prototype,
@@ -157,13 +157,13 @@ struct WeakRepeatedPtrField {
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
   ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
 
-  typedef internal::RepeatedPtrIterator<MessageLite> iterator;
-  typedef internal::RepeatedPtrIterator<const MessageLite> const_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<MessageLite*, void*>
-      pointer_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<const MessageLite* const,
-                                                const void* const>
-      const_pointer_iterator;
+  using iterator = internal::RepeatedPtrIterator<MessageLite>;
+  using const_iterator = internal::RepeatedPtrIterator<const MessageLite>;
+  using pointer_iterator =
+      internal::RepeatedPtrOverPtrsIterator<MessageLite*, void*>;
+  using const_pointer_iterator =
+      internal::RepeatedPtrOverPtrsIterator<const MessageLite* const,
+                                            const void* const>;
 
   iterator begin() { return iterator(base().raw_data()); }
   const_iterator begin() const { return iterator(base().raw_data()); }

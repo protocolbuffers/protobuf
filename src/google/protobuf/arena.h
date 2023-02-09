@@ -188,7 +188,7 @@ struct ArenaOptions {
 //   (`args`-only) constructor.
 //
 // - The type T must have a particular type trait: a nested type
-//   |InternalArenaConstructable_|. This is usually a typedef to |void|. If no
+//   |InternalArenaConstructable_|. This is usually an alias to |void|. If no
 //   such type trait exists, then the instantiation CreateMessage<T> will fail
 //   to compile.
 //
@@ -461,11 +461,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     template <typename U>
     static double DestructorSkippable(...);
 
-    typedef std::integral_constant<
-        bool, sizeof(DestructorSkippable<T>(static_cast<const T*>(0))) ==
-                      sizeof(char) ||
-                  std::is_trivially_destructible<T>::value>
-        is_destructor_skippable;
+    using is_destructor_skippable =
+        std::integral_constant<bool,
+                               sizeof(DestructorSkippable<T>(
+                                   static_cast<const T*>(0))) == sizeof(char) ||
+                                   std::is_trivially_destructible<T>::value>;
 
     template <typename U>
     static char ArenaConstructable(
@@ -473,11 +473,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     template <typename U>
     static double ArenaConstructable(...);
 
-    typedef std::integral_constant<bool, sizeof(ArenaConstructable<T>(
-                                             static_cast<const T*>(0))) ==
-                                             sizeof(char)>
-        is_arena_constructable;
-
+    using is_arena_constructable =
+        std::integral_constant<bool,
+                               sizeof(ArenaConstructable<T>(
+                                   static_cast<const T*>(0))) == sizeof(char)>;
 
     template <typename... Args>
     static T* Construct(void* ptr, Args&&... args) {

@@ -50,7 +50,7 @@ namespace protobuf {
 namespace util {
 
 class PROTOBUF_EXPORT FieldMaskUtil {
-  typedef google::protobuf::FieldMask FieldMask;
+  using FieldMask = google::protobuf::FieldMask;
 
  public:
   // Converts FieldMask to/from string, formatted by separating each path

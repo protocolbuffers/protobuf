@@ -116,7 +116,7 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
 
  protected:
   ~RepeatedFieldWrapper() = default;
-  typedef RepeatedField<T> RepeatedFieldType;
+  using RepeatedFieldType = RepeatedField<T>;
   static const RepeatedFieldType* GetRepeatedField(const Field* data) {
     return reinterpret_cast<const RepeatedFieldType*>(data);
   }
@@ -172,7 +172,7 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
 
  protected:
   ~RepeatedPtrFieldWrapper() = default;
-  typedef RepeatedPtrField<T> RepeatedFieldType;
+  using RepeatedFieldType = RepeatedPtrField<T>;
   static const RepeatedFieldType* GetRepeatedField(const Field* data) {
     return reinterpret_cast<const RepeatedFieldType*>(data);
   }
@@ -239,7 +239,7 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
   }
 
  protected:
-  typedef RepeatedPtrField<Message> RepeatedFieldType;
+  using RepeatedFieldType = RepeatedPtrField<Message>;
   static const RepeatedFieldType* GetRepeatedField(const Field* data) {
     return reinterpret_cast<const RepeatedFieldType*>(
         (&reinterpret_cast<const MapFieldBase*>(data)->GetRepeatedField()));
@@ -267,8 +267,8 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
 // Default implementations of RepeatedFieldAccessor for primitive types.
 template <typename T>
 class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
-  typedef void Field;
-  typedef void Value;
+  using Field = void;
+  using Value = void;
   using RepeatedFieldWrapper<T>::MutableRepeatedField;
 
  public:
@@ -296,8 +296,8 @@ class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
 // ctype=STRING.
 class RepeatedPtrFieldStringAccessor final
     : public RepeatedPtrFieldWrapper<std::string> {
-  typedef void Field;
-  typedef void Value;
+  using Field = void;
+  using Value = void;
   using RepeatedFieldAccessor::Add;
 
  public:
@@ -335,8 +335,8 @@ class RepeatedPtrFieldStringAccessor final
 
 class RepeatedPtrFieldMessageAccessor final
     : public RepeatedPtrFieldWrapper<Message> {
-  typedef void Field;
-  typedef void Value;
+  using Field = void;
+  using Value = void;
 
  public:
   RepeatedPtrFieldMessageAccessor() {}

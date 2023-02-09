@@ -65,8 +65,8 @@ struct ArenaDestructor : ArenaHolder<MapType> {
 
 class MapFieldBaseStub : public MapFieldBase {
  public:
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   MapFieldBaseStub() {}
   virtual ~MapFieldBaseStub() { MapFieldBase::Destruct(); }
   explicit MapFieldBaseStub(Arena* arena) : MapFieldBase(arena) {}
@@ -110,10 +110,10 @@ class MapFieldBaseStub : public MapFieldBase {
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
  protected:
-  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
-  typedef MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
-                   WireFormatLite::TYPE_INT32>
-      MapFieldType;
+  using EntryType = unittest::TestMap_MapInt32Int32Entry_DoNotUse;
+  using MapFieldType =
+      MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
+               WireFormatLite::TYPE_INT32>;
 
   MapFieldBasePrimitiveTest()
       : arena_(GetParam() ? new Arena() : nullptr),
@@ -230,10 +230,10 @@ enum State { CLEAN, MAP_DIRTY, REPEATED_DIRTY };
 class MapFieldStateTest
     : public testing::TestWithParam<std::tuple<State, bool>> {
  protected:
-  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
-  typedef MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
-                   WireFormatLite::TYPE_INT32>
-      MapFieldType;
+  using EntryType = unittest::TestMap_MapInt32Int32Entry_DoNotUse;
+  using MapFieldType =
+      MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
+               WireFormatLite::TYPE_INT32>;
   MapFieldStateTest()
       : arena_(std::get<1>(GetParam()) ? new Arena() : nullptr),
         map_field_(arena_.get()),

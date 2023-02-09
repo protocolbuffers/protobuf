@@ -103,8 +103,8 @@ namespace internal {
 // specific override for std::string*.
 template <typename T>
 struct TypeImplementsMergeBehaviorProbeForMergeFrom {
-  typedef char HasMerge;
-  typedef long HasNoMerge;
+  using HasMerge = char;
+  using HasNoMerge = long;
 
   // We accept either of:
   // - void MergeFrom(const T& other)
@@ -123,9 +123,8 @@ struct TypeImplementsMergeBehaviorProbeForMergeFrom {
   static HasNoMerge Check(...);
 
   // Resolves to either std::true_type or std::false_type.
-  typedef std::integral_constant<bool,
-                                 (sizeof(Check<T>(0)) == sizeof(HasMerge))>
-      type;
+  using type =
+      std::integral_constant<bool, sizeof(Check<T>(0)) == sizeof(HasMerge)>;
 };
 
 template <typename T, typename = void>
@@ -135,7 +134,7 @@ struct TypeImplementsMergeBehavior
 
 template <>
 struct TypeImplementsMergeBehavior<std::string> {
-  typedef std::true_type type;
+  using type = std::true_type;
 };
 
 template <typename T>
@@ -150,7 +149,7 @@ struct IsMovable
 // but may have a template argument called TypeHandler.  Its signature is:
 //   class TypeHandler {
 //    public:
-//     typedef MyType Type;
+//     using Type = MyType;
 //     static Type* New();
 //     static Type* NewFromPrototype(const Type* prototype,
 //                                       Arena* arena);
@@ -794,7 +793,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 template <typename GenericType>
 class GenericTypeHandler {
  public:
-  typedef GenericType Type;
+  using Type = GenericType;
   using Movable = IsMovable<GenericType>;
 
   static inline GenericType* New(Arena* arena) {
@@ -868,7 +867,7 @@ PROTOBUF_EXPORT Arena* GenericTypeHandler<Message>::GetOwningArena(
 
 class StringTypeHandler {
  public:
-  typedef std::string Type;
+  using Type = std::string;
   using Movable = IsMovable<Type>;
 
   static PROTOBUF_NOINLINE std::string* New(Arena* arena) {
@@ -1017,15 +1016,15 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   void SwapElements(int index1, int index2);
 
   // STL-like iterator support
-  typedef internal::RepeatedPtrIterator<Element> iterator;
-  typedef internal::RepeatedPtrIterator<const Element> const_iterator;
-  typedef Element value_type;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
-  typedef value_type* pointer;
-  typedef const value_type* const_pointer;
-  typedef int size_type;
-  typedef ptrdiff_t difference_type;
+  using iterator = internal::RepeatedPtrIterator<Element>;
+  using const_iterator = internal::RepeatedPtrIterator<const Element>;
+  using value_type = Element;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
+  using size_type = int;
+  using difference_type = ptrdiff_t;
 
   iterator begin();
   const_iterator begin() const;
@@ -1035,8 +1034,8 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   const_iterator cend() const;
 
   // Reverse iterator support
-  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-  typedef std::reverse_iterator<iterator> reverse_iterator;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
   reverse_iterator rbegin() { return reverse_iterator(end()); }
   const_reverse_iterator rbegin() const {
     return const_reverse_iterator(end());
@@ -1048,11 +1047,11 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   // Custom STL-like iterator that iterates over and returns the underlying
   // pointers to Element rather than Element itself.
-  typedef internal::RepeatedPtrOverPtrsIterator<Element*, void*>
-      pointer_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<const Element* const,
-                                                const void* const>
-      const_pointer_iterator;
+  using pointer_iterator =
+      internal::RepeatedPtrOverPtrsIterator<Element*, void*>;
+  using const_pointer_iterator =
+      internal::RepeatedPtrOverPtrsIterator<const Element* const,
+                                            const void* const>;
   pointer_iterator pointer_begin();
   const_pointer_iterator pointer_begin() const;
   pointer_iterator pointer_end();
@@ -1221,7 +1220,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   template <typename T>
   friend struct WeakRepeatedPtrField;
 
-  typedef void InternalArenaConstructable_;
+  using InternalArenaConstructable_ = void;
 
 };
 

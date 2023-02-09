@@ -68,21 +68,21 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
 template <typename T>
 class RepeatedFieldRef<
     T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
-  typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
-  typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
+  using IteratorType = typename internal::RefTypeTraits<T>::iterator;
+  using AccessorType = typename internal::RefTypeTraits<T>::AccessorType;
 
  public:
   bool empty() const { return accessor_->IsEmpty(data_); }
   int size() const { return accessor_->Size(data_); }
   T Get(int index) const { return accessor_->template Get<T>(data_, index); }
 
-  typedef IteratorType iterator;
-  typedef IteratorType const_iterator;
-  typedef T value_type;
-  typedef T& reference;
-  typedef const T& const_reference;
-  typedef int size_type;
-  typedef ptrdiff_t difference_type;
+  using iterator = IteratorType;
+  using const_iterator = IteratorType;
+  using value_type = T;
+  using reference = T&;
+  using const_reference = const T&;
+  using size_type = int;
+  using difference_type = ptrdiff_t;
 
   iterator begin() const { return iterator(data_, accessor_, true); }
   iterator end() const { return iterator(data_, accessor_, false); }
@@ -105,7 +105,7 @@ class RepeatedFieldRef<
 template <typename T>
 class MutableRepeatedFieldRef<
     T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
-  typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
+  using AccessorType = typename internal::RefTypeTraits<T>::AccessorType;
 
  public:
   bool empty() const { return accessor_->IsEmpty(data_); }
@@ -128,7 +128,7 @@ class MutableRepeatedFieldRef<
 
   template <typename Container>
   void MergeFrom(const Container& container) const {
-    typedef typename Container::const_iterator Iterator;
+    using Iterator = typename Container::const_iterator;
     for (Iterator it = container.begin(); it != container.end(); ++it) {
       Add(*it);
     }
@@ -156,8 +156,8 @@ class MutableRepeatedFieldRef<
 template <typename T>
 class RepeatedFieldRef<
     T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
-  typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
-  typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
+  using IteratorType = typename internal::RefTypeTraits<T>::iterator;
+  using AccessorType = typename internal::RefTypeTraits<T>::AccessorType;
 
  public:
   bool empty() const { return accessor_->IsEmpty(data_); }
@@ -178,13 +178,13 @@ class RepeatedFieldRef<
   // repeated field. Caller takes ownership of the returned object.
   T* NewMessage() const { return static_cast<T*>(default_instance_->New()); }
 
-  typedef IteratorType iterator;
-  typedef IteratorType const_iterator;
-  typedef T value_type;
-  typedef T& reference;
-  typedef const T& const_reference;
-  typedef int size_type;
-  typedef ptrdiff_t difference_type;
+  using iterator = IteratorType;
+  using const_iterator = IteratorType;
+  using value_type = T;
+  using reference = T&;
+  using const_reference = const T&;
+  using size_type = int;
+  using difference_type = ptrdiff_t;
 
   iterator begin() const {
     return iterator(data_, accessor_, true, NewMessage());
@@ -216,7 +216,7 @@ class RepeatedFieldRef<
 template <typename T>
 class MutableRepeatedFieldRef<
     T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
-  typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
+  using AccessorType = typename internal::RefTypeTraits<T>::AccessorType;
 
  public:
   bool empty() const { return accessor_->IsEmpty(data_); }
@@ -245,7 +245,7 @@ class MutableRepeatedFieldRef<
 
   template <typename Container>
   void MergeFrom(const Container& container) const {
-    typedef typename Container::const_iterator Iterator;
+    using Iterator = typename Container::const_iterator;
     for (Iterator it = container.begin(); it != container.end(); ++it) {
       Add(*it);
     }
@@ -298,13 +298,13 @@ namespace internal {
 // Note that for enums we use int32_t in the interface.
 //
 // You can map from T to the actual type using RefTypeTraits:
-//   typedef RefTypeTraits<T>::AccessorValueType ActualType;
+//   using ActualType = RefTypeTraits<T>::AccessorValueType;
 class PROTOBUF_EXPORT RepeatedFieldAccessor {
  public:
   // Typedefs for clarity.
-  typedef void Field;
-  typedef void Value;
-  typedef void Iterator;
+  using Field = void;
+  using Value = void;
+  using Iterator = void;
 
   virtual bool IsEmpty(const Field* data) const = 0;
   virtual int Size(const Field* data) const = 0;
@@ -349,7 +349,7 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
   // types.
   template <typename T>
   T Get(const Field* data, int index) const {
-    typedef typename RefTypeTraits<T>::AccessorValueType ActualType;
+    using ActualType = typename RefTypeTraits<T>::AccessorValueType;
     ActualType scratch_space;
     return static_cast<T>(*reinterpret_cast<const ActualType*>(
         Get(data, index, static_cast<Value*>(&scratch_space))));
@@ -357,7 +357,7 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
 
   template <typename T, typename ValueType>
   void Set(Field* data, int index, const ValueType& value) const {
-    typedef typename RefTypeTraits<T>::AccessorValueType ActualType;
+    using ActualType = typename RefTypeTraits<T>::AccessorValueType;
     // In this RepeatedFieldAccessor interface we pass/return data using
     // raw pointers. Type of the data these raw pointers point to should
     // be ActualType. Here we have a ValueType object and want a ActualType
@@ -371,7 +371,7 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
 
   template <typename T, typename ValueType>
   void Add(Field* data, const ValueType& value) const {
-    typedef typename RefTypeTraits<T>::AccessorValueType ActualType;
+    using ActualType = typename RefTypeTraits<T>::AccessorValueType;
     // In this RepeatedFieldAccessor interface we pass/return data using
     // raw pointers. Type of the data these raw pointers point to should
     // be ActualType. Here we have a ValueType object and want a ActualType
@@ -394,9 +394,9 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
 // Implement (Mutable)RepeatedFieldRef::iterator
 template <typename T>
 class RepeatedFieldRefIterator {
-  typedef typename RefTypeTraits<T>::AccessorValueType AccessorValueType;
-  typedef typename RefTypeTraits<T>::IteratorValueType IteratorValueType;
-  typedef typename RefTypeTraits<T>::IteratorPointerType IteratorPointerType;
+  using AccessorValueType = typename RefTypeTraits<T>::AccessorValueType;
+  using IteratorValueType = typename RefTypeTraits<T>::IteratorValueType;
+  using IteratorPointerType = typename RefTypeTraits<T>::IteratorPointerType;
 
  public:
   using iterator_category = std::forward_iterator_tag;
@@ -498,11 +498,11 @@ DEFINE_PRIMITIVE(BOOL, bool)
 template <typename T>
 struct RefTypeTraits<
     T, typename std::enable_if<PrimitiveTraits<T>::is_primitive>::type> {
-  typedef RepeatedFieldRefIterator<T> iterator;
-  typedef RepeatedFieldAccessor AccessorType;
-  typedef T AccessorValueType;
-  typedef T IteratorValueType;
-  typedef T* IteratorPointerType;
+  using iterator = RepeatedFieldRefIterator<T>;
+  using AccessorType = RepeatedFieldAccessor;
+  using AccessorValueType = T;
+  using IteratorValueType = T;
+  using IteratorPointerType = T*;
   static constexpr FieldDescriptor::CppType cpp_type =
       PrimitiveTraits<T>::cpp_type;
   static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
@@ -511,12 +511,12 @@ struct RefTypeTraits<
 template <typename T>
 struct RefTypeTraits<
     T, typename std::enable_if<is_proto_enum<T>::value>::type> {
-  typedef RepeatedFieldRefIterator<T> iterator;
-  typedef RepeatedFieldAccessor AccessorType;
+  using iterator = RepeatedFieldRefIterator<T>;
+  using AccessorType = RepeatedFieldAccessor;
   // We use int32_t for repeated enums in RepeatedFieldAccessor.
-  typedef int32_t AccessorValueType;
-  typedef T IteratorValueType;
-  typedef int32_t* IteratorPointerType;
+  using AccessorValueType = int32_t;
+  using IteratorValueType = T;
+  using IteratorPointerType = int32_t*;
   static constexpr FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_ENUM;
   static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
@@ -525,11 +525,11 @@ struct RefTypeTraits<
 template <typename T>
 struct RefTypeTraits<
     T, typename std::enable_if<std::is_same<std::string, T>::value>::type> {
-  typedef RepeatedFieldRefIterator<T> iterator;
-  typedef RepeatedFieldAccessor AccessorType;
-  typedef std::string AccessorValueType;
-  typedef const std::string IteratorValueType;
-  typedef const std::string* IteratorPointerType;
+  using iterator = RepeatedFieldRefIterator<T>;
+  using AccessorType = RepeatedFieldAccessor;
+  using AccessorValueType = std::string;
+  using IteratorValueType = const std::string;
+  using IteratorPointerType = const std::string*;
   static constexpr FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_STRING;
   static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
@@ -549,11 +549,11 @@ struct MessageDescriptorGetter<Message> {
 template <typename T>
 struct RefTypeTraits<
     T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
-  typedef RepeatedFieldRefIterator<T> iterator;
-  typedef RepeatedFieldAccessor AccessorType;
-  typedef Message AccessorValueType;
-  typedef const T& IteratorValueType;
-  typedef const T* IteratorPointerType;
+  using iterator = RepeatedFieldRefIterator<T>;
+  using AccessorType = RepeatedFieldAccessor;
+  using AccessorValueType = Message;
+  using IteratorValueType = const T&;
+  using IteratorPointerType = const T*;
   static constexpr FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_MESSAGE;
   static const Descriptor* GetMessageFieldDescriptor() {

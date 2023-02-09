@@ -62,7 +62,7 @@ class Tokenizer;
 // of bytes before a given byte, except that a tab character advances to
 // the next multiple of 8 bytes.  Note in particular that column numbers
 // are zero-based, while many user interfaces use one-based column numbers.
-typedef int ColumnNumber;
+using ColumnNumber = int;
 
 // Abstract interface for an object which collects the errors that occur
 // during parsing.  A typical implementation might simply print the errors

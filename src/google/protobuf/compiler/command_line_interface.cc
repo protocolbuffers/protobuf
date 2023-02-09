@@ -2687,7 +2687,7 @@ namespace {
 // parameter will contain the direct children (when groups are ignored in the
 // tree) of the given descriptor for the caller to traverse. The declaration
 // order of the nested messages is also preserved.
-typedef std::pair<int, int> FieldRange;
+using FieldRange = std::pair<int, int>;
 void GatherOccupiedFieldRanges(
     const Descriptor* descriptor, absl::btree_set<FieldRange>* ranges,
     std::vector<const Descriptor*>* nested_messages) {

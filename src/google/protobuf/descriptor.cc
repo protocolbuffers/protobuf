@@ -7031,7 +7031,7 @@ void DescriptorBuilder::ValidateMessageOptions(Descriptor* message,
   }
 }
 
-
+extern const char* enforce_utf8_white_list[];
 void DescriptorBuilder::ValidateFieldOptions(
     FieldDescriptor* field, const FieldDescriptorProto& proto) {
   if (pool_->lazily_build_dependencies_ && (!field || !field->message_type())) {

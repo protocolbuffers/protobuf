@@ -137,10 +137,6 @@ inline bool IsOneofPresent(const void* base, uint32_t offset, uint32_t tag) {
   return *oneof == tag >> 3;
 }
 
-typedef void (*SpecialSerializer)(const uint8_t* base, uint32_t offset,
-                                  uint32_t tag, uint32_t has_offset,
-                                  io::CodedOutputStream* output);
-
 PROTOBUF_EXPORT void ExtensionSerializer(const MessageLite* extendee,
                                          const uint8_t* ptr, uint32_t offset,
                                          uint32_t tag, uint32_t has_offset,

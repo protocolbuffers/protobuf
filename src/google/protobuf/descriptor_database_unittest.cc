@@ -86,9 +86,6 @@ class DescriptorDatabaseTestCase {
   virtual bool AddToDatabase(const FileDescriptorProto& file) = 0;
 };
 
-// Factory function type.
-typedef DescriptorDatabaseTestCase* DescriptorDatabaseTestCaseFactory();
-
 // Specialization for SimpleDescriptorDatabase.
 class SimpleDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
  public:
@@ -150,7 +147,7 @@ class DescriptorPoolDatabaseTestCase : public DescriptorDatabaseTestCase {
 // -------------------------------------------------------------------
 
 class DescriptorDatabaseTest
-    : public testing::TestWithParam<DescriptorDatabaseTestCaseFactory*> {
+    : public testing::TestWithParam<DescriptorDatabaseTestCase* (*)()> {
  protected:
   virtual void SetUp() {
     test_case_.reset(GetParam()());

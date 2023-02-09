@@ -103,14 +103,15 @@ class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
   ~MapEntry() override {
     Message::_internal_metadata_.template Delete<UnknownFieldSet>();
   }
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
 
-  typedef typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
-                                kValueFieldType>::KeyTypeHandler KeyTypeHandler;
-  typedef
+  using KeyTypeHandler =
       typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
-                            kValueFieldType>::ValueTypeHandler ValueTypeHandler;
+                            kValueFieldType>::KeyTypeHandler;
+  using ValueTypeHandler =
+      typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
+                            kValueFieldType>::ValueTypeHandler;
   size_t SpaceUsedLong() const override {
     size_t size = sizeof(Derived);
     size += KeyTypeHandler::SpaceUsedInMapEntryLong(this->key_);

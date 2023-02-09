@@ -63,10 +63,10 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType value_wire_type>
 class MapFieldLite {
   // Define message type for internal repeated field.
-  typedef Derived EntryType;
+  using EntryType = Derived;
 
  public:
-  typedef Map<Key, T> MapType;
+  using MapType = Map<Key, T>;
 
   constexpr MapFieldLite() : map_() {}
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
@@ -125,7 +125,7 @@ class MapFieldLite {
   }
 
  private:
-  typedef void DestructorSkippable_;
+  using DestructorSkippable_ = void;
 
   // map_ is inside an anonymous union so we can explicitly control its
   // destruction
@@ -184,10 +184,9 @@ template <typename T, typename Key, typename Value,
           WireFormatLite::FieldType kValueFieldType>
 struct MapEntryToMapField<
     MapEntryLite<T, Key, Value, kKeyFieldType, kValueFieldType>> {
-  typedef MapFieldLite<
-      MapEntryLite<T, Key, Value, kKeyFieldType, kValueFieldType>, Key, Value,
-      kKeyFieldType, kValueFieldType>
-      MapFieldType;
+  using MapFieldType =
+      MapFieldLite<MapEntryLite<T, Key, Value, kKeyFieldType, kValueFieldType>,
+                   Key, Value, kKeyFieldType, kValueFieldType>;
 };
 
 #ifndef NDEBUG

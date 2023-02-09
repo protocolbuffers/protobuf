@@ -57,8 +57,9 @@ std::string GetTypeUrl(absl::string_view message_name,
 
 // Helper class used to implement google::protobuf::Any.
 class PROTOBUF_EXPORT AnyMetadata {
-  typedef ArenaStringPtr UrlType;
-  typedef ArenaStringPtr ValueType;
+  using UrlType = ArenaStringPtr;
+  using ValueType = ArenaStringPtr;
+
  public:
   // AnyMetadata does not take ownership of "type_url" and "value".
   constexpr AnyMetadata(UrlType* type_url, ValueType* value)

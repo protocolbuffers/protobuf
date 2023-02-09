@@ -371,8 +371,8 @@ class PROTOBUF_EXPORT InlinedStringField {
 
   // When constructed in an Arena, we want our destructor to be skipped.
   friend class ::google::protobuf::Arena;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
 };
 
 inline std::string* InlinedStringField::get_mutable() {
