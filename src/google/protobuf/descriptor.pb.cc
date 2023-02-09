@@ -184,8 +184,10 @@ PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(
 
   , /*decltype(_impl_.proto3_optional_)*/ false
 
-  , /*decltype(_impl_.label_)*/1
-  , /*decltype(_impl_.type_)*/1} {}
+  , /*decltype(_impl_.label_)*/ 1
+
+  , /*decltype(_impl_.type_)*/ 1
+} {}
 struct FieldDescriptorProtoDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldDescriptorProtoDefaultTypeInternal() {}
@@ -389,7 +391,8 @@ PROTOBUF_CONSTEXPR FileOptions::FileOptions(
 
   , /*decltype(_impl_.deprecated_)*/ false
 
-  , /*decltype(_impl_.optimize_for_)*/1
+  , /*decltype(_impl_.optimize_for_)*/ 1
+
   , /*decltype(_impl_.cc_enable_arenas_)*/ true
 } {}
 struct FileOptionsDefaultTypeInternal {
@@ -434,8 +437,10 @@ PROTOBUF_CONSTEXPR FieldOptions::FieldOptions(
   , /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.uninterpreted_option_)*/{}
-  , /*decltype(_impl_.ctype_)*/0
-  , /*decltype(_impl_.jstype_)*/0
+  , /*decltype(_impl_.ctype_)*/ 0
+
+  , /*decltype(_impl_.jstype_)*/ 0
+
   , /*decltype(_impl_.packed_)*/ false
 
   , /*decltype(_impl_.lazy_)*/ false
@@ -448,8 +453,10 @@ PROTOBUF_CONSTEXPR FieldOptions::FieldOptions(
 
   , /*decltype(_impl_.debug_redact_)*/ false
 
-  , /*decltype(_impl_.retention_)*/0
-  , /*decltype(_impl_.target_)*/0} {}
+  , /*decltype(_impl_.retention_)*/ 0
+
+  , /*decltype(_impl_.target_)*/ 0
+} {}
 struct FieldOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldOptionsDefaultTypeInternal() {}
@@ -541,7 +548,8 @@ PROTOBUF_CONSTEXPR MethodOptions::MethodOptions(
   , /*decltype(_impl_.uninterpreted_option_)*/{}
   , /*decltype(_impl_.deprecated_)*/ false
 
-  , /*decltype(_impl_.idempotency_level_)*/0} {}
+  , /*decltype(_impl_.idempotency_level_)*/ 0
+} {}
 struct MethodOptionsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MethodOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MethodOptionsDefaultTypeInternal() {}
@@ -663,7 +671,8 @@ PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
 
   , /*decltype(_impl_.end_)*/ 0
 
-  , /*decltype(_impl_.semantic_)*/0} {}
+  , /*decltype(_impl_.semantic_)*/ 0
+} {}
 struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
   PROTOBUF_CONSTEXPR GeneratedCodeInfo_AnnotationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~GeneratedCodeInfo_AnnotationDefaultTypeInternal() {}
@@ -4033,8 +4042,10 @@ FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
 
     , decltype(_impl_.proto3_optional_) {}
 
-    , decltype(_impl_.label_){}
-    , decltype(_impl_.type_){}};
+    , decltype(_impl_.label_) {}
+
+    , decltype(_impl_.type_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -4103,8 +4114,10 @@ inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.proto3_optional_) { false }
 
-    , decltype(_impl_.label_){1}
-    , decltype(_impl_.type_){1}
+    , decltype(_impl_.label_) { 1 }
+
+    , decltype(_impl_.type_) { 1 }
+
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -4390,14 +4403,14 @@ failure:
   if (cached_has_bits & 0x00000200u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      4, this->_internal_label(), target);
+        4, this->_internal_label(), target);
   }
 
   // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
   if (cached_has_bits & 0x00000400u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      5, this->_internal_type(), target);
+        5, this->_internal_type(), target);
   }
 
   // optional string type_name = 6;
@@ -4522,13 +4535,13 @@ failure:
     // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
     if (cached_has_bits & 0x00000200u) {
       total_size += 1 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_label());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_label());
     }
 
     // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
     if (cached_has_bits & 0x00000400u) {
       total_size += 1 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_type());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_type());
     }
 
   }
@@ -6716,7 +6729,8 @@ FileOptions::FileOptions(const FileOptions& from)
 
     , decltype(_impl_.deprecated_) {}
 
-    , decltype(_impl_.optimize_for_){}
+    , decltype(_impl_.optimize_for_) {}
+
     , decltype(_impl_.cc_enable_arenas_) {}
   };
 
@@ -6841,7 +6855,8 @@ inline void FileOptions::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.deprecated_) { false }
 
-    , decltype(_impl_.optimize_for_){1}
+    , decltype(_impl_.optimize_for_) { 1 }
+
     , decltype(_impl_.cc_enable_arenas_) { true }
 
   };
@@ -7286,7 +7301,7 @@ failure:
   if (cached_has_bits & 0x00040000u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      9, this->_internal_optimize_for(), target);
+        9, this->_internal_optimize_for(), target);
   }
 
   // optional bool java_multiple_files = 10 [default = false];
@@ -7562,7 +7577,7 @@ failure:
     // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
     if (cached_has_bits & 0x00040000u) {
       total_size += 1 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_optimize_for());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_optimize_for());
     }
 
     // optional bool cc_enable_arenas = 31 [default = true];
@@ -8171,8 +8186,10 @@ FieldOptions::FieldOptions(const FieldOptions& from)
     , decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
-    , decltype(_impl_.ctype_){}
-    , decltype(_impl_.jstype_){}
+    , decltype(_impl_.ctype_) {}
+
+    , decltype(_impl_.jstype_) {}
+
     , decltype(_impl_.packed_) {}
 
     , decltype(_impl_.lazy_) {}
@@ -8185,8 +8202,10 @@ FieldOptions::FieldOptions(const FieldOptions& from)
 
     , decltype(_impl_.debug_redact_) {}
 
-    , decltype(_impl_.retention_){}
-    , decltype(_impl_.target_){}};
+    , decltype(_impl_.retention_) {}
+
+    , decltype(_impl_.target_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
@@ -8203,8 +8222,10 @@ inline void FieldOptions::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.uninterpreted_option_){arena}
-    , decltype(_impl_.ctype_){0}
-    , decltype(_impl_.jstype_){0}
+    , decltype(_impl_.ctype_) { 0 }
+
+    , decltype(_impl_.jstype_) { 0 }
+
     , decltype(_impl_.packed_) { false }
 
     , decltype(_impl_.lazy_) { false }
@@ -8217,8 +8238,10 @@ inline void FieldOptions::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.debug_redact_) { false }
 
-    , decltype(_impl_.retention_){0}
-    , decltype(_impl_.target_){0}
+    , decltype(_impl_.retention_) { 0 }
+
+    , decltype(_impl_.target_) { 0 }
+
   };
 }
 
@@ -8441,7 +8464,7 @@ failure:
   if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      1, this->_internal_ctype(), target);
+        1, this->_internal_ctype(), target);
   }
 
   // optional bool packed = 2;
@@ -8469,7 +8492,7 @@ failure:
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      6, this->_internal_jstype(), target);
+        6, this->_internal_jstype(), target);
   }
 
   // optional bool weak = 10 [default = false];
@@ -8497,14 +8520,14 @@ failure:
   if (cached_has_bits & 0x00000100u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      17, this->_internal_retention(), target);
+        17, this->_internal_retention(), target);
   }
 
   // optional .google.protobuf.FieldOptions.OptionTargetType target = 18;
   if (cached_has_bits & 0x00000200u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      18, this->_internal_target(), target);
+        18, this->_internal_target(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -8549,13 +8572,13 @@ failure:
     // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_ctype());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_ctype());
     }
 
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
     if (cached_has_bits & 0x00000002u) {
       total_size += 1 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_jstype());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_jstype());
     }
 
     // optional bool packed = 2;
@@ -8593,13 +8616,13 @@ failure:
     // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
     if (cached_has_bits & 0x00000100u) {
       total_size += 2 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_retention());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_retention());
     }
 
     // optional .google.protobuf.FieldOptions.OptionTargetType target = 18;
     if (cached_has_bits & 0x00000200u) {
       total_size += 2 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_target());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_target());
     }
 
   }
@@ -9772,7 +9795,8 @@ MethodOptions::MethodOptions(const MethodOptions& from)
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
     , decltype(_impl_.deprecated_) {}
 
-    , decltype(_impl_.idempotency_level_){}};
+    , decltype(_impl_.idempotency_level_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
@@ -9791,7 +9815,8 @@ inline void MethodOptions::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.uninterpreted_option_){arena}
     , decltype(_impl_.deprecated_) { false }
 
-    , decltype(_impl_.idempotency_level_){0}
+    , decltype(_impl_.idempotency_level_) { 0 }
+
   };
 }
 
@@ -9924,7 +9949,7 @@ failure:
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      34, this->_internal_idempotency_level(), target);
+        34, this->_internal_idempotency_level(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9974,7 +9999,7 @@ failure:
     // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
     if (cached_has_bits & 0x00000002u) {
       total_size += 2 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_idempotency_level());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_idempotency_level());
     }
 
   }
@@ -11422,7 +11447,8 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeIn
 
     , decltype(_impl_.end_) {}
 
-    , decltype(_impl_.semantic_){}};
+    , decltype(_impl_.semantic_) {}
+  };
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.source_file_.InitDefault();
@@ -11452,7 +11478,8 @@ inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* arena) {
 
     , decltype(_impl_.end_) { 0 }
 
-    , decltype(_impl_.semantic_){0}
+    , decltype(_impl_.semantic_) { 0 }
+
   };
   _impl_.source_file_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -11631,7 +11658,7 @@ failure:
   if (cached_has_bits & 0x00000008u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      5, this->_internal_semantic(), target);
+        5, this->_internal_semantic(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -11686,7 +11713,7 @@ failure:
     // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
     if (cached_has_bits & 0x00000008u) {
       total_size += 1 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_semantic());
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_semantic());
     }
 
   }

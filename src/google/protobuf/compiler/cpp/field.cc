@@ -39,10 +39,8 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -50,6 +48,7 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/tracker.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -172,17 +171,9 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
     }
   }
 
-  if (field->real_containing_oneof()) {
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return MakeOneofMessageGenerator(field, options, scc);
-      case FieldDescriptor::CPPTYPE_STRING:
-        return MakeSinguarStringGenerator(field, options, scc);
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return MakeOneofEnumGenerator(field, options, scc);
-      default:
-        return MakeSinguarPrimitiveGenerator(field, options, scc);
-    }
+  if (field->real_containing_oneof() &&
+      field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    return MakeOneofMessageGenerator(field, options, scc);
   }
 
   switch (field->cpp_type()) {

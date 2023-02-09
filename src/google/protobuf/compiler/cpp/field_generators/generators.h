@@ -67,10 +67,6 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
-std::unique_ptr<FieldGeneratorBase> MakeOneofEnumGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc);
-
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);

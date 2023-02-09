@@ -2439,18 +2439,22 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   void clear_label() ;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label label() const;
   void set_label(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label _internal_label() const;
   void _internal_set_label(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label value);
+
   public:
   // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
   bool has_type() const;
   void clear_type() ;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type type() const;
   void set_type(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type _internal_type() const;
   void _internal_set_type(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldDescriptorProto)
  private:
@@ -4225,9 +4229,11 @@ class PROTOBUF_EXPORT FileOptions final :
   void clear_optimize_for() ;
   ::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode optimize_for() const;
   void set_optimize_for(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode _internal_optimize_for() const;
   void _internal_set_optimize_for(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode value);
+
   public:
   // optional bool cc_enable_arenas = 31 [default = true];
   bool has_cc_enable_arenas() const;
@@ -5063,18 +5069,22 @@ class PROTOBUF_EXPORT FieldOptions final :
   void clear_ctype() ;
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_CType ctype() const;
   void set_ctype(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_CType _internal_ctype() const;
   void _internal_set_ctype(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType value);
+
   public:
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
   bool has_jstype() const;
   void clear_jstype() ;
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType jstype() const;
   void set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType _internal_jstype() const;
   void _internal_set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value);
+
   public:
   // optional bool packed = 2;
   bool has_packed() const;
@@ -5147,18 +5157,22 @@ class PROTOBUF_EXPORT FieldOptions final :
   void clear_retention() ;
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention retention() const;
   void set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention _internal_retention() const;
   void _internal_set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value);
+
   public:
   // optional .google.protobuf.FieldOptions.OptionTargetType target = 18;
   bool has_target() const;
   void clear_target() ;
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType target() const;
   void set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType _internal_target() const;
   void _internal_set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
+
   public:
   template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
@@ -6853,9 +6867,11 @@ class PROTOBUF_EXPORT MethodOptions final :
   void clear_idempotency_level() ;
   ::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel idempotency_level() const;
   void set_idempotency_level(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel _internal_idempotency_level() const;
   void _internal_set_idempotency_level(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel value);
+
   public:
   template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
@@ -8134,9 +8150,11 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   void clear_semantic() ;
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic semantic() const;
   void set_semantic(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic value);
+
   private:
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic _internal_semantic() const;
   void _internal_set_semantic(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic value);
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo.Annotation)
  private:
@@ -9999,21 +10017,21 @@ inline void FieldDescriptorProto::clear_label() {
   _impl_.label_ = 1;
   _impl_._has_bits_[0] &= ~0x00000200u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label FieldDescriptorProto::_internal_label() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label >(_impl_.label_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label FieldDescriptorProto::label() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.label)
   return _internal_label();
+}
+inline void FieldDescriptorProto::set_label(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label value) {
+   _internal_set_label(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.label)
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label FieldDescriptorProto::_internal_label() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label>(_impl_.label_);
 }
 inline void FieldDescriptorProto::_internal_set_label(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label value) {
   assert(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.label_ = value;
-}
-inline void FieldDescriptorProto::set_label(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label value) {
-  _internal_set_label(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.label)
 }
 
 // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
@@ -10025,21 +10043,21 @@ inline void FieldDescriptorProto::clear_type() {
   _impl_.type_ = 1;
   _impl_._has_bits_[0] &= ~0x00000400u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type FieldDescriptorProto::_internal_type() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type >(_impl_.type_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type FieldDescriptorProto::type() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.type)
   return _internal_type();
+}
+inline void FieldDescriptorProto::set_type(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type value) {
+   _internal_set_type(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.type)
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type FieldDescriptorProto::_internal_type() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type>(_impl_.type_);
 }
 inline void FieldDescriptorProto::_internal_set_type(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type value) {
   assert(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000400u;
   _impl_.type_ = value;
-}
-inline void FieldDescriptorProto::set_type(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type value) {
-  _internal_set_type(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.type)
 }
 
 // optional string type_name = 6;
@@ -11896,21 +11914,21 @@ inline void FileOptions::clear_optimize_for() {
   _impl_.optimize_for_ = 1;
   _impl_._has_bits_[0] &= ~0x00040000u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode FileOptions::_internal_optimize_for() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode >(_impl_.optimize_for_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode FileOptions::optimize_for() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.optimize_for)
   return _internal_optimize_for();
+}
+inline void FileOptions::set_optimize_for(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode value) {
+   _internal_set_optimize_for(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.optimize_for)
+}
+inline ::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode FileOptions::_internal_optimize_for() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode>(_impl_.optimize_for_);
 }
 inline void FileOptions::_internal_set_optimize_for(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode value) {
   assert(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode_IsValid(value));
   _impl_._has_bits_[0] |= 0x00040000u;
   _impl_.optimize_for_ = value;
-}
-inline void FileOptions::set_optimize_for(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode value) {
-  _internal_set_optimize_for(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.optimize_for)
 }
 
 // optional string go_package = 11;
@@ -12805,21 +12823,21 @@ inline void FieldOptions::clear_ctype() {
   _impl_.ctype_ = 0;
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_CType FieldOptions::_internal_ctype() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::FieldOptions_CType >(_impl_.ctype_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_CType FieldOptions::ctype() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.ctype)
   return _internal_ctype();
+}
+inline void FieldOptions::set_ctype(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType value) {
+   _internal_set_ctype(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.ctype)
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_CType FieldOptions::_internal_ctype() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::FieldOptions_CType>(_impl_.ctype_);
 }
 inline void FieldOptions::_internal_set_ctype(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType value) {
   assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.ctype_ = value;
-}
-inline void FieldOptions::set_ctype(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType value) {
-  _internal_set_ctype(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.ctype)
 }
 
 // optional bool packed = 2;
@@ -12856,21 +12874,21 @@ inline void FieldOptions::clear_jstype() {
   _impl_.jstype_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType FieldOptions::_internal_jstype() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType >(_impl_.jstype_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType FieldOptions::jstype() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.jstype)
   return _internal_jstype();
+}
+inline void FieldOptions::set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value) {
+   _internal_set_jstype(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.jstype)
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType FieldOptions::_internal_jstype() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType>(_impl_.jstype_);
 }
 inline void FieldOptions::_internal_set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value) {
   assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.jstype_ = value;
-}
-inline void FieldOptions::set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value) {
-  _internal_set_jstype(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.jstype)
 }
 
 // optional bool lazy = 5 [default = false];
@@ -13007,21 +13025,21 @@ inline void FieldOptions::clear_retention() {
   _impl_.retention_ = 0;
   _impl_._has_bits_[0] &= ~0x00000100u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention FieldOptions::_internal_retention() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention >(_impl_.retention_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention FieldOptions::retention() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.retention)
   return _internal_retention();
+}
+inline void FieldOptions::set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value) {
+   _internal_set_retention(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.retention)
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention FieldOptions::_internal_retention() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention>(_impl_.retention_);
 }
 inline void FieldOptions::_internal_set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value) {
   assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.retention_ = value;
-}
-inline void FieldOptions::set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value) {
-  _internal_set_retention(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.retention)
 }
 
 // optional .google.protobuf.FieldOptions.OptionTargetType target = 18;
@@ -13033,21 +13051,21 @@ inline void FieldOptions::clear_target() {
   _impl_.target_ = 0;
   _impl_._has_bits_[0] &= ~0x00000200u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::_internal_target() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType >(_impl_.target_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::target() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.target)
   return _internal_target();
+}
+inline void FieldOptions::set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
+   _internal_set_target(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.target)
+}
+inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::_internal_target() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType>(_impl_.target_);
 }
 inline void FieldOptions::_internal_set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
   assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.target_ = value;
-}
-inline void FieldOptions::set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
-  _internal_set_target(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.target)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -13429,21 +13447,21 @@ inline void MethodOptions::clear_idempotency_level() {
   _impl_.idempotency_level_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel MethodOptions::_internal_idempotency_level() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel >(_impl_.idempotency_level_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel MethodOptions::idempotency_level() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodOptions.idempotency_level)
   return _internal_idempotency_level();
+}
+inline void MethodOptions::set_idempotency_level(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel value) {
+   _internal_set_idempotency_level(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.MethodOptions.idempotency_level)
+}
+inline ::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel MethodOptions::_internal_idempotency_level() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel>(_impl_.idempotency_level_);
 }
 inline void MethodOptions::_internal_set_idempotency_level(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel value) {
   assert(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.idempotency_level_ = value;
-}
-inline void MethodOptions::set_idempotency_level(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel value) {
-  _internal_set_idempotency_level(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.MethodOptions.idempotency_level)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -14406,21 +14424,21 @@ inline void GeneratedCodeInfo_Annotation::clear_semantic() {
   _impl_.semantic_ = 0;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::_internal_semantic() const {
-  return static_cast< ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic >(_impl_.semantic_);
-}
 inline ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::semantic() const {
   // @@protoc_insertion_point(field_get:google.protobuf.GeneratedCodeInfo.Annotation.semantic)
   return _internal_semantic();
+}
+inline void GeneratedCodeInfo_Annotation::set_semantic(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic value) {
+   _internal_set_semantic(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.semantic)
+}
+inline ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::_internal_semantic() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic>(_impl_.semantic_);
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_semantic(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic value) {
   assert(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.semantic_ = value;
-}
-inline void GeneratedCodeInfo_Annotation::set_semantic(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic value) {
-  _internal_set_semantic(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.semantic)
 }
 
 // -------------------------------------------------------------------
