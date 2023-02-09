@@ -961,3 +961,38 @@ TEST(GeneratedCode, ArenaUnaligned) {
   EXPECT_EQ(0, reinterpret_cast<uintptr_t>(mem) & low_bits);
   upb_Arena_Free(arena);
 }
+
+TEST(GeneratedCode, Extensions) {
+  upb::Arena arena;
+  upb_test_ModelExtension1* extension1 =
+      upb_test_ModelExtension1_new(arena.ptr());
+  upb_test_ModelExtension1_set_str(extension1,
+                                   upb_StringView_FromString("Hello"));
+
+  upb_test_ModelExtension2* extension2 =
+      upb_test_ModelExtension2_new(arena.ptr());
+  upb_test_ModelExtension2_set_i(extension2, 5);
+
+  upb_test_ModelWithExtensions* msg1 =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelWithExtensions* msg2 =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+
+  // msg1: [extension1, extension2]
+  upb_test_ModelExtension1_set_model_ext(msg1, extension1, arena.ptr());
+  upb_test_ModelExtension2_set_model_ext(msg1, extension2, arena.ptr());
+
+  // msg2: [extension2, extension1]
+  upb_test_ModelExtension2_set_model_ext(msg2, extension2, arena.ptr());
+  upb_test_ModelExtension1_set_model_ext(msg2, extension1, arena.ptr());
+
+  size_t size1, size2;
+  int opts = kUpb_EncodeOption_Deterministic;
+  char* pb1 = upb_test_ModelWithExtensions_serialize_ex(msg1, opts, arena.ptr(),
+                                                        &size1);
+  char* pb2 = upb_test_ModelWithExtensions_serialize_ex(msg2, opts, arena.ptr(),
+                                                        &size2);
+
+  ASSERT_EQ(size1, size2);
+  ASSERT_EQ(0, memcmp(pb1, pb2, size1));
+}

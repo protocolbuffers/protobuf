@@ -481,6 +481,7 @@ cc_library(
         ":base",
         ":hash",
         ":mem",
+        ":message_internal",
         ":mini_table_internal",
         ":port",
     ],
