@@ -2465,6 +2465,79 @@ TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedNoCodegenSupport) {
       "optional fields in proto3");
 }
 
+TEST_F(CommandLineInterfaceTest, ReservedFieldNumbersFail) {
+  CreateTempFile("foo.proto",
+                 R"(
+syntax = "proto2";
+message Foo {
+  optional int32 i = 19123;
+}
+)");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+      "foo.proto: Field numbers 19000 through 19999 are reserved for the "
+      "protocol buffer library implementation.");
+}
+
+TEST_F(CommandLineInterfaceTest, ReservedFieldNumbersFailAsOneof) {
+  CreateTempFile("foo.proto",
+                 R"(
+syntax = "proto2";
+message Foo {
+  oneof one {
+    int32 i = 19123;
+  }
+}
+)");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+      "foo.proto: Field numbers 19000 through 19999 are reserved for the "
+      "protocol buffer library implementation.");
+}
+
+TEST_F(CommandLineInterfaceTest, ReservedFieldNumbersFailAsExtension) {
+  CreateTempFile("foo.proto",
+                 R"(
+syntax = "proto2";
+message Foo {
+  extensions 4 to max;
+}
+extend Foo {
+  optional int32 i = 19123;
+}
+)");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+      "foo.proto: Field numbers 19000 through 19999 are reserved for the "
+      "protocol buffer library implementation.");
+
+  CreateTempFile("foo.proto",
+                 R"(
+syntax = "proto2";
+message Foo {
+  extensions 4 to max;
+}
+message Bar {
+  extend Foo {
+    optional int32 i = 19123;
+  }
+}
+)");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+      "foo.proto: Field numbers 19000 through 19999 are reserved for the "
+      "protocol buffer library implementation.");
+}
+
+
 TEST_F(CommandLineInterfaceTest, Proto3OptionalAllowWithFlag) {
   CreateTempFile("google/foo.proto",
                  "syntax = \"proto3\";\n"

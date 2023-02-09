@@ -631,7 +631,7 @@ void Printer::PrintImpl(absl::string_view format,
           if (options_.annotation_collector != nullptr) {
             options_.annotation_collector->AddAnnotation(
                 record_var.second, sink_.bytes_written(), record->file_path,
-                record->path);
+                record->path, record->semantic);
           }
         }
 
@@ -743,7 +743,7 @@ void Printer::PrintImpl(absl::string_view format,
           options_.annotation_collector != nullptr) {
         options_.annotation_collector->AddAnnotation(
             range_start, range_end, same_name_record->file_path,
-            same_name_record->path);
+            same_name_record->path, same_name_record->semantic);
       }
 
       if (opts.use_substitution_map) {

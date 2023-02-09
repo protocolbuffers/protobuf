@@ -37,11 +37,10 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("com_google_absl"):
-        # Abseil LTS RC3 from January 2023
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "78be63686ba732b25052be15f8d6dee891c05749",
+            commit = "78be63686ba732b25052be15f8d6dee891c05749",  # Abseil LTS 20230125
             sha256 = "4f356a07b9ec06ef51f943928508566e992f621ed5fa4dd588865d7bed1284cd",
         )
 
@@ -58,12 +57,12 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("jsoncpp"):
-        http_archive(
+        _github_archive(
             name = "jsoncpp",
+            repo = "https://github.com/open-source-parsers/jsoncpp",
+            commit = "9059f5cad030ba11d37818847443a53918c327b1",  # 1.9.4
+            sha256 = "c0c583c7b53a53bcd1f7385f15439dcdf0314d550362379e2db9919a918d1996",
             build_file = Label("//:third_party/jsoncpp.BUILD"),
-            sha256 = "e34a628a8142643b976c7233ef381457efad79468c67cb1ae0b83a33d7493999",
-            strip_prefix = "jsoncpp-1.9.4",
-            urls = ["https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/1.9.4.tar.gz"],
         )
 
     if not native.existing_rule("utf8_range"):
@@ -99,11 +98,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_python"):
-        http_archive(
+        _github_archive(
             name = "rules_python",
-            sha256 = "a868059c8c6dd6ad45a205cca04084c652cfe1852e6df2d5aca036f6e5438380",
-            strip_prefix = "rules_python-0.14.0",
-            url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.14.0.tar.gz",
+            repo = "https://github.com/bazelbuild/rules_python",
+            commit = "912a5051f51581784fd64094f6bdabf93f6d698f",  # 0.14.0
+            sha256 = "a3e4b4ade7c4a52e757b16a16e94d0b2640333062180cba577d81fac087a501d",
         )
 
     if not native.existing_rule("rules_ruby"):

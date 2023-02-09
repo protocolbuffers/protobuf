@@ -57,7 +57,7 @@ genrule(
 )
 
 genrule(
-    name = "release",
+    name = "ruby_release",
     srcs = [
       "@utf8_range//:utf8_range_srcs",
       "@utf8_range//:LICENSE",
@@ -91,6 +91,15 @@ genrule(
         "@rules_ruby//ruby/runtime:config_ruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+)
+
+filegroup(
+    name = "release",
+    srcs = select({
+        "@rules_ruby//ruby/runtime:config_jruby": [":jruby_release"],
+        "//conditions:default": [":ruby_release"],
+    }),
+    tags = ["manual"],
 )
 
 

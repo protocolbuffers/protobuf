@@ -46,6 +46,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
@@ -189,6 +190,13 @@ class FakeAnnotationCollector : public AnnotationCollector {
         Record{begin_offset, end_offset, file_path, path});
   }
 
+  void AddAnnotation(size_t begin_offset, size_t end_offset,
+                     const std::string& file_path, const std::vector<int>& path,
+                     absl::optional<Semantic> semantic) override {
+    annotations_.emplace_back(
+        Record{begin_offset, end_offset, file_path, path, semantic});
+  }
+
   void AddAnnotationNew(Annotation& a) override {
     GeneratedCodeInfo::Annotation annotation;
     annotation.ParseFromString(a.second);
@@ -202,14 +210,17 @@ class FakeAnnotationCollector : public AnnotationCollector {
   }
 
   struct Record {
-    size_t start, end;
+    size_t start = 0;
+    size_t end = 0;
     std::string file_path;
     std::vector<int> path;
+    absl::optional<Semantic> semantic;
 
     friend std::ostream& operator<<(std::ostream& out, const Record& record) {
       return out << "Record{" << record.start << ", " << record.end << ", \""
                  << record.file_path << "\", ["
-                 << absl::StrJoin(record.path, ", ") << "]}";
+                 << absl::StrJoin(record.path, ", ") << "], "
+                 << record.semantic.value_or(kNone) << "}";
     }
   };
 
@@ -219,16 +230,18 @@ class FakeAnnotationCollector : public AnnotationCollector {
   std::vector<Record> annotations_;
 };
 
-template <typename Start, typename End, typename FilePath, typename Path>
-testing::Matcher<FakeAnnotationCollector::Record> Annotation(Start start,
-                                                             End end,
-                                                             FilePath file_path,
-                                                             Path path) {
-  return AllOf(Field("start", &FakeAnnotationCollector::Record::start, start),
-               Field("end", &FakeAnnotationCollector::Record::end, end),
-               Field("file_path", &FakeAnnotationCollector::Record::file_path,
-                     file_path),
-               Field("path", &FakeAnnotationCollector::Record::path, path));
+template <typename Start, typename End, typename FilePath, typename Path,
+          typename Semantic = absl::optional<AnnotationCollector::Semantic>>
+testing::Matcher<FakeAnnotationCollector::Record> Annotation(
+    Start start, End end, FilePath file_path, Path path,
+    Semantic semantic = absl::nullopt) {
+  return AllOf(
+      Field("start", &FakeAnnotationCollector::Record::start, start),
+      Field("end", &FakeAnnotationCollector::Record::end, end),
+      Field("file_path", &FakeAnnotationCollector::Record::file_path,
+            file_path),
+      Field("path", &FakeAnnotationCollector::Record::path, path),
+      Field("semantic", &FakeAnnotationCollector::Record::semantic, semantic));
 }
 
 TEST_F(PrinterTest, AnnotateMap) {
@@ -689,6 +702,32 @@ TEST_F(PrinterTest, EmitSameNameAnnotation) {
 
   EXPECT_THAT(collector.Get(),
               ElementsAre(Annotation(6, 9, "file.proto", ElementsAre(33))));
+}
+
+TEST_F(PrinterTest, EmitSameNameAnnotationWithSemantic) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
+    FakeDescriptor descriptor{{"file.proto"}, {33}};
+    auto v = printer.WithVars({{"class", "Foo"}});
+    auto a = printer.WithAnnotations(
+        {{"class", {&descriptor, AnnotationCollector::kSet}}});
+
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      class $class$ {
+        int $f1$, $f2$, $f3$;
+      };
+    )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n");
+
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(6, 9, "file.proto", ElementsAre(33),
+                                     AnnotationCollector::kSet)));
 }
 
 TEST_F(PrinterTest, EmitSameNameAnnotationFileNameOnly) {

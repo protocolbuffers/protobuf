@@ -159,50 +159,65 @@ Inactive:
 
 There are miscellaneous other things you may find useful as a Protocol Buffers developer.
 
-* [Bazel Build](https://bazel.build)
-    * [rules_closure](https://github.com/bazelbuild/rules_closure) `js-closure`
-    * [rules_go](https://github.com/bazelbuild/rules_go) `go`
-    * [rules_protobuf](https://github.com/pubref/rules_protobuf) `java` `c++` `c#` `go` `js-closure` `js-node` `python` `ruby`
-* [NetBeans IDE plugin](https://code.google.com/p/protobuf-netbeans-plugin/)
-* [Wireshark/Ethereal packet sniffer plugin](https://code.google.com/p/protobuf-wireshark/)
-* [Alternate encodings (JSON, XML, HTML) for Java protobufs](https://code.google.com/p/protobuf-java-format/)
-* [Another JSON encoder/decoder for Java](https://github.com/sijuv/protobuf-codec)
-* [Editor for serialized protobufs](https://code.google.com/p/protobufeditor/)
-* [IntelliJ IDEA plugin](http://github.com/jvolkman/intellij-protobuf-editor)
-* [IntelliJ Protobuf Plugin](https://github.com/devkanro/intellij-protobuf-plugin)
-* [TextMate syntax highlighting](http://github.com/michaeledgar/protobuf-tmbundle)
-* [Oracle PL SQL plugin](https://code.google.com/p/protocol-buffer-plsql/)
-* [Eclipse editor for protobuf (from Google)](https://code.google.com/p/protobuf-dt/)
-* [C++ Builder compatible protobuf](https://github.com/saadware/protobuf-cppbuilder)
-* Maven Protobuf Compiler Plugin
-    * By xolstice.org ([Documentation](https://www.xolstice.org/protobuf-maven-plugin/)) ([Source](https://github.com/xolstice/protobuf-maven-plugin/)) [![Maven Central](https://img.shields.io/maven-central/v/org.xolstice.maven.plugins/protobuf-maven-plugin.svg)](https://repo1.maven.org/maven2/org/xolstice/maven/plugins/protobuf-maven-plugin/)
-    * https://code.google.com/p/maven-protoc-plugin/
-    * https://github.com/os72/protoc-jar-maven-plugin
-* [Documentation generator plugin (Markdown/HTML/DocBook/...)](https://github.com/pseudomuto/protoc-gen-doc)
-* [DocBook generator for .proto files](https://code.google.com/p/protoc-gen-docbook/)
-* [Protobuf for nginx module](https://github.com/dbcode/protobuf-nginx/)
-* [RSpec matchers and Cucumber step defs for testing Protocol Buffers](https://github.com/connamara/protobuf_spec)
-* [Sbt plugin for Protocol Buffers](https://github.com/Atry/sbt-cppp)
-* [Protobuf Plugin for Gradle](https://github.com/google/protobuf-gradle-plugin)
-* [Multi-platform executable JAR and Java API for protoc](https://github.com/os72/protoc-jar)
-* [Python scripts to convert between Protocol Buffers and JSON](https://github.com/NextTuesday/py-pb-converters)
-* [Visual Studio Language Service support for Protocol Buffers](http://visualstudiogallery.msdn.microsoft.com/4bc0f38c-b058-4e05-ae38-155e053c19c5)
-* [Visual Studio Code Support for Protocol Buffers](https://marketplace.visualstudio.com/items?itemName=zxh404.vscode-proto3)
-* [C++ library for serialization/de-serialization between Protocol Buffers and JSON.](https://github.com/yinqiwen/pbjson)
-* [ProtoBuf with Java EE7 Expression Language 3.0; pure Java ProtoBuf Parser and Builder.](https://github.com/protobufel/protobuf-el)
-* [Notepad++ Syntax Highlighting for .proto files](https://github.com/chai2010/notepadplus-protobuf)
-* [Linter for .proto files](https://github.com/ckaznocha/protoc-gen-lint)
-* [Protocol Buffers Dynamic Schema - create protobuf schemas programmatically (Java)](https://github.com/os72/protobuf-dynamic)
-* [Make protoc plugins in NodeJS](https://github.com/konsumer/node-protoc-plugin)
-* [ProfaneDB - A Protocol Buffers database](https://profanedb.gitlab.io)
-* [Protocol Buffer property-based testing utility and example message generator (Python / Hypothesis)](https://github.com/CurataEng/hypothesis-protobuf)
-* [Protolock - CLI utility to prevent backward-incompatible changes to .proto files](https://github.com/nilslice/protolock)
-* [Optional GRPC - GRPC for testable microservices (Python)](https://github.com/mattpaletta/optional-grpc.git)
-* [Protobuf Parser - Yet another Go package which parses a Protocol Buffer file (proto2+proto3)](https://github.com/yoheimuta/go-protoparser)
-* [Protolint - A tool to enforce Protocol Buffer style and conventions.](https://github.com/yoheimuta/protolint)
-    * [vscode-protolint: A protobuf linter for visual studio code](https://github.com/plexsystems/vscode-protolint)
-    * [intellij-protolint: A protobuf linter for JetBrains IDEs](https://github.com/yoheimuta/intellij-protolint)
-    * [vim-protolint: A protobuf linter for Vim](https://github.com/yoheimuta/vim-protolint)
-* [super-linter: Protocol Buffer lint as GitHub Action](https://github.com/github/super-linter)
-* [protoc-gen-fieldmask - A plugin to generate static type fieldmask paths](https://github.com/idodod/protoc-gen-fieldmask)
-* [protoc-gen-bq-schema - A protoc plugin to generate BigQuery schema files](https://github.com/GoogleCloudPlatform/protoc-gen-bq-schema)
+*   [Bazel Build](https://bazel.build)
+    *   [rules_closure](https://github.com/bazelbuild/rules_closure)
+        `js-closure`
+    *   [rules_go](https://github.com/bazelbuild/rules_go) `go`
+    *   [rules_protobuf](https://github.com/pubref/rules_protobuf) `java` `c++`
+        `c#` `go` `js-closure` `js-node` `python` `ruby`
+*   [NetBeans IDE plugin](https://code.google.com/p/protobuf-netbeans-plugin/)
+*   [Wireshark/Ethereal packet sniffer plugin](https://code.google.com/p/protobuf-wireshark/)
+*   [Alternate encodings (JSON, XML, HTML) for Java protobufs](https://code.google.com/p/protobuf-java-format/)
+*   [Another JSON encoder/decoder for Java](https://github.com/sijuv/protobuf-codec)
+*   [Editor for serialized protobufs](https://code.google.com/p/protobufeditor/)
+*   [IntelliJ IDEA plugin](http://github.com/jvolkman/intellij-protobuf-editor)
+*   [IntelliJ Protobuf Plugin](https://github.com/devkanro/intellij-protobuf-plugin)
+*   [TextMate syntax highlighting](http://github.com/michaeledgar/protobuf-tmbundle)
+*   [Oracle PL SQL plugin](https://code.google.com/p/protocol-buffer-plsql/)
+*   [Eclipse editor for protobuf (from Google)](https://code.google.com/p/protobuf-dt/)
+*   [C++ Builder compatible protobuf](https://github.com/saadware/protobuf-cppbuilder)
+*   Maven Protobuf Compiler Plugin
+    *   By xolstice.org
+        ([Documentation](https://www.xolstice.org/protobuf-maven-plugin/))
+        ([Source](https://github.com/xolstice/protobuf-maven-plugin/))
+        [![Maven Central](https://img.shields.io/maven-central/v/org.xolstice.maven.plugins/protobuf-maven-plugin.svg)](https://repo1.maven.org/maven2/org/xolstice/maven/plugins/protobuf-maven-plugin/)
+    *   https://code.google.com/p/maven-protoc-plugin/
+    *   https://github.com/os72/protoc-jar-maven-plugin
+*   [Documentation generator plugin (Markdown/HTML/DocBook/...)](https://github.com/pseudomuto/protoc-gen-doc)
+*   [DocBook generator for .proto files](https://code.google.com/p/protoc-gen-docbook/)
+*   [Protobuf for nginx module](https://github.com/dbcode/protobuf-nginx/)
+*   [RSpec matchers and Cucumber step defs for testing Protocol Buffers](https://github.com/connamara/protobuf_spec)
+*   [Sbt plugin for Protocol Buffers](https://github.com/Atry/sbt-cppp)
+*   [Protobuf Plugin for Gradle](https://github.com/google/protobuf-gradle-plugin)
+*   [Multi-platform executable JAR and Java API for protoc](https://github.com/os72/protoc-jar)
+*   [Python scripts to convert between Protocol Buffers and JSON](https://github.com/NextTuesday/py-pb-converters)
+*   [Visual Studio Language Service support for Protocol Buffers](http://visualstudiogallery.msdn.microsoft.com/4bc0f38c-b058-4e05-ae38-155e053c19c5)
+*   [Visual Studio Code Support for Protocol Buffers](https://marketplace.visualstudio.com/items?itemName=zxh404.vscode-proto3)
+*   [C++ library for serialization/de-serialization between Protocol Buffers and
+    JSON.](https://github.com/yinqiwen/pbjson)
+*   [ProtoBuf with Java EE7 Expression Language 3.0; pure Java ProtoBuf Parser
+    and Builder.](https://github.com/protobufel/protobuf-el)
+*   [Notepad++ Syntax Highlighting for .proto files](https://github.com/chai2010/notepadplus-protobuf)
+*   [Linter for .proto files](https://github.com/ckaznocha/protoc-gen-lint)
+*   [Protocol Buffers Dynamic Schema - create protobuf schemas programmatically
+    (Java)](https://github.com/os72/protobuf-dynamic)
+*   [Make protoc plugins in NodeJS](https://github.com/konsumer/node-protoc-plugin)
+*   [ProfaneDB - A Protocol Buffers database](https://profanedb.gitlab.io)
+*   [Protocol Buffer property-based testing utility and example message
+    generator (Python /
+    Hypothesis)](https://github.com/CurataEng/hypothesis-protobuf)
+*   [Protolock - CLI utility to prevent backward-incompatible changes to .proto
+    files](https://github.com/nilslice/protolock)
+*   [Optional GRPC - GRPC for testable microservices (Python)](https://github.com/mattpaletta/optional-grpc.git)
+*   [Protobuf Parser - Yet another Go package which parses a Protocol Buffer
+    file (proto2+proto3)](https://github.com/yoheimuta/go-protoparser)
+*   [Protolint - A tool to enforce Protocol Buffer style and conventions.](https://github.com/yoheimuta/protolint)
+    *   [vscode-protolint: A protobuf linter for visual studio code](https://github.com/plexsystems/vscode-protolint)
+    *   [intellij-protolint: A protobuf linter for JetBrains IDEs](https://github.com/yoheimuta/intellij-protolint)
+    *   [vim-protolint: A protobuf linter for Vim](https://github.com/yoheimuta/vim-protolint)
+*   [super-linter: Protocol Buffer lint as GitHub Action](https://github.com/github/super-linter)
+*   [protoc-gen-fieldmask - A plugin to generate static type fieldmask paths](https://github.com/idodod/protoc-gen-fieldmask)
+*   [protoc-gen-bq-schema - A protoc plugin to generate BigQuery schema files](https://github.com/GoogleCloudPlatform/protoc-gen-bq-schema)
+*   [protobuf-decoder-explainer - Web page which decodes and explains pasted
+    binary Protocol
+    Buffers](https://github.com/jamesdbrock/protobuf-decoder-explainer)

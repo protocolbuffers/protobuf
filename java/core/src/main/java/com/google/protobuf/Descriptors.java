@@ -1772,6 +1772,21 @@ public final class Descriptors {
       return file;
     }
 
+    /**
+     * Determines if the given enum is closed.
+     *
+     * <p>Closed enum means that it:
+     *
+     * <ul>
+     *   <li>Has a fixed set of named values. *
+     *   <li>Encountering values not in this set causes them to be treated as unknown fields.
+     *   <li>The first value (i.e., the default) may be nonzero.
+     * </ul>
+     */
+    public boolean isClosed() {
+      return getFile().getSyntax() != Syntax.PROTO3;
+    }
+
     /** If this is a nested type, get the outer descriptor, otherwise null. */
     public Descriptor getContainingType() {
       return containingType;

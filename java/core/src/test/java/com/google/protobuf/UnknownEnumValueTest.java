@@ -56,6 +56,7 @@ public class UnknownEnumValueTest {
   @Test
   @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testUnknownEnumValues() throws Exception {
+    assertThat(TestAllTypes.NestedEnum.getDescriptor().isClosed()).isFalse();
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalNestedEnumValue(4321);
     builder.addRepeatedNestedEnumValue(5432);
@@ -270,6 +271,7 @@ public class UnknownEnumValueTest {
 
   @Test
   public void testUnknownEnumValuesInProto2() throws Exception {
+    assertThat(Proto2TestEnum.getDescriptor().isClosed()).isTrue();
     Proto2EnumMessage.Builder sourceMessage = Proto2EnumMessage.newBuilder();
     sourceMessage
         .addRepeatedPackedEnum(Proto2TestEnum.ZERO)

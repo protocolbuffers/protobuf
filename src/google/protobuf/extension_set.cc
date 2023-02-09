@@ -34,7 +34,9 @@
 
 #include "google/protobuf/extension_set.h"
 
+#include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
@@ -43,7 +45,6 @@
 #include "absl/hash/hash.h"
 #include "google/protobuf/extension_set_inl.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
