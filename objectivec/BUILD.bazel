@@ -101,6 +101,18 @@ conformance_test(
     testee = "//conformance:conformance_objc",
 )
 
+# -------------------------------------------------------------------
+# Current Version Check between Generator and Runtime Sources
+sh_test(
+    name = "check_version_stamps",
+    size = "small",
+    srcs = ["DevTools/check_version_stamps.sh"],
+    data = [
+        "GPBBootstrap.h",
+        "//src/google/protobuf/compiler/objectivec:file.cc",
+    ],
+)
+
 ################################################################################
 # Distribution files
 ################################################################################

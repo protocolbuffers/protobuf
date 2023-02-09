@@ -133,6 +133,13 @@ cc_test(
     ],
 )
 
+# Exposed only for the version check to ensure the ObjC Runtime and Generator
+# are in sync.
+exports_files(
+    ["file.cc"],
+    visibility = ["//objectivec:__pkg__"],
+)
+
 ################################################################################
 # Distribution packaging
 ################################################################################

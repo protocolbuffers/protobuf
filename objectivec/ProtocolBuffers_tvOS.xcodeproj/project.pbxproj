@@ -617,7 +617,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8BBEA4BA147C728600C4ADB7 /* Build configuration list for PBXNativeTarget "UnitTests" */;
 			buildPhases = (
-				F4B62A791AF91F7500AFCEDC /* Script: Check Runtime Stamps */,
 				8BBEA4A1147C727100C4ADB7 /* Resources */,
 				8BBEA4A2147C727100C4ADB7 /* Sources */,
 				8BBEA4A3147C727100C4ADB7 /* Frameworks */,
@@ -703,25 +702,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		F4B62A791AF91F7500AFCEDC /* Script: Check Runtime Stamps */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Script: Check Runtime Stamps";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -eu\nexec \"${SOURCE_ROOT}/DevTools/check_version_stamps.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7461B52B0F94FAF800A0C422 /* Sources */ = {
