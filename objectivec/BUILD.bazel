@@ -88,6 +88,13 @@ objc_library(
         "GPBWireFormat.m",
         "GPBWrappers.pbobjc.m",
     ],
+    target_compatible_with = select({
+        "@platforms//os:macos": [],
+        "@platforms//os:ios": [],
+        "@platforms//os:tvos": [],
+        "@platforms//os:watchos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     visibility = ["//visibility:public"],
 )
 
@@ -99,6 +106,7 @@ conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_objc.txt",
     testee = "//conformance:conformance_objc",
+    target_compatible_with = ["@platforms//os:macos"],
 )
 
 # -------------------------------------------------------------------
