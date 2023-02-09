@@ -850,8 +850,35 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return FastTV8S1<-1, -1>(PROTOBUF_TC_PARAM_PASS);
+  using TagType = uint8_t;
+
+  // Special case for a varint bool field with a tag of 1 byte:
+  // The coded_tag() field will actually contain the value too and we can check
+  // both at the same time.
+  auto coded_tag = data.coded_tag<uint16_t>();
+  if (PROTOBUF_PREDICT_TRUE(coded_tag == 0x0000 || coded_tag == 0x0100)) {
+    auto& field = RefAt<bool>(msg, data.offset());
+    // Note: we use `data.data` because Clang generates suboptimal code when
+    // using coded_tag.
+    // In x86_64 this uses the CH register to read the second byte out of
+    // `data`.
+    uint8_t value = data.data >> 8;
+    // The assume allows using a mov instead of test+setne.
+    PROTOBUF_ASSUME(value <= 1);
+    field = static_cast<bool>(value);
+
+    ptr += sizeof(TagType) + 1;  // Consume the tag and the value.
+    hasbits |= (uint64_t{1} << data.hasbit_idx());
+
+    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+  }
+
+  // If it didn't match above either the tag is wrong, or the value is encoded
+  // non-canonically.
+  // Jump to MiniParse as wrong tag is the most probable reason.
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
 }
+
 PROTOBUF_NOINLINE const char* TcParser::FastV8S2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return SingularVarint<bool, uint16_t>(
       PROTOBUF_TC_PARAM_PASS);
