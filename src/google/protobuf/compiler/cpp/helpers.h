@@ -65,22 +65,22 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
+static constexpr absl::string_view kRuntimeNamespace = "google::protobuf";
+
 enum class ArenaDtorNeeds { kNone = 0, kOnDemand = 1, kRequired = 2 };
 
-inline std::string ProtobufNamespace(const Options& /* options */) {
-  return "PROTOBUF_NAMESPACE_ID";
+inline std::string ProtobufNamespace(const Options&) {
+  return std::string(kRuntimeNamespace);
 }
 
-inline std::string MacroPrefix(const Options& /* options */) {
-  return "GOOGLE_PROTOBUF";
-}
+inline std::string MacroPrefix(const Options&) { return "GOOGLE_PROTOBUF"; }
 
-inline std::string DeprecatedAttribute(const Options& /* options */,
+inline std::string DeprecatedAttribute(const Options&,
                                        const FieldDescriptor* d) {
   return d->options().deprecated() ? "PROTOBUF_DEPRECATED " : "";
 }
 
-inline std::string DeprecatedAttribute(const Options& /* options */,
+inline std::string DeprecatedAttribute(const Options&,
                                        const EnumValueDescriptor* d) {
   return d->options().deprecated() ? "PROTOBUF_DEPRECATED_ENUM " : "";
 }
@@ -402,8 +402,7 @@ bool ShouldSplit(const FieldDescriptor* field, const Options& options);
 bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
                                          const Options& options);
 
-inline bool IsFieldUsed(const FieldDescriptor* /* field */,
-                        const Options& /* options */) {
+inline bool IsFieldUsed(const FieldDescriptor* /* field */, const Options&) {
   return true;
 }
 

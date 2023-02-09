@@ -78,7 +78,7 @@ void SetMessageVariables(
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_default_instance_ptr"] = ReinterpretCast(
-      "const ::PROTOBUF_NAMESPACE_ID::MessageLite*",
+      "const ::google::protobuf::MessageLite*",
       QualifiedDefaultInstancePtr(descriptor->message_type(), options),
       implicit_weak);
   variables->insert(

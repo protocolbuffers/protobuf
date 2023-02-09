@@ -246,7 +246,7 @@ class PROTOBUF_EXPORT MapKey {
  private:
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
-  friend class ::PROTOBUF_NAMESPACE_ID::MapIterator;
+  friend class MapIterator;
   friend class internal::DynamicMapField;
 
   union KeyValue {
@@ -284,42 +284,42 @@ struct is_internal_map_key_type<MapKey> : std::true_type {};
 }  // namespace google
 namespace std {
 template <>
-struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
-  size_t operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key) const {
+struct hash<google::protobuf::MapKey> {
+  size_t operator()(const google::protobuf::MapKey& map_key) const {
     switch (map_key.type()) {
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_DOUBLE:
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_FLOAT:
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_ENUM:
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_MESSAGE:
+      case google::protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
+      case google::protobuf::FieldDescriptor::CPPTYPE_FLOAT:
+      case google::protobuf::FieldDescriptor::CPPTYPE_ENUM:
+      case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
         ABSL_LOG(FATAL) << "Unsupported";
         break;
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
+      case google::protobuf::FieldDescriptor::CPPTYPE_STRING:
         return hash<std::string>()(map_key.GetStringValue());
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT64: {
+      case google::protobuf::FieldDescriptor::CPPTYPE_INT64: {
         auto value = map_key.GetInt64Value();
         return hash<decltype(value)>()(value);
       }
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT32: {
+      case google::protobuf::FieldDescriptor::CPPTYPE_INT32: {
         auto value = map_key.GetInt32Value();
         return hash<decltype(value)>()(map_key.GetInt32Value());
       }
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT64: {
+      case google::protobuf::FieldDescriptor::CPPTYPE_UINT64: {
         auto value = map_key.GetUInt64Value();
         return hash<decltype(value)>()(map_key.GetUInt64Value());
       }
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT32: {
+      case google::protobuf::FieldDescriptor::CPPTYPE_UINT32: {
         auto value = map_key.GetUInt32Value();
         return hash<decltype(value)>()(map_key.GetUInt32Value());
       }
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_BOOL: {
+      case google::protobuf::FieldDescriptor::CPPTYPE_BOOL: {
         return hash<bool>()(map_key.GetBoolValue());
       }
     }
     ABSL_LOG(FATAL) << "Can't get here.";
     return 0;
   }
-  bool operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key1,
-                  const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key2) const {
+  bool operator()(const google::protobuf::MapKey& map_key1,
+                  const google::protobuf::MapKey& map_key2) const {
     return map_key1 < map_key2;
   }
 };
@@ -466,14 +466,14 @@ class PROTOBUF_EXPORT MapFieldBase {
   friend class ContendedMapCleanTest;
   friend class GeneratedMessageReflection;
   friend class MapFieldAccessor;
-  friend class ::PROTOBUF_NAMESPACE_ID::Reflection;
-  friend class ::PROTOBUF_NAMESPACE_ID::DynamicMessage;
+  friend class google::protobuf::Reflection;
+  friend class google::protobuf::DynamicMessage;
 
   // Virtual helper methods for MapIterator. MapIterator doesn't have the
   // type helper for key and value. Call these help methods to deal with
   // different types. Real helper methods are implemented in
   // TypeDefinedMapFieldBase.
-  friend class ::PROTOBUF_NAMESPACE_ID::MapIterator;
+  friend class google::protobuf::MapIterator;
   // Allocate map<...>::iterator for MapIterator.
   virtual void InitializeIterator(MapIterator* map_iter) const = 0;
 
@@ -642,7 +642,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
 
   void SetMapIteratorValue(MapIterator* map_iter) const override;
 
-  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
+  friend class google::protobuf::Arena;
   friend class MapFieldStateTest;  // For testing, it needs raw access to impl_
 };
 
@@ -788,7 +788,7 @@ class PROTOBUF_EXPORT MapValueConstRef {
   friend class internal::MapField;
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
-  friend class ::PROTOBUF_NAMESPACE_ID::MapIterator;
+  friend class google::protobuf::MapIterator;
   friend class Reflection;
   friend class internal::DynamicMapField;
 

@@ -76,11 +76,9 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
 namespace {
-
-static const char kAnyMessageName[] = "Any";
-static const char kAnyProtoFile[] = "google/protobuf/any.proto";
+constexpr absl::string_view kAnyMessageName = "Any";
+constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
 
 std::string DotsToColons(absl::string_view name) {
   return absl::StrReplaceAll(name, {{".", "::"}});
@@ -457,14 +455,13 @@ std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const FileDescriptor* d, const Options& options) {
   std::string ns = Namespace(d->package());
   if (IsWellKnownMessage(d) && options.opensource_runtime) {
-    // Written with string concatenation to prevent rewriting of
-    // ::google::protobuf.
-    constexpr absl::string_view prefix =
-        "::google::"  // prevent clang-format reflowing
-        "protobuf";
-    absl::string_view new_ns(ns);
-    absl::ConsumePrefix(&new_ns, prefix);
-    return absl::StrCat("::PROTOBUF_NAMESPACE_ID", new_ns);
+    return absl::StrCat(
+        "::", kRuntimeNamespace,
+        absl::StripPrefix(
+            ns,
+            // Written with string concatenation to prevent rewriting of
+            // ::google::protobuf.
+            "::google::" /**/ "protobuf"));
   }
   return ns;
 }
@@ -1174,28 +1171,14 @@ void NamespaceOpener::ChangeTo(absl::string_view name) {
   }
 
   for (size_t i = name_stack_.size(); i > common_idx; i--) {
-    const auto& ns = name_stack_[i - 1];
-    if (ns == "PROTOBUF_NAMESPACE_ID") {
-      p_->Emit(R"cc(
-        PROTOBUF_NAMESPACE_CLOSE
-      )cc");
-    } else {
-      p_->Emit({{"ns", ns}}, R"(
-          }  // namespace $ns$
-        )");
-    }
+    p_->Emit({{"ns", name_stack_[i - 1]}}, R"(
+      }  // namespace $ns$
+    )");
   }
   for (size_t i = common_idx; i < new_stack.size(); ++i) {
-    const auto& ns = new_stack[i];
-    if (ns == "PROTOBUF_NAMESPACE_ID") {
-      p_->Emit(R"cc(
-        PROTOBUF_NAMESPACE_OPEN
-      )cc");
-    } else {
-      p_->Emit({{"ns", ns}}, R"(
-        namespace $ns$ {
-      )");
-    }
+    p_->Emit({{"ns", new_stack[i]}}, R"(
+      namespace $ns$ {
+    )");
   }
 
   name_stack_ = std::move(new_stack);

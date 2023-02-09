@@ -32,7 +32,7 @@
 // #undefs all macros defined in port_def.inc.  See comments in port_def.inc
 // for more info.
 
-#ifndef PROTOBUF_NAMESPACE
+#ifndef PROTOBUF_PORT_
 #error "port_undef.inc must be included after port_def.inc"
 #endif
 
@@ -46,8 +46,6 @@
 #undef PROTOBUF_CLANG_MIN
 #undef PROTOBUF_MSC_VER_MIN
 #undef PROTOBUF_CPLUSPLUS_MIN
-#undef PROTOBUF_NAMESPACE
-#undef PROTOBUF_NAMESPACE_ID
 #undef PROTOBUF_ALWAYS_INLINE
 #undef PROTOBUF_NDEBUG_INLINE
 #undef PROTOBUF_MUSTTAIL
@@ -82,8 +80,6 @@
 #undef PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG
 #undef PROTOBUF_FORCE_COPY_DEFAULT_STRING
 #undef PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
-#undef PROTOBUF_NAMESPACE_OPEN
-#undef PROTOBUF_NAMESPACE_CLOSE
 #undef PROTOBUF_UNUSED
 #undef PROTOBUF_ASSUME
 #undef PROTOBUF_EXPORT_TEMPLATE_DECLARE

@@ -119,10 +119,10 @@ class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
   }
 
  private:
-  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
-  template <typename C, typename K, typename V,
-            WireFormatLite::FieldType k_wire_type, WireFormatLite::FieldType>
-  friend class internal::MapField;
+  friend class google::protobuf::Arena;
+  template <typename C, typename K, typename V, WireFormatLite::FieldType,
+            WireFormatLite::FieldType>
+  friend class MapField;
 };
 
 }  // namespace internal
