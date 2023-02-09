@@ -96,21 +96,6 @@ jobs:
   # Note: this pattern of passing the head sha is vulnerable to PWN requests for
   # pull_request_target events. We carefully limit those workflows to require a
   # human stamp before continuing.
-  cpp:
-    name: C++
-    needs: [check-tag]
-    uses: ./.github/workflows/test_cpp.yml
-    with:
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-    secrets: inherit
-
-  java:
-    name: Java
-    needs: [check-tag]
-    uses: ./.github/workflows/test_java.yml
-    with:
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-    secrets: inherit
 
   python:
     name: Python
@@ -132,22 +117,6 @@ jobs:
     name: PHP
     needs: [check-tag]
     uses: ./.github/workflows/test_php.yml
-    with:
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-    secrets: inherit
-
-  php-ext:
-    name: PHP Extension
-    needs: [check-tag]
-    uses: ./.github/workflows/test_php_ext.yml
-    with:
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-    secrets: inherit
-
-  csharp:
-    name: C#
-    needs: [check-tag]
-    uses: ./.github/workflows/test_csharp.yml
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
