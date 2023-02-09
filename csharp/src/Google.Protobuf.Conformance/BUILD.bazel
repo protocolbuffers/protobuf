@@ -37,7 +37,7 @@ CONFORMANCE_DEPS = [
 filegroup(
     name = "srcs",
     srcs = [
-        "Conformance.cs",
+        "Conformance.pb.cs",
         "Program.cs",
         "Google.Protobuf.Conformance.csproj",
     ],
@@ -88,7 +88,7 @@ pkg_files(
     srcs = [
         "BUILD.bazel",
         "Google.Protobuf.Conformance.csproj",
-        "Conformance.cs",
+        "Conformance.pb.cs",
         "Program.cs",
     ],
     strip_prefix = strip_prefix.from_root(""),
