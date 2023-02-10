@@ -2,7 +2,7 @@
     "22.x": {
         "protoc_version": "22.0-dev",
         "lts": false,
-        "date": "2023-02-02",
+        "date": "2023-02-10",
         "languages": {
             "cpp": "4.22.0-dev",
             "csharp": "3.22.0-dev",
