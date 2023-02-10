@@ -1,5 +1,9 @@
 # This information is extracted from the MacOS runner specs located at:
-# https://github.com/actions/runner-images/blob/win19/20230129.2/images/macos/macos-12-Readme.md
+# https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+#
+# When updating, also ensure the "xcode_destination" entries in
+# `.github/workflows/test_objectivec.yml` are supported for the given versions
+# of Xcode.
 xcode_version(
     name = "version14_2_14C18",
     version = "14.2.14C18",
