@@ -409,28 +409,11 @@ class FieldGeneratorTable {
   std::vector<FieldGenerator> fields_;
 };
 
-// Helper function: set variables in the map that are the same for all
-// field code generators.
-// ['name', 'index', 'number', 'classname', 'declared_type', 'tag_size',
-// 'deprecation'].
+// Returns variables common to all fields.
 //
-// Each function comes in a legacy "write variables to an existing variable
-// map" and a new version that returns a new map object for use with WithVars().
-
-absl::flat_hash_map<absl::string_view, std::string> FieldVars(
-    const FieldDescriptor* field, const Options& opts);
-
-absl::flat_hash_map<absl::string_view, std::string> OneofFieldVars(
-    const FieldDescriptor* descriptor);
-
-void SetCommonFieldVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables,
-    const Options& options);
-
-void SetCommonOneofFieldVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables);
+// TODO(b/245791219): Make this function .cc-private.
+std::vector<io::Printer::Sub> FieldVars(const FieldDescriptor* field,
+                                        const Options& opts);
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

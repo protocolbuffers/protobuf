@@ -206,7 +206,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
     const char* ptr, const Msg* extendee, internal::InternalMetadata* metadata,
     internal::ParseContext* ctx) {
   std::string payload;
-  uint32_t type_id;
+  uint32_t type_id = 0;
   enum class State { kNoTag, kHasType, kHasPayload, kDone };
   State state = State::kNoTag;
 

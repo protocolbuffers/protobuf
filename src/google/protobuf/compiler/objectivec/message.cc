@@ -215,12 +215,9 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
 
 }  // namespace
 
-MessageGenerator::MessageGenerator(
-    const std::string& root_classname,
-    const std::string& file_descriptor_function_name,
-    const Descriptor* descriptor)
-    : root_classname_(root_classname),
-      file_descriptor_function_name_(file_descriptor_function_name),
+MessageGenerator::MessageGenerator(const std::string& file_description_name,
+                                   const Descriptor* descriptor)
+    : file_description_name_(file_description_name),
       descriptor_(descriptor),
       field_generators_(descriptor),
       class_name_(ClassName(descriptor_)),
@@ -282,6 +279,10 @@ void MessageGenerator::DetermineForwardDeclarations(
 void MessageGenerator::DetermineObjectiveCClassDefinitions(
     absl::btree_set<std::string>* fwd_decls) const {
   if (!IsMapEntryMessage(descriptor_)) {
+    // Forward declare this class, as a linker symbol, so the symbol can be used
+    // to reference the class instead of calling +class later.
+    fwd_decls->insert(ObjCClassDeclaration(class_name_));
+
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
       field_generators_.get(fieldDescriptor)
@@ -457,9 +458,13 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
     // clang-format off
     printer->Print(
         "    // Start up the root class to support the scoped extensions.\n"
-        "    __unused Class rootStartup = [$rootclass_name$ class];\n",
-        "rootclass_name", root_classname_);
+        "    __unused Class rootStartup = [$root_class_name$ class];\n",
+        "root_class_name", FileClassName(descriptor_->file()));
     // clang-format on
+  } else {
+    // The Root class has a debug runtime check, so if not starting that
+    // up, add the check.
+    printer->Print("    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
   }
 
   TextFormatDecodeData text_format_decode_data;
@@ -495,7 +500,9 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
 
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["classname"] = class_name_;
-  vars["file_descriptor_function_name"] = file_descriptor_function_name_;
+  vars["message_name"] = descriptor_->name();
+  vars["class_reference"] = ObjCClass(class_name_);
+  vars["file_description_name"] = file_description_name_;
   vars["fields"] = has_fields ? "fields" : "NULL";
   if (has_fields) {
     vars["fields_count"] = absl::StrCat("(uint32_t)(sizeof(fields) / sizeof(",
@@ -522,8 +529,9 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   printer->Print(
       vars,
       "    GPBDescriptor *localDescriptor =\n"
-      "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
-      "                                          file:$file_descriptor_function_name$()\n"
+      "        [GPBDescriptor allocDescriptorForClass:$class_reference$\n"
+      "                                   messageName:@\"$message_name$\"\n"
+      "                               fileDescription:&$file_description_name$\n"
       "                                        fields:$fields$\n"
       "                                    fieldCount:$fields_count$\n"
       "                                   storageSize:sizeof($classname$__storage_)\n"
@@ -586,13 +594,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
         "    [localDescriptor setupContainingMessageClass:$parent_class_ref$];\n",
         // clang-format on
         "parent_class_ref", parent_class_ref);
-  }
-  std::string suffix_added;
-  ClassName(descriptor_, &suffix_added);
-  if (!suffix_added.empty()) {
-    printer->Print(
-        "    [localDescriptor setupMessageClassNameSuffix:@\"$suffix$\"];\n",
-        "suffix", suffix_added);
   }
   // clang-format off
   printer->Print(

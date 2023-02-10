@@ -42,8 +42,14 @@
 #include <string>
 #include <type_traits>
 
+#if PROTOBUF_RTTI
+#include <typeinfo>
+#endif
+
 
 #include "absl/meta/type_traits.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 // must be last
 #include "google/protobuf/port_def.inc"
@@ -162,6 +168,16 @@ inline ToRef DownCast(From& f) {
   assert(dynamic_cast<To*>(&f) != nullptr);
 #endif
   return *static_cast<To*>(&f);
+}
+
+// Looks up the name of `T` via RTTI, if RTTI is available.
+template <typename T>
+inline absl::optional<absl::string_view> RttiTypeName() {
+#if PROTOBUF_RTTI
+  return typeid(T).name();
+#else
+  return absl::nullopt;
+#endif
 }
 
 // Helpers for identifying our supported types.

@@ -226,28 +226,42 @@ class PROTOBUF_EXPORT Any final :
   // string type_url = 1;
   void clear_type_url() ;
   const std::string& type_url() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_type_url(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_type_url();
   PROTOBUF_NODISCARD std::string* release_type_url();
-  void set_allocated_type_url(std::string* type_url);
+  void set_allocated_type_url(std::string* ptr);
+
   private:
   const std::string& _internal_type_url() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(
+      const std::string& value);
   std::string* _internal_mutable_type_url();
+
   public:
   // bytes value = 2;
   void clear_value() ;
   const std::string& value() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_value(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
   PROTOBUF_NODISCARD std::string* release_value();
-  void set_allocated_value(std::string* value);
+  void set_allocated_value(std::string* ptr);
+
   private:
   const std::string& _internal_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_value(
+      const std::string& value);
   std::string* _internal_mutable_value();
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Any)
  private:
@@ -290,11 +304,11 @@ inline const std::string& Any::type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.type_url)
   return _internal_type_url();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Any::set_type_url(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.type_url_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Any::set_type_url(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
 }
 inline std::string* Any::mutable_type_url() {
@@ -306,24 +320,26 @@ inline const std::string& Any::_internal_type_url() const {
   return _impl_.type_url_.Get();
 }
 inline void Any::_internal_set_type_url(const std::string& value) {
+  ;
+
 
   _impl_.type_url_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Any::_internal_mutable_type_url() {
-
-  return _impl_.type_url_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.type_url_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Any::release_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Any.type_url)
   return _impl_.type_url_.Release();
 }
-inline void Any::set_allocated_type_url(std::string* type_url) {
-  _impl_.type_url_.SetAllocated(type_url, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.type_url_.IsDefault()) {
-    _impl_.type_url_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void Any::set_allocated_type_url(std::string* value) {
+  _impl_.type_url_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.type_url_.IsDefault()) {
+          _impl_.type_url_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.type_url)
 }
 
@@ -335,11 +351,11 @@ inline const std::string& Any::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.value)
   return _internal_value();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void Any::set_value(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.value_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Any::set_value(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
 }
 inline std::string* Any::mutable_value() {
@@ -351,12 +367,14 @@ inline const std::string& Any::_internal_value() const {
   return _impl_.value_.Get();
 }
 inline void Any::_internal_set_value(const std::string& value) {
+  ;
+
 
   _impl_.value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Any::_internal_mutable_value() {
-
-  return _impl_.value_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.value_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Any::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Any.value)
@@ -364,11 +382,11 @@ inline std::string* Any::release_value() {
 }
 inline void Any::set_allocated_value(std::string* value) {
   _impl_.value_.SetAllocated(value, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.value_.IsDefault()) {
-    _impl_.value_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.value_.IsDefault()) {
+          _impl_.value_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.value)
 }
 

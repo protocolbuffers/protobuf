@@ -1,0 +1,36 @@
+name: 'CCache Setup'
+description: 'Setup ccache for us in Windows CI'
+inputs:
+  ccache-version:
+    required: false
+    default: '4.7.4'
+    description: A pinned version of ccache
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure ccache environment variables
+      shell: pwsh
+      run: |
+        Write-Host $Env:GITHUB_REF
+        $cllocation = (Get-Command cl.exe).Path
+        echo "CCACHE_COMPILER=$cllocation" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+        echo "CCACHE_COMPILERTYPE=msvc" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Download ccache
+      shell: bash
+      run: |
+        curl -kLSs "https://github.com/ccache/ccache/releases/download/v${{ inputs.ccache-version }}/ccache-${{ inputs.ccache-version }}-windows-x86_64.zip" -o ccache.zip
+        unzip ccache.zip
+        cp ccache-${{ inputs.ccache-version }}-windows-x86_64/ccache.exe ccache.exe
+        cp ccache.exe cl.exe
+        rm ccache.zip
+
+    - name: Configure msbuild flags
+      shell: bash
+      run: echo "CCACHE_MSBUILD_FLAGS=/p:CLToolExe=cl.exe /p:CLToolPath=${{ github.workspace}}" >> $GITHUB_ENV
+
+    - name: Configure cmake flags
+      shell: bash
+      run: echo "CCACHE_CMAKE_FLAGS=-Dprotobuf_ALLOW_CCACHE=ON" >> $GITHUB_ENV

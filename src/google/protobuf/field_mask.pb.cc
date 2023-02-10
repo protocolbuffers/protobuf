@@ -215,12 +215,10 @@ failure:
   (void) cached_has_bits;
 
   // repeated string paths = 1;
-  for (int i = 0, n = this->_internal_paths_size(); i < n; i++) {
+  for (int i = 0, n = this->_internal_paths_size(); i < n; ++i) {
     const auto& s = this->_internal_paths(i);
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      s.data(), static_cast<int>(s.length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "google.protobuf.FieldMask.paths");
+        s.data(), static_cast<int>(s.length()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.FieldMask.paths");
     target = stream->WriteString(1, s, target);
   }
 
@@ -241,11 +239,9 @@ failure:
   (void) cached_has_bits;
 
   // repeated string paths = 1;
-  total_size += 1 *
-      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.paths_.size());
-  for (int i = 0, n = _impl_.paths_.size(); i < n; i++) {
-    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-      _impl_.paths_.Get(i));
+  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.paths_.size());
+  for (int i = 0, n = _impl_.paths_.size(); i < n; ++i) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(_impl_.paths_.Get(i));
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);

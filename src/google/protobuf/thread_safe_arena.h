@@ -124,6 +124,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
+  void* AllocateFromStringBlock();
+
  private:
   friend class ArenaBenchmark;
   friend class TcParser;

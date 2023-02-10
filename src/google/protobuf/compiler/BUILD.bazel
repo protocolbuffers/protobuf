@@ -310,6 +310,17 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "retention",
+    srcs = ["retention.cc"],
+    hdrs = ["retention.h"],
+    include_prefix = "google/protobuf/compiler",
+    visibility = ["//src/google/protobuf:__subpackages__"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+    ],
+)
+
 ################################################################################
 # Generates protoc release artifacts.
 ################################################################################
@@ -365,7 +376,7 @@ filegroup(
     srcs = glob([
         "*_test.cc",
         "*unittest.cc",
-    ]) + [
+    ], allow_empty = True) + [
         "//src/google/protobuf/compiler/cpp:test_srcs",
         "//src/google/protobuf/compiler/csharp:test_srcs",
         "//src/google/protobuf/compiler/java:test_srcs",

@@ -243,15 +243,6 @@ static int extract_method_call(VALUE method_name, Message* self,
   if (Match(m, name, f, o, "clear_", "")) return METHOD_CLEAR;
   if (Match(m, name, f, o, "has_", "?") &&
       (*o || (*f && upb_FieldDef_HasPresence(*f)))) {
-    // Disallow oneof hazzers for proto3.
-    // TODO(haberman): remove this test when we are enabling oneof hazzers for
-    // proto3.
-    if (*f && !upb_FieldDef_IsSubMessage(*f) &&
-        upb_FieldDef_RealContainingOneof(*f) &&
-        upb_MessageDef_Syntax(upb_FieldDef_ContainingType(*f)) !=
-            kUpb_Syntax_Proto2) {
-      return METHOD_UNKNOWN;
-    }
     return METHOD_PRESENCE;
   }
   if (Match(m, name, f, o, "", "_as_value") && *f &&
@@ -1287,12 +1278,12 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
     int32_t value = upb_EnumValueDef_Number(ev);
     if (name[0] < 'A' || name[0] > 'Z') {
       if (name[0] >= 'a' && name[0] <= 'z') {
-        name[0] -= 32; // auto capitalize
+        name[0] -= 32;  // auto capitalize
       } else {
         rb_warn(
-          "Enum value '%s' does not start with an uppercase letter "
-          "as is required for Ruby constants.",
-          name);
+            "Enum value '%s' does not start with an uppercase letter "
+            "as is required for Ruby constants.",
+            name);
       }
     }
     rb_define_const(mod, name, INT2NUM(value));

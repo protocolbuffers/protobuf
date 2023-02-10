@@ -21,9 +21,9 @@ namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR Duration::Duration(
     ::_pbi::ConstantInitialized): _impl_{
-    /* ._impl_.seconds_ = */ ::int64_t{0}
+    /*decltype(_impl_.seconds_)*/ ::int64_t{0}
 
-  , /* ._impl_.nanos_ = */ 0
+  , /*decltype(_impl_.nanos_)*/ 0
 
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct DurationDefaultTypeInternal {

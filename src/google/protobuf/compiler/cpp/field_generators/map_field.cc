@@ -48,7 +48,6 @@ void SetMessageVariables(
     const FieldDescriptor* descriptor,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
     const Options& options) {
-  SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = ClassName(descriptor->message_type(), false);
   (*variables)["full_name"] = descriptor->full_name();
 

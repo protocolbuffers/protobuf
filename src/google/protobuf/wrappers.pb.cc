@@ -21,7 +21,7 @@ namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(
     ::_pbi::ConstantInitialized): _impl_{
-    /* ._impl_.value_ = */ 0
+    /*decltype(_impl_.value_)*/ 0
 
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct DoubleValueDefaultTypeInternal {
@@ -36,7 +36,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
 PROTOBUF_CONSTEXPR FloatValue::FloatValue(
     ::_pbi::ConstantInitialized): _impl_{
-    /* ._impl_.value_ = */ 0
+    /*decltype(_impl_.value_)*/ 0
 
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct FloatValueDefaultTypeInternal {
@@ -51,7 +51,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FloatValueDefaultTypeInternal _FloatValue_default_instance_;
 PROTOBUF_CONSTEXPR Int64Value::Int64Value(
     ::_pbi::ConstantInitialized): _impl_{
-    /* ._impl_.value_ = */ ::int64_t{0}
+    /*decltype(_impl_.value_)*/ ::int64_t{0}
 
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct Int64ValueDefaultTypeInternal {
@@ -66,7 +66,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
 PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(
     ::_pbi::ConstantInitialized): _impl_{
-    /* ._impl_.value_ = */ ::uint64_t{0u}
+    /*decltype(_impl_.value_)*/ ::uint64_t{0u}
 
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct UInt64ValueDefaultTypeInternal {
@@ -81,7 +81,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
 PROTOBUF_CONSTEXPR Int32Value::Int32Value(
     ::_pbi::ConstantInitialized): _impl_{
-    /* ._impl_.value_ = */ 0
+    /*decltype(_impl_.value_)*/ 0
 
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct Int32ValueDefaultTypeInternal {
@@ -96,7 +96,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
 PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(
     ::_pbi::ConstantInitialized): _impl_{
-    /* ._impl_.value_ = */ 0u
+    /*decltype(_impl_.value_)*/ 0u
 
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct UInt32ValueDefaultTypeInternal {
@@ -111,7 +111,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
 PROTOBUF_CONSTEXPR BoolValue::BoolValue(
     ::_pbi::ConstantInitialized): _impl_{
-    /* ._impl_.value_ = */ false
+    /*decltype(_impl_.value_)*/ false
 
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct BoolValueDefaultTypeInternal {
@@ -126,7 +126,10 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BoolValueDefaultTypeInternal _BoolValue_default_instance_;
 PROTOBUF_CONSTEXPR StringValue::StringValue(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+    /*decltype(_impl_.value_)*/ {
+    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
+  }
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct StringValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR StringValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -140,7 +143,10 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StringValueDefaultTypeInternal _StringValue_default_instance_;
 PROTOBUF_CONSTEXPR BytesValue::BytesValue(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+    /*decltype(_impl_.value_)*/ {
+    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
+  }
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct BytesValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BytesValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -1572,17 +1578,17 @@ StringValue::StringValue(const StringValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   StringValue* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
+      decltype(_impl_.value_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.value_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.value_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_value().empty()) {
-    _this->_impl_.value_.Set(from._internal_value(), 
-      _this->GetArenaForAllocation());
+    _this->_impl_.value_.Set(from._internal_value(), _this->GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
@@ -1590,13 +1596,14 @@ StringValue::StringValue(const StringValue& from)
 inline void StringValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
+      decltype(_impl_.value_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.value_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.value_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 StringValue::~StringValue() {
@@ -1675,12 +1682,10 @@ failure:
 
   // string value = 1;
   if (!this->_internal_value().empty()) {
+    const std::string& _s = this->_internal_value();
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_value().data(), static_cast<int>(this->_internal_value().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "google.protobuf.StringValue.value");
-    target = stream->WriteStringMaybeAliased(
-        1, this->_internal_value(), target);
+        _s.data(), static_cast<int>(_s.length()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.StringValue.value");
+    target = stream->WriteStringMaybeAliased(1, _s, target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1701,9 +1706,8 @@ failure:
 
   // string value = 1;
   if (!this->_internal_value().empty()) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_value());
+    total_size += 1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+                                    this->_internal_value());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1746,10 +1750,8 @@ void StringValue::InternalSwap(StringValue* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.value_, lhs_arena,
-      &other->_impl_.value_, rhs_arena
-  );
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, lhs_arena,
+                                       &other->_impl_.value_, rhs_arena);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata StringValue::GetMetadata() const {
@@ -1772,17 +1774,17 @@ BytesValue::BytesValue(const BytesValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   BytesValue* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
+      decltype(_impl_.value_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.value_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.value_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_value().empty()) {
-    _this->_impl_.value_.Set(from._internal_value(), 
-      _this->GetArenaForAllocation());
+    _this->_impl_.value_.Set(from._internal_value(), _this->GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }
@@ -1790,13 +1792,14 @@ BytesValue::BytesValue(const BytesValue& from)
 inline void BytesValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
+      decltype(_impl_.value_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.value_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.value_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 BytesValue::~BytesValue() {
@@ -1874,8 +1877,8 @@ failure:
 
   // bytes value = 1;
   if (!this->_internal_value().empty()) {
-    target = stream->WriteBytesMaybeAliased(
-        1, this->_internal_value(), target);
+    const std::string& _s = this->_internal_value();
+    target = stream->WriteBytesMaybeAliased(1, _s, target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1896,9 +1899,8 @@ failure:
 
   // bytes value = 1;
   if (!this->_internal_value().empty()) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_value());
+    total_size += 1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
+                                    this->_internal_value());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1941,10 +1943,8 @@ void BytesValue::InternalSwap(BytesValue* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.value_, lhs_arena,
-      &other->_impl_.value_, rhs_arena
-  );
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, lhs_arena,
+                                       &other->_impl_.value_, rhs_arena);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BytesValue::GetMetadata() const {

@@ -190,15 +190,22 @@ class PROTOBUF_EXPORT SourceContext final :
   // string file_name = 1;
   void clear_file_name() ;
   const std::string& file_name() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_file_name(ArgT0&& arg0, ArgT... args);
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_file_name(Arg_&& arg, Args_... args);
   std::string* mutable_file_name();
   PROTOBUF_NODISCARD std::string* release_file_name();
-  void set_allocated_file_name(std::string* file_name);
+  void set_allocated_file_name(std::string* ptr);
+
   private:
   const std::string& _internal_file_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_file_name(const std::string& value);
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_file_name(
+      const std::string& value);
   std::string* _internal_mutable_file_name();
+
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceContext)
  private:
@@ -239,11 +246,11 @@ inline const std::string& SourceContext::file_name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceContext.file_name)
   return _internal_file_name();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void SourceContext::set_file_name(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.file_name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void SourceContext::set_file_name(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.file_name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
 inline std::string* SourceContext::mutable_file_name() {
@@ -255,24 +262,26 @@ inline const std::string& SourceContext::_internal_file_name() const {
   return _impl_.file_name_.Get();
 }
 inline void SourceContext::_internal_set_file_name(const std::string& value) {
+  ;
+
 
   _impl_.file_name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* SourceContext::_internal_mutable_file_name() {
-
-  return _impl_.file_name_.Mutable(GetArenaForAllocation());
+  ;
+  return _impl_.file_name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* SourceContext::release_file_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
   return _impl_.file_name_.Release();
 }
-inline void SourceContext::set_allocated_file_name(std::string* file_name) {
-  _impl_.file_name_.SetAllocated(file_name, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.file_name_.IsDefault()) {
-    _impl_.file_name_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void SourceContext::set_allocated_file_name(std::string* value) {
+  _impl_.file_name_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.file_name_.IsDefault()) {
+          _impl_.file_name_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
 }
 
