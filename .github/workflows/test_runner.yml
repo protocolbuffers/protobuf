@@ -91,7 +91,7 @@ jobs:
     steps:
       - uses: actions-ecosystem/action-remove-labels@2ce5d41b4b6aa8503e285553f75ed56e0a40bae0 # v1.3.0
         with:
-          labels: safe for tests
+          labels: ':a: safe for tests'
 
   # Note: this pattern of passing the head sha is vulnerable to PWN requests for
   # pull_request_target events. We carefully limit those workflows to require a
