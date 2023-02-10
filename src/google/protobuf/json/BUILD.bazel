@@ -143,6 +143,7 @@ cc_test(
     name = "lexer_test",
     srcs = ["internal/lexer_test.cc"],
     copts = COPTS,
+    timeout = "long",
     deps = [
         ":lexer",
         ":test_input_stream",

@@ -41,9 +41,6 @@
 #include <vector>
 
 #include "google/protobuf/type.pb.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/message.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
@@ -54,8 +51,8 @@
 #include "absl/types/span.h"
 #include "absl/types/variant.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/util/type_resolver.h"
-#include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 #include "google/protobuf/stubs/status_macros.h"
@@ -536,10 +533,16 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
   } else if (auto* extant = absl::get_if<std::vector<T>>(&slot)) {
     extant->push_back(std::move(value));
   } else {
+    absl::optional<absl::string_view> name =
+        google::protobuf::internal::RttiTypeName<T>();
+    if (!name.has_value()) {
+      name = "<unknown>";
+    }
+
     return absl::InvalidArgumentError(
         absl::StrFormat("inconsistent types for field number %d: tried to "
-                        "insert %s, but index was %d",
-                        number, typeid(T).name(), slot.index()));
+                        "insert '%s', but index was %d",
+                        number, *name, slot.index()));
   }
 
   return absl::OkStatus();

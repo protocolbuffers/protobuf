@@ -3,14 +3,12 @@ Protocol Buffers - Google's data interchange format
 
 Copyright 2008 Google Inc.
 
-[Protocol Buffers documentation](https://developers.google.com/protocol-buffers/)
-
 Overview
 --------
 
 Protocol Buffers (a.k.a., protobuf) are Google's language-neutral,
 platform-neutral, extensible mechanism for serializing structured data. You
-can find [protobuf's documentation on the Google Developers site](https://developers.google.com/protocol-buffers/).
+can learn more about it in [protobuf's documentation](https://protobuf.dev).
 
 This README file contains protobuf installation instructions. To install
 protobuf, you need to install the protocol compiler (used to compile .proto
@@ -64,7 +62,7 @@ Quick Start
 -----------
 
 The best way to learn how to use protobuf is to follow the [tutorials in our
-developer guide](https://developers.google.com/protocol-buffers/docs/tutorials).
+developer guide](https://protobuf.dev/getting-started).
 
 If you want to learn from code examples, take a look at the examples in the
 [examples](examples) directory.
@@ -72,11 +70,16 @@ If you want to learn from code examples, take a look at the examples in the
 Documentation
 -------------
 
-The complete documentation is available via the [Protocol Buffers documentation](https://developers.google.com/protocol-buffers/).
+The complete documentation is available at the [Protocol Buffers doc site](https://protobuf.dev).
+
+Support Policy
+--------------
+
+Read about our [version support policy](https://protobuf.dev/version-support/)
+to stay current on support timeframes for the language libraries.
 
 Developer Community
 -------------------
 
 To be alerted to upcoming changes in Protocol Buffers and connect with protobuf developers and users,
 [join the Google Group](https://groups.google.com/g/protobuf).
-

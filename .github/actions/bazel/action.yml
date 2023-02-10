@@ -1,0 +1,111 @@
+name: 'Docker Bazel Run'
+description: 'Run a Bazel-based docker image for Protobuf CI testing'
+inputs:
+  credentials:
+    required: true
+    description: The GCP credentials to use for reading the docker image
+    type: string
+  bazel-cache:
+    required: true
+    description: >
+      A unique path for the Bazel cache.  This will trigger the generation
+      of a BAZEL_CACHE environment variable inside the container that provides
+      the appropriate flags for any bazel command.
+    type: string
+  version:
+    required: false
+    description: A pinned Bazel version to use
+    default: '5.1.1'
+    type: string
+  bazel:
+    required: false
+    description: The Bazel command to run
+    type: string
+  bash:
+    required: false
+    description: >
+      A bash command to run.  $BAZEL_FLAGS and $BAZEL_STARTUP_FLAGS will be
+      available to use for bazel runs.
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Authenticate
+      id: auth
+      uses: ./.github/actions/internal/gcloud-auth
+      with:
+        credentials: ${{ inputs.credentials }}
+
+    - name: Setup Runner
+      uses: ./.github/actions/internal/setup-runner
+
+    - name: Setup Bazel
+      id: bazel
+      uses: ./.github/actions/internal/bazel-setup
+      with:
+        credentials-file: ${{ steps.auth.outputs.credentials-file }}
+        bazel-cache: ${{ inputs.bazel-cache }}
+
+    - name: Get Linux bazelisk path
+      if: runner.os == 'Linux'
+      shell: bash
+      run: echo "BAZELISK_PATH=~/.cache/bazelisk" >> $GITHUB_ENV
+
+    - name: Get MacOS bazelisk path
+      if: runner.os == 'macOS'
+      shell: bash
+      run: echo "BAZELISK_PATH=~/Library/Caches/bazelisk" >> $GITHUB_ENV
+
+    - name: Get Windows bazelisk path
+      if: runner.os == 'Windows'
+      shell: bash
+      run: echo "BAZELISK_PATH=$LOCALAPPDATA\bazelisk" >> $GITHUB_ENV
+
+    - name: Cache Bazelisk
+      if: ${{ github.event_name == 'push' }}
+      uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ env.BAZELISK_PATH }}
+        key: bazel-${{ runner.os }}-${{ inputs.version }}
+
+    - name: Restore Bazelisk
+      if: ${{ github.event_name != 'push' }}
+      uses: actions/cache/restore@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ env.BAZELISK_PATH }}
+        key: bazel-${{ runner.os }}-${{ inputs.version }}
+
+    - name: Hook up repository Cache
+      shell: bash
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache=$(pwd)/${{ env.REPOSITORY_CACHE_PATH }}" >> $GITHUB_ENV
+
+    - name: Validate inputs
+      if: ${{ (inputs.bash && inputs.bazel) || (!inputs.bash && !inputs.bazel) }}
+      shell: bash
+      run: echo "Invalid specification of both non-Bazel and Bazel command"; exit 1
+
+    - name: Pin Bazel version
+      shell: bash
+      run: echo "USE_BAZEL_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+
+    - name: Output Bazel version
+      shell: bash
+      run: bazelisk version
+
+    - name: Run Bash
+      if: ${{ inputs.bash }}
+      run: ${{ inputs.bash }}
+      shell: bash
+
+    - name: Run Bazel
+      if: ${{ !inputs.bash }}
+      run: >-
+        bazelisk ${{ steps.bazel.outputs.bazel-startup-flags }}
+        ${{ inputs.bazel }} $BAZEL_FLAGS
+      shell: bash
+
+    - name: Save Bazel repository cache
+      # Only allow repository cache updates during post-submits.
+      if: ${{ github.event_name == 'push' }}
+      uses: ./.github/actions/internal/repository-cache-save

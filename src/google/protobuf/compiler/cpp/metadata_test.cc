@@ -158,6 +158,134 @@ TEST_F(CppMetadataTest, CapturesMessageNames) {
       atu::AnnotationMatchesSubstring(pb_h, message_annotation, "Message"));
 }
 
+TEST_F(CppMetadataTest, RangeChecksWork) {
+  absl::string_view test = "test";
+  GeneratedCodeInfo::Annotation annotation;
+  annotation.set_begin(-1);
+  annotation.set_end(0);
+  EXPECT_FALSE(atu::GetAnnotationSubstring(test, annotation).has_value());
+  annotation.set_begin(1);
+  EXPECT_FALSE(atu::GetAnnotationSubstring(test, annotation).has_value());
+  annotation.set_begin(0);
+  annotation.set_end(1);
+  EXPECT_TRUE(atu::GetAnnotationSubstring(test, annotation).has_value());
+  annotation.set_begin(4);
+  annotation.set_end(4);
+  ASSERT_TRUE(atu::GetAnnotationSubstring(test, annotation).has_value());
+  EXPECT_EQ("", *atu::GetAnnotationSubstring(test, annotation));
+  annotation.set_end(5);
+  EXPECT_FALSE(atu::GetAnnotationSubstring(test, annotation).has_value());
+}
+
+constexpr absl::string_view kStringFieldTestFile = R"(
+    syntax = "proto2";
+    package foo;
+    message Message {
+      optional string sfield = 1;
+      repeated string rsfield = 2;
+    }
+)";
+
+TEST_F(CppMetadataTest, AnnotatesStringSemantics) {
+  FileDescriptorProto file;
+  GeneratedCodeInfo info;
+  std::string pb_h;
+  atu::AddFile("test.proto", kStringFieldTestFile);
+  EXPECT_TRUE(CaptureMetadata("test.proto", &file, &pb_h, &info, nullptr,
+                              nullptr, nullptr));
+  EXPECT_EQ("Message", file.message_type(0).name());
+  std::vector<int> field_path{FileDescriptorProto::kMessageTypeFieldNumber, 0,
+                              DescriptorProto::kFieldFieldNumber, 0};
+  std::vector<const GeneratedCodeInfo::Annotation*> annotations;
+  atu::FindAnnotationsOnPath(info, "test.proto", field_path, &annotations);
+  EXPECT_TRUE(!annotations.empty());
+  for (const auto* annotation : annotations) {
+    auto substring = atu::GetAnnotationSubstring(pb_h, *annotation);
+    ASSERT_TRUE(substring.has_value());
+    if (*substring == "sfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_NONE,
+                annotation->semantic());
+    } else if (*substring == "set_sfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_SET,
+                annotation->semantic());
+    } else if (*substring == "mutable_sfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_ALIAS,
+                annotation->semantic());
+    }
+  }
+  field_path.back() = 1;
+  annotations.clear();
+  atu::FindAnnotationsOnPath(info, "test.proto", field_path, &annotations);
+  EXPECT_TRUE(!annotations.empty());
+  for (const auto* annotation : annotations) {
+    auto substring = atu::GetAnnotationSubstring(pb_h, *annotation);
+    ASSERT_TRUE(substring.has_value());
+    if (*substring == "rsfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_NONE,
+                annotation->semantic());
+    } else if (*substring == "set_rsfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_SET,
+                annotation->semantic());
+    } else if (*substring == "mutable_rsfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_ALIAS,
+                annotation->semantic());
+    }
+  }
+}
+
+constexpr absl::string_view kMessageFieldTestFile = R"(
+    syntax = "proto2";
+    package foo;
+    message SMessage { }
+    message Message {
+      optional SMessage mfield = 1;
+      repeated SMessage rmfield = 2;
+    }
+)";
+
+TEST_F(CppMetadataTest, AnnotatesMessageSemantics) {
+  FileDescriptorProto file;
+  GeneratedCodeInfo info;
+  std::string pb_h;
+  atu::AddFile("test.proto", kMessageFieldTestFile);
+  EXPECT_TRUE(CaptureMetadata("test.proto", &file, &pb_h, &info, nullptr,
+                              nullptr, nullptr));
+  EXPECT_EQ("Message", file.message_type(1).name());
+  std::vector<int> field_path;
+  field_path.push_back(FileDescriptorProto::kMessageTypeFieldNumber);
+  field_path.push_back(1);
+  field_path.push_back(DescriptorProto::kFieldFieldNumber);
+  field_path.push_back(0);
+  std::vector<const GeneratedCodeInfo::Annotation*> annotations;
+  atu::FindAnnotationsOnPath(info, "test.proto", field_path, &annotations);
+  EXPECT_TRUE(!annotations.empty());
+  for (const auto* annotation : annotations) {
+    auto substring = atu::GetAnnotationSubstring(pb_h, *annotation);
+    ASSERT_TRUE(substring.has_value());
+    if (*substring == "mfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_NONE,
+                annotation->semantic());
+    } else if (*substring == "mutable_mfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_ALIAS,
+                annotation->semantic());
+    }
+  }
+  field_path.back() = 1;
+  annotations.clear();
+  atu::FindAnnotationsOnPath(info, "test.proto", field_path, &annotations);
+  EXPECT_TRUE(!annotations.empty());
+  for (const auto* annotation : annotations) {
+    auto substring = atu::GetAnnotationSubstring(pb_h, *annotation);
+    ASSERT_TRUE(substring.has_value());
+    if (substring == "rmfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_NONE,
+                annotation->semantic());
+    } else if (substring == "mutable_rmfield") {
+      EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_ALIAS,
+                annotation->semantic());
+    }
+  }
+}
 }  // namespace
 }  // namespace cpp
 }  // namespace compiler

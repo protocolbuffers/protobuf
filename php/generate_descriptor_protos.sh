@@ -9,7 +9,7 @@ if [[ -z "${PROTOC}" ]]; then
   PROTOC=$(realpath protoc)
 fi
 if [ ! -f $PROTOC ]; then
-  bazel build -c opt //:protoc
+  ${BAZEL:-bazel} $BAZEL_STARTUP_FLAGS build -c opt //:protoc $BAZEL_FLAGS
   PROTOC=$(realpath bazel-bin/protoc)
 fi
 

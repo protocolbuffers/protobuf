@@ -1,3 +1,4 @@
+// -*- c++ -*-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -207,6 +208,10 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Used to remove the manipulation of cleared elements in RepeatedPtrField.
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
+
+// Used for descriptor proto extension declarations.
+// Owner: shaod@, gberg@
+#define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
 
 #endif
 
@@ -945,6 +950,10 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #undef STRICT
 #pragma push_macro("timezone")
 #undef timezone
+#pragma push_macro("TRUE")
+#undef TRUE
+#pragma push_macro("FALSE")
+#undef FALSE
 #endif  // _WIN32
 
 #ifdef __APPLE__

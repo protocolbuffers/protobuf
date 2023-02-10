@@ -244,7 +244,6 @@ bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
     format.Indent();
     return true;
   } else if (field->real_containing_oneof()) {
-    auto v = p->WithVars(OneofFieldVars(field));
     format("if ($has_field$) {\n");
     format.Indent();
     return true;
@@ -1031,7 +1030,6 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* p) {
 
 void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
                                                   io::Printer* p) {
-  auto v = p->WithVars(OneofFieldVars(field));
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
   Formatter format(p);
   // Singular field in a oneof
@@ -1075,7 +1073,6 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
   if (field->real_containing_oneof()) {
     // Clear this field only if it is the active field in this oneof,
     // otherwise ignore
-    auto v = p->WithVars(OneofFieldVars(field));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     format("if ($has_field$) {\n");
     format.Indent();
@@ -1989,7 +1986,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     field_generators_.get(field).GenerateNonInlineAccessorDefinitions(p);
     if (IsCrossFileMaybeMap(field)) {
-      auto v = p->WithVars(OneofFieldVars(field));
       GenerateFieldClear(field, false, p);
     }
   }

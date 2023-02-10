@@ -699,7 +699,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
     *value = byte;
     return p + 1;
   } else {
-    auto tmp = Parse64FallbackPair(p, byte);
+    auto tmp = ParseFallbackPair<std::make_unsigned_t<Type>>(p, byte);
     if (PROTOBUF_PREDICT_TRUE(tmp.first)) {
       *value = static_cast<Type>(tmp.second);
     }

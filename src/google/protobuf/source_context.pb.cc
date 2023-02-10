@@ -21,7 +21,10 @@ namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR SourceContext::SourceContext(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.file_name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+    /*decltype(_impl_.file_name_)*/ {
+    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
+  }
+
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct SourceContextDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SourceContextDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -120,17 +123,17 @@ SourceContext::SourceContext(const SourceContext& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   SourceContext* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.file_name_){}
+      decltype(_impl_.file_name_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.file_name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.file_name_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.file_name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_file_name().empty()) {
-    _this->_impl_.file_name_.Set(from._internal_file_name(), 
-      _this->GetArenaForAllocation());
+    _this->_impl_.file_name_.Set(from._internal_file_name(), _this->GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
@@ -138,13 +141,14 @@ SourceContext::SourceContext(const SourceContext& from)
 inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.file_name_){}
+      decltype(_impl_.file_name_) {}
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.file_name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.file_name_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.file_name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 SourceContext::~SourceContext() {
@@ -223,12 +227,10 @@ failure:
 
   // string file_name = 1;
   if (!this->_internal_file_name().empty()) {
+    const std::string& _s = this->_internal_file_name();
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_file_name().data(), static_cast<int>(this->_internal_file_name().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "google.protobuf.SourceContext.file_name");
-    target = stream->WriteStringMaybeAliased(
-        1, this->_internal_file_name(), target);
+        _s.data(), static_cast<int>(_s.length()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.SourceContext.file_name");
+    target = stream->WriteStringMaybeAliased(1, _s, target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -249,9 +251,8 @@ failure:
 
   // string file_name = 1;
   if (!this->_internal_file_name().empty()) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_file_name());
+    total_size += 1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+                                    this->_internal_file_name());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -294,10 +295,8 @@ void SourceContext::InternalSwap(SourceContext* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.file_name_, lhs_arena,
-      &other->_impl_.file_name_, rhs_arena
-  );
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.file_name_, lhs_arena,
+                                       &other->_impl_.file_name_, rhs_arena);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceContext::GetMetadata() const {

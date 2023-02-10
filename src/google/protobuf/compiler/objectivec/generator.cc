@@ -281,6 +281,12 @@ bool ObjectiveCGenerator::GenerateAll(
     }
   }
 
+  // Multi source generation forces off the use of fwd decls in favor of
+  // imports.
+  if (generation_options.experimental_multi_source_generation) {
+    generation_options.headers_use_forward_declarations = false;
+  }
+
   // -----------------------------------------------------------------
 
   // These are not official generation options and could be removed/changed in

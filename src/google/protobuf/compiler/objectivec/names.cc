@@ -345,7 +345,7 @@ const char* const kReservedWordList[] = {
     // These are brought in from nsobject_methods.h that is generated
     // using method_dump.sh. See kNSObjectMethods below.
 
-    // Objective C "keywords" that aren't in C
+    // Objective-C "keywords" that aren't in C
     // From
     // http://stackoverflow.com/questions/1873630/reserved-keywords-in-objective-c
     // with some others added on.

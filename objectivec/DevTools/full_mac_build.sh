@@ -2,17 +2,17 @@
 #
 # Helper to do build so you don't have to remember all the steps/args.
 
+echo "::group::Run full mac build"
 
 set -eu
 
 # Some base locations.
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/../.."
-readonly BazelFlags="--announce_rc --macos_minimum_os=10.9 \
-  $(${ScriptDir}/../../kokoro/common/bazel_flags.sh)"
+readonly BazelFlags="${BAZEL_FLAGS:---announce_rc --macos_minimum_os=10.9}"
 
 # Invoke with BAZEL=bazelisk to use that instead.
-readonly BazelBin="${BAZEL:=bazel}"
+readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS:-}"
 
 printUsage() {
   NAME=$(basename "${0}")
@@ -32,8 +32,9 @@ OPTIONS:
    -r, --regenerate-descriptors
          Run generate_descriptor_proto.sh to regenerate all the checked in
          proto sources.
-   --core-only
-         Skip some of the core protobuf build/checks to shorten the build time.
+   --full-build
+         By default only protoc is built within protobuf, this option will
+         enable a full build/test of the entire protobuf project.
    --skip-xcode
          Skip the invoke of Xcode to test the runtime on both iOS and OS X.
    --skip-xcode-ios
@@ -48,6 +49,9 @@ OPTIONS:
          Skip the invoke of Xcode to test the runtime on tvOS.
    --skip-objc-conformance
          Skip the Objective C conformance tests (run on OS X).
+   --skip-xcpretty
+         By default, if xcpretty is installed, it will be used, this option will
+         skip it even it it is installed.
    --xcode-quiet
          Pass -quiet to xcodebuild.
 
@@ -61,10 +65,19 @@ header() {
   echo "========================================================================"
 }
 
-BAZEL=bazel
+xcodebuild_xcpretty() {
+  set -o pipefail && xcodebuild "${@}" | xcpretty
+}
+
+if hash xcpretty >/dev/null 2>&1 ; then
+  XCODEBUILD=xcodebuild_xcpretty
+else
+  XCODEBUILD=xcodebuild
+fi
+
 DO_CLEAN=no
 REGEN_DESCRIPTORS=no
-CORE_ONLY=no
+FULL_BUILD=no
 DO_XCODE_IOS_TESTS=yes
 DO_XCODE_OSX_TESTS=yes
 DO_XCODE_TVOS_TESTS=yes
@@ -84,8 +97,8 @@ while [[ $# != 0 ]]; do
     -r | --regenerate-descriptors )
       REGEN_DESCRIPTORS=yes
       ;;
-    --core-only )
-      CORE_ONLY=yes
+    --full-build )
+      FULL_BUILD=yes
       ;;
     --skip-xcode )
       DO_XCODE_IOS_TESTS=no
@@ -110,6 +123,9 @@ while [[ $# != 0 ]]; do
     --skip-objc-conformance )
       DO_OBJC_CONFORMANCE_TESTS=no
       ;;
+    --skip-xcpretty )
+      XCODEBUILD=xcodebuild
+      ;;
     --xcode-quiet )
       XCODE_QUIET=yes
       ;;
@@ -132,7 +148,7 @@ cd "${ProtoRootDir}"
 
 if [[ "${DO_CLEAN}" == "yes" ]] ; then
   header "Cleaning"
-  "${BazelBin}" clean
+  ${BazelBin} clean
   if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
     XCODEBUILD_CLEAN_BASE_IOS=(
       xcodebuild
@@ -179,18 +195,16 @@ if [[ "${REGEN_DESCRIPTORS}" == "yes" ]] ; then
   ./generate_descriptor_proto.sh
 fi
 
-if [[ "${CORE_ONLY}" == "yes" ]] ; then
-  header "Building core Only"
-  "${BazelBin}" build //:protoc //:protobuf //:protobuf_lite $BazelFlags
+if [[ "${FULL_BUILD}" == "yes" ]] ; then
+  header "Build/Test: everything"
+  time ${BazelBin} test //:protoc //:protobuf //src/... $BazelFlags
 else
-  header "Building"
-  # Can't issue these together, when fully parallel, something sometimes chokes
-  # at random.
-  "${BazelBin}" test //src/... $BazelFlags
+  header "Building: protoc"
+  time ${BazelBin} build //:protoc $BazelFlags
 fi
 
 # Ensure the WKT sources checked in are current.
-BAZEL="${BazelBin}" objectivec/generate_well_known_types.sh --check-only $BazelFlags
+time objectivec/generate_well_known_types.sh --check-only $BazelFlags
 
 header "Checking on the ObjC Runtime Code"
 # Some of the kokoro machines don't have python3 yet, so fall back to python if need be.
@@ -212,7 +226,7 @@ readonly XCODE_VERSION="${XCODE_VERSION_LINE/Xcode /}"  # drop the prefix.
 
 if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
   XCODEBUILD_TEST_BASE_IOS=(
-    xcodebuild
+    "${XCODEBUILD}"
       -project objectivec/ProtocolBuffers_iOS.xcodeproj
       -scheme ProtocolBuffers
   )
@@ -254,7 +268,7 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
 fi
 if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
   XCODEBUILD_TEST_BASE_OSX=(
-    xcodebuild
+    "${XCODEBUILD}"
       -project objectivec/ProtocolBuffers_OSX.xcodeproj
       -scheme ProtocolBuffers
       # Since the ObjC 2.0 Runtime is required, 32bit OS X isn't supported.
@@ -280,7 +294,7 @@ if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
 fi
 if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
   XCODEBUILD_TEST_BASE_TVOS=(
-    xcodebuild
+    "${XCODEBUILD}"
       -project objectivec/ProtocolBuffers_tvOS.xcodeproj
       -scheme ProtocolBuffers
   )
@@ -317,8 +331,10 @@ fi
 
 if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
   header "Running ObjC Conformance Tests"
-  "${BazelBin}" test //objectivec:conformance_test $BazelFlags
+  time ${BazelBin} test //objectivec:conformance_test $BazelFlags
 fi
 
 echo ""
 echo "$(basename "${0}"): Success!"
+
+echo "::endgroup::"

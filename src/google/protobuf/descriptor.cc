@@ -38,6 +38,7 @@
 #include <array>
 #include <cstdlib>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -62,8 +63,11 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_database.h"
@@ -1872,6 +1876,7 @@ void DescriptorPool::AddUnusedImportTrackFile(absl::string_view file_name,
   unused_import_track_files_[file_name] = is_error;
 }
 
+
 void DescriptorPool::ClearUnusedImportTrackFiles() {
   unused_import_track_files_.clear();
 }
@@ -1912,7 +1917,10 @@ DescriptorPool* DescriptorPool::internal_generated_pool() {
 
 const DescriptorPool* DescriptorPool::generated_pool() {
   const DescriptorPool* pool = internal_generated_pool();
-  // Ensure that descriptor.proto has been registered in the generated pool.
+  // Ensure that descriptor.proto gets registered in the generated pool. It is a
+  // special case because it is included in the full runtime. We have to avoid
+  // registering it pre-main, because we need to ensure that the linker
+  // --gc-sections step can strip out the full runtime if it is unused.
   DescriptorProto::descriptor();
   return pool;
 }
@@ -5630,12 +5638,6 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
   }
 }
 
-namespace {
-bool IsAllowedReservedField(const FieldDescriptorProto& field) {
-  return false;
-}
-}  // namespace
-
 void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                                               Descriptor* parent,
                                               FieldDescriptor* result,
@@ -5863,21 +5865,6 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              absl::Substitute("Field numbers cannot be greater than $0.",
                               FieldDescriptor::kMaxNumber));
-  } else if (result->number() >= FieldDescriptor::kFirstReservedNumber &&
-             result->number() <= FieldDescriptor::kLastReservedNumber &&
-             !IsAllowedReservedField(proto)) {
-    message_hints_[parent].RequestHintOnFieldNumbers(
-        proto, DescriptorPool::ErrorCollector::NUMBER);
-    AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
-             absl::Substitute(
-                 "Field numbers $0 through $1 are reserved for the protocol "
-                 "buffer library implementation$2.",
-                 FieldDescriptor::kFirstReservedNumber,
-                 FieldDescriptor::kLastReservedNumber,
-                 absl::StartsWith(proto.type_name(), ".")
-                     ? ""
-                     : ", and the type name must be fully qualified with a `.` "
-                       "prefix"));
   }
 
   if (is_extension) {
@@ -6472,6 +6459,7 @@ void DescriptorBuilder::CrossLinkExtensionRange(
     range->options_ = &ExtensionRangeOptions::default_instance();
   }
 }
+
 
 void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                                        const FieldDescriptorProto& proto) {
@@ -7111,7 +7099,7 @@ void DescriptorBuilder::ValidateFieldOptions(
   // determine whether the json_name option is set on the field. Here we
   // compare it against the default calculated json_name value and consider
   // the option set if they are different. This won't catch the case when
-  // an user explicitly sets json_name to the default value, but should be
+  // a user explicitly sets json_name to the default value, but should be
   // good enough to catch common misuses.
   if (field->is_extension() &&
       (field->has_json_name() &&

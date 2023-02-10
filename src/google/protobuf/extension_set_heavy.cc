@@ -35,8 +35,9 @@
 // Contains methods defined in extension_set.h which cannot be part of the
 // lite library because they use descriptors or reflection.
 
+#include <vector>
+
 #include "google/protobuf/arena.h"
-#include "absl/base/casts.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
@@ -48,7 +49,6 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
-#include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -66,8 +66,8 @@ class DescriptorPoolExtensionFinder {
  public:
   DescriptorPoolExtensionFinder(const DescriptorPool* pool,
                                 MessageFactory* factory,
-                                const Descriptor* containing_type)
-      : pool_(pool), factory_(factory), containing_type_(containing_type) {}
+                                const Descriptor* extendee)
+      : pool_(pool), factory_(factory), containing_type_(extendee) {}
 
   bool Find(int number, ExtensionInfo* output);
 
@@ -78,9 +78,9 @@ class DescriptorPoolExtensionFinder {
 };
 
 void ExtensionSet::AppendToList(
-    const Descriptor* containing_type, const DescriptorPool* pool,
+    const Descriptor* extendee, const DescriptorPool* pool,
     std::vector<const FieldDescriptor*>* output) const {
-  ForEach([containing_type, pool, &output](int number, const Extension& ext) {
+  ForEach([extendee, pool, &output](int number, const Extension& ext) {
     bool has = false;
     if (ext.is_repeated) {
       has = ext.GetSize() > 0;
@@ -95,7 +95,7 @@ void ExtensionSet::AppendToList(
       //   AppendToList() is called.
 
       if (ext.descriptor == nullptr) {
-        output->push_back(pool->FindExtensionByNumber(containing_type, number));
+        output->push_back(pool->FindExtensionByNumber(extendee, number));
       } else {
         output->push_back(ext.descriptor);
       }
@@ -304,19 +304,19 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
 
 
 bool ExtensionSet::FindExtension(int wire_type, uint32_t field,
-                                 const Message* containing_type,
+                                 const Message* extendee,
                                  const internal::ParseContext* ctx,
                                  ExtensionInfo* extension,
                                  bool* was_packed_on_wire) {
   if (ctx->data().pool == nullptr) {
-    GeneratedExtensionFinder finder(containing_type);
+    GeneratedExtensionFinder finder(extendee);
     if (!FindExtensionInfoFromFieldNumber(wire_type, field, &finder, extension,
                                           was_packed_on_wire)) {
       return false;
     }
   } else {
     DescriptorPoolExtensionFinder finder(ctx->data().pool, ctx->data().factory,
-                                         containing_type->GetDescriptor());
+                                         extendee->GetDescriptor());
     if (!FindExtensionInfoFromFieldNumber(wire_type, field, &finder, extension,
                                           was_packed_on_wire)) {
       return false;
@@ -326,13 +326,13 @@ bool ExtensionSet::FindExtension(int wire_type, uint32_t field,
 }
 
 const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
-                                     const Message* containing_type,
+                                     const Message* extendee,
                                      internal::InternalMetadata* metadata,
                                      internal::ParseContext* ctx) {
   int number = tag >> 3;
   bool was_packed_on_wire;
   ExtensionInfo extension;
-  if (!FindExtension(tag & 7, number, containing_type, ctx, &extension,
+  if (!FindExtension(tag & 7, number, extendee, ctx, &extension,
                      &was_packed_on_wire)) {
     return UnknownFieldParse(
         tag, metadata->mutable_unknown_fields<UnknownFieldSet>(), ptr, ctx);
@@ -342,15 +342,15 @@ const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
 }
 
 const char* ExtensionSet::ParseFieldMaybeLazily(
-    uint64_t tag, const char* ptr, const Message* containing_type,
+    uint64_t tag, const char* ptr, const Message* extendee,
     internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseField(tag, ptr, containing_type, metadata, ctx);
+  return ParseField(tag, ptr, extendee, metadata, ctx);
 }
 
 const char* ExtensionSet::ParseMessageSetItem(
-    const char* ptr, const Message* containing_type,
+    const char* ptr, const Message* extendee,
     internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl<Message, UnknownFieldSet>(ptr, containing_type,
+  return ParseMessageSetItemTmpl<Message, UnknownFieldSet>(ptr, extendee,
                                                            metadata, ctx);
 }
 

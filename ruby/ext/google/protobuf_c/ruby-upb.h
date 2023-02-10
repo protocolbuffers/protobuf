@@ -1813,7 +1813,9 @@ union upb_MiniTableSub {
 // Must be last.
 
 struct upb_MiniTableExtension {
+  // Do not move this field. We need to be able to alias pointers.
   upb_MiniTableField field;
+
   const upb_MiniTable* extendee;
   upb_MiniTableSub sub;  // NULL unless submessage or proto2 enum
 };
@@ -2252,6 +2254,26 @@ UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
   return mini_table->subs[field->submsg_index].subenum;
 }
+
+// If this field is in a oneof, returns the first field in the oneof.
+//
+// Otherwise returns NULL.
+//
+// Usage:
+//   const upb_MiniTableField* field = upb_MiniTable_GetOneof(m, f);
+//   do {
+//       ..
+//   } while (upb_MiniTable_NextOneofField(m, &field);
+//
+const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
+                                                 const upb_MiniTableField* f);
+
+// Returns the next field in the oneof. If this is the last field in the
+// oneof, returns NULL. The ordering of fields in the oneof is not
+// guaranteed.
+// REQUIRES: |iter| is and iterator.
+bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
+                                  const upb_MiniTableField** f);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -2942,6 +2964,8 @@ typedef struct {
 //
 // The unknown data is removed from message after field value is set
 // using upb_Message_SetMessage.
+//
+// WARNING!: See b/267655898
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,
@@ -3290,6 +3314,12 @@ extern const upb_MiniTable google_protobuf_GeneratedCodeInfo_msg_init;
 extern const upb_MiniTable google_protobuf_GeneratedCodeInfo_Annotation_msg_init;
 
 typedef enum {
+  google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL = 1,
+  google_protobuf_FieldDescriptorProto_LABEL_REQUIRED = 2,
+  google_protobuf_FieldDescriptorProto_LABEL_REPEATED = 3
+} google_protobuf_FieldDescriptorProto_Label;
+
+typedef enum {
   google_protobuf_FieldDescriptorProto_TYPE_DOUBLE = 1,
   google_protobuf_FieldDescriptorProto_TYPE_FLOAT = 2,
   google_protobuf_FieldDescriptorProto_TYPE_INT64 = 3,
@@ -3309,18 +3339,6 @@ typedef enum {
   google_protobuf_FieldDescriptorProto_TYPE_SINT32 = 17,
   google_protobuf_FieldDescriptorProto_TYPE_SINT64 = 18
 } google_protobuf_FieldDescriptorProto_Type;
-
-typedef enum {
-  google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL = 1,
-  google_protobuf_FieldDescriptorProto_LABEL_REQUIRED = 2,
-  google_protobuf_FieldDescriptorProto_LABEL_REPEATED = 3
-} google_protobuf_FieldDescriptorProto_Label;
-
-typedef enum {
-  google_protobuf_FileOptions_SPEED = 1,
-  google_protobuf_FileOptions_CODE_SIZE = 2,
-  google_protobuf_FileOptions_LITE_RUNTIME = 3
-} google_protobuf_FileOptions_OptimizeMode;
 
 typedef enum {
   google_protobuf_FieldOptions_STRING = 0,
@@ -3354,10 +3372,10 @@ typedef enum {
 } google_protobuf_FieldOptions_OptionTargetType;
 
 typedef enum {
-  google_protobuf_MethodOptions_IDEMPOTENCY_UNKNOWN = 0,
-  google_protobuf_MethodOptions_NO_SIDE_EFFECTS = 1,
-  google_protobuf_MethodOptions_IDEMPOTENT = 2
-} google_protobuf_MethodOptions_IdempotencyLevel;
+  google_protobuf_FileOptions_SPEED = 1,
+  google_protobuf_FileOptions_CODE_SIZE = 2,
+  google_protobuf_FileOptions_LITE_RUNTIME = 3
+} google_protobuf_FileOptions_OptimizeMode;
 
 typedef enum {
   google_protobuf_GeneratedCodeInfo_Annotation_NONE = 0,
@@ -3365,16 +3383,22 @@ typedef enum {
   google_protobuf_GeneratedCodeInfo_Annotation_ALIAS = 2
 } google_protobuf_GeneratedCodeInfo_Annotation_Semantic;
 
+typedef enum {
+  google_protobuf_MethodOptions_IDEMPOTENCY_UNKNOWN = 0,
+  google_protobuf_MethodOptions_NO_SIDE_EFFECTS = 1,
+  google_protobuf_MethodOptions_IDEMPOTENT = 2
+} google_protobuf_MethodOptions_IdempotencyLevel;
 
-extern const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Type_enum_init;
+
 extern const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Label_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FileOptions_OptimizeMode_enum_init;
+extern const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Type_enum_init;
 extern const upb_MiniTableEnum google_protobuf_FieldOptions_CType_enum_init;
 extern const upb_MiniTableEnum google_protobuf_FieldOptions_JSType_enum_init;
 extern const upb_MiniTableEnum google_protobuf_FieldOptions_OptionRetention_enum_init;
 extern const upb_MiniTableEnum google_protobuf_FieldOptions_OptionTargetType_enum_init;
-extern const upb_MiniTableEnum google_protobuf_MethodOptions_IdempotencyLevel_enum_init;
+extern const upb_MiniTableEnum google_protobuf_FileOptions_OptimizeMode_enum_init;
 extern const upb_MiniTableEnum google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init;
+extern const upb_MiniTableEnum google_protobuf_MethodOptions_IdempotencyLevel_enum_init;
 
 /* google.protobuf.FileDescriptorSet */
 
@@ -8262,6 +8286,7 @@ UPB_INLINE int upb_EpsCopyInputStream_PushLimit(upb_EpsCopyInputStream* e,
   int limit = size + (int)(ptr - e->end);
   int delta = e->limit - limit;
   _upb_EpsCopyInputStream_CheckLimit(e);
+  UPB_ASSERT(limit <= e->limit);
   e->limit = limit;
   e->limit_ptr = e->end + UPB_MIN(0, limit);
   _upb_EpsCopyInputStream_CheckLimit(e);
@@ -9734,19 +9759,21 @@ UPB_API_INLINE upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
                               status);
 }
 
-// Links a sub-message field to a MiniTable for that sub-message.  If a
+// Links a sub-message field to a MiniTable for that sub-message. If a
 // sub-message field is not linked, it will be treated as an unknown field
-// during parsing, and setting the field will not be allowed.  It is possible
+// during parsing, and setting the field will not be allowed. It is possible
 // to link the message field later, at which point it will no longer be treated
-// as unknown.  However there is no synchronization for this operation, which
+// as unknown. However there is no synchronization for this operation, which
 // means parallel mutation requires external synchronization.
-UPB_API void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
+// Returns success/failure.
+UPB_API bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                          upb_MiniTableField* field,
                                          const upb_MiniTable* sub);
 
-// Links an enum field to a MiniTable for that enum.  All enum fields must
-// be linked prior to parsing.
-UPB_API void upb_MiniTable_SetSubEnum(upb_MiniTable* table,
+// Links an enum field to a MiniTable for that enum.
+// All enum fields must be linked prior to parsing.
+// Returns success/failure.
+UPB_API bool upb_MiniTable_SetSubEnum(upb_MiniTable* table,
                                       upb_MiniTableField* field,
                                       const upb_MiniTableEnum* sub);
 

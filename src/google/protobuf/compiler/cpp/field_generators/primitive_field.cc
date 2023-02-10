@@ -37,11 +37,9 @@
 #include <tuple>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
-#include "absl/strings/substitute.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -167,7 +165,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      /* .$field_$ = */ $kDefault$
+      /*decltype($field_$)*/ $kDefault$
     )cc");
   }
 
@@ -340,7 +338,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      /* .$field_$ = */ {}
+      /*decltype($field_$)*/ {}
     )cc");
     InitCachedSize(p);
   }

@@ -375,7 +375,7 @@ void ObjCObjFieldGenerator::GenerateFieldStorageDeclaration(
 void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
     io::Printer* printer) const {
   // Differs from SingleFieldGenerator::GeneratePropertyDeclaration() in that
-  // it uses pointers and deals with Objective C's rules around storage name
+  // it uses pointers and deals with Objective-C's rules around storage name
   // conventions (init*, new*, etc.)
 
   printer->Print(variables_, "$comments$");
@@ -431,7 +431,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
   // Repeated fields don't need the has* properties, but they do expose a
   // *Count (to check without autocreation).  So for the field property we need
   // the same logic as ObjCObjFieldGenerator::GeneratePropertyDeclaration() for
-  // dealing with needing Objective C's rules around storage name conventions
+  // dealing with needing Objective-C's rules around storage name conventions
   // (init*, new*, etc.)
 
   // clang-format off

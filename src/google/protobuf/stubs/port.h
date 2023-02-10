@@ -67,10 +67,10 @@
 #include <sys/isa_defs.h>  // __BYTE_ORDER
 #elif defined(_AIX) || defined(__TOS_AIX__)
 #include <sys/machine.h>  // BYTE_ORDER
+#elif defined(__QNX__)
+#include <sys/param.h>  // BYTE_ORDER
 #else
-#if !defined(__QNX__)
 #include <endian.h>  // __BYTE_ORDER
-#endif
 #endif
 #if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||   \
      (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || \

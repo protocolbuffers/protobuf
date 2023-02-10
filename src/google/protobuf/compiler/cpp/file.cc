@@ -57,6 +57,7 @@
 #include "google/protobuf/compiler/cpp/message.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/service.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -962,8 +963,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // FileDescriptorProto/ and embed it as a string literal, which is parsed and
   // built into real descriptors at initialization time.
 
-  FileDescriptorProto file_proto;
-  file_->CopyTo(&file_proto);
+  FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
   std::string file_data;
   file_proto.SerializeToString(&file_data);
 
