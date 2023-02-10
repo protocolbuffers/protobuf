@@ -1,6 +1,60 @@
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//conformance:defs.bzl", "conformance_test")
+load(":defs.bzl", "objc_proto_camel_case_name")
+
+# The WKTs have to be checked in to support the CocoaPods and Xcode builds. This
+# generule and test ensure the source are current.
+#
+# TODO: Improve the bazel build so it uses these generated headers so it is
+# always current, and only the builds that can't easily build protoc and
+# generate the files rely on the checked in ones.
+
+_WELL_KNOWN_TYPES = [
+    "any",
+    "api",
+    "duration",
+    "empty",
+    "field_mask",
+    "source_context",
+    "struct",
+    "timestamp",
+    "type",
+    "wrappers",
+]
+
+_OBJC_WKT_NAMES = [objc_proto_camel_case_name(x) for x in _WELL_KNOWN_TYPES]
+
+_OBJC_EXTS = [
+    ".pbobjc.h",
+    ".pbobjc.m",
+]
+
+genrule(
+    name = "gen_wkt_sources",
+    srcs = ["//src/google/protobuf:well_known_type_protos"],
+    outs = ["wkt/GPB" + wkt + ext for wkt in _OBJC_WKT_NAMES for ext in _OBJC_EXTS],
+    cmd = " && ".join([
+        "$(execpath //:protoc) --objc_out=$(RULEDIR)/wkt --proto_path=src $(SRCS)",
+    ] + [
+        "mv $(RULEDIR)/wkt/google/protobuf/" + wkt + ext + " $(RULEDIR)/wkt/GPB" + wkt + ext
+        for wkt in _OBJC_WKT_NAMES
+        for ext in _OBJC_EXTS
+    ]),
+    exec_tools = ["//:protoc"],
+)
+
+staleness_test(
+    name = "well_known_types_staleness_test",
+    outs = ["GPB" + wkt + ext for wkt in _OBJC_WKT_NAMES for ext in _OBJC_EXTS],
+    generated_pattern = "wkt/%s",
+    tags = ["manual"],
+)
+
+################################################################################
+# Objective-C Runtime Library
+################################################################################
 
 objc_library(
     name = "objectivec",

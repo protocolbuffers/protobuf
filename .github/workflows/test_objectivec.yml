@@ -73,11 +73,14 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Pod lib lint
-        run:  |
-          pod lib lint --verbose \
-            --configuration=${{ matrix.CONFIGURATION }} \
-            --platforms=${{ matrix.PLATFORM }} \
-            Protobuf.podspec
+        uses: ./.github/actions/bash
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: |
+            pod lib lint --verbose \
+              --configuration=${{ matrix.CONFIGURATION }} \
+              --platforms=${{ matrix.PLATFORM }} \
+              Protobuf.podspec
 
   bazel:
     strategy:
