@@ -1339,8 +1339,8 @@ void Reflection::ClearField(Message* message,
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
           if (schema_.HasBitIndex(field) == static_cast<uint32_t>(-1)) {
-            // Proto3 does not have has-bits and we need to set a message field
-            // to nullptr in order to indicate its un-presence.
+            // Some fields do not have hasbits and we need to set a message
+            // field to nullptr in order to indicate its un-presence.
             if (message->GetArenaForAllocation() == nullptr) {
               delete *MutableRaw<Message*>(message, field);
             }
@@ -1554,8 +1554,7 @@ void CheckInOrder(const FieldDescriptor* field, uint32_t* last) {
 
 namespace internal {
 bool CreateUnknownEnumValues(const FieldDescriptor* field) {
-  bool open_enum = false;
-  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 || open_enum;
+  return field->enum_type() == nullptr || !field->enum_type()->is_closed();
 }
 }  // namespace internal
 using internal::CreateUnknownEnumValues;
