@@ -9,8 +9,7 @@ readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ObjCDir="${ScriptDir}"
 readonly ProtoRootDir="${ObjCDir}/.."
 
-# Invoke with BAZEL=bazelisk to use that instead.
-readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS:-}"
+cd "${ProtoRootDir}"
 
 # Flag for continuous integration to check that everything is current.
 CHECK_ONLY=0
@@ -19,7 +18,11 @@ if [[ $# -ge 1 && ( "$1" == "--check-only" ) ]] ; then
   shift
 fi
 
-cd "${ProtoRootDir}"
+readonly PROTOC_PATH="${PROTOC:-${ProtoRootDir}/bazel-bin/protoc}"
+if [[ ! -x "${PROTOC_PATH}" ]] ; then
+  echo "Failed to find executable protoc: ${PROTOC_PATH}"
+  exit 1
+fi
 
 if [[ ! -e src/google/protobuf/stubs/common.h ]]; then
   cat >&2 << __EOF__
@@ -28,9 +31,6 @@ root of the distribution tree.
 __EOF__
   exit 1
 fi
-
-# Make sure the compiler is current.
-${BazelBin} build //:protoc $@
 
 cd src
 declare -a RUNTIME_PROTO_FILES=( \
@@ -50,7 +50,7 @@ declare -a OBJC_EXTENSIONS=( .pbobjc.h .pbobjc.m )
 # Generate to a temp directory to see if they match.
 TMP_DIR=$(mktemp -d)
 trap "rm -rf ${TMP_DIR}" EXIT
-${ProtoRootDir}/bazel-bin/protoc --objc_out="${TMP_DIR}" ${RUNTIME_PROTO_FILES[@]}
+"${PROTOC_PATH}" --objc_out="${TMP_DIR}" ${RUNTIME_PROTO_FILES[@]}
 
 DID_COPY=0
 for PROTO_FILE in "${RUNTIME_PROTO_FILES[@]}"; do
