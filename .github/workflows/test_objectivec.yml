@@ -13,20 +13,19 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        platform: ["macOS", "iOS"]
+        xc_config: ["Debug", "Release"]
+        # The "destination" entries need to match what is available for the selected Xcode.
+        # See `.github/BUILD.bazel` for the Xcode info.
         include:
-          - name: macOS
-            config: osx
-            flags: --skip-xcode-ios --skip-xcode-tvos --skip-objc-conformance
-          # The iOS simulator takes a while to start up, so Debug & Release are run in
-          # parallel to get the testing done faster.
-          - name: iOS Debug
-            config: ios_debug
-            flags: --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-release
-          - name: iOS Release
-            config: ios_release
-            flags: --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-debug
+        - platform: "macOS"
+          destination: "platform=macOS"
+          xc_project: "ProtocolBuffers_OSX.xcodeproj"
+        - platform: "iOS"
+          destination: "platform=iOS Simulator,name=iPhone 13,OS=latest"
+          xc_project: "ProtocolBuffers_iOS.xcodeproj"
 
-    name: Xcode ${{ matrix.name}}
+    name: Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
     runs-on: macos-12
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
@@ -39,18 +38,24 @@ jobs:
       - name: Setup ccache
         uses: ./.github/actions/ccache
         with:
-          cache-prefix: objectivec_macos_${{ matrix.config }}
+          cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
-        uses: ./.github/actions/bazel
+        uses: ./.github/actions/bash
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: objectivec_macos/${{ matrix.config }}
-          bash: objectivec/DevTools/full_mac_build.sh ${{ matrix.flags }}
+          command: |
+            xcodebuild \
+                -project "objectivec/${{ matrix.xc_project }}" \
+                -scheme ProtocolBuffers \
+                -configuration ${{ matrix.xc_config }} \
+                -destination "${{ matrix.destination }}" \
+                test \
+              | xcpretty
 
       - name: Report ccache stats
         shell: bash
