@@ -6782,13 +6782,26 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   UPB_ASSERT((uintptr_t)table->fields <= (uintptr_t)field &&
              (uintptr_t)field <
                  (uintptr_t)(table->fields + table->field_count));
-  // TODO: check these type invariants at runtime and return error to the
-  // caller if they are violated, instead of using an assert.
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
-             field->descriptortype == kUpb_FieldType_Group);
-  if (sub->ext & kUpb_ExtMode_IsMapEntry) {
-    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message);
-    field->mode = (field->mode & ~kUpb_FieldMode_Mask) | kUpb_FieldMode_Map;
+  UPB_ASSERT(sub);
+
+  const bool sub_is_map = sub->ext & kUpb_ExtMode_IsMapEntry;
+
+  switch (field->descriptortype) {
+    case kUpb_FieldType_Message:
+      if (sub_is_map) {
+        const bool table_is_map = table->ext & kUpb_ExtMode_IsMapEntry;
+        if (UPB_UNLIKELY(table_is_map)) return false;
+
+        field->mode = (field->mode & ~kUpb_FieldMode_Mask) | kUpb_FieldMode_Map;
+      }
+      break;
+
+    case kUpb_FieldType_Group:
+      if (UPB_UNLIKELY(sub_is_map)) return false;
+      break;
+
+    default:
+      return false;
   }
 
   upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];
