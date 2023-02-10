@@ -655,4 +655,31 @@ class ArrayTest extends TestBase
         $arr2 = clone $arr;
         $this->assertSame($arr[0], $arr2[0]);
     }
+
+    #########################################################
+    # Test offsetUnset
+    #########################################################
+
+    public function testOffsetUnset()
+    {
+        $arr = new RepeatedField(GPBType::INT32);
+        $arr[] = 0;
+        $arr[] = 1;
+        $arr[] = 2;
+
+        $this->assertSame(3, count($arr));
+        $this->assertSame(0, $arr[0]);
+        $this->assertSame(1, $arr[1]);
+        $this->assertSame(2, $arr[2]);
+
+        $arr->offsetUnset(1);
+        $this->assertSame(0, $arr[0]);
+        $this->assertSame(2, $arr[1]);
+
+        $arr->offsetUnset(0);
+        $this->assertSame(2, $arr[0]);
+
+        $arr->offsetUnset(0);
+        $this->assertCount(0, $arr);
+    }
 }
