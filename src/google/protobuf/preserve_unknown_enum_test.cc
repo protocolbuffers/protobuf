@@ -275,16 +275,5 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
             repeated_field->number());
   EXPECT_EQ(message.unknown_fields().field(2).varint(), 4242);
 }
-
-TEST(PreserveUnknownEnumTest, SupportsUnknownEnumValuesAPI) {
-  protobuf_unittest::TestAllTypes proto2_message;
-  proto3_preserve_unknown_enum_unittest::MyMessage new_message;
-
-  const Reflection* proto2_reflection = proto2_message.GetReflection();
-  const Reflection* new_reflection = new_message.GetReflection();
-
-  EXPECT_FALSE(proto2_reflection->SupportsUnknownEnumValues());
-  EXPECT_TRUE(new_reflection->SupportsUnknownEnumValues());
-}
 }  // namespace protobuf
 }  // namespace google

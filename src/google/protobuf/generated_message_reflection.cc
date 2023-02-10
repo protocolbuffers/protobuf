@@ -1540,10 +1540,6 @@ bool IsIndexInHasBitSet(const uint32_t* has_bit_set, uint32_t has_bit_index) {
           static_cast<uint32_t>(1)) != 0;
 }
 
-bool CreateUnknownEnumValues(const FileDescriptor* file) {
-  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
-
 void CheckInOrder(const FieldDescriptor* field, uint32_t* last) {
   *last = *last <= static_cast<uint32_t>(field->number())
               ? static_cast<uint32_t>(field->number())
@@ -2485,7 +2481,7 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
 }
 
 bool Reflection::SupportsUnknownEnumValues() const {
-  return CreateUnknownEnumValues(descriptor_->file());
+  return descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
 // ===================================================================

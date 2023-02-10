@@ -224,7 +224,6 @@ PyObject* MapValueRefToPython(MapContainer* self, const MapValueRef& value) {
 // This is only used for ScalarMap, so we don't need to handle the
 // CPPTYPE_MESSAGE case.
 static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
-                                bool allow_unknown_enum_values,
                                 MapValueRef* value_ref) {
   const FieldDescriptor* field_descriptor =
       self->parent_field_descriptor->message_type()->map_value();
@@ -274,7 +273,7 @@ static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(obj, value, false);
-      if (allow_unknown_enum_values) {
+      if (!field_descriptor->is_closed_enum()) {
         value_ref->SetEnumValue(value);
         return true;
       } else {
@@ -437,8 +436,7 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
       self->version++;
     }
 
-    if (!PythonToMapValueRef(self, v, reflection->SupportsUnknownEnumValues(),
-                             &value)) {
+    if (!PythonToMapValueRef(self, v, &value)) {
       return -1;
     }
     return 0;

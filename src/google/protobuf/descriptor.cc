@@ -8327,6 +8327,11 @@ const EnumDescriptor* FieldDescriptor::enum_type() const {
   return type_ == TYPE_ENUM ? type_descriptor_.enum_type : nullptr;
 }
 
+bool FieldDescriptor::is_closed_enum() const {
+  auto* e = enum_type();
+  return e != nullptr ? e->is_closed() : false;
+}
+
 const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {
   if (type_once_) {
     absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);

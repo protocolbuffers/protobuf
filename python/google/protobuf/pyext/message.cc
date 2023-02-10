@@ -2300,7 +2300,7 @@ int InternalSetNonOneofScalar(
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
-      if (reflection->SupportsUnknownEnumValues()) {
+      if (!field_descriptor->is_closed_enum()) {
         reflection->SetEnumValue(message, field_descriptor, value);
       } else {
         const EnumDescriptor* enum_descriptor = field_descriptor->enum_type();

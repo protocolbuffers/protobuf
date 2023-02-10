@@ -841,6 +841,11 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   // If type is TYPE_ENUM, returns a descriptor for the enum.  Otherwise,
   // returns null.
   const EnumDescriptor* enum_type() const;
+  // If the type is TYPE_ENUM, returns whether it is a closed enum. Otherwise,
+  // returns false.
+  //
+  // This is a conveinence wrapper over enum_type()->is_closed().
+  bool is_closed_enum() const;
 
   // Get the FieldOptions for this field.  This includes things listed in
   // square brackets after the field definition.  E.g., the field:
