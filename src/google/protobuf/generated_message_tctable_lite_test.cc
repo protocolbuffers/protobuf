@@ -125,6 +125,7 @@ TEST(FastVarints, NameHere) {
   // clang-format on
   uint8_t serialize_buffer[64];
 
+  // TODO(b/27721823): cleanup test cases for 'former' TV* functions.
   for (int size : {8, 32, 64, -8, -32, -64}) {
     SCOPED_TRACE(size);
     auto next_i = [](uint64_t i) {
@@ -193,19 +194,19 @@ TEST(FastVarints, NameHere) {
             fn = &TcParser::FastV8S1;
             break;
           case -8:
-            fn = &TcParser::FastTV8S1<kFieldOffset, kHasBitIndex>;
+            fn = &TcParser::FastV8S1;
             break;
           case 32:
             fn = &TcParser::FastV32S1;
             break;
           case -32:
-            fn = &TcParser::FastTV32S1<uint32_t, kFieldOffset, kHasBitIndex>;
+            fn = &TcParser::FastTV32S1<uint32_t>;
             break;
           case 64:
             fn = &TcParser::FastV64S1;
             break;
           case -64:
-            fn = &TcParser::FastTV64S1<uint64_t, kFieldOffset, kHasBitIndex>;
+            fn = &TcParser::FastTV64S1<uint64_t>;
             break;
         }
         fallback_ptr_received = absl::nullopt;
