@@ -23,5 +23,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: >
-          ${{ github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf' }} ||
-          (echo "This pull request is from an unsafe fork and isn't allowed to modify workflow files!" && exit 1)
+          ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf' }} ||
+          (echo "This pull request is from an unsafe fork (${{ github.event.pull_request.head.repo.full_name }}) and isn't allowed to modify workflow files!" && exit 1)
