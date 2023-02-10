@@ -71,6 +71,14 @@ is working as expected (that is, it will run all the staleness tests).
 The `regenerate_stale_files.sh` script is the central script responsible for all
 the re-generation of stale files.
 
+# Forked PRs
+
+Because we need secret access to run our tests, we use the `pull_request_target`
+event for PRs coming from forked repositories.  We do checkout the code from the
+PR's head, but the workflow files themselves are always fetched from the *base*
+branch (that is, the branch we're merging to).  Therefore, any changes to these
+files won't be tested, so we explicitly ban PRs that touch these files.
+
 # Caches
 
 We have a number of different caching strategies to help speed up tests.  These
