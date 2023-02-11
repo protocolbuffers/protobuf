@@ -292,13 +292,17 @@ if (MSVC)
   string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
 
   if (protobuf_ALLOW_CCACHE)
-    # In order to support ccache, we replace the /Zi option with /Z7.  This
+    # In order to support ccache, we need to remove the /Zi option because it
+    # puts debug symbols into separate pdb files (which in incompatible with
+    # ccache).  This can be replaced with /Z7 to preserve debug symbols, which
     # embeds debug symbols into the object files instead of creating a separate
-    # pdb file, which isn't currently supported by ccache.
-    string(REPLACE "/Zi" "/Z7" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    string(REPLACE "/Zi" "/Z7" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    # pdb file, which isn't currently supported by ccache.  However, this bloats
+    # the ccache size by about a factor of 2x, making it very expensive in CI.
+    # Instead, we strip debug symbols to reduce this overhead.
+    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
   endif()
 
   # Suppress linker warnings about files with no symbols defined.
