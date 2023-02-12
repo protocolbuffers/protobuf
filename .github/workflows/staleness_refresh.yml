@@ -11,12 +11,13 @@ on:
 
 permissions: {}
 jobs:
-  cmake:
+  run:
     permissions:
       contents: write  #  for git push
 
     if: github.repository == 'protocolbuffers/protobuf'
     runs-on: ubuntu-latest
+    name: Refresh stale files
 
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
