@@ -249,7 +249,8 @@ class Build
             {"mac_x64", "macos/x64"},
             {"mac_arm64", "macos/arm64"},
             {"linux_x64_clang", "linux"},
-            {"win64_vs2017", "win64"},
+            {"win_x64_vs2017_win7", "win/x64"},
+            {"win_arm64_vs2019_win7", "win/arm64"},
         };
 
         var name = toolchain.ActionName.ToLowerInvariant();
@@ -264,6 +265,7 @@ class Build
     {
         var toolchains = new ToolChain[] {
             ToolChain.Store.Windows().VS2017().Sdk_17134().x64(),
+            ToolChain.Store.Windows().VS2019().Sdk_20348().Arm64(),
             ToolChain.Store.Linux().Centos_7_7_1908().Clang_9_0_1().x64(),
             ToolChain.Store.Mac().Sdk_11_0().x64(),
             ToolChain.Store.Mac().Sdk_11_0().ARM64(),
