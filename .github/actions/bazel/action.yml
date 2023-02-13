@@ -63,14 +63,14 @@ runs:
       run: echo "BAZELISK_PATH=$LOCALAPPDATA\bazelisk" >> $GITHUB_ENV
 
     - name: Cache Bazelisk
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name != 'pull_request' && github.event_name != 'pull_request_target' }}
       uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
       with:
         path: ${{ env.BAZELISK_PATH }}
         key: bazel-${{ runner.os }}-${{ inputs.version }}
 
     - name: Restore Bazelisk
-      if: ${{ github.event_name != 'push' }}
+      if: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
       uses: actions/cache/restore@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
       with:
         path: ${{ env.BAZELISK_PATH }}
@@ -107,5 +107,5 @@ runs:
 
     - name: Save Bazel repository cache
       # Only allow repository cache updates during post-submits.
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name != 'pull_request' && github.event_name != 'pull_request_target'}}
       uses: ./.github/actions/internal/repository-cache-save
