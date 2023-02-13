@@ -91,11 +91,15 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        config:
+          - { name: Optimized, flags: --config=opt }
+          - { name: Debug, flags: --config=dbg }
+        # TODO: Could add iOS to atleast build the objc_library targets for that.
+        platform: ["macOS"]
         include:
-          # TODO: Could add iOS to atleast build the objc_library targets for that.
-          - name: macOS
-            bazel: //objectivec/...
-    name: Bazel ${{ matrix.name }}
+        - platform: "macOS"
+          bazel_targets: //objectivec/...
+    name: Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
@@ -106,5 +110,5 @@ jobs:
         uses: ./.github/actions/bazel
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel: test ${{ matrix.bazel }}
-          bazel-cache: objc_${{ matrix.name }}
+          bazel: test ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
+          bazel-cache: objc_${{ matrix.platform }}_${{ matrix.config.name }}
