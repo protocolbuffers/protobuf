@@ -856,6 +856,19 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // PROTOBUF_TC_PARAM_PASS passes values to match PROTOBUF_TC_PARAM_DECL.
 #define PROTOBUF_TC_PARAM_PASS msg, ptr, ctx, data, table, hasbits
 
+// PROTOBUF_TC_PARAM_NO_DATA_DECL and PROTOBUF_TC_PARAM_NO_DATA_PASS provide the
+// exact same ABI as above, except that they don't name or pass the `data`
+// argument. Specific functions such as `Error() and `ToTagDispatch()` don't
+// use the `data` argument. By not passing `data` down the call stack, we free
+// up the register holding that value, which may matter in highly optimized
+// functions such as varint parsing.
+#define PROTOBUF_TC_PARAM_NO_DATA_DECL                                        \
+  ::google::protobuf::MessageLite *msg, const char *ptr,                                \
+      ::google::protobuf::internal::ParseContext *ctx, ::google::protobuf::internal::TcFieldData, \
+      const ::google::protobuf::internal::TcParseTableBase *table, uint64_t hasbits
+#define PROTOBUF_TC_PARAM_NO_DATA_PASS \
+  msg, ptr, ctx, ::google::protobuf::internal::TcFieldData::DefaultInit(), table, hasbits
+
 #ifdef PROTOBUF_UNUSED
 #error PROTOBUF_UNUSED was previously defined
 #endif
