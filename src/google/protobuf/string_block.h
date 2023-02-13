@@ -62,11 +62,21 @@ class alignas(std::string) StringBlock {
   StringBlock(const StringBlock&) = delete;
   StringBlock& operator=(const StringBlock&) = delete;
 
+  // Returns the size of the next string block based on the size information
+  // stored in `block`. `block` may be null in which case the size of the
+  // initial string block is returned.
+  static size_t NextSize(StringBlock* block);
+
   // Allocates a new StringBlock pointing to `next`, which can be null.
   // The size of the returned block depends on the allocated size of `next`.
   static StringBlock* New(StringBlock* next);
 
-  // Deletes `block`. `block` must not be null.
+  // Allocates a new string block `in place`. `n` must be the value returned
+  // from a previous call to `StringBlock::NextSize(next)`
+  static StringBlock* Emplace(void* p, size_t n, StringBlock* next);
+
+  // Deletes `block` if `block` is heap allocated. `block` must not be null.
+  // Returns the allocated size of `block`, or 0 if the block was emplaced.
   static size_t Delete(StringBlock* block);
 
   StringBlock* next() const;
@@ -86,6 +96,9 @@ class alignas(std::string) StringBlock {
   // Returns the total allocation size of this instance.
   size_t allocated_size() const { return allocated_size_; }
 
+  // Returns true if this block is heap allocated, false if emplaced.
+  bool heap_allocated() const { return heap_allocated_; }
+
   // Returns the effective size available for allocation string instances.
   // This value is guaranteed to be a multiple of sizeof(std::string), and
   // guaranteed to never be zero.
@@ -97,20 +110,43 @@ class alignas(std::string) StringBlock {
 
   ~StringBlock() = default;
 
-  explicit StringBlock(StringBlock* next, uint32_t size,
+  explicit StringBlock(StringBlock* next, bool heap_allocated, uint32_t size,
                        uint32_t next_size) noexcept
-      : next_(next), allocated_size_(size), next_size_(next_size) {}
+      : next_(next),
+        heap_allocated_(heap_allocated),
+        allocated_size_(size),
+        next_size_(next_size) {}
 
   static constexpr uint32_t min_size() { return size_t{256}; }
   static constexpr uint32_t max_size() { return size_t{8192}; }
+
+  // Returns `size` rounded down such that we can fit a perfect number
+  // of std::string instances inside a StringBlock of that size.
+  static constexpr uint32_t RoundedSize(uint32_t size);
 
   // Returns the size of the next block.
   size_t next_size() const { return next_size_; }
 
   StringBlock* const next_;
-  const uint32_t allocated_size_;
+  const bool heap_allocated_ : 1;
+  const uint32_t allocated_size_ : 31;
   const uint32_t next_size_;
 };
+
+constexpr uint32_t StringBlock::RoundedSize(uint32_t size) {
+  return size - (size - sizeof(StringBlock)) % sizeof(std::string);
+}
+
+inline size_t StringBlock::NextSize(StringBlock* block) {
+  return block ? block->next_size() : min_size();
+}
+
+inline StringBlock* StringBlock::Emplace(void* p, size_t n, StringBlock* next) {
+  ABSL_DCHECK_EQ(n, NextSize(next));
+  uint32_t doubled = static_cast<uint32_t>(n) * 2;
+  uint32_t next_size = next ? std::min(doubled, max_size()) : min_size();
+  return new (p) StringBlock(next, false, RoundedSize(n), next_size);
+}
 
 inline StringBlock* StringBlock::New(StringBlock* next) {
   // Compute required size, rounding down to a multiple of sizeof(std:string)
@@ -122,13 +158,14 @@ inline StringBlock* StringBlock::New(StringBlock* next) {
     size = next->next_size_;
     next_size = std::min(size * 2, max_size());
   }
-  size -= (size - sizeof(StringBlock)) % sizeof(std::string);
+  size = RoundedSize(size);
   void* p = ::operator new(size);
-  return new (p) StringBlock(next, size, next_size);
+  return new (p) StringBlock(next, true, size, next_size);
 }
 
 inline size_t StringBlock::Delete(StringBlock* block) {
   ABSL_DCHECK(block != nullptr);
+  if (!block->heap_allocated_) return size_t{0};
   size_t size = block->allocated_size();
   internal::SizedDelete(block, size);
   return size;

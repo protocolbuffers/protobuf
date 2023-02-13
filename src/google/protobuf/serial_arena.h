@@ -333,6 +333,19 @@ class PROTOBUF_EXPORT SerialArena {
 
   static size_t FreeStringBlocks(StringBlock* string_block, size_t unused);
 
+  // Adds 'used` to space_used_ in relaxed atomic order.
+  void AddSpaceUsed(size_t space_used) {
+    space_used_.store(space_used_.load(std::memory_order_relaxed) + space_used,
+                      std::memory_order_relaxed);
+  }
+
+  // Adds 'allocated` to space_allocated_ in relaxed atomic order.
+  void AddSpaceAllocated(size_t space_allocated) {
+    space_allocated_.store(
+        space_allocated_.load(std::memory_order_relaxed) + space_allocated,
+        std::memory_order_relaxed);
+  }
+
   // Members are declared here to track sizeof(SerialArena) and hotness
   // centrally. They are (roughly) laid out in descending order of hotness.
 

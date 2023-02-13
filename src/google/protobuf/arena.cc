@@ -197,18 +197,21 @@ void* SerialArena::AllocateAlignedFallback(size_t n) {
 
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateFromStringBlockFallback() {
+  ABSL_DCHECK_EQ(string_block_unused_.load(std::memory_order_relaxed), 0U);
   if (string_block_) {
-    ABSL_DCHECK_EQ(string_block_unused_.load(std::memory_order_relaxed), 0U);
-    space_used_.store(space_used_.load(std::memory_order_relaxed) +
-                          string_block_->effective_size(),
-                      std::memory_order_relaxed);
+    AddSpaceUsed(string_block_->effective_size());
   }
 
-  string_block_ = StringBlock::New(string_block_);
-  space_allocated_.store(space_allocated_.load(std::memory_order_relaxed) +
-                             string_block_->allocated_size(),
-                         std::memory_order_relaxed);
-
+  void* ptr;
+  size_t size = StringBlock::NextSize(string_block_);
+  if (MaybeAllocateAligned(size, &ptr)) {
+    // Correct space_used_ to avoid double counting
+    AddSpaceUsed(-size);
+    string_block_ = StringBlock::Emplace(ptr, size, string_block_);
+  } else {
+    string_block_ = StringBlock::New(string_block_);
+    AddSpaceAllocated(string_block_->allocated_size());
+  }
   size_t unused = string_block_->effective_size() - sizeof(std::string);
   string_block_unused_.store(unused, std::memory_order_relaxed);
   return string_block_->AtOffset(unused);
@@ -240,8 +243,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
     // Record how much used in this block.
     used = static_cast<size_t>(ptr() - old_head->Pointer(kBlockHeaderSize));
     wasted = old_head->size - used;
-    space_used_.store(space_used_.load(std::memory_order_relaxed) + used,
-                      std::memory_order_relaxed);
+    AddSpaceUsed(used);
   }
 
   // TODO(sbenza): Evaluate if pushing unused space into the cached blocks is a
@@ -253,9 +255,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // We don't want to emit an expensive RMW instruction that requires
   // exclusive access to a cacheline. Hence we write it in terms of a
   // regular add.
-  space_allocated_.store(
-      space_allocated_.load(std::memory_order_relaxed) + mem.n,
-      std::memory_order_relaxed);
+  AddSpaceAllocated(mem.n);
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
                                             /*allocated=*/mem.n, wasted);
@@ -278,19 +278,21 @@ uint64_t SerialArena::SpaceUsed() const {
   // usage of the *current* block.
   // TODO(mkruskal) Consider eliminating this race in exchange for a possible
   // performance hit on ARM (see cl/455186837).
-  uint64_t current_space_used =
-      string_block_ ? string_block_->effective_size() -
-                          string_block_unused_.load(std::memory_order_relaxed)
-                    : 0;
+
+  uint64_t space_used = 0;
+  if (string_block_) {
+    size_t unused = string_block_unused_.load(std::memory_order_relaxed);
+    space_used += string_block_->effective_size() - unused;
+  }
   const ArenaBlock* h = head_.load(std::memory_order_acquire);
-  if (h->IsSentry()) return current_space_used;
+  if (h->IsSentry()) return space_used;
 
   const uint64_t current_block_size = h->size;
-  current_space_used += std::min(
+  space_used += std::min(
       static_cast<uint64_t>(
           ptr() - const_cast<ArenaBlock*>(h)->Pointer(kBlockHeaderSize)),
       current_block_size);
-  return current_space_used + space_used_.load(std::memory_order_relaxed);
+  return space_used + space_used_.load(std::memory_order_relaxed);
 }
 
 size_t SerialArena::FreeStringBlocks(StringBlock* string_block,
