@@ -130,10 +130,11 @@ UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
 const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
                                                  const upb_MiniTableField* f);
 
-// Returns the next field in the oneof. If this is the last field in the
-// oneof, returns NULL. The ordering of fields in the oneof is not
+// Iterates to the next field in the oneof. If this is the last field in the
+// oneof, returns false. The ordering of fields in the oneof is not
 // guaranteed.
-// REQUIRES: |iter| is and iterator.
+// REQUIRES: |f| is the field initialized by upb_MiniTable_GetOneof and updated
+//           by prior upb_MiniTable_NextOneofField calls.
 bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
                                   const upb_MiniTableField** f);
 
