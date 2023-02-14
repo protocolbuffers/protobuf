@@ -744,6 +744,62 @@ static void upb_MtDecoder_ParseMessageSet(upb_MtDecoder* d, const char* data,
   ret->required_count = 0;
 }
 
+static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
+    upb_MtDecoder* decoder, const char* data, size_t len, void** buf,
+    size_t* buf_size) {
+  upb_MtDecoder_CheckOutOfMemory(decoder, decoder->table);
+
+  decoder->table->size = 0;
+  decoder->table->field_count = 0;
+  decoder->table->ext = kUpb_ExtMode_NonExtendable;
+  decoder->table->dense_below = 0;
+  decoder->table->table_mask = -1;
+  decoder->table->required_count = 0;
+
+  // Strip off and verify the version tag.
+  if (!len--) goto done;
+  const char vers = *data++;
+
+  switch (vers) {
+    case kUpb_EncodedVersion_MapV1:
+      upb_MtDecoder_ParseMap(decoder, data, len);
+      break;
+
+    case kUpb_EncodedVersion_MessageV1:
+      upb_MtDecoder_ParseMessage(decoder, data, len);
+      upb_MtDecoder_AssignHasbits(decoder->table);
+      upb_MtDecoder_SortLayoutItems(decoder);
+      upb_MtDecoder_AssignOffsets(decoder);
+      break;
+
+    case kUpb_EncodedVersion_MessageSetV1:
+      upb_MtDecoder_ParseMessageSet(decoder, data, len);
+      break;
+
+    default:
+      upb_MtDecoder_ErrorFormat(decoder, "Invalid message version: %c", vers);
+      UPB_UNREACHABLE();
+  }
+
+done:
+  *buf = decoder->vec.data;
+  *buf_size = decoder->vec.capacity * sizeof(*decoder->vec.data);
+  return decoder->table;
+}
+
+static upb_MiniTable* upb_MtDecoder_BuildMiniTableWithBuf(
+    upb_MtDecoder* const decoder, const char* const data, const size_t len,
+    void** const buf, size_t* const buf_size) {
+  if (UPB_SETJMP(decoder->err) != 0) {
+    *buf = decoder->vec.data;
+    *buf_size = decoder->vec.capacity * sizeof(*decoder->vec.data);
+    return NULL;
+  }
+
+  return upb_MtDecoder_DoBuildMiniTableWithBuf(decoder, data, len, buf,
+                                               buf_size);
+}
+
 upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
                                           upb_MiniTablePlatform platform,
                                           upb_Arena* arena, void** buf,
@@ -762,49 +818,8 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
       .table = upb_Arena_Malloc(arena, sizeof(*decoder.table)),
   };
 
-  if (UPB_SETJMP(decoder.err)) {
-    decoder.table = NULL;
-    goto done;
-  }
-
-  upb_MtDecoder_CheckOutOfMemory(&decoder, decoder.table);
-
-  decoder.table->size = 0;
-  decoder.table->field_count = 0;
-  decoder.table->ext = kUpb_ExtMode_NonExtendable;
-  decoder.table->dense_below = 0;
-  decoder.table->table_mask = -1;
-  decoder.table->required_count = 0;
-
-  // Strip off and verify the version tag.
-  if (!len--) goto done;
-  const char vers = *data++;
-
-  switch (vers) {
-    case kUpb_EncodedVersion_MapV1:
-      upb_MtDecoder_ParseMap(&decoder, data, len);
-      break;
-
-    case kUpb_EncodedVersion_MessageV1:
-      upb_MtDecoder_ParseMessage(&decoder, data, len);
-      upb_MtDecoder_AssignHasbits(decoder.table);
-      upb_MtDecoder_SortLayoutItems(&decoder);
-      upb_MtDecoder_AssignOffsets(&decoder);
-      break;
-
-    case kUpb_EncodedVersion_MessageSetV1:
-      upb_MtDecoder_ParseMessageSet(&decoder, data, len);
-      break;
-
-    default:
-      upb_MtDecoder_ErrorFormat(&decoder, "Invalid message version: %c", vers);
-      UPB_UNREACHABLE();
-  }
-
-done:
-  *buf = decoder.vec.data;
-  *buf_size = decoder.vec.capacity * sizeof(*decoder.vec.data);
-  return decoder.table;
+  return upb_MtDecoder_BuildMiniTableWithBuf(&decoder, data, len, buf,
+                                             buf_size);
 }
 
 static size_t upb_MiniTableEnum_Size(size_t count) {
@@ -843,6 +858,59 @@ static void upb_MiniTableEnum_BuildValue(upb_MtDecoder* d, uint32_t val) {
   }
 }
 
+static upb_MiniTableEnum* upb_MtDecoder_DoBuildMiniTableEnum(
+    upb_MtDecoder* decoder, const char* data, size_t len) {
+  // If the string is non-empty then it must begin with a version tag.
+  if (len) {
+    if (*data != kUpb_EncodedVersion_EnumV1) {
+      upb_MtDecoder_ErrorFormat(decoder, "Invalid enum version: %c", *data);
+      UPB_UNREACHABLE();
+    }
+    data++;
+    len--;
+  }
+
+  upb_MtDecoder_CheckOutOfMemory(decoder, decoder->enum_table);
+
+  // Guarantee at least 64 bits of mask without checking mask size.
+  decoder->enum_table->mask_limit = 64;
+  decoder->enum_table = _upb_MiniTable_AddEnumDataMember(decoder, 0);
+  decoder->enum_table = _upb_MiniTable_AddEnumDataMember(decoder, 0);
+
+  decoder->enum_table->value_count = 0;
+
+  const char* ptr = data;
+  uint32_t base = 0;
+
+  while (ptr < decoder->end) {
+    char ch = *ptr++;
+    if (ch <= kUpb_EncodedValue_MaxEnumMask) {
+      uint32_t mask = _upb_FromBase92(ch);
+      for (int i = 0; i < 5; i++, base++, mask >>= 1) {
+        if (mask & 1) upb_MiniTableEnum_BuildValue(decoder, base);
+      }
+    } else if (kUpb_EncodedValue_MinSkip <= ch &&
+               ch <= kUpb_EncodedValue_MaxSkip) {
+      uint32_t skip;
+      ptr = upb_MiniTable_DecodeBase92Varint(decoder, ptr, ch,
+                                             kUpb_EncodedValue_MinSkip,
+                                             kUpb_EncodedValue_MaxSkip, &skip);
+      base += skip;
+    } else {
+      upb_MtDecoder_ErrorFormat(decoder, "Unexpected character: %c", ch);
+      return NULL;
+    }
+  }
+
+  return decoder->enum_table;
+}
+
+static upb_MiniTableEnum* upb_MtDecoder_BuildMiniTableEnum(
+    upb_MtDecoder* const decoder, const char* const data, size_t const len) {
+  if (UPB_SETJMP(decoder->err) != 0) return NULL;
+  return upb_MtDecoder_DoBuildMiniTableEnum(decoder, data, len);
+}
+
 upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
                                            upb_Arena* arena,
                                            upb_Status* status) {
@@ -856,72 +924,17 @@ upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
       .arena = arena,
   };
 
-  if (UPB_SETJMP(decoder.err)) return NULL;
-
-  // If the string is non-empty then it must begin with a version tag.
-  if (len) {
-    if (*data != kUpb_EncodedVersion_EnumV1) {
-      upb_MtDecoder_ErrorFormat(&decoder, "Invalid enum version: %c", *data);
-      UPB_UNREACHABLE();
-    }
-    data++;
-    len--;
-  }
-
-  upb_MtDecoder_CheckOutOfMemory(&decoder, decoder.enum_table);
-
-  // Guarantee at least 64 bits of mask without checking mask size.
-  decoder.enum_table->mask_limit = 64;
-  decoder.enum_table = _upb_MiniTable_AddEnumDataMember(&decoder, 0);
-  decoder.enum_table = _upb_MiniTable_AddEnumDataMember(&decoder, 0);
-
-  decoder.enum_table->value_count = 0;
-
-  const char* ptr = data;
-  uint32_t base = 0;
-
-  while (ptr < decoder.end) {
-    char ch = *ptr++;
-    if (ch <= kUpb_EncodedValue_MaxEnumMask) {
-      uint32_t mask = _upb_FromBase92(ch);
-      for (int i = 0; i < 5; i++, base++, mask >>= 1) {
-        if (mask & 1) upb_MiniTableEnum_BuildValue(&decoder, base);
-      }
-    } else if (kUpb_EncodedValue_MinSkip <= ch &&
-               ch <= kUpb_EncodedValue_MaxSkip) {
-      uint32_t skip;
-      ptr = upb_MiniTable_DecodeBase92Varint(&decoder, ptr, ch,
-                                             kUpb_EncodedValue_MinSkip,
-                                             kUpb_EncodedValue_MaxSkip, &skip);
-      base += skip;
-    } else {
-      upb_MtDecoder_ErrorFormat(&decoder, "Unexpected character: %c", ch);
-      return NULL;
-    }
-  }
-
-  return decoder.enum_table;
+  return upb_MtDecoder_BuildMiniTableEnum(&decoder, data, len);
 }
 
-const char* _upb_MiniTableExtension_Build(const char* data, size_t len,
-                                          upb_MiniTableExtension* ext,
-                                          const upb_MiniTable* extendee,
-                                          upb_MiniTableSub sub,
-                                          upb_MiniTablePlatform platform,
-                                          upb_Status* status) {
-  upb_MtDecoder decoder = {
-      .arena = NULL,
-      .status = status,
-      .table = NULL,
-      .platform = platform,
-  };
-
-  if (UPB_SETJMP(decoder.err)) return NULL;
-
+static const char* upb_MtDecoder_DoBuildMiniTableExtension(
+    upb_MtDecoder* decoder, const char* data, size_t len,
+    upb_MiniTableExtension* ext, const upb_MiniTable* extendee,
+    upb_MiniTableSub sub) {
   // If the string is non-empty then it must begin with a version tag.
   if (len) {
     if (*data != kUpb_EncodedVersion_ExtensionV1) {
-      upb_MtDecoder_ErrorFormat(&decoder, "Invalid ext version: %c", *data);
+      upb_MtDecoder_ErrorFormat(decoder, "Invalid ext version: %c", *data);
       UPB_UNREACHABLE();
     }
     data++;
@@ -930,7 +943,7 @@ const char* _upb_MiniTableExtension_Build(const char* data, size_t len,
 
   uint16_t count = 0;
   const char* ret =
-      upb_MtDecoder_Parse(&decoder, data, len, ext, sizeof(*ext), &count, NULL);
+      upb_MtDecoder_Parse(decoder, data, len, ext, sizeof(*ext), &count, NULL);
   if (!ret || count != 1) return NULL;
 
   upb_MiniTableField* f = &ext->field;
@@ -951,6 +964,32 @@ const char* _upb_MiniTableExtension_Build(const char* data, size_t len,
   ext->sub = sub;
 
   return ret;
+}
+
+static const char* upb_MtDecoder_BuildMiniTableExtension(
+    upb_MtDecoder* const decoder, const char* const data, const size_t len,
+    upb_MiniTableExtension* const ext, const upb_MiniTable* const extendee,
+    const upb_MiniTableSub sub) {
+  if (UPB_SETJMP(decoder->err) != 0) return NULL;
+  return upb_MtDecoder_DoBuildMiniTableExtension(decoder, data, len, ext,
+                                                 extendee, sub);
+}
+
+const char* _upb_MiniTableExtension_Build(const char* data, size_t len,
+                                          upb_MiniTableExtension* ext,
+                                          const upb_MiniTable* extendee,
+                                          upb_MiniTableSub sub,
+                                          upb_MiniTablePlatform platform,
+                                          upb_Status* status) {
+  upb_MtDecoder decoder = {
+      .arena = NULL,
+      .status = status,
+      .table = NULL,
+      .platform = platform,
+  };
+
+  return upb_MtDecoder_BuildMiniTableExtension(&decoder, data, len, ext,
+                                               extendee, sub);
 }
 
 upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
