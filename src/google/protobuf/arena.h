@@ -110,6 +110,8 @@ void arena_delete_object(void* object) {
 }
 }  // namespace internal
 
+constexpr char* kNullptr = nullptr;
+
 // ArenaOptions provides optional additional parameters to arena construction
 // that control its block-allocation behavior.
 struct ArenaOptions {
@@ -127,7 +129,7 @@ struct ArenaOptions {
   // provided, the block must live at least as long as the arena itself. The
   // creator of the Arena retains ownership of the block after the Arena is
   // destroyed.
-  char* initial_block = nullptr;
+  char* initial_block = kNullptr;
 
   // The size of the initial block, if provided.
   size_t initial_block_size = 0;
