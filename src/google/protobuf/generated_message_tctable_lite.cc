@@ -477,6 +477,20 @@ PROTOBUF_NOINLINE const char* TcParser::FastGtS2(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_TC_PARAM_PASS);
 }
 
+template <typename TagType>
+const char* TcParser::LazyMessage(PROTOBUF_TC_PARAM_DECL) {
+  ABSL_LOG(FATAL) << "Unimplemented";
+  return nullptr;
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastMlS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return LazyMessage<uint8_t>(PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastMlS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return LazyMessage<uint16_t>(PROTOBUF_TC_PARAM_PASS);
+}
+
 template <typename TagType, bool group_coding, bool aux_is_table>
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
     PROTOBUF_TC_PARAM_DECL) {
@@ -2361,6 +2375,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
   PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
+
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
@@ -2391,8 +2406,6 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
       break;
     default: {
     fallback:
-      // Lazy and implicit weak fields are handled by generated code:
-      // TODO(b/210762816): support these.
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
   }
@@ -2460,8 +2473,6 @@ const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
       break;
     default: {
     fallback:
-      // Lazy and implicit weak fields are handled by generated code:
-      // TODO(b/210762816): support these.
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
   }

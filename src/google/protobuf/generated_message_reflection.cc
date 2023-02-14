@@ -3087,6 +3087,7 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSubTable:
       case internal::TailCallTableInfo::kSubMessageWeak:
       case internal::TailCallTableInfo::kCreateInArena:
+      case internal::TailCallTableInfo::kMessageVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
         break;
       case internal::TailCallTableInfo::kMapAuxInfo:
@@ -3148,9 +3149,16 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
     explicit ReflectionOptionProvider(const Reflection& ref) : ref_(ref) {}
     internal::TailCallTableInfo::PerFieldOptions GetForField(
         const FieldDescriptor* field) const final {
+      const auto verify_flag = [&] {
+        if (ref_.IsEagerlyVerifiedLazyField(field))
+          return internal::field_layout::kTvEager;
+        if (ref_.IsLazilyVerifiedLazyField(field))
+          return internal::field_layout::kTvLazy;
+        return internal::field_layout::TransformValidation{};
+      };
       return {
-          ref_.IsLazyField(field),  //
-          ref_.IsInlined(field),    //
+          verify_flag(),          //
+          ref_.IsInlined(field),  //
 
           // Only LITE can be implicitly weak.
           /* is_implicitly_weak */ false,
