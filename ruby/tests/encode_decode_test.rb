@@ -90,7 +90,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
     msg = A::B::C::TestMessage.new({ optional_enum: 1 })
     json = A::B::C::TestMessage.encode_json(
       msg, 
-      { :enums_as_integers => true }
+      { :format_enums_as_integers => true }
     )
 
     assert_match '"optionalEnum":1', json
@@ -99,7 +99,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
     msg = A::B::C::TestMessage.new({ optional_enum: 0 })
     json = A::B::C::TestMessage.encode_json(
       msg, 
-      { :enums_as_integers => true, :emit_defaults => true }
+      { :format_enums_as_integers => true, :emit_defaults => true }
     )
 
     assert_match '"optionalEnum":0', json
@@ -108,7 +108,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
     msg = A::B::C::TestMessage.new({ repeated_enum: [0,1,2,3] })
     json = A::B::C::TestMessage.encode_json(
       msg, 
-      { :enums_as_integers => true }
+      { :format_enums_as_integers => true }
     )
 
     assert_match '"repeatedEnum":[0,1,2,3]', json

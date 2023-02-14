@@ -669,7 +669,7 @@ public class RubyMessage extends RubyObject {
    * @param options [Hash] options for the decoder
    *  preserve_proto_fieldnames: set true to use original fieldnames (default is to camelCase)
    *  emit_defaults: set true to emit 0/false values (default is to omit them)
-   *  enums_as_integers: set true to emit enum values as integer (default is string)
+   *  format_enums_as_integers: set true to emit enum values as integer (default is string)
    */
   @JRubyMethod(name = "encode_json", required = 1, optional = 1, meta = true)
   public static IRubyObject encodeJson(
@@ -691,7 +691,7 @@ public class RubyMessage extends RubyObject {
 
       IRubyObject emitDefaults = options.fastARef(runtime.newSymbol("emit_defaults"));
       IRubyObject preserveNames = options.fastARef(runtime.newSymbol("preserve_proto_fieldnames"));
-      IRubyObject enumAsIntegers = options.fastARef(runtime.newSymbol("enums_as_integers"));
+      IRubyObject printingEnumsAsInts = options.fastARef(runtime.newSymbol("format_enums_as_integers"));
 
       if (emitDefaults != null && emitDefaults.isTrue()) {
         printer = printer.includingDefaultValueFields();
@@ -701,7 +701,7 @@ public class RubyMessage extends RubyObject {
         printer = printer.preservingProtoFieldNames();
       }
       
-      if (enumAsIntegers != null && printingEnumsAsInts.isTrue()) {
+      if (printingEnumsAsInts != null && printingEnumsAsInts.isTrue()) {
         printer = printer.printingEnumsAsInts();
       }
     }
