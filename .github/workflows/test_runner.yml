@@ -12,8 +12,9 @@ name: Tests
 on:
   # continuous
   schedule:
-    # Run daily at 10 AM UTC (2 AM PDT)
-    - cron: 0 10 * * *
+    # TODO(mkruskal) Run daily at 10 AM UTC (2 AM PDT)
+    # Run every hour for now to gather statistics
+    - cron: 0 * * * *
 
   # postsubmit
   push:
