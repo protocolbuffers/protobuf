@@ -79,3 +79,8 @@ $PROTOC -Isrc -I. \
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
     --csharp_opt=file_extension=.pb.cs \
     examples/addressbook.proto
+
+# Conformance tests
+$PROTOC -I. --csharp_out=csharp/src/Google.Protobuf.Conformance \
+    --csharp_opt=file_extension=.pb.cs \
+    conformance/conformance.proto
