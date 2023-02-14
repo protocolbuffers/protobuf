@@ -14,7 +14,8 @@ end
 
 if RUBY_PLATFORM =~ /linux/
   # Instruct the linker to point memcpy calls at our __wrap_memcpy wrapper.
-  $LDFLAGS += " -Wl,-wrap,memcpy"
+  # Also disabling LTO as -wrap does not support LTO at all (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88643)
+  $LDFLAGS += " -fno-lto -Wl,-wrap,memcpy"
 end
 
 $VPATH << "$(srcdir)/third_party/utf8_range"
