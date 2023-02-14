@@ -1027,6 +1027,13 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 //   int index = ...
 //   int value = vec[index];
 #pragma GCC diagnostic ignored "-Wsign-conversion"
+#if __GNUC__ == 12 && __GNUC_MINOR__ < 4
+// Wrong warning emitted when assigning a single char c-string to a std::string
+// in c++20 mode and optimization on.
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105329
+// Planned to be fixed by 12.3 but widen window to 12.4.
+#pragma GCC diagnostic ignored "-Wrestrict"
+#endif
 #endif  // __GNUC__
 
 // Silence some MSVC warnings in all our code.
