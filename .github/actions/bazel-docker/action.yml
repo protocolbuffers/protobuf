@@ -71,5 +71,5 @@ runs:
 
     - name: Save Bazel repository cache
       # Only allow repository cache updates during post-submits.
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name != 'pull_request' && github.event_name != 'pull_request_target' }}
       uses: ./.github/actions/internal/repository-cache-save

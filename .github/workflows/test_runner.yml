@@ -12,8 +12,9 @@ name: Tests
 on:
   # continuous
   schedule:
-    # Run daily at 10 AM UTC (2 AM PDT)
-    - cron: 0 10 * * *
+    # TODO(mkruskal) Run daily at 10 AM UTC (2 AM PDT)
+    # Run every hour for now to gather statistics
+    - cron: 0 * * * *
 
   # postsubmit
   push:
@@ -57,7 +58,8 @@ jobs:
     # repository, it's safe and we can use `pull_request`.  Otherwise, we should
     # use `pull_request_target`.
     if: |
-      (github.event_name == 'push' &&
+      (github.event_name != 'pull_request' &&
+       github.event_name != 'pull_request_target' &&
        github.event.repository.full_name == 'protocolbuffers/protobuf') ||
       (github.event_name == 'pull_request' &&
        github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf') ||
@@ -91,7 +93,7 @@ jobs:
     steps:
       - uses: actions-ecosystem/action-remove-labels@2ce5d41b4b6aa8503e285553f75ed56e0a40bae0 # v1.3.0
         with:
-          labels: safe for tests
+          labels: ':a: safe for tests'
 
   # Note: this pattern of passing the head sha is vulnerable to PWN requests for
   # pull_request_target events. We carefully limit those workflows to require a

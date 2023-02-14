@@ -14,7 +14,7 @@ jobs:
         branch: [main, 22.x]
         os: [{ name: Linux, value: ubuntu-latest}]
 
-    name: ${{ matrix.os.name }} ${{ matrix.branch}}
+    name: Test staleness ${{ matrix.os.name }} ${{ matrix.branch}}
     runs-on: ${{ matrix.os.value }}
     steps:
       - name: Checkout ${{ matrix.branch }}
