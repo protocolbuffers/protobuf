@@ -30,6 +30,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
@@ -141,10 +142,12 @@ void MapFieldGenerator::GenerateAccessorDeclarations(
       "    ${1$_internal_mutable_$name$$}$();\n"
       "public:\n"
       "$deprecated_attr$const ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >&\n"
-      "    ${1$$name$$}$() const;\n"
+      "    ${1$$name$$}$() const;\n",
+      descriptor_);
+  format(
       "$deprecated_attr$::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
       "    ${1$mutable_$name$$}$();\n",
-      descriptor_);
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
 }
 
 void MapFieldGenerator::GenerateInlineAccessorDefinitions(
