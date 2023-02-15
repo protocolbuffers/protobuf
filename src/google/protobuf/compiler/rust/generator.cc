@@ -28,41 +28,32 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_GENERATOR_H__
+#include "google/protobuf/compiler/rust/generator.h"
 
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
-
-// Must be included last.
-#include "google/protobuf/port_def.inc"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
 
-class RustGenerator final : public google::protobuf::compiler::CodeGenerator {
- public:
-  RustGenerator() = default;
-  RustGenerator(const RustGenerator&) = delete;
-  RustGenerator& operator=(const RustGenerator&) = delete;
-  ~RustGenerator() override = default;
+bool RustGenerator::Generate(const FileDescriptor* file,
+                             const std::string& parameter,
+                             GeneratorContext* generator_context,
+                             std::string* error) const {
+  auto basename = StripProto(file->name());
+  auto outfile = absl::WrapUnique(
+      generator_context->Open(absl::StrCat(basename, ".pb.rs")));
 
-  bool Generate(const FileDescriptor* file, const std::string& parameter,
-                GeneratorContext* generator_context,
-                std::string* error) const override;
-
-  uint64_t GetSupportedFeatures() const override {
-    return FEATURE_PROTO3_OPTIONAL;
-  }
-};
+  google::protobuf::io::Printer(outfile.get()).Emit("// TODO: Generate Bindings");
+  return true;
+}
 
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#include "google/protobuf/port_undef.inc"
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_GENERATOR_H__
