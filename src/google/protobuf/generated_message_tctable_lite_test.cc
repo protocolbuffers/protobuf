@@ -94,7 +94,7 @@ TEST(FastVarints, NameHere) {
   const TcParseTable<0, 1, 0, 0, 2> parse_table = {
       {
           kHasBitsOffset,  //
-          0, 0, 0,         // no _extensions_
+          0,               // no _extensions_
           1, 0,            // max_field_number, fast_idx_mask
           offsetof(decltype(parse_table), field_lookup_table),
           0xFFFFFFFF - 1,  // skipmap
@@ -285,9 +285,9 @@ TEST(IsEntryForFieldNumTest, Matcher) {
   TcParseTable<0, 3, 0, 0, 2> table = {
       // header:
       {
-          0, 0, 0, 0,  // has_bits_offset, extensions
-          0,           // max_field_number
-          0,           // fast_idx_mask,
+          0, 0,  // has_bits_offset, extensions
+          0,     // max_field_number
+          0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
           0xFFFFFFFF - 7,  // 7 = fields 1, 2, and 3.
           offsetof(decltype(table), field_names),
@@ -352,9 +352,9 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
   TcParseTable<0, 5, 0, 0, 8> table = {
       // header:
       {
-          0, 0, 0, 0,  // has_bits_offset, extensions
-          111,         // max_field_number
-          0,           // fast_idx_mask,
+          0, 0,  // has_bits_offset, extensions
+          111,   // max_field_number
+          0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
           0xFFFFFFFF - (1 << 1) - (1 << 2)   // fields 2, 3
                      - (1 << 3) - (1 << 4),  // fields 4, 5
@@ -393,9 +393,9 @@ TEST_F(FindFieldEntryTest, SmallScanRange) {
   TcParseTable<0, 6, 0, 0, 8> table = {
       // header:
       {
-          0, 0, 0, 0,  // has_bits_offset, extensions
-          111,         // max_field_number
-          0,           // fast_idx_mask,
+          0, 0,  // has_bits_offset, extensions
+          111,   // max_field_number
+          0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
           0xFFFFFFFF - (1<<0) - (1<<2) - (1<<3) - (1<<4) - (1<<6),  // 1,3-5,7
           offsetof(decltype(table), field_entries),
@@ -439,9 +439,9 @@ TEST_F(FindFieldEntryTest, BinarySearchRange) {
   TcParseTable<0, 10, 0, 0, 8> table = {
       // header:
       {
-          0, 0, 0, 0,  // has_bits_offset, extensions
-          70,          // max_field_number
-          0,           // fast_idx_mask,
+          0, 0,  // has_bits_offset, extensions
+          70,    // max_field_number
+          0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
           0xFFFFFFFF - (1<<0) - (1<<2) - (1<<3) - (1<<4)   // 1, 3, 4, 5, 6
                      - (1<<5) - (1<<7) - (1<<8) - (1<<10)  // 8, 9, 11, 12
@@ -485,9 +485,9 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
   TcParseTable<0, 3, 0, 15, 2> table = {
       // header:
       {
-          0, 0, 0, 0,  // has_bits_offset, extensions
-          3,           // max_field_number
-          0,           // fast_idx_mask,
+          0, 0,  // has_bits_offset, extensions
+          3,     // max_field_number
+          0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
           0xFFFFFFFF - (1<<0) - (1<<1) - (1<<2),  // fields 1, 2, 3
           offsetof(decltype(table), field_entries),
@@ -535,9 +535,9 @@ TEST_F(FindFieldEntryTest, EmptyMessage) {
   TableType table = {
       // header:
       {
-          0, 0, 0, 0,  // has_bits_offset, extensions
-          0,           // max_field_number
-          0,           // fast_idx_mask,
+          0, 0,  // has_bits_offset, extensions
+          0,     // max_field_number
+          0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
           0xFFFFFFFF,       // no fields
           offsetof(decltype(table), field_names),  // no field_entries
@@ -586,7 +586,7 @@ int32_t test_all_types_table_field_numbers[] = {
 const TcParseTable<5, 134, 5, 2176, 55> test_all_types_table = {
     // header:
     {
-        0, 0, 0, 0,  // has_bits_offset, extensions
+        0, 0,  // has_bits_offset, extensions
         418, 248,    // max_field_number, fast_idx_mask
         offsetof(decltype(test_all_types_table), field_lookup_table),
         977895424,  // skipmap for fields 1-15,18-19,21-22,24-25,27,31-32

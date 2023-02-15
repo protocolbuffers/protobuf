@@ -170,8 +170,6 @@ struct alignas(uint64_t) TcParseTableBase {
   // Common attributes for message layout:
   uint16_t has_bits_offset;
   uint16_t extension_offset;
-  uint32_t extension_range_low;
-  uint32_t extension_range_high;
   uint32_t max_field_number;
   uint8_t fast_idx_mask;
   uint16_t lookup_table_offset;
@@ -194,7 +192,6 @@ struct alignas(uint64_t) TcParseTableBase {
   // compiled.
   constexpr TcParseTableBase(
       uint16_t has_bits_offset, uint16_t extension_offset,
-      uint32_t extension_range_low, uint32_t extension_range_high,
       uint32_t max_field_number, uint8_t fast_idx_mask,
       uint16_t lookup_table_offset, uint32_t skipmap32,
       uint32_t field_entries_offset, uint16_t num_field_entries,
@@ -202,8 +199,6 @@ struct alignas(uint64_t) TcParseTableBase {
       const MessageLite* default_instance, TailCallParseFunc fallback)
       : has_bits_offset(has_bits_offset),
         extension_offset(extension_offset),
-        extension_range_low(extension_range_low),
-        extension_range_high(extension_range_high),
         max_field_number(max_field_number),
         fast_idx_mask(fast_idx_mask),
         lookup_table_offset(lookup_table_offset),

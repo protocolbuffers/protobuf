@@ -494,14 +494,10 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       } else {
         format("0,  // no _has_bits_\n");
       }
-      if (descriptor_->extension_range_count() == 1) {
-        format(
-            "PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n"
-            "$1$, $2$,  // extension_range_{low,high}\n",
-            descriptor_->extension_range(0)->start,
-            descriptor_->extension_range(0)->end);
+      if (descriptor_->extension_range_count() != 0) {
+        format("PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n");
       } else {
-        format("0, 0, 0,  // no _extensions_\n");
+        format("0, // no _extensions_\n");
       }
       format("$1$, $2$,  // max_field_number, fast_idx_mask\n",
              (ordered_fields_.empty() ? 0 : ordered_fields_.back()->number()),

@@ -602,18 +602,21 @@ class PROTOBUF_EXPORT TcParser final {
       return ptr;
     }
 
-    uint32_t num = tag >> 3;
-    if (table->extension_range_low <= num &&
-        num <= table->extension_range_high) {
+    if (table->extension_offset != 0) {
+      // We don't need to check the extension ranges. If it is not an extension
+      // it will be handled just like if it was an unknown extension: sent to
+      // the unknown field set.
       return RefAt<ExtensionSet>(msg, table->extension_offset)
           .ParseField(tag, ptr,
                       static_cast<const MessageBaseT*>(table->default_instance),
                       &msg->_internal_metadata_, ctx);
+    } else {
+      // Otherwise, we directly put it on the unknown field set.
+      return UnknownFieldParse(
+          tag,
+          msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(),
+          ptr, ctx);
     }
-
-    return UnknownFieldParse(
-        tag, msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(),
-        ptr, ctx);
   }
 
   // Note: `inline` is needed on template function declarations below to avoid
