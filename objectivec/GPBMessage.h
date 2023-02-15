@@ -279,6 +279,22 @@ CF_EXTERN_C_END
     extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry;
 
 /**
+ * Parses the given data as this message's class, and merges those values into
+ * this message.
+ *
+ * @param data              The binary representation of the message to merge.
+ * @param extensionRegistry The extension registry to use to look up extensions.
+ * @param errorPtr          An optional error pointer to fill in with a failure
+ *                          reason if the data can not be parsed. Will only be
+ *                          filled in if the data failed to be parsed.
+ *
+ * @return Boolean indicating success. errorPtr will only be fill in on failure.
+ **/
+- (BOOL)mergeFromData:(NSData *)data
+    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
+                error:(NSError **)errorPtr;
+
+/**
  * Merges the fields from another message (of the same type) into this
  * message.
  *
