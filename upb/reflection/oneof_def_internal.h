@@ -38,8 +38,8 @@ extern "C" {
 #endif
 
 upb_OneofDef* _upb_OneofDef_At(const upb_OneofDef* o, int i);
-bool _upb_OneofDef_Insert(upb_OneofDef* o, const upb_FieldDef* f,
-                          const char* name, size_t size, upb_Arena* a);
+void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
+                          const upb_FieldDef* f, const char* name, size_t size);
 
 // Allocate and initialize an array of |n| oneof defs owned by |m|.
 upb_OneofDef* _upb_OneofDefs_New(

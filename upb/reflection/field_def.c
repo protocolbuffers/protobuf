@@ -638,8 +638,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
     upb_OneofDef* oneof = (upb_OneofDef*)upb_MessageDef_Oneof(m, oneof_index);
     f->scope.oneof = oneof;
 
-    bool ok = _upb_OneofDef_Insert(oneof, f, name.data, name.size, ctx->arena);
-    if (!ok) _upb_DefBuilder_OomErr(ctx);
+    _upb_OneofDef_Insert(ctx, oneof, f, name.data, name.size);
   }
 
   UPB_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);

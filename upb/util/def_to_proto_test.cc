@@ -176,6 +176,19 @@ TEST(FuzzTest, EditionEmbeddedNull) {
       ParseTextProtoOrDie(R"pb(file { name: "n" edition: "\000" })pb"));
 }
 
+TEST(FuzzTest, DuplicateOneofIndex) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "F"
+             message_type {
+               name: "M"
+               oneof_decl { name: "O" }
+               field { name: "f1" number: 1 type: TYPE_INT32 oneof_index: 0 }
+               field { name: "f2" number: 1 type: TYPE_INT32 oneof_index: 0 }
+             }
+           })pb"));
+}
+
 TEST(FuzzTest, NanValue) {
   RoundTripDescriptor(ParseTextProtoOrDie(
       R"pb(file {

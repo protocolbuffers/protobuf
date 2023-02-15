@@ -115,15 +115,29 @@ const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
                                                   : NULL;
 }
 
-bool _upb_OneofDef_Insert(upb_OneofDef* o, const upb_FieldDef* f,
-                          const char* name, size_t size, upb_Arena* a) {
+void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
+                          const upb_FieldDef* f, const char* name,
+                          size_t size) {
   o->field_count++;
   if (_upb_FieldDef_IsProto3Optional(f)) o->synthetic = true;
 
   const int number = upb_FieldDef_Number(f);
   const upb_value v = upb_value_constptr(f);
-  return upb_inttable_insert(&o->itof, number, v, a) &&
-         upb_strtable_insert(&o->ntof, name, size, v, a);
+
+  // TODO(salo): This lookup is unfortunate because we also perform it when
+  // inserting into the message's table. Unfortunately that step occurs after
+  // this one and moving things around could be tricky so let's leave it for
+  // a future refactoring.
+  const bool exists = upb_inttable_lookup(&o->itof, number, NULL);
+  if (UPB_UNLIKELY(exists)) {
+    _upb_DefBuilder_Errf(ctx, "oneof fields have the same number (%d)", number);
+  }
+
+  const bool ok = upb_inttable_insert(&o->itof, number, v, ctx->arena) &&
+                  upb_strtable_insert(&o->ntof, name, size, v, ctx->arena);
+  if (UPB_UNLIKELY(!ok)) {
+    _upb_DefBuilder_OomErr(ctx);
+  }
 }
 
 // Returns the synthetic count.
