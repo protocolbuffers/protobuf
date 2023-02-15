@@ -412,7 +412,7 @@ bool WireFormat::ParseAndMergeMessageSetField(uint32_t field_number,
 }
 
 static bool StrictUtf8Check(const FieldDescriptor* field) {
-  return field->requires_utf8_validation();
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
 bool WireFormat::ParseAndMergeField(
@@ -484,7 +484,8 @@ bool WireFormat::ParseAndMergeField(
           if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
                   input, &value))
             return false;
-          if (!field->enum_type()->is_closed()) {
+          if (message->GetDescriptor()->file()->syntax() ==
+              FileDescriptor::SYNTAX_PROTO3) {
             message_reflection->AddEnumValue(message, field, value);
           } else {
             const EnumValueDescriptor* enum_value =
@@ -868,7 +869,8 @@ const char* WireFormat::_InternalParseAndMergeField(
           auto rep_enum =
               reflection->MutableRepeatedFieldInternal<int>(msg, field);
           bool open_enum = false;
-          if (!field->enum_type()->is_closed() || open_enum) {
+          if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
+              open_enum) {
             ptr = internal::PackedEnumParser(rep_enum, ptr, ctx);
           } else {
             return ctx->ReadPackedVarint(
