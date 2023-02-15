@@ -93,6 +93,29 @@ runs:
       shell: bash
       run: bazelisk version
 
+    # Bazel has multiple Xcode calls with hardcoded timeouts.  Many of these
+    # end up timing out on our github runners, causing flakes on every mac
+    # build that invoked Bazel.  To work around this, we manually inoke these
+    # calls before running Bazel to make sure they end up in Xcode's cache for
+    # quicker runs later.  All of these calls are obtained from xcrun calls in
+    # https://github.com/bazelbuild/bazel/blob/e8a69f5d5acaeb6af760631490ecbf73e8a04eeb/tools/cpp/osx_cc_configure.bzl.
+    # See https://github.com/bazelbuild/bazel/issues/17437 for more details.
+    # TODO(b/269503614) Remove this once Bazel provides an official solution.
+    - name: Warm up Xcode
+      if: ${{ runner.os == 'macOS' }}
+      shell: bash
+      run: |
+        mkdir -p mac_bazel_workaround
+        bazelisk ${{ steps.bazel.outputs.bazel-startup-flags }} build @bazel_tools//tools/osx:xcode_locator.m $BAZEL_FLAGS
+        XCODE_LOCATOR_FLAGS="--sdk macosx clang -mmacosx-version-min=10.9 -fobjc-arc -framework CoreServices -framework Foundation"
+        SINGLE_ARCH_COMPILE_FLAGS="--sdk macosx clang -mmacosx-version-min=10.9 -std=c++11 -lc++ -O3"
+        COMPILE_FLAGS="$SINGLE_ARCH_COMPILE_FLAGS -arch arm64 -arch x86_64 -Wl,-no_adhoc_codesign -Wl,-no_uuid -O3"
+        time env -i DEVELOPER_DIR=$DEVELOPER_DIR xcrun $XCODE_LOCATOR_FLAGS -o mac_bazel_workaround/xcode-locator-bin $(bazel info output_base)/external/bazel_tools/tools/osx/xcode_locator.m
+        time env -i DEVELOPER_DIR=$DEVELOPER_DIR xcrun $SINGLE_ARCH_COMPILE_FLAGS -o mac_bazel_workaround/libtool_check_unique $(bazel info output_base)/external/bazel_tools/tools/objc/libtool_check_unique.cc
+        time env -i DEVELOPER_DIR=$DEVELOPER_DIR xcrun $COMPILE_FLAGS -o mac_bazel_workaround/libtool_check_unique $(bazel info output_base)/external/bazel_tools/tools/objc/libtool_check_unique.cc
+        time env -i DEVELOPER_DIR=$DEVELOPER_DIR xcrun $SINGLE_ARCH_COMPILE_FLAGS -o mac_bazel_workaround/wrapped_clang $(bazel info output_base)/external/bazel_tools/tools/osx/crosstool/wrapped_clang.cc
+        time env -i DEVELOPER_DIR=$DEVELOPER_DIR xcrun $COMPILE_FLAGS -o mac_bazel_workaround/wrapped_clang $(bazel info output_base)/external/bazel_tools/tools/osx/crosstool/wrapped_clang.cc
+
     - name: Run Bash
       if: ${{ inputs.bash }}
       run: ${{ inputs.bash }}
