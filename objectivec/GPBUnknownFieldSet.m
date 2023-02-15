@@ -289,13 +289,6 @@ static void GPBUnknownFieldSetMergeUnknownFields(__unused const void *key, const
   }
 }
 
-- (void)mergeFromData:(NSData *)data {
-  GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
-  [self mergeFromCodedInputStream:input];
-  [input checkLastTagWas:0];
-  [input release];
-}
-
 - (void)mergeVarintField:(int32_t)number value:(int32_t)value {
   checkNumber(number);
   [[self mutableFieldForNumber:number create:YES] addVarint:value];

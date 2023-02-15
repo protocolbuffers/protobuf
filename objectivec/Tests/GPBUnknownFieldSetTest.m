@@ -381,7 +381,8 @@
   NSData* data = [fields data];
 
   GPBUnknownFieldSet* parsed = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  [parsed mergeFromData:data];
+  GPBCodedInputStream* input = [[[GPBCodedInputStream alloc] initWithData:data] autorelease];
+  [parsed mergeFromCodedInputStream:input];
   GPBUnknownField* field2 = [parsed getField:1];
   XCTAssertEqual(field2.varintList.count, (NSUInteger)1);
   XCTAssertEqual(0x7FFFFFFFFFFFFFFFULL, [field2.varintList valueAtIndex:0]);
