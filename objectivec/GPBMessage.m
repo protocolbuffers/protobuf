@@ -2003,9 +2003,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     return;
   }
   NSData *data = GPBCodedInputStreamReadRetainedBytesNoCopy(state);
-  if (data == nil) {
-    return;
-  }
   [self mergeFromData:data extensionRegistry:extensionRegistry];
   [data release];
 }

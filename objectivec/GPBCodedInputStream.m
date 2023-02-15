@@ -51,6 +51,10 @@ NSString *const GPBCodedInputStreamErrorDomain =
 //  int CodedInputStream::default_recursion_limit_ = 100;
 static const NSUInteger kDefaultRecursionLimit = 100;
 
+// Bytes and Strings have a max size of 2GB.
+// https://protobuf.dev/programming-guides/encoding/#cheat-sheet
+static const uint32_t kMaxFieldSize = 0x7fffffff;
+
 static void RaiseException(NSInteger code, NSString *reason) {
   NSDictionary *errorInfo = nil;
   if ([reason length]) {
@@ -223,14 +227,20 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
 }
 
 NSString *GPBCodedInputStreamReadRetainedString(GPBCodedInputStreamState *state) {
-  int32_t size = ReadRawVarint32(state);
+  uint64_t size = GPBCodedInputStreamReadUInt64(state);
+  if (size > kMaxFieldSize) {
+    // TODO(thomasvl): Maybe a different error code for this, but adding one is a breaking change
+    // so reuse an existing one.
+    RaiseException(GPBCodedInputStreamErrorInvalidSize, nil);
+  }
+  NSUInteger ns_size = (NSUInteger)size;
   NSString *result;
   if (size == 0) {
     result = @"";
   } else {
     CheckSize(state, size);
     result = [[NSString alloc] initWithBytes:&state->bytes[state->bufferPos]
-                                      length:size
+                                      length:ns_size
                                     encoding:NSUTF8StringEncoding];
     state->bufferPos += size;
     if (!result) {
@@ -246,21 +256,31 @@ NSString *GPBCodedInputStreamReadRetainedString(GPBCodedInputStreamState *state)
 }
 
 NSData *GPBCodedInputStreamReadRetainedBytes(GPBCodedInputStreamState *state) {
-  int32_t size = ReadRawVarint32(state);
-  if (size < 0) return nil;
+  uint64_t size = GPBCodedInputStreamReadUInt64(state);
+  if (size > kMaxFieldSize) {
+    // TODO(thomasvl): Maybe a different error code for this, but adding one is a breaking change
+    // so reuse an existing one.
+    RaiseException(GPBCodedInputStreamErrorInvalidSize, nil);
+  }
+  NSUInteger ns_size = (NSUInteger)size;
   CheckSize(state, size);
-  NSData *result = [[NSData alloc] initWithBytes:state->bytes + state->bufferPos length:size];
+  NSData *result = [[NSData alloc] initWithBytes:state->bytes + state->bufferPos length:ns_size];
   state->bufferPos += size;
   return result;
 }
 
 NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(GPBCodedInputStreamState *state) {
-  int32_t size = ReadRawVarint32(state);
-  if (size < 0) return nil;
+  uint64_t size = GPBCodedInputStreamReadUInt64(state);
+  if (size > kMaxFieldSize) {
+    // TODO(thomasvl): Maybe a different error code for this, but adding one is a breaking change
+    // so reuse an existing one.
+    RaiseException(GPBCodedInputStreamErrorInvalidSize, nil);
+  }
+  NSUInteger ns_size = (NSUInteger)size;
   CheckSize(state, size);
   // Cast is safe because freeWhenDone is NO.
   NSData *result = [[NSData alloc] initWithBytesNoCopy:(void *)(state->bytes + state->bufferPos)
-                                                length:size
+                                                length:ns_size
                                           freeWhenDone:NO];
   state->bufferPos += size;
   return result;
