@@ -5375,6 +5375,7 @@ struct IncrementWhenDestroyed {
 
 }  // namespace
 
+
 void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                      const Descriptor* parent,
                                      Descriptor* result,
