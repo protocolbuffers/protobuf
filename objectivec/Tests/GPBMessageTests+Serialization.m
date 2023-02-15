@@ -1276,7 +1276,7 @@
   XCTAssertNil(result);
   XCTAssertNotNil(error);
   XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
-  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSize);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSubsectionLimit);
 }
 
 #ifdef DEBUG
