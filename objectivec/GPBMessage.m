@@ -1308,9 +1308,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   @try {
     [self writeToCodedOutputStream:stream];
   } @catch (NSException *exception) {
-    // This really shouldn't happen. The only way writeToCodedOutputStream:
-    // could throw is if something in the library has a bug and the
-    // serializedSize was wrong.
+    // This really shouldn't happen. Normally, this could mean there was a bug in the library and it
+    // failed to match between computing the size and writing out the bytes. However, the more
+    // common cause is while one thread was writing out the data, some other thread had a reference
+    // to this message or a message used as a nested field, and that other thread mutated that
+    // message, causing the pre computed serializedSize to no longer match the final size after
+    // serialization. It is not safe to mutate a message while accessing it from another thread.
 #ifdef DEBUG
     NSLog(@"%@: Internal exception while building message data: %@", [self class], exception);
 #endif
@@ -1328,9 +1331,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   @try {
     [self writeDelimitedToCodedOutputStream:stream];
   } @catch (NSException *exception) {
-    // This really shouldn't happen.  The only way writeToCodedOutputStream:
-    // could throw is if something in the library has a bug and the
-    // serializedSize was wrong.
+    // This really shouldn't happen. Normally, this could mean there was a bug in the library and it
+    // failed to match between computing the size and writing out the bytes. However, the more
+    // common cause is while one thread was writing out the data, some other thread had a reference
+    // to this message or a message used as a nested field, and that other thread mutated that
+    // message, causing the pre computed serializedSize to no longer match the final size after
+    // serialization. It is not safe to mutate a message while accessing it from another thread.
 #ifdef DEBUG
     NSLog(@"%@: Internal exception while building message delimitedData: %@", [self class],
           exception);
