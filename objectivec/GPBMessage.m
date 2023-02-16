@@ -2000,6 +2000,19 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   [input release];
 }
 
+#pragma mark - mergeDelimitedFrom
+
+- (void)mergeDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
+                         extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
+  GPBCodedInputStreamState *state = &input->state_;
+  if (GPBCodedInputStreamIsAtEnd(state)) {
+    return;
+  }
+  NSData *data = GPBCodedInputStreamReadRetainedBytesNoCopy(state);
+  [self mergeFromData:data extensionRegistry:extensionRegistry];
+  [data release];
+}
+
 #pragma mark - Parse From Data Support
 
 + (instancetype)parseFromData:(NSData *)data error:(NSError **)errorPtr {
@@ -2026,26 +2039,27 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 + (instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
                                  extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                                              error:(NSError **)errorPtr {
-  GPBMessage *result = nil;
+  GPBMessage *message = [[[self alloc] init] autorelease];
   @try {
-    uint64_t size = GPBCodedInputStreamReadUInt64(&input->state_);
-    size_t oldLimit = [input pushLimit:size];
-    result = [self parseFromCodedInputStream:input
-                           extensionRegistry:extensionRegistry
-                                       error:errorPtr];
-    if (result) {
-      [input popLimit:oldLimit];
-      if (errorPtr) {
-        *errorPtr = nil;
-      }
+    [message mergeDelimitedFromCodedInputStream:input extensionRegistry:extensionRegistry];
+    if (errorPtr) {
+      *errorPtr = nil;
     }
   } @catch (NSException *exception) {
-    result = nil;
+    message = nil;
     if (errorPtr) {
       *errorPtr = ErrorFromException(exception);
     }
   }
-  return result;
+#ifdef DEBUG
+  if (message && !message.initialized) {
+    message = nil;
+    if (errorPtr) {
+      *errorPtr = MessageError(GPBMessageErrorCodeMissingRequiredField, nil);
+    }
+  }
+#endif
+  return message;
 }
 
 #pragma mark - Unknown Field Support
