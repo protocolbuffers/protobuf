@@ -324,6 +324,13 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
   EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
 }
 
+TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
+  const char encoded[] = {"\n\x3\x80\0\0"};
+  UNITTEST::NestedTestAllTypes parsed;
+  EXPECT_FALSE(parsed.ParsePartialFromString(
+      absl::string_view{encoded, sizeof(encoded) - 1}));
+}
+
 TEST(MESSAGE_TEST_NAME, NestedExplicitLazyExceedRecursionLimit) {
   UNITTEST::NestedTestAllTypes original, parsed;
   // Build proto with recursion depth of 5, with nested annotated LazyField.
