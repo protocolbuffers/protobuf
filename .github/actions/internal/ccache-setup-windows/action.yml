@@ -16,9 +16,41 @@ runs:
         arch: x64
         vsversion: '2019'
 
-    - name: Install ccache
+    - name: Setup ccache path
       shell: bash
-      run: choco install ccache --version=4.7.4
+      run: |
+        echo "CCACHE_EXE_PATH=$LOCALAPPDATA\ccache-${{ inputs.ccache-version }}-windows-x86_64" >> $GITHUB_ENV
+        echo "$LOCALAPPDATA\ccache-${{ inputs.ccache-version }}-windows-x86_64" >> $GITHUB_PATH
+
+    - name: Add ccache to Powershell path
+      shell: pwsh
+      run: echo "%LOCALAPPDATA%\ccache-${{ inputs.ccache-version }}-windows-x86_64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Setup caching of ccache download
+      if: ${{ github.event_name != 'pull_request' && github.event_name != 'pull_request_target' }}
+      id: ccache-cache
+      uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ env.CCACHE_EXE_PATH }}
+        key: ccache-exe-${{ inputs.ccache-version }}
+
+    - name: Restore ccache download
+      if: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
+      id: ccache-restore
+      uses: actions/cache/restore@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ env.CCACHE_EXE_PATH }}
+        key: ccache-exe-${{ inputs.ccache-version }}
+
+    - name: Download ccache
+      shell: bash
+      if: ${{ steps.ccache-cache.outputs.cache-hit != 'true' && steps.ccache-restore.outputs.cache-hit != 'true'}}
+      run: |
+        cd $LOCALAPPDATA
+        curl -kLSs "https://github.com/ccache/ccache/releases/download/v${{ inputs.ccache-version }}/ccache-${{ inputs.ccache-version }}-windows-x86_64.zip" -o ccache.zip
+        unzip ccache.zip
+        rm ccache.zip
+        ccache --version
 
     - name: Configure ccache environment variables
       shell: pwsh
