@@ -1995,9 +1995,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 - (void)mergeFromData:(NSData *)data extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
-  [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
-  [input checkLastTagWas:0];
-  [input release];
+  @try {
+    [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
+    [input checkLastTagWas:0];
+  } @finally {
+    [input release];
+  }
 }
 
 #pragma mark - mergeDelimitedFrom
@@ -2207,8 +2210,8 @@ static void MergeSingleFieldFromCodedInputStream(GPBMessage *self, GPBFieldDescr
         [input readMessage:message extensionRegistry:extensionRegistry];
       } else {
         GPBMessage *message = [[field.msgClass alloc] init];
-        [input readMessage:message extensionRegistry:extensionRegistry];
         GPBSetRetainedObjectIvarWithFieldPrivate(self, field, message);
+        [input readMessage:message extensionRegistry:extensionRegistry];
       }
       break;
     }
@@ -2221,8 +2224,8 @@ static void MergeSingleFieldFromCodedInputStream(GPBMessage *self, GPBFieldDescr
         [input readGroup:GPBFieldNumber(field) message:message extensionRegistry:extensionRegistry];
       } else {
         GPBMessage *message = [[field.msgClass alloc] init];
-        [input readGroup:GPBFieldNumber(field) message:message extensionRegistry:extensionRegistry];
         GPBSetRetainedObjectIvarWithFieldPrivate(self, field, message);
+        [input readGroup:GPBFieldNumber(field) message:message extensionRegistry:extensionRegistry];
       }
       break;
     }
@@ -2330,16 +2333,20 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 #undef CASE_NOT_PACKED_OBJECT
     case GPBDataTypeMessage: {
       GPBMessage *message = [[field.msgClass alloc] init];
-      [input readMessage:message extensionRegistry:extensionRegistry];
       [(NSMutableArray *)genericArray addObject:message];
+      // The array will now retain message, so go ahead and release it in case
+      // -readMessage:extensionRegistry: throws so it won't be leaked.
       [message release];
+      [input readMessage:message extensionRegistry:extensionRegistry];
       break;
     }
     case GPBDataTypeGroup: {
       GPBMessage *message = [[field.msgClass alloc] init];
-      [input readGroup:GPBFieldNumber(field) message:message extensionRegistry:extensionRegistry];
       [(NSMutableArray *)genericArray addObject:message];
+      // The array will now retain message, so go ahead and release it in case
+      // -readGroup:extensionRegistry: throws so it won't be leaked.
       [message release];
+      [input readGroup:GPBFieldNumber(field) message:message extensionRegistry:extensionRegistry];
       break;
     }
     case GPBDataTypeEnum: {
