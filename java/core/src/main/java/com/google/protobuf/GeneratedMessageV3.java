@@ -423,6 +423,26 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return makeMutableCopy(list);
   }
 
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
+  protected static LongList mutableCopy(LongList list) {
+    return makeMutableCopy(list);
+  }
+
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
+  protected static FloatList mutableCopy(FloatList list) {
+    return makeMutableCopy(list);
+  }
+
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
+  protected static DoubleList mutableCopy(DoubleList list) {
+    return makeMutableCopy(list);
+  }
+
+  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
+  protected static BooleanList mutableCopy(BooleanList list) {
+    return makeMutableCopy(list);
+  }
+
   protected static LongList emptyLongList() {
     return LongArrayList.emptyList();
   }
@@ -430,11 +450,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   // TODO(b/258340024): Unused. Remove.
   protected static LongList newLongList() {
     return new LongArrayList();
-  }
-
-  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
-  protected static LongList mutableCopy(LongList list) {
-    return makeMutableCopy(list);
   }
 
   protected static FloatList emptyFloatList() {
@@ -446,11 +461,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new FloatArrayList();
   }
 
-  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
-  protected static FloatList mutableCopy(FloatList list) {
-    return makeMutableCopy(list);
-  }
-
   protected static DoubleList emptyDoubleList() {
     return DoubleArrayList.emptyList();
   }
@@ -460,11 +470,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new DoubleArrayList();
   }
 
-  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
-  protected static DoubleList mutableCopy(DoubleList list) {
-    return makeMutableCopy(list);
-  }
-
   protected static BooleanList emptyBooleanList() {
     return BooleanArrayList.emptyList();
   }
@@ -472,11 +477,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   // TODO(b/258340024): Unused. Remove.
   protected static BooleanList newBooleanList() {
     return new BooleanArrayList();
-  }
-
-  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
-  protected static BooleanList mutableCopy(BooleanList list) {
-    return makeMutableCopy(list);
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by proto runtime.
