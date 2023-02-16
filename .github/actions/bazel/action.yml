@@ -95,7 +95,7 @@ runs:
 
     # Bazel has multiple Xcode calls with hardcoded timeouts.  Many of these
     # end up timing out on our github runners, causing flakes on every mac
-    # build that invoked Bazel.  To work around this, we manually inoke these
+    # build that invoked Bazel.  To work around this, we manually invoke these
     # calls before running Bazel to make sure they end up in Xcode's cache for
     # quicker runs later.  All of these calls are obtained from xcrun calls in
     # https://github.com/bazelbuild/bazel/blob/e8a69f5d5acaeb6af760631490ecbf73e8a04eeb/tools/cpp/osx_cc_configure.bzl.
