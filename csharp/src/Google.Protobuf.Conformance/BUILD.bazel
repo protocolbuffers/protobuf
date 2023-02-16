@@ -1,3 +1,4 @@
+load("//:protobuf.bzl", "internal_csharp_proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
@@ -37,7 +38,6 @@ CONFORMANCE_DEPS = [
 filegroup(
     name = "srcs",
     srcs = [
-        "Conformance.pb.cs",
         "Program.cs",
         "Google.Protobuf.Conformance.csproj",
     ],
@@ -88,7 +88,6 @@ pkg_files(
     srcs = [
         "BUILD.bazel",
         "Google.Protobuf.Conformance.csproj",
-        "Conformance.pb.cs",
         "Program.cs",
     ],
     strip_prefix = strip_prefix.from_root(""),
