@@ -28,6 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#import <Foundation/Foundation.h>
 #import "GPBMessage_PackagePrivate.h"
 
 #import <objc/message.h>
@@ -2000,19 +2001,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   [input release];
 }
 
-#pragma mark - mergeDelimitedFrom
-
-- (void)mergeDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
-                         extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
-  GPBCodedInputStreamState *state = &input->state_;
-  if (GPBCodedInputStreamIsAtEnd(state)) {
-    return;
-  }
-  NSData *data = GPBCodedInputStreamReadRetainedBytesNoCopy(state);
-  [self mergeFromData:data extensionRegistry:extensionRegistry];
-  [data release];
-}
-
 #pragma mark - Parse From Data Support
 
 + (instancetype)parseFromData:(NSData *)data error:(NSError **)errorPtr {
@@ -2039,27 +2027,36 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 + (instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
                                  extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                                              error:(NSError **)errorPtr {
-  GPBMessage *message = [[[self alloc] init] autorelease];
+  GPBCodedInputStreamState *state = &input->state_;
+  // This doesn't completely match the C++, but if the stream has nothing, just make an empty
+  // message.
+  if (GPBCodedInputStreamIsAtEnd(state)) {
+    return [[[self alloc] init] autorelease];
+  }
+
+  // Manually extract the data and parse it. If we read a varint and push a limit, that consumes
+  // some of the recursion buffer which isn't correct, it also can result in a change in error
+  // codes for attempts to parse partial data; and there are projects sensitive to that, so this
+  // maintains existing error flows.
+
+  // Extract the data, but in a "no copy" mode since we will immediately parse it so this NSData
+  // is transient.
+  NSData *data = nil;
   @try {
-    [message mergeDelimitedFromCodedInputStream:input extensionRegistry:extensionRegistry];
-    if (errorPtr) {
-      *errorPtr = nil;
-    }
+    data = GPBCodedInputStreamReadRetainedBytesNoCopy(state);
   } @catch (NSException *exception) {
-    message = nil;
     if (errorPtr) {
       *errorPtr = ErrorFromException(exception);
     }
+    return nil;
   }
-#ifdef DEBUG
-  if (message && !message.initialized) {
-    message = nil;
-    if (errorPtr) {
-      *errorPtr = MessageError(GPBMessageErrorCodeMissingRequiredField, nil);
-    }
+
+  GPBMessage *result = [self parseFromData:data extensionRegistry:extensionRegistry error:errorPtr];
+  [data release];
+  if (result && errorPtr) {
+    *errorPtr = nil;
   }
-#endif
-  return message;
+  return result;
 }
 
 #pragma mark - Unknown Field Support
