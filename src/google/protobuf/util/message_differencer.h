@@ -81,7 +81,7 @@ class FieldContext;  // declared below MessageDifferencer
 // In case of internal google codebase we are using absl::FixedArray instead
 // of vector. It significantly speeds up proto comparison (by ~30%) by
 // reducing the number of malloc/free operations
-typedef absl::FixedArray<const FieldDescriptor*, 16> FieldDescriptorArray;
+using FieldDescriptorArray = absl::FixedArray<const FieldDescriptor*, 16>;
 
 // A basic differencer that can be used to determine
 // the differences between two specified Protocol Messages. If any differences

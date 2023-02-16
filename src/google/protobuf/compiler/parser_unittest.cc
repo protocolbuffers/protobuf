@@ -282,7 +282,7 @@ TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
 
 // ===================================================================
 
-typedef ParserTest ParseMessageTest;
+using ParseMessageTest = ParserTest;
 
 TEST_F(ParseMessageTest, IgnoreBOM) {
   char input[] =
@@ -1114,7 +1114,7 @@ TEST_F(ParseMessageTest, ExplicitOptionalLabelProto3) {
 
 // ===================================================================
 
-typedef ParserTest ParseEnumTest;
+using ParseEnumTest = ParserTest;
 
 TEST_F(ParseEnumTest, SimpleEnum) {
   ExpectParsesTo(
@@ -1225,7 +1225,7 @@ TEST_F(ParseEnumTest, ReservedNames) {
 
 // ===================================================================
 
-typedef ParserTest ParseServiceTest;
+using ParseServiceTest = ParserTest;
 
 TEST_F(ParseServiceTest, SimpleService) {
   ExpectParsesTo(
@@ -1259,7 +1259,7 @@ TEST_F(ParseServiceTest, MethodsAndStreams) {
 // ===================================================================
 // imports and packages
 
-typedef ParserTest ParseMiscTest;
+using ParseMiscTest = ParserTest;
 
 TEST_F(ParseMiscTest, ParseImport) {
   ExpectParsesTo("import \"foo/bar/baz.proto\";\n",
@@ -1329,7 +1329,7 @@ TEST_F(ParseMiscTest, ParseFileOptions) {
 // each variant of the Consume() helper only counts as one unique call to
 // AddError().
 
-typedef ParserTest ParseErrorTest;
+using ParseErrorTest = ParserTest;
 
 TEST_F(ParseErrorTest, MissingSyntaxIdentifier) {
   require_syntax_identifier_ = true;
@@ -1872,7 +1872,7 @@ TEST_F(ParseErrorTest, MultiplePackagesInFile) {
 // column numbers.  We have one test for every call to RecordLocation() in
 // parser.cc.
 
-typedef ParserTest ParserValidationErrorTest;
+using ParserValidationErrorTest = ParserTest;
 
 TEST_F(ParserValidationErrorTest, PackageNameError) {
   // Create another file which defines symbol "foo".
@@ -2364,7 +2364,7 @@ TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
 // definitions again afoter parsing (note, however, that the order of messages
 // cannot be guaranteed to be the same)
 
-typedef ParserTest ParseDescriptorDebugTest;
+using ParseDescriptorDebugTest = ParserTest;
 
 class CompareDescriptorNames {
  public:

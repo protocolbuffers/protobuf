@@ -108,7 +108,7 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
       const ConformanceRequestSetting& setting,
       Message* test_message) override;
 
-  typedef std::function<bool(const Json::Value&)> Validator;
+  using Validator = std::function<bool(const Json::Value&)>;
   void RunValidJsonTestWithValidator(const std::string& test_name,
                                      ConformanceLevel level,
                                      const std::string& input_json,

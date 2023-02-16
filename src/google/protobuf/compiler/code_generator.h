@@ -42,6 +42,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
@@ -63,7 +64,6 @@ class AccessInfoMap;
 class Version;
 
 // Defined in this file.
-class CodeGenerator;
 class GeneratorContext;
 
 // The abstract interface to a class which generates code implementing a
@@ -182,9 +182,9 @@ class PROTOC_EXPORT GeneratorContext {
 
 };
 
-// The type GeneratorContext was once called OutputDirectory. This typedef
+// The type GeneratorContext was once called OutputDirectory. This alias
 // provides backward compatibility.
-typedef GeneratorContext OutputDirectory;
+using OutputDirectory = GeneratorContext;
 
 // Several code generators treat the parameter argument as holding a
 // list of options separated by commas.  This helper function parses

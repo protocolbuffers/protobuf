@@ -1463,7 +1463,7 @@ MessageDifferencer ::GetMapKeyComparator(const FieldDescriptor* field) const {
 
 namespace {
 
-typedef std::pair<int, const UnknownField*> IndexUnknownFieldPair;
+using IndexUnknownFieldPair = std::pair<int, const UnknownField*>;
 
 struct UnknownFieldOrdering {
   inline bool operator()(const IndexUnknownFieldPair& a,
@@ -1729,7 +1729,7 @@ namespace {
 // Find maximum bipartite matching using the argumenting path algorithm.
 class MaximumMatcher {
  public:
-  typedef std::function<bool(int, int)> NodeMatchCallback;
+  using NodeMatchCallback = std::function<bool(int, int)>;
   // MaximumMatcher takes ownership of the passed in callback and uses it to
   // determine whether a node on the left side of the bipartial graph matches
   // a node on the right side. count1 is the number of nodes on the left side

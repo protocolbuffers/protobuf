@@ -93,7 +93,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingSymbolNames) {
 
   // Instantiate extension template functions to test conflicting template
   // parameter names.
-  typedef protobuf_unittest::TestConflictingSymbolNamesExtension ExtensionMessage;
+  using ExtensionMessage = protobuf_unittest::TestConflictingSymbolNamesExtension;
   message.AddExtension(ExtensionMessage::repeated_int32_ext, 123);
   EXPECT_EQ(123, message.GetExtension(ExtensionMessage::repeated_int32_ext, 0));
 }

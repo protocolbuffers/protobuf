@@ -63,7 +63,7 @@
 
 namespace google {
 namespace protobuf {
-
+namespace util {
 namespace {
 
 
@@ -1907,10 +1907,10 @@ TEST(MessageDifferencerTest, TreatRepeatedFieldAsMapWithIgnoredKeyFields) {
 class ValueProductMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
  public:
-  typedef util::MessageDifferencer::SpecificField SpecificField;
   bool IsMatch(const Message& message1, const Message& message2,
                int unpacked_any,
-               const std::vector<SpecificField>& parent_fields) const override {
+               const std::vector<util::MessageDifferencer::SpecificField>&
+                   parent_fields) const override {
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
     // FieldDescriptor for item.ra
@@ -1969,10 +1969,10 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_CustomMapKeyComparator) {
 class OffsetByOneMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
  public:
-  typedef util::MessageDifferencer::SpecificField SpecificField;
   bool IsMatch(const Message& message1, const Message& message2,
                int unpacked_any,
-               const std::vector<SpecificField>& parent_fields) const override {
+               const std::vector<util::MessageDifferencer::SpecificField>&
+                   parent_fields) const override {
     return parent_fields.back().index + 1 == parent_fields.back().new_index;
   }
 };
@@ -3405,10 +3405,10 @@ TEST_F(ComparisonTest, MapEntryMissingEmptyFieldIsOkTest) {
 class LengthMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
  public:
-  typedef util::MessageDifferencer::SpecificField SpecificField;
   bool IsMatch(const Message& message1, const Message& message2,
                int unpacked_any,
-               const std::vector<SpecificField>& parent_fields) const override {
+               const std::vector<util::MessageDifferencer::SpecificField>&
+                   parent_fields) const override {
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
     const FieldDescriptor* key_field = message1.GetDescriptor()->map_key();
@@ -3449,9 +3449,6 @@ TEST_F(ComparisonTest, MapEntryCustomMapKeyComparator) {
 }
 
 class MatchingTest : public testing::Test {
- public:
-  typedef util::MessageDifferencer MessageDifferencer;
-
  protected:
   MatchingTest() {}
 
@@ -3808,5 +3805,6 @@ TEST(Anytest, TreatAsSet_DifferentType) {
 
 
 }  // namespace
+}  // namespace util
 }  // namespace protobuf
 }  // namespace google

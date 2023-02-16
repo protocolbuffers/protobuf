@@ -344,7 +344,7 @@ class PROTOBUF_EXPORT CodedInputStream {
   // Opaque type used with PushLimit() and PopLimit().  Do not modify
   // values of this type yourself.  The only reason that this isn't a
   // struct with private internals is for efficiency.
-  typedef int Limit;
+  using Limit = int;
 
   // Places a limit on the number of bytes that the stream may read,
   // starting from the current position.  Once the stream hits this limit,

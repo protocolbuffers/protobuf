@@ -65,7 +65,7 @@ class PROTOC_EXPORT TextFormatDecodeData {
                                          const std::string& desired_output);
 
  private:
-  typedef std::pair<int32_t, std::string> DataEntry;
+  using DataEntry = std::pair<int32_t, std::string>;
   std::vector<DataEntry> entries_;
 };
 
