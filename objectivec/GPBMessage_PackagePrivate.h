@@ -80,6 +80,11 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input
                 extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry;
 
+// Parses the next delimited message of this type from the input and merges it
+// with this message.
+- (void)mergeDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
+                         extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry;
+
 - (void)addUnknownMapEntry:(int32_t)fieldNum value:(NSData *)data;
 
 @end
