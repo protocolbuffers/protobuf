@@ -134,8 +134,8 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
       upb_MiniTableSub sub;
       const upb_MiniTable* extendee = NextMiniTable();
       if (!extendee) break;
-      ptr = upb_MiniTableExtension_Build(ptr, end - ptr, ext, extendee, sub,
-                                         status.ptr());
+      ptr = upb_MiniTableExtension_Init(ptr, end - ptr, ext, extendee, sub,
+                                        status.ptr());
       if (!ptr) break;
       if (!LinkExtension(ext)) continue;
       if (upb_ExtensionRegistry_Lookup(*exts, ext->extendee, ext->field.number))
