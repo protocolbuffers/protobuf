@@ -136,6 +136,7 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * https://github.com/pbkit/npm-packages/blob/main/frpc-test/src/index.spec.ts (TypeScript Node.js/Browser)
 * https://github.com/ppissias/xsrpcj (Java)
 * https://github.com/twitchtv/twirp (Multiple languages)
+* https://connect.build/ (Multiple languages)
 
 Inactive:
 
