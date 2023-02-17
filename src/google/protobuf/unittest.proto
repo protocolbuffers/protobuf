@@ -552,6 +552,9 @@ message TestMutualRecursionA {
     optional SubMessage sub_message = 3;  // Needed because of bug in javatest
     optional TestAllTypes not_in_this_scc = 4;
   }
+  repeated group SubGroupR = 5 {
+    optional TestAllTypes payload = 6;
+  }
 }
 
 message TestMutualRecursionB {
