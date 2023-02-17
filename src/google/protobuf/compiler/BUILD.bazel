@@ -20,6 +20,7 @@ proto_library(
         "//:__pkg__",
         "//pkg:__pkg__",
     ],
+    strip_import_prefix = "src",
     deps = ["//:descriptor_proto"],
 )
 
