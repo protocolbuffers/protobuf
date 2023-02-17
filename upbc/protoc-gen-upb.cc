@@ -23,11 +23,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
+#include <map>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -412,14 +418,7 @@ void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
         )cc",
         msg_name, resolved_name, FieldInitializer(pools, field, options));
   } else if (field.IsMap()) {
-    // TODO(b/259616267): remove.
-    output(
-        R"cc(
-          UPB_INLINE bool $0_has_$1(const $0* msg) {
-            return $0_$1_size(msg) != 0;
-          }
-        )cc",
-        msg_name, resolved_name);
+    // Do nothing.
   } else if (field.IsSequence()) {
     // TODO(b/259616267): remove.
     output(
