@@ -1,5 +1,7 @@
 build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
 
+build --javacopt="--release 8"
+
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt
