@@ -8,7 +8,7 @@
 set -ex
 
 # Cd to the repo root.
-cd $(dirname -- "$0")
+cd $(dirname -- "$0")/..
 
 previous_commit_title=$(git log -1 --pretty='%s')
 
@@ -39,7 +39,6 @@ else
   commit_message="Auto-generate files"
 fi
 
-git pull --rebase
 git add -A
 git diff --staged --quiet || git commit -am "$commit_message"
-git push
+git push || echo "Conflicting commit hit, retrying in next job..."
