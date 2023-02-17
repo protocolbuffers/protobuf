@@ -54,6 +54,7 @@ internal_py_proto_library(
 internal_copy_files(
     name = "copied_wkt_proto_files",
     srcs = [
+        "//:compiler_plugin_proto",
         "//:well_known_type_protos",
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
