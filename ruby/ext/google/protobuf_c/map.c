@@ -61,9 +61,13 @@ static void Map_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
+static size_t Map_memsize(const void* _self) {
+  return sizeof(Map);
+}
+
 const rb_data_type_t Map_type = {
     "Google::Protobuf::Map",
-    {Map_mark, RUBY_DEFAULT_FREE, NULL},
+    {Map_mark, RUBY_DEFAULT_FREE, Map_memsize},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 

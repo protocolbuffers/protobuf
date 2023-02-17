@@ -187,11 +187,22 @@ static void Arena_free(void *data) {
   xfree(arena);
 }
 
+static size_t Arena_memsize(const void *data) {
+  const Arena *arena = data;
+  size_t memsize = upb_Arena_SpaceAllocated(arena->arena);
+  if (arena->arena->refcount > 1) {
+      // If other arena were fused we attribute an equal
+      // share of memory usage to each one.
+      memsize /= arena->arena->refcount;
+  }
+  return memsize + sizeof(Arena);
+}
+
 static VALUE cArena;
 
 const rb_data_type_t Arena_type = {
     "Google::Protobuf::Internal::Arena",
-    {Arena_mark, Arena_free, NULL},
+    {Arena_mark, Arena_free, Arena_memsize},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 

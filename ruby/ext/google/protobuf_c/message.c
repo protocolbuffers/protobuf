@@ -66,9 +66,13 @@ static void Message_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
+static size_t Message_memsize(const void* _self) {
+  return sizeof(Message);
+}
+
 static rb_data_type_t Message_type = {
     "Google::Protobuf::Message",
-    {Message_mark, RUBY_DEFAULT_FREE, NULL},
+    {Message_mark, RUBY_DEFAULT_FREE, Message_memsize},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
