@@ -66,6 +66,7 @@
   <properties>
     <!-- Use the core proto dir so that we can call the core generation script -->
     <test.proto.dir>../core/src/test/proto</test.proto.dir>
+    <maven.compiler.release>8</maven.compiler.release>
   </properties>
 
   <build>

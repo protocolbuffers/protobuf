@@ -29,6 +29,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.compiler.release>8</maven.compiler.release>
 
     <!-- These are relative to the submodules -->
     <protobuf.basedir>${project.basedir}/../..</protobuf.basedir>

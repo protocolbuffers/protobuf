@@ -16,6 +16,10 @@
     not guarantee API/ABI stability.
   </description>
 
+  <properties>
+    <maven.compiler.release>8</maven.compiler.release>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
