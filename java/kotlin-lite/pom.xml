@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.21.7</version>
+    <version>3.21.12</version>
   </parent>
 
   <artifactId>protobuf-kotlin-lite</artifactId>
@@ -16,7 +16,7 @@
   </description>
 
   <properties>
-    <kotlin.version>1.5.0</kotlin.version>
+    <kotlin.version>1.6.0</kotlin.version>
   </properties>
 
   <dependencies>

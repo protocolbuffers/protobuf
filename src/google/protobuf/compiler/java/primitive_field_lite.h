@@ -36,7 +36,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_PRIMITIVE_FIELD_LITE_H__
 
 #include <cstdint>
-#include <map>
 #include <string>
 
 #include "google/protobuf/compiler/java/field.h"
@@ -83,7 +82,7 @@ class ImmutablePrimitiveFieldLiteGenerator
 
  protected:
   const FieldDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
   const int messageBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
@@ -133,7 +132,7 @@ class RepeatedImmutablePrimitiveFieldLiteGenerator
 
  private:
   const FieldDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
   Context* context_;
   ClassNameResolver* name_resolver_;
 };

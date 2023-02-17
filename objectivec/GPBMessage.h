@@ -90,15 +90,13 @@ CF_EXTERN_C_END
  * The set of unknown fields for this message.
  *
  * Only messages from proto files declared with "proto2" syntax support unknown
- * fields. For "proto3" syntax, any unknown fields found while parsing are
- * dropped.
+ * fields.
  **/
 @property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields;
 
 /**
  * Whether the message, along with all submessages, have the required fields
- * set. This is only applicable for files declared with "proto2" syntax, as
- * there are no required fields for "proto3" syntax.
+ * set.
  **/
 @property(nonatomic, readonly, getter=isInitialized) BOOL initialized;
 
@@ -295,6 +293,10 @@ CF_EXTERN_C_END
  *
  * @note This can raise the GPBCodedOutputStreamException_* exceptions.
  *
+ * @note The most common cause of this failing is from one thread calling this
+ *       while another thread has a reference to this message or a message used
+ *       within a field and that other thread mutating the message while this
+ *       serialization is taking place.
  **/
 - (void)writeToCodedOutputStream:(GPBCodedOutputStream *)output;
 
@@ -304,6 +306,11 @@ CF_EXTERN_C_END
  * @param output The output stream into which to write the message.
  *
  * @note This can raise the GPBCodedOutputStreamException_* exceptions.
+ *
+ * @note The most common cause of this failing is from one thread calling this
+ *       while another thread has a reference to this message or a message used
+ *       within a field and that other thread mutating the message while this
+ *       serialization is taking place.
  **/
 - (void)writeToOutputStream:(NSOutputStream *)output;
 
@@ -314,6 +321,11 @@ CF_EXTERN_C_END
  * @param output The coded output stream into which to write the message.
  *
  * @note This can raise the GPBCodedOutputStreamException_* exceptions.
+ *
+ * @note The most common cause of this failing is from one thread calling this
+ *       while another thread has a reference to this message or a message used
+ *       within a field and that other thread mutating the message while this
+ *       serialization is taking place.
  **/
 - (void)writeDelimitedToCodedOutputStream:(GPBCodedOutputStream *)output;
 
@@ -324,6 +336,11 @@ CF_EXTERN_C_END
  * @param output The output stream into which to write the message.
  *
  * @note This can raise the GPBCodedOutputStreamException_* exceptions.
+ *
+ * @note The most common cause of this failing is from one thread calling this
+ *       while another thread has a reference to this message or a message used
+ *       within a field and that other thread mutating the message while this
+ *       serialization is taking place.
  **/
 - (void)writeDelimitedToOutputStream:(NSOutputStream *)output;
 
@@ -338,6 +355,11 @@ CF_EXTERN_C_END
  * @note In DEBUG ONLY, the message is also checked for all required field,
  *       if one is missing, nil will be returned.
  *
+ * @note The most common cause of this failing is from one thread calling this
+ *       while another thread has a reference to this message or a message used
+ *       within a field and that other thread mutating the message while this
+ *       serialization is taking place.
+ *
  * @return The binary representation of the message.
  **/
 - (nullable NSData *)data;
@@ -348,6 +370,11 @@ CF_EXTERN_C_END
  *
  * @note This value is not cached, so if you are using it repeatedly, it is
  *       recommended to keep a local copy.
+ *
+ * @note The most common cause of this failing is from one thread calling this
+ *       while another thread has a reference to this message or a message used
+ *       within a field and that other thread mutating the message while this
+ *       serialization is taking place.
  *
  * @return The binary representation of the size along with the message.
  **/
@@ -411,6 +438,12 @@ CF_EXTERN_C_END
  * Extensions use boxed values (NSNumbers) for PODs and NSMutableArrays for
  * repeated fields. If the extension is a Message one will be auto created for
  * you and returned similar to fields.
+ *
+ * NOTE: For Enum extensions, if the enum was _closed_, then unknown values
+ * were parsed into the message's unknown fields instead of ending up in the
+ * extensions, just like what happens with singular/repeated fields. For open
+ * enums, the _raw_ value will be in the NSNumber, meaning if one does a
+ * `switch` on the values, a `default` case should also be included.
  *
  * @param extension The extension descriptor of the extension to fetch.
  *

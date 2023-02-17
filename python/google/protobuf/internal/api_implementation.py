@@ -102,6 +102,7 @@ if _implementation_type == 'cpp':
   try:
     # pylint: disable=g-import-not-at-top
     from google.protobuf.pyext import _message
+    sys.modules['google3.net.proto2.python.internal.cpp._message'] = _message
     _c_module = _message
     del _message
   except ImportError:

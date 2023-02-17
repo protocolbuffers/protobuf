@@ -35,9 +35,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
 
-#include <map>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/port.h"
 
@@ -84,7 +84,7 @@ class ExtensionGenerator {
   Options options_;
   MessageSCCAnalyzer* scc_analyzer_;
 
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
 
 }  // namespace cpp

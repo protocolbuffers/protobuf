@@ -33,13 +33,12 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 #define GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 
-
 #include <cstdint>
-#include <map>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -182,9 +181,6 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
     Tolerance(double f, double m) : fraction(f), margin(m) {}
   };
 
-  // Defines the map to store the tolerances for floating point comparison.
-  typedef std::map<const FieldDescriptor*, Tolerance> ToleranceMap;
-
   friend class MessageDifferencer;
   // The following methods get executed when CompareFields is called for the
   // basic types (instead of submessages). They return true on success. One
@@ -258,11 +254,11 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
 
   // Field-specific float/double tolerances, which override any default for
   // those particular fields.
-  ToleranceMap map_tolerance_;
+  absl::flat_hash_map<const FieldDescriptor*, Tolerance> map_tolerance_;
 };
 
 // Default field comparison: use the basic implementation of FieldComparator.
-class PROTOBUF_EXPORT DefaultFieldComparator PROTOBUF_FUTURE_FINAL
+class PROTOBUF_EXPORT DefaultFieldComparator final
     : public SimpleFieldComparator {
  public:
   ComparisonResult Compare(const Message& message_1, const Message& message_2,

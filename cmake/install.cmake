@@ -47,7 +47,7 @@ include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
 set(protobuf_HEADERS
   ${libprotobuf_hdrs}
   ${libprotoc_hdrs}
-  ${wkt_protos_proto_srcs}
+  ${wkt_protos_files}
   ${descriptor_proto_proto_srcs}
   ${plugin_proto_proto_srcs}
 )
@@ -112,4 +112,11 @@ if(protobuf_INSTALL_EXAMPLES)
   install(DIRECTORY examples/
     DESTINATION "${CMAKE_INSTALL_EXAMPLEDIR}"
     COMPONENT protobuf-examples)
+endif()
+
+if (protobuf_INSTALL_TESTS)
+  install(TARGETS gmock EXPORT protobuf-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()

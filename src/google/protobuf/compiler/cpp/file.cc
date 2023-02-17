@@ -35,12 +35,8 @@
 #include "google/protobuf/compiler/cpp/file.h"
 
 #include <iostream>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -53,7 +49,6 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/cpp/enum.h"
@@ -62,6 +57,7 @@
 #include "google/protobuf/compiler/cpp/message.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/service.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -74,7 +70,9 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-absl::flat_hash_map<std::string, std::string> FileVars(
+using Sub = ::google::protobuf::io::Printer::Sub;
+
+absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
   return {
       {"filename", file->name()},
@@ -115,19 +113,19 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
 
   for (int i = 0; i < msgs.size(); ++i) {
-    message_generators_.push_back(absl::make_unique<MessageGenerator>(
+    message_generators_.push_back(std::make_unique<MessageGenerator>(
         msgs[i], variables_, i, options, &scc_analyzer_));
     message_generators_.back()->AddGenerators(&enum_generators_,
                                               &extension_generators_);
   }
 
   for (int i = 0; i < file->enum_type_count(); ++i) {
-    enum_generators_.push_back(absl::make_unique<EnumGenerator>(
-        file->enum_type(i), variables_, options));
+    enum_generators_.push_back(
+        std::make_unique<EnumGenerator>(file->enum_type(i), options));
   }
 
   for (int i = 0; i < file->service_count(); ++i) {
-    service_generators_.push_back(absl::make_unique<ServiceGenerator>(
+    service_generators_.push_back(std::make_unique<ServiceGenerator>(
         file->service(i), variables_, options));
   }
   if (HasGenericServices(file_, options_)) {
@@ -137,7 +135,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   }
 
   for (int i = 0; i < file->extension_count(); ++i) {
-    extension_generators_.push_back(absl::make_unique<ExtensionGenerator>(
+    extension_generators_.push_back(std::make_unique<ExtensionGenerator>(
         file->extension(i), options, &scc_analyzer_));
   }
 
@@ -202,9 +200,9 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
   p->Emit(
       {
           {"port_def",
-           [&] { IncludeFile("net/proto2/public/port_def.inc", p); }},
+           [&] { IncludeFile("third_party/protobuf/port_def.inc", p); }},
           {"port_undef",
-           [&] { IncludeFile("net/proto2/public/port_undef.inc", p); }},
+           [&] { IncludeFile("third_party/protobuf/port_undef.inc", p); }},
           {"dllexport_macro", FileDllExport(file_, options_)},
           {"undefs", [&] { GenerateMacroUndefs(p); }},
           {"global_state_decls",
@@ -377,26 +375,32 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
 
 void FileGenerator::DoIncludeFile(absl::string_view google3_name,
                                   bool do_export, io::Printer* p) {
-  absl::string_view prefix = "net/proto2/";
-  GOOGLE_CHECK(absl::StartsWith(google3_name, prefix)) << google3_name;
+  constexpr absl::string_view prefix = "third_party/protobuf/";
+  ABSL_CHECK(absl::StartsWith(google3_name, prefix)) << google3_name;
 
   auto v = p->WithVars(
       {{"export_suffix", do_export ? "// IWYU pragma: export" : ""}});
 
   if (options_.opensource_runtime) {
     absl::ConsumePrefix(&google3_name, prefix);
-    std::string path(google3_name);
+    absl::ConsumePrefix(&google3_name, "internal/");
+    absl::ConsumePrefix(&google3_name, "proto/");
+    absl::ConsumePrefix(&google3_name, "public/");
 
-    path = StringReplace(path, "internal/", "", false);
-    path = StringReplace(path, "proto/", "", false);
-    path = StringReplace(path, "public/", "", false);
+    std::string path;
+    if (absl::ConsumePrefix(&google3_name, "io/public/")) {
+      path = absl::StrCat("io/", google3_name);
+    } else {
+      path = std::string(google3_name);
+    }
 
     if (options_.runtime_include_base.empty()) {
       p->Emit({{"path", path}}, R"(
         #include "google/protobuf/$path$"$  export_suffix$
       )");
     } else {
-      p->Emit({{"base", options_.runtime_include_base}, {"path", path}}, R"(
+      p->Emit({{"base", options_.runtime_include_base}, {"path", path}},
+              R"(
         #include "$base$google/protobuf/$path$"$  export_suffix$
       )");
     }
@@ -405,8 +409,10 @@ void FileGenerator::DoIncludeFile(absl::string_view google3_name,
     // The bootstrapped proto generated code needs to use the
     // third_party/protobuf header paths to avoid circular dependencies.
     if (options_.bootstrap) {
-      path = StringReplace(path, "net/proto2/public", "third_party/protobuf",
-                           false);
+      constexpr absl::string_view bootstrap_prefix = "net/proto2/public";
+      if (absl::ConsumePrefix(&google3_name, bootstrap_prefix)) {
+        path = absl::StrCat("third_party/protobuf", google3_name);
+      }
     }
 
     p->Emit({{"path", path}}, R"(
@@ -442,26 +448,26 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
         #include <algorithm>
       )");
 
-  IncludeFile("net/proto2/io/public/coded_stream.h", p);
+  IncludeFile("third_party/protobuf/io/coded_stream.h", p);
   // TODO(gerbens) This is to include parse_context.h, we need a better way
-  IncludeFile("net/proto2/public/extension_set.h", p);
-  IncludeFile("net/proto2/public/wire_format_lite.h", p);
+  IncludeFile("third_party/protobuf/extension_set.h", p);
+  IncludeFile("third_party/protobuf/wire_format_lite.h", p);
 
   // Unknown fields implementation in lite mode uses StringOutputStream
   if (!UseUnknownFieldSet(file_, options_) && !message_generators_.empty()) {
-    IncludeFile("net/proto2/io/public/zero_copy_stream_impl_lite.h", p);
+    IncludeFile("third_party/protobuf/io/zero_copy_stream_impl_lite.h", p);
   }
 
   if (HasDescriptorMethods(file_, options_)) {
-    IncludeFile("net/proto2/public/descriptor.h", p);
-    IncludeFile("net/proto2/public/generated_message_reflection.h", p);
-    IncludeFile("net/proto2/public/reflection_ops.h", p);
-    IncludeFile("net/proto2/public/wire_format.h", p);
+    IncludeFile("third_party/protobuf/descriptor.h", p);
+    IncludeFile("third_party/protobuf/generated_message_reflection.h", p);
+    IncludeFile("third_party/protobuf/reflection_ops.h", p);
+    IncludeFile("third_party/protobuf/wire_format.h", p);
   }
 
   if (HasGeneratedMethods(file_, options_) &&
       options_.tctable_mode != Options::kTCTableNever) {
-    IncludeFile("net/proto2/public/generated_message_tctable_impl.h", p);
+    IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   }
 
   if (options_.proto_h) {
@@ -495,7 +501,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
 
     // Must be included last.
   )cc");
-  IncludeFile("net/proto2/public/port_def.inc", p);
+  IncludeFile("third_party/protobuf/port_def.inc", p);
 }
 
 void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
@@ -522,7 +528,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
 
   // Generate the split instance first because it's needed in the constexpr
   // constructor.
-  if (ShouldSplit(generator->descriptor_, options_)) {
+  if (ShouldSplit(generator->descriptor(), options_)) {
     // Use a union to disable the destructor of the _instance member.
     // We can constant initialize, but the object will still have a non-trivial
     // destructor that we need to elide.
@@ -533,13 +539,14 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
     // there just to improve performance and binary size in these builds.
     p->Emit(
         {
-            {"type", DefaultInstanceType(generator->descriptor_, options_,
+            {"type", DefaultInstanceType(generator->descriptor(), options_,
                                          /*split=*/true)},
-            {"name", DefaultInstanceName(generator->descriptor_, options_,
+            {"name", DefaultInstanceName(generator->descriptor(), options_,
                                          /*split=*/true)},
             {"default",
              [&] { generator->GenerateInitDefaultSplitInstance(p); }},
-            {"class", absl::StrCat(generator->classname_, "::Impl_::Split")},
+            {"class", absl::StrCat(ClassName(generator->descriptor()),
+                                   "::Impl_::Split")},
         },
         R"cc(
           struct $type$ {
@@ -558,10 +565,10 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
 
   p->Emit(
       {
-          {"type", DefaultInstanceType(generator->descriptor_, options_)},
-          {"name", DefaultInstanceName(generator->descriptor_, options_)},
+          {"type", DefaultInstanceType(generator->descriptor(), options_)},
+          {"name", DefaultInstanceName(generator->descriptor(), options_)},
           {"default", [&] { generator->GenerateInitDefaultSplitInstance(p); }},
-          {"class", generator->classname_},
+          {"class", ClassName(generator->descriptor())},
       },
       R"cc(
         struct $type$ {
@@ -576,8 +583,8 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
             PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
       )cc");
 
-  for (int i = 0; i < generator->descriptor_->field_count(); ++i) {
-    const FieldDescriptor* field = generator->descriptor_->field(i);
+  for (int i = 0; i < generator->descriptor()->field_count(); ++i) {
+    const FieldDescriptor* field = generator->descriptor()->field(i);
     if (!IsStringInlined(field, options_)) {
       continue;
     }
@@ -585,9 +592,9 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
     // Force the initialization of the inlined string in the default instance.
     p->Emit(
         {
-            {"class", ClassName(generator->descriptor_)},
+            {"class", ClassName(generator->descriptor())},
             {"field", FieldName(field)},
-            {"default", DefaultInstanceName(generator->descriptor_, options_)},
+            {"default", DefaultInstanceName(generator->descriptor(), options_)},
             {"member", FieldMemberName(field, ShouldSplit(field, options_))},
         },
         R"cc(
@@ -600,8 +607,8 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   if (options_.lite_implicit_weak_fields) {
     p->Emit(
         {
-            {"ptr", DefaultInstancePtr(generator->descriptor_, options_)},
-            {"name", DefaultInstanceName(generator->descriptor_, options_)},
+            {"ptr", DefaultInstancePtr(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
         },
         R"cc(
           PROTOBUF_CONSTINIT const void* $ptr$ = &$name$;
@@ -709,7 +716,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   }
 
   CrossFileReferences refs;
-  ForEachField(message_generators_[idx]->descriptor_,
+  ForEachField(message_generators_[idx]->descriptor(),
                [this, &refs](const FieldDescriptor* field) {
                  GetCrossFileReferencesForField(field, &refs);
                });
@@ -856,7 +863,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     UnmuteWuninitialized(p);
   }
 
-  IncludeFile("net/proto2/public/port_undef.inc", p);
+  IncludeFile("third_party/protobuf/port_undef.inc", p);
 }
 
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
@@ -915,8 +922,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                for (auto& gen : message_generators_) {
                  p->Emit(
                      {
-                         {"ns", Namespace(gen->descriptor_, options_)},
-                         {"class", ClassName(gen->descriptor_)},
+                         {"ns", Namespace(gen->descriptor(), options_)},
+                         {"class", ClassName(gen->descriptor())},
                      },
                      R"cc(
                        &$ns$::_$class$_default_instance_._instance,
@@ -925,7 +932,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
              }},
         },
         R"cc(
-          const uint32_t $tablename$::offsets[] PROTOBUF_SECTION_VARIABLE(
+          const ::uint32_t $tablename$::offsets[] PROTOBUF_SECTION_VARIABLE(
               protodesc_cold) = {
               $offsets$,
           };
@@ -944,7 +951,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     //
     // MSVC doesn't like empty arrays, so we add a dummy.
     p->Emit(R"cc(
-      const uint32_t $tablename$::offsets[1] = {};
+      const ::uint32_t $tablename$::offsets[1] = {};
       static constexpr ::_pbi::MigrationSchema* schemas = nullptr;
       static constexpr ::_pb::Message* const* file_default_instances = nullptr;
     )cc");
@@ -956,8 +963,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // FileDescriptorProto/ and embed it as a string literal, which is parsed and
   // built into real descriptors at initialization time.
 
-  FileDescriptorProto file_proto;
-  file_->CopyTo(&file_proto);
+  FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
   std::string file_data;
   file_proto.SerializeToString(&file_data);
 
@@ -1117,7 +1123,7 @@ class FileGenerator::ForwardDeclarations {
 
   void Print(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      p->Emit({{"enum", e.first, e.second}}, R"cc(
+      p->Emit({Sub("enum", e.first).AnnotatedAs(e.second)}, R"cc(
         enum $enum$ : int;
         bool $enum$_IsValid(int value);
       )cc");
@@ -1127,7 +1133,7 @@ class FileGenerator::ForwardDeclarations {
       const Descriptor* desc = c.second;
       p->Emit(
           {
-              {"class", c.first, desc},
+              Sub("class", c.first).AnnotatedAs(desc),
               {"default_type", DefaultInstanceType(desc, options)},
               {"default_name", DefaultInstanceName(desc, options)},
           },
@@ -1213,9 +1219,9 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
       decls[Namespace(e, options_)].AddEnum(e);
   }
   for (const auto& mg : message_generators_) {
-    const Descriptor* d = mg->descriptor_;
+    const Descriptor* d = mg->descriptor();
     if (d != nullptr && public_set.count(d->file()) == 0u &&
-        ShouldSplit(mg->descriptor_, options_))
+        ShouldSplit(mg->descriptor(), options_))
       decls[Namespace(d, options_)].AddSplit(d);
   }
 
@@ -1233,24 +1239,24 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
 
 void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (UsingImplicitWeakFields(file_, options_)) {
-    IncludeFile("net/proto2/public/implicit_weak_message.h", p);
+    IncludeFile("third_party/protobuf/implicit_weak_message.h", p);
   }
   if (HasWeakFields(file_, options_)) {
-    GOOGLE_CHECK(!options_.opensource_runtime);
-    IncludeFile("net/proto2/public/weak_field_map.h", p);
+    ABSL_CHECK(!options_.opensource_runtime);
+    IncludeFile("third_party/protobuf/weak_field_map.h", p);
   }
   if (HasLazyFields(file_, options_, &scc_analyzer_)) {
-    GOOGLE_CHECK(!options_.opensource_runtime);
-    IncludeFile("net/proto2/public/lazy_field.h", p);
+    ABSL_CHECK(!options_.opensource_runtime);
+    IncludeFile("third_party/protobuf/lazy_field.h", p);
   }
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {
-    IncludeFile("net/proto2/public/wire_format_verify.h", p);
+    IncludeFile("third_party/protobuf/wire_format_verify.h", p);
   }
 
   if (options_.opensource_runtime) {
     // Verify the protobuf library header version is compatible with the protoc
     // version before going any further.
-    IncludeFile("net/proto2/public/port_def.inc", p);
+    IncludeFile("third_party/protobuf/port_def.inc", p);
     p->Emit(
         {
             {"min_version", PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC},
@@ -1269,52 +1275,52 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
         #error "regenerate this file with a newer version of protoc."
         #endif  // PROTOBUF_MIN_PROTOC_VERSION
     )");
-    IncludeFile("net/proto2/public/port_undef.inc", p);
+    IncludeFile("third_party/protobuf/port_undef.inc", p);
   }
 
   // OK, it's now safe to #include other files.
-  IncludeFile("net/proto2/io/public/coded_stream.h", p);
-  IncludeFile("net/proto2/public/arena.h", p);
-  IncludeFile("net/proto2/public/arenastring.h", p);
+  IncludeFile("third_party/protobuf/io/coded_stream.h", p);
+  IncludeFile("third_party/protobuf/arena.h", p);
+  IncludeFile("third_party/protobuf/arenastring.h", p);
   if ((options_.force_inline_string || options_.profile_driven_inline_string) &&
       !options_.opensource_runtime) {
-    IncludeFile("net/proto2/public/inlined_string_field.h", p);
+    IncludeFile("third_party/protobuf/inlined_string_field.h", p);
   }
   if (HasSimpleBaseClasses(file_, options_)) {
-    IncludeFile("net/proto2/public/generated_message_bases.h", p);
+    IncludeFile("third_party/protobuf/generated_message_bases.h", p);
   }
   if (HasGeneratedMethods(file_, options_) &&
       options_.tctable_mode != Options::kTCTableNever) {
-    IncludeFile("net/proto2/public/generated_message_tctable_decl.h", p);
+    IncludeFile("third_party/protobuf/generated_message_tctable_decl.h", p);
   }
-  IncludeFile("net/proto2/public/generated_message_util.h", p);
-  IncludeFile("net/proto2/public/metadata_lite.h", p);
+  IncludeFile("third_party/protobuf/generated_message_util.h", p);
+  IncludeFile("third_party/protobuf/metadata_lite.h", p);
 
   if (HasDescriptorMethods(file_, options_)) {
-    IncludeFile("net/proto2/public/generated_message_reflection.h", p);
+    IncludeFile("third_party/protobuf/generated_message_reflection.h", p);
   }
 
   if (!message_generators_.empty()) {
     if (HasDescriptorMethods(file_, options_)) {
-      IncludeFile("net/proto2/public/message.h", p);
+      IncludeFile("third_party/protobuf/message.h", p);
     } else {
-      IncludeFile("net/proto2/public/message_lite.h", p);
+      IncludeFile("third_party/protobuf/message_lite.h", p);
     }
   }
   if (options_.opensource_runtime) {
     // Open-source relies on unconditional includes of these.
-    IncludeFileAndExport("net/proto2/public/repeated_field.h", p);
-    IncludeFileAndExport("net/proto2/public/extension_set.h", p);
+    IncludeFileAndExport("third_party/protobuf/repeated_field.h", p);
+    IncludeFileAndExport("third_party/protobuf/extension_set.h", p);
   } else {
     // Google3 includes these files only when they are necessary.
     if (HasExtensionsOrExtendableMessage(file_)) {
-      IncludeFileAndExport("net/proto2/public/extension_set.h", p);
+      IncludeFileAndExport("third_party/protobuf/extension_set.h", p);
     }
     if (HasRepeatedFields(file_)) {
-      IncludeFileAndExport("net/proto2/public/repeated_field.h", p);
+      IncludeFileAndExport("third_party/protobuf/repeated_field.h", p);
     }
     if (HasStringPieceFields(file_, options_)) {
-      IncludeFile("net/proto2/public/string_piece_field_support.h", p);
+      IncludeFile("third_party/protobuf/string_piece_field_support.h", p);
     }
     if (HasCordFields(file_, options_)) {
       p->Emit(R"(
@@ -1323,30 +1329,30 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     }
   }
   if (HasMapFields(file_)) {
-    IncludeFileAndExport("net/proto2/public/map.h", p);
+    IncludeFileAndExport("third_party/protobuf/map.h", p);
     if (HasDescriptorMethods(file_, options_)) {
-      IncludeFile("net/proto2/public/map_entry.h", p);
-      IncludeFile("net/proto2/public/map_field_inl.h", p);
+      IncludeFile("third_party/protobuf/map_entry.h", p);
+      IncludeFile("third_party/protobuf/map_field_inl.h", p);
     } else {
-      IncludeFile("net/proto2/public/map_entry_lite.h", p);
-      IncludeFile("net/proto2/public/map_field_lite.h", p);
+      IncludeFile("third_party/protobuf/map_entry_lite.h", p);
+      IncludeFile("third_party/protobuf/map_field_lite.h", p);
     }
   }
 
   if (HasEnumDefinitions(file_)) {
     if (HasDescriptorMethods(file_, options_)) {
-      IncludeFile("net/proto2/public/generated_enum_reflection.h", p);
+      IncludeFile("third_party/protobuf/generated_enum_reflection.h", p);
     } else {
-      IncludeFile("net/proto2/public/generated_enum_util.h", p);
+      IncludeFile("third_party/protobuf/generated_enum_util.h", p);
     }
   }
 
   if (HasGenericServices(file_, options_)) {
-    IncludeFile("net/proto2/public/service.h", p);
+    IncludeFile("third_party/protobuf/service.h", p);
   }
 
   if (UseUnknownFieldSet(file_, options_) && !message_generators_.empty()) {
-    IncludeFile("net/proto2/public/unknown_field_set.h", p);
+    IncludeFile("third_party/protobuf/unknown_field_set.h", p);
   }
 }
 
@@ -1403,7 +1409,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
   p->Emit(R"cc(
     // Internal implementation detail -- do not use these members.
     struct $dllexport_decl $$tablename$ {
-      static const uint32_t offsets[];
+      static const ::uint32_t offsets[];
     };
   )cc");
 

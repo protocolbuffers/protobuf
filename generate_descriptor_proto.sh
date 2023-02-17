@@ -62,7 +62,7 @@ do
     PROTOC=$BOOTSTRAP_PROTOC
     BOOTSTRAP_PROTOC=""
   else
-    bazel build $@ //:protoc
+    ${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS:-} build $@ //:protoc ${BAZEL_FLAGS:-}
     if test $? -ne 0; then
       echo "Failed to build protoc."
       exit 1

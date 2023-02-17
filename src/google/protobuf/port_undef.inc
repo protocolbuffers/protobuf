@@ -1,3 +1,4 @@
+// -*- c++ -*-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -57,6 +58,8 @@
 #undef PROTOBUF_DEPRECATED
 #undef PROTOBUF_DEPRECATED_ENUM
 #undef PROTOBUF_DEPRECATED_MSG
+#undef PROTOBUF_IGNORE_DEPRECATION_START
+#undef PROTOBUF_IGNORE_DEPRECATION_STOP
 #undef PROTOBUF_RETURNS_NONNULL
 #undef PROTOBUF_ATTRIBUTE_REINITIALIZES
 #undef PROTOBUF_RTTI
@@ -71,6 +74,7 @@
 #undef PROTOBUF_EXPORT
 #undef PROTOC_EXPORT
 #undef PROTOBUF_NODISCARD
+#undef PROTOBUF_RESTRICT
 #undef PROTOBUF_FORCE_COPY_IN_RELEASE
 #undef PROTOBUF_FORCE_COPY_IN_SWAP
 #undef PROTOBUF_FORCE_COPY_IN_MOVE
@@ -86,11 +90,9 @@
 #undef PROTOBUF_EXPORT_TEMPLATE_DEFINE
 #undef PROTOBUF_ALIGNAS
 #undef PROTOBUF_FINAL
-#undef PROTOBUF_FUTURE_FINAL
 #undef PROTOBUF_THREAD_LOCAL
 #undef PROTOBUF_LITTLE_ENDIAN
 #undef PROTOBUF_BIG_ENDIAN
-#undef PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
 #undef PROTOBUF_CONSTINIT
 #undef PROTOBUF_CONSTEXPR
 #undef PROTOBUF_ATTRIBUTE_WEAK
@@ -113,15 +115,13 @@
 #undef PROTOBUF_DEBUG
 #undef PROTOBUF_DLOG
 #undef PROTO2_IS_OSS
+#undef PROTOBUF_NO_THREADLOCAL
 
 #ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
 #undef PROTOBUF_FUTURE_BREAKING_CHANGES
-#undef PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
-#undef PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR
 #undef PROTOBUF_FUTURE_REMOVE_CLEARED_API
+#undef PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL
 #endif
-
-#undef PROTOBUF_FUTURE_FINAL
 
 // Restore macros that may have been #undef'd in port_def.inc.
 
@@ -163,6 +163,8 @@
 #pragma pop_macro("STRICT")
 #pragma pop_macro("STATUS_PENDING")
 #pragma pop_macro("timezone")
+#pragma pop_macro("TRUE")
+#pragma pop_macro("FALSE")
 #endif
 
 #ifdef __APPLE__
@@ -180,6 +182,10 @@
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
 #endif
 
 // Pop the warning(push) from port_def.inc

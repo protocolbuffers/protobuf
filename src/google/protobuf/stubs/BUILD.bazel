@@ -12,29 +12,23 @@ package(
 cc_library(
     name = "lite",
     srcs = [
-        "bytestream.cc",
         "common.cc",
-        "structurally_valid.cc",
-        "strutil.cc",
     ],
     hdrs = [
-        "bytestream.h",
         "callback.h",
         "common.h",
-        "logging.h",
-        "mathutil.h",
         "platform_macros.h",
         "port.h",
         "status_macros.h",
-        "stl_util.h",
-        "strutil.h",
     ],
     copts = COPTS,
     include_prefix = "google/protobuf/stubs",
     linkopts = LINK_OPTS,
     deps = [
         "//src/google/protobuf:port_def",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -48,16 +42,11 @@ cc_library(
     copts = COPTS,
     include_prefix = "google/protobuf/stubs",
     textual_hdrs = [
-        "bytestream.h",
         "callback.h",
         "common.h",
-        "logging.h",
-        "mathutil.h",
         "platform_macros.h",
         "port.h",
         "status_macros.h",
-        "stl_util.h",
-        "strutil.h",
     ],
     deps = [
         ":lite",
@@ -71,10 +60,7 @@ cc_library(
 cc_test(
     name = "stubs_test",
     srcs = [
-        "bytestream_unittest.cc",
         "common_unittest.cc",
-        "structurally_valid_unittest.cc",
-        "strutil_unittest.cc",
     ],
     copts = COPTS + select({
         "//build_defs:config_msvc": [],
@@ -87,6 +73,7 @@ cc_test(
         ":lite",
         ":stubs",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -108,6 +95,6 @@ filegroup(
     srcs = glob([
         "*_test.cc",
         "*unittest.cc",
-    ]),
+    ], allow_empty = True),
     visibility = ["//pkg:__pkg__"],
 )

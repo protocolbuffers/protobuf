@@ -3,21 +3,24 @@
 # This script checks that the runtime version number constant in the compiler
 # source and in the runtime source is the same.
 #
-# A distro can be made of the protobuf sources with only a subset of the
-# languages, so if the compiler depended on the Objective C runtime, those
-# builds would break. At the same time, we don't want the runtime source
-# depending on the compiler sources; so two copies of the constant are needed.
-
-readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
-readonly ProtoRootDir="${ScriptDir}/../.."
+# We don't really want the generator sources directly referencing the runtime
+# or the reverse, so they both have the same constant defined, and this script
+# is used in a test to ensure the values stay in sync.
 
 die() {
     echo "Error: $1"
     exit 1
 }
 
-readonly GeneratorSrc="${ProtoRootDir}/src/google/protobuf/compiler/objectivec/objectivec_file.cc"
-readonly RuntimeSrc="${ProtoRootDir}/objectivec/GPBBootstrap.h"
+readonly GeneratorSrc="src/google/protobuf/compiler/objectivec/file.cc"
+readonly RuntimeSrc="objectivec/GPBBootstrap.h"
+
+if [[ ! -e "${GeneratorSrc}" ]] ; then
+  die "Failed to find generator file: ${GeneratorSrc}"
+fi
+if [[ ! -e "${RuntimeSrc}" ]] ; then
+  die "Failed to find runtime file: ${RuntimeSrc}"
+fi
 
 check_constant() {
   local ConstantName="$1"

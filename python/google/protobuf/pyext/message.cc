@@ -42,6 +42,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -51,7 +52,6 @@
 #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
 #endif
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -70,7 +70,6 @@
 #include "google/protobuf/pyext/unknown_field_set.h"
 #include "google/protobuf/pyext/unknown_fields.h"
 #include "google/protobuf/util/message_differencer.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
@@ -253,10 +252,10 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   if (WKT_classes == nullptr) {
     ScopedPyObjectPtr well_known_types(
         PyImport_ImportModule(PROTOBUF_PYTHON_INTERNAL ".well_known_types"));
-    GOOGLE_DCHECK(well_known_types != nullptr);
+    ABSL_DCHECK(well_known_types != nullptr);
 
     WKT_classes = PyObject_GetAttrString(well_known_types.get(), "WKTBASES");
-    GOOGLE_DCHECK(WKT_classes != nullptr);
+    ABSL_DCHECK(WKT_classes != nullptr);
   }
 
   PyObject* well_known_class = PyDict_GetItemString(
@@ -681,8 +680,8 @@ bool IsValidUTF8(PyObject* obj) {
 bool AllowInvalidUTF8(const FieldDescriptor* field) { return false; }
 
 PyObject* CheckString(PyObject* arg, const FieldDescriptor* descriptor) {
-  GOOGLE_DCHECK(descriptor->type() == FieldDescriptor::TYPE_STRING ||
-         descriptor->type() == FieldDescriptor::TYPE_BYTES);
+  ABSL_DCHECK(descriptor->type() == FieldDescriptor::TYPE_STRING ||
+              descriptor->type() == FieldDescriptor::TYPE_BYTES);
   if (descriptor->type() == FieldDescriptor::TYPE_STRING) {
     if (!PyBytes_Check(arg) && !PyUnicode_Check(arg)) {
       FormatTypeError(arg, "bytes, unicode");
@@ -785,7 +784,7 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
 namespace cmessage {
 
 PyMessageFactory* GetFactoryForMessage(CMessage* message) {
-  GOOGLE_DCHECK(PyObject_TypeCheck(message, CMessage_Type));
+  ABSL_DCHECK(PyObject_TypeCheck(message, CMessage_Type));
   return reinterpret_cast<CMessageClass*>(Py_TYPE(message))->py_message_factory;
 }
 
@@ -857,7 +856,7 @@ int AssureWritable(CMessage* self) {
   }
 
   // Toplevel messages are always mutable.
-  GOOGLE_DCHECK(self->parent);
+  ABSL_DCHECK(self->parent);
 
   if (AssureWritable(self->parent) == -1) {
     return -1;
@@ -989,7 +988,7 @@ int DeleteRepeatedField(
   }
 
   Arena* arena = Arena::InternalGetArenaForAllocation(message);
-  GOOGLE_DCHECK_EQ(arena, nullptr)
+  ABSL_DCHECK_EQ(arena, nullptr)
       << "python protobuf is expected to be allocated from heap";
   // Remove items, starting from the end.
   for (; length > to; length--) {
@@ -1002,9 +1001,10 @@ int DeleteRepeatedField(
     //
     // To work around a debug hardening (PROTOBUF_FORCE_COPY_IN_RELEASE),
     // explicitly use UnsafeArenaReleaseLast. To not break rare use cases where
-    // arena is used, we fallback to ReleaseLast (but GOOGLE_DCHECK to find/fix it).
+    // arena is used, we fallback to ReleaseLast (but ABSL_DCHECK to find/fix
+    // it).
     //
-    // Note that arena is likely null and GOOGLE_DCHECK and ReleaesLast might be
+    // Note that arena is likely null and ABSL_DCHECK and ReleaesLast might be
     // redundant. The current approach takes extra cautious path not to disrupt
     // production.
     Message* sub_message =
@@ -1101,7 +1101,8 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
             reinterpret_cast<RepeatedCompositeContainer*>(container.get());
         ScopedPyObjectPtr iter(PyObject_GetIter(value));
         if (iter == nullptr) {
-          PyErr_SetString(PyExc_TypeError, "Value must be iterable");
+          PyErr_Format(PyExc_TypeError, "Value of field '%s' must be iterable",
+                       descriptor->name().c_str());
           return -1;
         }
         ScopedPyObjectPtr next;
@@ -1130,7 +1131,8 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
             reinterpret_cast<RepeatedScalarContainer*>(container.get());
         ScopedPyObjectPtr iter(PyObject_GetIter(value));
         if (iter == nullptr) {
-          PyErr_SetString(PyExc_TypeError, "Value must be iterable");
+          PyErr_Format(PyExc_TypeError, "Value of field '%s' must be iterable",
+                       descriptor->name().c_str());
           return -1;
         }
         ScopedPyObjectPtr next;
@@ -1267,8 +1269,8 @@ static void Dealloc(CMessage* self) {
     PyObject_ClearWeakRefs(reinterpret_cast<PyObject*>(self));
   }
   // At this point all dependent objects have been removed.
-  GOOGLE_DCHECK(!self->child_submessages || self->child_submessages->empty());
-  GOOGLE_DCHECK(!self->composite_fields || self->composite_fields->empty());
+  ABSL_DCHECK(!self->child_submessages || self->child_submessages->empty());
+  ABSL_DCHECK(!self->composite_fields || self->composite_fields->empty());
   delete self->child_submessages;
   delete self->composite_fields;
   if (self->unknown_field_set) {
@@ -1713,7 +1715,7 @@ static PyObject* InternalSerializeToString(
     coded_out.SetSerializationDeterministic(deterministic);
   }
   self->message->SerializeWithCachedSizes(&coded_out);
-  GOOGLE_CHECK(!coded_out.HadError());
+  ABSL_CHECK(!coded_out.HadError());
   return result;
 }
 
@@ -2255,37 +2257,37 @@ int InternalSetNonOneofScalar(
 
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      GOOGLE_CHECK_GET_INT32(arg, value, -1);
+      PROTOBUF_CHECK_GET_INT32(arg, value, -1);
       reflection->SetInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      GOOGLE_CHECK_GET_INT64(arg, value, -1);
+      PROTOBUF_CHECK_GET_INT64(arg, value, -1);
       reflection->SetInt64(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      GOOGLE_CHECK_GET_UINT32(arg, value, -1);
+      PROTOBUF_CHECK_GET_UINT32(arg, value, -1);
       reflection->SetUInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      GOOGLE_CHECK_GET_UINT64(arg, value, -1);
+      PROTOBUF_CHECK_GET_UINT64(arg, value, -1);
       reflection->SetUInt64(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
-      GOOGLE_CHECK_GET_FLOAT(arg, value, -1);
+      PROTOBUF_CHECK_GET_FLOAT(arg, value, -1);
       reflection->SetFloat(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_DOUBLE: {
-      GOOGLE_CHECK_GET_DOUBLE(arg, value, -1);
+      PROTOBUF_CHECK_GET_DOUBLE(arg, value, -1);
       reflection->SetDouble(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_BOOL: {
-      GOOGLE_CHECK_GET_BOOL(arg, value, -1);
+      PROTOBUF_CHECK_GET_BOOL(arg, value, -1);
       reflection->SetBool(message, field_descriptor, value);
       break;
     }
@@ -2297,7 +2299,7 @@ int InternalSetNonOneofScalar(
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
-      GOOGLE_CHECK_GET_INT32(arg, value, -1);
+      PROTOBUF_CHECK_GET_INT32(arg, value, -1);
       if (reflection->SupportsUnknownEnumValues()) {
         reflection->SetEnumValue(message, field_descriptor, value);
       } else {

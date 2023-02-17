@@ -34,8 +34,7 @@
 
 #include <limits>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "absl/log/absl_check.h"
 
 namespace google {
 namespace protobuf {
@@ -153,7 +152,7 @@ inline bool IsValidNumericCast(Source source) {
 // (this is static_asserted), though this could be supported if necessary.
 template <class Dest, class Source>
 inline Dest checked_numeric_cast(Source source) {
-  GOOGLE_CHECK(IsValidNumericCast<Dest>(source));
+  ABSL_CHECK(IsValidNumericCast<Dest>(source));
   return static_cast<Dest>(source);
 }
 

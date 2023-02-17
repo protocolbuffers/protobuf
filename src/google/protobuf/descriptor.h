@@ -57,20 +57,22 @@
 #include <atomic>
 #include <cstdint>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/port.h"
+#include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
+#include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/port.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -116,6 +118,7 @@ class MethodOptions;
 class FileOptions;
 class UninterpretedOption;
 class SourceCodeInfo;
+class ExtensionMetadata;
 
 // Defined in message.h
 class Message;
@@ -140,6 +143,7 @@ class Formatter;
 
 namespace descriptor_unittest {
 class DescriptorTest;
+class ValidationErrorTest;
 }  // namespace descriptor_unittest
 
 // Defined in printer.h
@@ -1148,10 +1152,22 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   bool is_placeholder() const;
 
   // Returns true whether this is a "closed" enum, meaning that it:
-  // - Has a fixed set of named values.
+  // - Has a fixed set of values, rather than being equivalent to an int32.
   // - Encountering values not in this set causes them to be treated as unknown
   //   fields.
   // - The first value (i.e., the default) may be nonzero.
+  //
+  // WARNING: Some runtimes currently have a quirk where non-closed enums are
+  // treated as closed when used as the type of fields defined in a
+  // `syntax = proto2;` file. This quirk is not present in all runtimes; as of
+  // writing, we know that:
+  //
+  // - C++, Java, and C++-based Python share this quirk.
+  // - UPB and UPB-based Python do not.
+  // - PHP and Ruby treat all enums as open regardless of declaration.
+  //
+  // Care should be taken when using this function to respect the target
+  // runtime's enum handling quirks.
   bool is_closed() const;
 
   // Reserved fields -------------------------------------------------
@@ -1799,7 +1815,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   //   this pool will be slower, since they will have to obtain locks too.
   // - An ErrorCollector may optionally be given to collect validation errors
   //   in files loaded from the database.  If not given, errors will be printed
-  //   to GOOGLE_LOG(ERROR).  Remember that files are built on-demand, so this
+  //   to ABSL_LOG(ERROR).  Remember that files are built on-demand, so this
   //   ErrorCollector may be called from any thread that calls one of the
   //   Find*By*() methods.
   // - The DescriptorDatabase must not be mutated during the lifetime of
@@ -1887,7 +1903,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     // in a .proto file.
     enum ErrorLocation {
       NAME,           // the symbol name, or the package name for files
-      NUMBER,         // field or extension range number
+      NUMBER,         // field, extension range or extension decl number
       TYPE,           // field type
       EXTENDEE,       // field extendee
       DEFAULT_VALUE,  // field default value
@@ -1901,32 +1917,63 @@ class PROTOBUF_EXPORT DescriptorPool {
 
     // Reports an error in the FileDescriptorProto. Use this function if the
     // problem occurred should interrupt building the FileDescriptorProto.
-    virtual void AddError(
-        const std::string& filename,  // File name in which the error occurred.
-        const std::string& element_name,  // Full name of the erroneous element.
-        const Message* descriptor,  // Descriptor of the erroneous element.
-        ErrorLocation location,     // One of the location constants, above.
-        const std::string& message  // Human-readable error message.
-        ) = 0;
+    // Provided the following arguments:
+    // filename - File name in which the error occurred.
+    // element_name - Full name of the erroneous element.
+    // descriptor - Descriptor of the erroneous element.
+    // location - One of the location constants, above.
+    // message - Human-readable error message.
+    virtual void RecordError(absl::string_view filename,
+                             absl::string_view element_name,
+                             const Message* descriptor, ErrorLocation location,
+                             absl::string_view message) {
+      PROTOBUF_IGNORE_DEPRECATION_START
+      AddError(std::string(filename), std::string(element_name), descriptor,
+               location, std::string(message));
+      PROTOBUF_IGNORE_DEPRECATION_STOP
+    }
 
     // Reports a warning in the FileDescriptorProto. Use this function if the
     // problem occurred should NOT interrupt building the FileDescriptorProto.
-    virtual void AddWarning(
-        const std::string& /*filename*/,      // File name in which the error
-                                              // occurred.
-        const std::string& /*element_name*/,  // Full name of the erroneous
-                                              // element.
-        const Message* /*descriptor*/,  // Descriptor of the erroneous element.
-        ErrorLocation /*location*/,     // One of the location constants, above.
-        const std::string& /*message*/  // Human-readable error message.
-    ) {}
+    // Provided the following arguments:
+    // filename - File name in which the error occurred.
+    // element_name - Full name of the erroneous element.
+    // descriptor - Descriptor of the erroneous element.
+    // location - One of the location constants, above.
+    // message - Human-readable error message.
+    virtual void RecordWarning(absl::string_view filename,
+                               absl::string_view element_name,
+                               const Message* descriptor,
+                               ErrorLocation location,
+                               absl::string_view message) {
+      PROTOBUF_IGNORE_DEPRECATION_START
+      AddWarning(std::string(filename), std::string(element_name), descriptor,
+                 location, std::string(message));
+      PROTOBUF_IGNORE_DEPRECATION_STOP
+    }
+
+   private:
+    // These should never be called directly, but if a legacy class overrides
+    // them they'll get routed to by the Record* methods.
+    ABSL_DEPRECATED("Use RecordError")
+    virtual void AddError(const std::string& filename,
+                          const std::string& element_name,
+                          const Message* descriptor, ErrorLocation location,
+                          const std::string& message) {
+      ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
+    }
+    ABSL_DEPRECATED("Use RecordWarning")
+    virtual void AddWarning(const std::string& filename,
+                            const std::string& element_name,
+                            const Message* descriptor, ErrorLocation location,
+                            const std::string& message) {}
   };
 
   // Convert the FileDescriptorProto to real descriptors and place them in
   // this DescriptorPool.  All dependencies of the file must already be in
   // the pool.  Returns the resulting FileDescriptor, or nullptr if there were
   // problems with the input (e.g. the message was invalid, or dependencies
-  // were missing).  Details about the errors are written to GOOGLE_LOG(ERROR).
+  // were missing).  Details about the errors are written to ABSL_LOG(ERROR).
   const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
 
   // Same as BuildFile() except errors are sent to the given ErrorCollector.
@@ -1992,6 +2039,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Disallow [enforce_utf8 = false] in .proto files.
   void DisallowEnforceUtf8() { disallow_enforce_utf8_ = true; }
 
+  // Use the deprecated legacy behavior for handling JSON field name conflicts.
+  ABSL_DEPRECATED("Deprecated treatment of field name conflicts is enabled.")
+  void UseDeprecatedLegacyJsonFieldConflicts() {
+    deprecated_legacy_json_field_conflicts_ = true;
+  }
+
 
   // For internal use only:  Gets a non-const pointer to the generated pool.
   // This is called at static-initialization time only, so thread-safety is
@@ -2050,6 +2103,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class FileDescriptor;
   friend class DescriptorBuilder;
   friend class FileDescriptorTables;
+  friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
 
   // Return true if the given name is a sub-symbol of any non-package
   // descriptor that already exists in the descriptor pool.  (The full
@@ -2120,10 +2174,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool allow_unknown_;
   bool enforce_weak_;
   bool disallow_enforce_utf8_;
+  bool deprecated_legacy_json_field_conflicts_;
 
   // Set of files to track for unused imports. The bool value when true means
   // unused imports are treated as errors (and as warnings when false).
-  std::map<std::string, bool> unused_import_track_files_;
+  absl::flat_hash_map<std::string, bool> unused_import_track_files_;
+
 };
 
 
@@ -2325,12 +2381,12 @@ inline const OneofDescriptor* FieldDescriptor::containing_oneof() const {
 }
 
 inline int FieldDescriptor::index_in_oneof() const {
-  GOOGLE_DCHECK(is_oneof_);
+  ABSL_DCHECK(is_oneof_);
   return static_cast<int>(this - scope_.containing_oneof->field(0));
 }
 
 inline const Descriptor* FieldDescriptor::extension_scope() const {
-  GOOGLE_CHECK(is_extension_);
+  ABSL_CHECK(is_extension_);
   return scope_.extension_scope;
 }
 
@@ -2514,7 +2570,7 @@ struct FieldRangeImpl {
     value_type operator*() { return descriptor->field(idx); }
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
-      GOOGLE_DCHECK(a.descriptor == b.descriptor);
+      ABSL_DCHECK(a.descriptor == b.descriptor);
       return a.idx == b.idx;
     }
     friend bool operator!=(const Iterator& a, const Iterator& b) {

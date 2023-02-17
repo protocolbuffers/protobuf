@@ -1,0 +1,30 @@
+--- upbc/bootstrap_compiler.bzl
++++ upbc/bootstrap_compiler.bzl
+@@ -20,7 +20,7 @@ _upbc_base = "//upbc:protoc-gen-upb"
+ 
+ # begin:github_only
+ _is_google3 = False
+-_extra_proto_path = "-Iexternal/com_google_protobuf/src "
++_extra_proto_path = "-Isrc "
+ # end:github_only
+ 
+ def _upbc(stage):
+ 
+--- cmake/build_defs.bzl
++++ cmake/build_defs.bzl
+@@ -25,7 +25,7 @@
+ 
+ """Bazel support functions related to CMake support."""
+ 
+-def staleness_test(name, outs, generated_pattern, target_files = None, **kwargs):
++def staleness_test(name, outs, generated_pattern, target_files = None, tags = [], **kwargs):
+     """Tests that checked-in file(s) match the contents of generated file(s).
+ 
+     The resulting test will verify that all output files exist and have the
+@@ -72,5 +72,6 @@ def staleness_test(name, outs, generated_pattern, target_files = None, **kwargs)
+         deps = [
+             Label("//cmake:staleness_test_lib"),
+         ],
++        tags = ["staleness_test"] + tags,
+         **kwargs
+     )

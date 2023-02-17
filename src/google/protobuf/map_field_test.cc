@@ -28,23 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <map>
 #include <memory>
-#include <unordered_map>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/map_unittest.pb.h"
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map_test_util.h"
+#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/unittest.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -72,14 +70,6 @@ class MapFieldBaseStub : public MapFieldBase {
   MapFieldBaseStub() {}
   virtual ~MapFieldBaseStub() { MapFieldBase::Destruct(); }
   explicit MapFieldBaseStub(Arena* arena) : MapFieldBase(arena) {}
-  // Get underlined repeated field without synchronizing map.
-  RepeatedPtrField<Message>* InternalRepeatedField() { return repeated_field_; }
-  bool IsMapClean() {
-    return state_.load(std::memory_order_relaxed) != STATE_MODIFIED_MAP;
-  }
-  bool IsRepeatedClean() {
-    return state_.load(std::memory_order_relaxed) != STATE_MODIFIED_REPEATED;
-  }
   void SetMapDirty() {
     state_.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
   }
@@ -152,7 +142,7 @@ class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
   const Descriptor* map_descriptor_;
   const FieldDescriptor* key_descriptor_;
   const FieldDescriptor* value_descriptor_;
-  std::map<int32_t, int32_t>
+  absl::flat_hash_map<int32_t, int32_t>
       initial_value_map_;  // copy of initial values inserted
 };
 
@@ -293,26 +283,28 @@ class MapFieldStateTest
 
   void Expect(MapFieldType* map_field, State state, int map_size,
               int repeated_size, bool is_repeated_null) {
-    MapFieldBase* map_field_base = map_field;
-    MapFieldBaseStub* stub =
-        reinterpret_cast<MapFieldBaseStub*>(map_field_base);
-
     // We use MutableMap on impl_ because we don't want to disturb the syncing
     Map<int32_t, int32_t>* map = map_field->impl_.MutableMap();
-    RepeatedPtrField<Message>* repeated_field = stub->InternalRepeatedField();
+    RepeatedPtrField<Message>* repeated_field = map_field->repeated_field_;
 
     switch (state) {
       case MAP_DIRTY:
-        EXPECT_FALSE(stub->IsMapClean());
-        EXPECT_TRUE(stub->IsRepeatedClean());
+        EXPECT_FALSE(map_field->state_.load(std::memory_order_relaxed) !=
+                     MapFieldType::STATE_MODIFIED_MAP);
+        EXPECT_TRUE(map_field->state_.load(std::memory_order_relaxed) !=
+                    MapFieldType::STATE_MODIFIED_REPEATED);
         break;
       case REPEATED_DIRTY:
-        EXPECT_TRUE(stub->IsMapClean());
-        EXPECT_FALSE(stub->IsRepeatedClean());
+        EXPECT_TRUE(map_field->state_.load(std::memory_order_relaxed) !=
+                    MapFieldType::STATE_MODIFIED_MAP);
+        EXPECT_FALSE(map_field->state_.load(std::memory_order_relaxed) !=
+                     MapFieldType::STATE_MODIFIED_REPEATED);
         break;
       case CLEAN:
-        EXPECT_TRUE(stub->IsMapClean());
-        EXPECT_TRUE(stub->IsRepeatedClean());
+        EXPECT_TRUE(map_field->state_.load(std::memory_order_relaxed) !=
+                    MapFieldType::STATE_MODIFIED_MAP);
+        EXPECT_TRUE(map_field->state_.load(std::memory_order_relaxed) !=
+                    MapFieldType::STATE_MODIFIED_REPEATED);
         break;
       default:
         FAIL();

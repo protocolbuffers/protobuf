@@ -1,3 +1,4 @@
+// -*- c++ -*-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -44,24 +45,24 @@
 #include <limits>
 #include <vector>
 
-#include "google/protobuf/message.h"
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <fstream>
 #include <sstream>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/scoped_mock_log.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -200,19 +201,15 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
   UNITTEST::TestRequired message;
-  std::vector<std::string> errors;
 
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::StrCat(
+            "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
+            ".TestRequired\" because it is missing required fields: a, b, c")));
+    log.StartCapturingLogs();
     EXPECT_FALSE(message.ParseFromString(""));
-    errors = log.GetMessages(ERROR);
   }
-
-  ASSERT_EQ(1, errors.size());
-  EXPECT_EQ(
-      "Can't parse message of type \"" + std::string(UNITTEST_PACKAGE_NAME) +
-          ".TestRequired\" because it is missing required fields: a, b, c",
-      errors[0]);
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageNotInitialized) {
@@ -223,20 +220,15 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageNotInitialized) {
   EXPECT_TRUE(message.ParsePartialFromString(serialized));
   EXPECT_FALSE(message.IsInitialized());
 
-  std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
-    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
-    errors = log.GetMessages(ERROR);
-  }
-
-  EXPECT_THAT(
-      errors,
-      testing::ElementsAre(
-          "Can't parse message of type \"" +
-          std::string(UNITTEST_PACKAGE_NAME) +
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::StrCat(
+          "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
           ".TestRequiredForeign\" because it is missing required fields: "
-          "optional_message.a, optional_message.b, optional_message.c"));
+          "optional_message.a, optional_message.b, optional_message.c")));
+    log.StartCapturingLogs();
+    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
+  }
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
@@ -249,21 +241,18 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
   EXPECT_TRUE(message.ParsePartialFromString(serialized));
   EXPECT_FALSE(message.IsInitialized());
 
-  std::vector<std::string> errors;
-  {
-    ScopedMemoryLog log;
-    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
-    errors = log.GetMessages(ERROR);
-  }
-
-  EXPECT_THAT(errors,
-              testing::ElementsAre(absl::Substitute(
+{
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::Substitute(
                   "Can't parse message of type \"$0.TestChildExtension\" "
                   "because it is missing required fields: "
                   "optional_extension.($0.TestRequired.single).a, "
                   "optional_extension.($0.TestRequired.single).b, "
                   "optional_extension.($0.TestRequired.single).c",
                   UNITTEST_PACKAGE_NAME)));
+    log.StartCapturingLogs();
+    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
+  }
 }
 
 TEST(MESSAGE_TEST_NAME, MergeFromUninitialized) {
@@ -333,6 +322,13 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
   // Lazy read results in parsing error which can be verified by not having
   // expected value.
   EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
+}
+
+TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
+  const char encoded[] = {"\n\x3\x80\0\0"};
+  UNITTEST::NestedTestAllTypes parsed;
+  EXPECT_FALSE(parsed.ParsePartialFromString(
+      absl::string_view{encoded, sizeof(encoded) - 1}));
 }
 
 TEST(MESSAGE_TEST_NAME, NestedExplicitLazyExceedRecursionLimit) {
@@ -519,6 +515,8 @@ TEST(MESSAGE_TEST_NAME, ParseStrictlyBoundedStream) {
 TEST(MESSAGE_TEST_NAME, AllSetMethodsOnStringField) {
   UNITTEST::TestAllTypes msg;
 
+  msg.set_optional_string(absl::string_view("Abcdef"));
+  EXPECT_EQ(msg.optional_string(), "Abcdef");
 
   msg.set_optional_string("Asciiz");
   EXPECT_EQ(msg.optional_string(), "Asciiz");
@@ -537,6 +535,38 @@ TEST(MESSAGE_TEST_NAME, AllSetMethodsOnStringField) {
   value = "std::string value 3";
   msg.set_optional_string(std::move(value));
   EXPECT_EQ(msg.optional_string(), "std::string value 3");
+}
+
+
+TEST(MESSAGE_TEST_NAME, AllAddMethodsOnRepeatedStringField) {
+  UNITTEST::TestAllTypes msg;
+
+  msg.add_repeated_string(absl::string_view("Abcdef"));
+  EXPECT_EQ(msg.repeated_string(0), "Abcdef");
+  msg.clear_repeated_string();
+
+  msg.add_repeated_string("Asciiz");
+  EXPECT_EQ(msg.repeated_string(0), "Asciiz");
+  msg.clear_repeated_string();
+
+  msg.add_repeated_string("Length delimited", 6);
+  EXPECT_EQ(msg.repeated_string(0), "Length");
+  msg.clear_repeated_string();
+
+  std::string value = "std::string value 1";
+  msg.add_repeated_string(value);
+  EXPECT_EQ(msg.repeated_string(0), "std::string value 1");
+  msg.clear_repeated_string();
+
+  value = "std::string value 2";
+  msg.add_repeated_string(std::cref(value));
+  EXPECT_EQ(msg.repeated_string(0), "std::string value 2");
+  msg.clear_repeated_string();
+
+  value = "std::string value 3";
+  msg.add_repeated_string(std::move(value));
+  EXPECT_EQ(msg.repeated_string(0), "std::string value 3");
+  msg.clear_repeated_string();
 }
 
 TEST(MESSAGE_TEST_NAME, SuccessAfterParsingFailure) {
@@ -690,27 +720,27 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
                          test_all_types_pointer_nullptr));
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
 
 TEST(MESSAGE_TEST_NAME, SerializeFailsIfNotInitialized) {
   UNITTEST::TestRequired message;
   std::string data;
-  EXPECT_DEBUG_DEATH(EXPECT_TRUE(message.SerializeToString(&data)),
-                     "Can't serialize message of type \"" +
-                         std::string(UNITTEST_PACKAGE_NAME) +
-                         ".TestRequired\" because "
-                         "it is missing required fields: a, b, c");
+  EXPECT_DEBUG_DEATH(
+      EXPECT_TRUE(message.SerializeToString(&data)),
+      absl::StrCat("Can't serialize message of type \"", UNITTEST_PACKAGE_NAME,
+                   ".TestRequired\" because "
+                   "it is missing required fields: a, b, c"));
 }
 
 TEST(MESSAGE_TEST_NAME, CheckInitialized) {
   UNITTEST::TestRequired message;
   EXPECT_DEATH(message.CheckInitialized(),
-               "Message of type \"" + std::string(UNITTEST_PACKAGE_NAME) +
-                   ".TestRequired\" is missing required "
-                   "fields: a, b, c");
+               absl::StrCat("Message of type \"", UNITTEST_PACKAGE_NAME,
+                            ".TestRequired\" is missing required "
+                            "fields: a, b, c"));
 }
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 namespace {
 // An input stream that repeats a std::string's content for a number of times.
@@ -1037,8 +1067,7 @@ TEST(MESSAGE_TEST_NAME, IsInitializedSplitBytestream) {
   fab.mutable_optional_message()->set_b(2);
   fc.mutable_optional_message()->set_c(3);
 
-  bytes =
-      fab.SerializePartialAsString() + fc.SerializePartialAsString();
+  bytes = fab.SerializePartialAsString() + fc.SerializePartialAsString();
 
   UNITTEST::TestRequiredForeign fconcatenated;
   EXPECT_TRUE(fconcatenated.ParsePartialFromString(bytes));
@@ -1070,7 +1099,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // Parser ends in last 16 bytes of buffer due to a 0.
     std::string data;
     // 12 bytes of data
-    for (int i = 0; i < 4; i++) data += "\370\1\1";
+    for (int i = 0; i < 4; i++) absl::StrAppend(&data, "\370\1\1");
     // 13 byte is terminator
     data += '\0';  // Terminator
     // followed by the rest of the stream
@@ -1087,7 +1116,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // a failure.
     UNITTEST::TestAllTypes::OptionalGroup msg;
     std::string data;
-    for (int i = 0; i < 3; i++) data += "\370\1\1";
+    for (int i = 0; i < 3; i++) absl::StrAppend(&data, "\370\1\1");
     data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
     data += std::string(30, ' ');
     io::ArrayInputStream zcis(data.data(), data.size(), 17);
@@ -1101,8 +1130,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // a length delimited field.
     // a failure.
     UNITTEST::TestAllTypes::OptionalGroup msg;
-    std::string data;
-    data += "\22\3foo";
+    std::string data = "\22\3foo";
     data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
     data += std::string(30, ' ');
     io::ArrayInputStream zcis(data.data(), data.size(), 17);
@@ -1116,7 +1144,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     UNITTEST::TestAllTypes msg;
     std::string data;
     // 12 bytes of data
-    for (int i = 0; i < 4; i++) data += "\370\1\1";
+    for (int i = 0; i < 4; i++) absl::StrAppend(&data, "\370\1\1");
     // 13 byte is terminator
     data += '\0';  // Terminator
     data += std::string(30, ' ');
@@ -1151,11 +1179,16 @@ TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
   EXPECT_EQ(3, out_message.foo_three());
   EXPECT_EQ(4, out_message.foo_four());
 
-  EXPECT_EQ(1, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_one));
-  EXPECT_EQ(2, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_two));
-  EXPECT_EQ(3, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_three));
-  EXPECT_EQ(4, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_four));
-  EXPECT_EQ(5, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_five));
+  EXPECT_EQ(1, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_one));
+  EXPECT_EQ(2, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_two));
+  EXPECT_EQ(3, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_three));
+  EXPECT_EQ(4, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_four));
+  EXPECT_EQ(5, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_five));
 }
 
 TEST(MESSAGE_TEST_NAME, PreservesFloatingPointNegative0) {
@@ -1174,6 +1207,37 @@ TEST(MESSAGE_TEST_NAME, PreservesFloatingPointNegative0) {
             std::signbit(out_message.optional_double()));
 }
 
+TEST(MESSAGE_TEST_NAME,
+     RegressionTestForParseMessageReadingUninitializedLimit) {
+  UNITTEST::TestAllTypes in_message;
+  in_message.mutable_optional_nested_message();
+  std::string serialized = in_message.SerializeAsString();
+  // We expect this to have 3 bytes: two for the tag, and one for the zero size.
+  // Break the size by making it overlong.
+  ASSERT_EQ(serialized.size(), 3);
+  serialized.back() = '\200';
+  serialized += std::string(10, '\200');
+  EXPECT_FALSE(in_message.ParseFromString(serialized));
+}
+
+TEST(MESSAGE_TEST_NAME,
+     RegressionTestForParseMessageWithSizeBeyondInputFailsToPopLimit) {
+  UNITTEST::TestAllTypes in_message;
+  in_message.mutable_optional_nested_message();
+  std::string serialized = in_message.SerializeAsString();
+  // We expect this to have 3 bytes: two for the tag, and one for the zero size.
+  // Make the size a valid varint, but it overflows in the input.
+  ASSERT_EQ(serialized.size(), 3);
+  serialized.back() = 10;
+  EXPECT_FALSE(in_message.ParseFromString(serialized));
+}
+
+const uint8_t* SkipTag(const uint8_t* buf) {
+  while (*buf & 0x80) ++buf;
+  ++buf;
+  return buf;
+}
+
 // Adds `non_canonical_bytes` bytes to the varint representation at the tail of
 // the buffer.
 // `buf` points to the start of the buffer, `p` points to one-past-the-end.
@@ -1190,13 +1254,41 @@ uint8_t* AddNonCanonicalBytes(const uint8_t* buf, uint8_t* p,
   return p;
 }
 
-std::string EncodeEnumValue(int number, int value, int non_canonical_bytes) {
+std::string EncodeEnumValue(int number, int value, int non_canonical_bytes,
+                            bool use_packed) {
   uint8_t buf[100];
   uint8_t* p = buf;
 
-  p = internal::WireFormatLite::WriteEnumToArray(number, value, p);
-  p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
-  return std::string(buf, p);
+  if (use_packed) {
+    p = internal::WireFormatLite::WriteEnumNoTagToArray(value, p);
+    p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
+
+    std::string payload(buf, p);
+    p = buf;
+    p = internal::WireFormatLite::WriteStringToArray(number, payload, p);
+    return std::string(buf, p);
+
+  } else {
+    p = internal::WireFormatLite::WriteEnumToArray(number, value, p);
+    p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
+    return std::string(buf, p);
+  }
+}
+
+std::string EncodeOverlongEnum(int number, bool use_packed) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  std::string overlong(16, static_cast<char>(0x80));
+  if (use_packed) {
+    p = internal::WireFormatLite::WriteStringToArray(number, overlong, p);
+    return std::string(buf, p);
+  } else {
+    p = internal::WireFormatLite::WriteTagToArray(
+        number, internal::WireFormatLite::WIRETYPE_VARINT, p);
+    p = std::copy(overlong.begin(), overlong.end(), p);
+    return std::string(buf, p);
+  }
 }
 
 std::string EncodeOtherField() {
@@ -1223,62 +1315,88 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
   constexpr int kInvalidValue = 0x900913;
   auto* ref = obj.GetReflection();
   auto* descriptor = obj.descriptor();
-  for (bool use_tail_field : {false, true}) {
-    SCOPED_TRACE(use_tail_field);
-    for (int non_canonical_bytes = 0; non_canonical_bytes < 5;
-         ++non_canonical_bytes) {
-      SCOPED_TRACE(non_canonical_bytes);
-      for (int i = 0; i < descriptor->field_count(); ++i) {
-        const auto* field = descriptor->field(i);
-        if (field->name() == "other_field") continue;
-        SCOPED_TRACE(field->full_name());
-        const auto* enum_desc = field->enum_type();
-        for (int e = 0; e < enum_desc->value_count(); ++e) {
-          const auto* value_desc = enum_desc->value(e);
-          if (value_desc->number() < 0 && non_canonical_bytes > 0) {
-            // Negative numbers only have a canonical representation.
+  for (bool use_packed : {false, true}) {
+    SCOPED_TRACE(use_packed);
+    for (bool use_tail_field : {false, true}) {
+      SCOPED_TRACE(use_tail_field);
+      for (int non_canonical_bytes = 0; non_canonical_bytes < 9;
+           ++non_canonical_bytes) {
+        SCOPED_TRACE(non_canonical_bytes);
+        for (bool add_garbage_bits : {false, true}) {
+          if (add_garbage_bits && non_canonical_bytes != 9) {
+            // We only add garbage on the 10th byte.
             continue;
           }
-          SCOPED_TRACE(value_desc->number());
-          GOOGLE_CHECK_NE(value_desc->number(), kInvalidValue)
-              << "Invalid value is a real label.";
-          auto encoded = EncodeEnumValue(field->number(), value_desc->number(),
-                                         non_canonical_bytes);
-          if (use_tail_field) {
-            // Make sure that fields after this one can be parsed too. ie test
-            // that the "next" jump is correct too.
-            encoded += other_field;
-          }
+          SCOPED_TRACE(add_garbage_bits);
+          for (int i = 0; i < descriptor->field_count(); ++i) {
+            const auto* field = descriptor->field(i);
+            if (field->name() == "other_field") continue;
+            if (!field->is_repeated() && use_packed) continue;
+            SCOPED_TRACE(field->full_name());
+            const auto* enum_desc = field->enum_type();
+            for (int e = 0; e < enum_desc->value_count(); ++e) {
+              const auto* value_desc = enum_desc->value(e);
+              if (value_desc->number() < 0 && non_canonical_bytes > 0) {
+                // Negative numbers only have a canonical representation.
+                continue;
+              }
+              SCOPED_TRACE(value_desc->number());
+              ABSL_CHECK_NE(value_desc->number(), kInvalidValue)
+                  << "Invalid value is a real label.";
+              auto encoded =
+                  EncodeEnumValue(field->number(), value_desc->number(),
+                                  non_canonical_bytes, use_packed);
+              if (add_garbage_bits) {
+                // These bits should be discarded even in the `false` case.
+                encoded.back() |= 0b0111'1110;
+              }
+              if (use_tail_field) {
+                // Make sure that fields after this one can be parsed too. ie
+                // test that the "next" jump is correct too.
+                encoded += other_field;
+              }
 
-          EXPECT_TRUE(obj.ParseFromString(encoded));
-          if (field->is_repeated()) {
-            ASSERT_EQ(ref->FieldSize(obj, field), 1);
-            EXPECT_EQ(ref->GetRepeatedEnumValue(obj, field, 0),
-                      value_desc->number());
-          } else {
-            EXPECT_TRUE(ref->HasField(obj, field));
-            EXPECT_EQ(ref->GetEnumValue(obj, field), value_desc->number());
-          }
-          auto& unknown = ref->GetUnknownFields(obj);
-          ASSERT_EQ(unknown.field_count(), 0);
-        }
+              EXPECT_TRUE(obj.ParseFromString(encoded));
+              if (field->is_repeated()) {
+                ASSERT_EQ(ref->FieldSize(obj, field), 1);
+                EXPECT_EQ(ref->GetRepeatedEnumValue(obj, field, 0),
+                          value_desc->number());
+              } else {
+                EXPECT_TRUE(ref->HasField(obj, field));
+                EXPECT_EQ(ref->GetEnumValue(obj, field), value_desc->number());
+              }
+              auto& unknown = ref->GetUnknownFields(obj);
+              ASSERT_EQ(unknown.field_count(), 0);
+            }
 
-        SCOPED_TRACE("Invalid value");
-        // Try an invalid value, which should go to the unknown fields.
-        EXPECT_TRUE(obj.ParseFromString(EncodeEnumValue(
-            field->number(), kInvalidValue, non_canonical_bytes)));
-        if (field->is_repeated()) {
-          ASSERT_EQ(ref->FieldSize(obj, field), 0);
-        } else {
-          EXPECT_FALSE(ref->HasField(obj, field));
-          EXPECT_EQ(ref->GetEnumValue(obj, field),
-                    enum_desc->value(0)->number());
+            {
+              SCOPED_TRACE("Invalid value");
+              // Try an invalid value, which should go to the unknown fields.
+              EXPECT_TRUE(obj.ParseFromString(
+                  EncodeEnumValue(field->number(), kInvalidValue,
+                                  non_canonical_bytes, use_packed)));
+              if (field->is_repeated()) {
+                ASSERT_EQ(ref->FieldSize(obj, field), 0);
+              } else {
+                EXPECT_FALSE(ref->HasField(obj, field));
+                EXPECT_EQ(ref->GetEnumValue(obj, field),
+                          enum_desc->value(0)->number());
+              }
+              auto& unknown = ref->GetUnknownFields(obj);
+              ASSERT_EQ(unknown.field_count(), 1);
+              EXPECT_EQ(unknown.field(0).number(), field->number());
+              EXPECT_EQ(unknown.field(0).type(), unknown.field(0).TYPE_VARINT);
+              EXPECT_EQ(unknown.field(0).varint(), kInvalidValue);
+            }
+            {
+              SCOPED_TRACE("Overlong varint");
+              // Try an overlong varint. It should fail parsing, but not trigger
+              // any sanitizer warning.
+              EXPECT_FALSE(obj.ParseFromString(
+                  EncodeOverlongEnum(field->number(), use_packed)));
+            }
+          }
         }
-        auto& unknown = ref->GetUnknownFields(obj);
-        ASSERT_EQ(unknown.field_count(), 1);
-        EXPECT_EQ(unknown.field(0).number(), field->number());
-        EXPECT_EQ(unknown.field(0).type(), unknown.field(0).TYPE_VARINT);
-        EXPECT_EQ(unknown.field(0).varint(), kInvalidValue);
       }
     }
   }
@@ -1289,7 +1407,7 @@ std::string EncodeBoolValue(int number, bool value, int non_canonical_bytes) {
   uint8_t* p = buf;
 
   p = internal::WireFormatLite::WriteBoolToArray(number, value, p);
-  p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
+  p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
   return std::string(buf, p);
 }
 
@@ -1313,30 +1431,189 @@ TEST(MESSAGE_TEST_NAME, TestBoolParsers) {
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
          ++non_canonical_bytes) {
       SCOPED_TRACE(non_canonical_bytes);
-      for (int i = 0; i < descriptor->field_count(); ++i) {
-        const auto* field = descriptor->field(i);
-        if (field->name() == "other_field") continue;
-        SCOPED_TRACE(field->full_name());
-        for (bool value : {false, true}) {
-          SCOPED_TRACE(value);
-          auto encoded =
-              EncodeBoolValue(field->number(), value, non_canonical_bytes);
-          if (use_tail_field) {
-            // Make sure that fields after this one can be parsed too. ie test
-            // that the "next" jump is correct too.
-            encoded += other_field;
-          }
+      for (bool add_garbage_bits : {false, true}) {
+        if (add_garbage_bits && non_canonical_bytes != 9) {
+          // We only add garbage on the 10th byte.
+          continue;
+        }
+        SCOPED_TRACE(add_garbage_bits);
+        for (int i = 0; i < descriptor->field_count(); ++i) {
+          const auto* field = descriptor->field(i);
+          if (field->name() == "other_field") continue;
+          SCOPED_TRACE(field->full_name());
+          for (bool value : {false, true}) {
+            SCOPED_TRACE(value);
+            auto encoded =
+                EncodeBoolValue(field->number(), value, non_canonical_bytes);
+            if (add_garbage_bits) {
+              // These bits should be discarded even in the `false` case.
+              encoded.back() |= 0b0111'1110;
+            }
+            if (use_tail_field) {
+              // Make sure that fields after this one can be parsed too. ie test
+              // that the "next" jump is correct too.
+              encoded += other_field;
+            }
 
-          EXPECT_TRUE(obj.ParseFromString(encoded));
-          if (field->is_repeated()) {
-            ASSERT_EQ(ref->FieldSize(obj, field), 1);
-            EXPECT_EQ(ref->GetRepeatedBool(obj, field, 0), value);
-          } else {
-            EXPECT_TRUE(ref->HasField(obj, field));
-            EXPECT_EQ(ref->GetBool(obj, field), value);
+            EXPECT_TRUE(obj.ParseFromString(encoded));
+            if (field->is_repeated()) {
+              ASSERT_EQ(ref->FieldSize(obj, field), 1);
+              EXPECT_EQ(ref->GetRepeatedBool(obj, field, 0), value);
+            } else {
+              EXPECT_TRUE(ref->HasField(obj, field));
+              EXPECT_EQ(ref->GetBool(obj, field), value)
+                  << testing::PrintToString(encoded);
+            }
+            auto& unknown = ref->GetUnknownFields(obj);
+            ASSERT_EQ(unknown.field_count(), 0);
           }
-          auto& unknown = ref->GetUnknownFields(obj);
-          ASSERT_EQ(unknown.field_count(), 0);
+        }
+      }
+    }
+  }
+}
+
+std::string EncodeInt32Value(int number, int32_t value,
+                             int non_canonical_bytes) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  p = internal::WireFormatLite::WriteInt32ToArray(number, value, p);
+  p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
+  return std::string(buf, p);
+}
+
+TEST(MESSAGE_TEST_NAME, TestInt32Parsers) {
+  UNITTEST::Int32ParseTester obj;
+
+  const auto other_field = EncodeOtherField();
+
+  // Encode an int32 field for many different cases and verify that it can be
+  // parsed as expected.
+  // There are:
+  //  - optional/repeated/packed fields
+  //  - field tags that encode in 1/2/3 bytes
+  //  - canonical and non-canonical encodings of the varint
+  //  - last vs not last field
+
+  auto* ref = obj.GetReflection();
+  auto* descriptor = obj.descriptor();
+  for (bool use_tail_field : {false, true}) {
+    SCOPED_TRACE(use_tail_field);
+    for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
+         ++non_canonical_bytes) {
+      SCOPED_TRACE(non_canonical_bytes);
+      for (bool add_garbage_bits : {false, true}) {
+        if (add_garbage_bits && non_canonical_bytes != 9) {
+          // We only add garbage on the 10th byte.
+          continue;
+        }
+        SCOPED_TRACE(add_garbage_bits);
+        for (int i = 0; i < descriptor->field_count(); ++i) {
+          const auto* field = descriptor->field(i);
+          if (field->name() == "other_field") continue;
+          SCOPED_TRACE(field->full_name());
+          for (int32_t value : {1, 0, -1, (std::numeric_limits<int32_t>::min)(),
+                              (std::numeric_limits<int32_t>::max)()}) {
+            SCOPED_TRACE(value);
+            auto encoded =
+                EncodeInt32Value(field->number(), value, non_canonical_bytes);
+            if (add_garbage_bits) {
+              // These bits should be discarded even in the `false` case.
+              encoded.back() |= 0b0111'1110;
+            }
+            if (use_tail_field) {
+              // Make sure that fields after this one can be parsed too. ie test
+              // that the "next" jump is correct too.
+              encoded += other_field;
+            }
+
+            EXPECT_TRUE(obj.ParseFromString(encoded));
+            if (field->is_repeated()) {
+              ASSERT_EQ(ref->FieldSize(obj, field), 1);
+              EXPECT_EQ(ref->GetRepeatedInt32(obj, field, 0), value);
+            } else {
+              EXPECT_TRUE(ref->HasField(obj, field));
+              EXPECT_EQ(ref->GetInt32(obj, field), value)
+                  << testing::PrintToString(encoded);
+            }
+            auto& unknown = ref->GetUnknownFields(obj);
+            ASSERT_EQ(unknown.field_count(), 0);
+          }
+        }
+      }
+    }
+  }
+}
+
+std::string EncodeInt64Value(int number, int64_t value,
+                             int non_canonical_bytes) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  p = internal::WireFormatLite::WriteInt64ToArray(number, value, p);
+  p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
+  return std::string(buf, p);
+}
+
+TEST(MESSAGE_TEST_NAME, TestInt64Parsers) {
+  UNITTEST::Int64ParseTester obj;
+
+  const auto other_field = EncodeOtherField();
+
+  // Encode an int64 field for many different cases and verify that it can be
+  // parsed as expected.
+  // There are:
+  //  - optional/repeated/packed fields
+  //  - field tags that encode in 1/2/3 bytes
+  //  - canonical and non-canonical encodings of the varint
+  //  - last vs not last field
+
+  auto* ref = obj.GetReflection();
+  auto* descriptor = obj.descriptor();
+  for (bool use_tail_field : {false, true}) {
+    SCOPED_TRACE(use_tail_field);
+    for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
+         ++non_canonical_bytes) {
+      SCOPED_TRACE(non_canonical_bytes);
+      for (bool add_garbage_bits : {false, true}) {
+        if (add_garbage_bits && non_canonical_bytes != 9) {
+          // We only add garbage on the 10th byte.
+          continue;
+        }
+        SCOPED_TRACE(add_garbage_bits);
+        for (int i = 0; i < descriptor->field_count(); ++i) {
+          const auto* field = descriptor->field(i);
+          if (field->name() == "other_field") continue;
+          SCOPED_TRACE(field->full_name());
+          for (int64_t value : {int64_t{1}, int64_t{0}, int64_t{-1},
+                                (std::numeric_limits<int64_t>::min)(),
+                                (std::numeric_limits<int64_t>::max)()}) {
+            SCOPED_TRACE(value);
+            auto encoded =
+                EncodeInt64Value(field->number(), value, non_canonical_bytes);
+            if (add_garbage_bits) {
+              // These bits should be discarded even in the `false` case.
+              encoded.back() |= 0b0111'1110;
+            }
+            if (use_tail_field) {
+              // Make sure that fields after this one can be parsed too. ie test
+              // that the "next" jump is correct too.
+              encoded += other_field;
+            }
+
+            EXPECT_TRUE(obj.ParseFromString(encoded));
+            if (field->is_repeated()) {
+              ASSERT_EQ(ref->FieldSize(obj, field), 1);
+              EXPECT_EQ(ref->GetRepeatedInt64(obj, field, 0), value);
+            } else {
+              EXPECT_TRUE(ref->HasField(obj, field));
+              EXPECT_EQ(ref->GetInt64(obj, field), value)
+                  << testing::PrintToString(encoded);
+            }
+            auto& unknown = ref->GetUnknownFields(obj);
+            ASSERT_EQ(unknown.field_count(), 0);
+          }
         }
       }
     }
@@ -1374,13 +1651,13 @@ class TestInputStream final : public io::ZeroCopyInputStream {
     return true;
   }
 
-  void BackUp(int) override { GOOGLE_CHECK(false); }
+  void BackUp(int) override { ABSL_CHECK(false); }
   bool Skip(int) override {
-    GOOGLE_CHECK(false);
+    ABSL_CHECK(false);
     return false;
   }
   int64_t ByteCount() const override {
-    GOOGLE_CHECK(false);
+    ABSL_CHECK(false);
     return 0;
   }
 
@@ -1406,27 +1683,71 @@ TEST(MESSAGE_TEST_NAME, TestRepeatedStringParsers) {
     SCOPED_TRACE(size);
     const std::string value = sample.substr(0, size);
     for (int i = 0; i < descriptor->field_count(); ++i) {
-        const auto* field = descriptor->field(i);
-        SCOPED_TRACE(field->full_name());
-        const auto encoded = EncodeStringValue(field->number(), sample) +
-                             EncodeStringValue(field->number(), value);
-        // Check for different breaks in the input stream to test cases where
-        // the payload can be read and can't be read in one go.
-        for (size_t i = 1; i <= encoded.size(); ++i) {
-          TestInputStream input_stream(encoded, i);
+      const auto* field = descriptor->field(i);
+      SCOPED_TRACE(field->full_name());
+      const auto encoded = EncodeStringValue(field->number(), sample) +
+                           EncodeStringValue(field->number(), value);
+      // Check for different breaks in the input stream to test cases where
+      // the payload can be read and can't be read in one go.
+      for (size_t i = 1; i <= encoded.size(); ++i) {
+        TestInputStream input_stream(encoded, i);
 
-          auto& obj = *arena.CreateMessage<UNITTEST::StringParseTester>(&arena);
-          auto* ref = obj.GetReflection();
-          EXPECT_TRUE(obj.ParseFromZeroCopyStream(&input_stream));
-          if (field->is_repeated()) {
-            ASSERT_EQ(ref->FieldSize(obj, field), 2);
-            EXPECT_EQ(ref->GetRepeatedString(obj, field, 0), sample);
-            EXPECT_EQ(ref->GetRepeatedString(obj, field, 1), value);
-          } else {
-            EXPECT_EQ(ref->GetString(obj, field), value);
-          }
+        auto& obj = *arena.CreateMessage<UNITTEST::StringParseTester>(&arena);
+        auto* ref = obj.GetReflection();
+        EXPECT_TRUE(obj.ParseFromZeroCopyStream(&input_stream));
+        if (field->is_repeated()) {
+          ASSERT_EQ(ref->FieldSize(obj, field), 2);
+          EXPECT_EQ(ref->GetRepeatedString(obj, field, 0), sample);
+          EXPECT_EQ(ref->GetRepeatedString(obj, field, 1), value);
+        } else {
+          EXPECT_EQ(ref->GetString(obj, field), value);
         }
+      }
     }
+  }
+}
+
+TEST(MESSAGE_TEST_NAME, TestRegressionOnParseFailureNotSettingHasBits) {
+  std::string single_field;
+  // We use blocks because we want fully new instances of the proto. We are
+  // testing .Clear(), so we can't use it to set up the test.
+  {
+    UNITTEST::TestAllTypes message;
+    message.set_optional_int32(17);
+    single_field = message.SerializeAsString();
+  }
+  const auto validate_message = [](auto& message) {
+    if (!message.has_optional_int32()) {
+      EXPECT_EQ(message.optional_int32(), 0);
+    }
+    message.Clear();
+    EXPECT_FALSE(message.has_optional_int32());
+    EXPECT_EQ(message.optional_int32(), 0);
+  };
+  {
+    // Verify the setup is correct.
+    UNITTEST::TestAllTypes message;
+    EXPECT_FALSE(message.has_optional_int32());
+    EXPECT_EQ(message.optional_int32(), 0);
+    EXPECT_TRUE(message.ParseFromString(single_field));
+    validate_message(message);
+  }
+  {
+    // Run the regression.
+    // These are the steps:
+    // - The stream contains a fast field, and then a failure in MiniParse
+    // - The parsing fails.
+    // - We call clear.
+    // - The fast field should be reset.
+    UNITTEST::TestAllTypes message;
+    EXPECT_FALSE(message.has_optional_int32());
+    EXPECT_EQ(message.optional_int32(), 0);
+    // The second tag will fail to parse because it has too many continuation
+    // bits.
+    auto with_error =
+        absl::StrCat(single_field, std::string(100, static_cast<char>(0x80)));
+    EXPECT_FALSE(message.ParseFromString(with_error));
+    validate_message(message);
   }
 }
 

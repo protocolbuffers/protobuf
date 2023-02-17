@@ -86,9 +86,8 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
 }
 
 void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) {
-  printer->Print(
-      variables_,
-      "$name$_.MergeFrom(other.$name$_);\n");
+  printer->Print(variables_,
+                 "$name$_.MergeFrom(other.$name$_);\n");
 }
 
 void MapFieldGenerator::GenerateParsingCode(io::Printer* printer) {

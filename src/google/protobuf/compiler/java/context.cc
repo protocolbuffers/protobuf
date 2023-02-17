@@ -30,12 +30,16 @@
 
 #include "google/protobuf/compiler/java/context.h"
 
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/stubs/strutil.h"
+#include <string>
+
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/compiler/java/field.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -54,11 +58,17 @@ ClassNameResolver* Context::GetNameResolver() const {
 }
 
 namespace {
+bool EqualWithSuffix(absl::string_view name1, absl::string_view suffix,
+                     absl::string_view name2) {
+  if (!absl::ConsumeSuffix(&name2, suffix)) return false;
+  return name1 == name2;
+}
+
 // Whether two fields have conflicting accessors (assuming name1 and name2
 // are different). name1 and name2 are field1 and field2's camel-case name
 // respectively.
-bool IsConflicting(const FieldDescriptor* field1, const std::string& name1,
-                   const FieldDescriptor* field2, const std::string& name2,
+bool IsConflicting(const FieldDescriptor* field1, absl::string_view name1,
+                   const FieldDescriptor* field2, absl::string_view name2,
                    std::string* info) {
   if (field1->is_repeated()) {
     if (field2->is_repeated()) {
@@ -66,16 +76,18 @@ bool IsConflicting(const FieldDescriptor* field1, const std::string& name1,
       return false;
     } else {
       // field1 is repeated, and field2 is not.
-      if (name1 + "Count" == name2) {
-        *info = "both repeated field \"" + field1->name() + "\" and singular " +
-                "field \"" + field2->name() + "\" generate the method \"" +
-                "get" + name1 + "Count()\"";
+      if (EqualWithSuffix(name1, "Count", name2)) {
+        *info = absl::StrCat("both repeated field \"", field1->name(),
+                             "\" and singular ", "field \"", field2->name(),
+                             "\" generate the method \"", "get", name1,
+                             "Count()\"");
         return true;
       }
-      if (name1 + "List" == name2) {
-        *info = "both repeated field \"" + field1->name() + "\" and singular " +
-                "field \"" + field2->name() + "\" generate the method \"" +
-                "get" + name1 + "List()\"";
+      if (EqualWithSuffix(name1, "List", name2)) {
+        *info =
+            absl::StrCat("both repeated field \"", field1->name(),
+                         "\" and singular ", "field \"", field2->name(),
+                         "\" generate the method \"", "get", name1, "List()\"");
         return true;
       }
       // Well, there are obviously many more conflicting cases, but it probably
@@ -138,8 +150,8 @@ void Context::InitializeFieldGeneratorInfoForFields(
       if (name == other_name) {
         is_conflict[i] = is_conflict[j] = true;
         conflict_reason[i] = conflict_reason[j] =
-            "capitalized name of field \"" + field->name() +
-            "\" conflicts with field \"" + other->name() + "\"";
+            absl::StrCat("capitalized name of field \"", field->name(),
+                         "\" conflicts with field \"", other->name(), "\"");
       } else if (IsConflicting(field, name, other, other_name,
                                &conflict_reason[j])) {
         is_conflict[i] = is_conflict[j] = true;
@@ -147,8 +159,9 @@ void Context::InitializeFieldGeneratorInfoForFields(
       }
     }
     if (is_conflict[i]) {
-      GOOGLE_LOG(WARNING) << "field \"" << field->full_name() << "\" is conflicting "
-                   << "with another field: " << conflict_reason[i];
+      ABSL_LOG(WARNING) << "field \"" << field->full_name()
+                        << "\" is conflicting "
+                        << "with another field: " << conflict_reason[i];
     }
   }
   for (int i = 0; i < fields.size(); ++i) {
@@ -159,8 +172,8 @@ void Context::InitializeFieldGeneratorInfoForFields(
     // For fields conflicting with some other fields, we append the field
     // number to their field names in generated code to avoid conflicts.
     if (is_conflict[i]) {
-      info.name += absl::StrCat(field->number());
-      info.capitalized_name += absl::StrCat(field->number());
+      absl::StrAppend(&info.name, field->number());
+      absl::StrAppend(&info.capitalized_name, field->number());
       info.disambiguated_reason = conflict_reason[i];
     }
     field_generator_info_map_[field] = info;
@@ -171,8 +184,8 @@ const FieldGeneratorInfo* Context::GetFieldGeneratorInfo(
     const FieldDescriptor* field) const {
   auto it = field_generator_info_map_.find(field);
   if (it == field_generator_info_map_.end()) {
-    GOOGLE_LOG(FATAL) << "Can not find FieldGeneratorInfo for field: "
-               << field->full_name();
+    ABSL_LOG(FATAL) << "Can not find FieldGeneratorInfo for field: "
+                    << field->full_name();
   }
   return &it->second;
 }
@@ -181,8 +194,8 @@ const OneofGeneratorInfo* Context::GetOneofGeneratorInfo(
     const OneofDescriptor* oneof) const {
   auto it = oneof_generator_info_map_.find(oneof);
   if (it == oneof_generator_info_map_.end()) {
-    GOOGLE_LOG(FATAL) << "Can not find OneofGeneratorInfo for oneof: "
-               << oneof->name();
+    ABSL_LOG(FATAL) << "Can not find OneofGeneratorInfo for oneof: "
+                    << oneof->name();
   }
   return &it->second;
 }

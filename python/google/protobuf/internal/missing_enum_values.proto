@@ -30,7 +30,6 @@
 
 syntax = "proto2";
 
-
 package google.protobuf.python.internal;
 
 message TestEnumValues {
@@ -44,13 +43,14 @@ message TestEnumValues {
 }
 
 message TestMissingEnumValues {
-  enum NestedEnum { TWO = 2; }
+  enum NestedEnum {
+    TWO = 2;
+  }
   optional NestedEnum optional_nested_enum = 1;
   repeated NestedEnum repeated_nested_enum = 2;
   repeated NestedEnum packed_nested_enum = 3 [packed = true];
 }
 
 message JustString {
-  required string dummy = 1;
+  optional string dummy = 1;
 }
-

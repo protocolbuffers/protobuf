@@ -76,7 +76,6 @@ message TestSameTypeMap {
   map<int32, int32> map2 = 2;
 }
 
-
 enum MapEnum {
   MAP_ENUM_FOO = 0;
   MAP_ENUM_BAR = 1;
@@ -111,7 +110,9 @@ message TestArenaMap {
 // Previously, message containing enum called Type cannot be used as value of
 // map field.
 message MessageContainingEnumCalledType {
-  enum Type { TYPE_FOO = 0; }
+  enum Type {
+    TYPE_FOO = 0;
+  }
   map<string, MessageContainingEnumCalledType> type = 1;
 }
 

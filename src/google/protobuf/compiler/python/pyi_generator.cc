@@ -32,7 +32,11 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
@@ -59,12 +63,12 @@ std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
     std::string filename = descriptor.file()->name();
     if (import_map_.find(filename) == import_map_.end()) {
       std::string module_name = ModuleName(descriptor.file()->name());
-      std::vector<std::string> tokens = absl::StrSplit(module_name, ".");
-      module_alias = "_" + tokens.back();
+      std::vector<absl::string_view> tokens = absl::StrSplit(module_name, '.');
+      module_alias = absl::StrCat("_", tokens.back());
     } else {
       module_alias = import_map_.at(filename);
     }
-    name = module_alias + "." + name;
+    name = absl::StrCat(module_alias, ".", name);
   }
   return name;
 }
@@ -152,22 +156,24 @@ void CheckImportModules(const Descriptor* descriptor,
 
 void PyiGenerator::PrintImportForDescriptor(
     const FileDescriptor& desc,
-    std::set<std::string>* seen_aliases) const {
+    absl::flat_hash_set<std::string>* seen_aliases) const {
   const std::string& filename = desc.name();
-  std::string module_name = StrippedModuleName(filename);
+  std::string module_name_owned = StrippedModuleName(filename);
+  absl::string_view module_name(module_name_owned);
   size_t last_dot_pos = module_name.rfind('.');
   std::string import_statement;
   if (last_dot_pos == std::string::npos) {
-    import_statement = "import " + module_name;
+    import_statement = absl::StrCat("import ", module_name);
   } else {
-    import_statement = "from " + module_name.substr(0, last_dot_pos) +
-                       " import " + module_name.substr(last_dot_pos + 1);
+    import_statement =
+        absl::StrCat("from ", module_name.substr(0, last_dot_pos), " import ",
+                     module_name.substr(last_dot_pos + 1));
     module_name = module_name.substr(last_dot_pos + 1);
   }
-  std::string alias = "_" + module_name;
+  std::string alias = absl::StrCat("_", module_name);
   // Generate a unique alias by adding _1 suffixes until we get an unused alias.
   while (seen_aliases->find(alias) != seen_aliases->end()) {
-    alias = alias + "_1";
+    absl::StrAppend(&alias, "_1");
   }
   printer_->Print("$statement$ as $alias$\n", "statement",
                   import_statement, "alias", alias);
@@ -177,7 +183,7 @@ void PyiGenerator::PrintImportForDescriptor(
 
 void PyiGenerator::PrintImports() const {
   // Prints imported dependent _pb2 files.
-  std::set<std::string> seen_aliases;
+  absl::flat_hash_set<std::string> seen_aliases;
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const FileDescriptor* dep = file_->dependency(i);
     PrintImportForDescriptor(*dep, &seen_aliases);
@@ -301,17 +307,26 @@ void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
       "    __slots__ = []\n",
       "enum_name", enum_name);
   Annotate("enum_name", &enum_descriptor);
+  printer_->Indent();
+  PrintEnumValues(enum_descriptor, /* is_classvar = */ true);
+  printer_->Outdent();
 }
 
-void PyiGenerator::PrintEnumValues(
-    const EnumDescriptor& enum_descriptor) const {
+void PyiGenerator::PrintEnumValues(const EnumDescriptor& enum_descriptor,
+                                   bool is_classvar) const {
   // enum values
   std::string module_enum_name = ModuleLevelName(enum_descriptor);
   for (int j = 0; j < enum_descriptor.value_count(); ++j) {
     const EnumValueDescriptor* value_descriptor = enum_descriptor.value(j);
-    printer_->Print("$name$: $module_enum_name$\n",
-                    "name", value_descriptor->name(),
-                    "module_enum_name", module_enum_name);
+    if (is_classvar) {
+      printer_->Print("$name$: _ClassVar[$module_enum_name$]\n", "name",
+                      value_descriptor->name(), "module_enum_name",
+                      module_enum_name);
+    } else {
+      printer_->Print("$name$: $module_enum_name$\n", "name",
+                      value_descriptor->name(), "module_enum_name",
+                      module_enum_name);
+    }
     Annotate("name", value_descriptor);
   }
 }
@@ -327,7 +342,8 @@ template <typename DescriptorT>
 void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
   for (int i = 0; i < descriptor.extension_count(); ++i) {
     const FieldDescriptor* extension_field = descriptor.extension(i);
-    std::string constant_name = extension_field->name() + "_FIELD_NUMBER";
+    std::string constant_name =
+        absl::StrCat(extension_field->name(), "_FIELD_NUMBER");
     absl::AsciiStrToUpper(&constant_name);
     printer_->Print("$constant_name$: _ClassVar[int]\n",
                     "constant_name", constant_name);
@@ -367,12 +383,12 @@ std::string PyiGenerator::GetFieldType(
       if ((containing_des.containing_type() != nullptr &&
            name == containing_des.name())) {
         std::string module = ModuleName(field_des.file()->name());
-        name = module + "." + name;
+        name = absl::StrCat(module, ".", name);
       }
       return name;
     }
     default:
-      GOOGLE_LOG(FATAL) << "Unsupported field type.";
+      ABSL_LOG(FATAL) << "Unsupported field type.";
   }
   return "";
 }
@@ -387,14 +403,14 @@ void PyiGenerator::PrintMessage(
   // A well-known type needs to inherit from its corresponding base class in
   // net/proto2/python/internal/well_known_types.
   if (IsWellKnownType(message_descriptor.full_name())) {
-    extra_base = ", _well_known_types." + message_descriptor.name();
+    extra_base =
+        absl::StrCat(", _well_known_types.", message_descriptor.name());
   } else {
     extra_base = "";
   }
   printer_->Print("class $class_name$(_message.Message$extra_base$):\n",
                   "class_name", class_name, "extra_base", extra_base);
   Annotate("class_name", &message_descriptor);
-  printer_->Indent();
   printer_->Indent();
 
   // Prints slots
@@ -436,8 +452,8 @@ void PyiGenerator::PrintMessage(
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
     const FieldDescriptor& field_des = *message_descriptor.field(i);
     printer_->Print(
-      "$field_number_name$: _ClassVar[int]\n", "field_number_name",
-      absl::AsciiStrToUpper(field_des.name()) + "_FIELD_NUMBER");
+        "$field_number_name$: _ClassVar[int]\n", "field_number_name",
+        absl::StrCat(absl::AsciiStrToUpper(field_des.name()), "_FIELD_NUMBER"));
   }
   // Prints field name and type
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
@@ -449,12 +465,12 @@ void PyiGenerator::PrintMessage(
     if (field_des.is_map()) {
       const FieldDescriptor* key_des = field_des.message_type()->field(0);
       const FieldDescriptor* value_des = field_des.message_type()->field(1);
-      field_type = (value_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
-                        ? "_containers.MessageMap["
-                        : "_containers.ScalarMap[");
-      field_type += GetFieldType(*key_des, message_descriptor);
-      field_type += ", ";
-      field_type += GetFieldType(*value_des, message_descriptor);
+      field_type =
+          absl::StrCat(value_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
+                           ? "_containers.MessageMap["
+                           : "_containers.ScalarMap[",
+                       GetFieldType(*key_des, message_descriptor), ", ",
+                       GetFieldType(*value_des, message_descriptor));
     } else {
       if (field_des.is_repeated()) {
         field_type = (field_des.cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
@@ -465,7 +481,7 @@ void PyiGenerator::PrintMessage(
     }
 
     if (field_des.is_repeated()) {
-      field_type += "]";
+      absl::StrAppend(&field_type, "]");
     }
     printer_->Print("$name$: $type$\n",
                     "name", field_des.name(), "type", field_type);
@@ -535,8 +551,6 @@ void PyiGenerator::PrintMessage(
     printer_->Print(", **kwargs");
   }
   printer_->Print(") -> None: ...\n");
-
-  printer_->Outdent();
   printer_->Outdent();
 }
 
@@ -580,7 +594,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
     } else if (absl::EndsWith(option.first, ".pyi")) {
       filename = option.first;
     } else {
-      *error = "Unknown generator option: " + option.first;
+      *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
     }
   }
@@ -590,12 +604,14 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   }
 
   std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
-  GOOGLE_CHECK(output.get());
+  ABSL_CHECK(output.get());
   GeneratedCodeInfo annotations;
   io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
       &annotations);
-  io::Printer printer(output.get(), '$',
-                      annotate_code ? &annotation_collector : nullptr);
+  io::Printer::Options printer_opt(
+      '$', annotate_code ? &annotation_collector : nullptr);
+  printer_opt.spaces_per_indent = 4;
+  io::Printer printer(output.get(), printer_opt);
   printer_ = &printer;
 
   PrintImports();

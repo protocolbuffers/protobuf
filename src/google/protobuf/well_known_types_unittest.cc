@@ -30,7 +30,6 @@
 #include <gtest/gtest.h>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/stl_util.h"
 #include "google/protobuf/testing/googletest.h"
 #include "google/protobuf/unittest_well_known_types.pb.h"
 

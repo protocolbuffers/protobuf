@@ -1,0 +1,69 @@
+name: Java Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: OpenJDK 11
+            version: '11'
+            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1
+            targets: //java/... //java/internal:java_version
+          - name: OpenJDK 17
+            version: '17'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-65526ea124d1034eac33e7c37cc6d65c5bef054f
+            targets: //java/... //java/internal:java_version
+          - name: aarch64
+            version: 'aarch64'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b
+            targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
+
+    name: Linux ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: ./.github/actions/bazel-docker
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: java_linux/${{ matrix.version }}
+          bazel: test ${{ matrix.targets }} --test_env=KOKORO_JAVA_VERSION
+
+  linkage-monitor:
+    name: Linux Linkage Monitor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Build protoc
+        uses: ./.github/actions/bazel
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: java_linux_linkage
+          bash: |
+            $BAZEL build //:protoc $BAZEL_FLAGS
+            # The java build setup expects protoc in the root directory.
+            cp bazel-bin/protoc .
+      - name: Install snapshot version locally
+        run: |
+          cd java
+          mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
+      - name: Download Linkage Monitor
+        run: curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
+      - name: Fails if there's new linkage errors compared with baseline
+        run: java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:libraries-bom

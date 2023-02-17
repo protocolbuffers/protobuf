@@ -38,13 +38,14 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/compiler/scc.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -55,7 +56,6 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/port.h"
-
 
 namespace google {
 namespace protobuf {
@@ -179,7 +179,7 @@ class FileGenerator {
 
   bool IsDepWeak(const FileDescriptor* dep) const {
     if (weak_deps_.count(dep) != 0) {
-      GOOGLE_CHECK(!options_.opensource_runtime);
+      ABSL_CHECK(!options_.opensource_runtime);
       return true;
     }
     return false;
@@ -195,7 +195,7 @@ class FileGenerator {
   // This member is unused and should be deleted once all old-style variable
   // maps are gone.
   // TODO(b/245791219)
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
 
   // Contains the post-order walk of all the messages (and child messages) in
   // this file. If you need a pre-order walk just reverse iterate.

@@ -37,11 +37,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__
 #define GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__
 
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
@@ -129,14 +129,14 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
     ~ValidationErrorCollector() override;
 
     // implements ErrorCollector ---------------------------------------
-    void AddError(const std::string& filename, const std::string& element_name,
-                  const Message* descriptor, ErrorLocation location,
-                  const std::string& message) override;
+    void RecordError(absl::string_view filename, absl::string_view element_name,
+                     const Message* descriptor, ErrorLocation location,
+                     absl::string_view message) override;
 
-    void AddWarning(const std::string& filename,
-                    const std::string& element_name, const Message* descriptor,
-                    ErrorLocation location,
-                    const std::string& message) override;
+    void RecordWarning(absl::string_view filename,
+                       absl::string_view element_name,
+                       const Message* descriptor, ErrorLocation location,
+                       absl::string_view message) override;
 
    private:
     SourceTreeDescriptorDatabase* owner_;
@@ -203,11 +203,31 @@ class PROTOBUF_EXPORT MultiFileErrorCollector {
 
   // Line and column numbers are zero-based.  A line number of -1 indicates
   // an error with the entire file (e.g. "not found").
-  virtual void AddError(const std::string& filename, int line, int column,
-                        const std::string& message) = 0;
+  virtual void RecordError(absl::string_view filename, int line, int column,
+                           absl::string_view message) {
+    PROTOBUF_IGNORE_DEPRECATION_START
+    AddError(std::string(filename), line, column, std::string(message));
+    PROTOBUF_IGNORE_DEPRECATION_STOP
+  }
+  virtual void RecordWarning(absl::string_view filename, int line, int column,
+                             absl::string_view message) {
+    PROTOBUF_IGNORE_DEPRECATION_START
+    AddWarning(std::string(filename), line, column, std::string(message));
+    PROTOBUF_IGNORE_DEPRECATION_STOP
+  }
 
-  virtual void AddWarning(const std::string& /* filename */, int /* line */,
-                          int /* column */, const std::string& /* message */) {}
+ private:
+  // These should never be called directly, but if a legacy class overrides
+  // them they'll get routed to by the Record* methods.
+  ABSL_DEPRECATED("Use RecordError")
+  virtual void AddError(const std::string& filename, int line, int column,
+                        const std::string& message) {
+    ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
+  }
+
+  ABSL_DEPRECATED("Use RecordWarning")
+  virtual void AddWarning(const std::string& filename, int line, int column,
+                          const std::string& message) {}
 };
 
 // Abstract interface which represents a directory tree containing proto files.
@@ -220,12 +240,6 @@ class PROTOBUF_EXPORT SourceTree {
   SourceTree(const SourceTree&) = delete;
   SourceTree& operator=(const SourceTree&) = delete;
   virtual ~SourceTree();
-
-  // This is a temporary typedef alias to allow migrating the argument type of
-  // Open in an atomic change without touching certain directories which are
-  // restricted for various reasons.  This must match the argument type used
-  // below.
-  using SourceTreeOpenArgumentType = absl::string_view;
 
   // Open the given file and return a stream that reads it, or NULL if not
   // found.  The caller takes ownership of the returned object.  The filename

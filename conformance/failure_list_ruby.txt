@@ -27,6 +27,8 @@ Recommended.Proto2.ProtobufInput.ValidDataRepeated.UINT32.PackedInput.PackedOutp
 Recommended.Proto2.ProtobufInput.ValidDataRepeated.UINT32.UnpackedInput.PackedOutput.ProtobufOutput
 Recommended.Proto2.ProtobufInput.ValidDataRepeated.UINT64.PackedInput.PackedOutput.ProtobufOutput
 Recommended.Proto2.ProtobufInput.ValidDataRepeated.UINT64.UnpackedInput.PackedOutput.ProtobufOutput
+Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput
+Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInRepeatedField.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataOneofBinary.MESSAGE.Merge.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.BOOL.PackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.BOOL.UnpackedInput.UnpackedOutput.ProtobufOutput
@@ -56,6 +58,3 @@ Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.PackedInput.UnpackedOu
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.UnpackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.PackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.UnpackedInput.UnpackedOutput.ProtobufOutput
-Required.Proto3.JsonInput.DurationNegativeNanos.JsonOutput
-Required.Proto3.JsonInput.DurationNegativeNanos.ProtobufOutput
-Required.Proto3.JsonInput.DurationNegativeSeconds.JsonOutput

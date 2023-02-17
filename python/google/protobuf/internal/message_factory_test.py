@@ -92,36 +92,17 @@ class MessageFactoryTest(unittest.TestCase):
     pool = descriptor_pool.DescriptorPool(db)
     db.Add(self.factory_test1_fd)
     db.Add(self.factory_test2_fd)
-    factory = message_factory.MessageFactory()
-    cls = factory.GetPrototype(pool.FindMessageTypeByName(
+    cls = message_factory.GetMessageClass(pool.FindMessageTypeByName(
         'google.protobuf.python.internal.Factory2Message'))
     self.assertFalse(cls is factory_test2_pb2.Factory2Message)
     self._ExerciseDynamicClass(cls)
-    cls2 = factory.GetPrototype(pool.FindMessageTypeByName(
+    cls2 = message_factory.GetMessageClass(pool.FindMessageTypeByName(
         'google.protobuf.python.internal.Factory2Message'))
     self.assertTrue(cls is cls2)
 
-  def testCreatePrototypeOverride(self):
-    class MyMessageFactory(message_factory.MessageFactory):
-
-      def CreatePrototype(self, descriptor):
-        cls = super(MyMessageFactory, self).CreatePrototype(descriptor)
-        cls.additional_field = 'Some value'
-        return cls
-
-    db = descriptor_database.DescriptorDatabase()
-    pool = descriptor_pool.DescriptorPool(db)
-    db.Add(self.factory_test1_fd)
-    db.Add(self.factory_test2_fd)
-    factory = MyMessageFactory()
-    cls = factory.GetPrototype(pool.FindMessageTypeByName(
-        'google.protobuf.python.internal.Factory2Message'))
-    self.assertTrue(hasattr(cls, 'additional_field'))
-
   def testGetExistingPrototype(self):
-    factory = message_factory.MessageFactory()
     # Get Existing Prototype should not create a new class.
-    cls = factory.GetPrototype(
+    cls = message_factory.GetMessageClass(
         descriptor=factory_test2_pb2.Factory2Message.DESCRIPTOR)
     msg = factory_test2_pb2.Factory2Message()
     self.assertIsInstance(msg, cls)
@@ -181,7 +162,6 @@ class MessageFactoryTest(unittest.TestCase):
 
   def testDuplicateExtensionNumber(self):
     pool = descriptor_pool.DescriptorPool()
-    factory = message_factory.MessageFactory(pool=pool)
 
     # Add Container message.
     f = descriptor_pb2.FileDescriptorProto(
@@ -189,7 +169,7 @@ class MessageFactoryTest(unittest.TestCase):
         package='google.protobuf.python.internal')
     f.message_type.add(name='Container').extension_range.add(start=1, end=10)
     pool.Add(f)
-    msgs = factory.GetMessages([f.name])
+    msgs = message_factory.GetMessageClassesForFiles([f.name], pool)
     self.assertIn('google.protobuf.python.internal.Container', msgs)
 
     # Extend container.
@@ -205,7 +185,7 @@ class MessageFactoryTest(unittest.TestCase):
         type_name='Extension',
         extendee='Container')
     pool.Add(f)
-    msgs = factory.GetMessages([f.name])
+    msgs = message_factory.GetMessageClassesForFiles([f.name], pool)
     self.assertIn('google.protobuf.python.internal.Extension', msgs)
 
     # Add Duplicate extending the same field number.
@@ -223,7 +203,7 @@ class MessageFactoryTest(unittest.TestCase):
     pool.Add(f)
 
     with self.assertRaises(Exception) as cm:
-      factory.GetMessages([f.name])
+      message_factory.GetMessageClassesForFiles([f.name], pool)
 
     self.assertIn(str(cm.exception),
                   ['Extensions '
@@ -281,8 +261,8 @@ class MessageFactoryTest(unittest.TestCase):
     db = SimpleDescriptorDB({f1.name: f1, f2.name: f2, f3.name: f3})
 
     pool = descriptor_pool.DescriptorPool(db)
-    factory = message_factory.MessageFactory(pool=pool)
-    msgs = factory.GetMessages([f1.name, f3.name])  # Deliberately not f2.
+    msgs = message_factory.GetMessageClassesForFiles(
+        [f1.name, f3.name], pool)  # Deliberately not f2.
     msg = msgs['google.protobuf.python.internal.Container']
     desc = msgs['google.protobuf.python.internal.Extension'].DESCRIPTOR
     ext1 = desc.file.extensions_by_name['top_level_extension_field']
@@ -293,8 +273,8 @@ class MessageFactoryTest(unittest.TestCase):
     serialized = m.SerializeToString()
 
     pool = descriptor_pool.DescriptorPool(db)
-    factory = message_factory.MessageFactory(pool=pool)
-    msgs = factory.GetMessages([f1.name, f3.name])  # Deliberately not f2.
+    msgs = message_factory.GetMessageClassesForFiles(
+        [f1.name, f3.name], pool)  # Deliberately not f2.
     msg = msgs['google.protobuf.python.internal.Container']
     desc = msgs['google.protobuf.python.internal.Extension'].DESCRIPTOR
     ext1 = desc.file.extensions_by_name['top_level_extension_field']

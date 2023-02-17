@@ -46,21 +46,24 @@
 
 #include <memory>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/descriptor.h"
+#include <gmock/gmock.h>
+#include "google/protobuf/testing/googletest.h"
+#include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
+#include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/test_util.h"
+#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/testing/googletest.h"
-#include <gtest/gtest.h>
-#include "google/protobuf/map_test_util.h"
-#include "google/protobuf/test_util.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
 
 namespace google {
 namespace protobuf {
@@ -90,11 +93,15 @@ class GeneratedMessageReflectionTestHelper {
 
 namespace {
 
+using ::testing::ElementsAre;
+using ::testing::Pointee;
+using ::testing::Property;
+
 // Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
 const FieldDescriptor* F(const std::string& name) {
   const FieldDescriptor* result =
       unittest::TestAllTypes::descriptor()->FindFieldByName(name);
-  GOOGLE_CHECK(result != nullptr);
+  ABSL_CHECK(result != nullptr);
   return result;
 }
 
@@ -613,10 +620,16 @@ TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   (void)expected;  // unused in somce configurations
   std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->FindFieldByName("repeated_foreign_message")));
+#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
   EXPECT_EQ(expected, released.get());
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
 }
 
 TEST(GeneratedMessageReflectionTest, ReleaseLastExtensions) {
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  GTEST_SKIP() << "Won't work with FORCE_COPY_IN_RELEASE.";
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+
   unittest::TestAllExtensions message;
   const Descriptor* descriptor = message.GetDescriptor();
   TestUtil::ReflectionTester reflection_tester(descriptor);
@@ -1040,7 +1053,9 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
   released = reflection->ReleaseMessage(
       &to_message, descriptor->FindFieldByName("foo_lazy_message"));
   EXPECT_TRUE(released != nullptr);
+#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
   EXPECT_EQ(&sub_message, released);
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   delete released;
 
   TestUtil::ReflectionTester::SetOneofViaReflection(&from_message2);
@@ -1058,7 +1073,9 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
   released = reflection->ReleaseMessage(
       &to_message, descriptor->FindFieldByName("foo_message"));
   EXPECT_TRUE(released != nullptr);
+#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
   EXPECT_EQ(&sub_message2, released);
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   delete released;
 }
 
@@ -1179,7 +1196,9 @@ TEST(GeneratedMessageReflectionTest, ReleaseOneofMessageTest) {
       &message, descriptor->FindFieldByName("foo_lazy_message"));
 
   EXPECT_TRUE(released != nullptr);
+#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
   EXPECT_EQ(&sub_message, released);
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   delete released;
 
   released = reflection->ReleaseMessage(
@@ -1254,7 +1273,7 @@ TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
   EXPECT_TRUE(released == nullptr);
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {
   unittest::TestAllTypes message;
@@ -1301,7 +1320,7 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Problem     : Field does not match message type.");
 }
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 
 using internal::IsDescendant;
@@ -1362,6 +1381,51 @@ TEST(GeneratedMessageReflection, IsDescendantOneof) {
       IsDescendant(msg1, msg2.foo_message().optional_nested_message()));
   EXPECT_FALSE(
       IsDescendant(msg1, msg2.foo_message().repeated_foreign_message(0)));
+}
+
+TEST(GeneratedMessageReflection, ListFieldsSorted) {
+  unittest::TestFieldOrderings msg;
+  const Reflection* reflection = msg.GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+  msg.set_my_string("hello");             // tag 11
+  msg.mutable_optional_nested_message();  // tag 200
+  reflection->ListFields(msg, &fields);
+  // No sorting, in order declaration.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 11)),
+                          Pointee(Property(&FieldDescriptor::number, 200))));
+  msg.set_my_int(4242);  // tag 1
+  reflection->ListFields(msg, &fields);
+  // Sorting as fields are declared in order 11, 1, 200.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 1)),
+                          Pointee(Property(&FieldDescriptor::number, 11)),
+                          Pointee(Property(&FieldDescriptor::number, 200))));
+  msg.clear_optional_nested_message();  // tag 200
+  msg.SetExtension(unittest::my_extension_int,
+                   424242);  // tag 5 from extension
+  reflection->ListFields(msg, &fields);
+  // Sorting as extension tag is in between.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 1)),
+                          Pointee(Property(&FieldDescriptor::number, 5)),
+                          Pointee(Property(&FieldDescriptor::number, 11))));
+  msg.clear_my_string();  // tag 11.
+  reflection->ListFields(msg, &fields);
+  // No sorting as extension is bigger than tag 1.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 1)),
+                          Pointee(Property(&FieldDescriptor::number, 5))));
+  msg.set_my_float(1.0);  // tag 101
+  msg.SetExtension(unittest::my_extension_string,
+                   "hello");  // tag 50 from extension
+  reflection->ListFields(msg, &fields);
+  // Sorting of all as extensions are out of order and fields are in between.
+  EXPECT_THAT(fields,
+              ElementsAre(Pointee(Property(&FieldDescriptor::number, 1)),
+                          Pointee(Property(&FieldDescriptor::number, 5)),
+                          Pointee(Property(&FieldDescriptor::number, 50)),
+                          Pointee(Property(&FieldDescriptor::number, 101))));
 }
 
 }  // namespace

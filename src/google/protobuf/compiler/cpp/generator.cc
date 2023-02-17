@@ -34,16 +34,15 @@
 
 #include "google/protobuf/compiler/cpp/generator.h"
 
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/strutil.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -57,18 +56,21 @@ std::string NumberedCcFileName(absl::string_view basename, int number) {
   return absl::StrCat(basename, ".out/", number, ".cc");
 }
 
-absl::flat_hash_map<std::string, std::string> CommonVars(
+absl::flat_hash_map<absl::string_view, std::string> CommonVars(
     const Options& options) {
   bool is_oss = options.opensource_runtime;
   return {
       {"proto_ns", ProtobufNamespace(options)},
+      {"pb", absl::StrCat("::", ProtobufNamespace(options))},
+      {"pbi", absl::StrCat("::", ProtobufNamespace(options), "::internal")},
+
       {"string", "std::string"},
-      {"int8", "int8_t"},
-      {"int32", "int32_t"},
-      {"int64", "int64_t"},
-      {"uint8", "uint8_t"},
-      {"uint32", "uint32_t"},
-      {"uint64", "uint64_t"},
+      {"int8", "::int8_t"},
+      {"int32", "::int32_t"},
+      {"int64", "::int64_t"},
+      {"uint8", "::uint8_t"},
+      {"uint32", "::uint32_t"},
+      {"uint64", "::uint64_t"},
 
       {"hrule_thick", kThickSeparator},
       {"hrule_thin", kThinSeparator},
@@ -76,7 +78,7 @@ absl::flat_hash_map<std::string, std::string> CommonVars(
       // Warning: there is some clever naming/splitting here to avoid extract
       // script rewrites.  The names of these variables must not be things that
       // the extract script will rewrite.  That's why we use "CHK" (for example)
-      // instead of "GOOGLE_CHECK".
+      // instead of "ABSL_CHECK".
       //
       // These values are things the extract script would rewrite if we did not
       // split them.  It might not strictly matter since we don't generate
@@ -85,12 +87,12 @@ absl::flat_hash_map<std::string, std::string> CommonVars(
       {"GOOGLE_PROTOBUF", is_oss ? "GOOGLE_PROTOBUF"
                                  : "GOOGLE3_PROTOBU"
                                    "F"},
-      {"CHK", is_oss ? "GOOGLE_CHECK"
-                     : "CHEC"
-                       "K"},
-      {"DCHK", is_oss ? "GOOGLE_DCHECK"
-                      : "DCHEC"
-                        "K"},
+      {"CHK",
+       "ABSL_CHEC"
+       "K"},
+      {"DCHK",
+       "ABSL_DCHEC"
+       "K"},
   };
 }
 }  // namespace
@@ -152,10 +154,11 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
       file_options.lite_implicit_weak_fields = true;
       if (!value.empty()) {
-        file_options.num_cc_files = strto32(value.c_str(), nullptr, 10);
+        file_options.num_cc_files = std::strtol(value.c_str(), nullptr, 10);
       }
     } else if (key == "proto_h") {
       file_options.proto_h = true;
+    } else if (key == "proto_static_reflection_h") {
     } else if (key == "annotate_accessor") {
       file_options.annotate_accessor = true;
     } else if (key == "inject_field_listener_events") {
@@ -169,13 +172,11 @@ bool CppGenerator::Generate(const FileDescriptor* file,
         }
         if (next_pos > pos)
           file_options.field_listener_options.forbidden_field_listener_events
-              .insert(value.substr(pos, next_pos - pos));
+              .emplace(value.substr(pos, next_pos - pos));
         pos = next_pos + 1;
       } while (pos < value.size());
     } else if (key == "unverified_lazy_message_sets") {
       file_options.unverified_lazy_message_sets = true;
-    } else if (key == "message_owned_arena_trial") {
-      file_options.message_owned_arena_trial = true;
     } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
     } else if (key == "experimental_tail_call_table_mode") {
@@ -186,12 +187,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       } else if (value == "always") {
         file_options.tctable_mode = Options::kTCTableAlways;
       } else {
-        *error =
-            "Unknown value for experimental_tail_call_table_mode: " + value;
+        *error = absl::StrCat(
+            "Unknown value for experimental_tail_call_table_mode: ", value);
         return false;
       }
     } else {
-      *error = "Unknown generator option: " + key;
+      *error = absl::StrCat("Unknown generator option: ", key);
       return false;
     }
   }
@@ -208,6 +209,17 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
 
   std::string basename = StripProto(file->name());
+
+  auto generate_reserved_static_reflection_header = [&basename,
+                                                     &generator_context]() {
+    auto output = absl::WrapUnique(generator_context->Open(
+        absl::StrCat(basename, ".proto.static_reflection.h")));
+    io::Printer(output.get()).Emit(R"cc(
+      // Reserved for future use.
+    )cc");
+  };
+  // Suppress maybe unused warning.
+  (void)generate_reserved_static_reflection_header;
 
   if (MaybeBootstrap(file_options, generator_context, file_options.bootstrap,
                      &basename)) {
@@ -288,7 +300,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     // pb.cc file. If we have more files than messages, then some files will
     // be generated as empty placeholders.
     if (file_options.num_cc_files > 0) {
-      GOOGLE_CHECK_LE(num_cc_files, file_options.num_cc_files)
+      ABSL_CHECK_LE(num_cc_files, file_options.num_cc_files)
           << "There must be at least as many numbered .cc files as messages "
              "and extensions.";
       num_cc_files = file_options.num_cc_files;

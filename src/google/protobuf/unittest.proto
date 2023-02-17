@@ -194,9 +194,12 @@ message NestedTestAllTypes {
 
 message TestDeprecatedFields {
   optional int32 deprecated_int32 = 1 [deprecated=true];
+  repeated string deprecated_repeated_string = 4 [deprecated=true];
+  optional TestAllTypes.NestedMessage deprecated_message = 3 [deprecated=true];
   oneof oneof_fields {
     int32 deprecated_int32_in_oneof = 2 [deprecated=true];
   }
+  optional TestDeprecatedFields nested = 5;
 }
 
 message TestDeprecatedMessage {
@@ -883,12 +886,12 @@ message TestRequiredOneof {
     int32 foo_int = 1;
     string foo_string = 2;
     NestedMessage foo_message = 3;
+    NestedMessage foo_lazy_message = 4 [lazy = true];
   }
   message NestedMessage {
     required double required_double = 1;
   }
 }
-
 
 // Test messages for packed fields
 
@@ -994,6 +997,14 @@ message TestDynamicExtensions {
   repeated sint32 packed_extension = 2006 [packed = true];
 }
 
+message TestRepeatedString {
+  repeated string repeated_string1 = 1;
+  repeated string repeated_string2 = 2;
+
+  repeated bytes repeated_bytes11 = 11;
+  repeated bytes repeated_bytes12 = 12;
+}
+
 message TestRepeatedScalarDifferentTagSizes {
   // Parsing repeated fixed size values used to fail. This message needs to be
   // used in order to get a tag of the right size; all of the repeated fields
@@ -1070,7 +1081,6 @@ message TestMessageSize {
   optional int64 m6 = 6;
 }
 
-
 // Test that RPC services work.
 message FooRequest  {}
 message FooResponse {}
@@ -1082,7 +1092,6 @@ service TestService {
   rpc Foo(FooRequest) returns (FooResponse);
   rpc Bar(BarRequest) returns (BarResponse);
 }
-
 
 message BarRequest  {}
 message BarResponse {}
@@ -1437,7 +1446,6 @@ message TestVerifyBigFieldNumberUint32 {
   optional Nested optional_nested = 1;
 }
 
-
 // This message contains different kind of enums to exercise the different
 // parsers in table-driven.
 message EnumParseTester {
@@ -1557,6 +1565,36 @@ message BoolParseTester {
   optional int32 other_field = 99;
 };
 
+message Int32ParseTester {
+  optional int32 optional_int32_lowfield = 1;
+  optional int32 optional_int32_midfield = 1001;
+  optional int32 optional_int32_hifield = 1000001;
+  repeated int32 repeated_int32_lowfield = 2;
+  repeated int32 repeated_int32_midfield = 1002;
+  repeated int32 repeated_int32_hifield = 1000002;
+  repeated int32 packed_int32_lowfield = 3 [packed = true];
+  repeated int32 packed_int32_midfield = 1003 [packed = true];
+  repeated int32 packed_int32_hifield = 1000003 [packed = true];
+
+  // An arbitrary field we can append to to break the runs of repeated fields.
+  optional int32 other_field = 99;
+};
+
+message Int64ParseTester {
+  optional int64 optional_int64_lowfield = 1;
+  optional int64 optional_int64_midfield = 1001;
+  optional int64 optional_int64_hifield = 1000001;
+  repeated int64 repeated_int64_lowfield = 2;
+  repeated int64 repeated_int64_midfield = 1002;
+  repeated int64 repeated_int64_hifield = 1000002;
+  repeated int64 packed_int64_lowfield = 3 [packed = true];
+  repeated int64 packed_int64_midfield = 1003 [packed = true];
+  repeated int64 packed_int64_hifield = 1000003 [packed = true];
+
+  // An arbitrary field we can append to to break the runs of repeated fields.
+  optional int32 other_field = 99;
+};
+
 message StringParseTester {
   optional string optional_string_lowfield = 1;
   optional string optional_string_midfield = 1001;
@@ -1566,3 +1604,11 @@ message StringParseTester {
   repeated string repeated_string_hifield = 1000002;
 };
 
+message BadFieldNames{
+  optional int32 OptionalInt32 = 1;
+  optional int32 for = 2;
+}
+
+message RedactedFields{
+  optional string optional_redacted_string = 1 [debug_redact = true];
+}

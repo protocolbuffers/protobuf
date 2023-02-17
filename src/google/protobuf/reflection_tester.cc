@@ -31,6 +31,7 @@
 #include "google/protobuf/reflection_tester.h"
 
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 
@@ -45,79 +46,83 @@ MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
   const DescriptorPool* pool = base_descriptor->file()->pool();
   std::string package = base_descriptor->file()->package();
 
-  map_enum_foo_ = pool->FindEnumValueByName(package + ".MAP_ENUM_FOO");
-  map_enum_bar_ = pool->FindEnumValueByName(package + ".MAP_ENUM_BAR");
-  map_enum_baz_ = pool->FindEnumValueByName(package + ".MAP_ENUM_BAZ");
+  map_enum_foo_ =
+      pool->FindEnumValueByName(absl::StrCat(package, ".MAP_ENUM_FOO"));
+  map_enum_bar_ =
+      pool->FindEnumValueByName(absl::StrCat(package, ".MAP_ENUM_BAR"));
+  map_enum_baz_ =
+      pool->FindEnumValueByName(absl::StrCat(package, ".MAP_ENUM_BAZ"));
 
-  foreign_c_ = pool->FindFieldByName(package + ".ForeignMessage.c");
-  map_int32_int32_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32Int32Entry.key");
-  map_int32_int32_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32Int32Entry.value");
-  map_int64_int64_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt64Int64Entry.key");
-  map_int64_int64_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt64Int64Entry.value");
-  map_uint32_uint32_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapUint32Uint32Entry.key");
-  map_uint32_uint32_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapUint32Uint32Entry.value");
-  map_uint64_uint64_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapUint64Uint64Entry.key");
-  map_uint64_uint64_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapUint64Uint64Entry.value");
-  map_sint32_sint32_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapSint32Sint32Entry.key");
-  map_sint32_sint32_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapSint32Sint32Entry.value");
-  map_sint64_sint64_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapSint64Sint64Entry.key");
-  map_sint64_sint64_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapSint64Sint64Entry.value");
-  map_fixed32_fixed32_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapFixed32Fixed32Entry.key");
-  map_fixed32_fixed32_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapFixed32Fixed32Entry.value");
-  map_fixed64_fixed64_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapFixed64Fixed64Entry.key");
-  map_fixed64_fixed64_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapFixed64Fixed64Entry.value");
-  map_sfixed32_sfixed32_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapSfixed32Sfixed32Entry.key");
+  foreign_c_ =
+      pool->FindFieldByName(absl::StrCat(package, ".ForeignMessage.c"));
+  map_int32_int32_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32Int32Entry.key"));
+  map_int32_int32_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32Int32Entry.value"));
+  map_int64_int64_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt64Int64Entry.key"));
+  map_int64_int64_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt64Int64Entry.value"));
+  map_uint32_uint32_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapUint32Uint32Entry.key"));
+  map_uint32_uint32_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapUint32Uint32Entry.value"));
+  map_uint64_uint64_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapUint64Uint64Entry.key"));
+  map_uint64_uint64_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapUint64Uint64Entry.value"));
+  map_sint32_sint32_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapSint32Sint32Entry.key"));
+  map_sint32_sint32_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapSint32Sint32Entry.value"));
+  map_sint64_sint64_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapSint64Sint64Entry.key"));
+  map_sint64_sint64_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapSint64Sint64Entry.value"));
+  map_fixed32_fixed32_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapFixed32Fixed32Entry.key"));
+  map_fixed32_fixed32_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapFixed32Fixed32Entry.value"));
+  map_fixed64_fixed64_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapFixed64Fixed64Entry.key"));
+  map_fixed64_fixed64_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapFixed64Fixed64Entry.value"));
+  map_sfixed32_sfixed32_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapSfixed32Sfixed32Entry.key"));
   map_sfixed32_sfixed32_val_ = pool->FindFieldByName(
-      package + ".TestMap.MapSfixed32Sfixed32Entry.value");
-  map_sfixed64_sfixed64_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapSfixed64Sfixed64Entry.key");
+      absl::StrCat(package, ".TestMap.MapSfixed32Sfixed32Entry.value"));
+  map_sfixed64_sfixed64_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapSfixed64Sfixed64Entry.key"));
   map_sfixed64_sfixed64_val_ = pool->FindFieldByName(
-      package + ".TestMap.MapSfixed64Sfixed64Entry.value");
-  map_int32_float_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32FloatEntry.key");
-  map_int32_float_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32FloatEntry.value");
-  map_int32_double_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32DoubleEntry.key");
-  map_int32_double_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32DoubleEntry.value");
-  map_bool_bool_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapBoolBoolEntry.key");
-  map_bool_bool_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapBoolBoolEntry.value");
-  map_string_string_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapStringStringEntry.key");
-  map_string_string_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapStringStringEntry.value");
-  map_int32_bytes_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32BytesEntry.key");
-  map_int32_bytes_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32BytesEntry.value");
-  map_int32_enum_key_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32EnumEntry.key");
-  map_int32_enum_val_ =
-      pool->FindFieldByName(package + ".TestMap.MapInt32EnumEntry.value");
+      absl::StrCat(package, ".TestMap.MapSfixed64Sfixed64Entry.value"));
+  map_int32_float_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32FloatEntry.key"));
+  map_int32_float_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32FloatEntry.value"));
+  map_int32_double_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32DoubleEntry.key"));
+  map_int32_double_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32DoubleEntry.value"));
+  map_bool_bool_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapBoolBoolEntry.key"));
+  map_bool_bool_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapBoolBoolEntry.value"));
+  map_string_string_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapStringStringEntry.key"));
+  map_string_string_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapStringStringEntry.value"));
+  map_int32_bytes_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32BytesEntry.key"));
+  map_int32_bytes_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32BytesEntry.value"));
+  map_int32_enum_key_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32EnumEntry.key"));
+  map_int32_enum_val_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestMap.MapInt32EnumEntry.value"));
   map_int32_foreign_message_key_ = pool->FindFieldByName(
-      package + ".TestMap.MapInt32ForeignMessageEntry.key");
+      absl::StrCat(package, ".TestMap.MapInt32ForeignMessageEntry.key"));
   map_int32_foreign_message_val_ = pool->FindFieldByName(
-      package + ".TestMap.MapInt32ForeignMessageEntry.value");
+      absl::StrCat(package, ".TestMap.MapInt32ForeignMessageEntry.value"));
 
   EXPECT_FALSE(map_enum_foo_ == nullptr);
   EXPECT_FALSE(map_enum_bar_ == nullptr);
@@ -193,7 +198,7 @@ MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
       map_int32_foreign_message_key_,
       map_int32_foreign_message_val_};
   for (const FieldDescriptor* fdesc : all_map_descriptors) {
-    GOOGLE_CHECK(fdesc->containing_type() != nullptr) << fdesc->name();
+    ABSL_CHECK(fdesc->containing_type() != nullptr) << fdesc->name();
     if (fdesc->name() == "key") {
       EXPECT_EQ(fdesc->containing_type()->map_key(), fdesc);
     } else {
@@ -207,7 +212,7 @@ MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
 const FieldDescriptor* MapReflectionTester::F(const std::string& name) {
   const FieldDescriptor* result = nullptr;
   result = base_descriptor_->FindFieldByName(name);
-  GOOGLE_CHECK(result != nullptr);
+  ABSL_CHECK(result != nullptr);
   return result;
 }
 
@@ -888,7 +893,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
   ASSERT_EQ(2, reflection->FieldSize(message, F("map_int32_foreign_message")));
 
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -916,7 +921,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -944,7 +949,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<uint32_t, uint32_t> map;
+    absl::flat_hash_map<uint32_t, uint32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -972,7 +977,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<uint64_t, uint64_t> map;
+    absl::flat_hash_map<uint64_t, uint64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1000,7 +1005,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1028,7 +1033,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1056,7 +1061,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<uint32_t, uint32_t> map;
+    absl::flat_hash_map<uint32_t, uint32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1084,7 +1089,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<uint64_t, uint64_t> map;
+    absl::flat_hash_map<uint64_t, uint64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1112,7 +1117,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1141,7 +1146,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1170,7 +1175,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, float> map;
+    absl::flat_hash_map<int32_t, float> map;
     map[0] = 0.0;
     map[1] = 1.0;
     for (int i = 0; i < 2; i++) {
@@ -1198,7 +1203,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, double> map;
+    absl::flat_hash_map<int32_t, double> map;
     map[0] = 0.0;
     map[1] = 1.0;
     for (int i = 0; i < 2; i++) {
@@ -1226,7 +1231,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<bool, bool> map;
+    absl::flat_hash_map<bool, bool> map;
     map[false] = false;
     map[true] = true;
     std::vector<bool> keys = {false, true};
@@ -1256,7 +1261,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<std::string, std::string> map;
+    absl::flat_hash_map<std::string, std::string> map;
     map["0"] = "0";
     map["1"] = "1";
     std::vector<std::string> keys = {"0", "1"};
@@ -1286,7 +1291,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, std::string> map;
+    absl::flat_hash_map<int32_t, std::string> map;
     map[0] = "0";
     map[1] = "1";
     for (int i = 0; i < 2; i++) {
@@ -1314,7 +1319,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, const EnumValueDescriptor*> map;
+    absl::flat_hash_map<int32_t, const EnumValueDescriptor*> map;
     map[0] = map_enum_bar_;
     map[1] = map_enum_baz_;
     for (int i = 0; i < 2; i++) {
@@ -1342,7 +1347,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1403,7 +1408,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
   ASSERT_EQ(2, reflection->FieldSize(*message, F("map_int32_foreign_message")));
 
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     int size = 0;
@@ -1422,7 +1427,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     EXPECT_EQ(size, 2);
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int64_int64"));
@@ -1432,7 +1437,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<uint32_t, uint32_t> map;
+    absl::flat_hash_map<uint32_t, uint32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1443,7 +1448,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<uint64_t, uint64_t> map;
+    absl::flat_hash_map<uint64_t, uint64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1454,7 +1459,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1465,7 +1470,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1476,7 +1481,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<uint32_t, uint32_t> map;
+    absl::flat_hash_map<uint32_t, uint32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1488,7 +1493,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<uint64_t, uint64_t> map;
+    absl::flat_hash_map<uint64_t, uint64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1500,7 +1505,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1512,7 +1517,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, float> map;
+    absl::flat_hash_map<int32_t, float> map;
     map[0] = 0.0;
     map[1] = 1.0;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_float"));
@@ -1522,7 +1527,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, double> map;
+    absl::flat_hash_map<int32_t, double> map;
     map[0] = 0.0;
     map[1] = 1.0;
     for (MapIterator iter =
@@ -1533,7 +1538,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<bool, bool> map;
+    absl::flat_hash_map<bool, bool> map;
     map[false] = false;
     map[true] = true;
     for (MapIterator iter = reflection->MapBegin(message, F("map_bool_bool"));
@@ -1543,7 +1548,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<std::string, std::string> map;
+    absl::flat_hash_map<std::string, std::string> map;
     map["0"] = "0";
     map["1"] = "1";
     int size = 0;
@@ -1563,7 +1568,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     EXPECT_EQ(size, 2);
   }
   {
-    std::map<int32_t, std::string> map;
+    absl::flat_hash_map<int32_t, std::string> map;
     map[0] = "0";
     map[1] = "1";
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_bytes"));
@@ -1573,7 +1578,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, const EnumValueDescriptor*> map;
+    absl::flat_hash_map<int32_t, const EnumValueDescriptor*> map;
     map[0] = map_enum_bar_;
     map[1] = map_enum_baz_;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_enum"));
@@ -1583,7 +1588,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     int size = 0;

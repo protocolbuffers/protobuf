@@ -41,7 +41,8 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -76,14 +77,34 @@ class PROTOBUF_EXPORT ErrorCollector {
   // Indicates that there was an error in the input at the given line and
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
-  virtual void AddError(int line, ColumnNumber column,
-                        const std::string& message) = 0;
+  virtual void RecordError(int line, ColumnNumber column,
+                           absl::string_view message) {
+    PROTOBUF_IGNORE_DEPRECATION_START
+    AddError(line, column, std::string(message));
+    PROTOBUF_IGNORE_DEPRECATION_STOP
+  }
 
   // Indicates that there was a warning in the input at the given line and
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
-  virtual void AddWarning(int /* line */, ColumnNumber /* column */,
-                          const std::string& /* message */) {}
+  virtual void RecordWarning(int line, ColumnNumber column,
+                             absl::string_view message) {
+    PROTOBUF_IGNORE_DEPRECATION_START
+    AddWarning(line, column, std::string(message));
+    PROTOBUF_IGNORE_DEPRECATION_STOP
+  }
+
+ private:
+  // These should never be called directly, but if a legacy class overrides
+  // them they'll get routed to by the Record* methods.
+  ABSL_DEPRECATED("Use RecordError")
+  virtual void AddError(int line, ColumnNumber column,
+                        const std::string& message) {
+    ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
+  }
+  ABSL_DEPRECATED("Use RecordWarning")
+  virtual void AddWarning(int line, ColumnNumber column,
+                          const std::string& message) {}
 };
 
 // This class converts a stream of raw text into a stream of tokens for
@@ -339,7 +360,7 @@ class PROTOBUF_EXPORT Tokenizer {
 
   // Convenience method to add an error at the current line and column.
   void AddError(const std::string& message) {
-    error_collector_->AddError(line_, column_, message);
+    error_collector_->RecordError(line_, column_, message);
   }
 
   // -----------------------------------------------------------------

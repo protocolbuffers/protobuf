@@ -54,6 +54,7 @@ use Google\Protobuf\NullValue;
  * or extend this class or its child classes by their own.  See the comment of
  * specific functions for more details.
  */
+#[\AllowDynamicProperties]
 class Message
 {
 
@@ -543,7 +544,7 @@ class Message
 
     /**
      * Clear all containing fields.
-     * @return null.
+     * @return null
      */
     public function clear()
     {
@@ -653,7 +654,7 @@ class Message
 
     /**
      * Clear all unknown fields previously parsed.
-     * @return null.
+     * @return null
      */
     public function discardUnknownFields()
     {
@@ -699,7 +700,7 @@ class Message
      * sub-messages are deep-copied.
      *
      * @param object $msg Protobuf message to be merged from.
-     * @return null.
+     * @return null
      */
     public function mergeFrom($msg)
     {
@@ -766,7 +767,7 @@ class Message
      * specified message.
      *
      * @param string $data Binary protobuf data.
-     * @return null.
+     * @return null
      * @throws \Exception Invalid data.
      */
     public function mergeFromString($data)
@@ -784,7 +785,8 @@ class Message
      * specified message.
      *
      * @param string $data Json protobuf data.
-     * @return null.
+     * @param bool $ignore_unknown
+     * @return null
      * @throws \Exception Invalid data.
      */
     public function mergeFromJsonString($data, $ignore_unknown = false)
@@ -1052,7 +1054,7 @@ class Message
      * must receive data that is either a string or a StringValue object.
      *
      * @param array $array An array containing message properties and values.
-     * @return null.
+     * @return null
      */
     protected function mergeFromArray(array $array)
     {
@@ -1980,8 +1982,12 @@ class Message
                 $size += 9;
                 $size += $value_msg->jsonByteSize();
             } else {
-                // Size for value. +1 for comma, -2 for "{}".
-                $size += $value_msg->jsonByteSize() -1;
+                $value_size = $value_msg->jsonByteSize();
+                // size === 2 it's empty message {} which is not serialized inside any
+                if ($value_size !== 2) {
+                    // Size for value. +1 for comma, -2 for "{}".
+                    $size += $value_size -1;
+                }
             }
         } elseif (get_class($this) === 'Google\Protobuf\FieldMask') {
             $field_mask = GPBUtil::formatFieldMask($this);

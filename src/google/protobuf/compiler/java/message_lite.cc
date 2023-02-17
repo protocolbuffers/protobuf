@@ -36,15 +36,11 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
@@ -58,6 +54,9 @@
 #include "google/protobuf/compiler/java/message_builder_lite.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -77,12 +76,13 @@ ImmutableMessageLiteGenerator::ImmutableMessageLiteGenerator(
       context_(context),
       name_resolver_(context->GetNameResolver()),
       field_generators_(descriptor, context_) {
-  GOOGLE_CHECK(!HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
+  ABSL_CHECK(!HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A lite message generator is used to "
          "generate non-lite messages.";
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
-      oneofs_.insert(descriptor_->field(i)->containing_oneof());
+      const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
+      ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -118,7 +118,7 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true, "OrBuilder");
 
-  std::map<std::string, std::string> variables = {
+  absl::flat_hash_map<absl::string_view, std::string> variables = {
       {"{", ""},
       {"}", ""},
       {"deprecation",
@@ -153,7 +153,8 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
     field_generators_.get(descriptor_->field(i))
         .GenerateInterfaceMembers(printer);
   }
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     variables["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
     variables["classname"] =
@@ -174,7 +175,8 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
 void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
-  std::map<std::string, std::string> variables = {{"{", ""}, {"}", ""}};
+  absl::flat_hash_map<absl::string_view, std::string> variables = {{"{", ""},
+                                                                   {"}", ""}};
   variables["static"] = is_own_file ? " " : " static ";
   variables["classname"] = descriptor_->name();
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
@@ -243,8 +245,10 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  std::map<std::string, std::string> vars = {{"{", ""}, {"}", ""}};
-  for (auto oneof : oneofs_) {
+  absl::flat_hash_map<absl::string_view, std::string> vars = {{"{", ""},
+                                                              {"}", ""}};
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
@@ -521,11 +525,11 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
 
     // Record the number of oneofs.
     WriteIntToUtf16CharSequence(oneofs_.size(), &chars);
-    for (auto oneof : oneofs_) {
+    for (auto& kv : oneofs_) {
       printer->Print(
           "\"$oneof_name$_\",\n"
           "\"$oneof_name$Case_\",\n",
-          "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
+          "oneof_name", context_->GetOneofGeneratorInfo(kv.second)->name);
     }
 
     // Integers for bit fields.
@@ -783,7 +787,8 @@ void ImmutableMessageLiteGenerator::GenerateKotlinDsl(
         .GenerateKotlinDslMembers(printer);
   }
 
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     printer->Print(
         "public val $oneof_name$Case: $message$.$oneof_capitalized_name$Case\n"
         "  @JvmName(\"get$oneof_capitalized_name$Case\")\n"
@@ -896,7 +901,7 @@ void ImmutableMessageLiteGenerator::GenerateKotlinExtensions(
       "com.google.protobuf.ExtensionLite<$message$, T>): T {\n"
       "  return if (extension.isRepeated) {\n"
       "    get(extension as com.google.protobuf.ExtensionLite<$message$, "
-      "List<*>>) as T\n"
+      "kotlin.collections.List<*>>) as T\n"
       "  } else {\n"
       "    _builder.getExtension(extension)\n"
       "  }\n"
@@ -909,7 +914,8 @@ void ImmutableMessageLiteGenerator::GenerateKotlinExtensions(
       "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
       "@kotlin.jvm.JvmName(\"-getRepeatedExtension\")\n"
       "public operator fun <E : kotlin.Any> get(\n"
-      "  extension: com.google.protobuf.ExtensionLite<$message$, List<E>>\n"
+      "  extension: com.google.protobuf.ExtensionLite<$message$, "
+      "kotlin.collections.List<E>>\n"
       "): com.google.protobuf.kotlin.ExtensionList<E, $message$> {\n"
       "  return com.google.protobuf.kotlin.ExtensionList(extension, "
       "_builder.getExtension(extension))\n"
@@ -936,8 +942,7 @@ void ImmutableMessageLiteGenerator::GenerateKotlinExtensions(
 
   printer->Print(
       "@kotlin.jvm.JvmSynthetic\n"
-      "@kotlin.PublishedApi\n"
-      "internal fun <T : kotlin.Any> setExtension(extension: "
+      "public fun <T : kotlin.Any> setExtension(extension: "
       "com.google.protobuf.ExtensionLite<$message$, T>, "
       "value: T) {\n"
       "  _builder.setExtension(extension, value)\n"

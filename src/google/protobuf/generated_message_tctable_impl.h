@@ -149,7 +149,6 @@ enum FieldRep : uint16_t {
   kRepMessage  = 0,               // MessageLite*
   kRepGroup    = 1 << kRepShift,  // MessageLite* (WT=3,4)
   kRepLazy     = 2 << kRepShift,  // LazyField*
-  kRepIWeak    = 3 << kRepShift,  // ImplicitWeak
 };
 
 // Transform/validation (2 bits):
@@ -168,8 +167,9 @@ enum TransformValidation : uint16_t {
   kTvUtf8      = 2 << kTvShift,  // proto3
 
   // Message fields:
-  kTvDefault   = 1 << kTvShift,  // Aux has default_instance
+  kTvDefault   = 1 << kTvShift,  // Aux has default_instance*
   kTvTable     = 2 << kTvShift,  // Aux has TcParseTableBase*
+  kTvWeakPtr   = 3 << kTvShift,  // Aux has default_instance** (for weak)
 };
 
 static_assert((kTvEnum & kTvRange) != 0,
@@ -259,16 +259,12 @@ enum FieldType : uint16_t {
 }  // namespace field_layout
 
 #ifndef NDEBUG
-template <size_t align>
-void AlignFail(uintptr_t address) {
-  GOOGLE_LOG(FATAL) << "Unaligned (" << align << ") access at " << address;
-
-  // Explicit abort to let compilers know this function does not return
-  abort();
-}
-
-extern template void AlignFail<4>(uintptr_t);
-extern template void AlignFail<8>(uintptr_t);
+PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 4>,
+                               std::uintptr_t address);
+PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 8>,
+                               std::uintptr_t address);
+inline void AlignFail(std::integral_constant<size_t, 1>,
+                      std::uintptr_t address) {}
 #endif
 
 // TcParser implements most of the parsing logic for tailcall tables.
@@ -277,6 +273,27 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename T>
   static constexpr const TcParseTableBase* GetTable() {
     return &T::_table_.header;
+  }
+
+  // == ABI of the tail call functions ==
+  // All the tail call functions have the same signature as required by clang's
+  // `musttail` attribute. However, their ABIs are different.
+  // See TcFieldData's comments for details on the layouts.
+  // The ABIs are as follow:
+  //
+  //  - The following functions ignore `data`:
+  //      ToTagDispatch, TagDispatch, MiniParse, ToParseLoop, Error,
+  //      FastUnknownEnumFallback.
+  //  - FastXXX functions expect `data` with a fast table entry ABI.
+  //  - FastEndGX functions expect `data` with a non-field entry ABI.
+  //  - MpXXX functions expect `data` with a mini table ABI.
+  //  - The fallback functions (both GenericFallbackXXX and the codegen ones)
+  //    expect only the tag in `data`. In addition, if a null `ptr` is passed,
+  //    the function is used as a way to get a UnknownFieldOps vtable, returned
+  //    via the `const char*` return type. See `GetUnknownFieldOps()`
+
+  static bool MustFallbackToGeneric(PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+    return ptr == nullptr;
   }
 
   static const char* GenericFallback(PROTOBUF_TC_PARAM_DECL);
@@ -342,55 +359,53 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* FastZ64P1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastZ64P2(PROTOBUF_TC_PARAM_DECL);
 
-  // Manually unrolled and specialized Varint parsing.
-  template <typename FieldType, int data_offset, int hasbit_idx>
-  static const char* SpecializedUnrolledVImpl1(PROTOBUF_TC_PARAM_DECL);
-  template <int data_offset, int hasbit_idx>
-  static const char* SpecializedFastV8S1(PROTOBUF_TC_PARAM_DECL);
-
-  template <typename FieldType, int data_offset, int hasbit_idx>
+  template <typename FieldType, int unused_data_offset, int unused_hasbit_idx>
   static constexpr TailCallParseFunc SingularVarintNoZag1() {
-    if (data_offset < 100) {
-      if (sizeof(FieldType) == 1) {
-        return &SpecializedFastV8S1<data_offset, hasbit_idx>;
-      }
-      return &SpecializedUnrolledVImpl1<FieldType, data_offset, hasbit_idx>;
-    } else if (sizeof(FieldType) == 1) {
+    if (sizeof(FieldType) == 1) {
       return &FastV8S1;
-    } else if (sizeof(FieldType) == 4) {
-      return &FastV32S1;
-    } else if (sizeof(FieldType) == 8) {
-      return &FastV64S1;
-    } else {
-      static_assert(sizeof(FieldType) == 1 || sizeof(FieldType) == 4 ||
-                        sizeof(FieldType) == 8,
-                    "");
-      return nullptr;
     }
+    if (sizeof(FieldType) == 4) {
+      return &FastV32S1;
+    }
+    if (sizeof(FieldType) == 8) {
+      return &FastV64S1;
+    }
+    static_assert(sizeof(FieldType) == 1 || sizeof(FieldType) == 4 ||
+                      sizeof(FieldType) == 8,
+                  "");
+    ABSL_LOG(FATAL) << "This should be unreachable";
   }
 
   // Functions referenced by generated fast tables (closed enum):
   //   E: closed enum (N.B.: open enums use V32, above)
   //   r: enum range  v: enum validator (_IsValid function)
-  //   S: singular   R: repeated
+  //   S: singular   R: repeated   P: packed
   //   1/2: tag length (bytes)
   static const char* FastErS1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastErS2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastErR1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastErR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastErP1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastErP2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEvS1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEvS2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEvR1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEvR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEvP1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEvP2(PROTOBUF_TC_PARAM_DECL);
 
   static const char* FastEr0S1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEr0S2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEr0R1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEr0R2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEr0P1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEr0P2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEr1S1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEr1S2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEr1R1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEr1R2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEr1P1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEr1P2(PROTOBUF_TC_PARAM_DECL);
 
   // Functions referenced by generated fast tables (string types):
   //   B: bytes      S: string     U: UTF-8 string
@@ -416,6 +431,13 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* FastSiS2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastUiS1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastUiS2(PROTOBUF_TC_PARAM_DECL);
+
+  static const char* FastBcS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastBcS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastScS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastScS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUcS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUcS2(PROTOBUF_TC_PARAM_DECL);
 
   // Functions referenced by generated fast tables (message types):
   //   M: message    G: group
@@ -446,7 +468,10 @@ class PROTOBUF_EXPORT TcParser final {
 #ifndef NDEBUG
     if (PROTOBUF_PREDICT_FALSE(
             reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
-      AlignFail<alignof(T)>(reinterpret_cast<uintptr_t>(target));
+      AlignFail(std::integral_constant<size_t, alignof(T)>(),
+                reinterpret_cast<uintptr_t>(target));
+      // Explicit abort to let compilers know this code-path does not return
+      abort();
     }
 #endif
     return *target;
@@ -459,7 +484,10 @@ class PROTOBUF_EXPORT TcParser final {
 #ifndef NDEBUG
     if (PROTOBUF_PREDICT_FALSE(
             reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
-      AlignFail<alignof(T)>(reinterpret_cast<uintptr_t>(target));
+      AlignFail(std::integral_constant<size_t, alignof(T)>(),
+                reinterpret_cast<uintptr_t>(target));
+      // Explicit abort to let compilers know this code-path does not return
+      abort();
     }
 #endif
     return *target;
@@ -481,16 +509,31 @@ class PROTOBUF_EXPORT TcParser final {
   // NOTE: Currently, this function only calls the table-level fallback
   // function, so it should only be called as the fallback from fast table
   // parsing.
-  static const char* MiniParse(PROTOBUF_TC_PARAM_DECL);
+  static const char* MiniParse(PROTOBUF_TC_PARAM_NO_DATA_DECL);
 
   static const char* FastEndG1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEndG2(PROTOBUF_TC_PARAM_DECL);
 
  private:
+  // Optimized small tag varint parser for int32/int64
+  template <typename FieldType>
+  static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);
+
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
-                                 const TcParseTableBase* table,
-                                 google::protobuf::internal::ParseContext* ctx);
+                                 const TcParseTableBase* table);
+
+  // Test only access to verify that the right function is being called via
+  // MiniParse.
+  struct TestMiniParseResult {
+    TailCallParseFunc called_func;
+    uint32_t tag;
+    const TcParseTableBase::FieldEntry* found_entry;
+    const char* ptr;
+  };
+  static TestMiniParseResult TestMiniParse(PROTOBUF_TC_PARAM_DECL);
+  template <bool export_called_function>
+  static const char* MiniParse(PROTOBUF_TC_PARAM_DECL);
 
   template <typename TagType, bool group_coding, bool aux_is_table>
   static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
@@ -510,39 +553,70 @@ class PROTOBUF_EXPORT TcParser final {
     }
   }
 
-  static const char* TagDispatch(PROTOBUF_TC_PARAM_DECL);
-  static const char* ToTagDispatch(PROTOBUF_TC_PARAM_DECL);
-  static const char* ToParseLoop(PROTOBUF_TC_PARAM_DECL);
-  static const char* Error(PROTOBUF_TC_PARAM_DECL);
+  static const char* TagDispatch(PROTOBUF_TC_PARAM_NO_DATA_DECL);
+  static const char* ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_DECL);
+  static const char* ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_DECL);
+  static const char* Error(PROTOBUF_TC_PARAM_NO_DATA_DECL);
 
   static const char* FastUnknownEnumFallback(PROTOBUF_TC_PARAM_DECL);
 
   class ScopedArenaSwap;
 
+  struct UnknownFieldOps {
+    void (*write_varint)(MessageLite* msg, int number, int value);
+    void (*write_length_delimited)(MessageLite* msg, int number,
+                                   absl::string_view value);
+  };
+
+  static const UnknownFieldOps& GetUnknownFieldOps(
+      const TcParseTableBase* table);
+
+  template <typename UnknownFieldsT>
+  static void WriteVarintToUnknown(MessageLite* msg, int number, int value) {
+    internal::WriteVarint(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
+  }
+  template <typename UnknownFieldsT>
+  static void WriteLengthDelimitedToUnknown(MessageLite* msg, int number,
+                                            absl::string_view value) {
+    internal::WriteLengthDelimited(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
+  }
+
   template <class MessageBaseT, class UnknownFieldsT>
   static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
-#define CHK_(x) \
-  if (PROTOBUF_PREDICT_FALSE(!(x))) return nullptr /* NOLINT */
+    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+      // This is the ABI used by GetUnknownFieldOps(). Return the vtable.
+      static constexpr UnknownFieldOps kOps = {
+          WriteVarintToUnknown<UnknownFieldsT>,
+          WriteLengthDelimitedToUnknown<UnknownFieldsT>};
+      return reinterpret_cast<const char*>(&kOps);
+    }
 
     SyncHasbits(msg, hasbits, table);
-    CHK_(ptr);
     uint32_t tag = data.tag();
     if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
       ctx->SetLastTag(tag);
       return ptr;
     }
-    uint32_t num = tag >> 3;
-    if (table->extension_range_low <= num &&
-        num <= table->extension_range_high) {
+
+    if (table->extension_offset != 0) {
+      // We don't need to check the extension ranges. If it is not an extension
+      // it will be handled just like if it was an unknown extension: sent to
+      // the unknown field set.
       return RefAt<ExtensionSet>(msg, table->extension_offset)
           .ParseField(tag, ptr,
                       static_cast<const MessageBaseT*>(table->default_instance),
                       &msg->_internal_metadata_, ctx);
+    } else {
+      // Otherwise, we directly put it on the unknown field set.
+      return UnknownFieldParse(
+          tag,
+          msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(),
+          ptr, ctx);
     }
-    return UnknownFieldParse(
-        tag, msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(),
-        ptr, ctx);
-#undef CHK_
   }
 
   // Note: `inline` is needed on template function declarations below to avoid
@@ -575,19 +649,26 @@ class PROTOBUF_EXPORT TcParser final {
   static inline const char* SingularEnumSmallRange(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, uint16_t xform_val>
   static inline const char* RepeatedEnum(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType, uint16_t xform_val>
+  static inline const char* PackedEnum(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, uint8_t min>
   static inline const char* RepeatedEnumSmallRange(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType, uint8_t min>
+  static inline const char* PackedEnumSmallRange(PROTOBUF_TC_PARAM_DECL);
 
   // Implementations for fast string field parsing functions:
   enum Utf8Type { kNoUtf8 = 0, kUtf8 = 1, kUtf8ValidateOnly = 2 };
-  template <typename TagType, Utf8Type utf8>
+  template <typename TagType, typename FieldType, Utf8Type utf8>
   static inline const char* SingularString(PROTOBUF_TC_PARAM_DECL);
-  template <typename TagType, Utf8Type utf8>
+  template <typename TagType, typename FieldType, Utf8Type utf8>
   static inline const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
 
   static inline const char* ParseRepeatedStringOnce(
       const char* ptr, Arena* arena, SerialArena* serial_arena,
       ParseContext* ctx, RepeatedPtrField<std::string>& field);
+
+  static void UnknownPackedEnum(MessageLite* msg, const TcParseTableBase* table,
+                                uint32_t tag, int32_t enum_value);
 
   // Mini field lookup:
   static const TcParseTableBase::FieldEntry* FindFieldEntry(
@@ -610,6 +691,8 @@ class PROTOBUF_EXPORT TcParser final {
 
   // For FindFieldEntry tests:
   friend class FindFieldEntryTest;
+  friend struct ParseFunctionGeneratorTestPeer;
+  friend struct FuzzPeer;
   static constexpr const uint32_t kMtSmallScanSize = 4;
 
   // Mini parsing:
@@ -627,152 +710,17 @@ class PROTOBUF_EXPORT TcParser final {
   template <bool is_split>
   static const char* MpMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL);
-  static const char* MpMap(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);
 };
-
-// Notes:
-// 1) if data_offset is negative, it's read from data.offset()
-// 2) if hasbit_idx is negative, it's read from data.hasbit_idx()
-template <int data_offset, int hasbit_idx>
-const char* TcParser::SpecializedFastV8S1(PROTOBUF_TC_PARAM_DECL) {
-  using TagType = uint8_t;
-
-  // Special case for a varint bool field with a tag of 1 byte:
-  // The coded_tag() field will actually contain the value too and we can check
-  // both at the same time.
-  auto coded_tag = data.coded_tag<uint16_t>();
-  if (PROTOBUF_PREDICT_TRUE(coded_tag == 0x0000 || coded_tag == 0x0100)) {
-    auto& field =
-        RefAt<bool>(msg, data_offset >= 0 ? data_offset : data.offset());
-    // Note: we use `data.data` because Clang generates suboptimal code when
-    // using coded_tag.
-    // In x86_64 this uses the CH register to read the second byte out of
-    // `data`.
-    uint8_t value = data.data >> 8;
-    // The assume allows using a mov instead of test+setne.
-    PROTOBUF_ASSUME(value <= 1);
-    field = static_cast<bool>(value);
-
-    ptr += sizeof(TagType) + 1;  // Consume the tag and the value.
-    if (hasbit_idx < 0) {
-      hasbits |= (uint64_t{1} << data.hasbit_idx());
-    } else {
-      if (hasbit_idx < 32) {
-        hasbits |= (uint64_t{1} << hasbit_idx);
-      } else {
-        static_assert(hasbit_idx == 63 || (hasbit_idx < 32),
-                      "hard-coded hasbit_idx should be 0-31, or the special"
-                      "value 63, which indicates the field has no has-bit.");
-        // TODO(jorg): investigate whether higher hasbit indices are worth
-        // supporting. Something like:
-        // auto& hasblock = TcParser::RefAt<uint32_t>(msg, hasbit_idx / 32 * 4);
-        // hasblock |= uint32_t{1} << (hasbit_idx % 32);
-      }
-    }
-
-    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-  }
-
-  // If it didn't match above either the tag is wrong, or the value is encoded
-  // non-canonically.
-  // Jump to MiniParse as wrong tag is the most probable reason.
-  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
-}
-
-template <typename FieldType, int data_offset, int hasbit_idx>
-const char* TcParser::SpecializedUnrolledVImpl1(PROTOBUF_TC_PARAM_DECL) {
-  using TagType = uint8_t;
-  // super-early success test...
-  if (PROTOBUF_PREDICT_TRUE(((data.data) & 0x80FF) == 0)) {
-    ptr += sizeof(TagType);  // Consume tag
-    if (hasbit_idx < 32) {
-      hasbits |= (uint64_t{1} << hasbit_idx);
-    }
-    uint8_t value = data.data >> 8;
-    RefAt<FieldType>(msg, data_offset) = value;
-    ptr += 1;
-    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-  }
-  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
-    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
-  }
-  ptr += sizeof(TagType);  // Consume tag
-  if (hasbit_idx < 32) {
-    hasbits |= (uint64_t{1} << hasbit_idx);
-  }
-
-  // Few registers
-  auto* out = &RefAt<FieldType>(msg, data_offset);
-  uint64_t res = 0xFF & (data.data >> 8);
-  /* if (PROTOBUF_PREDICT_FALSE(res & 0x80)) */ {
-    res = RotRight7AndReplaceLowByte(res, ptr[1]);
-    if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
-      res = RotRight7AndReplaceLowByte(res, ptr[2]);
-      if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
-        res = RotRight7AndReplaceLowByte(res, ptr[3]);
-        if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
-          res = RotRight7AndReplaceLowByte(res, ptr[4]);
-          if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
-            res = RotRight7AndReplaceLowByte(res, ptr[5]);
-            if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
-              res = RotRight7AndReplaceLowByte(res, ptr[6]);
-              if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
-                res = RotRight7AndReplaceLowByte(res, ptr[7]);
-                if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
-                  res = RotRight7AndReplaceLowByte(res, ptr[8]);
-                  if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
-                    if (ptr[9] & 0xFE) return nullptr;
-                    res = RotateLeft(res, -7) & ~1;
-                    res += ptr[9] & 1;
-                    *out = RotateLeft(res, 63);
-                    ptr += 10;
-                    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-                  }
-                  *out = RotateLeft(res, 56);
-                  ptr += 9;
-                  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-                }
-                *out = RotateLeft(res, 49);
-                ptr += 8;
-                PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-              }
-              *out = RotateLeft(res, 42);
-              ptr += 7;
-              PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-            }
-            *out = RotateLeft(res, 35);
-            ptr += 6;
-            PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-          }
-          *out = RotateLeft(res, 28);
-          ptr += 5;
-          PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-        }
-        *out = RotateLeft(res, 21);
-        ptr += 4;
-        PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-      }
-      *out = RotateLeft(res, 14);
-      ptr += 3;
-      PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-    }
-    *out = RotateLeft(res, 7);
-    ptr += 2;
-    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-  }
-  *out = res;
-  ptr += 1;
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
-}
 
 // Dispatch to the designated parse function
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
-    PROTOBUF_TC_PARAM_DECL) {
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
   const size_t idx = coded_tag & table->fast_idx_mask;
   PROTOBUF_ASSUME((idx & 7) == 0);
   auto* fast_entry = table->fast_entry(idx >> 3);
-  data = fast_entry->bits;
+  TcFieldData data = fast_entry->bits;
   data.data ^= coded_tag;
   PROTOBUF_MUSTTAIL return fast_entry->target()(PROTOBUF_TC_PARAM_PASS);
 }
@@ -783,25 +731,23 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
 // mode. Luckily the structure of the algorithm is such that it's always
 // possible to just return and use the enclosing parse loop as a trampoline.
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToTagDispatch(
-    PROTOBUF_TC_PARAM_DECL) {
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   constexpr bool always_return = !PROTOBUF_TAILCALL;
   if (always_return || !ctx->DataAvailable(ptr)) {
-    PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
+    PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-  PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
-    PROTOBUF_TC_PARAM_DECL) {
-  (void)data;
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   (void)ctx;
   SyncHasbits(msg, hasbits, table);
   return ptr;
 }
 
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::Error(
-    PROTOBUF_TC_PARAM_DECL) {
-  (void)data;
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   (void)ctx;
   (void)ptr;
   SyncHasbits(msg, hasbits, table);

@@ -41,8 +41,6 @@
 //
 // This header covers RepeatedPtrField.
 
-// IWYU pragma: private, include "net/proto2/public/repeated_field.h"
-
 #ifndef GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__
 #define GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__
 
@@ -59,10 +57,9 @@
 #include <string>
 #include <type_traits>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 
@@ -189,22 +186,22 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   const typename TypeHandler::Type& at(int index) const {
-    GOOGLE_CHECK_GE(index, 0);
-    GOOGLE_CHECK_LT(index, current_size_);
+    ABSL_CHECK_GE(index, 0);
+    ABSL_CHECK_LT(index, current_size_);
     return *cast<TypeHandler>(rep_->elements[index]);
   }
 
   template <typename TypeHandler>
   typename TypeHandler::Type& at(int index) {
-    GOOGLE_CHECK_GE(index, 0);
-    GOOGLE_CHECK_LT(index, current_size_);
+    ABSL_CHECK_GE(index, 0);
+    ABSL_CHECK_LT(index, current_size_);
     return *cast<TypeHandler>(rep_->elements[index]);
   }
 
   template <typename TypeHandler>
   typename TypeHandler::Type* Mutable(int index) {
-    GOOGLE_DCHECK_GE(index, 0);
-    GOOGLE_DCHECK_LT(index, current_size_);
+    ABSL_DCHECK_GE(index, 0);
+    ABSL_DCHECK_LT(index, current_size_);
     return cast<TypeHandler>(rep_->elements[index]);
   }
 
@@ -242,8 +239,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void Delete(int index) {
-    GOOGLE_DCHECK_GE(index, 0);
-    GOOGLE_DCHECK_LT(index, current_size_);
+    ABSL_DCHECK_GE(index, 0);
+    ABSL_DCHECK_LT(index, current_size_);
     TypeHandler::Delete(cast<TypeHandler>(rep_->elements[index]), arena_);
   }
 
@@ -272,8 +269,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   const typename TypeHandler::Type& Get(int index) const {
-    GOOGLE_DCHECK_GE(index, 0);
-    GOOGLE_DCHECK_LT(index, current_size_);
+    ABSL_DCHECK_GE(index, 0);
+    ABSL_DCHECK_LT(index, current_size_);
     return *cast<TypeHandler>(rep_->elements[index]);
   }
 
@@ -286,7 +283,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   void Clear() {
     const int n = current_size_;
-    GOOGLE_DCHECK_GE(n, 0);
+    ABSL_DCHECK_GE(n, 0);
     if (n > 0) {
       ClearNonEmpty<TypeHandler>();
     }
@@ -300,14 +297,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // binary. This calls a shared implementation with most of the logic,
     // passing a function pointer to another type-specific piece of code that
     // calls the object-allocate and merge handlers.
-    GOOGLE_DCHECK_NE(&other, this);
+    ABSL_DCHECK_NE(&other, this);
     if (other.current_size_ == 0) return;
     MergeFromInternal(other,
                       &RepeatedPtrFieldBase::MergeFromInnerLoop<TypeHandler>);
   }
 
   inline void InternalSwap(RepeatedPtrFieldBase* rhs) {
-    GOOGLE_DCHECK(this != rhs);
+    ABSL_DCHECK(this != rhs);
 
     // Swap all fields at once.
     auto temp = std::make_tuple(rhs->arena_, rhs->current_size_,
@@ -348,7 +345,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
  protected:
   template <typename TypeHandler>
   void RemoveLast() {
-    GOOGLE_DCHECK_GT(current_size_, 0);
+    ABSL_DCHECK_GT(current_size_, 0);
     ExchangeCurrentSize(current_size_ - 1);
     TypeHandler::Clear(cast<TypeHandler>(rep_->elements[current_size_]));
   }
@@ -483,7 +480,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // arena.
   template <typename TypeHandler>
   typename TypeHandler::Type* UnsafeArenaReleaseLast() {
-    GOOGLE_DCHECK_GT(current_size_, 0);
+    ABSL_DCHECK_GT(current_size_, 0);
     ExchangeCurrentSize(current_size_ - 1);
     typename TypeHandler::Type* result =
         cast<TypeHandler>(rep_->elements[current_size_]);
@@ -502,9 +499,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void AddCleared(typename TypeHandler::Type* value) {
-    GOOGLE_DCHECK(GetOwningArena() == nullptr) << "AddCleared() can only be used on a "
-                                           "RepeatedPtrField not on an arena.";
-    GOOGLE_DCHECK(TypeHandler::GetOwningArena(value) == nullptr)
+    ABSL_DCHECK(GetOwningArena() == nullptr)
+        << "AddCleared() can only be used on a "
+           "RepeatedPtrField not on an arena.";
+    ABSL_DCHECK(TypeHandler::GetOwningArena(value) == nullptr)
         << "AddCleared() can only accept values not on an arena.";
     if (!rep_ || rep_->allocated_size == total_size_) {
       Reserve(total_size_ + 1);
@@ -514,12 +512,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   PROTOBUF_NODISCARD typename TypeHandler::Type* ReleaseCleared() {
-    GOOGLE_DCHECK(GetOwningArena() == nullptr)
+    ABSL_DCHECK(GetOwningArena() == nullptr)
         << "ReleaseCleared() can only be used on a RepeatedPtrField not on "
         << "an arena.";
-    GOOGLE_DCHECK(GetOwningArena() == nullptr);
-    GOOGLE_DCHECK(rep_ != nullptr);
-    GOOGLE_DCHECK_GT(rep_->allocated_size, current_size_);
+    ABSL_DCHECK(rep_ != nullptr);
+    ABSL_DCHECK_GT(rep_->allocated_size, current_size_);
     return cast<TypeHandler>(rep_->elements[--rep_->allocated_size]);
   }
 
@@ -611,10 +608,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   typename TypeHandler::Type* ReleaseLastInternal(std::false_type) {
     // ReleaseLast() for types that *do not* implement merge/copy behavior --
-    // this is the same as UnsafeArenaReleaseLast(). Note that we GOOGLE_DCHECK-fail if
-    // we're on an arena, since the user really should implement the copy
-    // operation in this case.
-    GOOGLE_DCHECK(GetOwningArena() == nullptr)
+    // this is the same as UnsafeArenaReleaseLast(). Note that we
+    // ABSL_DCHECK-fail if we're on an arena, since the user really should
+    // implement the copy operation in this case.
+    ABSL_DCHECK(GetOwningArena() == nullptr)
         << "ReleaseLast() called on a RepeatedPtrField that is on an arena, "
         << "with a type that does not implement MergeFrom. This is unsafe; "
         << "please implement MergeFrom for your type.";
@@ -624,10 +621,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   PROTOBUF_NOINLINE void SwapFallback(RepeatedPtrFieldBase* other) {
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    GOOGLE_DCHECK(GetOwningArena() == nullptr ||
-           other->GetOwningArena() != GetOwningArena());
+    ABSL_DCHECK(GetOwningArena() == nullptr ||
+                other->GetOwningArena() != GetOwningArena());
 #else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    GOOGLE_DCHECK(other->GetOwningArena() != GetOwningArena());
+    ABSL_DCHECK(other->GetOwningArena() != GetOwningArena());
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
 
     // Copy semantics in this case. We try to improve efficiency by placing the
@@ -642,15 +639,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   // Gets the Arena on which this RepeatedPtrField stores its elements.
-  // Message-owned arenas are not exposed by this method, which will return
-  // nullptr for messages owned by MOAs.
-  inline Arena* GetArena() const {
-    Arena* arena = GetOwningArena();
-    if (arena == nullptr || arena->InternalIsMessageOwnedArena()) {
-      return nullptr;
-    }
-    return arena;
-  }
+  inline Arena* GetArena() const { return GetOwningArena(); }
 
  protected:
   inline Arena* GetOwningArena() const { return arena_; }
@@ -709,8 +698,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     const int n = current_size_;
     void* const* elements = rep_->elements;
     int i = 0;
-    GOOGLE_DCHECK_GT(n,
-              0);  // do/while loop to avoid initial test because we know n > 0
+    ABSL_DCHECK_GT(
+        n,
+        0);  // do/while loop to avoid initial test because we know n > 0
     do {
       TypeHandler::Clear(cast<TypeHandler>(elements[i++]));
     } while (i < n);
@@ -913,6 +903,21 @@ class StringTypeHandler {
 // Messages.
 template <typename Element>
 class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
+  static_assert(!std::is_const<Element>::value,
+                "We do not support const value types.");
+  static_assert(!std::is_volatile<Element>::value,
+                "We do not support volatile value types.");
+  static_assert(!std::is_pointer<Element>::value,
+                "We do not support pointer value types.");
+  static_assert(!std::is_reference<Element>::value,
+                "We do not support reference value types.");
+  static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
+    static_assert(
+        absl::disjunction<
+            internal::is_supported_string_type<Element>,
+            internal::is_supported_message_type<Element>>::value,
+        "We only support string and Message types in RepeatedPtrField.");
+  }
 
  public:
   constexpr RepeatedPtrField();
@@ -998,10 +1003,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
-  //
-  // This API is deprecated. Instead of directly working with element array,
-  // use APIs in repeated_field_util.h; e.g. sorting, etc.
-  PROTOBUF_DEPRECATED_MSG("Use APIs in repeated_field_util.h")
   Element** mutable_data();
   const Element* const* data() const;
 
@@ -1012,7 +1013,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // Swaps entire contents with "other". Caller should guarantee that either
   // both fields are on the same arena or both are on the heap. Swapping between
   // different arenas with this function is disallowed and is caught via
-  // GOOGLE_DCHECK.
+  // ABSL_DCHECK.
   void UnsafeArenaSwap(RepeatedPtrField* other);
 
   // Swaps two elements.
@@ -1146,22 +1147,27 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   // Gets the number of cleared objects that are currently being kept
   // around for reuse.
+  ABSL_DEPRECATED("This will be removed in a future release")
   int ClearedCount() const;
+
 #ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
   // Adds an element to the pool of cleared objects, passing ownership to
   // the RepeatedPtrField.  The element must be cleared prior to calling
   // this method.
   //
   // This method cannot be called when either the repeated field or |value| is
-  // on an arena; both cases will trigger a GOOGLE_DCHECK-failure.
+  // on an arena; both cases will trigger a ABSL_DCHECK-failure.
+  ABSL_DEPRECATED("This will be removed in a future release")
   void AddCleared(Element* value);
   // Removes and returns a single element from the cleared pool, passing
   // ownership to the caller.  The element is guaranteed to be cleared.
   // Requires:  ClearedCount() > 0
   //
   // This method cannot be called when the repeated field is on an arena; doing
-  // so will trigger a GOOGLE_DCHECK-failure.
-  PROTOBUF_NODISCARD Element* ReleaseCleared();
+  // so will trigger a ABSL_DCHECK-failure.
+  PROTOBUF_NODISCARD
+  ABSL_DEPRECATED("This will be removed in a future release")
+  Element* ReleaseCleared();
 #endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
 
   // Removes the element referenced by position.
@@ -1180,6 +1186,9 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   iterator erase(const_iterator first, const_iterator last);
 
   // Gets the arena on which this RepeatedPtrField stores its elements.
+  inline Arena* GetArena();
+
+  ABSL_DEPRECATED("This will be removed in a future release")
   inline Arena* GetArena() const;
 
   // For internal use only.
@@ -1231,27 +1240,34 @@ class RepeatedPtrField<std::string>::TypeHandler
 
 template <typename Element>
 constexpr RepeatedPtrField<Element>::RepeatedPtrField()
-    : RepeatedPtrFieldBase() {}
+    : RepeatedPtrFieldBase() {
+  StaticValidityCheck();
+}
 
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena)
-    : RepeatedPtrFieldBase(arena) {}
+    : RepeatedPtrFieldBase(arena) {
+  StaticValidityCheck();
+}
 
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
     const RepeatedPtrField& other)
     : RepeatedPtrFieldBase() {
+  StaticValidityCheck();
   MergeFrom(other);
 }
 
 template <typename Element>
 template <typename Iter, typename>
 inline RepeatedPtrField<Element>::RepeatedPtrField(Iter begin, Iter end) {
+  StaticValidityCheck();
   Add(begin, end);
 }
 
 template <typename Element>
 RepeatedPtrField<Element>::~RepeatedPtrField() {
+  StaticValidityCheck();
 #ifdef __cpp_if_constexpr
   if constexpr (std::is_base_of<MessageLite, Element>::value) {
 #else
@@ -1374,9 +1390,9 @@ inline void RepeatedPtrField<Element>::RemoveLast() {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
-  GOOGLE_DCHECK_GE(start, 0);
-  GOOGLE_DCHECK_GE(num, 0);
-  GOOGLE_DCHECK_LE(start + num, size());
+  ABSL_DCHECK_GE(start, 0);
+  ABSL_DCHECK_GE(num, 0);
+  ABSL_DCHECK_LE(start + num, size());
   for (int i = 0; i < num; ++i) {
     RepeatedPtrFieldBase::Delete<TypeHandler>(start + i);
   }
@@ -1396,13 +1412,13 @@ inline void RepeatedPtrField<Element>::ExtractSubrange(int start, int num,
 template <typename Element>
 inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
     int start, int num, Element** elements, std::true_type) {
-  GOOGLE_DCHECK_GE(start, 0);
-  GOOGLE_DCHECK_GE(num, 0);
-  GOOGLE_DCHECK_LE(start + num, size());
+  ABSL_DCHECK_GE(start, 0);
+  ABSL_DCHECK_GE(num, 0);
+  ABSL_DCHECK_LE(start + num, size());
 
   if (num == 0) return;
 
-  GOOGLE_DCHECK_NE(elements, nullptr)
+  ABSL_DCHECK_NE(elements, nullptr)
       << "Releasing elements without transferring ownership is an unsafe "
          "operation.  Use UnsafeArenaExtractSubrange.";
   if (elements == nullptr) {
@@ -1446,9 +1462,9 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
     int start, int num, Element** elements, std::false_type) {
   // This case is identical to UnsafeArenaExtractSubrange(). However, since
   // ExtractSubrange() must return heap-allocated objects by contract, and we
-  // cannot fulfill this contract if we are an on arena, we must GOOGLE_DCHECK() that
-  // we are not on an arena.
-  GOOGLE_DCHECK(GetOwningArena() == nullptr)
+  // cannot fulfill this contract if we are an on arena, we must ABSL_DCHECK()
+  // that we are not on an arena.
+  ABSL_DCHECK(GetOwningArena() == nullptr)
       << "ExtractSubrange() when arena is non-nullptr is only supported when "
       << "the Element type supplies a MergeFrom() operation to make copies.";
   UnsafeArenaExtractSubrange(start, num, elements);
@@ -1457,9 +1473,9 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
 template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaExtractSubrange(
     int start, int num, Element** elements) {
-  GOOGLE_DCHECK_GE(start, 0);
-  GOOGLE_DCHECK_GE(num, 0);
-  GOOGLE_DCHECK_LE(start + num, size());
+  ABSL_DCHECK_GE(start, 0);
+  ABSL_DCHECK_GE(num, 0);
+  ABSL_DCHECK_LE(start + num, size());
 
   if (num > 0) {
     // Save the values of the removed elements if requested.
@@ -1535,13 +1551,18 @@ template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaSwap(
     RepeatedPtrField* other) {
   if (this == other) return;
-  GOOGLE_DCHECK_EQ(GetOwningArena(), other->GetOwningArena());
+  ABSL_DCHECK_EQ(GetOwningArena(), other->GetOwningArena());
   RepeatedPtrFieldBase::InternalSwap(other);
 }
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::SwapElements(int index1, int index2) {
   RepeatedPtrFieldBase::SwapElements(index1, index2);
+}
+
+template <typename Element>
+inline Arena* RepeatedPtrField<Element>::GetArena() {
+  return RepeatedPtrFieldBase::GetArena();
 }
 
 template <typename Element>
@@ -2037,9 +2058,6 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
   return internal::UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator<T>(
       mutable_field);
 }
-
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
-    RepeatedPtrField<std::string>;
 
 }  // namespace protobuf
 }  // namespace google

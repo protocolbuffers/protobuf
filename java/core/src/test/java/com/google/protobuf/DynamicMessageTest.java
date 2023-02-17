@@ -44,6 +44,7 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
+import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
@@ -228,6 +229,19 @@ public class DynamicMessageTest {
 
     // In fact, the serialized forms should be exactly the same, byte-for-byte.
     assertThat(rawBytes).isEqualTo(TestUtil.getPackedSet().toByteString());
+  }
+
+  @Test
+  public void testDynamicMessagePackedEmptySerialization() throws Exception {
+    Message message =
+        DynamicMessage.newBuilder(TestPackedTypes.getDescriptor())
+            .setField(
+                TestPackedTypes.getDescriptor()
+                    .findFieldByNumber(TestPackedTypes.PACKED_INT64_FIELD_NUMBER),
+                new ArrayList<Long>())
+            .build();
+
+    assertThat(message.toByteString()).isEqualTo(ByteString.EMPTY);
   }
 
   @Test

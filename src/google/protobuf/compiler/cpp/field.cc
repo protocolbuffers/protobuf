@@ -37,271 +37,84 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "absl/strings/str_cat.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/substitute.h"
+#include "absl/types/optional.h"
+#include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/compiler/cpp/primitive_field.h"
-#include "google/protobuf/compiler/cpp/string_field.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/compiler/cpp/tracker.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
-#include "google/protobuf/compiler/cpp/enum_field.h"
-#include "google/protobuf/compiler/cpp/map_field.h"
-#include "google/protobuf/compiler/cpp/message_field.h"
-#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+using ::google::protobuf::internal::WireFormat;
+using Sub = ::google::protobuf::io::Printer::Sub;
 
-using internal::WireFormat;
+std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
+  bool split = ShouldSplit(field, opts);
+  std::vector<Sub> vars = {
+      // This will eventually be renamed to "field", once the existing "field"
+      // variable is replaced with "field_" everywhere.
+      {"name", FieldName(field)},
 
-namespace {
+      {"index", field->index()},
+      {"number", field->number()},
+      {"pkg.Msg.field", field->full_name()},
 
-void MaySetAnnotationVariable(const Options& options,
-                              absl::string_view annotation_name,
-                              absl::string_view substitute_template_prefix,
-                              absl::string_view prepared_template,
-                              int field_index, absl::string_view access_type,
-                              std::map<std::string, std::string>* variables) {
-  if (options.field_listener_options.forbidden_field_listener_events.count(
-          std::string(annotation_name)))
-    return;
-  (*variables)[absl::StrCat("annotate_", annotation_name)] = absl::Substitute(
-      absl::StrCat(substitute_template_prefix, prepared_template, ");\n"),
-      field_index, access_type);
-}
+      {"field_", FieldMemberName(field, split)},
+      {"DeclaredType", DeclaredTypeMethodName(field->type())},
+      {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
+      Sub("PrepareSplitMessageForWrite",
+          split ? "PrepareSplitMessageForWrite();" : "")
+          .WithSuffix(";"),
+      Sub("DEPRECATED", DeprecatedAttribute(opts, field)).WithSuffix(" "),
 
-std::string GenerateTemplateForOneofString(const FieldDescriptor* descriptor,
-                                           absl::string_view proto_ns,
-                                           absl::string_view field_member) {
-  std::string field_name = google::protobuf::compiler::cpp::FieldName(descriptor);
-  std::string field_pointer =
-      descriptor->options().ctype() == google::protobuf::FieldOptions::STRING
-          ? "$0.UnsafeGetPointer()"
-          : "$0";
+      // These variables are placeholders to pick out the beginning and ends of
+      // identifiers for annotations (when doing so with existing variables
+      // would be ambiguous or impossible). They should never be set to anything
+      // but the empty string.
+      {"{", ""},
+      {"}", ""},
 
-  if (descriptor->default_value_string().empty()) {
-    return absl::Substitute(absl::StrCat("_internal_has_", field_name, "() ? ",
-                                         field_pointer, ": nullptr"),
-                            field_member);
-  }
-
-  if (descriptor->options().ctype() == google::protobuf::FieldOptions::STRING_PIECE) {
-    return absl::Substitute(absl::StrCat("_internal_has_", field_name, "() ? ",
-                                         field_pointer, ": nullptr"),
-                            field_member);
-  }
-
-  std::string default_value_pointer =
-      descriptor->options().ctype() == google::protobuf::FieldOptions::STRING
-          ? "&$1.get()"
-          : "&$1";
-  return absl::Substitute(
-      absl::StrCat("_internal_has_", field_name, "() ? ", field_pointer, " : ",
-                   default_value_pointer),
-      field_member, MakeDefaultFieldName(descriptor));
-}
-
-std::string GenerateTemplateForSingleString(const FieldDescriptor* descriptor,
-                                            absl::string_view field_member) {
-  if (descriptor->default_value_string().empty()) {
-    return absl::StrCat("&", field_member);
-  }
-
-  if (descriptor->options().ctype() == google::protobuf::FieldOptions::STRING) {
-    return absl::Substitute(
-        "$0.IsDefault() ? &$1.get() : $0.UnsafeGetPointer()", field_member,
-        MakeDefaultFieldName(descriptor));
-  }
-
-  return absl::StrCat("&", field_member);
-}
-
-}  // namespace
-
-void AddAccessorAnnotations(const FieldDescriptor* descriptor,
-                            const Options& options,
-                            std::map<std::string, std::string>* variables) {
-  // Can be expanded to include more specific calls, for example, for arena or
-  // clear calls.
-  static constexpr const char* kAccessorsAnnotations[] = {
-      "annotate_add",     "annotate_get",         "annotate_has",
-      "annotate_list",    "annotate_mutable",     "annotate_mutable_list",
-      "annotate_release", "annotate_set",         "annotate_size",
-      "annotate_clear",   "annotate_add_mutable",
+      // Old-style names.
+      {"field", FieldMemberName(field, split)},
+      {"maybe_prepare_split_message",
+       split ? "PrepareSplitMessageForWrite();" : ""},
+      {"declared_type", DeclaredTypeMethodName(field->type())},
+      {"classname", ClassName(FieldScope(field), false)},
+      {"ns", Namespace(field, opts)},
+      {"tag_size", WireFormat::TagSize(field->number(), field->type())},
+      {"deprecated_attr", DeprecatedAttribute(opts, field)},
   };
-  for (size_t i = 0; i < ABSL_ARRAYSIZE(kAccessorsAnnotations); ++i) {
-    (*variables)[kAccessorsAnnotations[i]] = "";
-  }
-  if (options.annotate_accessor) {
-    for (size_t i = 0; i < ABSL_ARRAYSIZE(kAccessorsAnnotations); ++i) {
-      (*variables)[kAccessorsAnnotations[i]] = absl::StrCat(
-          "  ", FieldName(descriptor), "_AccessedNoStrip = true;\n");
-    }
-  }
-  if (!options.field_listener_options.inject_field_listener_events) {
-    return;
-  }
-  if (descriptor->file()->options().optimize_for() ==
-      google::protobuf::FileOptions::LITE_RUNTIME) {
-    return;
-  }
-  std::string field_member = (*variables)["field"];
-  const google::protobuf::OneofDescriptor* oneof_member =
-      descriptor->real_containing_oneof();
-  const std::string substitute_template_prefix =
-      absl::StrCat("  ", (*variables)["tracker"], ".$1<$0>(this, ");
-  std::string prepared_template;
 
-  // Flat template is needed if the prepared one is introspecting the values
-  // inside the returned values, for example, for repeated fields and maps.
-  std::string prepared_flat_template;
-  std::string prepared_add_template;
-  // TODO(b/190614678): Support fields with type Message or Map.
-  if (descriptor->is_repeated() && !descriptor->is_map()) {
-    if (descriptor->type() != FieldDescriptor::TYPE_MESSAGE &&
-        descriptor->type() != FieldDescriptor::TYPE_GROUP) {
-      prepared_template = absl::Substitute("&$0.Get(index)", field_member);
-      prepared_add_template =
-          absl::Substitute("&$0.Get($0.size() - 1)", field_member);
-    } else {
-      prepared_template = "nullptr";
-      prepared_add_template = "nullptr";
-    }
-  } else if (descriptor->is_map()) {
-    prepared_template = "nullptr";
-  } else if (descriptor->type() == FieldDescriptor::TYPE_MESSAGE &&
-             !IsExplicitLazy(descriptor)) {
-    prepared_template = "nullptr";
-  } else if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-    if (oneof_member) {
-      prepared_template = GenerateTemplateForOneofString(
-          descriptor, ProtobufNamespace(options), field_member);
-    } else {
-      prepared_template =
-          GenerateTemplateForSingleString(descriptor, field_member);
-    }
-  } else {
-    prepared_template = absl::StrCat("&", field_member);
-  }
-  if (descriptor->is_repeated() && !descriptor->is_map() &&
-      descriptor->type() != FieldDescriptor::TYPE_MESSAGE &&
-      descriptor->type() != FieldDescriptor::TYPE_GROUP) {
-    prepared_flat_template = absl::StrCat("&", field_member);
-  } else {
-    prepared_flat_template = prepared_template;
+  if (const auto* oneof = field->containing_oneof()) {
+    auto field_name = UnderscoresToCamelCase(field->name(), true);
+
+    vars.push_back({"oneof_name", oneof->name()});
+    vars.push_back({"field_name", field_name});
+    vars.push_back({"oneof_index", oneof->index()});
+    vars.push_back({"has_field", absl::StrFormat("%s_case() == k%s",
+                                                 oneof->name(), field_name)});
+    vars.push_back(
+        {"not_has_field",
+         absl::StrFormat("%s_case() != k%s", oneof->name(), field_name)});
   }
 
-  MaySetAnnotationVariable(options, "get", substitute_template_prefix,
-                           prepared_template, descriptor->index(), "OnGet",
-                           variables);
-  MaySetAnnotationVariable(options, "set", substitute_template_prefix,
-                           prepared_template, descriptor->index(), "OnSet",
-                           variables);
-  MaySetAnnotationVariable(options, "has", substitute_template_prefix,
-                           prepared_template, descriptor->index(), "OnHas",
-                           variables);
-  MaySetAnnotationVariable(options, "mutable", substitute_template_prefix,
-                           prepared_template, descriptor->index(), "OnMutable",
-                           variables);
-  MaySetAnnotationVariable(options, "release", substitute_template_prefix,
-                           prepared_template, descriptor->index(), "OnRelease",
-                           variables);
-  MaySetAnnotationVariable(options, "clear", substitute_template_prefix,
-                           prepared_flat_template, descriptor->index(),
-                           "OnClear", variables);
-  MaySetAnnotationVariable(options, "size", substitute_template_prefix,
-                           prepared_flat_template, descriptor->index(),
-                           "OnSize", variables);
-  MaySetAnnotationVariable(options, "list", substitute_template_prefix,
-                           prepared_flat_template, descriptor->index(),
-                           "OnList", variables);
-  MaySetAnnotationVariable(options, "mutable_list", substitute_template_prefix,
-                           prepared_flat_template, descriptor->index(),
-                           "OnMutableList", variables);
-  MaySetAnnotationVariable(options, "add", substitute_template_prefix,
-                           prepared_add_template, descriptor->index(), "OnAdd",
-                           variables);
-  MaySetAnnotationVariable(options, "add_mutable", substitute_template_prefix,
-                           prepared_add_template, descriptor->index(),
-                           "OnAddMutable", variables);
+  return vars;
 }
 
-void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<std::string, std::string>* variables,
-                             const Options& options) {
-  SetCommonMessageDataVariables(descriptor->containing_type(), variables);
-
-  (*variables)["ns"] = Namespace(descriptor, options);
-  (*variables)["name"] = FieldName(descriptor);
-  (*variables)["index"] = absl::StrCat(descriptor->index());
-  (*variables)["number"] = absl::StrCat(descriptor->number());
-  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
-  (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
-  bool split = ShouldSplit(descriptor, options);
-  (*variables)["field"] = FieldMemberName(descriptor, split);
-
-  (*variables)["tag_size"] = absl::StrCat(
-      WireFormat::TagSize(descriptor->number(), descriptor->type()));
-  (*variables)["deprecated_attr"] = DeprecatedAttribute(options, descriptor);
-
-  (*variables)["set_hasbit"] = "";
-  (*variables)["clear_hasbit"] = "";
-  (*variables)["maybe_prepare_split_message"] =
-      split ? "  PrepareSplitMessageForWrite();\n" : "";
-
-  AddAccessorAnnotations(descriptor, options, variables);
-
-  // These variables are placeholders to pick out the beginning and ends of
-  // identifiers for annotations (when doing so with existing variables would
-  // be ambiguous or impossible). They should never be set to anything but the
-  // empty string.
-  (*variables)["{"] = "";
-  (*variables)["}"] = "";
-}
-
-void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
-  if (!internal::cpp::HasHasbit(descriptor_)) {
-    GOOGLE_CHECK_EQ(has_bit_index, -1);
-    return;
-  }
-  variables_["set_hasbit"] = absl::StrCat(
-      variables_["has_bits"], "[", has_bit_index / 32, "] |= 0x",
-      absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8), "u;");
-  variables_["clear_hasbit"] = absl::StrCat(
-      variables_["has_bits"], "[", has_bit_index / 32, "] &= ~0x",
-      absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8), "u;");
-}
-
-void FieldGenerator::SetInlinedStringIndex(int32_t inlined_string_index) {
-  if (!IsStringInlined(descriptor_, options_)) {
-    GOOGLE_CHECK_EQ(inlined_string_index, -1);
-    return;
-  }
-  // The first bit is the tracking bit for on demand registering ArenaDtor.
-  GOOGLE_CHECK_GT(inlined_string_index, 0)
-      << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
-  variables_["inlined_string_donated"] = absl::StrCat(
-      "(", variables_["inlined_string_donated_array"], "[",
-      inlined_string_index / 32, "] & 0x",
-      absl::Hex(1u << (inlined_string_index % 32), absl::kZeroPad8),
-      "u) != 0;");
-  variables_["donating_states_word"] =
-      absl::StrCat(variables_["inlined_string_donated_array"], "[",
-                   inlined_string_index / 32, "]");
-  variables_["mask_for_undonate"] = absl::StrCat(
-      "~0x", absl::Hex(1u << (inlined_string_index % 32), absl::kZeroPad8),
-      "u");
-}
-
-void FieldGenerator::GenerateAggregateInitializer(io::Printer* printer) const {
-  Formatter format(printer, variables_);
+void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
+  Formatter format(p, variables_);
   if (ShouldSplit(descriptor_, options_)) {
     format("decltype(Impl_::Split::$name$_){arena}");
     return;
@@ -309,110 +122,159 @@ void FieldGenerator::GenerateAggregateInitializer(io::Printer* printer) const {
   format("decltype($field$){arena}");
 }
 
-void FieldGenerator::GenerateConstexprAggregateInitializer(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
+void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
+    io::Printer* p) const {
+  Formatter format(p, variables_);
   format("/*decltype($field$)*/{}");
 }
 
-void FieldGenerator::GenerateCopyAggregateInitializer(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
+void FieldGeneratorBase::GenerateCopyAggregateInitializer(
+    io::Printer* p) const {
+  Formatter format(p, variables_);
   format("decltype($field$){from.$field$}");
 }
 
-void FieldGenerator::GenerateCopyConstructorCode(io::Printer* printer) const {
+void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
   if (ShouldSplit(descriptor_, options_)) {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
-    Formatter format(printer, variables_);
+    Formatter format(p, variables_);
     format("$field$ = from.$field$;\n");
   }
 }
 
-void SetCommonOneofFieldVariables(
-    const FieldDescriptor* descriptor,
-    std::map<std::string, std::string>* variables) {
-  const std::string prefix = descriptor->containing_oneof()->name() + "_.";
-  (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
+void FieldGeneratorBase::GenerateIfHasField(io::Printer* p) const {
+  ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
+
+  Formatter format(p);
+  format("if (($has_hasbit$) != 0) {\n");
 }
 
-FieldGenerator::~FieldGenerator() {}
+namespace {
+std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
+                                                  const Options& options,
+                                                  MessageSCCAnalyzer* scc) {
 
-FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
-                                     const Options& options,
-                                     MessageSCCAnalyzer* scc_analyzer)
-    : descriptor_(descriptor), field_generators_(descriptor->field_count()) {
-  // Construct all the FieldGenerators.
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    field_generators_[i].reset(
-        MakeGenerator(descriptor->field(i), options, scc_analyzer));
+  if (field->is_map()) {
+    return MakeMapGenerator(field, options, scc);
   }
-}
-
-FieldGenerator* FieldGeneratorMap::MakeGoogleInternalGenerator(
-    const FieldDescriptor* field, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) {
-
-  return nullptr;
-}
-
-FieldGenerator* FieldGeneratorMap::MakeGenerator(
-    const FieldDescriptor* field, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) {
-  FieldGenerator* generator =
-      MakeGoogleInternalGenerator(field, options, scc_analyzer);
-  if (generator) {
-    return generator;
-  }
-
   if (field->is_repeated()) {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        if (field->is_map()) {
-          return new MapFieldGenerator(field, options, scc_analyzer);
-        } else {
-          return new RepeatedMessageFieldGenerator(field, options,
-                                                   scc_analyzer);
-        }
+        return MakeRepeatedMessageGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_STRING:
-        return new RepeatedStringFieldGenerator(field, options);
+        return MakeRepeatedStringGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_ENUM:
-        return new RepeatedEnumFieldGenerator(field, options);
+        return MakeRepeatedEnumGenerator(field, options, scc);
       default:
-        return new RepeatedPrimitiveFieldGenerator(field, options);
+        return MakeRepeatedPrimitiveGenerator(field, options, scc);
     }
-  } else if (field->real_containing_oneof()) {
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new MessageOneofFieldGenerator(field, options, scc_analyzer);
-      case FieldDescriptor::CPPTYPE_STRING:
-        return new StringOneofFieldGenerator(field, options);
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return new EnumOneofFieldGenerator(field, options);
-      default:
-        return new PrimitiveOneofFieldGenerator(field, options);
-    }
-  } else {
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new MessageFieldGenerator(field, options, scc_analyzer);
-      case FieldDescriptor::CPPTYPE_STRING:
-        return new StringFieldGenerator(field, options);
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return new EnumFieldGenerator(field, options);
-      default:
-        return new PrimitiveFieldGenerator(field, options);
-    }
+  }
+
+  if (field->real_containing_oneof() &&
+      field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    return MakeOneofMessageGenerator(field, options, scc);
+  }
+
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return MakeSinguarMessageGenerator(field, options, scc);
+    case FieldDescriptor::CPPTYPE_STRING:
+      return MakeSinguarStringGenerator(field, options, scc);
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return MakeSinguarEnumGenerator(field, options, scc);
+    default:
+      return MakeSinguarPrimitiveGenerator(field, options, scc);
   }
 }
 
-FieldGeneratorMap::~FieldGeneratorMap() {}
+void HasBitVars(const FieldDescriptor* field, const Options& opts,
+                absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
+  if (!idx.has_value()) {
+    vars.emplace_back("set_hasbit", "");
+    vars.emplace_back("clear_hasbit", "");
+    return;
+  }
 
-const FieldGenerator& FieldGeneratorMap::get(
-    const FieldDescriptor* field) const {
-  GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
-  return *field_generators_[field->index()];
+  ABSL_CHECK(internal::cpp::HasHasbit(field));
+
+  int32_t index = *idx / 32;
+  std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+
+  absl::string_view has_bits = IsMapEntryMessage(field->containing_type())
+                                   ? "_has_bits_"
+                                   : "_impl_._has_bits_";
+
+  auto has = absl::StrFormat("%s[%d] & %s", has_bits, index, mask);
+  auto set = absl::StrFormat("%s[%d] |= %s;", has_bits, index, mask);
+  auto clr = absl::StrFormat("%s[%d] &= ~%s;", has_bits, index, mask);
+
+  vars.emplace_back("has_hasbit", has);
+  vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
+  vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
+}
+
+void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
+                       absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
+  if (!IsStringInlined(field, opts)) {
+    ABSL_CHECK(!idx.has_value());
+    return;
+  }
+
+  // The first bit is the tracking bit for on demand registering ArenaDtor.
+  ABSL_CHECK_GT(*idx, 0)
+      << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
+
+  int32_t index = *idx / 32;
+  std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+
+  absl::string_view array = IsMapEntryMessage(field->containing_type())
+                                ? "_inlined_string_donated_"
+                                : "_impl_._inlined_string_donated_";
+
+  vars.emplace_back("inlined_string_donated",
+                    absl::StrFormat("(%s[%d] & %s) != 0;", array, index, mask));
+  vars.emplace_back("donating_states_word",
+                    absl::StrFormat("%s[%d]", array, index));
+  vars.emplace_back("mask_for_undonate", absl::StrFormat("~%s", mask));
+}
+}  // namespace
+
+FieldGenerator::FieldGenerator(const FieldDescriptor* field,
+                               const Options& options,
+                               MessageSCCAnalyzer* scc_analyzer,
+                               absl::optional<uint32_t> hasbit_index,
+                               absl::optional<uint32_t> inlined_string_index)
+    : impl_(MakeGenerator(field, options, scc_analyzer)),
+      field_vars_(FieldVars(field, options)),
+      tracker_vars_(MakeTrackerCalls(field, options)),
+      per_generator_vars_(impl_->MakeVars()) {
+  HasBitVars(field, options, hasbit_index, field_vars_);
+  InlinedStringVars(field, options, inlined_string_index, field_vars_);
+}
+
+void FieldGeneratorTable::Build(
+    const Options& options, MessageSCCAnalyzer* scc,
+    absl::Span<const int32_t> has_bit_indices,
+    absl::Span<const int32_t> inlined_string_indices) {
+  // Construct all the FieldGenerators.
+  fields_.reserve(descriptor_->field_count());
+  for (const auto* field : internal::FieldRange(descriptor_)) {
+    absl::optional<uint32_t> has_bit_index;
+    if (!has_bit_indices.empty() && has_bit_indices[field->index()] >= 0) {
+      has_bit_index = static_cast<uint32_t>(has_bit_indices[field->index()]);
+    }
+
+    absl::optional<uint32_t> inlined_string_index;
+    if (!inlined_string_indices.empty() &&
+        inlined_string_indices[field->index()] >= 0) {
+      inlined_string_index =
+          static_cast<uint32_t>(inlined_string_indices[field->index()]);
+    }
+
+    fields_.push_back(FieldGenerator(field, options, scc, has_bit_index,
+                                     inlined_string_index));
+  }
 }
 
 }  // namespace cpp

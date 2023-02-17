@@ -76,7 +76,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       case WireFormatLite::TYPE_BYTES:
       case WireFormatLite::TYPE_GROUP:
       case WireFormatLite::TYPE_MESSAGE:
-        GOOGLE_LOG(FATAL) << "Non-primitive types can't be packed.";
+        ABSL_LOG(FATAL) << "Non-primitive types can't be packed.";
         break;
     }
   } else {
@@ -206,7 +206,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
     const char* ptr, const Msg* extendee, internal::InternalMetadata* metadata,
     internal::ParseContext* ctx) {
   std::string payload;
-  uint32_t type_id;
+  uint32_t type_id = 0;
   enum class State { kNoTag, kHasType, kHasPayload, kDone };
   State state = State::kNoTag;
 

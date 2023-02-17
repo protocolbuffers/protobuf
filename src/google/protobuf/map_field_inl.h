@@ -142,7 +142,7 @@ template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::InitializeIterator(
     MapIterator* map_iter) const {
   map_iter->iter_ = new typename Map<Key, T>::const_iterator;
-  GOOGLE_CHECK(map_iter->iter_ != nullptr);
+  ABSL_CHECK(map_iter->iter_ != nullptr);
 }
 
 template <typename Key, typename T>
@@ -345,7 +345,7 @@ void MapField<Derived, Key, T, kKeyFieldType,
   RepeatedPtrField<EntryType>* repeated_field =
       reinterpret_cast<RepeatedPtrField<EntryType>*>(
           this->MapFieldBase::repeated_field_);
-  GOOGLE_CHECK(this->MapFieldBase::repeated_field_ != nullptr);
+  ABSL_CHECK(this->MapFieldBase::repeated_field_ != nullptr);
   map->clear();
   for (typename RepeatedPtrField<EntryType>::iterator it =
            repeated_field->begin();

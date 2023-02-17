@@ -31,10 +31,12 @@
 #ifndef GOOGLE_PROTOBUF_TEST_UTIL2_H__
 #define GOOGLE_PROTOBUF_TEST_UTIL2_H__
 
-#include "google/protobuf/stubs/strutil.h"
+#include <string>
 
 #include "google/protobuf/testing/googletest.h"
-#include "absl/strings/str_replace.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/message_differencer.h"
@@ -44,35 +46,31 @@ namespace protobuf {
 namespace TestUtil {
 
 // Translate net/proto2/* or third_party/protobuf/* to google/protobuf/*.
-inline std::string TranslatePathToOpensource(const std::string& google3_path) {
-  std::string net_proto2 = "net/proto2/";
-  std::string third_party_protobuf = "third_party/protobuf/";
-  std::string path;
-  if (google3_path.find(net_proto2) == 0) {
-    path = google3_path.substr(net_proto2.size());
-  } else {
-    GOOGLE_CHECK(google3_path.find(third_party_protobuf) == 0) << google3_path;
-    path = google3_path.substr(third_party_protobuf.size());
+inline std::string TranslatePathToOpensource(absl::string_view google3_path) {
+  constexpr absl::string_view net_proto2 = "net/proto2/";
+  constexpr absl::string_view third_party_protobuf = "third_party/protobuf/";
+  if (!absl::ConsumePrefix(&google3_path, net_proto2)) {
+    ABSL_CHECK(absl::ConsumePrefix(&google3_path, third_party_protobuf))
+        << google3_path;
   }
 
-  path = StringReplace(path, "internal/", "", false);
-  path = StringReplace(path, "proto/", "", false);
-  path = StringReplace(path, "public/", "", false);
-  return "google/protobuf/" + path;
+  absl::ConsumePrefix(&google3_path, "internal/");
+  absl::ConsumePrefix(&google3_path, "proto/");
+  absl::ConsumeSuffix(&google3_path, "public/");
+  return absl::StrCat("google/protobuf/", google3_path);
 }
 
-inline std::string MaybeTranslatePath(const std::string& google3_path) {
-  std::string path = google3_path;
-  path = TranslatePathToOpensource(path);
-  return path;
+inline std::string MaybeTranslatePath(absl::string_view google3_path) {
+  return TranslatePathToOpensource(google3_path);
+  return std::string(google3_path);
 }
 
 inline std::string TestSourceDir() {
   return google::protobuf::TestSourceDir();
 }
 
-inline std::string GetTestDataPath(const std::string& google3_path) {
-  return TestSourceDir() + "/" + MaybeTranslatePath(google3_path);
+inline std::string GetTestDataPath(absl::string_view google3_path) {
+  return absl::StrCat(TestSourceDir(), "/", MaybeTranslatePath(google3_path));
 }
 
 // Checks the equality of "message" and serialized proto of type "ProtoType".
@@ -94,7 +92,7 @@ class BoundedArrayInputStream : public io::ZeroCopyInputStream {
   ~BoundedArrayInputStream() override {}
 
   bool Next(const void** data, int* size) override {
-    GOOGLE_CHECK_LT(stream_.ByteCount(), bound_);
+    ABSL_CHECK_LT(stream_.ByteCount(), bound_);
     return stream_.Next(data, size);
   }
   void BackUp(int count) override { stream_.BackUp(count); }

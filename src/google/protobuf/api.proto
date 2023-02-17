@@ -35,11 +35,11 @@ package google.protobuf;
 import "google/protobuf/source_context.proto";
 import "google/protobuf/type.proto";
 
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "ApiProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option go_package = "google.golang.org/protobuf/types/known/apipb";
 
 // Api is a light-weight descriptor for an API Interface.
@@ -81,7 +81,6 @@ message Api {
   // `google.feature.v1`. For major versions 0 and 1, the suffix can
   // be omitted. Zero major versions must only be used for
   // experimental, non-GA interfaces.
-  //
   //
   string version = 4;
 

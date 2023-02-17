@@ -37,14 +37,13 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message_lite.h"
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 
 
 // Must be included last.

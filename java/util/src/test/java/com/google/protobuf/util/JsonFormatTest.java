@@ -1019,7 +1019,6 @@ public class JsonFormatTest {
     assertRoundTripEquals(message);
   }
 
-
   @Test
   public void testAnyFieldsWithCustomAddedTypeRegistry() throws Exception {
     TestAllTypes content = TestAllTypes.newBuilder().setOptionalInt32(1234).build();

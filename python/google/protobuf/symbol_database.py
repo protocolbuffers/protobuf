@@ -57,17 +57,40 @@ Example usage::
   my_message_instance = db.GetSymbol('MyMessage')()
 """
 
+import warnings
 
 from google.protobuf.internal import api_implementation
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
 
-class SymbolDatabase(message_factory.MessageFactory):
+class SymbolDatabase():
   """A database of Python generated symbols."""
 
   # local cache of registered classes.
   _classes = {}
+
+  def __init__(self, pool=None):
+    """Initializes a new SymbolDatabase."""
+    self.pool = pool or descriptor_pool.DescriptorPool()
+
+  def GetPrototype(self, descriptor):
+    warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+                  'use message_factory.GetMessageClass() instead. '
+                  'SymbolDatabase.GetPrototype() will be removed soon.')
+    return message_factory.GetMessageClass(descriptor)
+
+  def CreatePrototype(self, descriptor):
+    warnings.warn('Directly call CreatePrototype() is wrong. Please use '
+                  'message_factory.GetMessageClass() instead. '
+                  'SymbolDatabase.CreatePrototype() will be removed soon.')
+    return message_factory._InternalCreateMessageClass(descriptor)
+
+  def GetMessages(self, files):
+    warnings.warn('SymbolDatabase.GetMessages() is deprecated. Please use '
+                  'message_factory.GetMessageClassedForFiles() instead. '
+                  'SymbolDatabase.GetMessages() will be removed soon.')
+    return message_factory.GetMessageClassedForFiles(files, self.pool)
 
   def RegisterMessage(self, message):
     """Registers the given message type in the local database.

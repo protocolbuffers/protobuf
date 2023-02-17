@@ -38,12 +38,11 @@
 #ifndef GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 #define GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 
-
 #include <algorithm>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
@@ -137,7 +136,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   bool delegate_to_generated_factory_;
 
   struct TypeInfo;
-  std::unordered_map<const Descriptor*, const TypeInfo*> prototypes_;
+  absl::flat_hash_map<const Descriptor*, const TypeInfo*> prototypes_;
   mutable absl::Mutex prototypes_mutex_;
 
   friend class DynamicMessage;
@@ -163,9 +162,9 @@ class PROTOBUF_EXPORT DynamicMapSorter {
 #ifndef NDEBUG
     for (size_t j = 1; j < static_cast<size_t>(map_size); j++) {
       if (!comparator(result[j - 1], result[j])) {
-        GOOGLE_LOG(ERROR) << (comparator(result[j], result[j - 1])
-                           ? "internal error in map key sorting"
-                           : "map keys are not unique");
+        ABSL_LOG(ERROR) << (comparator(result[j], result[j - 1])
+                                ? "internal error in map key sorting"
+                                : "map keys are not unique");
       }
     }
 #endif
@@ -212,7 +211,7 @@ class PROTOBUF_EXPORT DynamicMapSorter {
           return first < second;
         }
         default:
-          GOOGLE_LOG(DFATAL) << "Invalid key for map field.";
+          ABSL_DLOG(FATAL) << "Invalid key for map field.";
           return true;
       }
     }

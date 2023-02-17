@@ -34,11 +34,10 @@
 
 #include <algorithm>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/implicit_weak_message.h"
-#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/repeated_field.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -59,14 +58,16 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   Arena* arena = GetOwningArena();
   new_size = internal::CalculateReserveSize<void*, kRepHeaderSize>(total_size_,
                                                                    new_size);
-  GOOGLE_CHECK_LE(static_cast<int64_t>(new_size),
-           static_cast<int64_t>(
-               (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
-               sizeof(old_rep->elements[0])))
+  ABSL_CHECK_LE(static_cast<int64_t>(new_size),
+                static_cast<int64_t>(
+                    (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
+                    sizeof(old_rep->elements[0])))
       << "Requested size is too large to fit into size_t.";
   size_t bytes = kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size;
   if (arena == nullptr) {
-    rep_ = reinterpret_cast<Rep*>(::operator new(bytes));
+    internal::SizedPtr res = internal::AllocateAtLeast(bytes);
+    new_size = (res.n - kRepHeaderSize) / sizeof(old_rep->elements[0]);
+    rep_ = reinterpret_cast<Rep*>(res.p);
   } else {
     rep_ = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
   }
@@ -99,8 +100,8 @@ void RepeatedPtrFieldBase::Reserve(int new_size) {
 }
 
 void RepeatedPtrFieldBase::DestroyProtos() {
-  GOOGLE_DCHECK(rep_);
-  GOOGLE_DCHECK(arena_ == nullptr);
+  ABSL_DCHECK(rep_);
+  ABSL_DCHECK(arena_ == nullptr);
   int n = rep_->allocated_size;
   void* const* elements = rep_->elements;
   for (int i = 0; i < n; i++) {

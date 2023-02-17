@@ -3,141 +3,121 @@
 # See also code generation logic under /src/google/protobuf/compiler/ruby.
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:internal_shell.bzl", "inline_sh_test")
-load("//conformance:defs.bzl", "conformance_test")
+load("@rules_ruby//ruby:defs.bzl", "ruby_library")
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
-load(":internal.bzl", "internal_ruby_extension")
+load("//conformance:defs.bzl", "conformance_test")
+load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
 
 ################################################################################
 # Ruby Runtime
 ################################################################################
 
-config_setting(
-    name = "java_ruby",
-    values = {"define": "ruby_platform=java"},
-)
-
-config_setting(
-    name = "c_ruby",
-    values = {"define": "ruby_platform=c"},
-)
-
-filegroup(
-    name = "srcs",
-    srcs = glob([
-        "lib/**/*.rb",
-        "src/**/*.proto",
-    ]) + [
-        "Gemfile",
-        "Rakefile",
-        "google-protobuf.gemspec",
-        "pom.xml",
+ruby_library(
+    name = "protobuf",
+    deps = ["//ruby/lib/google:protobuf_lib"],
+    visibility = [
+        "//visibility:public",
     ],
 )
 
-internal_ruby_extension(
-    name = "protobuf_c_mac",
-    extension = "lib/google/protobuf_c.bundle",
-    deps = glob(["ext/google/protobuf_c/*"]),
+# Note: these can be greatly simplified using inline_sh_binary in Bazel 6,
+# but doesn't work prior to that due to https://github.com/bazelbuild/bazel/issues/15043.
+# Instead, we need to manually copy all of the srcs into gendir from a genrule.
+genrule(
+    name = "jruby_release",
+    srcs = [
+      "//ruby/lib/google:copy_jar",
+      "//ruby/lib/google:dist_files",
+      "//:well_known_ruby_protos",
+      "google-protobuf.gemspec",
+    ],
+    outs = ["google-protobuf-"+PROTOBUF_RUBY_VERSION+"-java.gem"],
+    cmd = """
+        set -eux
+        mkdir tmp
+        for src in $(SRCS); do
+            cp --parents -L "$$src" tmp
+        done
+        for wkt in $(execpaths //:well_known_ruby_protos); do
+            mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
+        done
+        mv "tmp/$(execpath //ruby/lib/google:copy_jar)" "tmp/ruby/lib/google"
+        cd tmp/ruby
+        chmod -R 777 ./
+        gem build google-protobuf.gemspec
+        cd ../..
+        mv tmp/ruby/google-protobuf-*.gem $@
+    """,
+    tags = ["manual"],
     target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
-        "//conditions:default": ["@platforms//os:osx"],
+        "@rules_ruby//ruby/runtime:config_jruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
 
-internal_ruby_extension(
-    name = "protobuf_c",
-    extension = "lib/google/protobuf_c.so",
-    deps = glob(["ext/google/protobuf_c/*"]),
+genrule(
+    name = "ruby_release",
+    srcs = [
+      "@utf8_range//:utf8_range_srcs",
+      "@utf8_range//:LICENSE",
+      "//:well_known_ruby_protos",
+      "//ruby/ext/google/protobuf_c:dist_files",
+      "//ruby/lib/google:dist_files",
+      "google-protobuf.gemspec",
+    ],
+    outs = ["google-protobuf-"+PROTOBUF_RUBY_VERSION+".gem"],
+    cmd = """
+        set -eux
+        mkdir tmp
+        for src in $(SRCS); do
+            cp --parents -L "$$src" "tmp"
+        done
+        mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+            mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        done
+        for wkt in $(execpaths //:well_known_ruby_protos); do
+            mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
+        done
+        cd tmp/ruby
+        chmod -R 777 ./
+        gem build google-protobuf.gemspec
+        cd ../..
+        mv tmp/ruby/google-protobuf-*.gem $@
+    """,
+    tags = ["manual"],
     target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
-        "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
-)
-
-internal_ruby_extension(
-    name = "protobuf_java",
-    extension = "lib/google/protobuf_java.jar",
-    deps = glob(["src/**/*.java"]),
-    target_compatible_with = select({
-        ":java_ruby": [],
+        "@rules_ruby//ruby/runtime:config_ruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
 
 filegroup(
-    name = "protobuf",
-    srcs = [
-        ":srcs",
-        "//third_party/utf8_range:all_files",
-    ] + select({
-        ":java_ruby": [":protobuf_java"],
-        "@bazel_tools//src/conditions:darwin": [":protobuf_c_mac"],
-        "//conditions:default": [":protobuf_c"],
+    name = "release",
+    srcs = select({
+        "@rules_ruby//ruby/runtime:config_jruby": [":jruby_release"],
+        "//conditions:default": [":ruby_release"],
     }),
-    visibility = [
-        "//conformance:__subpackages__",
-        "//ruby:__subpackages__",
-    ],
+    tags = ["manual"],
 )
+
 
 ################################################################################
 # Tests
 ################################################################################
 
-filegroup(
-  name = "tests",
-  srcs = glob(["tests/*.rb"]),
-)
-
-filegroup(
-  name = "test_protos",
-  srcs = glob(["tests/*.proto"]),
-)
-
+# Define this here so the descriptor paths match what we get in Rake tests.
 internal_ruby_proto_library(
     name = "test_ruby_protos",
-    srcs = [":test_protos"],
-    proto_deps = ["//:well_known_protos"],
+    srcs = ["//ruby/tests:test_protos"],
+    deps = ["//:well_known_ruby_protos"],
     includes = [".", "src", "ruby/tests"],
+    visibility = [
+        "//ruby:__subpackages__",
+    ],
 )
 
-inline_sh_test(
-    name = "test",
-    srcs = [
-        "Rakefile",
-    ],
-    deps = [
-        ":protobuf",
-        ":test_ruby_protos",
-        ":tests",
-        "//:well_known_ruby_protos",
-    ],
-    cmd = """
-        pushd `dirname $(location Rakefile)`
-        RUBYLIB=../src:tests:. BAZEL=true rake test
-        popd
-    """,
-)
-
-inline_sh_test(
-    name = "gc_test",
-    srcs = [
-        "Rakefile",
-    ],
-    deps = [
-        ":protobuf",
-        ":test_ruby_protos",
-        ":tests",
-        "//:well_known_ruby_protos",
-    ],
-    cmd = """
-        pushd `dirname $(location Rakefile)`
-        RUBYLIB=../src:tests:. BAZEL=true rake gc_test
-        popd
-    """,
-)
 
 conformance_test(
     name = "conformance_test",
@@ -145,8 +125,8 @@ conformance_test(
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
     target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
-        "//conditions:default": [],
+        "@rules_ruby//ruby/runtime:config_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
 
@@ -156,7 +136,7 @@ conformance_test(
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
     target_compatible_with = select({
-        ":java_ruby": [],
+        "@rules_ruby//ruby/runtime:config_jruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
@@ -167,17 +147,16 @@ conformance_test(
 
 pkg_files(
     name = "dist_files",
-    srcs = glob([
-        "tests/*.proto",
-        "tests/*.rb",
-    ]) + [
-        ":srcs",
+    srcs = [
+        "//ruby/ext/google/protobuf_c:dist_files",
+        "//ruby/lib/google:dist_files",
+        "//ruby/src/main/java:dist_files",
+        "//ruby/tests:dist_files",
         ".gitignore",
         "BUILD.bazel",
-        "internal.bzl",
         "Gemfile",
+        "Rakefile",
         "README.md",
-        "travis-test.sh",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],

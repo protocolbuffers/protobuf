@@ -36,25 +36,29 @@
 #include "google/protobuf/message_lite.h"
 
 #include <climits>
+#include <cstddef>
 #include <cstdint>
+#include <istream>
+#include <ostream>
 #include <string>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/arena.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/cord_buffer.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include "google/protobuf/generated_message_util.h"
+#include "absl/types/optional.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
-#include "google/protobuf/repeated_field.h"
 
 
 // Must be included last.
@@ -63,17 +67,12 @@
 namespace google {
 namespace protobuf {
 
-MessageLite::~MessageLite(){
-// Defined out of line to save code space
-}
-
 std::string MessageLite::InitializationErrorString() const {
   return "(cannot determine missing fields for lite message)";
 }
 
 std::string MessageLite::DebugString() const {
-  std::uintptr_t address = reinterpret_cast<std::uintptr_t>(this);
-  return absl::StrCat("MessageLite at 0x", absl::Hex(address));
+  return absl::StrCat("MessageLite at 0x", absl::Hex(this));
 }
 
 namespace {
@@ -88,43 +87,30 @@ void ByteSizeConsistencyError(size_t byte_size_before_serialization,
                               size_t byte_size_after_serialization,
                               size_t bytes_produced_by_serialization,
                               const MessageLite& message) {
-  GOOGLE_CHECK_EQ(byte_size_before_serialization, byte_size_after_serialization)
+  ABSL_CHECK_EQ(byte_size_before_serialization, byte_size_after_serialization)
       << message.GetTypeName()
       << " was modified concurrently during serialization.";
-  GOOGLE_CHECK_EQ(bytes_produced_by_serialization, byte_size_before_serialization)
+  ABSL_CHECK_EQ(bytes_produced_by_serialization, byte_size_before_serialization)
       << "Byte size calculation and serialization were inconsistent.  This "
          "may indicate a bug in protocol buffers or it may be caused by "
          "concurrent modification of "
       << message.GetTypeName() << ".";
-  GOOGLE_LOG(FATAL) << "This shouldn't be called if all the sizes are equal.";
+  ABSL_LOG(FATAL) << "This shouldn't be called if all the sizes are equal.";
 }
 
-std::string InitializationErrorMessage(const char* action,
+std::string InitializationErrorMessage(absl::string_view action,
                                        const MessageLite& message) {
-  // Note:  We want to avoid depending on strutil in the lite library, otherwise
-  //   we'd use:
-  //
-  // return strings::Substitute(
-  //   "Can't $0 message of type \"$1\" because it is missing required "
-  //   "fields: $2",
-  //   action, message.GetTypeName(),
-  //   message.InitializationErrorString());
-
-  std::string result;
-  result += "Can't ";
-  result += action;
-  result += " message of type \"";
-  result += message.GetTypeName();
-  result += "\" because it is missing required fields: ";
-  result += message.InitializationErrorString();
-  return result;
+  return absl::StrCat("Can't ", action, " message of type \"",
+                      message.GetTypeName(),
+                      "\" because it is missing required fields: ",
+                      message.InitializationErrorString());
 }
 
 inline absl::string_view as_string_view(const void* data, int size) {
   return absl::string_view(static_cast<const char*>(data), size);
 }
 
-// Returns true of all required fields are present / have values.
+// Returns true if all required fields are present / have values.
 inline bool CheckFieldPresence(const internal::ParseContext& ctx,
                                const MessageLite& msg,
                                MessageLite::ParseFlags parse_flags) {
@@ -138,7 +124,7 @@ inline bool CheckFieldPresence(const internal::ParseContext& ctx,
 }  // namespace
 
 void MessageLite::LogInitializationErrorMessage() const {
-  GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *this);
+  ABSL_LOG(ERROR) << InitializationErrorMessage("parse", *this);
 }
 
 namespace internal {
@@ -205,7 +191,7 @@ template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
 
 class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
  public:
-  ZeroCopyCodedInputStream(io::CodedInputStream* cis) : cis_(cis) {}
+  explicit ZeroCopyCodedInputStream(io::CodedInputStream* cis) : cis_(cis) {}
   bool Next(const void** data, int* size) final {
     if (!cis_->GetDirectBufferPointer(data, size)) return false;
     cis_->Skip(*size);
@@ -217,6 +203,16 @@ class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
 
   bool aliasing_enabled() { return cis_->aliasing_enabled_; }
 
+  bool ReadCord(absl::Cord* cord, int count) final {
+    // Fast path: tail call into ReadCord reading new value.
+    if (PROTOBUF_PREDICT_TRUE(cord->empty())) {
+      return cis_->ReadCord(cord, count);
+    }
+    absl::Cord tmp;
+    bool res = cis_->ReadCord(&tmp, count);
+    cord->Append(std::move(tmp));
+    return res;
+  }
  private:
   io::CodedInputStream* cis_;
 };
@@ -237,7 +233,7 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (!ctx.EndedAtEndOfStream()) {
-    GOOGLE_DCHECK_NE(ctx.LastTag(), 1);  // We can't end on a pushed limit.
+    ABSL_DCHECK_NE(ctx.LastTag(), 1);  // We can't end on a pushed limit.
     if (ctx.IsExceedingLimit(ptr)) return false;
     input->SetLastTag(ctx.LastTag());
   } else {
@@ -334,6 +330,43 @@ bool MessageLite::MergeFromString(absl::string_view data) {
 }
 
 
+namespace internal {
+
+template <>
+struct SourceWrapper<absl::Cord> {
+  explicit SourceWrapper(const absl::Cord* c) : cord(c) {}
+  template <bool alias>
+  bool MergeInto(MessageLite* msg, MessageLite::ParseFlags parse_flags) const {
+    absl::optional<absl::string_view> flat = cord->TryFlat();
+    if (flat && flat->size() <= ParseContext::kMaxCordBytesToCopy) {
+      return MergeFromImpl<alias>(*flat, msg, parse_flags);
+    } else {
+      io::CordInputStream input(cord);
+      return MergeFromImpl<alias>(&input, msg, parse_flags);
+    }
+  }
+
+  const absl::Cord* const cord;
+};
+
+}  // namespace internal
+
+bool MessageLite::MergeFromCord(const absl::Cord& cord) {
+  return ParseFrom<kMerge>(internal::SourceWrapper<absl::Cord>(&cord));
+}
+
+bool MessageLite::MergePartialFromCord(const absl::Cord& cord) {
+  return ParseFrom<kMergePartial>(internal::SourceWrapper<absl::Cord>(&cord));
+}
+
+bool MessageLite::ParseFromCord(const absl::Cord& cord) {
+  return ParseFrom<kParse>(internal::SourceWrapper<absl::Cord>(&cord));
+}
+
+bool MessageLite::ParsePartialFromCord(const absl::Cord& cord) {
+  return ParseFrom<kParsePartial>(internal::SourceWrapper<absl::Cord>(&cord));
+}
+
 // ===================================================================
 
 inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
@@ -350,14 +383,14 @@ inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
         &ptr);
     ptr = msg._InternalSerialize(ptr, &out);
     out.Trim(ptr);
-    GOOGLE_DCHECK(!out.HadError() && stream.ByteCount() == size);
+    ABSL_DCHECK(!out.HadError() && stream.ByteCount() == size);
     return target + size;
   } else {
     io::EpsCopyOutputStream out(
         target, size,
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    auto res = msg._InternalSerialize(target, &out);
-    GOOGLE_DCHECK(target + size == res);
+    uint8_t* res = msg._InternalSerialize(target, &out);
+    ABSL_DCHECK(target + size == res);
     return res;
   }
 }
@@ -369,7 +402,8 @@ uint8_t* MessageLite::SerializeWithCachedSizesToArray(uint8_t* target) const {
 }
 
 bool MessageLite::SerializeToCodedStream(io::CodedOutputStream* output) const {
-  GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
+  ABSL_DCHECK(IsInitialized())
+      << InitializationErrorMessage("serialize", *this);
   return SerializePartialToCodedStream(output);
 }
 
@@ -377,8 +411,8 @@ bool MessageLite::SerializePartialToCodedStream(
     io::CodedOutputStream* output) const {
   const size_t size = ByteSizeLong();  // Force size to be cached.
   if (size > INT_MAX) {
-    GOOGLE_LOG(ERROR) << GetTypeName()
-               << " exceeded maximum protobuf size of 2GB: " << size;
+    ABSL_LOG(ERROR) << GetTypeName()
+                    << " exceeded maximum protobuf size of 2GB: " << size;
     return false;
   }
 
@@ -399,7 +433,8 @@ bool MessageLite::SerializePartialToCodedStream(
 
 bool MessageLite::SerializeToZeroCopyStream(
     io::ZeroCopyOutputStream* output) const {
-  GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
+  ABSL_DCHECK(IsInitialized())
+      << InitializationErrorMessage("serialize", *this);
   return SerializePartialToZeroCopyStream(output);
 }
 
@@ -407,8 +442,8 @@ bool MessageLite::SerializePartialToZeroCopyStream(
     io::ZeroCopyOutputStream* output) const {
   const size_t size = ByteSizeLong();  // Force size to be cached.
   if (size > INT_MAX) {
-    GOOGLE_LOG(ERROR) << GetTypeName()
-               << " exceeded maximum protobuf size of 2GB: " << size;
+    ABSL_LOG(ERROR) << GetTypeName()
+                    << " exceeded maximum protobuf size of 2GB: " << size;
     return false;
   }
 
@@ -446,7 +481,8 @@ bool MessageLite::SerializePartialToOstream(std::ostream* output) const {
 }
 
 bool MessageLite::AppendToString(std::string* output) const {
-  GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
+  ABSL_DCHECK(IsInitialized())
+      << InitializationErrorMessage("serialize", *this);
   return AppendPartialToString(output);
 }
 
@@ -454,8 +490,8 @@ bool MessageLite::AppendPartialToString(std::string* output) const {
   size_t old_size = output->size();
   size_t byte_size = ByteSizeLong();
   if (byte_size > INT_MAX) {
-    GOOGLE_LOG(ERROR) << GetTypeName()
-               << " exceeded maximum protobuf size of 2GB: " << byte_size;
+    ABSL_LOG(ERROR) << GetTypeName()
+                    << " exceeded maximum protobuf size of 2GB: " << byte_size;
     return false;
   }
 
@@ -478,15 +514,16 @@ bool MessageLite::SerializePartialToString(std::string* output) const {
 }
 
 bool MessageLite::SerializeToArray(void* data, int size) const {
-  GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
+  ABSL_DCHECK(IsInitialized())
+      << InitializationErrorMessage("serialize", *this);
   return SerializePartialToArray(data, size);
 }
 
 bool MessageLite::SerializePartialToArray(void* data, int size) const {
   const size_t byte_size = ByteSizeLong();
   if (byte_size > INT_MAX) {
-    GOOGLE_LOG(ERROR) << GetTypeName()
-               << " exceeded maximum protobuf size of 2GB: " << byte_size;
+    ABSL_LOG(ERROR) << GetTypeName()
+                    << " exceeded maximum protobuf size of 2GB: " << byte_size;
     return false;
   }
   if (size < static_cast<int64_t>(byte_size)) return false;
@@ -511,6 +548,78 @@ std::string MessageLite::SerializePartialAsString() const {
   return output;
 }
 
+bool MessageLite::AppendToCord(absl::Cord* output) const {
+  ABSL_DCHECK(IsInitialized())
+      << InitializationErrorMessage("serialize", *this);
+  return AppendPartialToCord(output);
+}
+
+bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
+  // For efficiency, we'd like to pass a size hint to CordOutputStream with
+  // the exact total size expected.
+  const size_t size = ByteSizeLong();
+  const size_t total_size = size + output->size();
+  if (size > INT_MAX) {
+    ABSL_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB.";
+    return false;
+  }
+
+
+  // Allocate a CordBuffer (which may utilize private capacity in 'output').
+  absl::CordBuffer buffer = output->GetAppendBuffer(size);
+  absl::Span<char> available = buffer.available();
+  auto target = reinterpret_cast<uint8_t*>(available.data());
+  if (available.size() >= size) {
+    // Use EpsCopyOutputStream with full available capacity, as serialization
+    // may in the future use the extra slop bytes if available.
+    io::EpsCopyOutputStream out(
+        target, static_cast<int>(available.size()),
+        io::CodedOutputStream::IsDefaultSerializationDeterministic());
+    auto res = _InternalSerialize(target, &out);
+    ABSL_DCHECK_EQ(res, target + size);
+    buffer.IncreaseLengthBy(size);
+    output->Append(std::move(buffer));
+    ABSL_DCHECK_EQ(output->size(), total_size);
+    return true;
+  }
+
+  // Donate the buffer to the CordOutputStream with length := capacity.
+  // This follows the eager `EpsCopyOutputStream` initialization logic.
+  buffer.SetLength(buffer.capacity());
+  io::CordOutputStream output_stream(std::move(*output), std::move(buffer),
+                                     total_size);
+  io::EpsCopyOutputStream out(
+      target, static_cast<int>(available.size()), &output_stream,
+      io::CodedOutputStream::IsDefaultSerializationDeterministic(), &target);
+  target = _InternalSerialize(target, &out);
+  out.Trim(target);
+  if (out.HadError()) return false;
+  *output = output_stream.Consume();
+  ABSL_DCHECK_EQ(output->size(), total_size);
+  return true;
+}
+
+bool MessageLite::SerializeToCord(absl::Cord* output) const {
+  output->Clear();
+  return AppendToCord(output);
+}
+
+bool MessageLite::SerializePartialToCord(absl::Cord* output) const {
+  output->Clear();
+  return AppendPartialToCord(output);
+}
+
+absl::Cord MessageLite::SerializeAsCord() const {
+  absl::Cord output;
+  if (!AppendToCord(&output)) output.Clear();
+  return output;
+}
+
+absl::Cord MessageLite::SerializePartialAsCord() const {
+  absl::Cord output;
+  if (!AppendPartialToCord(&output)) output.Clear();
+  return output;
+}
 
 namespace internal {
 
@@ -527,15 +636,6 @@ template <>
 void GenericTypeHandler<std::string>::Merge(const std::string& from,
                                             std::string* to) {
   *to = from;
-}
-
-// Non-inline implementations of InternalMetadata destructor
-// This is moved out of the header because the GOOGLE_DCHECK produces a lot of code.
-void InternalMetadata::CheckedDestruct() {
-  if (HasMessageOwnedArenaTag()) {
-    GOOGLE_DCHECK(!HasUnknownFieldsTag());
-    delete reinterpret_cast<Arena*>(ptr_ - kMessageOwnedArenaTagMask);
-  }
 }
 
 // Non-inline variants of std::string specializations for

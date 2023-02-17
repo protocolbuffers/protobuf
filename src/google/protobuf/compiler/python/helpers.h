@@ -34,6 +34,7 @@
 #include <string>
 
 #include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -42,19 +43,19 @@ namespace protobuf {
 namespace compiler {
 namespace python {
 
-std::string ModuleName(const std::string& filename);
-std::string StrippedModuleName(const std::string& filename);
-bool ContainsPythonKeyword(const std::string& module_name);
-bool IsPythonKeyword(const std::string& name);
-std::string ResolveKeyword(const std::string& name);
+std::string ModuleName(absl::string_view filename);
+std::string StrippedModuleName(absl::string_view filename);
+bool ContainsPythonKeyword(absl::string_view module_name);
+bool IsPythonKeyword(absl::string_view name);
+std::string ResolveKeyword(absl::string_view name);
 std::string GetFileName(const FileDescriptor* file_des,
-                        const std::string& suffix);
+                        absl::string_view suffix);
 bool HasGenericServices(const FileDescriptor* file);
 std::string GeneratedCodeToBase64(const GeneratedCodeInfo& annotations);
 
 template <typename DescriptorT>
 std::string NamePrefixedWithNestedTypes(const DescriptorT& descriptor,
-                                        const std::string& separator);
+                                        absl::string_view separator);
 
 }  // namespace python
 }  // namespace compiler

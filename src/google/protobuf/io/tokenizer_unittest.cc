@@ -40,7 +40,6 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -162,7 +161,7 @@ class TestErrorCollector : public ErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) {
+  void RecordError(int line, int column, absl::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
@@ -1021,7 +1020,7 @@ TEST_F(TokenizerTest, ParseFloat) {
   EXPECT_EQ(0.0, Tokenizer::ParseFloat("1e-9999999999999999999999999999"));
   EXPECT_EQ(HUGE_VAL, Tokenizer::ParseFloat("1e+9999999999999999999999999999"));
 
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   // Test invalid integers that will never be tokenized as integers.
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseFloat("zxy"),
@@ -1032,7 +1031,7 @@ TEST_F(TokenizerTest, ParseFloat) {
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseFloat("-1.0"),
       "passed text that could not have been tokenized as a float");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 }
 
 TEST_F(TokenizerTest, ParseString) {
@@ -1044,6 +1043,8 @@ TEST_F(TokenizerTest, ParseString) {
   Tokenizer::ParseString("'\\1x\\1\\123\\739\\52\\334n\\3'", &output);
   EXPECT_EQ("\1x\1\123\739\52\334n\3", output);
   Tokenizer::ParseString("'\\x20\\x4'", &output);
+  EXPECT_EQ("\x20\x4", output);
+  Tokenizer::ParseString("'\\X20\\X4'", &output);
   EXPECT_EQ("\x20\x4", output);
 
   // Test invalid strings that may still be tokenized as strings.
@@ -1074,11 +1075,11 @@ TEST_F(TokenizerTest, ParseString) {
   EXPECT_EQ("\\U00110000\\U00200000\\Uffffffff", output);
 
   // Test invalid strings that will never be tokenized as strings.
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseString("", &output),
       "passed text that could not have been tokenized as a string");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 }
 
 TEST_F(TokenizerTest, ParseStringAppend) {
@@ -1110,7 +1111,7 @@ inline std::ostream& operator<<(std::ostream& out, const ErrorCase& test_case) {
 ErrorCase kErrorCases[] = {
     // String errors.
     {"'\\l' foo", true, "0:2: Invalid escape sequence in string literal.\n"},
-    {"'\\X' foo", true, "0:2: Invalid escape sequence in string literal.\n"},
+    {"'\\X' foo", true, "0:3: Expected hex digits for escape sequence.\n"},
     {"'\\x' foo", true, "0:3: Expected hex digits for escape sequence.\n"},
     {"'foo", false, "0:4: Unexpected end of string.\n"},
     {"'bar\nfoo", true,

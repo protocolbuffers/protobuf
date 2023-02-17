@@ -37,12 +37,10 @@
 // "generate_descriptor_proto.sh" and add the changed files under
 // csharp/src/ to your changelist.
 
-#include <map>
-
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/googletest.h"
-#include "google/protobuf/stubs/strutil.h"
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_replace.h"
@@ -52,7 +50,6 @@
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 namespace google {
 namespace protobuf {
@@ -69,8 +66,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
+  void RecordError(absl::string_view filename, int line, int column,
+                   absl::string_view message) {
     absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
@@ -86,9 +83,9 @@ class MockGeneratorContext : public GeneratorContext {
     std::string expected_contents = *it->second;
 
     std::string actual_contents;
-    GOOGLE_CHECK_OK(
-        File::GetContentsAsText(TestSourceDir() + "/" + physical_filename,
-                          &actual_contents, true))
+    ABSL_CHECK_OK(File::GetContentsAsText(
+        absl::StrCat(TestSourceDir(), "/", physical_filename), &actual_contents,
+        true))
         << "Unable to get " << physical_filename;
     EXPECT_TRUE(actual_contents == expected_contents)
       << physical_filename << " needs to be regenerated.  Please run "
@@ -105,7 +102,7 @@ class MockGeneratorContext : public GeneratorContext {
   }
 
  private:
-  std::map<std::string, std::unique_ptr<std::string>> files_;
+  absl::flat_hash_map<std::string, std::unique_ptr<std::string>> files_;
 };
 
 class GenerateAndTest {
@@ -134,7 +131,7 @@ TEST(CsharpBootstrapTest, GeneratedCsharpDescriptorMatches) {
   // only distribution).
   std::string descriptor_file_name =
       "../csharp/src/Google.Protobuf/Reflection/Descriptor.cs";
-  if (!File::Exists(TestSourceDir() + "/" + descriptor_file_name)) {
+  if (!File::Exists(absl::StrCat(TestSourceDir(), "/", descriptor_file_name))) {
     return;
   }
 

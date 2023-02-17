@@ -99,7 +99,6 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     return EMPTY_REGISTRY;
   }
 
-
   /** Returns an unmodifiable view of the registry. */
   @Override
   public ExtensionRegistry getUnmodifiable() {

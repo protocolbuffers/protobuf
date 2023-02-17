@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__
 #define GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__
 
+#include "absl/strings/cord.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/repeated_field.h"
@@ -233,7 +234,7 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
   }
   void Swap(Field* data, const internal::RepeatedFieldAccessor* other_mutator,
             Field* other_data) const override {
-    GOOGLE_CHECK(this == other_mutator);
+    ABSL_CHECK(this == other_mutator);
     MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
   }
 
@@ -277,7 +278,7 @@ class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
     // Currently RepeatedFieldPrimitiveAccessor is the only implementation of
     // RepeatedFieldAccessor for primitive types. As we are using singletons
     // for these accessors, here "other_mutator" must be "this".
-    GOOGLE_CHECK(this == other_mutator);
+    ABSL_CHECK(this == other_mutator);
     MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
   }
 
@@ -341,7 +342,7 @@ class RepeatedPtrFieldMessageAccessor final
   RepeatedPtrFieldMessageAccessor() {}
   void Swap(Field* data, const internal::RepeatedFieldAccessor* other_mutator,
             Field* other_data) const override {
-    GOOGLE_CHECK(this == other_mutator);
+    ABSL_CHECK(this == other_mutator);
     MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
   }
 

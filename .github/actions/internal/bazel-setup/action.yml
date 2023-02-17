@@ -1,0 +1,75 @@
+name: Setup Bazel
+description: Setup a Bazel environment for Protobuf CI testing
+inputs:
+  credentials-file:
+    required: true
+    description: The GCP credentials file to use for caching
+    type: string
+  bazel-cache:
+    required: true
+    description: A unique path for the Bazel cache.
+    type: string
+
+outputs:
+  bazel-flags:
+    description: Bazel flags that should be sent to all Bazel invocations
+    value: ${{ steps.output.outputs.bazel-flags }}
+  bazel-startup-flags:
+    description: Bazel startup flags that should be sent to all Bazel invocations
+    value: ${{ steps.output.outputs.bazel-startup-flags }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Initialize BAZEL environment variable
+      shell: bash
+      run: echo "BAZEL=bazelisk" >> $GITHUB_ENV
+
+    - name: Initialize Windows startup flags
+      if: runner.os == 'Windows'
+      shell: bash
+      run: echo "BAZEL_STARTUP_FLAGS=--output_user_root=C:/tmp --windows_enable_symlinks" >> $GITHUB_ENV
+
+    - name: Initialize Bazel flags
+      shell: bash
+      run: echo "BAZEL_FLAGS=--keep_going --test_output=errors --test_timeout=600" >> $GITHUB_ENV
+
+    - name: Initialize Windows-specific Bazel flags
+      if: runner.os == 'Windows'
+      shell: bash
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --enable_runfiles" >> $GITHUB_ENV
+
+    - name: Initialize MacOS-specific Bazel flags
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        echo "BAZEL_FLAGS=$BAZEL_FLAGS --xcode_version_config=//.github:host_xcodes" >> $GITHUB_ENV
+        echo "DEVELOPER_DIR=${{ env.DEVELOPER_DIR || '/Applications/Xcode_14.1.app/Contents/Developer' }}" >> $GITHUB_ENV
+
+    - name: Configure Bazel caching
+      # Skip bazel cache for local act runs due to issue with credential files
+      # and nested docker images
+      if: ${{ inputs.bazel-cache && !github.event.act_local_test }}
+      shell: bash
+      run: >-
+        echo "BAZEL_FLAGS=$BAZEL_FLAGS
+        --google_credentials=${{ inputs.credentials-file }}
+        --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.bazel-cache }}" >> $GITHUB_ENV
+
+    - name: Configure Bazel cache writing
+      # External runs should never write to our caches.
+      if: ${{ github.event_name != 'pull_request_target' && inputs.bazel-cache && !github.event.act_local_test }}
+      shell: bash
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --remote_upload_local_results" >> $GITHUB_ENV
+
+    - name: Output Bazel flags
+      id: output
+      shell: bash
+      run: |
+        echo "bazel-flags=$BAZEL_FLAGS" >> $GITHUB_OUTPUT
+        echo "bazel-startup-flags=$BAZEL_STARTUP_FLAGS" >> $GITHUB_OUTPUT
+
+    - name: Restore Bazel repository cache
+      uses: ./.github/actions/internal/repository-cache-restore
+      with:
+        bazel-cache: ${{ inputs.bazel-cache }}

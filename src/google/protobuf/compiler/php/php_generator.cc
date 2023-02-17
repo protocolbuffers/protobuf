@@ -30,31 +30,38 @@
 
 #include "google/protobuf/compiler/php/php_generator.h"
 
+#include <algorithm>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
-const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
-const std::string kEmptyFile = "google/protobuf/empty.proto";
-const std::string kEmptyMetadataFile = "GPBMetadata/Google/Protobuf/GPBEmpty.php";
-const std::string kDescriptorMetadataFile =
+constexpr absl::string_view kDescriptorFile =
+    "google/protobuf/descriptor.proto";
+constexpr absl::string_view kEmptyFile = "google/protobuf/empty.proto";
+constexpr absl::string_view kEmptyMetadataFile =
+    "GPBMetadata/Google/Protobuf/GPBEmpty.php";
+constexpr absl::string_view kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
-const std::string kDescriptorDirName = "Google/Protobuf/Internal";
-const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
-const char* const kValidConstantNames[] = {
-    "int",   "float", "bool", "string",   "true",
-    "false", "null",  "void", "iterable", "parent",
-    "self", "readonly"
-};
+constexpr absl::string_view kDescriptorPackageName =
+    "Google\\Protobuf\\Internal";
+constexpr absl::string_view kValidConstantNames[] = {
+    "int",  "float", "bool",     "string", "true", "false",
+    "null", "void",  "iterable", "parent", "self", "readonly"};
 const int kValidConstantNamesSize = 12;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
@@ -69,18 +76,18 @@ struct Options {
   bool is_descriptor = false;
   bool aggregate_metadata = false;
   bool gen_c_wkt = false;
-  std::set<std::string> aggregate_metadata_prefixes;
+  absl::flat_hash_set<std::string> aggregate_metadata_prefixes;
 };
 
 namespace {
 
 // Forward decls.
-std::string PhpName(const std::string& full_name, const Options& options);
+std::string PhpName(absl::string_view full_name, const Options& options);
 std::string IntToString(int32_t value);
-std::string FilenameToClassname(const std::string& filename);
+std::string FilenameToClassname(absl::string_view filename);
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options);
-std::string UnderscoresToCamelCase(const std::string& name,
+std::string UnderscoresToCamelCase(absl::string_view name,
                                    bool cap_first_letter);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
@@ -108,12 +115,17 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
 
 template <typename DescriptorType>
 std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
+  absl::string_view full_name = desc->full_name();
   if (is_internal) {
-    return StringReplace(desc->full_name(), "google.protobuf",
-                         "google.protobuf.internal", false);
-  } else {
-    return desc->full_name();
+    constexpr absl::string_view replace = "google.protobuf";
+    size_t index = full_name.find(replace);
+    if (index != std::string::npos) {
+      return absl::StrCat(full_name.substr(0, index),
+                          "google.protobuf.internal",
+                          full_name.substr(index + replace.size()));
+    }
   }
+  return std::string(full_name);
 }
 
 template <typename DescriptorType>
@@ -127,10 +139,10 @@ std::string LegacyGeneratedClassName(const DescriptorType* desc) {
   return ClassNamePrefix(classname, desc) + classname;
 }
 
-std::string ConstantNamePrefix(const std::string& classname) {
+std::string ConstantNamePrefix(absl::string_view classname) {
   bool is_reserved = false;
 
-  std::string lower = classname;
+  std::string lower(classname);
   std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
   is_reserved = IsReservedName(lower);
@@ -153,9 +165,9 @@ template <typename DescriptorType>
 std::string RootPhpNamespace(const DescriptorType* desc,
                              const Options& options) {
   if (desc->file()->options().has_php_namespace()) {
-    const std::string& php_namespace = desc->file()->options().php_namespace();
+    absl::string_view php_namespace = desc->file()->options().php_namespace();
     if (!php_namespace.empty()) {
-      return php_namespace;
+      return std::string(php_namespace);
     }
     return "";
   }
@@ -171,7 +183,7 @@ std::string FullClassName(const DescriptorType* desc, const Options& options) {
   std::string classname = GeneratedClassName(desc);
   std::string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
-    return php_namespace + "\\" + classname;
+    return absl::StrCat(php_namespace, "\\", classname);
   }
   return classname;
 }
@@ -189,19 +201,19 @@ std::string LegacyFullClassName(const DescriptorType* desc,
   std::string classname = LegacyGeneratedClassName(desc);
   std::string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
-    return php_namespace + "\\" + classname;
+    return absl::StrCat(php_namespace, "\\", classname);
   }
   return classname;
 }
 
-std::string PhpNamePrefix(const std::string& classname) {
+std::string PhpNamePrefix(absl::string_view classname) {
   if (IsReservedName(classname)) return "PB";
   return "";
 }
 
-std::string PhpName(const std::string& full_name, const Options& options) {
+std::string PhpName(absl::string_view full_name, const Options& options) {
   if (options.is_descriptor) {
-    return kDescriptorPackageName;
+    return std::string(kDescriptorPackageName);
   }
 
   std::string segment;
@@ -250,44 +262,44 @@ std::string DefaultForField(const FieldDescriptor* field) {
 
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options) {
-  const std::string& proto_file = file->name();
+  absl::string_view proto_file = file->name();
   int start_index = 0;
   int first_index = proto_file.find_first_of('/', start_index);
   std::string result = "";
   std::string segment = "";
 
   if (proto_file == kEmptyFile) {
-    return kEmptyMetadataFile;
+    return std::string(kEmptyMetadataFile);
   }
   if (options.is_descriptor) {
-    return kDescriptorMetadataFile;
+    return std::string(kDescriptorMetadataFile);
   }
 
   // Append directory name.
-  std::string file_no_suffix;
+  absl::string_view file_no_suffix;
   int lastindex = proto_file.find_last_of('.');
   if (proto_file == kEmptyFile) {
-    return kEmptyMetadataFile;
+    return std::string(kEmptyMetadataFile);
   } else {
     file_no_suffix = proto_file.substr(0, lastindex);
   }
 
   if (file->options().has_php_metadata_namespace()) {
-    const std::string& php_metadata_namespace =
+    absl::string_view php_metadata_namespace =
         file->options().php_metadata_namespace();
     if (!php_metadata_namespace.empty() && php_metadata_namespace != "\\") {
-      result += php_metadata_namespace;
+      absl::StrAppend(&result, php_metadata_namespace);
       std::replace(result.begin(), result.end(), '\\', '/');
       if (result.at(result.size() - 1) != '/') {
-        result += "/";
+        absl::StrAppend(&result, "/");
       }
     }
   } else {
-    result += "GPBMetadata/";
+    absl::StrAppend(&result, "GPBMetadata/");
     while (first_index != std::string::npos) {
       segment = UnderscoresToCamelCase(
           file_no_suffix.substr(start_index, first_index - start_index), true);
-      result += ReservedNamePrefix(segment, file) + segment + "/";
+      absl::StrAppend(&result, ReservedNamePrefix(segment, file), segment, "/");
       start_index = first_index + 1;
       first_index = file_no_suffix.find_first_of('/', start_index);
     }
@@ -303,7 +315,8 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   segment = UnderscoresToCamelCase(
       file_no_suffix.substr(file_name_start, first_index - file_name_start), true);
 
-  return result + ReservedNamePrefix(segment, file) + segment + ".php";
+  return absl::StrCat(result, ReservedNamePrefix(segment, file), segment,
+                      ".php");
 }
 
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
@@ -322,7 +335,7 @@ std::string GeneratedClassFileName(const DescriptorType* desc,
       result[i] = '/';
     }
   }
-  return result + ".php";
+  return absl::StrCat(result, ".php");
 }
 
 template <typename DescriptorType>
@@ -335,7 +348,7 @@ std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
       result[i] = '/';
     }
   }
-  return result + ".php";
+  return absl::StrCat(result, ".php");
 }
 
 template <typename DescriptorType>
@@ -347,21 +360,21 @@ std::string LegacyReadOnlyGeneratedClassFileName(std::string php_namespace,
         php_namespace[i] = '/';
       }
     }
-    return php_namespace + "/" + desc->name() + ".php";
+    return absl::StrCat(php_namespace, "/", desc->name(), ".php");
   }
 
-  return desc->name() + ".php";
+  return absl::StrCat(desc->name(), ".php");
 }
 
 std::string GeneratedServiceFileName(const ServiceDescriptor* service,
                                      const Options& options) {
-  std::string result = FullClassName(service, options) + "Interface";
+  std::string result = FullClassName(service, options);
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
       result[i] = '/';
     }
   }
-  return result + ".php";
+  return absl::StrCat(result, "Interface", ".php");
 }
 
 std::string IntToString(int32_t value) {
@@ -413,7 +426,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
       type = "string";
       break;
     case FieldDescriptor::TYPE_MESSAGE:
-      type = "\\" + FullClassName(field->message_type(), options);
+      type = absl::StrCat("\\", FullClassName(field->message_type(), options));
       break;
     case FieldDescriptor::TYPE_GROUP:
       return "null";
@@ -425,7 +438,8 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
     if (start_pos != std::string::npos) {
       type.replace(start_pos, 1, ">|array<");
     }
-    type = "array<" + type + ">|\\Google\\Protobuf\\Internal\\RepeatedField";
+    type = absl::StrCat("array<", type,
+                        ">|\\Google\\Protobuf\\Internal\\RepeatedField");
   }
   return type;
 }
@@ -463,7 +477,7 @@ std::string PhpGetterTypeName(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: return "string";
     case FieldDescriptor::TYPE_MESSAGE:
-      return "\\" + FullClassName(field->message_type(), options);
+      return absl::StrCat("\\", FullClassName(field->message_type(), options));
     case FieldDescriptor::TYPE_GROUP: return "null";
     default: assert(false); return "";
   }
@@ -479,13 +493,14 @@ std::string PhpGetterTypeName(const FieldDescriptor* field,
 std::string EnumOrMessageSuffix(const FieldDescriptor* field,
                                 const Options& options) {
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    return ", '" +
-           DescriptorFullName(field->message_type(), options.is_descriptor) +
-           "'";
+    return absl::StrCat(
+        ", '", DescriptorFullName(field->message_type(), options.is_descriptor),
+        "'");
   }
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-    return ", '" +
-           DescriptorFullName(field->enum_type(), options.is_descriptor) + "'";
+    return absl::StrCat(
+        ", '", DescriptorFullName(field->enum_type(), options.is_descriptor),
+        "'");
   }
   return "";
 }
@@ -499,7 +514,7 @@ std::string EnumOrMessageSuffix(const FieldDescriptor* field,
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
-std::string UnderscoresToCamelCase(const std::string& name,
+std::string UnderscoresToCamelCase(absl::string_view name,
                                    bool cap_first_letter) {
   std::string result;
   for (int i = 0; i < name.size(); i++) {
@@ -580,8 +595,11 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   GenerateFieldDocComment(printer, field, options, kFieldGetter);
 
   // deprecation
-  std::string deprecation_trigger = (field->options().deprecated()) ? "@trigger_error('" +
-      field->name() + " is deprecated.', E_USER_DEPRECATED);\n        " : "";
+  std::string deprecation_trigger =
+      (field->options().deprecated())
+          ? absl::StrCat("@trigger_error('", field->name(),
+                         " is deprecated.', E_USER_DEPRECATED);\n        ")
+          : "";
 
   // Emit getter.
   if (oneof != NULL) {
@@ -684,15 +702,13 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "key_type", absl::AsciiStrToUpper(key->type_name()),
         "value_type", absl::AsciiStrToUpper(value->type_name()));
     if (value->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      printer->Print(
-          ", \\^class_name^);\n",
-          "class_name",
-          FullClassName(value->message_type(), options) + "::class");
+      printer->Print(", \\^class_name^);\n", "class_name",
+                     absl::StrCat(FullClassName(value->message_type(), options),
+                                  "::class"));
     } else if (value->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       printer->Print(
-          ", \\^class_name^);\n",
-          "class_name",
-          FullClassName(value->enum_type(), options) + "::class");
+          ", \\^class_name^);\n", "class_name",
+          absl::StrCat(FullClassName(value->enum_type(), options), "::class"));
     } else {
       printer->Print(");\n");
     }
@@ -702,15 +718,13 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "\\Google\\Protobuf\\Internal\\GPBType::^type^",
         "type", absl::AsciiStrToUpper(field->type_name()));
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      printer->Print(
-          ", \\^class_name^);\n",
-          "class_name",
-          FullClassName(field->message_type(), options) + "::class");
+      printer->Print(", \\^class_name^);\n", "class_name",
+                     absl::StrCat(FullClassName(field->message_type(), options),
+                                  "::class"));
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       printer->Print(
-          ", \\^class_name^);\n",
-          "class_name",
-          FullClassName(field->enum_type(), options) + "::class");
+          ", \\^class_name^);\n", "class_name",
+          absl::StrCat(FullClassName(field->enum_type(), options), "::class"));
     } else {
       printer->Print(");\n");
     }
@@ -800,16 +814,16 @@ void GenerateServiceMethod(const MethodDescriptor* method,
   );
 }
 
-void GenerateMessageToPool(const std::string& name_prefix,
+void GenerateMessageToPool(absl::string_view name_prefix,
                            const Descriptor* message, io::Printer* printer) {
   // Don't generate MapEntry messages -- we use the PHP extension's native
   // support for map fields instead.
   if (message->options().map_entry()) {
     return;
   }
-  std::string class_name =
-      (name_prefix.empty() ? "" : name_prefix + "\\") +
-      ReservedNamePrefix(message->name(), message->file()) + message->name();
+  std::string class_name = absl::StrCat(
+      name_prefix.empty() ? "" : absl::StrCat(name_prefix, "\\"),
+      ReservedNamePrefix(message->name(), message->file()), message->name());
 
   printer->Print(
       "$pool->addMessage('^message^', "
@@ -911,7 +925,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
           "$pool->finish();\n");
     } else {
       for (int i = 0; i < file->dependency_count(); i++) {
-        const std::string& name = file->dependency(i)->name();
+        absl::string_view name = file->dependency(i)->name();
         // Currently, descriptor.proto is not ready for external usage. Skip to
         // import it for now, so that its dependencies can still work as long as
         // they don't use protos defined in descriptor.proto.
@@ -986,9 +1000,10 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
 
 static void AnalyzeDependencyForFile(
     const FileDescriptor* file,
-    std::set<const FileDescriptor*>* nodes_without_dependency,
-    std::map<const FileDescriptor*, std::set<const FileDescriptor*>>* deps,
-    std::map<const FileDescriptor*, int>* dependency_count) {
+    absl::flat_hash_set<const FileDescriptor*>* nodes_without_dependency,
+    absl::flat_hash_map<const FileDescriptor*,
+                        absl::flat_hash_set<const FileDescriptor*>>* deps,
+    absl::flat_hash_map<const FileDescriptor*, int>* dependency_count) {
   int count = file->dependency_count();
   for (int i = 0; i < file->dependency_count(); i++) {
       const FileDescriptor* dependency = file->dependency(i);
@@ -1008,7 +1023,7 @@ static void AnalyzeDependencyForFile(
         continue;
       }
       if (deps->find(dependency) == deps->end()) {
-        (*deps)[dependency] = std::set<const FileDescriptor*>();
+        (*deps)[dependency] = {};
       }
       (*deps)[dependency].insert(file);
       AnalyzeDependencyForFile(
@@ -1044,9 +1059,11 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       "}\n");
 
   // Sort files according to dependency
-  std::map<const FileDescriptor*, std::set<const FileDescriptor*>> deps;
-  std::map<const FileDescriptor*, int> dependency_count;
-  std::set<const FileDescriptor*> nodes_without_dependency;
+  absl::flat_hash_map<const FileDescriptor*,
+                      absl::flat_hash_set<const FileDescriptor*>>
+      deps;
+  absl::flat_hash_map<const FileDescriptor*, int> dependency_count;
+  absl::flat_hash_set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
 
   AnalyzeDependencyForFile(
@@ -1152,10 +1169,10 @@ void GenerateHead(const FileDescriptor* file, io::Printer* printer) {
     "filename", file->name());
 }
 
-std::string FilenameToClassname(const std::string& filename) {
-  int lastindex = filename.find_last_of('.');
-  std::string result = filename.substr(0, lastindex);
-  for (int i = 0; i < result.size(); i++) {
+std::string FilenameToClassname(absl::string_view filename) {
+  size_t lastindex = filename.find_last_of('.');
+  std::string result(filename.substr(0, lastindex));
+  for (size_t i = 0; i < result.size(); i++) {
     if (result[i] == '/') {
       result[i] = '\\';
     }
@@ -1610,7 +1627,7 @@ void GenerateFile(const FileDescriptor* file, const Options& options,
   }
 }
 
-static std::string EscapePhpdoc(const std::string& input) {
+static std::string EscapePhpdoc(absl::string_view input) {
   std::string result;
   result.reserve(input.size() * 2);
 
@@ -1667,7 +1684,8 @@ static void GenerateDocCommentBodyForLocation(
     // HTML-escape them so that they don't accidentally close the doc comment.
     comments = EscapePhpdoc(comments);
 
-    std::vector<std::string> lines = absl::StrSplit(comments, "\n", absl::SkipEmpty());
+    std::vector<absl::string_view> lines =
+        absl::StrSplit(comments, '\n', absl::SkipEmpty());
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }
@@ -1698,8 +1716,8 @@ static void GenerateDocCommentBody(
   }
 }
 
-static std::string FirstLineOf(const std::string& value) {
-  std::string result = value;
+static std::string FirstLineOf(absl::string_view value) {
+  std::string result(value);
 
   std::string::size_type pos = result.find_first_of('\n');
   if (pos != std::string::npos) {
@@ -2298,14 +2316,14 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       options.aggregate_metadata = true;
       for (const auto& prefix : absl::StrSplit(option_pair[1], "#", absl::AllowEmpty())) {
         options.aggregate_metadata_prefixes.emplace(prefix);
-        GOOGLE_LOG(INFO) << prefix;
+        ABSL_LOG(INFO) << prefix;
       }
     } else if (option_pair[0] == "internal") {
       options.is_descriptor = true;
     } else if (option_pair[0] == "internal_generate_c_wkt") {
       GenerateCWellKnownTypes(files, generator_context);
     } else {
-      GOOGLE_LOG(FATAL) << "Unknown codegen option: " << option_pair[0];
+      ABSL_LOG(FATAL) << "Unknown codegen option: " << option_pair[0];
     }
   }
 

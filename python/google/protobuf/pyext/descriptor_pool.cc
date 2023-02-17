@@ -39,13 +39,18 @@
 #include <Python.h>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_database.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
-#include "absl/strings/string_view.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
@@ -72,19 +77,19 @@ class BuildFileErrorCollector : public DescriptorPool::ErrorCollector {
  public:
   BuildFileErrorCollector() : error_message(""), had_errors_(false) {}
 
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* descriptor, ErrorLocation location,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
     // Replicates the logging behavior that happens in the C++ implementation
     // when an error collector is not passed in.
     if (!had_errors_) {
-      error_message +=
-          ("Invalid proto descriptor for file \"" + filename + "\":\n");
+      absl::StrAppend(&error_message, "Invalid proto descriptor for file \"",
+                      filename, "\":\n");
       had_errors_ = true;
     }
     // As this only happens on failure and will result in the program not
     // running at all, no effort is made to optimize this string manipulation.
-    error_message += ("  " + element_name + ": " + message + "\n");
+    absl::StrAppend(&error_message, "  ", element_name, ": ", message, "\n");
   }
 
   void Clear() {
@@ -154,20 +159,28 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
 }
 
 static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
-    DescriptorDatabase* database) {
+    DescriptorDatabase* database,
+    bool use_deprecated_legacy_json_field_conflicts) {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
   if (cpool == nullptr) {
     return nullptr;
   }
+  DescriptorPool* pool;
   if (database != nullptr) {
     cpool->error_collector = new BuildFileErrorCollector();
-    cpool->pool = new DescriptorPool(database, cpool->error_collector);
+    pool = new DescriptorPool(database, cpool->error_collector);
     cpool->is_mutable = false;
     cpool->database = database;
   } else {
-    cpool->pool = new DescriptorPool();
+    pool = new DescriptorPool();
     cpool->is_mutable = true;
   }
+  if (use_deprecated_legacy_json_field_conflicts) {
+    PROTOBUF_IGNORE_DEPRECATION_START
+    pool->UseDeprecatedLegacyJsonFieldConflicts();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
+  }
+  cpool->pool = pool;
   cpool->is_owned = true;
 
   if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
@@ -182,6 +195,7 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
 // The public DescriptorPool constructor.
 static PyObject* New(PyTypeObject* type,
                      PyObject* args, PyObject* kwargs) {
+  int use_deprecated_legacy_json_field_conflicts = 0;
   static const char* kwlist[] = {"descriptor_db", nullptr};
   PyObject* py_database = nullptr;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O",
@@ -192,8 +206,8 @@ static PyObject* New(PyTypeObject* type,
   if (py_database && py_database != Py_None) {
     database = new PyDescriptorDatabase(py_database);
   }
-  return reinterpret_cast<PyObject*>(
-      PyDescriptorPool_NewWithDatabase(database));
+  return reinterpret_cast<PyObject*>(PyDescriptorPool_NewWithDatabase(
+      database, use_deprecated_legacy_json_field_conflicts));
 }
 
 static void Dealloc(PyObject* pself) {
@@ -818,3 +832,5 @@ PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

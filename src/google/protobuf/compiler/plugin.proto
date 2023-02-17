@@ -47,6 +47,7 @@ package google.protobuf.compiler;
 option java_package = "com.google.protobuf.compiler";
 option java_outer_classname = "PluginProtos";
 
+option csharp_namespace = "Google.Protobuf.Compiler";
 option go_package = "google.golang.org/protobuf/types/pluginpb";
 
 import "google/protobuf/descriptor.proto";
@@ -89,7 +90,6 @@ message CodeGeneratorRequest {
 
   // The version number of protocol compiler.
   optional Version compiler_version = 3;
-
 }
 
 // The plugin writes an encoded CodeGeneratorResponse to stdout.

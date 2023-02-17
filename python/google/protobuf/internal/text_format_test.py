@@ -41,12 +41,6 @@ import unittest
 
 from google.protobuf import any_pb2
 from google.protobuf import struct_pb2
-from google.protobuf import any_test_pb2
-from google.protobuf import map_unittest_pb2
-from google.protobuf import unittest_custom_options_pb2
-from google.protobuf import unittest_mset_pb2
-from google.protobuf import unittest_pb2
-from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import any_test_pb2 as test_extend_any
 from google.protobuf.internal import api_implementation
@@ -56,6 +50,12 @@ from google.protobuf.internal import test_util
 from google.protobuf import descriptor_pool
 from google.protobuf import text_format
 from google.protobuf.internal import _parameterized
+from google.protobuf import any_test_pb2
+from google.protobuf import map_unittest_pb2
+from google.protobuf import unittest_mset_pb2
+from google.protobuf import unittest_custom_options_pb2
+from google.protobuf import unittest_pb2
+from google.protobuf import unittest_proto3_arena_pb2
 # pylint: enable=g-import-not-at-top
 
 
@@ -786,6 +786,12 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(message_module.TestAllTypes(), message)
 
   def testParseInvalidUtf8(self, message_module):
+    message = message_module.TestAllTypes()
+    text = b'invalid<\xc3\xc3>'
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse(text, message)
+
+  def testParseInvalidUtf8Value(self, message_module):
     message = message_module.TestAllTypes()
     text = 'repeated_string: "\\xc3\\xc3"'
     with self.assertRaises(text_format.ParseError) as e:
@@ -2482,8 +2488,6 @@ class OptionalColonMessageToStringTest(unittest.TestCase):
     output = text_format.MessageToString(
         message, use_short_repeated_primitives=True, force_colon=True)
     self.assertEqual('repeated_int32: [1]\n', output)
-
-
 
 if __name__ == '__main__':
   unittest.main()

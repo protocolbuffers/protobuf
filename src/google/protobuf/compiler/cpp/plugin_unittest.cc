@@ -40,10 +40,11 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/command_line_interface.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -171,44 +172,45 @@ class TestGenerator : public CodeGenerator {
 // not verify that they are correctly-placed; that would require actually
 // compiling the output which is a bit more than I care to do for this test.
 TEST(CppPluginTest, PluginTest) {
-  GOOGLE_CHECK_OK(File::SetContents(TestTempDir() + "/test.proto",
-                             "syntax = \"proto2\";\n"
-                             "package foo;\n"
-                             "\n"
-                             "enum Thud { VALUE = 0; }\n"
-                             "\n"
-                             "message Bar {\n"
-                             "  message Baz {}\n"
-                             "  optional int32 optInt = 1;\n"
-                             "  repeated int32 repeatedInt = 2;\n"
-                             "\n"
-                             "  required string requiredString = 3;\n"
-                             "  repeated string repeatedString = 4;\n"
-                             "\n"
-                             "  optional Baz optMessage = 6;\n"
-                             "  repeated Baz repeatedMessage = 7;\n"
-                             "\n"
-                             "  optional Thud optEnum = 8;\n"
-                             "  repeated Thud repeatedEnum = 9;\n"
-                             "\n"
-                             "  required string requiredCord = 10 [\n"
-                             "    ctype = CORD\n"
-                             "  ];\n"
-                             "  repeated string repeatedCord = 11 [\n"
-                             "    ctype = CORD\n"
-                             "  ];\n"
-                             "\n"
-                             "  oneof Moo {\n"
-                             "    int64 oneOfInt = 20;\n"
-                             "    string oneOfString = 21;\n"
-                             "    Baz oneOfMessage = 22;\n"
-                             "    Thud oneOfEnum = 23;"
-                             "    string oneOfCord = 24 [\n"
-                             "      ctype = CORD\n"
-                             "    ];\n"
-                             "  }\n"
-                             "}\n",
-                             true));
+  ABSL_CHECK_OK(
+      File::SetContents(absl::StrCat(TestTempDir(), "/test.proto"),
+                        "syntax = \"proto2\";\n"
+                        "package foo;\n"
+                        "\n"
+                        "enum Thud { VALUE = 0; }\n"
+                        "\n"
+                        "message Bar {\n"
+                        "  message Baz {}\n"
+                        "  optional int32 optInt = 1;\n"
+                        "  repeated int32 repeatedInt = 2;\n"
+                        "\n"
+                        "  required string requiredString = 3;\n"
+                        "  repeated string repeatedString = 4;\n"
+                        "\n"
+                        "  optional Baz optMessage = 6;\n"
+                        "  repeated Baz repeatedMessage = 7;\n"
+                        "\n"
+                        "  optional Thud optEnum = 8;\n"
+                        "  repeated Thud repeatedEnum = 9;\n"
+                        "\n"
+                        "  required string requiredCord = 10 [\n"
+                        "    ctype = CORD\n"
+                        "  ];\n"
+                        "  repeated string repeatedCord = 11 [\n"
+                        "    ctype = CORD\n"
+                        "  ];\n"
+                        "\n"
+                        "  oneof Moo {\n"
+                        "    int64 oneOfInt = 20;\n"
+                        "    string oneOfString = 21;\n"
+                        "    Baz oneOfMessage = 22;\n"
+                        "    Thud oneOfEnum = 23;"
+                        "    string oneOfCord = 24 [\n"
+                        "      ctype = CORD\n"
+                        "    ];\n"
+                        "  }\n"
+                        "}\n",
+                        true));
 
   CommandLineInterface cli;
   cli.SetInputsAreProtoPathRelative(true);
@@ -218,9 +220,9 @@ TEST(CppPluginTest, PluginTest) {
   cli.RegisterGenerator("--cpp_out", &cpp_generator, "");
   cli.RegisterGenerator("--test_out", &test_generator, "");
 
-  std::string proto_path = "-I" + TestTempDir();
-  std::string cpp_out = "--cpp_out=" + TestTempDir();
-  std::string test_out = "--test_out=" + TestTempDir();
+  std::string proto_path = absl::StrCat("-I", TestTempDir());
+  std::string cpp_out = absl::StrCat("--cpp_out=", TestTempDir());
+  std::string test_out = absl::StrCat("--test_out=", TestTempDir());
 
   const char* argv[] = {"protoc", proto_path.c_str(), cpp_out.c_str(),
                         test_out.c_str(), "test.proto"};

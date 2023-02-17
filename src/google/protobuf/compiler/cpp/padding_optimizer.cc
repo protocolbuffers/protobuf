@@ -30,6 +30,7 @@
 
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 
+#include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
 namespace google {
@@ -121,7 +122,7 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
       if (IsLazy(field, options, scc_analyzer)) {
         f = LAZY_MESSAGE;
       }
-    } else if (CanInitializeByZeroing(field)) {
+    } else if (CanInitializeByZeroing(field, options, scc_analyzer)) {
       f = ZERO_INITIALIZABLE;
     }
 
@@ -137,8 +138,9 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
         aligned_to_8[f].push_back(FieldGroup(j, field));
         break;
       default:
-        GOOGLE_LOG(FATAL) << "Unknown alignment size " << EstimateAlignmentSize(field)
-                   << "for a field " << field->full_name() << ".";
+        ABSL_LOG(FATAL) << "Unknown alignment size "
+                        << EstimateAlignmentSize(field) << "for a field "
+                        << field->full_name() << ".";
     }
   }
 

@@ -34,9 +34,8 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/port.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/message_lite.h"

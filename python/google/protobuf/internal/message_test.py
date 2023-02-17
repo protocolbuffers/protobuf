@@ -50,20 +50,20 @@ import warnings
 
 cmp = lambda x, y: (x > y) - (x < y)
 
+from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
+from google.protobuf.internal import encoder
+from google.protobuf.internal import more_extensions_pb2
+from google.protobuf.internal import packed_field_test_pb2
+from google.protobuf.internal import test_proto3_optional_pb2
+from google.protobuf.internal import test_util
+from google.protobuf.internal import testing_refleaks
+from google.protobuf import descriptor
+from google.protobuf import message
+from google.protobuf.internal import _parameterized
 from google.protobuf import map_proto2_unittest_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
-from google.protobuf import descriptor
-from google.protobuf.internal import api_implementation
-from google.protobuf.internal import encoder
-from google.protobuf.internal import more_extensions_pb2
-from google.protobuf.internal import packed_field_test_pb2
-from google.protobuf.internal import test_util
-from google.protobuf.internal import test_proto3_optional_pb2
-from google.protobuf.internal import testing_refleaks
-from google.protobuf import message
-from google.protobuf.internal import _parameterized
 
 UCS2_MAXUNICODE = 65535
 
@@ -1530,7 +1530,6 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(100, msg.optional_int32)
     self.assertEqual(200, msg.optional_fixed32)
 
-
   def test_documentation(self):
     # Also used by the interactive help() function.
     doc = pydoc.html.document(unittest_pb2.TestAllTypes, 'message')
@@ -2488,8 +2487,6 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(
         unittest_proto3_arena_pb2.TestAllTypes().optional_nested_message,
         unittest_proto3_arena_pb2.TestAllTypes().optional_nested_message)
-
-
 
 
 @testing_refleaks.TestCase

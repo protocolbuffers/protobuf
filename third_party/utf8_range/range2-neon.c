@@ -2,7 +2,7 @@
  * Process 2x16 bytes in each iteration.
  * Comments removed for brevity. See range-neon.c for details.
  */
-#if defined(__aarch64__) && defined(__ARM_NEON)
+#ifdef __aarch64__
 
 #include <stdio.h>
 #include <stdint.h>

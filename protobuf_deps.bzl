@@ -30,28 +30,47 @@ def protobuf_deps():
         http_archive(
             name = "bazel_skylib",
             urls = [
-                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
-                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
+                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
             ],
-            sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
+            sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
         )
 
     if not native.existing_rule("com_google_absl"):
-        # Abseil LTS from November 2021
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "273292d1cfc0a94a65082ee350509af1d113344d",
-            sha256 = "6764f226bd6e2d8ab9fe2f3cab5f45fb1a4a15c04b58b87ba7fa87456054f98b",
+            commit = "78be63686ba732b25052be15f8d6dee891c05749",  # Abseil LTS 20230125
+            sha256 = "4f356a07b9ec06ef51f943928508566e992f621ed5fa4dd588865d7bed1284cd",
         )
 
     if not native.existing_rule("zlib"):
         http_archive(
             name = "zlib",
-            build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
-            sha256 = "629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff",
-            strip_prefix = "zlib-1.2.11",
-            urls = ["https://github.com/madler/zlib/archive/v1.2.11.tar.gz"],
+            build_file = Label("//:third_party/zlib.BUILD"),
+            sha256 = "d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98",
+            strip_prefix = "zlib-1.2.13",
+            urls = [
+                "https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.xz",
+                "https://zlib.net/zlib-1.2.13.tar.xz",
+            ],
+        )
+
+    if not native.existing_rule("jsoncpp"):
+        _github_archive(
+            name = "jsoncpp",
+            repo = "https://github.com/open-source-parsers/jsoncpp",
+            commit = "9059f5cad030ba11d37818847443a53918c327b1",  # 1.9.4
+            sha256 = "c0c583c7b53a53bcd1f7385f15439dcdf0314d550362379e2db9919a918d1996",
+            build_file = Label("//:third_party/jsoncpp.BUILD"),
+        )
+
+    if not native.existing_rule("utf8_range"):
+        _github_archive(
+            name = "utf8_range",
+            repo = "https://github.com/protocolbuffers/utf8_range",
+            commit = "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f",
+            sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
         )
 
     if not native.existing_rule("rules_cc"):
@@ -79,11 +98,19 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_python"):
-        http_archive(
+        _github_archive(
             name = "rules_python",
-            sha256 = "9fcf91dbcc31fde6d1edb15f117246d912c33c36f44cf681976bd886538deba6",
-            strip_prefix = "rules_python-0.8.0",
-            url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.8.0.tar.gz",
+            repo = "https://github.com/bazelbuild/rules_python",
+            commit = "912a5051f51581784fd64094f6bdabf93f6d698f",  # 0.14.0
+            sha256 = "a3e4b4ade7c4a52e757b16a16e94d0b2640333062180cba577d81fac087a501d",
+        )
+
+    if not native.existing_rule("rules_ruby"):
+        _github_archive(
+            name = "rules_ruby",
+            repo = "https://github.com/protocolbuffers/rules_ruby",
+            commit = "5cf6ff74161d7f985b9bf86bb3c5fb16cef6337b",
+            sha256 = "c88dd69eb50fcfd7fbc5d7db79adc6631ef0e1d80b3c94efe33ac5ee3ccc37f7",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -104,6 +131,13 @@ def protobuf_deps():
             sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
         )
 
+    if not native.existing_rule("build_bazel_rules_apple"):
+        http_archive(
+            name = "build_bazel_rules_apple",
+            sha256 = "f94e6dddf74739ef5cb30f000e13a2a613f6ebfa5e63588305a71fce8a8a9911",
+            url = "https://github.com/bazelbuild/rules_apple/releases/download/1.1.3/rules_apple.1.1.3.tar.gz",
+        )
+
     if not native.existing_rule("io_bazel_rules_kotlin"):
         http_archive(
             name = "io_bazel_rules_kotlin",
@@ -115,6 +149,7 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "ce3a28f75c8a52a5ea31f6ecf72467a9d6461cb1",
-            sha256 = "716c0c0e6b0bbafa7e64a9184b248fcd100eebb01b0e1aded61c7bc3d81d837e",
+            commit = "662497f1d3dcced2bba1620cea9aae8b484bd3cd",
+            sha256 = "57c87ca4145d2cbc162a6c613b114b9325b577f4f6525bd78747a34b3d03627c",
+            patches = ["@com_google_protobuf//build_defs:upb.patch"],
         )

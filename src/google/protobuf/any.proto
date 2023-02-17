@@ -32,12 +32,12 @@ syntax = "proto3";
 
 package google.protobuf;
 
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option go_package = "google.golang.org/protobuf/types/known/anypb";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "AnyProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 
 // `Any` contains an arbitrary serialized protocol buffer message along with a
 // URL that describes the type of the serialized message.
@@ -62,6 +62,10 @@ option objc_class_prefix = "GPB";
 //     ...
 //     if (any.is(Foo.class)) {
 //       foo = any.unpack(Foo.class);
+//     }
+//     // or ...
+//     if (any.isSameTypeAs(Foo.getDefaultInstance())) {
+//       foo = any.unpack(Foo.getDefaultInstance());
 //     }
 //
 // Example 3: Pack and unpack a message in Python.
@@ -92,7 +96,6 @@ option objc_class_prefix = "GPB";
 // methods only use the fully qualified type name after the last '/'
 // in the type URL, for example "foo.bar.com/x/y.z" will yield type
 // name "y.z".
-//
 //
 // JSON
 //

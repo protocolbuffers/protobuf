@@ -110,7 +110,6 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_H__
 
-
 #include <iosfwd>
 #include <string>
 #include <type_traits>
@@ -121,6 +120,7 @@
 #include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
+#include "absl/functional/function_ref.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -157,6 +157,7 @@ class MapIterator;
 class MapReflectionTester;
 
 namespace internal {
+struct FuzzPeer;
 struct DescriptorTable;
 class MapFieldBase;
 class SwapFieldHelper;
@@ -180,7 +181,10 @@ class CelMapReflectionFriend;  // field_backed_map_impl.cc
 
 namespace internal {
 class MapFieldPrinterHelper;  // text_format.cc
-}
+void PerformAbslStringify(
+    const Message& message,
+    absl::FunctionRef<void(absl::string_view)> append);  // text_format.cc
+}  // namespace internal
 namespace util {
 class MessageDifferencer;
 }
@@ -271,8 +275,8 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // exact same class).
   virtual void MergeFrom(const Message& from);
 
-  // Verifies that IsInitialized() returns true.  GOOGLE_CHECK-fails otherwise, with
-  // a nice error message.
+  // Verifies that IsInitialized() returns true.  ABSL_CHECK-fails otherwise,
+  // with a nice error message.
   void CheckInitialized() const;
 
   // Slowly build a list of all required fields that are not set.
@@ -328,6 +332,15 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   std::string Utf8DebugString() const;
   // Convenience function useful in GDB.  Prints DebugString() to stdout.
   void PrintDebugString() const;
+
+  // Implementation of the `AbslStringify` interface. This adds something
+  // similar to either `ShortDebugString()` or `DebugString()` to the sink.
+  // Do not rely on exact format.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const google::protobuf::Message& message) {
+    internal::PerformAbslStringify(
+        message, [&](absl::string_view content) { sink.Append(content); });
+  }
 
   // Reflection-based methods ----------------------------------------
   // These methods are pure-virtual in MessageLite, but Message provides
@@ -398,11 +411,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // type, and thus uses GetClassData().
   static void CopyWithSourceCheck(Message& to, const Message& from);
 
-  // Fail if "from" is a descendant of "to" as such copy is not allowed.
-  static void FailIfCopyFromDescendant(Message& to, const Message& from);
-
-  inline explicit Message(Arena* arena, bool is_message_owned = false)
-      : MessageLite(arena, is_message_owned) {}
+  inline explicit Message(Arena* arena) : MessageLite(arena) {}
   size_t ComputeUnknownFieldsSize(size_t total_size,
                                   internal::CachedSize* cached_size) const;
   size_t MaybeComputeUnknownFieldsSize(size_t total_size,
@@ -795,6 +804,7 @@ class PROTOBUF_EXPORT Reflection final {
                  std::string value) const;
   void AddEnum(Message* message, const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
+
   // Add an integer value to a repeated enum field rather than
   // EnumValueDescriptor. For proto3 this is just setting the enum field to the
   // value specified, for proto2 it's more complicated. If value is a known enum
@@ -914,8 +924,7 @@ class PROTOBUF_EXPORT Reflection final {
 
   // Try to find an extension of this message type by fully-qualified field
   // name.  Returns nullptr if no extension is known for this name or number.
-  const FieldDescriptor* FindKnownExtensionByName(
-      const std::string& name) const;
+  const FieldDescriptor* FindKnownExtensionByName(absl::string_view name) const;
 
   // Try to find an extension of this message type by field number.
   // Returns nullptr if no extension is known for this name or number.
@@ -928,7 +937,7 @@ class PROTOBUF_EXPORT Reflection final {
   // take arbitrary integer values, and the legacy GetEnum() getter will
   // dynamically create an EnumValueDescriptor for any integer value without
   // one. If |false|, setting an unknown enum value via the integer-based
-  // setters results in undefined behavior (in practice, GOOGLE_DCHECK-fails).
+  // setters results in undefined behavior (in practice, ABSL_DCHECK-fails).
   //
   // Generic code that uses reflection to handle messages with enum fields
   // should check this flag before using the integer-based setter, and either
@@ -977,6 +986,7 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename T>
   RepeatedPtrField<T>* MutableRepeatedPtrFieldInternal(
       Message* message, const FieldDescriptor* field) const;
+
   // Obtain a pointer to a Repeated Field Structure and do some type checking:
   //   on field->cpp_type(),
   //   on field->field_option().ctype() (if ctype >= 0)
@@ -1013,22 +1023,6 @@ class PROTOBUF_EXPORT Reflection final {
   // the RepeatedFieldAccessor interface.
   const internal::RepeatedFieldAccessor* RepeatedFieldAccessor(
       const FieldDescriptor* field) const;
-
-  // Lists all fields of the message which are currently set, except for unknown
-  // fields and stripped fields. See ListFields for details.
-  void ListFieldsOmitStripped(
-      const Message& message,
-      std::vector<const FieldDescriptor*>* output) const;
-
-  bool IsMessageStripped(const Descriptor* descriptor) const {
-    return schema_.IsMessageStripped(descriptor);
-  }
-
-  friend class TextFormat;
-
-  void ListFieldsMayFailOnStripped(
-      const Message& message, bool should_fail,
-      std::vector<const FieldDescriptor*>* output) const;
 
   // Returns true if the message field is backed by a LazyField.
   //
@@ -1111,6 +1105,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class internal::WireFormat;
   friend class internal::ReflectionOps;
   friend class internal::SwapFieldHelper;
+  friend struct internal::FuzzPeer;
   // Needed for implementing text format for map.
   friend class internal::MapFieldPrinterHelper;
 
@@ -1531,7 +1526,7 @@ const Type& Reflection::DefaultRaw(const FieldDescriptor* field) const {
 
 uint32_t Reflection::GetOneofCase(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
-  GOOGLE_DCHECK(!oneof_descriptor->is_synthetic());
+  ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   return internal::GetConstRefAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
@@ -1543,20 +1538,20 @@ bool Reflection::HasOneofField(const Message& message,
 }
 
 const void* Reflection::GetSplitField(const Message* message) const {
-  GOOGLE_DCHECK(schema_.IsSplit());
+  ABSL_DCHECK(schema_.IsSplit());
   return *internal::GetConstPointerAtOffset<void*>(message,
                                                    schema_.SplitOffset());
 }
 
 void** Reflection::MutableSplitField(Message* message) const {
-  GOOGLE_DCHECK(schema_.IsSplit());
+  ABSL_DCHECK(schema_.IsSplit());
   return internal::GetPointerAtOffset<void*>(message, schema_.SplitOffset());
 }
 
 template <typename Type>
 const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
-  GOOGLE_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
+  ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
       << "Field = " << field->full_name();
   if (schema_.IsSplit(field)) {
     return *internal::GetConstPointerAtOffset<Type>(

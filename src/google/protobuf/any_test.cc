@@ -28,10 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/any_test.pb.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/any.pb.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/any_test.pb.h"
+#include "google/protobuf/unittest.pb.h"
 
 
 // Must be included last.
@@ -177,7 +178,7 @@ TEST(AnyTest, MoveAssignment) {
   EXPECT_EQ(12345, payload.int32_value());
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 #ifndef NDEBUG
 TEST(AnyTest, PackSelfDeath) {
   google::protobuf::Any any;
@@ -185,7 +186,7 @@ TEST(AnyTest, PackSelfDeath) {
   EXPECT_DEATH(any.PackFrom(any, ""), "&message");
 }
 #endif  // !NDEBUG
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 
 }  // namespace

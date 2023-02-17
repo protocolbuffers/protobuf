@@ -31,7 +31,6 @@ pkg_filegroup(
         "//src/google/protobuf/stubs:dist_files",
         "//src/google/protobuf/testing:dist_files",
         "//src/google/protobuf/util:dist_files",
-        "//src/google/protobuf/util/internal:dist_files",
     ],
     visibility = ["//pkg:__pkg__"],
 )
@@ -51,6 +50,7 @@ genrule(
     outs = ["cmake_copy/file_lists.cmake"],
     cmd = "cp $< $@",
     visibility = ["//visibility:private"],
+    tags = ["manual"],
 )
 
 staleness_test(

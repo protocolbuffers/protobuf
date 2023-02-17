@@ -38,33 +38,34 @@
 #include "google/protobuf/unknown_field_set.h"
 
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_lite.pb.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/text_format.h"
-#include "google/protobuf/wire_format.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_set.h"
+#include "absl/functional/bind_front.h"
+#include "absl/strings/cord.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/test_util.h"
-#include "google/protobuf/stubs/stl_util.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_lite.pb.h"
+#include "google/protobuf/wire_format.h"
 
 
 namespace google {
 namespace protobuf {
 
 using internal::WireFormat;
+using ::testing::ElementsAre;
 
 class UnknownFieldSetTest : public testing::Test {
  protected:
@@ -136,7 +137,7 @@ TEST_F(UnknownFieldSetTest, AllFieldsPresent) {
     }
   }
 
-  std::unordered_set<uint32_t> unknown_tags;
+  absl::flat_hash_set<uint32_t> unknown_tags;
   for (int i = 0; i < unknown_fields_->field_count(); i++) {
     unknown_tags.insert(unknown_fields_->field(i).number());
   }
@@ -206,15 +207,13 @@ TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
   slow_buffer.resize(size);
   fast_buffer.resize(size);
 
-  uint8_t* target =
-      reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&fast_buffer));
+  uint8_t* target = reinterpret_cast<uint8_t*>(&fast_buffer[0]);
   uint8_t* result = WireFormat::SerializeUnknownFieldsToArray(
       empty_message_.unknown_fields(), target);
   EXPECT_EQ(size, result - target);
 
   {
-    io::ArrayOutputStream raw_stream(::google::protobuf::string_as_array(&slow_buffer), size,
-                                     1);
+    io::ArrayOutputStream raw_stream(&slow_buffer[0], size, 1);
     io::CodedOutputStream output_stream(&raw_stream);
     WireFormat::SerializeUnknownFields(empty_message_.unknown_fields(),
                                        &output_stream);
@@ -680,6 +679,80 @@ TEST_F(UnknownFieldSetTest, DeleteByNumber) {
                       MAKE_VECTOR(kExpectedFieldNumbers5));
 }
 #undef MAKE_VECTOR
+
+TEST_F(UnknownFieldSetTest, SerializeToString) {
+  UnknownFieldSet field_set;
+  field_set.AddVarint(3, 3);
+  field_set.AddVarint(4, 4);
+  field_set.AddVarint(1, -1);
+  field_set.AddVarint(2, -2);
+  field_set.AddLengthDelimited(44, "str");
+  field_set.AddLengthDelimited(44, "byv");
+  field_set.AddFixed32(7, 7);
+  field_set.AddFixed64(8, 8);
+
+  UnknownFieldSet* group_field_set = field_set.AddGroup(46);
+  group_field_set->AddVarint(47, 1024);
+  group_field_set = field_set.AddGroup(46);
+  group_field_set->AddVarint(47, 2048);
+
+  unittest::TestAllTypes message;
+  std::string serialized_message;
+  ASSERT_TRUE(field_set.SerializeToString(&serialized_message));
+  ASSERT_TRUE(message.ParseFromString(serialized_message));
+
+  EXPECT_EQ(message.optional_int32(), -1);
+  EXPECT_EQ(message.optional_int64(), -2);
+  EXPECT_EQ(message.optional_uint32(), 3);
+  EXPECT_EQ(message.optional_uint64(), 4);
+  EXPECT_EQ(message.optional_fixed32(), 7);
+  EXPECT_EQ(message.optional_fixed64(), 8);
+  EXPECT_EQ(message.repeated_string(0), "str");
+  EXPECT_EQ(message.repeated_string(1), "byv");
+  EXPECT_EQ(message.repeatedgroup(0).a(), 1024);
+  EXPECT_EQ(message.repeatedgroup(1).a(), 2048);
+}
+
+TEST_F(UnknownFieldSetTest, SerializeToCodedStream_TestPackedTypes) {
+  UnknownFieldSet field_set;
+  field_set.AddVarint(90, -1);
+  field_set.AddVarint(90, -2);
+  field_set.AddVarint(90, -3);
+  field_set.AddVarint(90, -4);
+  field_set.AddVarint(93, 5);
+  field_set.AddVarint(93, 6);
+  field_set.AddVarint(93, 7);
+
+  unittest::TestPackedTypes message;
+  std::string serialized_message;
+  {
+    io::StringOutputStream string_output(&serialized_message);
+    io::CodedOutputStream coded_output(&string_output);
+    ASSERT_TRUE(field_set.SerializeToCodedStream(&coded_output));
+  }
+  ASSERT_TRUE(message.ParseFromString(serialized_message));
+  EXPECT_THAT(message.packed_int32(), ElementsAre(-1, -2, -3, -4));
+  EXPECT_THAT(message.packed_uint64(), ElementsAre(5, 6, 7));
+}
+
+TEST_F(UnknownFieldSetTest, SerializeToCord_TestPackedTypes) {
+  UnknownFieldSet field_set;
+  field_set.AddVarint(90, -1);
+  field_set.AddVarint(90, -2);
+  field_set.AddVarint(90, -3);
+  field_set.AddVarint(90, -4);
+  field_set.AddVarint(93, 5);
+  field_set.AddVarint(93, 6);
+  field_set.AddVarint(93, 7);
+
+  absl::Cord cord;
+  ASSERT_TRUE(field_set.SerializeToCord(&cord));
+
+  unittest::TestPackedTypes message;
+  ASSERT_TRUE(message.ParseFromCord(cord));
+  EXPECT_THAT(message.packed_int32(), ElementsAre(-1, -2, -3, -4));
+  EXPECT_THAT(message.packed_uint64(), ElementsAre(5, 6, 7));
+}
 
 }  // namespace
 

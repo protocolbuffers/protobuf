@@ -50,11 +50,11 @@
 #include <android/log.h>
 #endif
 
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/stubs/callback.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/strutil.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"  // NOLINT
@@ -69,26 +69,32 @@ void VerifyVersion(int headerVersion,
                    const char* filename) {
   if (GOOGLE_PROTOBUF_VERSION < minLibraryVersion) {
     // Library is too old for headers.
-    GOOGLE_LOG(FATAL)
-      << "This program requires version " << VersionString(minLibraryVersion)
-      << " of the Protocol Buffer runtime library, but the installed version "
-         "is " << VersionString(GOOGLE_PROTOBUF_VERSION) << ".  Please update "
-         "your library.  If you compiled the program yourself, make sure that "
-         "your headers are from the same version of Protocol Buffers as your "
-         "link-time library.  (Version verification failed in \""
-      << filename << "\".)";
+    ABSL_LOG(FATAL)
+        << "This program requires version " << VersionString(minLibraryVersion)
+        << " of the Protocol Buffer runtime library, but the installed version "
+           "is "
+        << VersionString(GOOGLE_PROTOBUF_VERSION)
+        << ".  Please update "
+           "your library.  If you compiled the program yourself, make sure "
+           "that "
+           "your headers are from the same version of Protocol Buffers as your "
+           "link-time library.  (Version verification failed in \""
+        << filename << "\".)";
   }
   if (headerVersion < kMinHeaderVersionForLibrary) {
     // Headers are too old for library.
-    GOOGLE_LOG(FATAL)
-      << "This program was compiled against version "
-      << VersionString(headerVersion) << " of the Protocol Buffer runtime "
-         "library, which is not compatible with the installed version ("
-      << VersionString(GOOGLE_PROTOBUF_VERSION) <<  ").  Contact the program "
-         "author for an update.  If you compiled the program yourself, make "
-         "sure that your headers are from the same version of Protocol Buffers "
-         "as your link-time library.  (Version verification failed in \""
-      << filename << "\".)";
+    ABSL_LOG(FATAL)
+        << "This program was compiled against version "
+        << VersionString(headerVersion)
+        << " of the Protocol Buffer runtime "
+           "library, which is not compatible with the installed version ("
+        << VersionString(GOOGLE_PROTOBUF_VERSION)
+        << ").  Contact the program "
+           "author for an update.  If you compiled the program yourself, make "
+           "sure that your headers are from the same version of Protocol "
+           "Buffers "
+           "as your link-time library.  (Version verification failed in \""
+        << filename << "\".)";
   }
 }
 
@@ -125,171 +131,6 @@ std::string ProtocVersionString(int version) {
 
 }  // namespace internal
 
-// ===================================================================
-// emulates google3/base/logging.cc
-
-// If the minimum logging level is not set, we default to logging messages for
-// all levels.
-#ifndef GOOGLE_PROTOBUF_MIN_LOG_LEVEL
-#define GOOGLE_PROTOBUF_MIN_LOG_LEVEL LOGLEVEL_INFO
-#endif
-
-namespace internal {
-
-#if defined(__ANDROID__)
-inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                              const std::string& message) {
-  if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
-    return;
-  }
-  static const char* level_names[] = {"INFO", "WARNING", "ERROR", "FATAL"};
-
-  static const int android_log_levels[] = {
-      ANDROID_LOG_INFO,   // LOG(INFO),
-      ANDROID_LOG_WARN,   // LOG(WARNING)
-      ANDROID_LOG_ERROR,  // LOG(ERROR)
-      ANDROID_LOG_FATAL,  // LOG(FATAL)
-  };
-
-  // Bound the logging level.
-  const int android_log_level = android_log_levels[level];
-  ::std::ostringstream ostr;
-  ostr << "[libprotobuf " << level_names[level] << " " << filename << ":"
-       << line << "] " << message.c_str();
-
-  // Output the log string the Android log at the appropriate level.
-  __android_log_write(android_log_level, "libprotobuf-native",
-                      ostr.str().c_str());
-  // Also output to std::cerr.
-  fprintf(stderr, "%s", ostr.str().c_str());
-  fflush(stderr);
-
-  // Indicate termination if needed.
-  if (android_log_level == ANDROID_LOG_FATAL) {
-    __android_log_write(ANDROID_LOG_FATAL, "libprotobuf-native",
-                        "terminating.\n");
-  }
-}
-
-#else
-void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                       const std::string& message) {
-  if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
-    return;
-  }
-  static const char* level_names[] = { "INFO", "WARNING", "ERROR", "FATAL" };
-
-  // We use fprintf() instead of cerr because we want this to work at static
-  // initialization time.
-  fprintf(stderr, "[libprotobuf %s %s:%d] %s\n",
-          level_names[level], filename, line, message.c_str());
-  fflush(stderr);  // Needed on MSVC.
-}
-#endif
-
-void NullLogHandler(LogLevel /* level */, const char* /* filename */,
-                    int /* line */, const std::string& /* message */) {
-  // Nothing.
-}
-
-static LogHandler* log_handler_ = &DefaultLogHandler;
-static std::atomic<int> log_silencer_count_{0};
-
-LogMessage& LogMessage::operator<<(const std::string& value) {
-  message_ += value;
-  return *this;
-}
-
-LogMessage& LogMessage::operator<<(const char* value) {
-  message_ += value;
-  return *this;
-}
-
-LogMessage& LogMessage::operator<<(absl::string_view value) {
-  absl::StrAppend(&message_, value);
-  return *this;
-}
-
-LogMessage& LogMessage::operator<<(const absl::Status& status) {
-  message_ += status.ToString();
-  return *this;
-}
-
-LogMessage& LogMessage::operator<<(char value) {
-  return *this << absl::string_view(&value, 1);
-}
-
-LogMessage& LogMessage::operator<<(void* value) {
-  absl::StrAppend(&message_, strings::Hex(reinterpret_cast<uintptr_t>(value)));
-  return *this;
-}
-
-#undef DECLARE_STREAM_OPERATOR
-#define DECLARE_STREAM_OPERATOR(TYPE)              \
-  LogMessage& LogMessage::operator<<(TYPE value) { \
-    absl::StrAppend(&message_, value);             \
-    return *this;                                  \
-  }
-
-DECLARE_STREAM_OPERATOR(int)
-DECLARE_STREAM_OPERATOR(unsigned int)
-DECLARE_STREAM_OPERATOR(long)           // NOLINT(runtime/int)
-DECLARE_STREAM_OPERATOR(unsigned long)  // NOLINT(runtime/int)
-DECLARE_STREAM_OPERATOR(double)
-DECLARE_STREAM_OPERATOR(long long)           // NOLINT(runtime/int)
-DECLARE_STREAM_OPERATOR(unsigned long long)  // NOLINT(runtime/int)
-#undef DECLARE_STREAM_OPERATOR
-
-LogMessage::LogMessage(LogLevel level, const char* filename, int line)
-  : level_(level), filename_(filename), line_(line) {}
-LogMessage::~LogMessage() {}
-
-void LogMessage::Finish() {
-  bool suppress = false;
-
-  if (level_ != LOGLEVEL_FATAL) {
-    suppress = log_silencer_count_ > 0;
-  }
-
-  if (!suppress) {
-    log_handler_(level_, filename_, line_, message_);
-  }
-
-  if (level_ == LOGLEVEL_FATAL) {
-#if PROTOBUF_USE_EXCEPTIONS
-    throw FatalException(filename_, line_, message_);
-#else
-    abort();
-#endif
-  }
-}
-
-void LogFinisher::operator=(LogMessage& other) {
-  other.Finish();
-}
-
-}  // namespace internal
-
-LogHandler* SetLogHandler(LogHandler* new_func) {
-  LogHandler* old = internal::log_handler_;
-  if (old == &internal::NullLogHandler) {
-    old = nullptr;
-  }
-  if (new_func == nullptr) {
-    internal::log_handler_ = &internal::NullLogHandler;
-  } else {
-    internal::log_handler_ = new_func;
-  }
-  return old;
-}
-
-LogSilencer::LogSilencer() {
-  ++internal::log_silencer_count_;
-};
-
-LogSilencer::~LogSilencer() {
-  --internal::log_silencer_count_;
-};
 
 // ===================================================================
 // emulates google3/base/callback.cc
@@ -317,14 +158,6 @@ uint32_t ghtonl(uint32_t x) {
   result_array[3] = static_cast<uint8_t>(x & 0xFF);
   return result;
 }
-
-#if PROTOBUF_USE_EXCEPTIONS
-FatalException::~FatalException() throw() {}
-
-const char* FatalException::what() const throw() {
-  return message_.c_str();
-}
-#endif
 
 }  // namespace protobuf
 }  // namespace google

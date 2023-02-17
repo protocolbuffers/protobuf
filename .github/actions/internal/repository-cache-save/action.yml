@@ -1,0 +1,19 @@
+name: Restore Repository Cache
+description: Restore the Bazel repository cache from our github action cache
+
+# Note: this action will only work if repository-cache-restore has already
+# been called.  All bazel actions should specify the repository_cache parameter
+# using REPOSITORY_CACHE_PATH.
+#
+# We intentionally upload to REPOSITORY_CACHE_BASE to prevent a flood of new
+# caches on any change.  Only 1 job per os in each test run will be allowed to
+# update the cache because they're all trying to write to the same location.
+runs:
+  using: 'composite'
+  steps:
+    - name: Save modified Bazel repository cache
+      if: ${{ env.REPOSITORY_CACHE_HASH != hashFiles(format('{0}/**', env.REPOSITORY_CACHE_PATH)) }}
+      uses: actions/cache/save@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      with:
+        path: ${{ github.workspace }}/${{ env.REPOSITORY_CACHE_PATH }}
+        key: ${{ env.REPOSITORY_CACHE_BASE }}-${{ github.sha }}

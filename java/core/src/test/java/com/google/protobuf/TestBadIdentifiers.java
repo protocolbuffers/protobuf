@@ -99,7 +99,6 @@ public class TestBadIdentifiers extends TestCase {
     assertEquals("", message.getFieldName33());
     assertEquals(0, message.get2Conflict34());
     assertEquals(0, message.get2Conflict35());
-
   }
 
   public void testNumberFields() throws Exception {
@@ -120,6 +119,5 @@ public class TestBadIdentifiers extends TestCase {
     assertEquals(0, message.get32());
     assertEquals(0, message.get64Count());
     assertEquals(0, message.get64List().size());
-
   }
 }

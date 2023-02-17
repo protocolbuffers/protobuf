@@ -106,3 +106,20 @@ def internal_copy_files(name, srcs, strip_prefix, **kwargs):
         }),
         **kwargs
     )
+
+def internal_py_test(deps = [], **kwargs):
+    """Internal wrapper for shared test configuration
+
+    Args:
+      deps: any additional dependencies of the test.
+      **kwargs: arguments forwarded to py_test.
+    """
+    native.py_test(
+        imports = ["."],
+        deps = deps + [":python_test_lib"],
+        target_compatible_with = select({
+            "@system_python//:supported": [],
+            "//conditions:default": ["@platforms//:incompatible"],
+        }),
+        **kwargs
+    )

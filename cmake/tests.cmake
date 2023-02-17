@@ -1,44 +1,9 @@
-option(protobuf_USE_EXTERNAL_GTEST "Use external Google Test (i.e. not the one in third_party/googletest)" OFF)
-
 option(protobuf_REMOVE_INSTALLED_HEADERS
   "Remove local headers so that installed ones are used instead" OFF)
 
 option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
   "Using absolute test_plugin path in tests" ON)
 mark_as_advanced(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
-
-if (protobuf_USE_EXTERNAL_GTEST)
-  find_package(GTest REQUIRED)
-else()
-  if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/googletest/CMakeLists.txt")
-    message(FATAL_ERROR
-            "Cannot find third_party/googletest directory that's needed to "
-            "build tests. If you use git, make sure you have cloned submodules:\n"
-            "  git submodule update --init --recursive\n"
-            "If instead you want to skip tests, run cmake with:\n"
-            "  cmake -Dprotobuf_BUILD_TESTS=OFF\n")
-  endif()
-
-  set(googlemock_source_dir "${protobuf_SOURCE_DIR}/third_party/googletest/googlemock")
-  set(googletest_source_dir "${protobuf_SOURCE_DIR}/third_party/googletest/googletest")
-  include_directories(
-    ${googlemock_source_dir}
-    ${googletest_source_dir}
-    ${googletest_source_dir}/include
-    ${googlemock_source_dir}/include
-  )
-
-  add_library(gmock STATIC
-    "${googlemock_source_dir}/src/gmock-all.cc"
-    "${googletest_source_dir}/src/gtest-all.cc"
-  )
-  target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})
-  add_library(gmock_main STATIC "${googlemock_source_dir}/src/gmock_main.cc")
-  target_link_libraries(gmock_main gmock)
-
-  add_library(GTest::gmock ALIAS gmock)
-  add_library(GTest::gmock_main ALIAS gmock_main)
-endif()
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
 
@@ -50,6 +15,7 @@ set(tests_protos
   ${protobuf_test_protos_files}
   ${compiler_test_protos_files}
   ${util_test_protos_files}
+  ${lite_test_protos}
 )
 
 macro(compile_proto_file filename)
@@ -77,24 +43,13 @@ foreach(proto_file ${tests_protos})
   set(tests_proto_files ${tests_proto_files} ${pb_src} ${pb_hdr})
 endforeach(proto_file)
 
-add_library(protobuf-lite-test-common STATIC
-  ${lite_test_util_srcs} ${lite_test_proto_files})
-target_include_directories(protobuf-lite-test-common PRIVATE ${ABSL_ROOT_DIR})
-target_link_libraries(protobuf-lite-test-common
-  ${protobuf_LIB_PROTOBUF_LITE} ${protobuf_ABSL_USED_TARGETS} GTest::gmock)
-
 set(common_test_files
   ${test_util_hdrs}
+  ${lite_test_util_srcs}
   ${test_util_srcs}
   ${common_test_hdrs}
   ${common_test_srcs}
 )
-
-add_library(protobuf-test-common STATIC
-  ${common_test_files} ${tests_proto_files})
-target_include_directories(protobuf-test-common PRIVATE ${ABSL_ROOT_DIR})
-target_link_libraries(protobuf-test-common
-  ${protobuf_LIB_PROTOBUF} ${protobuf_ABSL_USED_TARGETS} GTest::gmock)
 
 set(tests_files
   ${protobuf_test_files}
@@ -129,13 +84,23 @@ else()
   set(protobuf_GTEST_ARGS)
 endif()
 
-add_executable(tests ${tests_files})
+add_executable(tests
+  ${tests_files}
+  ${common_test_files}
+  ${tests_proto_files}
+)
 if (MSVC)
   target_compile_options(tests PRIVATE
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
   )
 endif()
-target_link_libraries(tests protobuf-lite-test-common protobuf-test-common ${protobuf_LIB_PROTOC} ${protobuf_LIB_PROTOBUF} GTest::gmock_main)
+target_link_libraries(tests
+  ${protobuf_LIB_PROTOC}
+  ${protobuf_LIB_PROTOBUF}
+  ${protobuf_ABSL_USED_TARGETS}
+  ${protobuf_ABSL_USED_TEST_TARGETS}
+  GTest::gmock_main
+)
 
 set(test_plugin_files
   ${test_plugin_files}
@@ -149,21 +114,31 @@ target_link_libraries(test_plugin
   ${protobuf_LIB_PROTOC}
   ${protobuf_LIB_PROTOBUF}
   ${protobuf_ABSL_USED_TARGETS}
+  ${protobuf_ABSL_USED_TEST_TARGETS}
   GTest::gmock
 )
 
-add_executable(lite-test ${protobuf_lite_test_files})
-target_link_libraries(lite-test protobuf-lite-test-common ${protobuf_LIB_PROTOBUF_LITE} GTest::gmock_main)
+add_executable(lite-test
+  ${protobuf_lite_test_files}
+  ${lite_test_util_srcs}
+  ${lite_test_proto_files}
+)
+target_link_libraries(lite-test
+  ${protobuf_LIB_PROTOBUF_LITE}
+  ${protobuf_ABSL_USED_TARGETS}
+  ${protobuf_ABSL_USED_TEST_TARGETS}
+  GTest::gmock_main
+)
 
 add_test(NAME lite-test
   COMMAND lite-test ${protobuf_GTEST_ARGS})
 
-add_custom_target(check
+add_custom_target(full-test
   COMMAND tests
   DEPENDS tests lite-test test_plugin
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
-add_test(NAME check
+add_test(NAME full-test
   COMMAND tests ${protobuf_GTEST_ARGS})
 
 # For test purposes, remove headers that should already be installed.  This

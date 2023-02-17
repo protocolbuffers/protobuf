@@ -33,6 +33,8 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -43,9 +45,22 @@ class Descriptor;
 class EnumDescriptor;
 class EnumValueDescriptor;
 class FieldDescriptor;
+class FileDescriptor;
 
 namespace compiler {
 namespace cpp {
+
+// Returns the fully qualified C++ namespace.
+//
+// For example, if you had:
+//   package foo.bar;
+//   message Baz { message Moo {} }
+// Then the qualified namespace for Moo would be:
+//   ::foo::bar
+std::string Namespace(const FileDescriptor* d);
+std::string Namespace(const Descriptor* d);
+std::string Namespace(const FieldDescriptor* d);
+std::string Namespace(const EnumDescriptor* d);
 
 // Returns the unqualified C++ name.
 //
@@ -85,7 +100,7 @@ std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field);
 std::string EnumValueName(const EnumValueDescriptor* enum_value);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
-PROTOC_EXPORT std::string StripProto(const std::string& filename);
+PROTOC_EXPORT std::string StripProto(absl::string_view filename);
 
 }  // namespace cpp
 }  // namespace compiler

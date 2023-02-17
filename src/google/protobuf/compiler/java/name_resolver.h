@@ -31,11 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_NAME_RESOLVER_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_NAME_RESOLVER_H__
 
-#include <map>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/port.h"
 
@@ -80,7 +78,7 @@ class ClassNameResolver {
   // Check whether there is any type defined in the proto file that has
   // the given class name.
   bool HasConflictingClassName(const FileDescriptor* file,
-                               const std::string& classname,
+                               absl::string_view classname,
                                NameEquality equality_mode);
 
   // Gets the name of the outer class that holds descriptor information.
@@ -134,10 +132,10 @@ class ClassNameResolver {
 
   // Get the full name of a Java class by prepending the Java package name
   // or outer class name.
-  std::string GetClassFullName(const std::string& name_without_package,
+  std::string GetClassFullName(absl::string_view name_without_package,
                                const FileDescriptor* file, bool immutable,
                                bool is_own_file);
-  std::string GetClassFullName(const std::string& name_without_package,
+  std::string GetClassFullName(absl::string_view name_without_package,
                                const FileDescriptor* file, bool immutable,
                                bool is_own_file, bool kotlin);
 
@@ -145,13 +143,13 @@ class ClassNameResolver {
 
  private:
   // Get the Java Class style full name of a message.
-  std::string GetJavaClassFullName(const std::string& name_without_package,
+  std::string GetJavaClassFullName(absl::string_view name_without_package,
                                    const FileDescriptor* file, bool immutable);
-  std::string GetJavaClassFullName(const std::string& name_without_package,
+  std::string GetJavaClassFullName(absl::string_view name_without_package,
                                    const FileDescriptor* file, bool immutable,
                                    bool kotlin);
   // Caches the result to provide better performance.
-  std::map<const FileDescriptor*, std::string>
+  absl::flat_hash_map<const FileDescriptor*, std::string>
       file_immutable_outer_class_names_;
 };
 

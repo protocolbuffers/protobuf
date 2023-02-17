@@ -32,6 +32,7 @@ fi
 # descriptor.proto and well-known types
 $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
     --csharp_opt=base_namespace=Google.Protobuf \
+    --csharp_opt=file_extension=.pb.cs \
     src/google/protobuf/descriptor.proto \
     src/google/protobuf/any.proto \
     src/google/protobuf/api.proto \
@@ -49,9 +50,10 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # Note that this deliberately does *not* include old_extensions1.proto
 # and old_extensions2.proto, which are generated with an older version
 # of protoc.
-$PROTOC -Isrc -Icsharp/protos \
+$PROTOC -Isrc -I. \
     --experimental_allow_proto3_optional \
     --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \
+    --csharp_opt=file_extension=.pb.cs \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
     --include_source_info \
     --include_imports \
@@ -75,4 +77,10 @@ $PROTOC -Isrc -Icsharp/protos \
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
+    --csharp_opt=file_extension=.pb.cs \
     examples/addressbook.proto
+
+# Conformance tests
+$PROTOC -I. --csharp_out=csharp/src/Google.Protobuf.Conformance \
+    --csharp_opt=file_extension=.pb.cs \
+    conformance/conformance.proto

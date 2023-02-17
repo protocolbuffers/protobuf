@@ -75,6 +75,7 @@ import java.util.NoSuchElementException;
  */
 @CheckReturnValue
 public abstract class ByteString implements Iterable<Byte>, Serializable {
+  private static final long serialVersionUID = 1L;
 
   /**
    * When two strings to be concatenated have a combined length shorter than this, we just copy
@@ -431,7 +432,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     return copyFrom(bytes, 0, bytes.length);
   }
 
-  /** Wraps the given bytes into a {@code ByteString}. Intended for internal only usage. */
+  /**
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal usage within the
+   * library.
+   */
   static ByteString wrap(ByteBuffer buffer) {
     if (buffer.hasArray()) {
       final int offset = buffer.arrayOffset();
@@ -442,8 +446,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
-   * Wraps the given bytes into a {@code ByteString}. Intended for internal only usage to force a
-   * classload of ByteString before LiteralByteString.
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal usage within the library
+   * to force a classload of ByteString before LiteralByteString.
    */
   static ByteString wrap(byte[] bytes) {
     // TODO(dweis): Return EMPTY when bytes are empty to reduce allocations?
@@ -451,8 +455,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
-   * Wraps the given bytes into a {@code ByteString}. Intended for internal only usage to force a
-   * classload of ByteString before BoundedByteString and LiteralByteString.
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal usage within the library
+   * to force a classload of ByteString before BoundedByteString and LiteralByteString.
    */
   static ByteString wrap(byte[] bytes, int offset, int length) {
     return new BoundedByteString(bytes, offset, length);
@@ -945,6 +949,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
   /** Base class for leaf {@link ByteString}s (i.e. non-ropes). */
   abstract static class LeafByteString extends ByteString {
+    private static final long serialVersionUID = 1L;
+
     @Override
     protected final int getTreeDepth() {
       return 0;
@@ -1603,7 +1609,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   // Keep this class private to avoid deadlocks in classloading across threads as ByteString's
   // static initializer loads LiteralByteString and another thread loads BoundedByteString.
   private static final class BoundedByteString extends LiteralByteString {
-
     private final int bytesOffset;
     private final int bytesLength;
 

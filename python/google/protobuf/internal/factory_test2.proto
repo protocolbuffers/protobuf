@@ -36,14 +36,13 @@ package google.protobuf.python.internal;
 
 import "google/protobuf/internal/factory_test1.proto";
 
-
 enum Factory2Enum {
   FACTORY_2_VALUE_0 = 0;
   FACTORY_2_VALUE_1 = 1;
 }
 
 message Factory2Message {
-  required int32 mandatory = 1;
+  optional int32 mandatory = 1;
   optional Factory2Enum factory_2_enum = 2;
   enum NestedFactory2Enum {
     NESTED_FACTORY_2_VALUE_0 = 0;
@@ -73,7 +72,6 @@ message Factory2Message {
   optional Factory2Enum enum_with_default = 20 [default = FACTORY_2_VALUE_1];
   optional bytes bytes_with_default = 21 [default = "a\373\000c"];
 
-
   extend Factory1Message {
     optional string one_more_field = 1001;
   }
@@ -100,5 +98,6 @@ extend Factory1Message {
 
 message MessageWithOption {
   option no_standard_descriptor_accessor = true;
+
   optional int32 field1 = 1;
 }

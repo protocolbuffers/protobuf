@@ -38,10 +38,10 @@
 #include <limits>
 #include <vector>
 
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/repeated_field.h"
@@ -317,7 +317,7 @@ class AccessorHelper {
 };
 
 void SerializeNotImplemented(int field) {
-  GOOGLE_LOG(FATAL) << "Not implemented field number " << field;
+  ABSL_LOG(FATAL) << "Not implemented field number " << field;
 }
 
 // When switching to c++11 we should make these constexpr functions
@@ -389,9 +389,9 @@ void GenericSwap(MessageLite* m1, MessageLite* m2) {
 MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                      MessageLite* submessage,
                                      Arena* submessage_arena) {
-  GOOGLE_DCHECK(Arena::InternalGetOwningArena(submessage) == submessage_arena);
-  GOOGLE_DCHECK(message_arena != submessage_arena);
-  GOOGLE_DCHECK_EQ(submessage_arena, nullptr);
+  ABSL_DCHECK(Arena::InternalGetOwningArena(submessage) == submessage_arena);
+  ABSL_DCHECK(message_arena != submessage_arena);
+  ABSL_DCHECK_EQ(submessage_arena, nullptr);
   if (message_arena != nullptr && submessage_arena == nullptr) {
     message_arena->Own(submessage);
     return submessage;

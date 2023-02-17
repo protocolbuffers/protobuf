@@ -39,12 +39,11 @@
 #ifndef GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 
-
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/io/coded_stream.h"
 #include "absl/base/casts.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -130,7 +129,7 @@ class PROTOBUF_EXPORT WireFormat {
     int expected_endpoint = output->ByteCount() + size;
     output->SetCur(
         _InternalSerialize(message, output->Cur(), output->EpsCopy()));
-    GOOGLE_CHECK_EQ(output->ByteCount(), expected_endpoint)
+    ABSL_CHECK_EQ(output->ByteCount(), expected_endpoint)
         << ": Protocol message serialized to a size different from what was "
            "originally expected.  Perhaps it was modified by another thread "
            "during serialization?";

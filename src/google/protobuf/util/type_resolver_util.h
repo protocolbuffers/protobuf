@@ -33,7 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_TYPE_RESOLVER_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_TYPE_RESOLVER_UTIL_H__
 
-#include <string>
+#include "absl/strings/string_view.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -47,7 +47,7 @@ class TypeResolver;
 // Creates a TypeResolver that serves type information in the given descriptor
 // pool. Caller takes ownership of the returned TypeResolver.
 PROTOBUF_EXPORT TypeResolver* NewTypeResolverForDescriptorPool(
-    const std::string& url_prefix, const DescriptorPool* pool);
+    absl::string_view url_prefix, const DescriptorPool* pool);
 
 }  // namespace util
 }  // namespace protobuf

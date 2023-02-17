@@ -34,13 +34,13 @@
 
 #include "google/protobuf/compiler/java/extension.h"
 
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/io/printer.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -69,8 +69,9 @@ ImmutableExtensionGenerator::~ImmutableExtensionGenerator() {}
 void ExtensionGenerator::InitTemplateVars(
     const FieldDescriptor* descriptor, const std::string& scope, bool immutable,
     ClassNameResolver* name_resolver,
-    std::map<std::string, std::string>* vars_pointer, Context* context) {
-  std::map<std::string, std::string>& vars = *vars_pointer;
+    absl::flat_hash_map<absl::string_view, std::string>* vars_pointer,
+    Context* context) {
+  absl::flat_hash_map<absl::string_view, std::string>& vars = *vars_pointer;
   vars["scope"] = scope;
   vars["name"] = UnderscoresToCamelCaseCheckReserved(descriptor);
   vars["containing_type"] =
@@ -82,7 +83,7 @@ void ExtensionGenerator::InitTemplateVars(
                         ? ""
                         : DefaultValue(descriptor, immutable, name_resolver,
                                        context->options());
-  vars["type_constant"] = FieldTypeName(GetType(descriptor));
+  vars["type_constant"] = std::string(FieldTypeName(GetType(descriptor)));
   vars["packed"] = descriptor->is_packed() ? "true" : "false";
   vars["enum_map"] = "null";
   vars["prototype"] = "null";
@@ -93,12 +94,12 @@ void ExtensionGenerator::InitTemplateVars(
     case JAVATYPE_MESSAGE:
       singular_type =
           name_resolver->GetClassName(descriptor->message_type(), immutable);
-      vars["prototype"] = singular_type + ".getDefaultInstance()";
+      vars["prototype"] = absl::StrCat(singular_type, ".getDefaultInstance()");
       break;
     case JAVATYPE_ENUM:
       singular_type =
           name_resolver->GetClassName(descriptor->enum_type(), immutable);
-      vars["enum_map"] = singular_type + ".internalGetValueMap()";
+      vars["enum_map"] = absl::StrCat(singular_type, ".internalGetValueMap()");
       break;
     case JAVATYPE_STRING:
       singular_type = "java.lang.String";
@@ -107,17 +108,17 @@ void ExtensionGenerator::InitTemplateVars(
       singular_type = immutable ? "com.google.protobuf.ByteString" : "byte[]";
       break;
     default:
-      singular_type = BoxedPrimitiveTypeName(java_type);
+      singular_type = std::string(BoxedPrimitiveTypeName(java_type));
       break;
   }
   vars["type"] = descriptor->is_repeated()
-                     ? "java.util.List<" + singular_type + ">"
+                     ? absl::StrCat("java.util.List<", singular_type, ">")
                      : singular_type;
   vars["singular_type"] = singular_type;
 }
 
 void ImmutableExtensionGenerator::Generate(io::Printer* printer) {
-  std::map<std::string, std::string> vars;
+  absl::flat_hash_map<absl::string_view, std::string> vars;
   const bool kUseImmutableNames = true;
   InitTemplateVars(descriptor_, scope_, kUseImmutableNames, name_resolver_,
                    &vars, context_);

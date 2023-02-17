@@ -501,8 +501,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
       [(NSMutableDictionary *)mapDictionary setObject:value.valueString forKey:key.valueString];
     } else {
       if (valueDataType == GPBDataTypeEnum) {
-        if (GPBHasPreservingUnknownEnumSemantics([parentMessage descriptor].file.syntax) ||
-            [field isValidEnumValue:value.valueEnum]) {
+        if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:value.valueEnum]) {
           [mapDictionary setGPBGenericValue:&value forGPBGenericValueKey:&key];
         } else {
           NSData *data = [mapDictionary serializedDataForUnknownValue:value.valueEnum

@@ -37,15 +37,18 @@
 #include <cstdint>
 #include <iostream>
 #include <memory>
+#include <ostream>
+#include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
@@ -72,23 +75,25 @@ namespace compiler {
 // comma-separated string.
 std::string CommaSeparatedList(
     const std::vector<const FileDescriptor*>& all_files) {
-  std::vector<std::string> names;
+  std::vector<absl::string_view> names;
   for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
   }
   return absl::StrJoin(names, ",");
 }
 
-static const char* kFirstInsertionPointName = "first_mock_insertion_point";
-static const char* kSecondInsertionPointName = "second_mock_insertion_point";
-static const char* kFirstInsertionPoint =
+static constexpr absl::string_view kFirstInsertionPointName =
+    "first_mock_insertion_point";
+static constexpr absl::string_view kSecondInsertionPointName =
+    "second_mock_insertion_point";
+static constexpr absl::string_view kFirstInsertionPoint =
     "# @@protoc_insertion_point(first_mock_insertion_point) is here\n";
-static const char* kSecondInsertionPoint =
+static constexpr absl::string_view kSecondInsertionPoint =
     "  # @@protoc_insertion_point(second_mock_insertion_point) is here\n";
 
-MockCodeGenerator::MockCodeGenerator(const std::string& name) : name_(name) {}
+MockCodeGenerator::MockCodeGenerator(absl::string_view name) : name_(name) {}
 
-MockCodeGenerator::~MockCodeGenerator() {}
+MockCodeGenerator::~MockCodeGenerator() = default;
 
 uint64_t MockCodeGenerator::GetSupportedFeatures() const {
   uint64_t all_features = CodeGenerator::FEATURE_PROTO3_OPTIONAL;
@@ -100,29 +105,29 @@ void MockCodeGenerator::SuppressFeatures(uint64_t features) {
 }
 
 void MockCodeGenerator::ExpectGenerated(
-    const std::string& name, const std::string& parameter,
-    const std::string& insertions, const std::string& file,
-    const std::string& first_message_name,
-    const std::string& first_parsed_file_name,
-    const std::string& output_directory) {
+    absl::string_view name, absl::string_view parameter,
+    absl::string_view insertions, absl::string_view file,
+    absl::string_view first_message_name,
+    absl::string_view first_parsed_file_name,
+    absl::string_view output_directory) {
   std::string content;
-  GOOGLE_CHECK_OK(
-      File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
-                        &content, true));
+  ABSL_CHECK_OK(File::GetContents(
+      absl::StrCat(output_directory, "/", GetOutputFileName(name, file)),
+      &content, true));
 
   std::vector<std::string> lines =
-      absl::StrSplit(content, "\n", absl::SkipEmpty());
+      absl::StrSplit(content, '\n', absl::SkipEmpty());
 
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
   for (size_t i = 0; i < lines.size(); i++) {
-    lines[i] += "\n";
+    absl::StrAppend(&lines[i], "\n");
   }
 
   std::vector<std::string> insertion_list;
   if (!insertions.empty()) {
-    insertion_list = absl::StrSplit(insertions, ",", absl::SkipEmpty());
+    insertion_list = absl::StrSplit(insertions, ',', absl::SkipEmpty());
   }
 
   EXPECT_EQ(lines.size(), 3 + insertion_list.size() * 2);
@@ -139,16 +144,17 @@ void MockCodeGenerator::ExpectGenerated(
               lines[1 + i]);
     // Second insertion point is indented, so the inserted text should
     // automatically be indented too.
-    EXPECT_EQ("  " + GetOutputFileContent(insertion_list[i], "second_insert",
-                                          file, file, first_message_name),
+    EXPECT_EQ(absl::StrCat(
+                  "  ", GetOutputFileContent(insertion_list[i], "second_insert",
+                                             file, file, first_message_name)),
               lines[2 + insertion_list.size() + i]);
   }
 }
 
 namespace {
-void CheckSingleAnnotation(const std::string& expected_file,
-                           const std::string& expected_text,
-                           const std::string& file_content,
+void CheckSingleAnnotation(absl::string_view expected_file,
+                           absl::string_view expected_text,
+                           absl::string_view file_content,
                            const GeneratedCodeInfo::Annotation& annotation) {
   EXPECT_EQ(expected_file, annotation.source_file());
   ASSERT_GE(file_content.size(), annotation.begin());
@@ -161,18 +167,19 @@ void CheckSingleAnnotation(const std::string& expected_file,
 }  // anonymous namespace
 
 void MockCodeGenerator::CheckGeneratedAnnotations(
-    const std::string& name, const std::string& file,
-    const std::string& output_directory) {
+    absl::string_view name, absl::string_view file,
+    absl::string_view output_directory) {
   std::string file_content;
-  GOOGLE_CHECK_OK(
-      File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
-                        &file_content, true));
+  ABSL_CHECK_OK(File::GetContents(
+      absl::StrCat(output_directory, "/", GetOutputFileName(name, file)),
+      &file_content, true));
   std::string meta_content;
-  GOOGLE_CHECK_OK(File::GetContents(
-      output_directory + "/" + GetOutputFileName(name, file) + ".pb.meta",
-      &meta_content, true));
+  ABSL_CHECK_OK(
+      File::GetContents(absl::StrCat(output_directory, "/",
+                                     GetOutputFileName(name, file), ".pb.meta"),
+                        &meta_content, true));
   GeneratedCodeInfo annotations;
-  GOOGLE_CHECK(TextFormat::ParseFromString(meta_content, &annotations));
+  ABSL_CHECK(TextFormat::ParseFromString(meta_content, &annotations));
   ASSERT_EQ(7, annotations.annotation_size());
 
   CheckSingleAnnotation("first_annotation", "first", file_content,
@@ -213,40 +220,39 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
       if (command == "Error") {
         *error = "Saw message type MockCodeGenerator_Error.";
         return false;
-      } else if (command == "Exit") {
+      }
+      if (command == "Exit") {
         std::cerr << "Saw message type MockCodeGenerator_Exit." << std::endl;
         exit(123);
-      } else if (command == "Abort") {
-        std::cerr << "Saw message type MockCodeGenerator_Abort." << std::endl;
-        abort();
-      } else if (command == "HasSourceCodeInfo") {
+      }
+      ABSL_CHECK(command != "Abort")
+          << "Saw message type MockCodeGenerator_Abort.";
+      if (command == "HasSourceCodeInfo") {
         FileDescriptorProto file_descriptor_proto;
         file->CopySourceCodeInfoTo(&file_descriptor_proto);
         bool has_source_code_info =
             file_descriptor_proto.has_source_code_info() &&
             file_descriptor_proto.source_code_info().location_size() > 0;
-        std::cerr << "Saw message type MockCodeGenerator_HasSourceCodeInfo: "
-                  << has_source_code_info << "." << std::endl;
-        abort();
+        ABSL_LOG(FATAL)
+            << "Saw message type MockCodeGenerator_HasSourceCodeInfo: "
+            << has_source_code_info << ".";
       } else if (command == "HasJsonName") {
         FieldDescriptorProto field_descriptor_proto;
         file->message_type(i)->field(0)->CopyTo(&field_descriptor_proto);
-        std::cerr << "Saw json_name: " << field_descriptor_proto.has_json_name()
-                  << std::endl;
-        abort();
+        ABSL_LOG(FATAL) << "Saw json_name: "
+                        << field_descriptor_proto.has_json_name();
       } else if (command == "Annotate") {
         annotate = true;
       } else if (command == "ShowVersionNumber") {
         Version compiler_version;
         context->GetCompilerVersion(&compiler_version);
-        std::cerr << "Saw compiler_version: "
-                  << compiler_version.major() * 1000000 +
-                         compiler_version.minor() * 1000 +
-                         compiler_version.patch()
-                  << " " << compiler_version.suffix() << std::endl;
-        abort();
+        ABSL_LOG(FATAL) << "Saw compiler_version: "
+                        << compiler_version.major() * 1000000 +
+                               compiler_version.minor() * 1000 +
+                               compiler_version.patch()
+                        << " " << compiler_version.suffix();
       } else {
-        GOOGLE_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;
+        ABSL_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;
       }
     }
   }
@@ -275,7 +281,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
         std::unique_ptr<io::ZeroCopyOutputStream> output(
             context->OpenForInsertWithGeneratedCodeInfo(
                 GetOutputFileName(insert_into[i], file),
-                kFirstInsertionPointName, info));
+                std::string(kFirstInsertionPointName), info));
         io::Printer printer(output.get(), '$');
         printer.PrintRaw(content);
         if (printer.failed()) {
@@ -300,7 +306,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
         std::unique_ptr<io::ZeroCopyOutputStream> output(
             context->OpenForInsertWithGeneratedCodeInfo(
                 GetOutputFileName(insert_into[i], file),
-                kSecondInsertionPointName, info));
+                std::string(kSecondInsertionPointName), info));
         io::Printer printer(output.get(), '$');
         printer.PrintRaw(content);
         if (printer.failed()) {
@@ -322,17 +328,17 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
     std::string annotate_suffix = "_annotation";
     if (annotate) {
       printer.Print("$p$\n", "p", "first");
-      printer.Annotate("p", "first" + annotate_suffix);
+      printer.Annotate("p", absl::StrCat("first", annotate_suffix));
     }
     printer.PrintRaw(kFirstInsertionPoint);
     if (annotate) {
       printer.Print("$p$\n", "p", "second");
-      printer.Annotate("p", "second" + annotate_suffix);
+      printer.Annotate("p", absl::StrCat("second", annotate_suffix));
     }
     printer.PrintRaw(kSecondInsertionPoint);
     if (annotate) {
       printer.Print("$p$\n", "p", "third");
-      printer.Annotate("p", "third" + annotate_suffix);
+      printer.Annotate("p", absl::StrCat("third", annotate_suffix));
     }
 
     if (printer.failed()) {
@@ -340,8 +346,8 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
       return false;
     }
     if (annotate) {
-      std::unique_ptr<io::ZeroCopyOutputStream> meta_output(
-          context->Open(GetOutputFileName(name_, file) + ".pb.meta"));
+      std::unique_ptr<io::ZeroCopyOutputStream> meta_output(context->Open(
+          absl::StrCat(GetOutputFileName(name_, file), ".pb.meta")));
       if (!TextFormat::Print(annotations, meta_output.get())) {
         *error = "MockCodeGenerator couldn't write .pb.meta";
         return false;
@@ -353,17 +359,17 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
 }
 
 std::string MockCodeGenerator::GetOutputFileName(
-    const std::string& generator_name, const FileDescriptor* file) {
+    absl::string_view generator_name, const FileDescriptor* file) {
   return GetOutputFileName(generator_name, file->name());
 }
 
 std::string MockCodeGenerator::GetOutputFileName(
-    const std::string& generator_name, const std::string& file) {
-  return file + ".MockCodeGenerator." + generator_name;
+    absl::string_view generator_name, absl::string_view file) {
+  return absl::StrCat(file, ".MockCodeGenerator.", generator_name);
 }
 
 std::string MockCodeGenerator::GetOutputFileContent(
-    const std::string& generator_name, const std::string& parameter,
+    absl::string_view generator_name, absl::string_view parameter,
     const FileDescriptor* file, GeneratorContext* context) {
   std::vector<const FileDescriptor*> all_files;
   context->ListParsedFiles(&all_files);
@@ -374,9 +380,9 @@ std::string MockCodeGenerator::GetOutputFileContent(
 }
 
 std::string MockCodeGenerator::GetOutputFileContent(
-    const std::string& generator_name, const std::string& parameter,
-    const std::string& file, const std::string& parsed_file_list,
-    const std::string& first_message_name) {
+    absl::string_view generator_name, absl::string_view parameter,
+    absl::string_view file, absl::string_view parsed_file_list,
+    absl::string_view first_message_name) {
   return absl::Substitute("$0: $1, $2, $3, $4\n", generator_name, parameter,
                           file, first_message_name, parsed_file_list);
 }

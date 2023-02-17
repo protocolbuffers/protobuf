@@ -52,7 +52,7 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
   // Indicates the field needs custom handling for the TextFormat name, if not
   // set, the name can be derived from the ObjC name.
   GPBFieldTextFormatNameCustom = 1 << 6,
-  // Indicates the field has an enum descriptor.
+  // This flag has never had any meaning, it was set on all enum fields.
   GPBFieldHasEnumDescriptor = 1 << 7,
 
   // These are not standard protobuf concepts, they are specific to the
@@ -73,11 +73,32 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
   GPBFieldMapKeySFixed64 = 10 << 8,
   GPBFieldMapKeyBool = 11 << 8,
   GPBFieldMapKeyString = 12 << 8,
+
+  // If the enum for this field is "closed", meaning that it:
+  // - Has a fixed set of named values.
+  // - Encountering values not in this set causes them to be treated as unknown
+  //   fields.
+  // - The first value (i.e., the default) may be nonzero.
+  // NOTE: This could be tracked just on the GPBEnumDescriptor, but to support
+  // previously generated code, there would be not data to get the behavior
+  // correct, so instead it is tracked on the field. If old source compatibility
+  // is removed, this could be removed and the GPBEnumDescription fetched from
+  // the GPBFieldDescriptor instead.
+  GPBFieldClosedEnum = 1 << 12,
 };
 
 // NOTE: The structures defined here have their members ordered to minimize
 // their size. This directly impacts the size of apps since these exist per
 // field/extension.
+
+typedef struct GPBFileDescription {
+  // The proto package for the file.
+  const char *package;
+  // The objc_class_prefix option if present.
+  const char *prefix;
+  // The file's proto syntax.
+  GPBFileSyntax syntax;
+} GPBFileDescription;
 
 // Describes a single field in a protobuf as it is represented as an ivar.
 typedef struct GPBMessageFieldDescription {
@@ -89,10 +110,8 @@ typedef struct GPBMessageFieldDescription {
     // clazz is used iff GPBDescriptorInitializationFlag_UsesClassRefs is set.
     char *className;  // Name of the class of the message.
     Class clazz;      // Class of the message.
-    // For enums only: If EnumDescriptors are compiled in, it will be that,
-    // otherwise it will be the verifier.
+    // For enums only.
     GPBEnumDescriptorFunc enumDescFunc;
-    GPBEnumValidationFunc enumVerifier;
   } dataTypeSpecific;
   // The field number for the ivar.
   uint32_t number;
@@ -175,6 +194,12 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
   // at startup. This allows older generated code to still work with the
   // current runtime library.
   GPBDescriptorInitializationFlag_Proto3OptionalKnown = 1 << 3,
+
+  // This flag is used to indicate that the generated sources already contain
+  // the `GPBFieldCloseEnum` flag and it doesn't have to be computed at startup.
+  // This allows the older generated code to still work with the current runtime
+  // library.
+  GPBDescriptorInitializationFlag_ClosedEnumSupportKnown = 1 << 4,
 };
 
 @interface GPBDescriptor () {
@@ -184,20 +209,14 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
   uint32_t storageSize_;
 }
 
-// fieldDescriptions have to be long lived, they are held as raw pointers.
+// fieldDescriptions and fileDescription have to be long lived, they are held as raw pointers.
 + (instancetype)allocDescriptorForClass:(Class)messageClass
-                              rootClass:(Class)rootClass
-                                   file:(GPBFileDescriptor *)file
+                            messageName:(NSString *)messageName
+                        fileDescription:(GPBFileDescription *)fileDescription
                                  fields:(void *)fieldDescriptions
                              fieldCount:(uint32_t)fieldCount
                             storageSize:(uint32_t)storageSize
                                   flags:(GPBDescriptorInitializationFlags)flags;
-
-- (instancetype)initWithClass:(Class)messageClass
-                         file:(GPBFileDescriptor *)file
-                       fields:(NSArray *)fields
-                  storageSize:(uint32_t)storage
-                   wireFormat:(BOOL)wireFormat;
 
 // Called right after init to provide extra information to avoid init having
 // an explosion of args. These pointers are recorded, so they are expected
@@ -208,10 +227,23 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 - (void)setupExtraTextInfo:(const char *)extraTextFormatInfo;
 - (void)setupExtensionRanges:(const GPBExtensionRange *)ranges count:(int32_t)count;
 - (void)setupContainingMessageClass:(Class)msgClass;
-- (void)setupMessageClassNameSuffix:(NSString *)suffix;
 
-// Deprecated. Use setupContainingMessageClass instead.
+// Deprecated, these remain to support older versions of source generation.
++ (instancetype)allocDescriptorForClass:(Class)messageClass
+                                   file:(GPBFileDescriptor *)file
+                                 fields:(void *)fieldDescriptions
+                             fieldCount:(uint32_t)fieldCount
+                            storageSize:(uint32_t)storageSize
+                                  flags:(GPBDescriptorInitializationFlags)flags;
++ (instancetype)allocDescriptorForClass:(Class)messageClass
+                              rootClass:(Class)rootClass
+                                   file:(GPBFileDescriptor *)file
+                                 fields:(void *)fieldDescriptions
+                             fieldCount:(uint32_t)fieldCount
+                            storageSize:(uint32_t)storageSize
+                                  flags:(GPBDescriptorInitializationFlags)flags;
 - (void)setupContainingMessageClassName:(const char *)msgClassName;
+- (void)setupMessageClassNameSuffix:(NSString *)suffix;
 
 @end
 
@@ -242,20 +274,35 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
   SEL hasOrCountSel_;  // *Count for map<>/repeated fields, has* otherwise.
   SEL setHasSel_;
 }
-
-// Single initializer
-// description has to be long lived, it is held as a raw pointer.
-- (instancetype)initWithFieldDescription:(void *)description
-                         includesDefault:(BOOL)includesDefault
-                           usesClassRefs:(BOOL)usesClassRefs
-                     proto3OptionalKnown:(BOOL)proto3OptionalKnown
-                                  syntax:(GPBFileSyntax)syntax;
-
 @end
+
+typedef NS_OPTIONS(uint32_t, GPBEnumDescriptorInitializationFlags) {
+  GPBEnumDescriptorInitializationFlag_None = 0,
+
+  // Available: 1 << 0
+
+  // Marks this enum as a closed enum.
+  GPBEnumDescriptorInitializationFlag_IsClosed = 1 << 1,
+};
 
 @interface GPBEnumDescriptor ()
 // valueNames, values and extraTextFormatInfo have to be long lived, they are
 // held as raw pointers.
++ (instancetype)allocDescriptorForName:(NSString *)name
+                            valueNames:(const char *)valueNames
+                                values:(const int32_t *)values
+                                 count:(uint32_t)valueCount
+                          enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                                 flags:(GPBEnumDescriptorInitializationFlags)flags;
++ (instancetype)allocDescriptorForName:(NSString *)name
+                            valueNames:(const char *)valueNames
+                                values:(const int32_t *)values
+                                 count:(uint32_t)valueCount
+                          enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                                 flags:(GPBEnumDescriptorInitializationFlags)flags
+                   extraTextFormatInfo:(const char *)extraTextFormatInfo;
+
+// Deprecated, these remain to support older versions of source generation.
 + (instancetype)allocDescriptorForName:(NSString *)name
                             valueNames:(const char *)valueNames
                                 values:(const int32_t *)values
@@ -267,12 +314,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
                                  count:(uint32_t)valueCount
                           enumVerifier:(GPBEnumValidationFunc)enumVerifier
                    extraTextFormatInfo:(const char *)extraTextFormatInfo;
-
-- (instancetype)initWithName:(NSString *)name
-                  valueNames:(const char *)valueNames
-                      values:(const int32_t *)values
-                       count:(uint32_t)valueCount
-                enumVerifier:(GPBEnumValidationFunc)enumVerifier;
 @end
 
 @interface GPBExtensionDescriptor () {
@@ -320,6 +361,10 @@ GPB_INLINE uint32_t GPBFieldNumber(GPBFieldDescriptor *field) {
   return field->description_->number;
 }
 
+GPB_INLINE BOOL GPBFieldIsClosedEnum(GPBFieldDescriptor *field) {
+  return (field->description_->flags & GPBFieldClosedEnum) != 0;
+}
+
 #pragma clang diagnostic pop
 
 uint32_t GPBFieldTag(GPBFieldDescriptor *self);
@@ -329,10 +374,6 @@ uint32_t GPBFieldTag(GPBFieldDescriptor *self);
 // would be the wire type for unpacked; if the field was marked unpacked, it
 // would be the wire type for packed.
 uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self);
-
-GPB_INLINE BOOL GPBHasPreservingUnknownEnumSemantics(GPBFileSyntax syntax) {
-  return syntax == GPBFileSyntaxProto3;
-}
 
 GPB_INLINE BOOL GPBExtensionIsRepeated(GPBExtensionDescription *description) {
   return (description->options & GPBExtensionRepeated) != 0;

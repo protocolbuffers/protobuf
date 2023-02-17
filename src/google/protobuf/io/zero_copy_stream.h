@@ -108,6 +108,7 @@
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/strings/cord.h"
 #include "google/protobuf/port.h"
 
 
@@ -156,13 +157,6 @@ class PROTOBUF_EXPORT ZeroCopyInputStream {
   // buffer that goes beyond what you wanted to read, you can use BackUp()
   // to return to the point where you intended to finish.
   //
-  // This method can be called with `count = 0` to finalize (flush) any
-  // previously returned buffer. For example, a file output stream can
-  // flush buffers returned from a previous call to Next() upon such
-  // BackUp(0) invocations. ZeroCopyOutputStream callers should always
-  // invoke BackUp() after a final Next() call, even if there is no
-  // excess buffer data to be backed up to indicate a flush point.
-  //
   // Preconditions:
   // * The last method called must have been Next().
   // * count must be less than or equal to the size of the last buffer
@@ -174,14 +168,30 @@ class PROTOBUF_EXPORT ZeroCopyInputStream {
   //   the same data again before producing new data.
   virtual void BackUp(int count) = 0;
 
-  // Skips a number of bytes.  Returns false if the end of the stream is
-  // reached or some input error occurred.  In the end-of-stream case, the
-  // stream is advanced to the end of the stream (so ByteCount() will return
-  // the total size of the stream).
+  // Skips `count` number of bytes.
+  // Returns true on success, or false if some input error occurred, or `count`
+  // exceeds the end of the stream. This function may skip up to `count - 1`
+  // bytes in case of failure.
+  //
+  // Preconditions:
+  // * `count` is non-negative.
+  //
   virtual bool Skip(int count) = 0;
 
   // Returns the total number of bytes read since this object was created.
   virtual int64_t ByteCount() const = 0;
+
+  // Read the next `count` bytes and append it to the given Cord.
+  //
+  // In the case of a read error, the method reads as much data as possible into
+  // the cord before returning false. The default implementation iterates over
+  // the buffers and appends up to `count` bytes of data into `cord` using the
+  // `absl::CordBuffer` API.
+  //
+  // Some streams may implement this in a way that avoids copying by sharing or
+  // reference counting existing data managed by the stream implementation.
+  //
+  virtual bool ReadCord(absl::Cord* cord, int count);
 
 };
 
@@ -222,6 +232,13 @@ class PROTOBUF_EXPORT ZeroCopyOutputStream {
   // than you needed.  You don't want to write a bunch of garbage after the
   // end of your data, so you use BackUp() to back up.
   //
+  // This method can be called with `count = 0` to finalize (flush) any
+  // previously returned buffer. For example, a file output stream can
+  // flush buffers returned from a previous call to Next() upon such
+  // BackUp(0) invocations. ZeroCopyOutputStream callers should always
+  // invoke BackUp() after a final Next() call, even if there is no
+  // excess buffer data to be backed up to indicate a flush point.
+  //
   // Preconditions:
   // * The last method called must have been Next().
   // * count must be less than or equal to the size of the last buffer
@@ -239,13 +256,22 @@ class PROTOBUF_EXPORT ZeroCopyOutputStream {
 
   // Write a given chunk of data to the output.  Some output streams may
   // implement this in a way that avoids copying. Check AllowsAliasing() before
-  // calling WriteAliasedRaw(). It will GOOGLE_CHECK fail if WriteAliasedRaw() is
+  // calling WriteAliasedRaw(). It will ABSL_CHECK fail if WriteAliasedRaw() is
   // called on a stream that does not allow aliasing.
   //
   // NOTE: It is caller's responsibility to ensure that the chunk of memory
   // remains live until all of the data has been consumed from the stream.
   virtual bool WriteAliasedRaw(const void* data, int size);
   virtual bool AllowsAliasing() const { return false; }
+
+  // Writes the given Cord to the output.
+  //
+  // The default implementation iterates over all Cord chunks copying all cord
+  // data into the buffer(s) returned by the stream's `Next()` method.
+  //
+  // Some streams may implement this in a way that avoids copying the cord
+  // data by copying and managing a copy of the provided cord instead.
+  virtual bool WriteCord(const absl::Cord& cord);
 
 };
 

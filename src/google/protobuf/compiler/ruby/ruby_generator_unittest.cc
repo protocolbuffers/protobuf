@@ -47,7 +47,7 @@ namespace ruby {
 namespace {
 
 std::string FindRubyTestDir() {
-  return TestSourceDir() + "/google/protobuf/compiler/ruby";
+  return absl::StrCat(TestSourceDir(), "/google/protobuf/compiler/ruby");
 }
 
 // This test is a simple golden-file test over the output of the Ruby code
@@ -68,33 +68,27 @@ void RubyTest(std::string proto_file, std::string import_proto_file = "") {
 
   // Copy generated_code.proto to the temporary test directory.
   std::string test_input;
-  GOOGLE_CHECK_OK(File::GetContents(
-      ruby_tests + proto_file + ".proto",
-      &test_input,
-      true));
-  GOOGLE_CHECK_OK(File::SetContents(
-      TestTempDir() + proto_file + ".proto",
-      test_input,
-      true));
+  ABSL_CHECK_OK(File::GetContents(
+      absl::StrCat(ruby_tests, proto_file, ".proto"), &test_input, true));
+  ABSL_CHECK_OK(File::SetContents(
+      absl::StrCat(TestTempDir(), proto_file, ".proto"), test_input, true));
 
   // Copy generated_code_import.proto to the temporary test directory.
   std::string test_import;
   if (!import_proto_file.empty()) {
-    GOOGLE_CHECK_OK(File::GetContents(
-        ruby_tests + import_proto_file + ".proto",
-        &test_import,
-        true));
-    GOOGLE_CHECK_OK(File::SetContents(
-        TestTempDir() + import_proto_file + ".proto",
-        test_import,
+    ABSL_CHECK_OK(
+        File::GetContents(absl::StrCat(ruby_tests, import_proto_file, ".proto"),
+                          &test_import, true));
+    ABSL_CHECK_OK(File::SetContents(
+        absl::StrCat(TestTempDir(), import_proto_file, ".proto"), test_import,
         true));
   }
 
   // Invoke the proto compiler (we will be inside TestTempDir() at this point).
-  std::string ruby_out = "--ruby_out=" + TestTempDir();
-  std::string proto_path = "--proto_path=" + TestTempDir();
+  std::string ruby_out = absl::StrCat("--ruby_out=", TestTempDir());
+  std::string proto_path = absl::StrCat("--proto_path=", TestTempDir());
 
-  std::string proto_target = TestTempDir() + proto_file + ".proto";
+  std::string proto_target = absl::StrCat(TestTempDir(), proto_file, ".proto");
   const char* argv[] = {
     "protoc",
     ruby_out.c_str(),
@@ -106,15 +100,11 @@ void RubyTest(std::string proto_file, std::string import_proto_file = "") {
 
   // Load the generated output and compare to the expected result.
   std::string output;
-  GOOGLE_CHECK_OK(File::GetContentsAsText(
-      TestTempDir() + proto_file + "_pb.rb",
-      &output,
-      true));
+  ABSL_CHECK_OK(File::GetContentsAsText(
+      absl::StrCat(TestTempDir(), proto_file, "_pb.rb"), &output, true));
   std::string expected_output;
-  GOOGLE_CHECK_OK(File::GetContentsAsText(
-      ruby_tests + proto_file + "_pb.rb",
-      &expected_output,
-      true));
+  ABSL_CHECK_OK(File::GetContentsAsText(
+      absl::StrCat(ruby_tests, proto_file, "_pb.rb"), &expected_output, true));
   EXPECT_EQ(expected_output, output);
 }
 

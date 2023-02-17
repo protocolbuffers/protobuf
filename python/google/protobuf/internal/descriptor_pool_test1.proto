@@ -32,7 +32,6 @@ syntax = "proto2";
 
 package google.protobuf.python.internal;
 
-
 message DescriptorPoolTest1 {
   extensions 1000 to max;
 
@@ -86,6 +85,9 @@ message DescriptorPoolTest2 {
       enum NestedEnum {
         LAMBDA = 11;
         MU = 12;
+
+        reserved -1;
+        reserved 536870913;  // 0x20000001
       }
       optional NestedEnum nested_enum = 1 [default = MU];
       optional string nested_field = 2 [default = "lambda"];

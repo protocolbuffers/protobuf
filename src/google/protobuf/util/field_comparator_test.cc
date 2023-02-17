@@ -34,10 +34,9 @@
 
 #include <limits>
 
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/descriptor.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/mathutil.h"
+#include "google/protobuf/unittest.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -225,10 +224,8 @@ TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonApproximate) {
   // results first to check if that's where the failure was introduced.
   ASSERT_NE(message_1_.optional_float(), message_2_.optional_float());
   ASSERT_NE(message_1_.optional_double(), message_2_.optional_double());
-  ASSERT_TRUE(MathUtil::AlmostEquals(message_1_.optional_float(),
-                                     message_2_.optional_float()));
-  ASSERT_TRUE(MathUtil::AlmostEquals(message_1_.optional_double(),
-                                     message_2_.optional_double()));
+  ASSERT_FLOAT_EQ(message_1_.optional_float(), message_2_.optional_float());
+  ASSERT_DOUBLE_EQ(message_1_.optional_double(), message_2_.optional_double());
 
   // DefaultFieldComparator's default float comparison mode is EXACT.
   ASSERT_EQ(DefaultFieldComparator::EXACT, comparator_.float_comparison());

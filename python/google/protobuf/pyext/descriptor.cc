@@ -32,6 +32,8 @@
 
 #include "google/protobuf/pyext/descriptor.h"
 
+#include "absl/log/absl_check.h"
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <frameobject.h>
@@ -404,7 +406,7 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
   std::unordered_map<const void*, PyObject*>::iterator it =
       interned_descriptors->find(descriptor);
   if (it != interned_descriptors->end()) {
-    GOOGLE_DCHECK(Py_TYPE(it->second) == type);
+    ABSL_DCHECK(Py_TYPE(it->second) == type);
     Py_INCREF(it->second);
     return it->second;
   }
@@ -1182,6 +1184,11 @@ static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
     Py_RETURN_FALSE;
   }
 }
+
+static PyObject* GetIsClosed(PyBaseDescriptor* self, void* closure) {
+  return PyBool_FromLong(_GetDescriptor(self)->is_closed());
+}
+
 static int SetHasOptions(PyBaseDescriptor *self, PyObject *value,
                          void *closure) {
   return CheckCalledFromGeneratedFile("has_options");
@@ -1225,6 +1232,7 @@ static PyGetSetDef Getters[] = {
      "Containing type"},
     {"has_options", (getter)GetHasOptions, (setter)SetHasOptions,
      "Has Options"},
+    {"is_closed", (getter)GetIsClosed, nullptr, "If the enum is closed"},
     {"_options", (getter) nullptr, (setter)SetOptions, "Options"},
     {"_serialized_options", (getter) nullptr, (setter)SetSerializedOptions,
      "Serialized Options"},

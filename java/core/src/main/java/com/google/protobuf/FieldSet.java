@@ -185,7 +185,6 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return clone;
   }
 
-
   // =================================================================
 
   /** See {@link Message.Builder#clear()}. */
@@ -574,7 +573,6 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     }
   }
 
-
   /** See {@link Message#writeTo(CodedOutputStream)}. */
   public void writeTo(final CodedOutputStream output) throws IOException {
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
@@ -728,6 +726,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     if (descriptor.isRepeated()) {
       final List<?> valueList = (List<?>) value;
       if (descriptor.isPacked()) {
+        if (valueList.isEmpty()) {
+          // The tag should not be written for empty packed fields.
+          return;
+        }
         output.writeTag(number, WireFormat.WIRETYPE_LENGTH_DELIMITED);
         // Compute the total data size so the length can be written.
         int dataSize = 0;
@@ -893,9 +895,13 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     WireFormat.FieldType type = descriptor.getLiteType();
     int number = descriptor.getNumber();
     if (descriptor.isRepeated()) {
+      List<?> valueList = (List<?>) value;
       if (descriptor.isPacked()) {
+        if (valueList.isEmpty()) {
+          return 0;
+        }
         int dataSize = 0;
-        for (final Object element : (List<?>) value) {
+        for (final Object element : valueList) {
           dataSize += computeElementSizeNoTag(type, element);
         }
         return dataSize
@@ -903,7 +909,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
             + CodedOutputStream.computeUInt32SizeNoTag(dataSize);
       } else {
         int size = 0;
-        for (final Object element : (List<?>) value) {
+        for (final Object element : valueList) {
           size += computeElementSize(type, number, element);
         }
         return size;

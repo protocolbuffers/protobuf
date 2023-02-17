@@ -31,8 +31,11 @@
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
 
 #include <sstream>
+#include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
@@ -63,8 +66,8 @@ void EnumGenerator::Generate(io::Printer* printer) {
                  "access_level", class_access_level(),
                  "name", descriptor_->name());
   printer->Indent();
-  std::set<std::string> used_names;
-  std::set<int> used_number;
+  absl::flat_hash_set<std::string> used_names;
+  absl::flat_hash_set<int> used_number;
   for (int i = 0; i < descriptor_->value_count(); i++) {
       WriteEnumValueDocComment(printer, descriptor_->value(i));
       if (descriptor_->value(i)->options().deprecated()) {
@@ -76,9 +79,10 @@ void EnumGenerator::Generate(io::Printer* printer) {
       // Make sure we don't get any duplicate names due to prefix removal.
       while (!used_names.insert(name).second) {
         // It's possible we'll end up giving this warning multiple times, but that's better than not at all.
-        GOOGLE_LOG(WARNING) << "Duplicate enum value " << name << " (originally " << original_name
-          << ") in " << descriptor_->name() << "; adding underscore to distinguish";
-        name += "_";
+        ABSL_LOG(WARNING) << "Duplicate enum value " << name << " (originally "
+                          << original_name << ") in " << descriptor_->name()
+                          << "; adding underscore to distinguish";
+        absl::StrAppend(&name, "_");
       }
       int number = descriptor_->value(i)->number();
       if (!used_number.insert(number).second) {

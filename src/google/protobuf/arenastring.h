@@ -36,8 +36,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
 #include "absl/strings/string_view.h"
@@ -100,9 +99,9 @@ class TaggedStringPtr {
   // Bit flags qualifying string properties. We can use 2 bits as
   // ptr_ is guaranteed and enforced to be aligned on 4 byte boundaries.
   enum Flags {
-    kArenaBit = 0x1,      // ptr is arena allocated
-    kMutableBit = 0x2,    // ptr contents are fully mutable
-    kMask = 0x3           // Bit mask
+    kArenaBit = 0x1,    // ptr is arena allocated
+    kMutableBit = 0x2,  // ptr contents are fully mutable
+    kMask = 0x3         // Bit mask
   };
 
   // Composed logical types
@@ -168,7 +167,7 @@ class TaggedStringPtr {
 
   // If the current string is a heap-allocated mutable value, returns a pointer
   // to it.  Returns nullptr otherwise.
-  inline std::string *GetIfAllocated() const {
+  inline std::string* GetIfAllocated() const {
     auto allocated = as_int() ^ kAllocated;
     if (allocated & kMask) return nullptr;
 
@@ -198,11 +197,11 @@ class TaggedStringPtr {
 
  private:
   static inline void assert_aligned(const void* p) {
-    GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(p) & kMask, 0UL);
+    ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(p) & kMask, 0UL);
   }
 
   inline std::string* TagAs(Type type, std::string* p) {
-    GOOGLE_DCHECK(p != nullptr);
+    ABSL_DCHECK(p != nullptr);
     assert_aligned(p);
     ptr_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) | type);
     return p;
@@ -262,11 +261,15 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   void Set(absl::string_view value, Arena* arena);
   void Set(std::string&& value, Arena* arena);
+  template <typename... OverloadDisambiguator>
+  void Set(const std::string& value, Arena* arena);
   void Set(const char* s, Arena* arena);
   void Set(const char* s, size_t n, Arena* arena);
 
   void SetBytes(absl::string_view value, Arena* arena);
   void SetBytes(std::string&& value, Arena* arena);
+  template <typename... OverloadDisambiguator>
+  void SetBytes(const std::string& value, Arena* arena);
   void SetBytes(const char* s, Arena* arena);
   void SetBytes(const void* p, size_t n, Arena* arena);
 
@@ -418,6 +421,15 @@ inline void ArenaStringPtr::SetBytes(absl::string_view value, Arena* arena) {
   Set(value, arena);
 }
 
+template <>
+PROTOBUF_EXPORT void ArenaStringPtr::Set(const std::string& value,
+                                         Arena* arena);
+
+template <>
+inline void ArenaStringPtr::SetBytes(const std::string& value, Arena* arena) {
+  Set(value, arena);
+}
+
 inline void ArenaStringPtr::SetBytes(std::string&& value, Arena* arena) {
   Set(std::move(value), arena);
 }
@@ -466,8 +478,8 @@ inline void ArenaStringPtr::ClearNonDefaultToEmpty() {
 }
 
 inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
-  GOOGLE_DCHECK(tagged_ptr_.IsMutable());
-  GOOGLE_DCHECK(tagged_ptr_.Get() != nullptr);
+  ABSL_DCHECK(tagged_ptr_.IsMutable());
+  ABSL_DCHECK(tagged_ptr_.Get() != nullptr);
   return tagged_ptr_.Get();
 }
 

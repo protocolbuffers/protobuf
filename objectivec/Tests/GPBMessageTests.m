@@ -1481,6 +1481,82 @@
   XCTAssertEqualObjects(message, message2);
 }
 
+- (void)testClosedEnumsInExtensions {
+  // Only unknown values.
+
+  NSData *data =
+      DataFromCStr("\xA8\x01\x0A"      // optional_nested_enum_extension set to 10
+                   "\x98\x03\x0B"      // repeated_nested_enum_extension set to 11
+                   "\xA2\x03\x01\x0C"  // repeated_foreign_enum_extension set to 12 (packed)
+      );
+  NSError *error = nil;
+
+  TestAllExtensions *msg = [TestAllExtensions parseFromData:data
+                                          extensionRegistry:[self extensionRegistry]
+                                                      error:&error];
+  XCTAssertNil(error);
+
+  XCTAssertFalse([msg hasExtension:[UnittestRoot optionalNestedEnumExtension]]);
+  XCTAssertFalse([msg hasExtension:[UnittestRoot repeatedNestedEnumExtension]]);
+  XCTAssertFalse([msg hasExtension:[UnittestRoot repeatedForeignEnumExtension]]);
+
+  GPBUnknownFieldSet *unknownFields = msg.unknownFields;
+  GPBUnknownField *field =
+      [unknownFields getField:[UnittestRoot optionalNestedEnumExtension].fieldNumber];
+  XCTAssertNotNil(field);
+  XCTAssertEqual(field.varintList.count, 1);
+  XCTAssertEqual([field.varintList valueAtIndex:0], 10);
+  field = [unknownFields getField:[UnittestRoot repeatedNestedEnumExtension].fieldNumber];
+  XCTAssertNotNil(field);
+  XCTAssertEqual(field.varintList.count, 1);
+  XCTAssertEqual([field.varintList valueAtIndex:0], 11);
+  field = [unknownFields getField:[UnittestRoot repeatedForeignEnumExtension].fieldNumber];
+  XCTAssertNotNil(field);
+  XCTAssertEqual(field.varintList.count, 1);
+  XCTAssertEqual([field.varintList valueAtIndex:0], 12);
+
+  // Unknown and known, the known come though an unknown go to unknown fields.
+
+  data = DataFromCStr(
+      "\xA8\x01\x01"              // optional_nested_enum_extension set to 1
+      "\xA8\x01\x0A"              // optional_nested_enum_extension set to 10
+      "\xA8\x01\x02"              // optional_nested_enum_extension set to 2
+      "\x98\x03\x02"              // repeated_nested_enum_extension set to 2
+      "\x98\x03\x0B"              // repeated_nested_enum_extension set to 11
+      "\x98\x03\x03"              // repeated_nested_enum_extension set to 3
+      "\xA2\x03\x03\x04\x0C\x06"  // repeated_foreign_enum_extension set to 4, 12, 6 (packed)
+  );
+  error = nil;
+
+  msg = [TestAllExtensions parseFromData:data
+                       extensionRegistry:[self extensionRegistry]
+                                   error:&error];
+  XCTAssertNil(error);
+
+  XCTAssertTrue([msg hasExtension:[UnittestRoot optionalNestedEnumExtension]]);
+  XCTAssertEqualObjects([msg getExtension:[UnittestRoot optionalNestedEnumExtension]], @2);
+  XCTAssertTrue([msg hasExtension:[UnittestRoot repeatedNestedEnumExtension]]);
+  id expected = @[ @2, @3 ];
+  XCTAssertEqualObjects([msg getExtension:[UnittestRoot repeatedNestedEnumExtension]], expected);
+  XCTAssertTrue([msg hasExtension:[UnittestRoot repeatedForeignEnumExtension]]);
+  expected = @[ @4, @6 ];
+  XCTAssertEqualObjects([msg getExtension:[UnittestRoot repeatedForeignEnumExtension]], expected);
+
+  unknownFields = msg.unknownFields;
+  field = [unknownFields getField:[UnittestRoot optionalNestedEnumExtension].fieldNumber];
+  XCTAssertNotNil(field);
+  XCTAssertEqual(field.varintList.count, 1);
+  XCTAssertEqual([field.varintList valueAtIndex:0], 10);
+  field = [unknownFields getField:[UnittestRoot repeatedNestedEnumExtension].fieldNumber];
+  XCTAssertNotNil(field);
+  XCTAssertEqual(field.varintList.count, 1);
+  XCTAssertEqual([field.varintList valueAtIndex:0], 11);
+  field = [unknownFields getField:[UnittestRoot repeatedForeignEnumExtension].fieldNumber];
+  XCTAssertNotNil(field);
+  XCTAssertEqual(field.varintList.count, 1);
+  XCTAssertEqual([field.varintList valueAtIndex:0], 12);
+}
+
 - (void)testDefaultingExtensionMessages {
   TestAllExtensions *message = [TestAllExtensions message];
 
@@ -1843,8 +1919,8 @@
 }
 
 - (void)testPropertyNaming {
-  // objectivec_helpers.cc has some special handing to get proper all caps
-  // for a few cases to meet objc developer expectations.
+  // names.cc has some special handing to get proper all caps for a few cases to
+  // meet objc developer expectations.
   //
   // This "test" confirms that the expected names are generated, otherwise the
   // test itself will fail to compile.
@@ -1861,7 +1937,7 @@
 }
 
 - (void)testEnumNaming {
-  // objectivec_helpers.cc has some interesting cases to deal with in
+  // names.cc has some interesting cases to deal with in
   // EnumValueName/EnumValueShortName.  Confirm that things generated as
   // expected.
 
@@ -1966,9 +2042,8 @@
 }
 
 - (void)testReservedWordNaming {
-  // objectivec_helpers.cc has some special handing to make sure that
-  // some "reserved" objc names get renamed in a way so they
-  // don't conflict.
+  // names.cc has some special handing to make sure that some "reserved" objc
+  // names get renamed in a way so they don't conflict.
   //
   // This "test" confirms that the expected names are generated,
   // otherwise the test itself will fail to compile.

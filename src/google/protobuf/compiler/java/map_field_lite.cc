@@ -31,12 +31,13 @@
 #include "google/protobuf/compiler/java/map_field_lite.h"
 
 #include <cstdint>
+#include <string>
 
-#include "google/protobuf/io/printer.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/io/printer.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -49,16 +50,16 @@ namespace java {
 namespace {
 
 const FieldDescriptor* KeyField(const FieldDescriptor* descriptor) {
-  GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
   const Descriptor* message = descriptor->message_type();
-  GOOGLE_CHECK(message->options().map_entry());
+  ABSL_CHECK(message->options().map_entry());
   return message->map_key();
 }
 
 const FieldDescriptor* ValueField(const FieldDescriptor* descriptor) {
-  GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
   const Descriptor* message = descriptor->message_type();
-  GOOGLE_CHECK(message->options().map_entry());
+  ABSL_CHECK(message->options().map_entry());
   return message->map_value();
 }
 
@@ -69,8 +70,8 @@ std::string TypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
-                 : PrimitiveTypeName(GetJavaType(field));
+    return std::string(boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
+                             : PrimitiveTypeName(GetJavaType(field)));
   }
 }
 
@@ -81,19 +82,19 @@ std::string KotlinTypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return KotlinTypeName(GetJavaType(field));
+    return std::string(KotlinTypeName(GetJavaType(field)));
   }
 }
 
 std::string WireType(const FieldDescriptor* field) {
-  return "com.google.protobuf.WireFormat.FieldType." +
-         std::string(FieldTypeName(field->type()));
+  return absl::StrCat("com.google.protobuf.WireFormat.FieldType.",
+                      FieldTypeName(field->type()));
 }
 
-void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
-                         int builderBitIndex, const FieldGeneratorInfo* info,
-                         Context* context,
-                         std::map<std::string, std::string>* variables) {
+void SetMessageVariables(
+    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
+    const FieldGeneratorInfo* info, Context* context,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   ClassNameResolver* name_resolver = context->GetNameResolver();
@@ -130,8 +131,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   if (GetJavaType(value) == JAVATYPE_ENUM) {
     // We store enums as Integers internally.
     (*variables)["value_type"] = "int";
-    (*variables)["value_type_pass_through_nullness"] =
-        (*variables)["value_type"];
+    (*variables)["value_type_pass_through_nullness"] = "int";
     (*variables)["boxed_value_type"] = "java.lang.Integer";
     (*variables)["value_wire_type"] = WireType(value);
     (*variables)["value_default_value"] =
@@ -140,13 +140,15 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
 
     (*variables)["value_enum_type"] = TypeName(value, name_resolver, false);
 
-    (*variables)["value_enum_type_pass_through_nullness"] =
-        pass_through_nullness + (*variables)["value_enum_type"];
+    variables->insert(
+        {"value_enum_type_pass_through_nullness",
+         absl::StrCat(pass_through_nullness, (*variables)["value_enum_type"])});
 
     if (SupportUnknownEnumValue(descriptor->file())) {
       // Map unknown values to a special UNRECOGNIZED value if supported.
-      (*variables)["unrecognized_value"] =
-          (*variables)["value_enum_type"] + ".UNRECOGNIZED";
+      variables->insert(
+          {"unrecognized_value",
+           absl::StrCat((*variables)["value_enum_type"], ".UNRECOGNIZED")});
     } else {
       // Map unknown values to the default value if we don't have UNRECOGNIZED.
       (*variables)["unrecognized_value"] =
@@ -155,31 +157,37 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   } else {
     (*variables)["value_type"] = TypeName(value, name_resolver, false);
 
-    (*variables)["value_type_pass_through_nullness"] =
-        (IsReferenceType(valueJavaType) ? pass_through_nullness : "") +
-        (*variables)["value_type"];
+    variables->insert(
+        {"value_type_pass_through_nullness",
+         absl::StrCat(
+             (IsReferenceType(valueJavaType) ? pass_through_nullness : ""),
+             (*variables)["value_type"])});
 
     (*variables)["boxed_value_type"] = TypeName(value, name_resolver, true);
     (*variables)["value_wire_type"] = WireType(value);
     (*variables)["value_default_value"] =
         DefaultValue(value, true, name_resolver, context->options());
   }
-  (*variables)["type_parameters"] =
-      (*variables)["boxed_key_type"] + ", " + (*variables)["boxed_value_type"];
+  variables->insert(
+      {"type_parameters", absl::StrCat((*variables)["boxed_key_type"], ", ",
+                                       (*variables)["boxed_value_type"])});
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
-  (*variables)["kt_deprecation"] =
-      descriptor->options().deprecated()
-          ? "@kotlin.Deprecated(message = \"Field " + (*variables)["name"] +
-                " is deprecated\") "
-          : "";
+  variables->insert(
+      {"kt_deprecation",
+       descriptor->options().deprecated()
+           ? absl::StrCat("@kotlin.Deprecated(message = \"Field ",
+                          (*variables)["name"], " is deprecated\") ")
+           : ""});
 
-  (*variables)["default_entry"] =
-      (*variables)["capitalized_name"] + "DefaultEntryHolder.defaultEntry";
+  variables->insert(
+      {"default_entry", absl::StrCat((*variables)["capitalized_name"],
+                                     "DefaultEntryHolder.defaultEntry")});
   // { and } variables are used as delimiters when emitting annotations.
-  (*variables)["{"] = (*variables)["}"] = "";
+  (*variables)["{"] = "";
+  (*variables)["}"] = "";
 }
 
 }  // namespace

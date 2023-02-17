@@ -38,6 +38,7 @@ import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
+import com.google.protobuf.DescriptorProtos.FileOptions;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.EnumDescriptor;
@@ -64,6 +65,7 @@ import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestReservedEnumFields;
 import protobuf_unittest.UnittestProto.TestReservedFields;
 import protobuf_unittest.UnittestProto.TestService;
+import protobuf_unittest.UnittestRetention;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
@@ -295,6 +297,7 @@ public class DescriptorsTest {
     assertThat(enumType.getName()).isEqualTo("ForeignEnum");
     assertThat(enumType.getFullName()).isEqualTo("protobuf_unittest.ForeignEnum");
     assertThat(enumType.getFile()).isEqualTo(UnittestProto.getDescriptor());
+    assertThat(enumType.isClosed()).isTrue();
     assertThat(enumType.getContainingType()).isNull();
     assertThat(enumType.getOptions()).isEqualTo(DescriptorProtos.EnumOptions.getDefaultInstance());
 
@@ -324,7 +327,6 @@ public class DescriptorsTest {
     assertThat(service.getFullName()).isEqualTo("protobuf_unittest.TestService");
     assertThat(service.getFile()).isEqualTo(UnittestProto.getDescriptor());
 
-
     MethodDescriptor fooMethod = service.getMethods().get(0);
     assertThat(fooMethod.getName()).isEqualTo("Foo");
     assertThat(fooMethod.getInputType()).isEqualTo(UnittestProto.FooRequest.getDescriptor());
@@ -337,14 +339,12 @@ public class DescriptorsTest {
     assertThat(barMethod.getOutputType()).isEqualTo(UnittestProto.BarResponse.getDescriptor());
     assertThat(service.findMethodByName("Bar")).isEqualTo(barMethod);
 
-
     assertThat(service.findMethodByName("NoSuchMethod")).isNull();
 
     for (int i = 0; i < service.getMethods().size(); i++) {
       assertThat(service.getMethods().get(i).getIndex()).isEqualTo(i);
     }
   }
-
 
   @Test
   public void testCustomOptions() throws Exception {
@@ -393,6 +393,16 @@ public class DescriptorsTest {
     assertThat(method.getOptions().hasExtension(UnittestCustomOptions.methodOpt1)).isTrue();
     assertThat(method.getOptions().getExtension(UnittestCustomOptions.methodOpt1))
         .isEqualTo(UnittestCustomOptions.MethodOpt1.METHODOPT1_VAL2);
+  }
+
+  @Test
+  public void testOptionRetention() throws Exception {
+    // Verify that options with RETENTION_SOURCE are stripped from the
+    // generated descriptors.
+    FileOptions options = UnittestRetention.getDescriptor().getOptions();
+    assertThat(options.hasExtension(UnittestRetention.plainOption)).isTrue();
+    assertThat(options.hasExtension(UnittestRetention.runtimeRetentionOption)).isTrue();
+    assertThat(options.hasExtension(UnittestRetention.sourceRetentionOption)).isFalse();
   }
 
   /** Test that the FieldDescriptor.Type enum is the same as the WireFormat.FieldType enum. */

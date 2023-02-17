@@ -38,6 +38,9 @@ syntax = "proto2";
 
 package protobuf_unittest;
 
+import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
+
 message TestFlagsAndStrings {
   required int32 A = 1;
   repeated group RepeatedGroup = 2 {
@@ -91,7 +94,6 @@ message TestNumbers {
   optional double e = 5;
   optional uint32 f = 6;
 }
-
 
 message TestCamelCase {
   optional string normal_field = 1;

@@ -1,6 +1,14 @@
 # Setup our dependency on Abseil.
 
-set(ABSL_PROPAGATE_CXX_STD ON)
+if(protobuf_BUILD_TESTS)
+  # Tell Abseil to build test-only helpers.
+  set(ABSL_BUILD_TEST_HELPERS ON)
+
+  # We depend on googletest too, so just tell Abseil to use the same one we've
+  # already setup.
+  set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
+  set(ABSL_FIND_GOOGLETEST OFF)
+endif()
 
 if(TARGET absl::strings)
   # If Abseil is included already, skip including it.
@@ -29,30 +37,49 @@ elseif(protobuf_ABSL_PROVIDER STREQUAL "package")
 endif()
 set(_protobuf_FIND_ABSL "if(NOT TARGET absl::strings)\n  find_package(absl CONFIG)\nendif()")
 
-set(protobuf_ABSL_USED_TARGETS
-  absl::algorithm
-  absl::base
-  absl::bind_front
-  absl::bits
-  absl::cleanup
-  absl::cord
-  absl::core_headers
-  absl::debugging
-  absl::dynamic_annotations
-  absl::flags
-  absl::flat_hash_map
-  absl::flat_hash_set
-  absl::function_ref
-  absl::hash
-  absl::layout
-  absl::memory
-  absl::optional
-  absl::span
-  absl::status
-  absl::statusor
-  absl::strings
-  absl::synchronization
-  absl::time
-  absl::utility
-  absl::variant
-)
+if (BUILD_SHARED_LIBS AND MSVC)
+  # On MSVC Abseil is bundled into a single DLL.
+  set(protobuf_ABSL_USED_TARGETS abseil_dll)
+
+  set(protobuf_ABSL_USED_TEST_TARGETS abseil_test_dll)
+else()
+  set(protobuf_ABSL_USED_TARGETS
+    absl::absl_check
+    absl::absl_log
+    absl::algorithm
+    absl::base
+    absl::bind_front
+    absl::bits
+    absl::btree
+    absl::cleanup
+    absl::cord
+    absl::core_headers
+    absl::debugging
+    absl::die_if_null
+    absl::dynamic_annotations
+    absl::flags
+    absl::flat_hash_map
+    absl::flat_hash_set
+    absl::function_ref
+    absl::hash
+    absl::layout
+    absl::log_initialize
+    absl::log_severity
+    absl::memory
+    absl::node_hash_map
+    absl::node_hash_set
+    absl::optional
+    absl::span
+    absl::status
+    absl::statusor
+    absl::strings
+    absl::synchronization
+    absl::time
+    absl::type_traits
+    absl::utility
+    absl::variant
+  )
+  set(protobuf_ABSL_USED_TEST_TARGETS
+    absl::scoped_mock_log
+  )
+endif ()

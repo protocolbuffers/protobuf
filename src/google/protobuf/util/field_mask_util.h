@@ -38,6 +38,7 @@
 #include <vector>
 
 #include "google/protobuf/field_mask.pb.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 
@@ -65,7 +66,7 @@ class PROTOBUF_EXPORT FieldMaskUtil {
     for (const auto field_number : field_numbers) {
       const FieldDescriptor* field_desc =
           T::descriptor()->FindFieldByNumber(field_number);
-      GOOGLE_CHECK(field_desc != nullptr)
+      ABSL_CHECK(field_desc != nullptr)
           << "Invalid field number for " << T::descriptor()->full_name() << ": "
           << field_number;
       AddPathToFieldMask<T>(field_desc->lowercase_name(), out);
@@ -108,7 +109,7 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   // This method check-fails if the path is not a valid path for type T.
   template <typename T>
   static void AddPathToFieldMask(absl::string_view path, FieldMask* mask) {
-    GOOGLE_CHECK(IsValidPath<T>(path)) << path;
+    ABSL_CHECK(IsValidPath<T>(path)) << path;
     mask->add_paths(std::string(path));
   }
 

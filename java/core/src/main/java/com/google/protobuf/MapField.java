@@ -122,7 +122,6 @@ public class MapField<K, V> implements MutabilityOracle {
     }
   }
 
-
   private final Converter<K, V> converter;
 
   private MapField(Converter<K, V> converter, StorageMode mode, Map<K, V> mapData) {
@@ -137,18 +136,15 @@ public class MapField<K, V> implements MutabilityOracle {
     this(new ImmutableMessageConverter<K, V>(defaultEntry), mode, mapData);
   }
 
-
   /** Returns an immutable empty MapField. */
   public static <K, V> MapField<K, V> emptyMapField(MapEntry<K, V> defaultEntry) {
     return new MapField<K, V>(defaultEntry, StorageMode.MAP, Collections.<K, V>emptyMap());
   }
 
-
   /** Creates a new mutable empty MapField. */
   public static <K, V> MapField<K, V> newMapField(MapEntry<K, V> defaultEntry) {
     return new MapField<K, V>(defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
   }
-
 
   private Message convertKeyAndValueToMessage(K key, V value) {
     return converter.convertKeyAndValueToMessage(key, value);

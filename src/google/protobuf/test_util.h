@@ -129,33 +129,48 @@ inline TestUtil::ReflectionTester::ReflectionTester(
     : base_descriptor_(base_descriptor) {
   const DescriptorPool* pool = base_descriptor->file()->pool();
   std::string package = base_descriptor->file()->package();
-  const FieldDescriptor* import_descriptor =
-      pool->FindFieldByName(package + ".TestAllTypes.optional_import_message");
+  const FieldDescriptor* import_descriptor = pool->FindFieldByName(
+      absl::StrCat(package, ".TestAllTypes.optional_import_message"));
   std::string import_package =
       import_descriptor->message_type()->file()->package();
 
-  nested_b_ = pool->FindFieldByName(package + ".TestAllTypes.NestedMessage.bb");
-  foreign_c_ = pool->FindFieldByName(package + ".ForeignMessage.c");
-  import_d_ = pool->FindFieldByName(import_package + ".ImportMessage.d");
-  import_e_ = pool->FindFieldByName(import_package + ".PublicImportMessage.e");
-  nested_foo_ = pool->FindEnumValueByName(package + ".TestAllTypes.FOO");
-  nested_bar_ = pool->FindEnumValueByName(package + ".TestAllTypes.BAR");
-  nested_baz_ = pool->FindEnumValueByName(package + ".TestAllTypes.BAZ");
-  foreign_foo_ = pool->FindEnumValueByName(package + ".FOREIGN_FOO");
-  foreign_bar_ = pool->FindEnumValueByName(package + ".FOREIGN_BAR");
-  foreign_baz_ = pool->FindEnumValueByName(package + ".FOREIGN_BAZ");
-  import_foo_ = pool->FindEnumValueByName(import_package + ".IMPORT_FOO");
-  import_bar_ = pool->FindEnumValueByName(import_package + ".IMPORT_BAR");
-  import_baz_ = pool->FindEnumValueByName(import_package + ".IMPORT_BAZ");
+  nested_b_ = pool->FindFieldByName(
+      absl::StrCat(package, ".TestAllTypes.NestedMessage.bb"));
+  foreign_c_ =
+      pool->FindFieldByName(absl::StrCat(package, ".ForeignMessage.c"));
+  import_d_ =
+      pool->FindFieldByName(absl::StrCat(import_package, ".ImportMessage.d"));
+  import_e_ = pool->FindFieldByName(
+      absl::StrCat(import_package, ".PublicImportMessage.e"));
+  nested_foo_ =
+      pool->FindEnumValueByName(absl::StrCat(package, ".TestAllTypes.FOO"));
+  nested_bar_ =
+      pool->FindEnumValueByName(absl::StrCat(package, ".TestAllTypes.BAR"));
+  nested_baz_ =
+      pool->FindEnumValueByName(absl::StrCat(package, ".TestAllTypes.BAZ"));
+  foreign_foo_ =
+      pool->FindEnumValueByName(absl::StrCat(package, ".FOREIGN_FOO"));
+  foreign_bar_ =
+      pool->FindEnumValueByName(absl::StrCat(package, ".FOREIGN_BAR"));
+  foreign_baz_ =
+      pool->FindEnumValueByName(absl::StrCat(package, ".FOREIGN_BAZ"));
+  import_foo_ =
+      pool->FindEnumValueByName(absl::StrCat(import_package, ".IMPORT_FOO"));
+  import_bar_ =
+      pool->FindEnumValueByName(absl::StrCat(import_package, ".IMPORT_BAR"));
+  import_baz_ =
+      pool->FindEnumValueByName(absl::StrCat(import_package, ".IMPORT_BAZ"));
 
   if (base_descriptor_->name() == "TestAllExtensions") {
-    group_a_ = pool->FindFieldByName(package + ".OptionalGroup_extension.a");
-    repeated_group_a_ =
-        pool->FindFieldByName(package + ".RepeatedGroup_extension.a");
+    group_a_ = pool->FindFieldByName(
+        absl::StrCat(package, ".OptionalGroup_extension.a"));
+    repeated_group_a_ = pool->FindFieldByName(
+        absl::StrCat(package, ".RepeatedGroup_extension.a"));
   } else {
-    group_a_ = pool->FindFieldByName(package + ".TestAllTypes.OptionalGroup.a");
-    repeated_group_a_ =
-        pool->FindFieldByName(package + ".TestAllTypes.RepeatedGroup.a");
+    group_a_ = pool->FindFieldByName(
+        absl::StrCat(package, ".TestAllTypes.OptionalGroup.a"));
+    repeated_group_a_ = pool->FindFieldByName(
+        absl::StrCat(package, ".TestAllTypes.RepeatedGroup.a"));
   }
 
   EXPECT_TRUE(group_a_ != nullptr);
@@ -181,11 +196,12 @@ inline const FieldDescriptor* TestUtil::ReflectionTester::F(
   const FieldDescriptor* result = nullptr;
   if (base_descriptor_->name() == "TestAllExtensions" ||
       base_descriptor_->name() == "TestPackedExtensions") {
-    result = base_descriptor_->file()->FindExtensionByName(name + "_extension");
+    result = base_descriptor_->file()->FindExtensionByName(
+        absl::StrCat(name, "_extension"));
   } else {
     result = base_descriptor_->FindFieldByName(name);
   }
-  GOOGLE_CHECK(result != nullptr);
+  ABSL_CHECK(result != nullptr);
   return result;
 }
 

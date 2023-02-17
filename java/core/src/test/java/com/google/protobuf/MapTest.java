@@ -66,26 +66,26 @@ public class MapTest {
     builder.getMutableInt32ToInt32Field().put(1, 11);
     builder.getMutableInt32ToInt32Field().put(2, 22);
     builder.getMutableInt32ToInt32Field().put(3, 33);
-  //
+
     builder.getMutableInt32ToStringField().put(1, "11");
     builder.getMutableInt32ToStringField().put(2, "22");
     builder.getMutableInt32ToStringField().put(3, "33");
-  //
+
     builder.getMutableInt32ToBytesField().put(1, TestUtil.toBytes("11"));
     builder.getMutableInt32ToBytesField().put(2, TestUtil.toBytes("22"));
     builder.getMutableInt32ToBytesField().put(3, TestUtil.toBytes("33"));
-  //
+
     builder.getMutableInt32ToEnumField().put(1, TestMap.EnumValue.FOO);
     builder.getMutableInt32ToEnumField().put(2, TestMap.EnumValue.BAR);
     builder.getMutableInt32ToEnumField().put(3, TestMap.EnumValue.BAZ);
-  //
+
     builder.getMutableInt32ToMessageField().put(
         1, MessageValue.newBuilder().setValue(11).build());
     builder.getMutableInt32ToMessageField().put(
         2, MessageValue.newBuilder().setValue(22).build());
     builder.getMutableInt32ToMessageField().put(
         3, MessageValue.newBuilder().setValue(33).build());
-  //
+
     builder.getMutableStringToInt32Field().put("1", 11);
     builder.getMutableStringToInt32Field().put("2", 22);
     builder.getMutableStringToInt32Field().put("3", 33);
@@ -174,25 +174,25 @@ public class MapTest {
     builder.getMutableInt32ToInt32Field().put(1, 111);
     builder.getMutableInt32ToInt32Field().remove(2);
     builder.getMutableInt32ToInt32Field().put(4, 44);
-  //
+
     builder.getMutableInt32ToStringField().put(1, "111");
     builder.getMutableInt32ToStringField().remove(2);
     builder.getMutableInt32ToStringField().put(4, "44");
-  //
+
     builder.getMutableInt32ToBytesField().put(1, TestUtil.toBytes("111"));
     builder.getMutableInt32ToBytesField().remove(2);
     builder.getMutableInt32ToBytesField().put(4, TestUtil.toBytes("44"));
-  //
+
     builder.getMutableInt32ToEnumField().put(1, TestMap.EnumValue.BAR);
     builder.getMutableInt32ToEnumField().remove(2);
     builder.getMutableInt32ToEnumField().put(4, TestMap.EnumValue.QUX);
-  //
+
     builder.getMutableInt32ToMessageField().put(
         1, MessageValue.newBuilder().setValue(111).build());
     builder.getMutableInt32ToMessageField().remove(2);
     builder.getMutableInt32ToMessageField().put(
         4, MessageValue.newBuilder().setValue(44).build());
-  //
+
     builder.getMutableStringToInt32Field().put("1", 111);
     builder.getMutableStringToInt32Field().remove("2");
     builder.getMutableStringToInt32Field().put("4", 44);
@@ -233,7 +233,7 @@ public class MapTest {
     assertMapValuesSet(usingAccessors);
 
     assertThat(usingAccessors).isEqualTo(usingMutableMap);
-    //
+
     usingMutableMapBuilder = usingMutableMap.toBuilder();
     updateMapValuesUsingMutableMap(usingMutableMapBuilder);
     usingMutableMap = usingMutableMapBuilder.build();
@@ -339,7 +339,7 @@ public class MapTest {
     assertThat(builder.getInt32ToInt32Field()).isEqualTo(newMap(1, 2));
     builder.getMutableInt32ToInt32Field().put(2, 3);
     assertThat(builder.getInt32ToInt32Field()).isEqualTo(newMap(1, 2, 2, 3));
-  //
+
     Map<Integer, TestMap.EnumValue> enumMap = builder.getMutableInt32ToEnumField();
     enumMap.put(1, TestMap.EnumValue.BAR);
     assertThat(builder.build().getInt32ToEnumField())
@@ -354,7 +354,7 @@ public class MapTest {
     builder.getMutableInt32ToEnumField().put(2, TestMap.EnumValue.FOO);
     assertThat(builder.getInt32ToEnumField()).isEqualTo(
         newMap(1, TestMap.EnumValue.BAR, 2, TestMap.EnumValue.FOO));
-  //
+
     Map<Integer, String> stringMap = builder.getMutableInt32ToStringField();
     stringMap.put(1, "1");
     assertThat(builder.build().getInt32ToStringField()).isEqualTo(newMap(1, "1"));
@@ -367,7 +367,7 @@ public class MapTest {
     assertThat(builder.getInt32ToStringField()).isEqualTo(newMap(1, "1"));
     builder.putInt32ToStringField(2, "2");
     assertThat(builder.getInt32ToStringField()).isEqualTo(newMap(1, "1", 2, "2"));
-  //
+
     Map<Integer, TestMap.MessageValue> messageMap = builder.getMutableInt32ToMessageField();
     messageMap.put(1, TestMap.MessageValue.getDefaultInstance());
     assertThat( builder.build().getInt32ToMessageField())
@@ -385,7 +385,7 @@ public class MapTest {
         newMap(1, TestMap.MessageValue.getDefaultInstance(),
             2, TestMap.MessageValue.getDefaultInstance()));
   }
-  //
+
   @Test
   public void testMutableMapLifecycle_collections() {
     TestMap.Builder builder = TestMap.newBuilder();

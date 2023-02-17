@@ -36,19 +36,18 @@
 
 #include <memory>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
-
-#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 
 namespace google {
 namespace protobuf {
@@ -72,14 +71,14 @@ class MockErrorCollector : public MultiFileErrorCollector {
   std::string warning_text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, int line, int column,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, int line, int column,
+                   absl::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
 
-  void AddWarning(const std::string& filename, int line, int column,
-                  const std::string& message) override {
+  void RecordWarning(absl::string_view filename, int line, int column,
+                     absl::string_view message) override {
     absl::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename, line,
                               column, message);
   }
@@ -261,14 +260,16 @@ TEST_F(ImporterTest, LiteRuntimeImport) {
 class DiskSourceTreeTest : public testing::Test {
  protected:
   void SetUp() override {
-    dirnames_.push_back(TestTempDir() + "/test_proto2_import_path_1");
-    dirnames_.push_back(TestTempDir() + "/test_proto2_import_path_2");
+    dirnames_.push_back(
+        absl::StrCat(TestTempDir(), "/test_proto2_import_path_1"));
+    dirnames_.push_back(
+        absl::StrCat(TestTempDir(), "/test_proto2_import_path_2"));
 
     for (int i = 0; i < dirnames_.size(); i++) {
       if (FileExists(dirnames_[i])) {
         File::DeleteRecursively(dirnames_[i], NULL, NULL);
       }
-      GOOGLE_CHECK_OK(File::CreateDir(dirnames_[i], 0777));
+      ABSL_CHECK_OK(File::CreateDir(dirnames_[i], 0777));
     }
   }
 
@@ -281,11 +282,11 @@ class DiskSourceTreeTest : public testing::Test {
   }
 
   void AddFile(const std::string& filename, const char* contents) {
-    GOOGLE_CHECK_OK(File::SetContents(filename, contents, true));
+    ABSL_CHECK_OK(File::SetContents(filename, contents, true));
   }
 
   void AddSubdir(const std::string& dirname) {
-    GOOGLE_CHECK_OK(File::CreateDir(dirname, 0777));
+    ABSL_CHECK_OK(File::CreateDir(dirname, 0777));
   }
 
   void ExpectFileContents(const std::string& filename,
@@ -321,7 +322,7 @@ class DiskSourceTreeTest : public testing::Test {
 TEST_F(DiskSourceTreeTest, MapRoot) {
   // Test opening a file in a directory that is mapped to the root of the
   // source tree.
-  AddFile(dirnames_[0] + "/foo", "Hello World!");
+  AddFile(absl::StrCat(dirnames_[0], "/foo"), "Hello World!");
   source_tree_.MapPath("", dirnames_[0]);
 
   ExpectFileContents("foo", "Hello World!");
@@ -332,7 +333,7 @@ TEST_F(DiskSourceTreeTest, MapDirectory) {
   // Test opening a file in a directory that is mapped to somewhere other
   // than the root of the source tree.
 
-  AddFile(dirnames_[0] + "/foo", "Hello World!");
+  AddFile(absl::StrCat(dirnames_[0], "/foo"), "Hello World!");
   source_tree_.MapPath("baz", dirnames_[0]);
 
   ExpectFileContents("baz/foo", "Hello World!");
@@ -356,10 +357,10 @@ TEST_F(DiskSourceTreeTest, MapDirectory) {
 TEST_F(DiskSourceTreeTest, NoParent) {
   // Test that we cannot open files in a parent of a mapped directory.
 
-  AddFile(dirnames_[0] + "/foo", "Hello World!");
-  AddSubdir(dirnames_[0] + "/bar");
-  AddFile(dirnames_[0] + "/bar/baz", "Blah.");
-  source_tree_.MapPath("", dirnames_[0] + "/bar");
+  AddFile(absl::StrCat(dirnames_[0], "/foo"), "Hello World!");
+  AddSubdir(absl::StrCat(dirnames_[0], "/bar"));
+  AddFile(absl::StrCat(dirnames_[0], "/bar/baz"), "Blah.");
+  source_tree_.MapPath("", absl::StrCat(dirnames_[0], "/bar"));
 
   ExpectFileContents("baz", "Blah.");
   ExpectCannotOpenFile("../foo",
@@ -373,8 +374,8 @@ TEST_F(DiskSourceTreeTest, NoParent) {
 TEST_F(DiskSourceTreeTest, MapFile) {
   // Test opening a file that is mapped directly into the source tree.
 
-  AddFile(dirnames_[0] + "/foo", "Hello World!");
-  source_tree_.MapPath("foo", dirnames_[0] + "/foo");
+  AddFile(absl::StrCat(dirnames_[0], "/foo"), "Hello World!");
+  source_tree_.MapPath("foo", absl::StrCat(dirnames_[0], "/foo"));
 
   ExpectFileContents("foo", "Hello World!");
   ExpectCannotOpenFile("bar", "File not found.");
@@ -383,9 +384,9 @@ TEST_F(DiskSourceTreeTest, MapFile) {
 TEST_F(DiskSourceTreeTest, SearchMultipleDirectories) {
   // Test mapping and searching multiple directories.
 
-  AddFile(dirnames_[0] + "/foo", "Hello World!");
-  AddFile(dirnames_[1] + "/foo", "This file should be hidden.");
-  AddFile(dirnames_[1] + "/bar", "Goodbye World!");
+  AddFile(absl::StrCat(dirnames_[0], "/foo"), "Hello World!");
+  AddFile(absl::StrCat(dirnames_[1], "/foo"), "This file should be hidden.");
+  AddFile(absl::StrCat(dirnames_[1], "/bar"), "Goodbye World!");
   source_tree_.MapPath("", dirnames_[0]);
   source_tree_.MapPath("", dirnames_[1]);
 
@@ -399,11 +400,12 @@ TEST_F(DiskSourceTreeTest, OrderingTrumpsSpecificity) {
   // directory is more-specific than a former one.
 
   // Create the "bar" directory so we can put a file in it.
-  GOOGLE_CHECK_OK(File::CreateDir(dirnames_[0] + "/bar", 0777));
+  ABSL_CHECK_OK(File::CreateDir(absl::StrCat(dirnames_[0], "/bar"),
+                                0777));
 
   // Add files and map paths.
-  AddFile(dirnames_[0] + "/bar/foo", "Hello World!");
-  AddFile(dirnames_[1] + "/foo", "This file should be hidden.");
+  AddFile(absl::StrCat(dirnames_[0], "/bar/foo"), "Hello World!");
+  AddFile(absl::StrCat(dirnames_[1], "/foo"), "This file should be hidden.");
   source_tree_.MapPath("", dirnames_[0]);
   source_tree_.MapPath("bar", dirnames_[1]);
 
@@ -414,8 +416,8 @@ TEST_F(DiskSourceTreeTest, OrderingTrumpsSpecificity) {
 TEST_F(DiskSourceTreeTest, DiskFileToVirtualFile) {
   // Test DiskFileToVirtualFile.
 
-  AddFile(dirnames_[0] + "/foo", "Hello World!");
-  AddFile(dirnames_[1] + "/foo", "This file should be hidden.");
+  AddFile(absl::StrCat(dirnames_[0], "/foo"), "Hello World!");
+  AddFile(absl::StrCat(dirnames_[1], "/foo"), "This file should be hidden.");
   source_tree_.MapPath("bar", dirnames_[0]);
   source_tree_.MapPath("bar", dirnames_[1]);
 
@@ -426,20 +428,21 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFile) {
             source_tree_.DiskFileToVirtualFile("/foo", &virtual_file,
                                                &shadowing_disk_file));
 
-  EXPECT_EQ(DiskSourceTree::SHADOWED,
-            source_tree_.DiskFileToVirtualFile(
-                dirnames_[1] + "/foo", &virtual_file, &shadowing_disk_file));
+  EXPECT_EQ(DiskSourceTree::SHADOWED, source_tree_.DiskFileToVirtualFile(
+                                          absl::StrCat(dirnames_[1], "/foo"),
+                                          &virtual_file, &shadowing_disk_file));
   EXPECT_EQ("bar/foo", virtual_file);
-  EXPECT_EQ(dirnames_[0] + "/foo", shadowing_disk_file);
+  EXPECT_EQ(absl::StrCat(dirnames_[0], "/foo"), shadowing_disk_file);
 
-  EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
-            source_tree_.DiskFileToVirtualFile(
-                dirnames_[1] + "/baz", &virtual_file, &shadowing_disk_file));
+  EXPECT_EQ(
+      DiskSourceTree::CANNOT_OPEN,
+      source_tree_.DiskFileToVirtualFile(absl::StrCat(dirnames_[1], "/baz"),
+                                         &virtual_file, &shadowing_disk_file));
   EXPECT_EQ("bar/baz", virtual_file);
 
-  EXPECT_EQ(DiskSourceTree::SUCCESS,
-            source_tree_.DiskFileToVirtualFile(
-                dirnames_[0] + "/foo", &virtual_file, &shadowing_disk_file));
+  EXPECT_EQ(DiskSourceTree::SUCCESS, source_tree_.DiskFileToVirtualFile(
+                                         absl::StrCat(dirnames_[0], "/foo"),
+                                         &virtual_file, &shadowing_disk_file));
   EXPECT_EQ("bar/foo", virtual_file);
 }
 
@@ -514,18 +517,19 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFileCanonicalization) {
 TEST_F(DiskSourceTreeTest, VirtualFileToDiskFile) {
   // Test VirtualFileToDiskFile.
 
-  AddFile(dirnames_[0] + "/foo", "Hello World!");
-  AddFile(dirnames_[1] + "/foo", "This file should be hidden.");
-  AddFile(dirnames_[1] + "/quux", "This file should not be hidden.");
+  AddFile(absl::StrCat(dirnames_[0], "/foo"), "Hello World!");
+  AddFile(absl::StrCat(dirnames_[1], "/foo"), "This file should be hidden.");
+  AddFile(absl::StrCat(dirnames_[1], "/quux"),
+          "This file should not be hidden.");
   source_tree_.MapPath("bar", dirnames_[0]);
   source_tree_.MapPath("bar", dirnames_[1]);
 
   // Existent files, shadowed and non-shadowed case.
   std::string disk_file;
   EXPECT_TRUE(source_tree_.VirtualFileToDiskFile("bar/foo", &disk_file));
-  EXPECT_EQ(dirnames_[0] + "/foo", disk_file);
+  EXPECT_EQ(absl::StrCat(dirnames_[0], "/foo"), disk_file);
   EXPECT_TRUE(source_tree_.VirtualFileToDiskFile("bar/quux", &disk_file));
-  EXPECT_EQ(dirnames_[1] + "/quux", disk_file);
+  EXPECT_EQ(absl::StrCat(dirnames_[1], "/quux"), disk_file);
 
   // Nonexistent file in existent directory and vice versa.
   std::string not_touched = "not touched";

@@ -50,7 +50,6 @@
 - (void)mergeUnknownFields:(GPBUnknownFieldSet *)other;
 
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input;
-- (void)mergeFromData:(NSData *)data;
 
 - (void)mergeVarintField:(int32_t)number value:(int32_t)value;
 - (BOOL)mergeFieldFrom:(int32_t)tag input:(GPBCodedInputStream *)input;

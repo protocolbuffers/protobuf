@@ -35,15 +35,11 @@
 #include "google/protobuf/compiler/java/message_builder_lite.h"
 
 #include <algorithm>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/context.h"
@@ -54,6 +50,9 @@
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -69,12 +68,13 @@ MessageBuilderLiteGenerator::MessageBuilderLiteGenerator(
       context_(context),
       name_resolver_(context->GetNameResolver()),
       field_generators_(descriptor, context_) {
-  GOOGLE_CHECK(!HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
+  ABSL_CHECK(!HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A lite message generator is used to "
          "generate non-lite messages.";
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
-      oneofs_.insert(descriptor_->field(i)->containing_oneof());
+      const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
+      ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -83,7 +83,7 @@ MessageBuilderLiteGenerator::~MessageBuilderLiteGenerator() {}
 
 void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
   WriteMessageDocComment(printer, descriptor_);
-  std::map<std::string, std::string> vars = {
+  absl::flat_hash_map<absl::string_view, std::string> vars = {
       {"{", ""},
       {"}", ""},
       {"classname", name_resolver_->GetImmutableClassName(descriptor_)},
@@ -104,7 +104,8 @@ void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
   GenerateCommonBuilderMethods(printer);
 
   // oneof
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;

@@ -2,15 +2,26 @@
 # https://github.com/codespell-project/actions-codespell
 # https://github.com/codespell-project/codespell
 name: codespell
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - '[0-9]+.x'
+  pull_request:
+    branches:
+      - main
+      - '[0-9]+.x'
+
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
 jobs:
   codespell:
     name: Check for spelling errors
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: codespell-project/actions-codespell@master
         with:
           check_filenames: true
-          skip: ./.git,./conformance/third_party,*.snk,*.pb,*.pb.cc,*.pb.h,./src/google/protobuf/testdata,./objectivec/Tests,./python/compatibility_tests/v2.5.0/tests/google/protobuf/internal,./.github/workflows/codespell.yml
-          ignore_words_list: "alow,alse,ba,chec,cleare,copyable,cloneable,dedup,dur,errorprone,files',fo,fundementals,hel,importd,inout,leapyear,nd,nin,ois,ons,parseable,process',te,testof,ue,unparseable,wasn,wee,gae,keyserver,objext,od,optin,streem,sur,falsy"
+          skip: ./.git,./third_party,./conformance/third_party,*.snk,*.pb,*.pb.cc,*.pb.h,./src/google/protobuf/testdata,./objectivec/Tests,./python/compatibility_tests/v2.5.0/tests/google/protobuf/internal,./.github/workflows/codespell.yml
+          ignore_words_list: "alow,alse,atleast,ba,chec,cleare,copyable,cloneable,dedup,dur,errorprone,falsy,files',fo,fundementals,hel,importd,inout,leapyear,nd,nin,ois,ons,parseable,process',ro,te,testof,ue,unparseable,wasn,wee,gae,keyserver,objext,od,optin,streem,sur,falsy"

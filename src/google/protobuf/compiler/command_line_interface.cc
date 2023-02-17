@@ -34,6 +34,9 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_map.h"
+
 #include "google/protobuf/stubs/platform_macros.h"
 
 #include <stdio.h>
@@ -60,7 +63,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -71,14 +73,16 @@
 #endif
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/compiler/plugin.pb.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
@@ -90,7 +94,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 
 // Must be included last.
@@ -139,7 +142,7 @@ void SetFdToTextMode(int fd) {
 #ifdef _WIN32
   if (setmode(fd, _O_TEXT) == -1) {
     // This should never happen, I think.
-    GOOGLE_LOG(WARNING) << "setmode(" << fd << ", _O_TEXT): " << strerror(errno);
+    ABSL_LOG(WARNING) << "setmode(" << fd << ", _O_TEXT): " << strerror(errno);
   }
 #endif
   // (Text and binary are the same on non-Windows platforms.)
@@ -149,7 +152,8 @@ void SetFdToBinaryMode(int fd) {
 #ifdef _WIN32
   if (setmode(fd, _O_BINARY) == -1) {
     // This should never happen, I think.
-    GOOGLE_LOG(WARNING) << "setmode(" << fd << ", _O_BINARY): " << strerror(errno);
+    ABSL_LOG(WARNING) << "setmode(" << fd
+                      << ", _O_BINARY): " << strerror(errno);
   }
 #endif
   // (Text and binary are the same on non-Windows platforms.)
@@ -234,9 +238,10 @@ bool GetProtocAbsolutePath(std::string* path) {
 
 // Whether a path is where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
-bool IsInstalledProtoPath(const std::string& path) {
+bool IsInstalledProtoPath(absl::string_view path) {
   // Checking the descriptor.proto file should be good enough.
-  std::string file_path = path + "/google/protobuf/descriptor.proto";
+  std::string file_path =
+      absl::StrCat(path, "/google/protobuf/descriptor.proto");
   return access(file_path.c_str(), F_OK) != -1;
 }
 
@@ -247,25 +252,26 @@ void AddDefaultProtoPaths(
   // TODO(xiaofeng): The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
-  std::string path;
-  if (!GetProtocAbsolutePath(&path)) {
+  std::string path_str;
+  if (!GetProtocAbsolutePath(&path_str)) {
     return;
   }
+  absl::string_view path(path_str);
   // Strip the binary name.
   size_t pos = path.find_last_of("/\\");
-  if (pos == std::string::npos || pos == 0) {
+  if (pos == path.npos || pos == 0) {
     return;
   }
   path = path.substr(0, pos);
   // Check the binary's directory.
   if (IsInstalledProtoPath(path)) {
-    paths->push_back(std::pair<std::string, std::string>("", path));
+    paths->emplace_back("", path);
     return;
   }
   // Check if there is an include subdirectory.
-  if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(
-        std::pair<std::string, std::string>("", path + "/include"));
+  std::string include_path = absl::StrCat(path, "/include");
+  if (IsInstalledProtoPath(include_path)) {
+    paths->emplace_back("", std::move(include_path));
     return;
   }
   // Check if the upper level directory has an "include" subdirectory.
@@ -274,18 +280,19 @@ void AddDefaultProtoPaths(
     return;
   }
   path = path.substr(0, pos);
-  if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(
-        std::pair<std::string, std::string>("", path + "/include"));
+  include_path = absl::StrCat(path, "/include");
+  if (IsInstalledProtoPath(include_path)) {
+    paths->emplace_back("", std::move(include_path));
     return;
   }
 }
 
-std::string PluginName(const std::string& plugin_prefix,
-                       const std::string& directive) {
+std::string PluginName(absl::string_view plugin_prefix,
+                       absl::string_view directive) {
   // Assuming the directive starts with "--" and ends with "_out" or "_opt",
   // strip the "--" and "_out/_opt" and add the plugin prefix.
-  return plugin_prefix + "gen-" + directive.substr(2, directive.size() - 6);
+  return absl::StrCat(plugin_prefix, "gen-",
+                      directive.substr(2, directive.size() - 6));
 }
 
 }  // namespace
@@ -304,37 +311,37 @@ class CommandLineInterface::ErrorPrinter
   ~ErrorPrinter() override {}
 
   // implements MultiFileErrorCollector ------------------------------
-  void AddError(const std::string& filename, int line, int column,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, int line, int column,
+                   absl::string_view message) override {
     found_errors_ = true;
     AddErrorOrWarning(filename, line, column, message, "error", std::cerr);
   }
 
-  void AddWarning(const std::string& filename, int line, int column,
-                  const std::string& message) override {
+  void RecordWarning(absl::string_view filename, int line, int column,
+                     absl::string_view message) override {
     found_warnings_ = true;
     AddErrorOrWarning(filename, line, column, message, "warning", std::clog);
   }
 
   // implements io::ErrorCollector -----------------------------------
-  void AddError(int line, int column, const std::string& message) override {
-    AddError("input", line, column, message);
+  void RecordError(int line, int column, absl::string_view message) override {
+    RecordError("input", line, column, message);
   }
 
-  void AddWarning(int line, int column, const std::string& message) override {
+  void RecordWarning(int line, int column, absl::string_view message) override {
     AddErrorOrWarning("input", line, column, message, "warning", std::clog);
   }
 
   // implements DescriptorPool::ErrorCollector-------------------------
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* descriptor, ErrorLocation location,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
     AddErrorOrWarning(filename, -1, -1, message, "error", std::cerr);
   }
 
-  void AddWarning(const std::string& filename, const std::string& element_name,
-                  const Message* descriptor, ErrorLocation location,
-                  const std::string& message) override {
+  void RecordWarning(absl::string_view filename, absl::string_view element_name,
+                     const Message* descriptor, ErrorLocation location,
+                     absl::string_view message) override {
     AddErrorOrWarning(filename, -1, -1, message, "warning", std::clog);
   }
 
@@ -343,8 +350,8 @@ class CommandLineInterface::ErrorPrinter
   bool FoundWarnings() const { return found_warnings_; }
 
  private:
-  void AddErrorOrWarning(const std::string& filename, int line, int column,
-                         const std::string& message, const std::string& type,
+  void AddErrorOrWarning(absl::string_view filename, int line, int column,
+                         absl::string_view message, absl::string_view type,
                          std::ostream& out) {
     std::string dfile;
     if (
@@ -426,7 +433,7 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // The files_ field maps from path keys to file content values. It's a map
   // instead of an unordered_map so that files are written in order (good when
   // writing zips).
-  std::map<std::string, std::string> files_;
+  absl::btree_map<std::string, std::string> files_;
   const std::vector<const FileDescriptor*>& parsed_files_;
   bool had_error_;
 };
@@ -717,7 +724,7 @@ void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
 void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
     const std::string& insertion_content, size_t insertion_offset,
     size_t insertion_length, size_t indent_length) {
-  auto it = directory_->files_.find(filename_ + ".pb.meta");
+  auto it = directory_->files_.find(absl::StrCat(filename_, ".pb.meta"));
   if (it == directory_->files_.end() && info_to_insert_.annotation().empty()) {
     // No metadata was recorded for this file.
     return;
@@ -747,7 +754,8 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
   } else {
     // Create a new file to store the new metadata in info_to_insert_.
     encoded_data =
-        &directory_->files_.insert({filename_ + ".pb.meta", ""}).first->second;
+        &directory_->files_.try_emplace(absl::StrCat(filename_, ".pb.meta"), "")
+             .first->second;
   }
   GeneratedCodeInfo new_metadata;
   bool crossed_offset = false;
@@ -804,96 +812,95 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
     }
 
     it->second.swap(data_);
+    return;
+  }
+  // This was an OpenForInsert().
+
+  // If the data doesn't end with a clean line break, add one.
+  if (!data_.empty() && data_[data_.size() - 1] != '\n') {
+    data_.push_back('\n');
+  }
+
+  // Find the file we are going to insert into.
+  if (!already_present) {
+    std::cerr << filename_ << ": Tried to insert into file that doesn't exist."
+              << std::endl;
+    directory_->had_error_ = true;
+    return;
+  }
+  std::string* target = &it->second;
+
+  // Find the insertion point.
+  std::string magic_string =
+      absl::Substitute("@@protoc_insertion_point($0)", insertion_point_);
+  std::string::size_type pos = target->find(magic_string);
+
+  if (pos == std::string::npos) {
+    std::cerr << filename_ << ": insertion point \"" << insertion_point_
+              << "\" not found." << std::endl;
+    directory_->had_error_ = true;
+    return;
+  }
+
+  if ((pos > 3) && (target->substr(pos - 3, 2) == "/*")) {
+    // Support for inline "/* @@protoc_insertion_point() */"
+    pos = pos - 3;
   } else {
-    // This was an OpenForInsert().
-
-    // If the data doesn't end with a clean line break, add one.
-    if (!data_.empty() && data_[data_.size() - 1] != '\n') {
-      data_.push_back('\n');
-    }
-
-    // Find the file we are going to insert into.
-    if (!already_present) {
-      std::cerr << filename_
-                << ": Tried to insert into file that doesn't exist."
-                << std::endl;
-      directory_->had_error_ = true;
-      return;
-    }
-    std::string* target = &it->second;
-
-    // Find the insertion point.
-    std::string magic_string =
-        absl::Substitute("@@protoc_insertion_point($0)", insertion_point_);
-    std::string::size_type pos = target->find(magic_string);
-
+    // Seek backwards to the beginning of the line, which is where we will
+    // insert the data.  Note that this has the effect of pushing the
+    // insertion point down, so the data is inserted before it.  This is
+    // intentional because it means that multiple insertions at the same point
+    // will end up in the expected order in the final output.
+    pos = target->find_last_of('\n', pos);
     if (pos == std::string::npos) {
-      std::cerr << filename_ << ": insertion point \"" << insertion_point_
-                << "\" not found." << std::endl;
-      directory_->had_error_ = true;
-      return;
-    }
-
-    if ((pos > 3) && (target->substr(pos - 3, 2) == "/*")) {
-      // Support for inline "/* @@protoc_insertion_point() */"
-      pos = pos - 3;
+      // Insertion point is on the first line.
+      pos = 0;
     } else {
-      // Seek backwards to the beginning of the line, which is where we will
-      // insert the data.  Note that this has the effect of pushing the
-      // insertion point down, so the data is inserted before it.  This is
-      // intentional because it means that multiple insertions at the same point
-      // will end up in the expected order in the final output.
-      pos = target->find_last_of('\n', pos);
-      if (pos == std::string::npos) {
-        // Insertion point is on the first line.
-        pos = 0;
-      } else {
-        // Advance to character after '\n'.
-        ++pos;
-      }
-    }
-
-    // Extract indent.
-    std::string indent_(*target, pos,
-                        target->find_first_not_of(" \t", pos) - pos);
-
-    if (indent_.empty()) {
-      // No indent.  This makes things easier.
-      target->insert(pos, data_);
-      UpdateMetadata(data_, pos, data_.size(), 0);
-    } else {
-      // Calculate how much space we need.
-      int indent_size = 0;
-      for (int i = 0; i < data_.size(); i++) {
-        if (data_[i] == '\n') indent_size += indent_.size();
-      }
-
-      // Make a hole for it.
-      target->insert(pos, data_.size() + indent_size, '\0');
-
-      // Now copy in the data.
-      std::string::size_type data_pos = 0;
-      char* target_ptr = ::google::protobuf::string_as_array(target) + pos;
-      while (data_pos < data_.size()) {
-        // Copy indent.
-        memcpy(target_ptr, indent_.data(), indent_.size());
-        target_ptr += indent_.size();
-
-        // Copy line from data_.
-        // We already guaranteed that data_ ends with a newline (above), so this
-        // search can't fail.
-        std::string::size_type line_length =
-            data_.find_first_of('\n', data_pos) + 1 - data_pos;
-        memcpy(target_ptr, data_.data() + data_pos, line_length);
-        target_ptr += line_length;
-        data_pos += line_length;
-      }
-      UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
-
-      GOOGLE_CHECK_EQ(target_ptr,
-               ::google::protobuf::string_as_array(target) + pos + data_.size() + indent_size);
+      // Advance to character after '\n'.
+      ++pos;
     }
   }
+
+  // Extract indent.
+  std::string indent_(*target, pos,
+                      target->find_first_not_of(" \t", pos) - pos);
+
+  if (indent_.empty()) {
+    // No indent.  This makes things easier.
+    target->insert(pos, data_);
+    UpdateMetadata(data_, pos, data_.size(), 0);
+    return;
+  }
+  // Calculate how much space we need.
+  int indent_size = 0;
+  for (int i = 0; i < data_.size(); i++) {
+    if (data_[i] == '\n') indent_size += indent_.size();
+  }
+
+  // Make a hole for it.
+  target->insert(pos, data_.size() + indent_size, '\0');
+
+  // Now copy in the data.
+  std::string::size_type data_pos = 0;
+  char* target_ptr = &(*target)[pos];
+  while (data_pos < data_.size()) {
+    // Copy indent.
+    memcpy(target_ptr, indent_.data(), indent_.size());
+    target_ptr += indent_.size();
+
+    // Copy line from data_.
+    // We already guaranteed that data_ ends with a newline (above), so this
+    // search can't fail.
+    std::string::size_type line_length =
+        data_.find_first_of('\n', data_pos) + 1 - data_pos;
+    memcpy(target_ptr, data_.data() + data_pos, line_length);
+    target_ptr += line_length;
+    data_pos += line_length;
+  }
+
+  ABSL_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
+
+  UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
 }
 
 // ===================================================================
@@ -959,6 +966,77 @@ bool ContainsProto3Optional(const FileDescriptor* file) {
         return true;
       }
     }
+  }
+  return false;
+}
+
+template <typename Visitor>
+struct VisitImpl {
+  Visitor visitor;
+  void Visit(const FieldDescriptor* descriptor) { visitor(descriptor); }
+
+  void Visit(const EnumDescriptor* descriptor) { visitor(descriptor); }
+
+  void Visit(const Descriptor* descriptor) {
+    visitor(descriptor);
+
+    for (int i = 0; i < descriptor->enum_type_count(); i++) {
+      Visit(descriptor->enum_type(i));
+    }
+
+    for (int i = 0; i < descriptor->field_count(); i++) {
+      Visit(descriptor->field(i));
+    }
+
+    for (int i = 0; i < descriptor->nested_type_count(); i++) {
+      Visit(descriptor->nested_type(i));
+    }
+
+    for (int i = 0; i < descriptor->extension_count(); i++) {
+      Visit(descriptor->extension(i));
+    }
+  }
+
+  void Visit(const std::vector<const FileDescriptor*>& descriptors) {
+    for (auto* descriptor : descriptors) {
+      visitor(descriptor);
+      for (int i = 0; i < descriptor->message_type_count(); i++) {
+        Visit(descriptor->message_type(i));
+      }
+      for (int i = 0; i < descriptor->enum_type_count(); i++) {
+        Visit(descriptor->enum_type(i));
+      }
+      for (int i = 0; i < descriptor->extension_count(); i++) {
+        Visit(descriptor->extension(i));
+      }
+    }
+  }
+};
+
+// Visit every node in the descriptors calling `visitor(node)`.
+// The visitor does not need to handle all possible node types. Types that are
+// not visitable via `visitor` will be ignored.
+// Disclaimer: this is not fully implemented yet to visit _every_ node.
+// VisitImpl might need to be updated where needs arise.
+template <typename Visitor>
+void VisitDescriptors(const std::vector<const FileDescriptor*>& descriptors,
+                      Visitor visitor) {
+  // Provide a fallback to ignore all the nodes that are not interesting to the
+  // input visitor.
+  struct VisitorImpl : Visitor {
+    explicit VisitorImpl(Visitor visitor) : Visitor(visitor) {}
+    using Visitor::operator();
+    // Honeypot to ignore all inputs that Visitor does not take.
+    void operator()(const void*) const {}
+  };
+
+  VisitImpl<VisitorImpl>{VisitorImpl(visitor)}.Visit(descriptors);
+}
+
+bool HasReservedFieldNumber(const FieldDescriptor* field) {
+  if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
+      field->number() <= FieldDescriptor::kLastReservedNumber) {
+    return true;
   }
   return false;
 }
@@ -1056,6 +1134,38 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     return 1;
   }
 
+  bool validation_error = false;  // Defer exiting so we log more warnings.
+
+  VisitDescriptors(parsed_files, [&](const FieldDescriptor* field) {
+    if (HasReservedFieldNumber(field)) {
+      const char* error_link = nullptr;
+      validation_error = true;
+      std::string error;
+      if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
+          field->number() <= FieldDescriptor::kLastReservedNumber) {
+        error = absl::Substitute(
+            "Field numbers $0 through $1 are reserved "
+            "for the protocol buffer library implementation.",
+            FieldDescriptor::kFirstReservedNumber,
+            FieldDescriptor::kLastReservedNumber);
+      } else {
+        error = absl::Substitute(
+            "Field number $0 is reserved for specific purposes.",
+            field->number());
+      }
+      if (error_link) {
+        absl::StrAppend(&error, "(See ", error_link, ")");
+      }
+      static_cast<DescriptorPool::ErrorCollector*>(error_collector.get())
+          ->RecordError(field->file()->name(), field->full_name(), nullptr,
+                        DescriptorPool::ErrorCollector::NUMBER, error);
+    }
+  });
+
+
+  if (validation_error) {
+    return 1;
+  }
 
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
@@ -1076,7 +1186,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
       if (!generator) {
         // First time we've seen this output location.
-        generator.reset(new GeneratorContextImpl(parsed_files));
+        generator = std::make_unique<GeneratorContextImpl>(parsed_files);
       }
 
       if (!GenerateOutput(parsed_files, output_directives_[i],
@@ -1105,7 +1215,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   if (!dependency_out_name_.empty()) {
-    GOOGLE_DCHECK(disk_source_tree.get());
+    ABSL_DCHECK(disk_source_tree.get());
     if (!GenerateDependencyManifestFile(parsed_files, output_directories,
                                         disk_source_tree.get())) {
       return 1;
@@ -1125,7 +1235,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       FileDescriptorProto file;
       file.set_name("empty_message.proto");
       file.add_message_type()->set_name("EmptyMessage");
-      GOOGLE_CHECK(pool.BuildFile(file) != nullptr);
+      ABSL_CHECK(pool.BuildFile(file) != nullptr);
       codec_type_ = "EmptyMessage";
       if (!EncodeOrDecode(&pool)) {
         return 1;
@@ -1153,8 +1263,9 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         }
         break;
       case PRINT_NONE:
-        GOOGLE_LOG(ERROR) << "If the code reaches here, it usually means a bug of "
-                      "flag parsing in the CommandLineInterface.";
+        ABSL_LOG(ERROR)
+            << "If the code reaches here, it usually means a bug of "
+               "flag parsing in the CommandLineInterface.";
         return 1;
 
         // Do not add a default case.
@@ -1495,19 +1606,15 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
 
   // Make sure each plugin option has a matching plugin output.
   bool foundUnknownPluginOption = false;
-  for (std::map<std::string, std::string>::const_iterator i =
-           plugin_parameters_.begin();
-       i != plugin_parameters_.end(); ++i) {
-    if (plugins_.find(i->first) != plugins_.end()) {
+  for (const auto& kv : plugin_parameters_) {
+    if (plugins_.find(kv.first) != plugins_.end()) {
       continue;
     }
     bool foundImplicitPlugin = false;
-    for (std::vector<OutputDirective>::const_iterator j =
-             output_directives_.begin();
-         j != output_directives_.end(); ++j) {
-      if (j->generator == nullptr) {
-        std::string plugin_name = PluginName(plugin_prefix_, j->name);
-        if (plugin_name == i->first) {
+    for (const auto& d : output_directives_) {
+      if (d.generator == nullptr) {
+        std::string plugin_name = PluginName(plugin_prefix_, d.name);
+        if (plugin_name == kv.first) {
           foundImplicitPlugin = true;
           break;
         }
@@ -1516,7 +1623,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     if (!foundImplicitPlugin) {
       std::cerr << "Unknown flag: "
                 // strip prefix + "gen-" and add back "_opt"
-                << "--" + i->first.substr(plugin_prefix_.size() + 4) + "_opt"
+                << "--" << kv.first.substr(plugin_prefix_.size() + 4) << "_opt"
                 << std::endl;
       foundUnknownPluginOption = true;
     }
@@ -1561,7 +1668,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
           input_files_.empty() && descriptor_set_in_names_.empty();
       break;
     default:
-      GOOGLE_LOG(FATAL) << "Unexpected mode: " << mode_;
+      ABSL_LOG(FATAL) << "Unexpected mode: " << mode_;
   }
   if (missing_proto_definitions) {
     std::cerr << "Missing input file." << std::endl;
@@ -1766,7 +1873,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     direct_dependencies_explicitly_set_ = true;
     std::vector<std::string> direct =
         absl::StrSplit(value, ":", absl::SkipEmpty());
-    GOOGLE_DCHECK(direct_dependencies_.empty());
+    ABSL_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
 
   } else if (name == "--direct_dependencies_violation_msg") {
@@ -2166,8 +2273,8 @@ bool CommandLineInterface::GenerateOutput(
   std::string error;
   if (output_directive.generator == nullptr) {
     // This is a plugin.
-    GOOGLE_CHECK(absl::StartsWith(output_directive.name, "--") &&
-          absl::EndsWith(output_directive.name, "_out"))
+    ABSL_CHECK(absl::StartsWith(output_directive.name, "--") &&
+               absl::EndsWith(output_directive.name, "_out"))
         << "Bad name for plugin generator: " << output_directive.name;
 
     std::string plugin_name = PluginName(plugin_prefix_, output_directive.name);
@@ -2215,7 +2322,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     DiskSourceTree* source_tree) {
   FileDescriptorSet file_set;
 
-  std::set<const FileDescriptor*> already_seen;
+  absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (int i = 0; i < parsed_files.size(); i++) {
     GetTransitiveDependencies(parsed_files[i], false, false, &already_seen,
                               file_set.mutable_file());
@@ -2255,7 +2362,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   io::Printer printer(&out, '$');
 
   for (int i = 0; i < output_filenames.size(); i++) {
-    printer.Print(output_filenames[i].c_str());
+    printer.Print(output_filenames[i]);
     if (i == output_filenames.size() - 1) {
       printer.Print(":");
     } else {
@@ -2296,7 +2403,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   }
 
 
-  std::set<const FileDescriptor*> already_seen;
+  absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (int i = 0; i < parsed_files.size(); i++) {
     request.add_file_to_generate(parsed_files[i]->name());
     GetTransitiveDependencies(parsed_files[i],
@@ -2445,13 +2552,13 @@ bool CommandLineInterface::WriteDescriptorSet(
     const std::vector<const FileDescriptor*>& parsed_files) {
   FileDescriptorSet file_set;
 
-  std::set<const FileDescriptor*> already_seen;
+  absl::flat_hash_set<const FileDescriptor*> already_seen;
   if (!imports_in_descriptor_set_) {
     // Since we don't want to output transitive dependencies, but we do want
     // things to be in dependency order, add all dependencies that aren't in
     // parsed_files to already_seen.  This will short circuit the recursion
     // in GetTransitiveDependencies.
-    std::set<const FileDescriptor*> to_output;
+    absl::flat_hash_set<const FileDescriptor*> to_output;
     to_output.insert(parsed_files.begin(), parsed_files.end());
     for (int i = 0; i < parsed_files.size(); i++) {
       const FileDescriptor* file = parsed_files[i];
@@ -2509,7 +2616,7 @@ bool CommandLineInterface::WriteDescriptorSet(
 void CommandLineInterface::GetTransitiveDependencies(
     const FileDescriptor* file, bool include_json_name,
     bool include_source_code_info,
-    std::set<const FileDescriptor*>* already_seen,
+    absl::flat_hash_set<const FileDescriptor*>* already_seen,
     RepeatedPtrField<FileDescriptorProto>* output) {
   if (!already_seen->insert(file).second) {
     // Already saw this file.  Skip.
@@ -2582,9 +2689,9 @@ namespace {
 // order of the nested messages is also preserved.
 typedef std::pair<int, int> FieldRange;
 void GatherOccupiedFieldRanges(
-    const Descriptor* descriptor, std::set<FieldRange>* ranges,
+    const Descriptor* descriptor, absl::btree_set<FieldRange>* ranges,
     std::vector<const Descriptor*>* nested_messages) {
-  std::set<const Descriptor*> groups;
+  absl::flat_hash_set<const Descriptor*> groups;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     const FieldDescriptor* fd = descriptor->field(i);
     ranges->insert(FieldRange(fd->number(), fd->number() + 1));
@@ -2616,27 +2723,26 @@ void GatherOccupiedFieldRanges(
 // Actually prints the formatted free field numbers for given message name and
 // occupied ranges.
 void FormatFreeFieldNumbers(const std::string& name,
-                            const std::set<FieldRange>& ranges) {
+                            const absl::btree_set<FieldRange>& ranges) {
   std::string output;
   absl::StrAppendFormat(&output, "%-35s free:", name.c_str());
   int next_free_number = 1;
-  for (std::set<FieldRange>::const_iterator i = ranges.begin();
-       i != ranges.end(); ++i) {
+  for (const auto& range : ranges) {
     // This happens when groups re-use parent field numbers, in which
     // case we skip the FieldRange entirely.
-    if (next_free_number >= i->second) continue;
+    if (next_free_number >= range.second) continue;
 
-    if (next_free_number < i->first) {
-      if (next_free_number + 1 == i->first) {
+    if (next_free_number < range.first) {
+      if (next_free_number + 1 == range.first) {
         // Singleton
         absl::StrAppendFormat(&output, " %d", next_free_number);
       } else {
         // Range
         absl::StrAppendFormat(&output, " %d-%d", next_free_number,
-                              i->first - 1);
+                              range.first - 1);
       }
     }
-    next_free_number = i->second;
+    next_free_number = range.second;
   }
   if (next_free_number <= FieldDescriptor::kMaxNumber) {
     absl::StrAppendFormat(&output, " %d-INF", next_free_number);
@@ -2647,7 +2753,7 @@ void FormatFreeFieldNumbers(const std::string& name,
 }  // namespace
 
 void CommandLineInterface::PrintFreeFieldNumbers(const Descriptor* descriptor) {
-  std::set<FieldRange> ranges;
+  absl::btree_set<FieldRange> ranges;
   std::vector<const Descriptor*> nested_messages;
   GatherOccupiedFieldRanges(descriptor, &ranges, &nested_messages);
 

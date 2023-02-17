@@ -65,5 +65,4 @@ public final class TypeRegistryTest {
                 .getDescriptorForTypeUrl("type.googleapis.com/" + descriptor.getFullName()))
         .isSameInstanceAs(descriptor);
   }
-
 }

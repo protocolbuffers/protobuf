@@ -45,17 +45,17 @@ filegroup(
 filegroup(
     name = "wkt_cs_srcs",
     srcs = [
-        "src/Google.Protobuf/Reflection/Descriptor.cs",
-        "src/Google.Protobuf/WellKnownTypes/Any.cs",
-        "src/Google.Protobuf/WellKnownTypes/Api.cs",
-        "src/Google.Protobuf/WellKnownTypes/Duration.cs",
-        "src/Google.Protobuf/WellKnownTypes/Empty.cs",
-        "src/Google.Protobuf/WellKnownTypes/FieldMask.cs",
-        "src/Google.Protobuf/WellKnownTypes/SourceContext.cs",
-        "src/Google.Protobuf/WellKnownTypes/Struct.cs",
-        "src/Google.Protobuf/WellKnownTypes/Timestamp.cs",
-        "src/Google.Protobuf/WellKnownTypes/Type.cs",
-        "src/Google.Protobuf/WellKnownTypes/Wrappers.cs",
+        "src/Google.Protobuf/Reflection/Descriptor.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Any.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Api.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Duration.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Empty.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/FieldMask.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/SourceContext.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Struct.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Timestamp.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Type.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Wrappers.pb.cs",
     ],
     visibility = ["//src/google/protobuf/compiler/csharp:__pkg__"],
 )
@@ -65,9 +65,11 @@ inline_sh_test(
     srcs = [
         ":srcs",
         "src/Google.Protobuf.sln",
+        "//conformance:conformance_csharp_proto",
         "//csharp/src/Google.Protobuf.Conformance:srcs",
     ],
     cmd = """
+        cp $(rootpath //conformance:conformance_csharp_proto) `dirname $(location src/Google.Protobuf.sln)`/Google.Protobuf.Conformance/
         pushd `dirname $(location src/Google.Protobuf.sln)`/..
         dotnet restore src/Google.Protobuf.sln
         dotnet build -c Release src/Google.Protobuf.sln

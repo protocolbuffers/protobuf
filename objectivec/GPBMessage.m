@@ -32,6 +32,7 @@
 
 #import <objc/message.h>
 #import <objc/runtime.h>
+#import <os/lock.h>
 #import <stdatomic.h>
 
 #import "GPBArray_PackagePrivate.h"
@@ -70,8 +71,7 @@ static NSString *const kGPBDataCoderKey = @"GPBData";
  @package
   GPBUnknownFieldSet *unknownFields_;
   NSMutableDictionary *extensionMap_;
-  // Readonly access to autocreatedExtensionMap_ is protected via
-  // readOnlySemaphore_.
+  // Readonly access to autocreatedExtensionMap_ is protected via readOnlyLock_.
   NSMutableDictionary *autocreatedExtensionMap_;
 
   // If the object was autocreated, we remember the creator so that if we get
@@ -80,19 +80,21 @@ static NSString *const kGPBDataCoderKey = @"GPBData";
   GPBFieldDescriptor *autocreatorField_;
   GPBExtensionDescriptor *autocreatorExtension_;
 
-  // Message can only be mutated from one thread. But some *readonly* operations
-  // modify internal state because they autocreate things. The
-  // autocreatedExtensionMap_ is one such structure. Access during readonly
-  // operations is protected via this semaphore.
-  // NOTE: OSSpinLock may seem like a good fit here but Apple engineers have
-  // pointed out that they are vulnerable to live locking on iOS in cases of
-  // priority inversion:
+  // Messages can only be mutated from one thread. But some *readonly* operations modify internal
+  // state because they autocreate things. The autocreatedExtensionMap_ is one such structure.
+  // Access during readonly operations is protected via this lock.
+  //
+  // Long ago, this was an OSSpinLock, but then it came to light that there were issues for that on
+  // iOS:
   //   http://mjtsai.com/blog/2015/12/16/osspinlock-is-unsafe/
   //   https://lists.swift.org/pipermail/swift-dev/Week-of-Mon-20151214/000372.html
-  // Use of readOnlySemaphore_ must be prefaced by a call to
-  // GPBPrepareReadOnlySemaphore to ensure it has been created. This allows
-  // readOnlySemaphore_ to be only created when actually needed.
-  _Atomic(dispatch_semaphore_t) readOnlySemaphore_;
+  // It was changed to a dispatch_semaphore_t, but that has potential for priority inversion issues.
+  // The minOS versions are now high enough that os_unfair_lock can be used, and should provide
+  // all the support we need. For more information in the concurrency/locking space see:
+  //   https://gist.github.com/tclementdev/6af616354912b0347cdf6db159c37057
+  //   https://developer.apple.com/library/archive/documentation/Performance/Conceptual/EnergyGuide-iOS/PrioritizeWorkWithQoS.html
+  //   https://developer.apple.com/videos/play/wwdc2017/706/
+  os_unfair_lock readOnlyLock_;
 }
 @end
 
@@ -106,6 +108,7 @@ static id GetOrCreateMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *fiel
 static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field);
 static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap, NSZone *zone)
     __attribute__((ns_returns_retained));
+static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self);
 
 #ifdef DEBUG
 static NSError *MessageError(NSInteger code, NSDictionary *userInfo) {
@@ -635,6 +638,135 @@ static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
 
 #endif  // !defined(__clang_analyzer__)
 
+static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
+                                        GPBMessage *messageToGetExtension,
+                                        GPBCodedInputStream *input,
+                                        id<GPBExtensionRegistry> extensionRegistry,
+                                        GPBMessage *existingValue)
+    __attribute__((ns_returns_retained));
+
+// Note that this returns a retained value intentionally.
+static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
+                                        GPBMessage *messageToGetExtension,
+                                        GPBCodedInputStream *input,
+                                        id<GPBExtensionRegistry> extensionRegistry,
+                                        GPBMessage *existingValue) {
+  GPBExtensionDescription *description = extension->description_;
+  GPBCodedInputStreamState *state = &input->state_;
+  switch (description->dataType) {
+    case GPBDataTypeBool:
+      return [[NSNumber alloc] initWithBool:GPBCodedInputStreamReadBool(state)];
+    case GPBDataTypeFixed32:
+      return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadFixed32(state)];
+    case GPBDataTypeSFixed32:
+      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSFixed32(state)];
+    case GPBDataTypeFloat:
+      return [[NSNumber alloc] initWithFloat:GPBCodedInputStreamReadFloat(state)];
+    case GPBDataTypeFixed64:
+      return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadFixed64(state)];
+    case GPBDataTypeSFixed64:
+      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSFixed64(state)];
+    case GPBDataTypeDouble:
+      return [[NSNumber alloc] initWithDouble:GPBCodedInputStreamReadDouble(state)];
+    case GPBDataTypeInt32:
+      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadInt32(state)];
+    case GPBDataTypeInt64:
+      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadInt64(state)];
+    case GPBDataTypeSInt32:
+      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSInt32(state)];
+    case GPBDataTypeSInt64:
+      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSInt64(state)];
+    case GPBDataTypeUInt32:
+      return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadUInt32(state)];
+    case GPBDataTypeUInt64:
+      return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadUInt64(state)];
+    case GPBDataTypeBytes:
+      return GPBCodedInputStreamReadRetainedBytes(state);
+    case GPBDataTypeString:
+      return GPBCodedInputStreamReadRetainedString(state);
+    case GPBDataTypeEnum: {
+      int32_t val = GPBCodedInputStreamReadEnum(&input->state_);
+      GPBEnumDescriptor *enumDescriptor = extension.enumDescriptor;
+      // If run with source generated before the closed enum support, all enums
+      // will be considers not closed, so casing to the enum type for a switch
+      // could cause things to fall off the end of a switch.
+      if (!enumDescriptor.isClosed || enumDescriptor.enumVerifier(val)) {
+        return [[NSNumber alloc] initWithInt:val];
+      } else {
+        GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(messageToGetExtension);
+        [unknownFields mergeVarintField:extension->description_->fieldNumber value:val];
+        return nil;
+      }
+    }
+    case GPBDataTypeGroup:
+    case GPBDataTypeMessage: {
+      GPBMessage *message;
+      if (existingValue) {
+        message = [existingValue retain];
+      } else {
+        GPBDescriptor *descriptor = [extension.msgClass descriptor];
+        message = [[descriptor.messageClass alloc] init];
+      }
+
+      if (description->dataType == GPBDataTypeGroup) {
+        [input readGroup:description->fieldNumber
+                      message:message
+            extensionRegistry:extensionRegistry];
+      } else {
+        // description->dataType == GPBDataTypeMessage
+        if (GPBExtensionIsWireFormat(description)) {
+          // For MessageSet fields the message length will have already been
+          // read.
+          [message mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
+        } else {
+          [input readMessage:message extensionRegistry:extensionRegistry];
+        }
+      }
+
+      return message;
+    }
+  }
+
+  return nil;
+}
+
+static void ExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOOL isPackedOnStream,
+                                          GPBCodedInputStream *input,
+                                          id<GPBExtensionRegistry> extensionRegistry,
+                                          GPBMessage *message) {
+  GPBExtensionDescription *description = extension->description_;
+  GPBCodedInputStreamState *state = &input->state_;
+  if (isPackedOnStream) {
+    NSCAssert(GPBExtensionIsRepeated(description), @"How was it packed if it isn't repeated?");
+    int32_t length = GPBCodedInputStreamReadInt32(state);
+    size_t limit = GPBCodedInputStreamPushLimit(state, length);
+    while (GPBCodedInputStreamBytesUntilLimit(state) > 0) {
+      id value = NewSingleValueFromInputStream(extension, message, input, extensionRegistry, nil);
+      if (value) {
+        [message addExtension:extension value:value];
+        [value release];
+      }
+    }
+    GPBCodedInputStreamPopLimit(state, limit);
+  } else {
+    id existingValue = nil;
+    BOOL isRepeated = GPBExtensionIsRepeated(description);
+    if (!isRepeated && GPBDataTypeIsMessage(description->dataType)) {
+      existingValue = [message getExistingExtension:extension];
+    }
+    id value =
+        NewSingleValueFromInputStream(extension, message, input, extensionRegistry, existingValue);
+    if (value) {
+      if (isRepeated) {
+        [message addExtension:extension value:value];
+      } else {
+        [message setExtension:extension value:value];
+      }
+      [value release];
+    }
+  }
+}
+
 GPBMessage *GPBCreateMessageWithAutocreator(Class msgClass, GPBMessage *autocreator,
                                             GPBFieldDescriptor *field) {
   GPBMessage *message = [[msgClass alloc] init];
@@ -746,33 +878,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
   self->autocreatorExtension_ = nil;
 }
 
-// Call this before using the readOnlySemaphore_. This ensures it is created only once.
-void GPBPrepareReadOnlySemaphore(GPBMessage *self) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdirect-ivar-access"
-
-  // Create the semaphore on demand (rather than init) as developers might not cause them
-  // to be needed, and the heap usage can add up.  The atomic swap is used to avoid needing
-  // another lock around creating it.
-  if (self->readOnlySemaphore_ == nil) {
-    dispatch_semaphore_t worker = dispatch_semaphore_create(1);
-    dispatch_semaphore_t expected = nil;
-    if (!atomic_compare_exchange_strong(&self->readOnlySemaphore_, &expected, worker)) {
-      dispatch_release(worker);
-    }
-#if defined(__clang_analyzer__)
-    // The static analyzer thinks worker is leaked (doesn't seem to know about
-    // atomic_compare_exchange_strong); so just for the analyzer, let it think
-    // worker is also released in this case.
-    else {
-      dispatch_release(worker);
-    }
-#endif
-  }
-
-#pragma clang diagnostic pop
-}
-
 static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   if (!self->unknownFields_) {
     self->unknownFields_ = [[GPBUnknownFieldSet alloc] init];
@@ -845,6 +950,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   if ((self = [super init])) {
     messageStorage_ =
         (GPBMessage_StoragePtr)(((uint8_t *)self) + class_getInstanceSize([self class]));
+    readOnlyLock_ = OS_UNFAIR_LOCK_INIT;
   }
 
   return self;
@@ -915,9 +1021,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 - (void)dealloc {
   [self internalClear:NO];
   NSCAssert(!autocreator_, @"Autocreator was not cleared before dealloc.");
-  if (readOnlySemaphore_) {
-    dispatch_release(readOnlySemaphore_);
-  }
   [super dealloc];
 }
 
@@ -1205,9 +1308,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   @try {
     [self writeToCodedOutputStream:stream];
   } @catch (NSException *exception) {
-    // This really shouldn't happen. The only way writeToCodedOutputStream:
-    // could throw is if something in the library has a bug and the
-    // serializedSize was wrong.
+    // This really shouldn't happen. Normally, this could mean there was a bug in the library and it
+    // failed to match between computing the size and writing out the bytes. However, the more
+    // common cause is while one thread was writing out the data, some other thread had a reference
+    // to this message or a message used as a nested field, and that other thread mutated that
+    // message, causing the pre computed serializedSize to no longer match the final size after
+    // serialization. It is not safe to mutate a message while accessing it from another thread.
 #ifdef DEBUG
     NSLog(@"%@: Internal exception while building message data: %@", [self class], exception);
 #endif
@@ -1225,9 +1331,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   @try {
     [self writeDelimitedToCodedOutputStream:stream];
   } @catch (NSException *exception) {
-    // This really shouldn't happen.  The only way writeToCodedOutputStream:
-    // could throw is if something in the library has a bug and the
-    // serializedSize was wrong.
+    // This really shouldn't happen. Normally, this could mean there was a bug in the library and it
+    // failed to match between computing the size and writing out the bytes. However, the more
+    // common cause is while one thread was writing out the data, some other thread had a reference
+    // to this message or a message used as a nested field, and that other thread mutated that
+    // message, causing the pre computed serializedSize to no longer match the final size after
+    // serialization. It is not safe to mutate a message while accessing it from another thread.
 #ifdef DEBUG
     NSLog(@"%@: Internal exception while building message delimitedData: %@", [self class],
           exception);
@@ -1718,7 +1827,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 //%PDDM-EXPAND-END (18 expansions)
 
-// clang-format off
+      // clang-format on
   }
 }
 
@@ -1741,13 +1850,11 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   }
 
   // Check for an autocreated value.
-  GPBPrepareReadOnlySemaphore(self);
-  dispatch_semaphore_wait(readOnlySemaphore_, DISPATCH_TIME_FOREVER);
+  os_unfair_lock_lock(&readOnlyLock_);
   value = [autocreatedExtensionMap_ objectForKey:extension];
   if (!value) {
     // Auto create the message extensions to match normal fields.
-    value = CreateMessageWithAutocreatorForExtension(extension.msgClass, self,
-                                                     extension);
+    value = CreateMessageWithAutocreatorForExtension(extension.msgClass, self, extension);
 
     if (autocreatedExtensionMap_ == nil) {
       autocreatedExtensionMap_ = [[NSMutableDictionary alloc] init];
@@ -1759,7 +1866,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     [value release];
   }
 
-  dispatch_semaphore_signal(readOnlySemaphore_);
+  os_unfair_lock_unlock(&readOnlyLock_);
   return value;
 }
 
@@ -1824,8 +1931,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBExtensionDescriptor *descriptor = extension;
 
   if (GPBExtensionIsMessage(descriptor) && !descriptor.isRepeated) {
-    GPBMessage *autocreatedValue =
-        [[autocreatedExtensionMap_ objectForKey:extension] retain];
+    GPBMessage *autocreatedValue = [[autocreatedExtensionMap_ objectForKey:extension] retain];
     // Must remove from the map before calling GPBClearMessageAutocreator() so
     // that GPBClearMessageAutocreator() knows its safe to clear.
     [autocreatedExtensionMap_ removeObjectForKey:extension];
@@ -1857,9 +1963,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBBecomeVisibleToAutocreator(self);
 }
 
-- (void)setExtension:(GPBExtensionDescriptor *)extension
-               index:(NSUInteger)idx
-               value:(id)value {
+- (void)setExtension:(GPBExtensionDescriptor *)extension index:(NSUInteger)idx value:(id)value {
   CheckExtension(self, extension);
 
   if (!extension.repeated) {
@@ -1889,8 +1993,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 #pragma mark - mergeFrom
 
-- (void)mergeFromData:(NSData *)data
-    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
+- (void)mergeFromData:(NSData *)data extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
   [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
   [input checkLastTagWas:0];
@@ -1906,9 +2009,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     return;
   }
   NSData *data = GPBCodedInputStreamReadRetainedBytesNoCopy(state);
-  if (data == nil) {
-    return;
-  }
   [self mergeFromData:data extensionRegistry:extensionRegistry];
   [data release];
 }
@@ -1922,35 +2022,30 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 + (instancetype)parseFromData:(NSData *)data
             extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                         error:(NSError **)errorPtr {
-  return [[[self alloc] initWithData:data
-                   extensionRegistry:extensionRegistry
+  return [[[self alloc] initWithData:data extensionRegistry:extensionRegistry
                                error:errorPtr] autorelease];
 }
 
 + (instancetype)parseFromCodedInputStream:(GPBCodedInputStream *)input
                         extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                                     error:(NSError **)errorPtr {
-  return
-      [[[self alloc] initWithCodedInputStream:input
-                            extensionRegistry:extensionRegistry
-                                        error:errorPtr] autorelease];
+  return [[[self alloc] initWithCodedInputStream:input
+                               extensionRegistry:extensionRegistry
+                                           error:errorPtr] autorelease];
 }
 
 #pragma mark - Parse Delimited From Data Support
 
 + (instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
-                                 extensionRegistry:
-                                     (id<GPBExtensionRegistry>)extensionRegistry
+                                 extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                                              error:(NSError **)errorPtr {
   GPBMessage *message = [[[self alloc] init] autorelease];
   @try {
-    [message mergeDelimitedFromCodedInputStream:input
-                              extensionRegistry:extensionRegistry];
+    [message mergeDelimitedFromCodedInputStream:input extensionRegistry:extensionRegistry];
     if (errorPtr) {
       *errorPtr = nil;
     }
-  }
-  @catch (NSException *exception) {
+  } @catch (NSException *exception) {
     message = nil;
     if (errorPtr) {
       *errorPtr = ErrorFromException(exception);
@@ -1996,12 +2091,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     if (tag == GPBWireFormatMessageSetTypeIdTag) {
       typeId = GPBCodedInputStreamReadUInt32(state);
       if (typeId != 0) {
-        extension = [extensionRegistry extensionForDescriptor:[self descriptor]
-                                                  fieldNumber:typeId];
+        extension = [extensionRegistry extensionForDescriptor:[self descriptor] fieldNumber:typeId];
       }
     } else if (tag == GPBWireFormatMessageSetMessageTag) {
-      rawBytes =
-          [GPBCodedInputStreamReadRetainedBytesNoCopy(state) autorelease];
+      rawBytes = [GPBCodedInputStreamReadRetainedBytesNoCopy(state) autorelease];
     } else {
       if (![input skipField:tag]) {
         break;
@@ -2013,13 +2106,9 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
   if (rawBytes != nil && typeId != 0) {
     if (extension != nil) {
-      GPBCodedInputStream *newInput =
-          [[GPBCodedInputStream alloc] initWithData:rawBytes];
-      GPBExtensionMergeFromInputStream(extension,
-                                       extension.packable,
-                                       newInput,
-                                       extensionRegistry,
-                                       self);
+      GPBCodedInputStream *newInput = [[GPBCodedInputStream alloc] initWithData:rawBytes];
+      ExtensionMergeFromInputStream(extension, extension.packable, newInput, extensionRegistry,
+                                    self);
       [newInput release];
     } else {
       GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
@@ -2040,9 +2129,8 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   int32_t fieldNumber = GPBWireFormatGetTagFieldNumber(tag);
 
   GPBDescriptor *descriptor = [self descriptor];
-  GPBExtensionDescriptor *extension =
-      [extensionRegistry extensionForDescriptor:descriptor
-                                    fieldNumber:fieldNumber];
+  GPBExtensionDescriptor *extension = [extensionRegistry extensionForDescriptor:descriptor
+                                                                    fieldNumber:fieldNumber];
   if (extension == nil) {
     if (descriptor.wireFormat && GPBWireFormatMessageSetItemTag == tag) {
       [self parseMessageSet:input extensionRegistry:extensionRegistry];
@@ -2050,23 +2138,14 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     }
   } else {
     if (extension.wireType == wireType) {
-      GPBExtensionMergeFromInputStream(extension,
-                                       extension.packable,
-                                       input,
-                                       extensionRegistry,
-                                       self);
+      ExtensionMergeFromInputStream(extension, extension.packable, input, extensionRegistry, self);
       return YES;
     }
     // Primitive, repeated types can be packed on unpacked on the wire, and are
     // parsed either way.
-    if ([extension isRepeated] &&
-        !GPBDataTypeIsObject(extension->description_->dataType) &&
+    if ([extension isRepeated] && !GPBDataTypeIsObject(extension->description_->dataType) &&
         (extension.alternateWireType == wireType)) {
-      GPBExtensionMergeFromInputStream(extension,
-                                       !extension.packable,
-                                       input,
-                                       extensionRegistry,
-                                       self);
+      ExtensionMergeFromInputStream(extension, !extension.packable, input, extensionRegistry, self);
       return YES;
     }
   }
@@ -2085,38 +2164,38 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 #pragma mark - MergeFromCodedInputStream Support
 
-static void MergeSingleFieldFromCodedInputStream(
-    GPBMessage *self, GPBFieldDescriptor *field, GPBFileSyntax syntax,
-    GPBCodedInputStream *input, id<GPBExtensionRegistry>extensionRegistry) {
+static void MergeSingleFieldFromCodedInputStream(GPBMessage *self, GPBFieldDescriptor *field,
+                                                 GPBCodedInputStream *input,
+                                                 id<GPBExtensionRegistry> extensionRegistry) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
   switch (fieldDataType) {
-#define CASE_SINGLE_POD(NAME, TYPE, FUNC_TYPE)                             \
-    case GPBDataType##NAME: {                                              \
-      TYPE val = GPBCodedInputStreamRead##NAME(&input->state_);            \
-      GPBSet##FUNC_TYPE##IvarWithFieldPrivate(self, field, val);           \
-      break;                                                               \
-            }
-#define CASE_SINGLE_OBJECT(NAME)                                           \
-    case GPBDataType##NAME: {                                              \
-      id val = GPBCodedInputStreamReadRetained##NAME(&input->state_);      \
-      GPBSetRetainedObjectIvarWithFieldPrivate(self, field, val);          \
-      break;                                                               \
-    }
-      CASE_SINGLE_POD(Bool, BOOL, Bool)
-      CASE_SINGLE_POD(Fixed32, uint32_t, UInt32)
-      CASE_SINGLE_POD(SFixed32, int32_t, Int32)
-      CASE_SINGLE_POD(Float, float, Float)
-      CASE_SINGLE_POD(Fixed64, uint64_t, UInt64)
-      CASE_SINGLE_POD(SFixed64, int64_t, Int64)
-      CASE_SINGLE_POD(Double, double, Double)
-      CASE_SINGLE_POD(Int32, int32_t, Int32)
-      CASE_SINGLE_POD(Int64, int64_t, Int64)
-      CASE_SINGLE_POD(SInt32, int32_t, Int32)
-      CASE_SINGLE_POD(SInt64, int64_t, Int64)
-      CASE_SINGLE_POD(UInt32, uint32_t, UInt32)
-      CASE_SINGLE_POD(UInt64, uint64_t, UInt64)
-      CASE_SINGLE_OBJECT(Bytes)
-      CASE_SINGLE_OBJECT(String)
+#define CASE_SINGLE_POD(NAME, TYPE, FUNC_TYPE)                 \
+  case GPBDataType##NAME: {                                    \
+    TYPE val = GPBCodedInputStreamRead##NAME(&input->state_);  \
+    GPBSet##FUNC_TYPE##IvarWithFieldPrivate(self, field, val); \
+    break;                                                     \
+  }
+#define CASE_SINGLE_OBJECT(NAME)                                    \
+  case GPBDataType##NAME: {                                         \
+    id val = GPBCodedInputStreamReadRetained##NAME(&input->state_); \
+    GPBSetRetainedObjectIvarWithFieldPrivate(self, field, val);     \
+    break;                                                          \
+  }
+    CASE_SINGLE_POD(Bool, BOOL, Bool)
+    CASE_SINGLE_POD(Fixed32, uint32_t, UInt32)
+    CASE_SINGLE_POD(SFixed32, int32_t, Int32)
+    CASE_SINGLE_POD(Float, float, Float)
+    CASE_SINGLE_POD(Fixed64, uint64_t, UInt64)
+    CASE_SINGLE_POD(SFixed64, int64_t, Int64)
+    CASE_SINGLE_POD(Double, double, Double)
+    CASE_SINGLE_POD(Int32, int32_t, Int32)
+    CASE_SINGLE_POD(Int64, int64_t, Int64)
+    CASE_SINGLE_POD(SInt32, int32_t, Int32)
+    CASE_SINGLE_POD(SInt64, int64_t, Int64)
+    CASE_SINGLE_POD(UInt32, uint32_t, UInt32)
+    CASE_SINGLE_POD(UInt64, uint64_t, UInt64)
+    CASE_SINGLE_OBJECT(Bytes)
+    CASE_SINGLE_OBJECT(String)
 #undef CASE_SINGLE_POD
 #undef CASE_SINGLE_OBJECT
 
@@ -2124,8 +2203,7 @@ static void MergeSingleFieldFromCodedInputStream(
       if (GPBGetHasIvarField(self, field)) {
         // GPBGetObjectIvarWithFieldNoAutocreate() avoids doing the has
         // check again.
-        GPBMessage *message =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBMessage *message = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [input readMessage:message extensionRegistry:extensionRegistry];
       } else {
         GPBMessage *message = [[field.msgClass alloc] init];
@@ -2139,16 +2217,11 @@ static void MergeSingleFieldFromCodedInputStream(
       if (GPBGetHasIvarField(self, field)) {
         // GPBGetObjectIvarWithFieldNoAutocreate() avoids doing the has
         // check again.
-        GPBMessage *message =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-        [input readGroup:GPBFieldNumber(field)
-                      message:message
-            extensionRegistry:extensionRegistry];
+        GPBMessage *message = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        [input readGroup:GPBFieldNumber(field) message:message extensionRegistry:extensionRegistry];
       } else {
         GPBMessage *message = [[field.msgClass alloc] init];
-        [input readGroup:GPBFieldNumber(field)
-                      message:message
-            extensionRegistry:extensionRegistry];
+        [input readGroup:GPBFieldNumber(field) message:message extensionRegistry:extensionRegistry];
         GPBSetRetainedObjectIvarWithFieldPrivate(self, field, message);
       }
       break;
@@ -2156,8 +2229,7 @@ static void MergeSingleFieldFromCodedInputStream(
 
     case GPBDataTypeEnum: {
       int32_t val = GPBCodedInputStreamReadEnum(&input->state_);
-      if (GPBHasPreservingUnknownEnumSemantics(syntax) ||
-          [field isValidEnumValue:val]) {
+      if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:val]) {
         GPBSetInt32IvarWithFieldPrivate(self, field, val);
       } else {
         GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
@@ -2167,9 +2239,9 @@ static void MergeSingleFieldFromCodedInputStream(
   }  // switch
 }
 
-static void MergeRepeatedPackedFieldFromCodedInputStream(
-    GPBMessage *self, GPBFieldDescriptor *field, GPBFileSyntax syntax,
-    GPBCodedInputStream *input) {
+static void MergeRepeatedPackedFieldFromCodedInputStream(GPBMessage *self,
+                                                         GPBFieldDescriptor *field,
+                                                         GPBCodedInputStream *input) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
   GPBCodedInputStreamState *state = &input->state_;
   id genericArray = GetOrCreateArrayIvarWithField(self, field);
@@ -2177,25 +2249,25 @@ static void MergeRepeatedPackedFieldFromCodedInputStream(
   size_t limit = GPBCodedInputStreamPushLimit(state, length);
   while (GPBCodedInputStreamBytesUntilLimit(state) > 0) {
     switch (fieldDataType) {
-#define CASE_REPEATED_PACKED_POD(NAME, TYPE, ARRAY_TYPE)      \
-     case GPBDataType##NAME: {                                \
-       TYPE val = GPBCodedInputStreamRead##NAME(state);       \
-       [(GPB##ARRAY_TYPE##Array *)genericArray addValue:val]; \
-       break;                                                 \
-     }
-        CASE_REPEATED_PACKED_POD(Bool, BOOL, Bool)
-        CASE_REPEATED_PACKED_POD(Fixed32, uint32_t, UInt32)
-        CASE_REPEATED_PACKED_POD(SFixed32, int32_t, Int32)
-        CASE_REPEATED_PACKED_POD(Float, float, Float)
-        CASE_REPEATED_PACKED_POD(Fixed64, uint64_t, UInt64)
-        CASE_REPEATED_PACKED_POD(SFixed64, int64_t, Int64)
-        CASE_REPEATED_PACKED_POD(Double, double, Double)
-        CASE_REPEATED_PACKED_POD(Int32, int32_t, Int32)
-        CASE_REPEATED_PACKED_POD(Int64, int64_t, Int64)
-        CASE_REPEATED_PACKED_POD(SInt32, int32_t, Int32)
-        CASE_REPEATED_PACKED_POD(SInt64, int64_t, Int64)
-        CASE_REPEATED_PACKED_POD(UInt32, uint32_t, UInt32)
-        CASE_REPEATED_PACKED_POD(UInt64, uint64_t, UInt64)
+#define CASE_REPEATED_PACKED_POD(NAME, TYPE, ARRAY_TYPE)   \
+  case GPBDataType##NAME: {                                \
+    TYPE val = GPBCodedInputStreamRead##NAME(state);       \
+    [(GPB##ARRAY_TYPE##Array *)genericArray addValue:val]; \
+    break;                                                 \
+  }
+      CASE_REPEATED_PACKED_POD(Bool, BOOL, Bool)
+      CASE_REPEATED_PACKED_POD(Fixed32, uint32_t, UInt32)
+      CASE_REPEATED_PACKED_POD(SFixed32, int32_t, Int32)
+      CASE_REPEATED_PACKED_POD(Float, float, Float)
+      CASE_REPEATED_PACKED_POD(Fixed64, uint64_t, UInt64)
+      CASE_REPEATED_PACKED_POD(SFixed64, int64_t, Int64)
+      CASE_REPEATED_PACKED_POD(Double, double, Double)
+      CASE_REPEATED_PACKED_POD(Int32, int32_t, Int32)
+      CASE_REPEATED_PACKED_POD(Int64, int64_t, Int64)
+      CASE_REPEATED_PACKED_POD(SInt32, int32_t, Int32)
+      CASE_REPEATED_PACKED_POD(SInt64, int64_t, Int64)
+      CASE_REPEATED_PACKED_POD(UInt32, uint32_t, UInt32)
+      CASE_REPEATED_PACKED_POD(UInt64, uint64_t, UInt64)
 #undef CASE_REPEATED_PACKED_POD
 
       case GPBDataTypeBytes:
@@ -2207,9 +2279,8 @@ static void MergeRepeatedPackedFieldFromCodedInputStream(
 
       case GPBDataTypeEnum: {
         int32_t val = GPBCodedInputStreamReadEnum(state);
-        if (GPBHasPreservingUnknownEnumSemantics(syntax) ||
-            [field isValidEnumValue:val]) {
-          [(GPBEnumArray*)genericArray addRawValue:val];
+        if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:val]) {
+          [(GPBEnumArray *)genericArray addRawValue:val];
         } else {
           GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
           [unknownFields mergeVarintField:GPBFieldNumber(field) value:val];
@@ -2217,67 +2288,64 @@ static void MergeRepeatedPackedFieldFromCodedInputStream(
         break;
       }
     }  // switch
-  }  // while(BytesUntilLimit() > 0)
+  }    // while(BytesUntilLimit() > 0)
   GPBCodedInputStreamPopLimit(state, limit);
 }
 
 static void MergeRepeatedNotPackedFieldFromCodedInputStream(
-    GPBMessage *self, GPBFieldDescriptor *field, GPBFileSyntax syntax,
-    GPBCodedInputStream *input, id<GPBExtensionRegistry>extensionRegistry) {
+    GPBMessage *self, GPBFieldDescriptor *field, GPBCodedInputStream *input,
+    id<GPBExtensionRegistry> extensionRegistry) {
   GPBCodedInputStreamState *state = &input->state_;
   id genericArray = GetOrCreateArrayIvarWithField(self, field);
   switch (GPBGetFieldDataType(field)) {
 #define CASE_REPEATED_NOT_PACKED_POD(NAME, TYPE, ARRAY_TYPE) \
-   case GPBDataType##NAME: {                                 \
-     TYPE val = GPBCodedInputStreamRead##NAME(state);        \
-     [(GPB##ARRAY_TYPE##Array *)genericArray addValue:val];  \
-     break;                                                  \
-   }
-#define CASE_REPEATED_NOT_PACKED_OBJECT(NAME)                \
-   case GPBDataType##NAME: {                                 \
-     id val = GPBCodedInputStreamReadRetained##NAME(state);  \
-     [(NSMutableArray*)genericArray addObject:val];          \
-     [val release];                                          \
-     break;                                                  \
-   }
-      CASE_REPEATED_NOT_PACKED_POD(Bool, BOOL, Bool)
-      CASE_REPEATED_NOT_PACKED_POD(Fixed32, uint32_t, UInt32)
-      CASE_REPEATED_NOT_PACKED_POD(SFixed32, int32_t, Int32)
-      CASE_REPEATED_NOT_PACKED_POD(Float, float, Float)
-      CASE_REPEATED_NOT_PACKED_POD(Fixed64, uint64_t, UInt64)
-      CASE_REPEATED_NOT_PACKED_POD(SFixed64, int64_t, Int64)
-      CASE_REPEATED_NOT_PACKED_POD(Double, double, Double)
-      CASE_REPEATED_NOT_PACKED_POD(Int32, int32_t, Int32)
-      CASE_REPEATED_NOT_PACKED_POD(Int64, int64_t, Int64)
-      CASE_REPEATED_NOT_PACKED_POD(SInt32, int32_t, Int32)
-      CASE_REPEATED_NOT_PACKED_POD(SInt64, int64_t, Int64)
-      CASE_REPEATED_NOT_PACKED_POD(UInt32, uint32_t, UInt32)
-      CASE_REPEATED_NOT_PACKED_POD(UInt64, uint64_t, UInt64)
-      CASE_REPEATED_NOT_PACKED_OBJECT(Bytes)
-      CASE_REPEATED_NOT_PACKED_OBJECT(String)
+  case GPBDataType##NAME: {                                  \
+    TYPE val = GPBCodedInputStreamRead##NAME(state);         \
+    [(GPB##ARRAY_TYPE##Array *)genericArray addValue:val];   \
+    break;                                                   \
+  }
+#define CASE_REPEATED_NOT_PACKED_OBJECT(NAME)              \
+  case GPBDataType##NAME: {                                \
+    id val = GPBCodedInputStreamReadRetained##NAME(state); \
+    [(NSMutableArray *)genericArray addObject:val];        \
+    [val release];                                         \
+    break;                                                 \
+  }
+    CASE_REPEATED_NOT_PACKED_POD(Bool, BOOL, Bool)
+    CASE_REPEATED_NOT_PACKED_POD(Fixed32, uint32_t, UInt32)
+    CASE_REPEATED_NOT_PACKED_POD(SFixed32, int32_t, Int32)
+    CASE_REPEATED_NOT_PACKED_POD(Float, float, Float)
+    CASE_REPEATED_NOT_PACKED_POD(Fixed64, uint64_t, UInt64)
+    CASE_REPEATED_NOT_PACKED_POD(SFixed64, int64_t, Int64)
+    CASE_REPEATED_NOT_PACKED_POD(Double, double, Double)
+    CASE_REPEATED_NOT_PACKED_POD(Int32, int32_t, Int32)
+    CASE_REPEATED_NOT_PACKED_POD(Int64, int64_t, Int64)
+    CASE_REPEATED_NOT_PACKED_POD(SInt32, int32_t, Int32)
+    CASE_REPEATED_NOT_PACKED_POD(SInt64, int64_t, Int64)
+    CASE_REPEATED_NOT_PACKED_POD(UInt32, uint32_t, UInt32)
+    CASE_REPEATED_NOT_PACKED_POD(UInt64, uint64_t, UInt64)
+    CASE_REPEATED_NOT_PACKED_OBJECT(Bytes)
+    CASE_REPEATED_NOT_PACKED_OBJECT(String)
 #undef CASE_REPEATED_NOT_PACKED_POD
 #undef CASE_NOT_PACKED_OBJECT
     case GPBDataTypeMessage: {
       GPBMessage *message = [[field.msgClass alloc] init];
       [input readMessage:message extensionRegistry:extensionRegistry];
-      [(NSMutableArray*)genericArray addObject:message];
+      [(NSMutableArray *)genericArray addObject:message];
       [message release];
       break;
     }
     case GPBDataTypeGroup: {
       GPBMessage *message = [[field.msgClass alloc] init];
-      [input readGroup:GPBFieldNumber(field)
-                    message:message
-          extensionRegistry:extensionRegistry];
-      [(NSMutableArray*)genericArray addObject:message];
+      [input readGroup:GPBFieldNumber(field) message:message extensionRegistry:extensionRegistry];
+      [(NSMutableArray *)genericArray addObject:message];
       [message release];
       break;
     }
     case GPBDataTypeEnum: {
       int32_t val = GPBCodedInputStreamReadEnum(state);
-      if (GPBHasPreservingUnknownEnumSemantics(syntax) ||
-          [field isValidEnumValue:val]) {
-        [(GPBEnumArray*)genericArray addRawValue:val];
+      if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:val]) {
+        [(GPBEnumArray *)genericArray addRawValue:val];
       } else {
         GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
         [unknownFields mergeVarintField:GPBFieldNumber(field) value:val];
@@ -2290,7 +2358,6 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input
                 extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   GPBDescriptor *descriptor = [self descriptor];
-  GPBFileSyntax syntax = descriptor.file.syntax;
   GPBCodedInputStreamState *state = &input->state_;
   uint32_t tag = 0;
   NSUInteger startingIndex = 0;
@@ -2308,30 +2375,28 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       if (GPBFieldTag(fieldDescriptor) == tag) {
         GPBFieldType fieldType = fieldDescriptor.fieldType;
         if (fieldType == GPBFieldTypeSingle) {
-          MergeSingleFieldFromCodedInputStream(self, fieldDescriptor, syntax,
-                                               input, extensionRegistry);
+          MergeSingleFieldFromCodedInputStream(self, fieldDescriptor, input, extensionRegistry);
           // Well formed protos will only have a single field once, advance
           // the starting index to the next field.
           startingIndex += 1;
         } else if (fieldType == GPBFieldTypeRepeated) {
           if (fieldDescriptor.isPackable) {
-            MergeRepeatedPackedFieldFromCodedInputStream(
-                self, fieldDescriptor, syntax, input);
+            MergeRepeatedPackedFieldFromCodedInputStream(self, fieldDescriptor, input);
             // Well formed protos will only have a repeated field that is
             // packed once, advance the starting index to the next field.
             startingIndex += 1;
           } else {
-            MergeRepeatedNotPackedFieldFromCodedInputStream(
-                self, fieldDescriptor, syntax, input, extensionRegistry);
+            MergeRepeatedNotPackedFieldFromCodedInputStream(self, fieldDescriptor, input,
+                                                            extensionRegistry);
           }
         } else {  // fieldType == GPBFieldTypeMap
           // GPB*Dictionary or NSDictionary, exact type doesn't matter at this
           // point.
           id map = GetOrCreateMapIvarWithField(self, fieldDescriptor);
           [input readMapEntry:map
-            extensionRegistry:extensionRegistry
-                        field:fieldDescriptor
-                parentMessage:self];
+              extensionRegistry:extensionRegistry
+                          field:fieldDescriptor
+                  parentMessage:self];
         }
         merged = YES;
         break;
@@ -2352,14 +2417,13 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
             (GPBFieldAlternateTag(fieldDescriptor) == tag)) {
           BOOL alternateIsPacked = !fieldDescriptor.isPackable;
           if (alternateIsPacked) {
-            MergeRepeatedPackedFieldFromCodedInputStream(
-                self, fieldDescriptor, syntax, input);
+            MergeRepeatedPackedFieldFromCodedInputStream(self, fieldDescriptor, input);
             // Well formed protos will only have a repeated field that is
             // packed once, advance the starting index to the next field.
             startingIndex += 1;
           } else {
-            MergeRepeatedNotPackedFieldFromCodedInputStream(
-                self, fieldDescriptor, syntax, input, extensionRegistry);
+            MergeRepeatedNotPackedFieldFromCodedInputStream(self, fieldDescriptor, input,
+                                                            extensionRegistry);
           }
           merged = YES;
           break;
@@ -2374,9 +2438,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         // zero signals EOF / limit reached
         return;
       } else {
-        if (![self parseUnknownField:input
-                   extensionRegistry:extensionRegistry
-                                 tag:tag]) {
+        if (![self parseUnknownField:input extensionRegistry:extensionRegistry tag:tag]) {
           // it's an endgroup tag
           return;
         }
@@ -2391,8 +2453,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 - (void)mergeFrom:(GPBMessage *)other {
   Class selfClass = [self class];
   Class otherClass = [other class];
-  if (!([selfClass isSubclassOfClass:otherClass] ||
-        [otherClass isSubclassOfClass:selfClass])) {
+  if (!([selfClass isSubclassOfClass:otherClass] || [otherClass isSubclassOfClass:selfClass])) {
     [NSException raise:NSInvalidArgumentException
                 format:@"Classes must match %@ != %@", selfClass, otherClass];
   }
@@ -2414,39 +2475,32 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       GPBDataType fieldDataType = GPBGetFieldDataType(field);
       switch (fieldDataType) {
         case GPBDataTypeBool:
-          GPBSetBoolIvarWithFieldPrivate(
-              self, field, GPBGetMessageBoolField(other, field));
+          GPBSetBoolIvarWithFieldPrivate(self, field, GPBGetMessageBoolField(other, field));
           break;
         case GPBDataTypeSFixed32:
         case GPBDataTypeEnum:
         case GPBDataTypeInt32:
         case GPBDataTypeSInt32:
-          GPBSetInt32IvarWithFieldPrivate(
-              self, field, GPBGetMessageInt32Field(other, field));
+          GPBSetInt32IvarWithFieldPrivate(self, field, GPBGetMessageInt32Field(other, field));
           break;
         case GPBDataTypeFixed32:
         case GPBDataTypeUInt32:
-          GPBSetUInt32IvarWithFieldPrivate(
-              self, field, GPBGetMessageUInt32Field(other, field));
+          GPBSetUInt32IvarWithFieldPrivate(self, field, GPBGetMessageUInt32Field(other, field));
           break;
         case GPBDataTypeSFixed64:
         case GPBDataTypeInt64:
         case GPBDataTypeSInt64:
-          GPBSetInt64IvarWithFieldPrivate(
-              self, field, GPBGetMessageInt64Field(other, field));
+          GPBSetInt64IvarWithFieldPrivate(self, field, GPBGetMessageInt64Field(other, field));
           break;
         case GPBDataTypeFixed64:
         case GPBDataTypeUInt64:
-          GPBSetUInt64IvarWithFieldPrivate(
-              self, field, GPBGetMessageUInt64Field(other, field));
+          GPBSetUInt64IvarWithFieldPrivate(self, field, GPBGetMessageUInt64Field(other, field));
           break;
         case GPBDataTypeFloat:
-          GPBSetFloatIvarWithFieldPrivate(
-              self, field, GPBGetMessageFloatField(other, field));
+          GPBSetFloatIvarWithFieldPrivate(self, field, GPBGetMessageFloatField(other, field));
           break;
         case GPBDataTypeDouble:
-          GPBSetDoubleIvarWithFieldPrivate(
-              self, field, GPBGetMessageDoubleField(other, field));
+          GPBSetDoubleIvarWithFieldPrivate(self, field, GPBGetMessageDoubleField(other, field));
           break;
         case GPBDataTypeBytes:
         case GPBDataTypeString: {
@@ -2458,8 +2512,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         case GPBDataTypeGroup: {
           id otherVal = GPBGetObjectIvarWithFieldNoAutocreate(other, field);
           if (GPBGetHasIvar(self, hasIndex, fieldNumber)) {
-            GPBMessage *message =
-                GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+            GPBMessage *message = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
             [message mergeFrom:otherVal];
           } else {
             GPBMessage *message = [otherVal copy];
@@ -2467,27 +2520,23 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
           }
           break;
         }
-      } // switch()
+      }  // switch()
     } else if (fieldType == GPBFieldTypeRepeated) {
       // In the case of a list, they need to be appended, and there is no
       // _hasIvar to worry about setting.
-      id otherArray =
-          GPBGetObjectIvarWithFieldNoAutocreate(other, field);
+      id otherArray = GPBGetObjectIvarWithFieldNoAutocreate(other, field);
       if (otherArray) {
         GPBDataType fieldDataType = field->description_->dataType;
         if (GPBDataTypeIsObject(fieldDataType)) {
-          NSMutableArray *resultArray =
-              GetOrCreateArrayIvarWithField(self, field);
+          NSMutableArray *resultArray = GetOrCreateArrayIvarWithField(self, field);
           [resultArray addObjectsFromArray:otherArray];
         } else if (fieldDataType == GPBDataTypeEnum) {
-          GPBEnumArray *resultArray =
-              GetOrCreateArrayIvarWithField(self, field);
+          GPBEnumArray *resultArray = GetOrCreateArrayIvarWithField(self, field);
           [resultArray addRawValuesFromArray:otherArray];
         } else {
           // The array type doesn't matter, that all implement
           // -addValuesFromArray:.
-          GPBInt32Array *resultArray =
-              GetOrCreateArrayIvarWithField(self, field);
+          GPBInt32Array *resultArray = GetOrCreateArrayIvarWithField(self, field);
           [resultArray addValuesFromArray:otherArray];
         }
       }
@@ -2498,27 +2547,23 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       if (otherDict) {
         GPBDataType keyDataType = field.mapKeyDataType;
         GPBDataType valueDataType = field->description_->dataType;
-        if (GPBDataTypeIsObject(keyDataType) &&
-            GPBDataTypeIsObject(valueDataType)) {
-          NSMutableDictionary *resultDict =
-              GetOrCreateMapIvarWithField(self, field);
+        if (GPBDataTypeIsObject(keyDataType) && GPBDataTypeIsObject(valueDataType)) {
+          NSMutableDictionary *resultDict = GetOrCreateMapIvarWithField(self, field);
           [resultDict addEntriesFromDictionary:otherDict];
         } else if (valueDataType == GPBDataTypeEnum) {
           // The exact type doesn't matter, just need to know it is a
           // GPB*EnumDictionary.
-          GPBInt32EnumDictionary *resultDict =
-              GetOrCreateMapIvarWithField(self, field);
+          GPBInt32EnumDictionary *resultDict = GetOrCreateMapIvarWithField(self, field);
           [resultDict addRawEntriesFromDictionary:otherDict];
         } else {
           // The exact type doesn't matter, they all implement
           // -addEntriesFromDictionary:.
-          GPBInt32Int32Dictionary *resultDict =
-              GetOrCreateMapIvarWithField(self, field);
+          GPBInt32Int32Dictionary *resultDict = GetOrCreateMapIvarWithField(self, field);
           [resultDict addEntriesFromDictionary:otherDict];
         }
       }
     }  // if (fieldType)..else if...else
-  }  // for(fields)
+  }    // for(fields)
 
   // Unknown fields.
   if (!unknownFields_) {
@@ -2534,8 +2579,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
   }
 
   if (extensionMap_ == nil) {
-    extensionMap_ =
-        CloneExtensionMap(other->extensionMap_, NSZoneFromPointer(self));
+    extensionMap_ = CloneExtensionMap(other->extensionMap_, NSZoneFromPointer(self));
   } else {
     for (GPBExtensionDescriptor *extension in other->extensionMap_) {
       id otherValue = [other->extensionMap_ objectForKey:extension];
@@ -2573,8 +2617,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       }
 
       if (isMessageExtension && !extension.isRepeated) {
-        GPBMessage *autocreatedValue =
-            [[autocreatedExtensionMap_ objectForKey:extension] retain];
+        GPBMessage *autocreatedValue = [[autocreatedExtensionMap_ objectForKey:extension] retain];
         // Must remove from the map before calling GPBClearMessageAutocreator()
         // so that GPBClearMessageAutocreator() knows its safe to clear.
         [autocreatedExtensionMap_ removeObjectForKey:extension];
@@ -2608,10 +2651,8 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       // NOTE: These are NSArray/GPB*Array or NSDictionary/GPB*Dictionary, but
       // the type doesn't really matter as the objects all support -count and
       // -isEqual:.
-      NSArray *resultMapOrArray =
-          GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-      NSArray *otherMapOrArray =
-          GPBGetObjectIvarWithFieldNoAutocreate(other, field);
+      NSArray *resultMapOrArray = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+      NSArray *otherMapOrArray = GPBGetObjectIvarWithFieldNoAutocreate(other, field);
       // nil and empty are equal
       if (resultMapOrArray.count != 0 || otherMapOrArray.count != 0) {
         if (![resultMapOrArray isEqual:otherMapOrArray]) {
@@ -2689,9 +2730,9 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
           }
           break;
         }
-      } // switch()
-    }   // if(mapOrArray)...else
-  }  // for(fields)
+      }  // switch()
+    }    // if(mapOrArray)...else
+  }      // for(fields)
 
   // nil and empty are equal
   if (extensionMap_.count != 0 || otherMsg->extensionMap_.count != 0) {
@@ -2702,8 +2743,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 
   // nil and empty are equal
   GPBUnknownFieldSet *otherUnknowns = otherMsg->unknownFields_;
-  if ([unknownFields_ countOfFields] != 0 ||
-      [otherUnknowns countOfFields] != 0) {
+  if ([unknownFields_ countOfFields] != 0 || [otherUnknowns countOfFields] != 0) {
     if (![unknownFields_ isEqual:otherUnknowns]) {
       return NO;
     }
@@ -2806,7 +2846,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
           result = prime * result + (NSUInteger)[[*valPtr class] descriptor];
           break;
         }
-      } // switch()
+      }  // switch()
     }
   }
 
@@ -2819,8 +2859,8 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 
 - (NSString *)description {
   NSString *textFormat = GPBTextFormatForMessage(self, @"    ");
-  NSString *description = [NSString
-      stringWithFormat:@"<%@ %p>: {\n%@}", [self class], self, textFormat];
+  NSString *description =
+      [NSString stringWithFormat:@"<%@ %p>: {\n%@}", [self class], self, textFormat];
   return description;
 }
 
@@ -2858,44 +2898,43 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       uint32_t fieldNumber = GPBFieldNumber(fieldDescriptor);
 
       switch (fieldDataType) {
-#define CASE_SINGLE_POD(NAME, TYPE, FUNC_TYPE)                                \
-        case GPBDataType##NAME: {                                             \
-          TYPE fieldVal = GPBGetMessage##FUNC_TYPE##Field(self, fieldDescriptor); \
-          result += GPBCompute##NAME##Size(fieldNumber, fieldVal);            \
-          break;                                                              \
-        }
-#define CASE_SINGLE_OBJECT(NAME)                                              \
-        case GPBDataType##NAME: {                                             \
-          id fieldVal = GPBGetObjectIvarWithFieldNoAutocreate(self, fieldDescriptor); \
-          result += GPBCompute##NAME##Size(fieldNumber, fieldVal);            \
-          break;                                                              \
-        }
-          CASE_SINGLE_POD(Bool, BOOL, Bool)
-          CASE_SINGLE_POD(Fixed32, uint32_t, UInt32)
-          CASE_SINGLE_POD(SFixed32, int32_t, Int32)
-          CASE_SINGLE_POD(Float, float, Float)
-          CASE_SINGLE_POD(Fixed64, uint64_t, UInt64)
-          CASE_SINGLE_POD(SFixed64, int64_t, Int64)
-          CASE_SINGLE_POD(Double, double, Double)
-          CASE_SINGLE_POD(Int32, int32_t, Int32)
-          CASE_SINGLE_POD(Int64, int64_t, Int64)
-          CASE_SINGLE_POD(SInt32, int32_t, Int32)
-          CASE_SINGLE_POD(SInt64, int64_t, Int64)
-          CASE_SINGLE_POD(UInt32, uint32_t, UInt32)
-          CASE_SINGLE_POD(UInt64, uint64_t, UInt64)
-          CASE_SINGLE_OBJECT(Bytes)
-          CASE_SINGLE_OBJECT(String)
-          CASE_SINGLE_OBJECT(Message)
-          CASE_SINGLE_OBJECT(Group)
-          CASE_SINGLE_POD(Enum, int32_t, Int32)
+#define CASE_SINGLE_POD(NAME, TYPE, FUNC_TYPE)                              \
+  case GPBDataType##NAME: {                                                 \
+    TYPE fieldVal = GPBGetMessage##FUNC_TYPE##Field(self, fieldDescriptor); \
+    result += GPBCompute##NAME##Size(fieldNumber, fieldVal);                \
+    break;                                                                  \
+  }
+#define CASE_SINGLE_OBJECT(NAME)                                                \
+  case GPBDataType##NAME: {                                                     \
+    id fieldVal = GPBGetObjectIvarWithFieldNoAutocreate(self, fieldDescriptor); \
+    result += GPBCompute##NAME##Size(fieldNumber, fieldVal);                    \
+    break;                                                                      \
+  }
+        CASE_SINGLE_POD(Bool, BOOL, Bool)
+        CASE_SINGLE_POD(Fixed32, uint32_t, UInt32)
+        CASE_SINGLE_POD(SFixed32, int32_t, Int32)
+        CASE_SINGLE_POD(Float, float, Float)
+        CASE_SINGLE_POD(Fixed64, uint64_t, UInt64)
+        CASE_SINGLE_POD(SFixed64, int64_t, Int64)
+        CASE_SINGLE_POD(Double, double, Double)
+        CASE_SINGLE_POD(Int32, int32_t, Int32)
+        CASE_SINGLE_POD(Int64, int64_t, Int64)
+        CASE_SINGLE_POD(SInt32, int32_t, Int32)
+        CASE_SINGLE_POD(SInt64, int64_t, Int64)
+        CASE_SINGLE_POD(UInt32, uint32_t, UInt32)
+        CASE_SINGLE_POD(UInt64, uint64_t, UInt64)
+        CASE_SINGLE_OBJECT(Bytes)
+        CASE_SINGLE_OBJECT(String)
+        CASE_SINGLE_OBJECT(Message)
+        CASE_SINGLE_OBJECT(Group)
+        CASE_SINGLE_POD(Enum, int32_t, Int32)
 #undef CASE_SINGLE_POD
 #undef CASE_SINGLE_OBJECT
       }
 
-    // Repeated Fields
+      // Repeated Fields
     } else if (fieldType == GPBFieldTypeRepeated) {
-      id genericArray =
-          GPBGetObjectIvarWithFieldNoAutocreate(self, fieldDescriptor);
+      id genericArray = GPBGetObjectIvarWithFieldNoAutocreate(self, fieldDescriptor);
       NSUInteger count = [genericArray count];
       if (count == 0) {
         continue;  // Nothing to add.
@@ -2903,41 +2942,41 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       __block size_t dataSize = 0;
 
       switch (fieldDataType) {
-#define CASE_REPEATED_POD(NAME, TYPE, ARRAY_TYPE)                             \
-    CASE_REPEATED_POD_EXTRA(NAME, TYPE, ARRAY_TYPE, )
-#define CASE_REPEATED_POD_EXTRA(NAME, TYPE, ARRAY_TYPE, ARRAY_ACCESSOR_NAME)  \
-        case GPBDataType##NAME: {                                             \
-          GPB##ARRAY_TYPE##Array *array = genericArray;                       \
-          [array enumerate##ARRAY_ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, __unused NSUInteger idx, __unused BOOL *stop) { \
-            dataSize += GPBCompute##NAME##SizeNoTag(value);                   \
-          }];                                                                 \
-          break;                                                              \
-        }
-#define CASE_REPEATED_OBJECT(NAME)                                            \
-        case GPBDataType##NAME: {                                             \
-          for (id value in genericArray) {                                    \
-            dataSize += GPBCompute##NAME##SizeNoTag(value);                   \
-          }                                                                   \
-          break;                                                              \
-        }
-          CASE_REPEATED_POD(Bool, BOOL, Bool)
-          CASE_REPEATED_POD(Fixed32, uint32_t, UInt32)
-          CASE_REPEATED_POD(SFixed32, int32_t, Int32)
-          CASE_REPEATED_POD(Float, float, Float)
-          CASE_REPEATED_POD(Fixed64, uint64_t, UInt64)
-          CASE_REPEATED_POD(SFixed64, int64_t, Int64)
-          CASE_REPEATED_POD(Double, double, Double)
-          CASE_REPEATED_POD(Int32, int32_t, Int32)
-          CASE_REPEATED_POD(Int64, int64_t, Int64)
-          CASE_REPEATED_POD(SInt32, int32_t, Int32)
-          CASE_REPEATED_POD(SInt64, int64_t, Int64)
-          CASE_REPEATED_POD(UInt32, uint32_t, UInt32)
-          CASE_REPEATED_POD(UInt64, uint64_t, UInt64)
-          CASE_REPEATED_OBJECT(Bytes)
-          CASE_REPEATED_OBJECT(String)
-          CASE_REPEATED_OBJECT(Message)
-          CASE_REPEATED_OBJECT(Group)
-          CASE_REPEATED_POD_EXTRA(Enum, int32_t, Enum, Raw)
+#define CASE_REPEATED_POD(NAME, TYPE, ARRAY_TYPE) CASE_REPEATED_POD_EXTRA(NAME, TYPE, ARRAY_TYPE, )
+#define CASE_REPEATED_POD_EXTRA(NAME, TYPE, ARRAY_TYPE, ARRAY_ACCESSOR_NAME)           \
+  case GPBDataType##NAME: {                                                            \
+    GPB##ARRAY_TYPE##Array *array = genericArray;                                      \
+    [array enumerate##ARRAY_ACCESSOR_NAME##                                            \
+        ValuesWithBlock:^(TYPE value, __unused NSUInteger idx, __unused BOOL * stop) { \
+          dataSize += GPBCompute##NAME##SizeNoTag(value);                              \
+        }];                                                                            \
+    break;                                                                             \
+  }
+#define CASE_REPEATED_OBJECT(NAME)                    \
+  case GPBDataType##NAME: {                           \
+    for (id value in genericArray) {                  \
+      dataSize += GPBCompute##NAME##SizeNoTag(value); \
+    }                                                 \
+    break;                                            \
+  }
+        CASE_REPEATED_POD(Bool, BOOL, Bool)
+        CASE_REPEATED_POD(Fixed32, uint32_t, UInt32)
+        CASE_REPEATED_POD(SFixed32, int32_t, Int32)
+        CASE_REPEATED_POD(Float, float, Float)
+        CASE_REPEATED_POD(Fixed64, uint64_t, UInt64)
+        CASE_REPEATED_POD(SFixed64, int64_t, Int64)
+        CASE_REPEATED_POD(Double, double, Double)
+        CASE_REPEATED_POD(Int32, int32_t, Int32)
+        CASE_REPEATED_POD(Int64, int64_t, Int64)
+        CASE_REPEATED_POD(SInt32, int32_t, Int32)
+        CASE_REPEATED_POD(SInt64, int64_t, Int64)
+        CASE_REPEATED_POD(UInt32, uint32_t, UInt32)
+        CASE_REPEATED_POD(UInt64, uint64_t, UInt64)
+        CASE_REPEATED_OBJECT(Bytes)
+        CASE_REPEATED_OBJECT(String)
+        CASE_REPEATED_OBJECT(Message)
+        CASE_REPEATED_OBJECT(Group)
+        CASE_REPEATED_POD_EXTRA(Enum, int32_t, Enum, Raw)
 #undef CASE_REPEATED_POD
 #undef CASE_REPEATED_POD_EXTRA
 #undef CASE_REPEATED_OBJECT
@@ -2955,20 +2994,18 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         result += count * tagSize;
       }
 
-    // Map<> Fields
+      // Map<> Fields
     } else {  // fieldType == GPBFieldTypeMap
       if (GPBDataTypeIsObject(fieldDataType) &&
           (fieldDescriptor.mapKeyDataType == GPBDataTypeString)) {
         // If key type was string, then the map is an NSDictionary.
-        NSDictionary *map =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, fieldDescriptor);
+        NSDictionary *map = GPBGetObjectIvarWithFieldNoAutocreate(self, fieldDescriptor);
         if (map) {
           result += GPBDictionaryComputeSizeInternalHelper(map, fieldDescriptor);
         }
       } else {
         // Type will be GPB*GroupDictionary, exact type doesn't matter.
-        GPBInt32Int32Dictionary *map =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, fieldDescriptor);
+        GPBInt32Int32Dictionary *map = GPBGetObjectIvarWithFieldNoAutocreate(self, fieldDescriptor);
         result += [map computeSerializedSizeAsField:fieldDescriptor];
       }
     }
@@ -3004,40 +3041,40 @@ static void ResolveIvarGet(__unsafe_unretained GPBFieldDescriptor *field,
                            ResolveIvarAccessorMethodResult *result) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
   switch (fieldDataType) {
-#define CASE_GET(NAME, TYPE, TRUE_NAME)                          \
-    case GPBDataType##NAME: {                                    \
-      result->impToAdd = imp_implementationWithBlock(^(id obj) { \
-        return GPBGetMessage##TRUE_NAME##Field(obj, field);      \
-       });                                                       \
-      result->encodingSelector = @selector(get##NAME);           \
-      break;                                                     \
-    }
-#define CASE_GET_OBJECT(NAME, TYPE, TRUE_NAME)                   \
-    case GPBDataType##NAME: {                                    \
-      result->impToAdd = imp_implementationWithBlock(^(id obj) { \
-        return GPBGetObjectIvarWithField(obj, field);            \
-       });                                                       \
-      result->encodingSelector = @selector(get##NAME);           \
-      break;                                                     \
-    }
-      CASE_GET(Bool, BOOL, Bool)
-      CASE_GET(Fixed32, uint32_t, UInt32)
-      CASE_GET(SFixed32, int32_t, Int32)
-      CASE_GET(Float, float, Float)
-      CASE_GET(Fixed64, uint64_t, UInt64)
-      CASE_GET(SFixed64, int64_t, Int64)
-      CASE_GET(Double, double, Double)
-      CASE_GET(Int32, int32_t, Int32)
-      CASE_GET(Int64, int64_t, Int64)
-      CASE_GET(SInt32, int32_t, Int32)
-      CASE_GET(SInt64, int64_t, Int64)
-      CASE_GET(UInt32, uint32_t, UInt32)
-      CASE_GET(UInt64, uint64_t, UInt64)
-      CASE_GET_OBJECT(Bytes, id, Object)
-      CASE_GET_OBJECT(String, id, Object)
-      CASE_GET_OBJECT(Message, id, Object)
-      CASE_GET_OBJECT(Group, id, Object)
-      CASE_GET(Enum, int32_t, Enum)
+#define CASE_GET(NAME, TYPE, TRUE_NAME)                        \
+  case GPBDataType##NAME: {                                    \
+    result->impToAdd = imp_implementationWithBlock(^(id obj) { \
+      return GPBGetMessage##TRUE_NAME##Field(obj, field);      \
+    });                                                        \
+    result->encodingSelector = @selector(get##NAME);           \
+    break;                                                     \
+  }
+#define CASE_GET_OBJECT(NAME, TYPE, TRUE_NAME)                 \
+  case GPBDataType##NAME: {                                    \
+    result->impToAdd = imp_implementationWithBlock(^(id obj) { \
+      return GPBGetObjectIvarWithField(obj, field);            \
+    });                                                        \
+    result->encodingSelector = @selector(get##NAME);           \
+    break;                                                     \
+  }
+    CASE_GET(Bool, BOOL, Bool)
+    CASE_GET(Fixed32, uint32_t, UInt32)
+    CASE_GET(SFixed32, int32_t, Int32)
+    CASE_GET(Float, float, Float)
+    CASE_GET(Fixed64, uint64_t, UInt64)
+    CASE_GET(SFixed64, int64_t, Int64)
+    CASE_GET(Double, double, Double)
+    CASE_GET(Int32, int32_t, Int32)
+    CASE_GET(Int64, int64_t, Int64)
+    CASE_GET(SInt32, int32_t, Int32)
+    CASE_GET(SInt64, int64_t, Int64)
+    CASE_GET(UInt32, uint32_t, UInt32)
+    CASE_GET(UInt64, uint64_t, UInt64)
+    CASE_GET_OBJECT(Bytes, id, Object)
+    CASE_GET_OBJECT(String, id, Object)
+    CASE_GET_OBJECT(Message, id, Object)
+    CASE_GET_OBJECT(Group, id, Object)
+    CASE_GET(Enum, int32_t, Enum)
 #undef CASE_GET
   }
 }
@@ -3047,40 +3084,40 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
                            ResolveIvarAccessorMethodResult *result) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
   switch (fieldDataType) {
-#define CASE_SET(NAME, TYPE, TRUE_NAME)                                       \
-    case GPBDataType##NAME: {                                                 \
-      result->impToAdd = imp_implementationWithBlock(^(id obj, TYPE value) {  \
-        return GPBSet##TRUE_NAME##IvarWithFieldPrivate(obj, field, value);    \
-      });                                                                     \
-      result->encodingSelector = @selector(set##NAME:);                       \
-      break;                                                                  \
-    }
-#define CASE_SET_COPY(NAME)                                                   \
-    case GPBDataType##NAME: {                                                 \
-      result->impToAdd = imp_implementationWithBlock(^(id obj, id value) {    \
-        return GPBSetRetainedObjectIvarWithFieldPrivate(obj, field, [value copy]); \
-      });                                                                     \
-      result->encodingSelector = @selector(set##NAME:);                       \
-      break;                                                                  \
-    }
-      CASE_SET(Bool, BOOL, Bool)
-      CASE_SET(Fixed32, uint32_t, UInt32)
-      CASE_SET(SFixed32, int32_t, Int32)
-      CASE_SET(Float, float, Float)
-      CASE_SET(Fixed64, uint64_t, UInt64)
-      CASE_SET(SFixed64, int64_t, Int64)
-      CASE_SET(Double, double, Double)
-      CASE_SET(Int32, int32_t, Int32)
-      CASE_SET(Int64, int64_t, Int64)
-      CASE_SET(SInt32, int32_t, Int32)
-      CASE_SET(SInt64, int64_t, Int64)
-      CASE_SET(UInt32, uint32_t, UInt32)
-      CASE_SET(UInt64, uint64_t, UInt64)
-      CASE_SET_COPY(Bytes)
-      CASE_SET_COPY(String)
-      CASE_SET(Message, id, Object)
-      CASE_SET(Group, id, Object)
-      CASE_SET(Enum, int32_t, Enum)
+#define CASE_SET(NAME, TYPE, TRUE_NAME)                                    \
+  case GPBDataType##NAME: {                                                \
+    result->impToAdd = imp_implementationWithBlock(^(id obj, TYPE value) { \
+      return GPBSet##TRUE_NAME##IvarWithFieldPrivate(obj, field, value);   \
+    });                                                                    \
+    result->encodingSelector = @selector(set##NAME:);                      \
+    break;                                                                 \
+  }
+#define CASE_SET_COPY(NAME)                                                      \
+  case GPBDataType##NAME: {                                                      \
+    result->impToAdd = imp_implementationWithBlock(^(id obj, id value) {         \
+      return GPBSetRetainedObjectIvarWithFieldPrivate(obj, field, [value copy]); \
+    });                                                                          \
+    result->encodingSelector = @selector(set##NAME:);                            \
+    break;                                                                       \
+  }
+    CASE_SET(Bool, BOOL, Bool)
+    CASE_SET(Fixed32, uint32_t, UInt32)
+    CASE_SET(SFixed32, int32_t, Int32)
+    CASE_SET(Float, float, Float)
+    CASE_SET(Fixed64, uint64_t, UInt64)
+    CASE_SET(SFixed64, int64_t, Int64)
+    CASE_SET(Double, double, Double)
+    CASE_SET(Int32, int32_t, Int32)
+    CASE_SET(Int64, int64_t, Int64)
+    CASE_SET(SInt32, int32_t, Int32)
+    CASE_SET(SInt64, int64_t, Int64)
+    CASE_SET(UInt32, uint32_t, UInt32)
+    CASE_SET(UInt64, uint64_t, UInt64)
+    CASE_SET_COPY(Bytes)
+    CASE_SET_COPY(String)
+    CASE_SET(Message, id, Object)
+    CASE_SET(Group, id, Object)
+    CASE_SET(Enum, int32_t, Enum)
 #undef CASE_SET
   }
 }
@@ -3119,8 +3156,7 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
         result.impToAdd = imp_implementationWithBlock(^(id obj, BOOL value) {
           if (value) {
             [NSException raise:NSInvalidArgumentException
-                        format:@"%@: %@ can only be set to NO (to clear field).",
-                               [obj class],
+                        format:@"%@: %@ can only be set to NO (to clear field).", [obj class],
                                NSStringFromSelector(field->setHasSel_)];
           }
           GPBClearMessageField(obj, field);
@@ -3164,8 +3200,7 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
         result.impToAdd = imp_implementationWithBlock(^(id obj) {
           // Type doesn't matter, all *Array and *Dictionary types support
           // -count.
-          NSArray *arrayOrMap =
-              GPBGetObjectIvarWithFieldNoAutocreate(obj, field);
+          NSArray *arrayOrMap = GPBGetObjectIvarWithFieldNoAutocreate(obj, field);
           return [arrayOrMap count];
         });
         result.encodingSelector = @selector(getArrayCount);
@@ -3174,8 +3209,7 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
     }
   }
   if (result.impToAdd) {
-    const char *encoding =
-        GPBMessageEncodingForSelector(result.encodingSelector, YES);
+    const char *encoding = GPBMessageEncodingForSelector(result.encodingSelector, YES);
     Class msgClass = descriptor.messageClass;
     BOOL methodAdded = class_addMethod(msgClass, sel, result.impToAdd, encoding);
     // class_addMethod() is documented as also failing if the method was already
@@ -3209,8 +3243,7 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
   self = [self init];
   if (self) {
-    NSData *data =
-        [aDecoder decodeObjectOfClass:[NSData class] forKey:kGPBDataCoderKey];
+    NSData *data = [aDecoder decodeObjectOfClass:[NSData class] forKey:kGPBDataCoderKey];
     if (data.length) {
       [self mergeFromData:data extensionRegistry:nil];
     }
@@ -3257,8 +3290,7 @@ id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field) {
 #if defined(DEBUG) && DEBUG
   if (field.fieldType != GPBFieldTypeRepeated) {
     [NSException raise:NSInvalidArgumentException
-                format:@"%@.%@ is not a repeated field.",
-     [self class], field.name];
+                format:@"%@.%@ is not a repeated field.", [self class], field.name];
   }
 #endif
   return GetOrCreateArrayIvarWithField(self, field);
@@ -3269,8 +3301,7 @@ id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field) {
 #if defined(DEBUG) && DEBUG
   if (field.fieldType != GPBFieldTypeMap) {
     [NSException raise:NSInvalidArgumentException
-                format:@"%@.%@ is not a map<> field.",
-     [self class], field.name];
+                format:@"%@.%@ is not a map<> field.", [self class], field.name];
   }
 #endif
   return GetOrCreateMapIvarWithField(self, field);

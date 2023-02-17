@@ -128,8 +128,10 @@
 
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/base/attributes.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
@@ -214,6 +216,9 @@ class PROTOBUF_EXPORT CodedInputStream {
 
   // Like ReadRaw, but reads into a string.
   bool ReadString(std::string* buffer, int size);
+
+  // Like ReadString(), but reads to a Cord.
+  bool ReadCord(absl::Cord* output, int size);
 
 
   // Read a 32-bit little-endian integer.
@@ -698,6 +703,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     }
   }
 
+  uint8_t* WriteCord(const absl::Cord& cord, uint8_t* ptr);
 
 #ifndef NDEBUG
   PROTOBUF_NOINLINE
@@ -732,6 +738,13 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     std::memcpy(ptr, s.data(), size);
     return ptr + size;
   }
+
+  uint8_t* WriteString(uint32_t num, const absl::Cord& s, uint8_t* ptr) {
+    ptr = EnsureSpace(ptr);
+    ptr = WriteTag(num, 2, ptr);
+    return WriteCordOutline(s, ptr);
+  }
+
   template <typename T>
 #ifndef NDEBUG
   PROTOBUF_NOINLINE
@@ -831,7 +844,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   inline uint8_t* Next();
   int Flush(uint8_t* ptr);
   std::ptrdiff_t GetSize(uint8_t* ptr) const {
-    GOOGLE_DCHECK(ptr <= end_ + kSlopBytes);  // NOLINT
+    ABSL_DCHECK(ptr <= end_ + kSlopBytes);  // NOLINT
     return end_ + kSlopBytes - ptr;
   }
 
@@ -852,7 +865,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteTag(uint32_t num, uint32_t wt,
                                            uint8_t* ptr) {
-    GOOGLE_DCHECK(ptr < end_);  // NOLINT
+    ABSL_DCHECK(ptr < end_);  // NOLINT
     return UnsafeVarint((num << 3) | wt, ptr);
   }
 
@@ -869,6 +882,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   uint8_t* WriteStringMaybeAliasedOutline(uint32_t num, const std::string& s,
                                           uint8_t* ptr);
   uint8_t* WriteStringOutline(uint32_t num, const std::string& s, uint8_t* ptr);
+  uint8_t* WriteStringOutline(uint32_t num, absl::string_view s, uint8_t* ptr);
+  uint8_t* WriteCordOutline(const absl::Cord& c, uint8_t* ptr);
 
   template <typename T, typename E>
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteVarintPacked(int num, const T& r,
@@ -898,25 +913,12 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint(T value, uint8_t* ptr) {
     static_assert(std::is_unsigned<T>::value,
                   "Varint serialization must be unsigned");
-    ptr[0] = static_cast<uint8_t>(value);
-    if (value < 0x80) {
-      return ptr + 1;
-    }
-    // Turn on continuation bit in the byte we just wrote.
-    ptr[0] |= static_cast<uint8_t>(0x80);
-    value >>= 7;
-    ptr[1] = static_cast<uint8_t>(value);
-    if (value < 0x80) {
-      return ptr + 2;
-    }
-    ptr += 2;
-    do {
-      // Turn on continuation bit in the byte we just wrote.
-      ptr[-1] |= static_cast<uint8_t>(0x80);
+    while (PROTOBUF_PREDICT_FALSE(value >= 0x80)) {
+      *ptr = static_cast<uint8_t>(value | 0x80);
       value >>= 7;
-      *ptr = static_cast<uint8_t>(value);
       ++ptr;
-    } while (value >= 0x80);
+    }
+    *ptr++ = static_cast<uint8_t>(value);
     return ptr;
   }
 
@@ -1072,7 +1074,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // errors.
   bool HadError() {
     cur_ = impl_.FlushAndResetBuffer(cur_);
-    GOOGLE_DCHECK(cur_);
+    ABSL_DCHECK(cur_);
     return impl_.HadError();
   }
 
@@ -1137,6 +1139,12 @@ class PROTOBUF_EXPORT CodedOutputStream {
   static uint8_t* WriteStringWithSizeToArray(const std::string& str,
                                              uint8_t* target);
 
+  // Like WriteString() but writes a Cord.
+  void WriteCord(const absl::Cord& cord) { cur_ = impl_.WriteCord(cord, cur_); }
+
+  // Like WriteCord() but writing directly to the target array.
+  static uint8_t* WriteCordToArray(const absl::Cord& cord, uint8_t* target);
+
 
   // Write a 32-bit little-endian integer.
   void WriteLittleEndian32(uint32_t value) {
@@ -1159,10 +1167,12 @@ class PROTOBUF_EXPORT CodedOutputStream {
   void WriteVarint32(uint32_t value);
   // Like WriteVarint32()  but writing directly to the target array.
   static uint8_t* WriteVarint32ToArray(uint32_t value, uint8_t* target);
-  // Like WriteVarint32()  but writing directly to the target array, and with
-  // the less common-case paths being out of line rather than inlined.
+  // Like WriteVarint32ToArray()
+  PROTOBUF_DEPRECATED_MSG("Please use WriteVarint32ToArray() instead")
   static uint8_t* WriteVarint32ToArrayOutOfLine(uint32_t value,
-                                                uint8_t* target);
+                                                uint8_t* target) {
+    return WriteVarint32ToArray(value, target);
+  }
   // Write an unsigned integer with Varint encoding.
   void WriteVarint64(uint64_t value);
   // Like WriteVarint64()  but writing directly to the target array.
@@ -1282,13 +1292,10 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // that wants deterministic serialization by default needs to call
   // SetDefaultSerializationDeterministic() or ensure on its own that another
   // thread has done so.
-  friend void internal::MapTestForceDeterministic();
+  friend void google::protobuf::internal::MapTestForceDeterministic();
   static void SetDefaultSerializationDeterministic() {
     default_serialization_deterministic_.store(true, std::memory_order_relaxed);
   }
-  // REQUIRES: value >= 0x80, and that (value & 7f) has been written to *target.
-  static uint8_t* WriteVarint32ToArrayOutOfLineHelper(uint32_t value,
-                                                      uint8_t* target);
 };
 
 // inline methods ====================================================
@@ -1647,16 +1654,6 @@ inline uint8_t* CodedOutputStream::WriteVarint32ToArray(uint32_t value,
   return EpsCopyOutputStream::UnsafeVarint(value, target);
 }
 
-inline uint8_t* CodedOutputStream::WriteVarint32ToArrayOutOfLine(
-    uint32_t value, uint8_t* target) {
-  target[0] = static_cast<uint8_t>(value);
-  if (value < 0x80) {
-    return target + 1;
-  } else {
-    return WriteVarint32ToArrayOutOfLineHelper(value, target);
-  }
-}
-
 inline uint8_t* CodedOutputStream::WriteVarint64ToArray(uint64_t value,
                                                         uint8_t* target) {
   return EpsCopyOutputStream::UnsafeVarint(value, target);
@@ -1730,15 +1727,15 @@ inline size_t CodedOutputStream::VarintSize32(uint32_t value) {
   // Use an explicit multiplication to implement the divide of
   // a number in the 1..31 range.
   //
-  // Explicit OR 0x1 to avoid calling absl::bit_width(0), which is
+  // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
   // requires a branch to check for on many platforms.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 inline size_t CodedOutputStream::VarintSize32PlusOne(uint32_t value) {
   // Same as above, but one more.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
 }
 
@@ -1747,15 +1744,15 @@ inline size_t CodedOutputStream::VarintSize64(uint64_t value) {
   // Use an explicit multiplication to implement the divide of
   // a number in the 1..63 range.
   //
-  // Explicit OR 0x1 to avoid calling absl::bit_width(0), which is
+  // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
   // requires a branch to check for on many platforms.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 inline size_t CodedOutputStream::VarintSize64PlusOne(uint64_t value) {
   // Same as above, but one more.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
 }
 

@@ -20,23 +20,23 @@ cc_library(
 
 cc_library(
     name = "names_internal",
+    srcs = [
+        "helpers.cc",
+        "name_resolver.cc",
+        "names.cc",
+    ],
     hdrs = [
         "helpers.h",
         "name_resolver.h",
         "names.h",
         "options.h",
     ],
-    srcs = [
-        "helpers.cc",
-        "name_resolver.cc",
-        "names.cc",
-    ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/java",
     visibility = ["//pkg:__pkg__"],
     deps = [
-        "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/container:flat_hash_set",
     ],
 )
@@ -110,10 +110,12 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
-        ":names_internal",
         ":names",
+        ":names_internal",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:retention",
+        "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
     ],
@@ -166,6 +168,6 @@ filegroup(
     srcs = glob([
         "*_test.cc",
         "*unittest.cc",
-    ]),
+    ], allow_empty = True),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )
