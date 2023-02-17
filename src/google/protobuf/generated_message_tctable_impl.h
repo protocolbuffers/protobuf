@@ -267,6 +267,102 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
                       std::uintptr_t address) {}
 #endif
 
+#define PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(fn) \
+  PROTOBUF_TC_PARSE_FUNCTION_X(fn##S1)             \
+  PROTOBUF_TC_PARSE_FUNCTION_X(fn##S2)
+
+#define PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(fn) \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(fn)         \
+  PROTOBUF_TC_PARSE_FUNCTION_X(fn##R1)               \
+  PROTOBUF_TC_PARSE_FUNCTION_X(fn##R2)
+
+#define PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(fn) \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(fn)     \
+  PROTOBUF_TC_PARSE_FUNCTION_X(fn##P1)             \
+  PROTOBUF_TC_PARSE_FUNCTION_X(fn##P2)
+
+// TcParseFunction defines the set of table driven, tail call optimized parse
+// functions. This list currently does not include all types such as maps.
+//
+// This table identifies the logical set of functions, it does not imply that
+// functions of the same name do exist, and some entries may point to thunks or
+// generic implementations accepting multiple types of input.
+//
+// The names are encoded as follows:
+//   kFast<type>[<validation>][cardinality][tag_width]
+//
+//   type:
+//     V8  - bool
+//     V32 - int32/uint32 varint
+//     Z32 - int32/uint32 varint with zigzag encoding
+//     V64 - int64/uint64 varint
+//     Z64 - int64/uint64 varint with zigzag encoding
+//     F32 - int32/uint32/float fixed width value
+//     F64 - int64/uint64/double fixed width value
+//     E   - enum
+//     B   - string (bytes)*
+//     S   - utf8 string, verified in debug mode only*
+//     U   - utf8 string, strictly verified*
+//     Gd  - group
+//     Gt  - group width table driven parse tables
+//     Md  - message
+//     Mt  - message width table driven parse tables
+//
+// * string types can have a `c` or `i` suffix, indicating the
+//   underlying storage type to be cord or inlined respectively.
+//
+//  validation:
+//    For enums:
+//      v  - verify
+//      r  - verify; enum values are a contiguous range
+//      r0 - verify; enum values are a small contiguous range starting at 0
+//      r1 - verify; enum values are a small contiguous range starting at 1
+//    For strings:
+//      u - validate utf8 encoding
+//      v - validate utf8 encoding for debug only
+//
+//  cardinality:
+//    S - singular / optional
+//    R - repeated
+//    P - packed
+//
+//  tag_width:
+//    1: single byte encoded tag
+//    2: two byte encoded tag
+//
+// Examples:
+//   FastV8S1, FastEr1P2, FastBcS1
+//
+#define PROTOBUF_TC_PARSE_FUNCTION_LIST            \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV8)   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV32)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV64)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ32)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ64)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF32)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF64)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEv)   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr)   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr0)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr1)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastB)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastS)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastU)  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBi)   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSi)   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUi)   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBc)   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSc)   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUc)   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd) \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt) \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMd) \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMt)
+
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) k##value,
+enum class TcParseFunction { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
+#undef PROTOBUF_TC_PARSE_FUNCTION_X
+
 // TcParser implements most of the parsing logic for tailcall tables.
 class PROTOBUF_EXPORT TcParser final {
  public:
