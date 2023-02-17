@@ -1,0 +1,5 @@
+# go/google3metadata
+# proto-file: devtools/metadata/metadata.proto
+# proto-message: MetaData
+
+presubmit: { review_notify: "protobuf-rust+reviews" }
