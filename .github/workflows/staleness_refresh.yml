@@ -8,6 +8,7 @@ on:
       # The 21.x branch predates support for auto-generation, so we make sure
       # to exclude it.
       - '!21.x'
+  workflow_dispatch:
 
 permissions: {}
 jobs:
@@ -31,4 +32,4 @@ jobs:
       - name: Configure name and email address in Git
         run: cd ${{ github.workspace }} && git config user.name "Protobuf Team Bot" && git config user.email "protobuf-team-bot@google.com"
       - name: Commit and push update
-        run: cd ${{ github.workspace }} && ./push_auto_update.sh
+        run: cd ${{ github.workspace }} && ./ci/push_auto_update.sh
