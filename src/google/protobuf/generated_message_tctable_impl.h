@@ -412,32 +412,32 @@ class PROTOBUF_EXPORT TcParser final {
   //   (empty): ArenaStringPtr     i: InlinedString
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
-  static const char* FastBS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBR2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastSS1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastSS2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastSR1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastSR2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSvS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSvS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSvR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSvR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSuS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSuS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSuR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSuR2(PROTOBUF_TC_PARAM_DECL);
 
-  static const char* FastBiS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBiS2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastSiS1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastSiS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUiS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUiS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSivS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSivS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSiuS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSiuS2(PROTOBUF_TC_PARAM_DECL);
 
-  static const char* FastBcS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBcS2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastScS1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastScS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUcS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUcS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastScvS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastScvS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastScuS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastScuS2(PROTOBUF_TC_PARAM_DECL);
 
   // Functions referenced by generated fast tables (message types):
   //   M: message    G: group

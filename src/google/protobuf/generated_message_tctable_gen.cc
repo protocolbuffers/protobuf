@@ -78,100 +78,167 @@ bool GetEnumValidationRange(const EnumDescriptor* enum_type, int16_t& start,
   }
 }
 
+absl::string_view ParseFunctionValue(TcParseFunction function) {
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
+  static constexpr absl::string_view functions[] = {
+      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
+#undef PROTOBUF_TC_PARSE_FUNCTION_X
+  return functions[static_cast<int>(function)];
+};
+
+enum class EnumRangeInfo {
+  kNone,         // No contiguous range
+  kContiguous,   // Has a contiguous range
+  kContiguous0,  // Has a small contiguous range starting at 0
+  kContiguous1,  // Has a small contiguous range starting at 1
+};
+
+// Returns enum validation range info, and sets `rmax_value` if
+// the returned range is a small range.
+EnumRangeInfo GetEnumRangeInfo(const FieldDescriptor* field,
+                               uint8_t& rmax_value) {
+  int16_t start;
+  uint16_t size;
+  if (!GetEnumValidationRange(field->enum_type(), start, size)) {
+    return EnumRangeInfo::kNone;
+  }
+  int max_value = start + size - 1;
+  if (max_value <= 127 && (start == 0 || start == 1)) {
+    rmax_value = static_cast<uint8_t>(max_value);
+    return start == 0 ? EnumRangeInfo::kContiguous0
+                      : EnumRangeInfo::kContiguous1;
+  }
+  return EnumRangeInfo::kContiguous;
+}
+
 void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
                             const TailCallTableInfo::PerFieldOptions& options,
                             TailCallTableInfo::FastFieldInfo& info) {
+#define PROTOBUF_PICK_FUNCTION(fn) \
+  (field->number() < 16 ? TcParseFunction::fn##1 : TcParseFunction::fn##2)
+
+#define PROTOBUF_PICK_SINGLE_FUNCTION(fn) PROTOBUF_PICK_FUNCTION(fn##S)
+
+#define PROTOBUF_PICK_REPEATABLE_FUNCTION(fn)           \
+  (field->is_repeated() ? PROTOBUF_PICK_FUNCTION(fn##R) \
+                        : PROTOBUF_PICK_FUNCTION(fn##S))
+
+#define PROTOBUF_PICK_PACKABLE_FUNCTION(fn)               \
+  (field->is_packed()     ? PROTOBUF_PICK_FUNCTION(fn##P) \
+   : field->is_repeated() ? PROTOBUF_PICK_FUNCTION(fn##R) \
+                          : PROTOBUF_PICK_FUNCTION(fn##S))
+
+#define PROTOBUF_PICK_STRING_FUNCTION()                             \
+  (field->options().ctype() == FieldOptions::CORD                   \
+       ? PROTOBUF_PICK_FUNCTION(kFastSc##S)                         \
+   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(kFastSi##S) \
+                               : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastS))
+
+#define PROTOBUF_PICK_UTF_FUNCTION(v)                                  \
+  (field->options().ctype() == FieldOptions::CORD                      \
+       ? PROTOBUF_PICK_FUNCTION(kFastSc##v##S)                         \
+   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(kFastSi##v##S) \
+                               : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastS##v))
+
+#define PROTOBUF_PICK_MESSAGE_FUNCTION(fn)        \
+  (options.use_direct_tcparser_table              \
+       ? PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##t) \
+       : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##d))
+
   const FieldDescriptor* field = entry.field;
-  std::string name = "::_pbi::TcParser::Fast";
-  uint8_t aux_idx = static_cast<uint8_t>(entry.aux_idx);
-
-  static const char* kPrefix[] = {
-      nullptr,  // 0
-      "F64",    // TYPE_DOUBLE = 1,
-      "F32",    // TYPE_FLOAT = 2,
-      "V64",    // TYPE_INT64 = 3,
-      "V64",    // TYPE_UINT64 = 4,
-      "V32",    // TYPE_INT32 = 5,
-      "F64",    // TYPE_FIXED64 = 6,
-      "F32",    // TYPE_FIXED32 = 7,
-      "V8",     // TYPE_BOOL = 8,
-      "",       // TYPE_STRING = 9,
-      "G",      // TYPE_GROUP = 10,
-      "M",      // TYPE_MESSAGE = 11,
-      "B",      // TYPE_BYTES = 12,
-      "V32",    // TYPE_UINT32 = 13,
-      "",       // TYPE_ENUM = 14,
-      "F32",    // TYPE_SFIXED32 = 15,
-      "F64",    // TYPE_SFIXED64 = 16,
-      "Z32",    // TYPE_SINT32 = 17,
-      "Z64",    // TYPE_SINT64 = 18,
-  };
-  name.append(kPrefix[field->type()]);
-
-  if (field->type() == field->TYPE_ENUM) {
-    // Enums are handled as:
-    //  - V32 for open enums
-    //  - Er (and Er0/Er1) for sequential enums
-    //  - Ev for the rest
-    if (cpp::HasPreservingUnknownEnumSemantics(field)) {
-      name.append("V32");
-    } else {
-      int16_t start;
-      uint16_t size;
-      if (GetEnumValidationRange(field->enum_type(), start, size)) {
-        name.append("Er");
-        int max_value = start + size - 1;
-        if (max_value <= 127 && (start == 0 || start == 1)) {
-          name.append(1, '0' + start);
-          aux_idx = max_value;
-        }
-      } else {
-        name.append("Ev");
-      }
-    }
-  }
-  if (field->type() == field->TYPE_STRING) {
-    switch (internal::cpp::GetUtf8CheckMode(field, options.is_lite)) {
-      case internal::cpp::Utf8CheckMode::kStrict:
-        name.append("U");
-        break;
-      case internal::cpp::Utf8CheckMode::kVerify:
-        name.append("S");
-        break;
-      case internal::cpp::Utf8CheckMode::kNone:
-        name.append("B");
-        break;
-    }
-  }
-  if (field->type() == field->TYPE_STRING ||
-      field->type() == field->TYPE_BYTES) {
-    if (field->options().ctype() == FieldOptions::CORD) {
-      name.append("c");
-    } else if (options.is_string_inlined) {
-      name.append("i");
+  info.type_card = entry.type_card;
+  info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
+  if (field->type() == FieldDescriptor::TYPE_BYTES ||
+      field->type() == FieldDescriptor::TYPE_BYTES) {
+    if (options.is_string_inlined) {
       ABSL_CHECK(!field->is_repeated());
-      aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
+      info.aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
     }
   }
-  if (field->type() == field->TYPE_MESSAGE ||
-      field->type() == field->TYPE_GROUP) {
-    name.append(options.use_direct_tcparser_table ? "t" : "d");
+
+  TcParseFunction picked = TcParseFunction::kNone;
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_BOOL:
+      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV8);
+      break;
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV32);
+      break;
+    case FieldDescriptor::TYPE_SINT32:
+      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastZ32);
+      break;
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV64);
+      break;
+    case FieldDescriptor::TYPE_SINT64:
+      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastZ64);
+      break;
+    case FieldDescriptor::TYPE_FLOAT:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastF32);
+      break;
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64:
+      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastF64);
+      break;
+    case FieldDescriptor::TYPE_ENUM:
+      if (cpp::HasPreservingUnknownEnumSemantics(field)) {
+        picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV32);
+      } else {
+        switch (GetEnumRangeInfo(field, info.aux_idx)) {
+          case EnumRangeInfo::kNone:
+            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEv);
+            break;
+          case EnumRangeInfo::kContiguous:
+            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr);
+            break;
+          case EnumRangeInfo::kContiguous0:
+            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr0);
+            break;
+          case EnumRangeInfo::kContiguous1:
+            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr1);
+            break;
+        }
+      }
+      break;
+    case FieldDescriptor::TYPE_BYTES:
+      picked = PROTOBUF_PICK_STRING_FUNCTION();
+      break;
+    case FieldDescriptor::TYPE_STRING:
+      switch (internal::cpp::GetUtf8CheckMode(field, options.is_lite)) {
+        case internal::cpp::Utf8CheckMode::kStrict:
+          picked = PROTOBUF_PICK_UTF_FUNCTION(u);
+          break;
+        case internal::cpp::Utf8CheckMode::kVerify:
+          picked = PROTOBUF_PICK_UTF_FUNCTION(v);
+          break;
+        case internal::cpp::Utf8CheckMode::kNone:
+          picked = PROTOBUF_PICK_STRING_FUNCTION();
+          break;
+      }
+      break;
+    case FieldDescriptor::TYPE_MESSAGE:
+      picked = PROTOBUF_PICK_MESSAGE_FUNCTION(kFastM);
+      break;
+    case FieldDescriptor::TYPE_GROUP:
+      picked = PROTOBUF_PICK_MESSAGE_FUNCTION(kFastG);
+      break;
   }
 
-  // The field implementation functions are prefixed by cardinality:
-  //   `S` for optional or implicit fields.
-  //   `R` for non-packed repeated.
-  //   `P` for packed repeated.
-  name.append(field->is_packed()               ? "P"
-              : field->is_repeated()           ? "R"
-              : field->real_containing_oneof() ? "O"
-                                               : "S");
+  ABSL_CHECK(picked != TcParseFunction::kNone);
+  static constexpr absl::string_view ns = "::_pbi::TcParser::";
+  info.func_name = absl::StrCat(ns, ParseFunctionValue(picked));
 
-  // Append the tag length. Fast parsing only handles 1- or 2-byte tags.
-  name.append(field->number() < 16 ? "1" : "2");
-
-  info.func_name = std::move(name);
-  info.aux_idx = aux_idx;
+#undef PROTOBUF_PICK_FUNCTION
+#undef PROTOBUF_PICK_SINGLE_FUNCTION
+#undef PROTOBUF_PICK_REPEATABLE_FUNCTION
+#undef PROTOBUF_PICK_PACKABLE_FUNCTION
+#undef PROTOBUF_PICK_STRING_FUNCTION
+#undef PROTOBUF_PICK_MESSAGE_FUNCTION
 }
 
 bool IsFieldEligibleForFastParsing(
