@@ -33,7 +33,9 @@
 #include "google/protobuf/string_block.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -58,10 +60,12 @@ size_t AllocatedSizeFor(int size) {
   return EffectiveSizeFor(size) + sizeof(StringBlock);
 }
 
-TEST(StringBlockTest, OneNewBlock) {
+TEST(StringBlockTest, HeapAllocateOneBlock) {
   StringBlock* block = StringBlock::New(nullptr);
+
   ASSERT_THAT(block, Ne(nullptr));
   EXPECT_THAT(block->next(), Eq(nullptr));
+  ASSERT_TRUE(block->heap_allocated());
   EXPECT_THAT(block->allocated_size(), Eq(AllocatedSizeFor(256)));
   EXPECT_THAT(block->effective_size(), Eq(EffectiveSizeFor(256)));
   EXPECT_THAT(block->begin(), Eq(block->AtOffset(0)));
@@ -70,7 +74,26 @@ TEST(StringBlockTest, OneNewBlock) {
   EXPECT_THAT(StringBlock::Delete(block), Eq(AllocatedSizeFor(256)));
 }
 
-TEST(StringBlockTest, NewBlocks) {
+TEST(StringBlockTest, EmplaceOneBlock) {
+  // NextSize() returns unrounded 'min_size()' on first call.
+  size_t size = StringBlock::NextSize(nullptr);
+  EXPECT_THAT(size, Eq(256));
+
+  auto buffer = std::make_unique<char[]>(size);
+  StringBlock* block = StringBlock::Emplace(buffer.get(), size, nullptr);
+
+  ASSERT_THAT(block, Ne(nullptr));
+  EXPECT_THAT(block->next(), Eq(nullptr));
+  ASSERT_FALSE(block->heap_allocated());
+  EXPECT_THAT(block->allocated_size(), Eq(AllocatedSizeFor(256)));
+  EXPECT_THAT(block->effective_size(), Eq(EffectiveSizeFor(256)));
+  EXPECT_THAT(block->begin(), Eq(block->AtOffset(0)));
+  EXPECT_THAT(block->end(), Eq(block->AtOffset(block->effective_size())));
+
+  EXPECT_THAT(StringBlock::Delete(block), Eq(0));
+}
+
+TEST(StringBlockTest, HeapAllocateMultipleBlocks) {
   // Note: first two blocks are 256
   StringBlock* previous = StringBlock::New(nullptr);
 
@@ -78,6 +101,7 @@ TEST(StringBlockTest, NewBlocks) {
     StringBlock* block = StringBlock::New(previous);
     ASSERT_THAT(block, Ne(nullptr));
     ASSERT_THAT(block->next(), Eq(previous));
+    ASSERT_TRUE(block->heap_allocated());
     ASSERT_THAT(block->allocated_size(), Eq(AllocatedSizeFor(size)));
     ASSERT_THAT(block->effective_size(), Eq(EffectiveSizeFor(size)));
     ASSERT_THAT(block->begin(), Eq(block->AtOffset(0)));
@@ -88,7 +112,8 @@ TEST(StringBlockTest, NewBlocks) {
   // Capped at 8K from here on
   StringBlock* block = StringBlock::New(previous);
   ASSERT_THAT(block, Ne(nullptr));
-  EXPECT_THAT(block->next(), Eq(previous));
+  ASSERT_THAT(block->next(), Eq(previous));
+  ASSERT_TRUE(block->heap_allocated());
   ASSERT_THAT(block->allocated_size(), Eq(AllocatedSizeFor(8192)));
   ASSERT_THAT(block->effective_size(), Eq(EffectiveSizeFor(8192)));
   ASSERT_THAT(block->begin(), Eq(block->AtOffset(0)));
@@ -98,6 +123,48 @@ TEST(StringBlockTest, NewBlocks) {
     size_t size = block->allocated_size();
     StringBlock* next = block->next();
     EXPECT_THAT(StringBlock::Delete(block), Eq(AllocatedSizeFor(size)));
+    block = next;
+  }
+}
+
+TEST(StringBlockTest, EmplaceMultipleBlocks) {
+  std::vector<std::unique_ptr<char[]>> buffers;
+
+  // Convenience lambda to allocate a buffer and invoke Emplace on it.
+  auto EmplaceBlock = [&](StringBlock* previous) {
+    size_t size = StringBlock::NextSize(previous);
+    buffers.push_back(std::make_unique<char[]>(size));
+    return StringBlock::Emplace(buffers.back().get(), size, previous);
+  };
+
+  // Note: first two blocks are 256
+  StringBlock* previous = EmplaceBlock(nullptr);
+
+  for (int size = 256; size <= 8192; size *= 2) {
+    StringBlock* block = EmplaceBlock(previous);
+    ASSERT_THAT(block, Ne(nullptr));
+    ASSERT_THAT(block->next(), Eq(previous));
+    ASSERT_FALSE(block->heap_allocated());
+    ASSERT_THAT(block->allocated_size(), Eq(AllocatedSizeFor(size)));
+    ASSERT_THAT(block->effective_size(), Eq(EffectiveSizeFor(size)));
+    ASSERT_THAT(block->begin(), Eq(block->AtOffset(0)));
+    ASSERT_THAT(block->end(), Eq(block->AtOffset(block->effective_size())));
+    previous = block;
+  }
+
+  // Capped at 8K from here on
+  StringBlock* block = EmplaceBlock(previous);
+  ASSERT_THAT(block, Ne(nullptr));
+  EXPECT_THAT(block->next(), Eq(previous));
+  ASSERT_FALSE(block->heap_allocated());
+  ASSERT_THAT(block->allocated_size(), Eq(AllocatedSizeFor(8192)));
+  ASSERT_THAT(block->effective_size(), Eq(EffectiveSizeFor(8192)));
+  ASSERT_THAT(block->begin(), Eq(block->AtOffset(0)));
+  ASSERT_THAT(block->end(), Eq(block->AtOffset(block->effective_size())));
+
+  while (block) {
+    StringBlock* next = block->next();
+    EXPECT_THAT(StringBlock::Delete(block), Eq(0));
     block = next;
   }
 }
