@@ -562,6 +562,8 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     virtual bool IsInitialized(const MessageLite* prototype,
                                Arena* arena) const = 0;
+    virtual bool IsEagerSerializeSafe(const MessageLite* prototype,
+                                      Arena* arena) const = 0;
 
     PROTOBUF_DEPRECATED_MSG("Please use ByteSizeLong() instead")
     virtual int ByteSize() const { return internal::ToIntSize(ByteSizeLong()); }
