@@ -1466,11 +1466,11 @@ uint8_t* WireFormat::InternalSerializeMessageSetItem(
   // Write type ID.
   target = WireFormatLite::WriteUInt32ToArray(
       WireFormatLite::kMessageSetTypeIdNumber, field->number(), target);
-  // Write message.
-  auto& msg = message_reflection->GetMessage(message, field);
-  target = WireFormatLite::InternalWriteMessage(
-      WireFormatLite::kMessageSetMessageNumber, msg, msg.GetCachedSize(),
-      target, stream);
+    // Write message.
+    auto& msg = message_reflection->GetMessage(message, field);
+    target = WireFormatLite::InternalWriteMessage(
+        WireFormatLite::kMessageSetMessageNumber, msg, msg.GetCachedSize(),
+        target, stream);
   // End group.
   target = stream->EnsureSpace(target);
   target = io::CodedOutputStream::WriteTagToArray(
