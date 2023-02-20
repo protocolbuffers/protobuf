@@ -24,4 +24,4 @@ jobs:
         with:
           check_filenames: true
           skip: ./.git,./third_party,./conformance/third_party,*.snk,*.pb,*.pb.cc,*.pb.h,./src/google/protobuf/testdata,./objectivec/Tests,./python/compatibility_tests/v2.5.0/tests/google/protobuf/internal,./.github/workflows/codespell.yml
-          ignore_words_list: "alow,alse,atleast,ba,chec,cleare,copyable,cloneable,dedup,dur,errorprone,falsy,files',fo,fundementals,hel,importd,inout,leapyear,nd,nin,ois,ons,parseable,process',ro,te,testof,ue,unparseable,wasn,wee,gae,keyserver,objext,od,optin,streem,sur,falsy"
+          ignore_words_list: "alow,alse,atleast,ba,chec,cleare,copyable,cloneable,crate,dedup,dur,errorprone,falsy,files',fo,fundementals,hel,importd,inout,leapyear,nd,nin,ois,ons,parseable,process',ro,te,testof,ue,unparseable,wasn,wee,gae,keyserver,objext,od,optin,streem,sur,falsy"

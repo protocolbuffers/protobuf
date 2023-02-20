@@ -28,9 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Rust Protobuf Runtime
-
-// Not yet implemented.
-
-// TODO(b/270138878): Remove once we have real logic in the runtime.
-pub fn do_nothing() {}
+fn main() {
+    // This is currently just a smoke test checking that we can generate gencode, compile it, and
+    // link the test binary.
+    let _test_all_types: unittest_proto::TestAllTypes;
+}
