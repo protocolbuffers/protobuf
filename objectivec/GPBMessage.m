@@ -3261,7 +3261,10 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
   if (self) {
     NSData *data = [aDecoder decodeObjectOfClass:[NSData class] forKey:kGPBDataCoderKey];
     if (data.length) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
       [self mergeFromData:data extensionRegistry:nil];
+#pragma clang diagnostic pop
     }
   }
   return self;

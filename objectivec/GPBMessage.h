@@ -276,7 +276,9 @@ CF_EXTERN_C_END
  *                                         unsuccessful.
  **/
 - (void)mergeFromData:(NSData *)data
-    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry;
+    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
+    __attribute__((deprecated(
+        "Use -mergeFromData:extensionRegistry:error: instead, especaily if calling from Swift.")));
 
 /**
  * Parses the given data as this message's class, and merges those values into
