@@ -723,8 +723,8 @@ constexpr uint64_t kFirstResultBitChunk6 = 6 * 7;
 constexpr uint64_t kFirstResultBitChunk8 = 8 * 7;
 constexpr uint64_t kValidBitsForInvalidVarint = 0x60;
 
-PROTOBUF_NOINLINE const char* VarintParseSlowArm64(const char* p, uint64_t* out,
-                                                   uint64_t first8) {
+PROTOBUF_NOINLINE PROTOBUF_EXPORT const char *VarintParseSlowArm64(
+    const char *p, uint64_t *out, uint64_t first8) {
   SlowPathEncodedInfo info = ComputeLengthAndUpdateP(p);
   // Extract data bits from the low six chunks.  This includes chunks zero and
   // one which we already know are valid.
@@ -761,8 +761,8 @@ PROTOBUF_NOINLINE const char* VarintParseSlowArm64(const char* p, uint64_t* out,
 
 // See comments in VarintParseSlowArm64 for a description of the algorithm.
 // Differences in the 32 bit version are noted below.
-PROTOBUF_NOINLINE const char* VarintParseSlowArm32(const char* p, uint32_t* out,
-                                                   uint64_t first8) {
+PROTOBUF_NOINLINE PROTOBUF_EXPORT const char *VarintParseSlowArm32(
+    const char *p, uint32_t *out, uint64_t first8) {
   // This also skips the slop bytes.
   SlowPathEncodedInfo info = ComputeLengthAndUpdateP(p);
   // Extract data bits from chunks 1-4.  Chunk zero is merged in below.
