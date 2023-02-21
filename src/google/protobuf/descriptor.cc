@@ -5782,8 +5782,13 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
         case FieldDescriptor::CPPTYPE_STRING:
           if (result->type() == FieldDescriptor::TYPE_BYTES) {
             std::string value;
-            absl::CUnescape(proto.default_value(), &value);
-            result->default_value_string_ = alloc.AllocateStrings(value);
+            if (absl::CUnescape(proto.default_value(), &value)) {
+              result->default_value_string_ = alloc.AllocateStrings(value);
+            } else {
+              AddError(result->full_name(), proto,
+                       DescriptorPool::ErrorCollector::DEFAULT_VALUE,
+                       "Invalid escaping in default value.");
+            }
           } else {
             result->default_value_string_ =
                 alloc.AllocateStrings(proto.default_value());
