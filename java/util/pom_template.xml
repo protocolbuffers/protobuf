@@ -13,6 +13,10 @@
   <name>Protocol Buffers [Util]</name>
   <description>Utilities for Protocol Buffers</description>
   <dependencies>
+    <dependency>
+      <groupId>${groupId}</groupId>
+      <artifactId>protobuf-java</artifactId>
+    </dependency>
     {dependencies}
   </dependencies>
 
