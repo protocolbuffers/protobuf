@@ -301,4 +301,19 @@ TEST(FuzzTest, PackageStartsWithNumber) {
       ParseTextProtoOrDie(R"pb(file { name: "" package: "0" })pb"));
 }
 
+TEST(FuzzTest, RoundTripDescriptorRegression) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(file {
+                                                 name: ""
+                                                 message_type {
+                                                   name: "A"
+                                                   field {
+                                                     name: "B"
+                                                     number: 1
+                                                     type: TYPE_BYTES
+                                                     default_value: "\007"
+                                                   }
+                                                 }
+                                               })pb"));
+}
+
 }  // namespace upb_test

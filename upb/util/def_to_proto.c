@@ -102,28 +102,20 @@ static bool upb_isprint(char ch) { return ch >= 0x20 && ch <= 0x7f; }
 
 static int special_escape(char ch) {
   switch (ch) {
-    case '\a':
-      return 'a';
-    case '\b':
-      return 'b';
-    case '\f':
-      return 'f';
+    // This is the same set of special escapes recognized by
+    // absl::CEscape().
     case '\n':
       return 'n';
     case '\r':
       return 'r';
     case '\t':
       return 't';
-    case '\v':
-      return 'v';
     case '\\':
       return '\\';
     case '\'':
       return '\'';
     case '"':
       return '"';
-    case '\?':
-      return '?';
     default:
       return -1;
   }
