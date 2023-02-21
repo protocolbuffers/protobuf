@@ -15,5 +15,8 @@
     Lite version of Protocol Buffers library. This version is optimized for code size, but does
     not guarantee API/ABI stability.
   </description>
+  <dependencies>
+    {dependencies}
+  </dependencies>
 
 </project>
