@@ -15,4 +15,7 @@
     Core Protocol Buffers library. Protocol Buffers are a way of encoding structured data in an
     efficient yet extensible format.
   </description>
+  <dependencies>
+    {dependencies}
+  </dependencies>
 </project>
