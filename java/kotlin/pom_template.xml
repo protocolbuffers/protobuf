@@ -15,6 +15,13 @@
     Kotlin core Protocol Buffers library. Protocol Buffers are a way of encoding structured data in an
     efficient yet extensible format.
   </description>
+  <dependencies>
+    <dependency>
+      <groupId>${groupId}</groupId>
+      <artifactId>protobuf-java</artifactId>
+    </dependency>
+    {dependencies}
+  </dependencies>
 
   <properties>
     <kotlin.version>1.6.0</kotlin.version>
