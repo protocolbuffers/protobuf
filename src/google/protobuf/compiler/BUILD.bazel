@@ -208,7 +208,10 @@ filegroup(
 
 exports_files(
     srcs = ["plugin.proto"],
-    visibility = ["//:__pkg__"],
+    visibility = [
+        "//:__pkg__",
+        "//python:__pkg__",
+    ],
 )
 
 cc_library(
