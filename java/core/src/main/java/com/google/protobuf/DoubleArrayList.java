@@ -45,10 +45,7 @@ import java.util.RandomAccess;
 final class DoubleArrayList extends AbstractProtobufList<Double>
     implements DoubleList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final DoubleArrayList EMPTY_LIST = new DoubleArrayList(new double[0], 0);
-  static {
-    EMPTY_LIST.makeImmutable();
-  }
+  private static final DoubleArrayList EMPTY_LIST = new DoubleArrayList(new double[0], 0, false);
 
   public static DoubleArrayList emptyList() {
     return EMPTY_LIST;
@@ -65,14 +62,15 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
 
   /** Constructs a new mutable {@code DoubleArrayList} with default capacity. */
   DoubleArrayList() {
-    this(new double[DEFAULT_CAPACITY], 0);
+    this(new double[DEFAULT_CAPACITY], 0, true);
   }
 
   /**
    * Constructs a new mutable {@code DoubleArrayList} containing the same elements as {@code other}.
    */
-  private DoubleArrayList(double[] other, int size) {
-    array = other;
+  private DoubleArrayList(double[] other, int size, boolean isMutable) {
+    super(isMutable);
+    this.array = other;
     this.size = size;
   }
 
@@ -126,7 +124,7 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
-    return new DoubleArrayList(Arrays.copyOf(array, capacity), size);
+    return new DoubleArrayList(Arrays.copyOf(array, capacity), size, true);
   }
 
   @Override

@@ -45,10 +45,7 @@ import java.util.RandomAccess;
 final class FloatArrayList extends AbstractProtobufList<Float>
     implements FloatList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final FloatArrayList EMPTY_LIST = new FloatArrayList(new float[0], 0);
-  static {
-    EMPTY_LIST.makeImmutable();
-  }
+  private static final FloatArrayList EMPTY_LIST = new FloatArrayList(new float[0], 0, false);
 
   public static FloatArrayList emptyList() {
     return EMPTY_LIST;
@@ -65,14 +62,15 @@ final class FloatArrayList extends AbstractProtobufList<Float>
 
   /** Constructs a new mutable {@code FloatArrayList} with default capacity. */
   FloatArrayList() {
-    this(new float[DEFAULT_CAPACITY], 0);
+    this(new float[DEFAULT_CAPACITY], 0, true);
   }
 
   /**
    * Constructs a new mutable {@code FloatArrayList} containing the same elements as {@code other}.
    */
-  private FloatArrayList(float[] other, int size) {
-    array = other;
+  private FloatArrayList(float[] other, int size, boolean isMutable) {
+    super(isMutable);
+    this.array = other;
     this.size = size;
   }
 
@@ -125,7 +123,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
-    return new FloatArrayList(Arrays.copyOf(array, capacity), size);
+    return new FloatArrayList(Arrays.copyOf(array, capacity), size, true);
   }
 
   @Override
