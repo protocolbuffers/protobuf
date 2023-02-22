@@ -1,6 +1,7 @@
 # Protobuf Rust runtime packages.
 
 load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 
 package(default_visibility = ["//src/google/protobuf:__subpackages__"])
 

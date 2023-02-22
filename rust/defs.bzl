@@ -155,12 +155,13 @@ def _rust_proto_aspect_impl(target, ctx):
         build_info = None,
     )
 
+    proto_dep = getattr(ctx.rule.attr, "deps", [])
     dep_variant_info = _compile_rust(
         ctx = ctx,
         attr = ctx.rule.attr,
         src = gencode[0],
         extra_srcs = gencode[1:],
-        deps = [dep_variant_info_for_runtime],
+        deps = [dep_variant_info_for_runtime] + ([proto_dep[0][RustProtoInfo].dep_variant_info] if proto_dep else []),
     )
     return [RustProtoInfo(
         dep_variant_info = dep_variant_info,

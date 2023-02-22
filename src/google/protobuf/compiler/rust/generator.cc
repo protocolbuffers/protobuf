@@ -36,6 +36,7 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -54,6 +55,15 @@ bool ExperimentalRustGeneratorEnabled(
       options, [](std::pair<absl::string_view, absl::string_view> pair) {
         return pair == kMagicValue;
       });
+}
+
+std::string get_crate_name(const FileDescriptor* dependency) {
+  absl::string_view path = dependency->name();
+  auto basename = path.substr(path.rfind('/') + 1);
+  return absl::StrReplaceAll(basename, {
+                                           {".", "_"},
+                                           {"-", "_"},
+                                       });
 }
 
 bool RustGenerator::Generate(const FileDescriptor* file,
@@ -87,6 +97,21 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     p.Emit({{"Msg", file->message_type(i)->name()}}, R"rs(
                     pub struct $Msg$ {}
                   )rs");
+  }
+  // TODO(b/270124215): Delete the following "placeholder impl" of `import
+  // public`. Also make sure to figure out how to map FileDescriptor#name to
+  // Rust crate names (currently Bazel labels).
+  for (int i = 0; i < file->public_dependency_count(); ++i) {
+    const FileDescriptor* dep = file->public_dependency(i);
+    std::string crate_name = get_crate_name(dep);
+    for (int j = 0; j < dep->message_type_count(); ++j) {
+      // TODO(b/270138878): Implement real logic
+      p.Emit(
+          {{"crate", crate_name}, {"type_name", dep->message_type(j)->name()}},
+          R"rs(
+                pub use $crate$::$type_name$;
+              )rs");
+    }
   }
 
   return true;
