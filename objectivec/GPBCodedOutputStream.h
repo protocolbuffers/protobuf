@@ -110,6 +110,11 @@ __attribute__((objc_subclassing_restricted))
 - (void)flush;
 
 /**
+ * @return The number of bytes written out. Includes bytes not yet flused.
+ **/
+- (size_t)bytesWritten;
+
+/**
  * Write the raw byte out.
  *
  * @param value The value to write out.

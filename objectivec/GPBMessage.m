@@ -59,6 +59,16 @@ NSString *const GPBErrorReasonKey = @"Reason";
 
 static NSString *const kGPBDataCoderKey = @"GPBData";
 
+// Length-delimited has a max size of 2GB, and thus messages do also.
+// src/google/protobuf/message_lite also does this enforcement on the C++ side. Validation for
+// parsing is done with GPBCodedInputStream; but for messages, it is less checks to do it within
+// the message side since the input stream code calls these same bottlenecks.
+// https://protobuf.dev/programming-guides/encoding/#cheat-sheet
+static const size_t kMaximumMessageSize = 0x7fffffff;
+
+NSString *const GPBMessageExceptionMessageTooLarge =
+    GPBNSStringifySymbol(GPBMessageExceptionMessageTooLarge);
+
 //
 // PLEASE REMEMBER:
 //
@@ -111,7 +121,7 @@ static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap, NSZone
     __attribute__((ns_returns_retained));
 static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self);
 
-#ifdef DEBUG
+#if defined(DEBUG) && DEBUG
 static NSError *MessageError(NSInteger code, NSDictionary *userInfo) {
   return [NSError errorWithDomain:GPBMessageErrorDomain code:code userInfo:userInfo];
 }
@@ -968,7 +978,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     if (![self mergeFromData:data extensionRegistry:extensionRegistry error:errorPtr]) {
       [self release];
       self = nil;
-#ifdef DEBUG
+#if defined(DEBUG) && DEBUG
     } else if (!self.initialized) {
       [self release];
       self = nil;
@@ -997,7 +1007,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
         *errorPtr = ErrorFromException(exception);
       }
     }
-#ifdef DEBUG
+#if defined(DEBUG) && DEBUG
     if (self && !self.initialized) {
       [self release];
       self = nil;
@@ -1290,12 +1300,16 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 }
 
 - (NSData *)data {
-#ifdef DEBUG
+#if defined(DEBUG) && DEBUG
   if (!self.initialized) {
     return nil;
   }
 #endif
-  NSMutableData *data = [NSMutableData dataWithLength:[self serializedSize]];
+  size_t expectedSize = [self serializedSize];
+  if (expectedSize > kMaximumMessageSize) {
+    return nil;
+  }
+  NSMutableData *data = [NSMutableData dataWithLength:expectedSize];
   GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithData:data];
   @try {
     [self writeToCodedOutputStream:stream];
@@ -1306,11 +1320,14 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     // to this message or a message used as a nested field, and that other thread mutated that
     // message, causing the pre computed serializedSize to no longer match the final size after
     // serialization. It is not safe to mutate a message while accessing it from another thread.
-#ifdef DEBUG
+#if defined(DEBUG) && DEBUG
     NSLog(@"%@: Internal exception while building message data: %@", [self class], exception);
 #endif
     data = nil;
   }
+#if defined(DEBUG) && DEBUG
+  NSAssert(!data || [stream bytesWritten] == expectedSize, @"Internal error within the library");
+#endif
   [stream release];
   return data;
 }
@@ -1329,7 +1346,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     // to this message or a message used as a nested field, and that other thread mutated that
     // message, causing the pre computed serializedSize to no longer match the final size after
     // serialization. It is not safe to mutate a message while accessing it from another thread.
-#ifdef DEBUG
+#if defined(DEBUG) && DEBUG
     NSLog(@"%@: Internal exception while building message delimitedData: %@", [self class],
           exception);
 #endif
@@ -1342,8 +1359,16 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 - (void)writeToOutputStream:(NSOutputStream *)output {
   GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithOutputStream:output];
-  [self writeToCodedOutputStream:stream];
-  [stream release];
+  @try {
+    [self writeToCodedOutputStream:stream];
+    size_t bytesWritten = [stream bytesWritten];
+    if (bytesWritten > kMaximumMessageSize) {
+      [NSException raise:GPBMessageExceptionMessageTooLarge
+                  format:@"Message would have been %zu bytes", bytesWritten];
+    }
+  } @finally {
+    [stream release];
+  }
 }
 
 - (void)writeToCodedOutputStream:(GPBCodedOutputStream *)output {
@@ -1377,13 +1402,28 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 - (void)writeDelimitedToOutputStream:(NSOutputStream *)output {
   GPBCodedOutputStream *codedOutput = [[GPBCodedOutputStream alloc] initWithOutputStream:output];
-  [self writeDelimitedToCodedOutputStream:codedOutput];
-  [codedOutput release];
+  @try {
+    [self writeDelimitedToCodedOutputStream:codedOutput];
+  } @finally {
+    [codedOutput release];
+  }
 }
 
 - (void)writeDelimitedToCodedOutputStream:(GPBCodedOutputStream *)output {
-  [output writeRawVarintSizeTAs32:[self serializedSize]];
+  size_t expectedSize = [self serializedSize];
+  if (expectedSize > kMaximumMessageSize) {
+    [NSException raise:GPBMessageExceptionMessageTooLarge
+                format:@"Message would have been %zu bytes", expectedSize];
+  }
+  [output writeRawVarintSizeTAs32:expectedSize];
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+  size_t initialSize = [output bytesWritten];
+#endif
   [self writeToCodedOutputStream:output];
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+  NSAssert(([output bytesWritten] - initialSize) == expectedSize,
+           @"Internal error within the library");
+#endif
 }
 
 - (void)writeField:(GPBFieldDescriptor *)field toCodedOutputStream:(GPBCodedOutputStream *)output {
