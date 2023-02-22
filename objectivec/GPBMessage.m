@@ -649,52 +649,93 @@ static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
 
 #endif  // !defined(__clang_analyzer__)
 
-static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
-                                        GPBMessage *messageToGetExtension,
-                                        GPBCodedInputStream *input,
-                                        id<GPBExtensionRegistry> extensionRegistry,
-                                        GPBMessage *existingValue)
-    __attribute__((ns_returns_retained));
-
-// Note that this returns a retained value intentionally.
-static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
-                                        GPBMessage *messageToGetExtension,
-                                        GPBCodedInputStream *input,
-                                        id<GPBExtensionRegistry> extensionRegistry,
-                                        GPBMessage *existingValue) {
+static void DecodeSingleValueFromInputStream(GPBExtensionDescriptor *extension,
+                                             GPBMessage *messageToGetExtension,
+                                             GPBCodedInputStream *input,
+                                             id<GPBExtensionRegistry> extensionRegistry,
+                                             BOOL isRepeated, GPBMessage *targetMessage) {
   GPBExtensionDescription *description = extension->description_;
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+  if (GPBDataTypeIsMessage(description->dataType)) {
+    NSCAssert(targetMessage != nil, @"Internal error: must have a target message");
+  } else {
+    NSCAssert(targetMessage == nil, @"Internal error: should not have a target message");
+  }
+#endif
   GPBCodedInputStreamState *state = &input->state_;
+  id nsValue;
   switch (description->dataType) {
-    case GPBDataTypeBool:
-      return [[NSNumber alloc] initWithBool:GPBCodedInputStreamReadBool(state)];
-    case GPBDataTypeFixed32:
-      return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadFixed32(state)];
-    case GPBDataTypeSFixed32:
-      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSFixed32(state)];
-    case GPBDataTypeFloat:
-      return [[NSNumber alloc] initWithFloat:GPBCodedInputStreamReadFloat(state)];
-    case GPBDataTypeFixed64:
-      return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadFixed64(state)];
-    case GPBDataTypeSFixed64:
-      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSFixed64(state)];
-    case GPBDataTypeDouble:
-      return [[NSNumber alloc] initWithDouble:GPBCodedInputStreamReadDouble(state)];
-    case GPBDataTypeInt32:
-      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadInt32(state)];
-    case GPBDataTypeInt64:
-      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadInt64(state)];
-    case GPBDataTypeSInt32:
-      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSInt32(state)];
-    case GPBDataTypeSInt64:
-      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSInt64(state)];
-    case GPBDataTypeUInt32:
-      return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadUInt32(state)];
-    case GPBDataTypeUInt64:
-      return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadUInt64(state)];
+    case GPBDataTypeBool: {
+      BOOL value = GPBCodedInputStreamReadBool(state);
+      nsValue = [[NSNumber alloc] initWithBool:value];
+      break;
+    }
+    case GPBDataTypeFixed32: {
+      uint32_t value = GPBCodedInputStreamReadFixed32(state);
+      nsValue = [[NSNumber alloc] initWithUnsignedInt:value];
+      break;
+    }
+    case GPBDataTypeSFixed32: {
+      int32_t value = GPBCodedInputStreamReadSFixed32(state);
+      nsValue = [[NSNumber alloc] initWithInt:value];
+      break;
+    }
+    case GPBDataTypeFloat: {
+      float value = GPBCodedInputStreamReadFloat(state);
+      nsValue = [[NSNumber alloc] initWithFloat:value];
+      break;
+    }
+    case GPBDataTypeFixed64: {
+      uint64_t value = GPBCodedInputStreamReadFixed64(state);
+      nsValue = [[NSNumber alloc] initWithUnsignedLongLong:value];
+      break;
+    }
+    case GPBDataTypeSFixed64: {
+      int64_t value = GPBCodedInputStreamReadSFixed64(state);
+      nsValue = [[NSNumber alloc] initWithLongLong:value];
+      break;
+    }
+    case GPBDataTypeDouble: {
+      double value = GPBCodedInputStreamReadDouble(state);
+      nsValue = [[NSNumber alloc] initWithDouble:value];
+      break;
+    }
+    case GPBDataTypeInt32: {
+      int32_t value = GPBCodedInputStreamReadInt32(state);
+      nsValue = [[NSNumber alloc] initWithInt:value];
+      break;
+    }
+    case GPBDataTypeInt64: {
+      int64_t value = GPBCodedInputStreamReadInt64(state);
+      nsValue = [[NSNumber alloc] initWithLongLong:value];
+      break;
+    }
+    case GPBDataTypeSInt32: {
+      int32_t value = GPBCodedInputStreamReadSInt32(state);
+      nsValue = [[NSNumber alloc] initWithInt:value];
+      break;
+    }
+    case GPBDataTypeSInt64: {
+      int64_t value = GPBCodedInputStreamReadSInt64(state);
+      nsValue = [[NSNumber alloc] initWithLongLong:value];
+      break;
+    }
+    case GPBDataTypeUInt32: {
+      uint32_t value = GPBCodedInputStreamReadUInt32(state);
+      nsValue = [[NSNumber alloc] initWithUnsignedInt:value];
+      break;
+    }
+    case GPBDataTypeUInt64: {
+      uint64_t value = GPBCodedInputStreamReadUInt64(state);
+      nsValue = [[NSNumber alloc] initWithUnsignedLongLong:value];
+      break;
+    }
     case GPBDataTypeBytes:
-      return GPBCodedInputStreamReadRetainedBytes(state);
+      nsValue = GPBCodedInputStreamReadRetainedBytes(state);
+      break;
     case GPBDataTypeString:
-      return GPBCodedInputStreamReadRetainedString(state);
+      nsValue = GPBCodedInputStreamReadRetainedString(state);
+      break;
     case GPBDataTypeEnum: {
       int32_t val = GPBCodedInputStreamReadEnum(&input->state_);
       GPBEnumDescriptor *enumDescriptor = extension.enumDescriptor;
@@ -702,43 +743,44 @@ static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
       // will be considers not closed, so casing to the enum type for a switch
       // could cause things to fall off the end of a switch.
       if (!enumDescriptor.isClosed || enumDescriptor.enumVerifier(val)) {
-        return [[NSNumber alloc] initWithInt:val];
+        nsValue = [[NSNumber alloc] initWithInt:val];
       } else {
         GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(messageToGetExtension);
         [unknownFields mergeVarintField:extension->description_->fieldNumber value:val];
-        return nil;
+        nsValue = nil;
       }
+      break;
     }
     case GPBDataTypeGroup:
     case GPBDataTypeMessage: {
-      GPBMessage *message;
-      if (existingValue) {
-        message = [existingValue retain];
-      } else {
-        GPBDescriptor *descriptor = [extension.msgClass descriptor];
-        message = [[descriptor.messageClass alloc] init];
-      }
-
       if (description->dataType == GPBDataTypeGroup) {
         [input readGroup:description->fieldNumber
-                      message:message
+                      message:targetMessage
             extensionRegistry:extensionRegistry];
       } else {
         // description->dataType == GPBDataTypeMessage
         if (GPBExtensionIsWireFormat(description)) {
           // For MessageSet fields the message length will have already been
           // read.
-          [message mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
+          [targetMessage mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
         } else {
-          [input readMessage:message extensionRegistry:extensionRegistry];
+          [input readMessage:targetMessage extensionRegistry:extensionRegistry];
         }
       }
-
-      return message;
+      // Nothing to add below since the caller provided the message (and added it).
+      nsValue = nil;
+      break;
     }
-  }
+  }  // switch
 
-  return nil;
+  if (nsValue) {
+    if (isRepeated) {
+      [messageToGetExtension addExtension:extension value:nsValue];
+    } else {
+      [messageToGetExtension setExtension:extension value:nsValue];
+    }
+    [nsValue release];
+  }
 }
 
 static void ExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOOL isPackedOnStream,
@@ -748,33 +790,40 @@ static void ExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOO
   GPBExtensionDescription *description = extension->description_;
   GPBCodedInputStreamState *state = &input->state_;
   if (isPackedOnStream) {
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
     NSCAssert(GPBExtensionIsRepeated(description), @"How was it packed if it isn't repeated?");
+#endif
     int32_t length = GPBCodedInputStreamReadInt32(state);
     size_t limit = GPBCodedInputStreamPushLimit(state, length);
     while (GPBCodedInputStreamBytesUntilLimit(state) > 0) {
-      id value = NewSingleValueFromInputStream(extension, message, input, extensionRegistry, nil);
-      if (value) {
-        [message addExtension:extension value:value];
-        [value release];
-      }
+      DecodeSingleValueFromInputStream(extension, message, input, extensionRegistry,
+                                       /*isRepeated=*/YES, nil);
     }
     GPBCodedInputStreamPopLimit(state, limit);
   } else {
-    id existingValue = nil;
     BOOL isRepeated = GPBExtensionIsRepeated(description);
-    if (!isRepeated && GPBDataTypeIsMessage(description->dataType)) {
-      existingValue = [message getExistingExtension:extension];
-    }
-    id value =
-        NewSingleValueFromInputStream(extension, message, input, extensionRegistry, existingValue);
-    if (value) {
+    GPBMessage *targetMessage = nil;
+    if (GPBDataTypeIsMessage(description->dataType)) {
+      // For messages/groups create the targetMessage out here and add it to the objects graph in
+      // advance, that way if DecodeSingleValueFromInputStream() throw for a parsing issue, the
+      // object won't be leaked.
       if (isRepeated) {
-        [message addExtension:extension value:value];
+        GPBDescriptor *descriptor = [extension.msgClass descriptor];
+        targetMessage = [[descriptor.messageClass alloc] init];
+        [message addExtension:extension value:targetMessage];
+        [targetMessage release];
       } else {
-        [message setExtension:extension value:value];
+        targetMessage = [message getExistingExtension:extension];
+        if (!targetMessage) {
+          GPBDescriptor *descriptor = [extension.msgClass descriptor];
+          targetMessage = [[descriptor.messageClass alloc] init];
+          [message setExtension:extension value:targetMessage];
+          [targetMessage release];
+        }
       }
-      [value release];
     }
+    DecodeSingleValueFromInputStream(extension, message, input, extensionRegistry, isRepeated,
+                                     targetMessage);
   }
 }
 
@@ -2159,9 +2208,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   if (rawBytes != nil && typeId != 0) {
     if (extension != nil) {
       GPBCodedInputStream *newInput = [[GPBCodedInputStream alloc] initWithData:rawBytes];
-      ExtensionMergeFromInputStream(extension, extension.packable, newInput, extensionRegistry,
-                                    self);
-      [newInput release];
+      @try {
+        ExtensionMergeFromInputStream(extension, extension.packable, newInput, extensionRegistry,
+                                      self);
+      } @finally {
+        [newInput release];
+      }
     } else {
       GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
       // rawBytes was created via a NoCopy, so it can be reusing a
