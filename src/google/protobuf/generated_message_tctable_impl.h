@@ -271,7 +271,7 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
 class PROTOBUF_EXPORT TcParser final {
  public:
   template <typename T>
-  static constexpr const TcParseTableBase* GetTable() {
+  static constexpr auto GetTable() -> decltype(&T::_table_.header) {
     return &T::_table_.header;
   }
 
