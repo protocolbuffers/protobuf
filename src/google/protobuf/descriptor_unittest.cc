@@ -1120,6 +1120,66 @@ TEST_F(DescriptorTest, NeedsUtf8Check) {
   EXPECT_FALSE(bar3->requires_utf8_validation());
 }
 
+TEST_F(DescriptorTest, EnumFieldTreatedAsClosed) {
+  // Make an open enum definition.
+  FileDescriptorProto open_enum_file;
+  open_enum_file.set_name("open_enum.proto");
+  open_enum_file.set_syntax("proto3");
+  AddEnumValue(AddEnum(&open_enum_file, "TestEnumOpen"), "TestEnumOpen_VALUE0",
+               0);
+
+  const EnumDescriptor* open_enum =
+      pool_.BuildFile(open_enum_file)->enum_type(0);
+  EXPECT_FALSE(open_enum->is_closed());
+
+  // Create a message that treats enum fields as closed.
+  FileDescriptorProto closed_file;
+  closed_file.set_name("closed_enum_field.proto");
+  closed_file.add_dependency("open_enum.proto");
+  closed_file.add_dependency("foo.proto");
+
+  DescriptorProto* message = AddMessage(&closed_file, "TestClosedEnumField");
+  AddField(message, "int_field", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_INT32);
+  AddField(message, "open_enum", 2, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_ENUM)
+      ->set_type_name("TestEnumOpen");
+  AddField(message, "closed_enum", 3, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_ENUM)
+      ->set_type_name("TestEnum");
+  const Descriptor* closed_message =
+      pool_.BuildFile(closed_file)->message_type(0);
+
+  EXPECT_FALSE(closed_message->FindFieldByName("int_field")
+                   ->legacy_enum_field_treated_as_closed());
+  EXPECT_TRUE(closed_message->FindFieldByName("closed_enum")
+                  ->legacy_enum_field_treated_as_closed());
+  EXPECT_TRUE(closed_message->FindFieldByName("open_enum")
+                  ->legacy_enum_field_treated_as_closed());
+}
+
+TEST_F(DescriptorTest, EnumFieldTreatedAsOpen) {
+  FileDescriptorProto open_enum_file;
+  open_enum_file.set_name("open_enum.proto");
+  open_enum_file.set_syntax("proto3");
+  AddEnumValue(AddEnum(&open_enum_file, "TestEnumOpen"), "TestEnumOpen_VALUE0",
+               0);
+  DescriptorProto* message = AddMessage(&open_enum_file, "TestOpenEnumField");
+  AddField(message, "int_field", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_INT32);
+  AddField(message, "open_enum", 2, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_ENUM)
+      ->set_type_name("TestEnumOpen");
+  const FileDescriptor* open_enum_file_desc = pool_.BuildFile(open_enum_file);
+  const Descriptor* open_message = open_enum_file_desc->message_type(0);
+  const EnumDescriptor* open_enum = open_enum_file_desc->enum_type(0);
+  EXPECT_FALSE(open_enum->is_closed());
+  EXPECT_FALSE(open_message->FindFieldByName("int_field")
+                   ->legacy_enum_field_treated_as_closed());
+  EXPECT_FALSE(open_message->FindFieldByName("open_enum")
+                   ->legacy_enum_field_treated_as_closed());
+}
+
 TEST_F(DescriptorTest, IsMap) {
   EXPECT_TRUE(map_->is_map());
   EXPECT_FALSE(baz_->is_map());
