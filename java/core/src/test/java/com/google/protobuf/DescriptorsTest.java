@@ -290,6 +290,130 @@ public class DescriptorsTest {
   }
 
   @Test
+  public void testFieldDescriptorLegacyEnumFieldTreatedAsClosed() throws Exception {
+    // Make an open enum definition.
+    FileDescriptorProto openEnumFile =
+        FileDescriptorProto.newBuilder()
+            .setName("open_enum.proto")
+            .setSyntax("proto3")
+            .addEnumType(
+                EnumDescriptorProto.newBuilder()
+                    .setName("TestEnumOpen")
+                    .addValue(
+                        EnumValueDescriptorProto.newBuilder()
+                            .setName("TestEnumOpen_VALUE0")
+                            .setNumber(0)
+                            .build())
+                    .build())
+            .build();
+    FileDescriptor openFileDescriptor =
+        Descriptors.FileDescriptor.buildFrom(openEnumFile, new FileDescriptor[0]);
+    EnumDescriptor openEnum = openFileDescriptor.getEnumTypes().get(0);
+    assertThat(openEnum.isClosed()).isFalse();
+
+    // Create a message that treats enum fields as closed.
+    FileDescriptorProto closedEnumFile =
+        FileDescriptorProto.newBuilder()
+            .setName("closed_enum_field.proto")
+            .addDependency("open_enum.proto")
+            .setSyntax("proto2")
+            .addEnumType(
+                EnumDescriptorProto.newBuilder()
+                    .setName("TestEnum")
+                    .addValue(
+                        EnumValueDescriptorProto.newBuilder()
+                            .setName("TestEnum_VALUE0")
+                            .setNumber(0)
+                            .build())
+                    .build())
+            .addMessageType(
+                DescriptorProto.newBuilder()
+                    .setName("TestClosedEnumField")
+                    .addField(
+                        FieldDescriptorProto.newBuilder()
+                            .setName("int_field")
+                            .setNumber(1)
+                            .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                            .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                            .build())
+                    .addField(
+                        FieldDescriptorProto.newBuilder()
+                            .setName("open_enum")
+                            .setNumber(2)
+                            .setType(FieldDescriptorProto.Type.TYPE_ENUM)
+                            .setTypeName("TestEnumOpen")
+                            .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                            .build())
+                    .addField(
+                        FieldDescriptorProto.newBuilder()
+                            .setName("closed_enum")
+                            .setNumber(3)
+                            .setType(FieldDescriptorProto.Type.TYPE_ENUM)
+                            .setTypeName("TestEnum")
+                            .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                            .build())
+                    .build())
+            .build();
+    Descriptor closedMessage =
+        Descriptors.FileDescriptor.buildFrom(
+                closedEnumFile, new FileDescriptor[] {openFileDescriptor})
+            .getMessageTypes()
+            .get(0);
+    assertThat(closedMessage.findFieldByName("int_field").legacyEnumFieldTreatedAsClosed())
+        .isFalse();
+
+    assertThat(closedMessage.findFieldByName("closed_enum").legacyEnumFieldTreatedAsClosed())
+        .isTrue();
+    assertThat(closedMessage.findFieldByName("open_enum").legacyEnumFieldTreatedAsClosed())
+        .isTrue();
+  }
+
+  @Test
+  public void testFieldDescriptorLegacyEnumFieldTreatedAsOpen() throws Exception {
+    // Make an open enum definition and message that treats enum fields as open.
+    FileDescriptorProto openEnumFile =
+        FileDescriptorProto.newBuilder()
+            .setName("open_enum.proto")
+            .setSyntax("proto3")
+            .addEnumType(
+                EnumDescriptorProto.newBuilder()
+                    .setName("TestEnumOpen")
+                    .addValue(
+                        EnumValueDescriptorProto.newBuilder()
+                            .setName("TestEnumOpen_VALUE0")
+                            .setNumber(0)
+                            .build())
+                    .build())
+            .addMessageType(
+                DescriptorProto.newBuilder()
+                    .setName("TestOpenEnumField")
+                    .addField(
+                        FieldDescriptorProto.newBuilder()
+                            .setName("int_field")
+                            .setNumber(1)
+                            .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                            .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                            .build())
+                    .addField(
+                        FieldDescriptorProto.newBuilder()
+                            .setName("open_enum")
+                            .setNumber(2)
+                            .setType(FieldDescriptorProto.Type.TYPE_ENUM)
+                            .setTypeName("TestEnumOpen")
+                            .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                            .build())
+                    .build())
+            .build();
+    FileDescriptor openEnumFileDescriptor =
+        Descriptors.FileDescriptor.buildFrom(openEnumFile, new FileDescriptor[0]);
+    Descriptor openMessage = openEnumFileDescriptor.getMessageTypes().get(0);
+    EnumDescriptor openEnum = openEnumFileDescriptor.findEnumTypeByName("TestEnumOpen");
+    assertThat(openEnum.isClosed()).isFalse();
+    assertThat(openMessage.findFieldByName("int_field").legacyEnumFieldTreatedAsClosed()).isFalse();
+    assertThat(openMessage.findFieldByName("open_enum").legacyEnumFieldTreatedAsClosed()).isFalse();
+  }
+
+  @Test
   public void testEnumDescriptor() throws Exception {
     EnumDescriptor enumType = ForeignEnum.getDescriptor();
     EnumDescriptor nestedType = TestAllTypes.NestedEnum.getDescriptor();

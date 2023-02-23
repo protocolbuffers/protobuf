@@ -2889,7 +2889,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         valueOfMethod = getMethodOrDie(type, "valueOf", EnumValueDescriptor.class);
         getValueDescriptorMethod = getMethodOrDie(type, "getValueDescriptor");
 
-        supportUnknownEnumValue = descriptor.getFile().supportsUnknownEnumValue();
+        supportUnknownEnumValue = !descriptor.legacyEnumFieldTreatedAsClosed();
         if (supportUnknownEnumValue) {
           getValueMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Value");
           getValueMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Value");
@@ -2950,7 +2950,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         valueOfMethod = getMethodOrDie(type, "valueOf", EnumValueDescriptor.class);
         getValueDescriptorMethod = getMethodOrDie(type, "getValueDescriptor");
 
-        supportUnknownEnumValue = descriptor.getFile().supportsUnknownEnumValue();
+        supportUnknownEnumValue = !descriptor.legacyEnumFieldTreatedAsClosed();
         if (supportUnknownEnumValue) {
           getRepeatedValueMethod =
               getMethodOrDie(messageClass, "get" + camelCaseName + "Value", int.class);
