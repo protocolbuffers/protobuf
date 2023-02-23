@@ -732,6 +732,7 @@ static PyGetSetDef Getters[] = {
     {"_options", (getter) nullptr, (setter)SetOptions, "Options"},
     {"_serialized_options", (getter) nullptr, (setter)SetSerializedOptions,
      "Serialized Options"},
+// TODO(b/271287872) Remove this to open-source syntax deprecation.
     {"syntax", (getter)GetSyntax, (setter) nullptr, "Syntax"},
     {nullptr},
 };
@@ -1542,6 +1543,7 @@ static PyGetSetDef Getters[] = {
     {"_options", (getter) nullptr, (setter)SetOptions, "Options"},
     {"_serialized_options", (getter) nullptr, (setter)SetSerializedOptions,
      "Serialized Options"},
+// TODO(b/271287872) Remove this to open-source syntax deprecation.
     {"syntax", (getter)GetSyntax, (setter) nullptr, "Syntax"},
     {nullptr},
 };
