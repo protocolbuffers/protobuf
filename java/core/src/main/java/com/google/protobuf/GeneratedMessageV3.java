@@ -68,6 +68,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 
 /**
  * All generated protocol message classes extend this class. This class implements most of the
@@ -2267,6 +2268,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         }
       }
 
+      @Nullable
       public FieldDescriptor get(final GeneratedMessageV3 message) {
         if (fieldDescriptor != null) {
           return message.hasField(fieldDescriptor) ? fieldDescriptor : null;
@@ -2279,6 +2281,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         return null;
       }
 
+      @Nullable
       public FieldDescriptor get(GeneratedMessageV3.Builder<?> builder) {
         if (fieldDescriptor != null) {
           return builder.hasField(fieldDescriptor) ? fieldDescriptor : null;
@@ -2770,6 +2773,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         return (MapField<?, ?>) builder.internalGetMutableMapField(field.getNumber());
       }
 
+      @Nullable
       private Message coerceType(Message value) {
         if (value == null) {
           return null;

@@ -181,6 +181,7 @@ java_library(
     ],
     deps = [
         ":lite_runtime_only",
+        "@maven//:com_google_code_findbugs_jsr305",
     ],
 )
 
