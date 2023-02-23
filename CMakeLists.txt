@@ -1,29 +1,18 @@
 # Minimum CMake required
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Configuring...")
 endif()
 
-# CMake policies
-cmake_policy(SET CMP0022 NEW)
-# On MacOS use @rpath/ for target's install name prefix path
-if (POLICY CMP0042)
-  cmake_policy(SET CMP0042 NEW)
-endif ()
-# Clear VERSION variables when no VERSION is given to project()
-if(POLICY CMP0048)
-  cmake_policy(SET CMP0048 NEW)
-endif()
 # MSVC runtime library flags are selected by an abstraction.
+# New in CMake 3.15: https://cmake.org/cmake/help/latest/policy/CMP0091.html
 if(POLICY CMP0091)
   cmake_policy(SET CMP0091 NEW)
 endif()
-# Honor visibility properties for all target types.
-if(POLICY CMP0063)
-  cmake_policy(SET CMP0063 NEW)
-endif()
-# option() honor variables
+
+# option() honors normal variables
+# New in CMake 3.13: https://cmake.org/cmake/help/latest/policy/CMP0077.html
 if (POLICY CMP0077)
   cmake_policy(SET CMP0077 NEW)
 endif (POLICY CMP0077)
