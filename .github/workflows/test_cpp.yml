@@ -44,7 +44,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: ./.github/actions/bazel-docker
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -84,12 +84,12 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: ./.github/actions/ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
         with:
           cache-prefix: linux-cmake-${{ matrix.name }}
 
       - name: Run tests
-        uses: ./.github/actions/docker
+        uses: protocolbuffers/protobuf-ci/docker@v1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e8282f42b1c1c0e6227d746e861954fd6fad0bd2e7424e6ceb23c249289a4016
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -106,12 +106,12 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: ./.github/actions/ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
         with:
           cache-prefix: linux-cmake-install
 
       - name: Run tests
-        uses: ./.github/actions/docker
+        uses: protocolbuffers/protobuf-ci/docker@v1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e8282f42b1c1c0e6227d746e861954fd6fad0bd2e7424e6ceb23c249289a4016
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -135,12 +135,12 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: ./.github/actions/ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
         with:
           cache-prefix: linux-cmake-32-bit
 
       - name: Run tests
-        uses: ./.github/actions/docker
+        uses: protocolbuffers/protobuf-ci/docker@v1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:f99f051daa8b12f4ebad5927f389bc71372f771ab080290ab451cbaf1648f9ea
           platform: linux/386
@@ -173,7 +173,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: ./.github/actions/bazel
+        uses: protocolbuffers/protobuf-ci/bazel@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: test ${{ matrix.bazel }}
@@ -215,14 +215,14 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: ./.github/actions/ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
         with:
           cache-prefix: ${{ matrix.name }}
 
       # Install phase.
       - name: Configure CMake for install
         if: matrix.install-flags
-        uses: ./.github/actions/bash
+        uses: protocolbuffers/protobuf-ci/bash@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.install-flags }} ${{ env.CCACHE_CMAKE_FLAGS }}
@@ -244,7 +244,7 @@ jobs:
         run: cmake --build . --target clean && rm CMakeCache.txt
 
       - name: Configure CMake
-        uses: ./.github/actions/bash
+        uses: protocolbuffers/protobuf-ci/bash@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.flags }} ${{ env.CCACHE_CMAKE_FLAGS }}
