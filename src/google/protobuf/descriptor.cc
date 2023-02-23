@@ -41,6 +41,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -5375,6 +5376,7 @@ struct IncrementWhenDestroyed {
 };
 
 }  // namespace
+
 
 
 void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
