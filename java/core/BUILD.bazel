@@ -49,6 +49,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/Internal.java",
     "src/main/java/com/google/protobuf/InvalidProtocolBufferException.java",
     "src/main/java/com/google/protobuf/IterableByteBufferInputStream.java",
+    "src/main/java/com/google/protobuf/Java8Compatibility.java",
     "src/main/java/com/google/protobuf/JavaType.java",
     "src/main/java/com/google/protobuf/LazyField.java",
     "src/main/java/com/google/protobuf/LazyFieldLite.java",

@@ -1717,7 +1717,7 @@ public final class TextFormat {
         if (n == -1) {
           break;
         }
-        buffer.flip();
+        Java8Compatibility.flip(buffer);
         text.append(buffer, 0, n);
       }
       return text;
