@@ -43,7 +43,7 @@ jobs:
       - name: Push Changes
         run: |
           git add --all
-          git commit -m "${{ env.VERSION }} sync"
+          git commit --allow-empty -m "${{ env.VERSION }} sync"
           git push --force origin master
           git tag -a ${{ env.VERSION_TAG }} -m "Tag release ${{ env.VERSION_TAG }}"
           git push origin ${{ env.VERSION_TAG }}
