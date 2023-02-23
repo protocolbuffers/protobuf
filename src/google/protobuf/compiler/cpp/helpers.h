@@ -82,7 +82,7 @@ inline std::string DeprecatedAttribute(const Options& /* options */,
 
 inline std::string DeprecatedAttribute(const Options& /* options */,
                                        const EnumValueDescriptor* d) {
-  return d->options().deprecated() ? "PROTOBUF_DEPRECATED_ENUM " : "";
+  return d->options().deprecated() ? "PROTOBUF_DEPRECATED " : "";
 }
 
 // Commonly-used separator comments.  Thick is a line of '=', thin is a line
