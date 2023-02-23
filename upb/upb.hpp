@@ -87,7 +87,7 @@ class Arena {
 
   void Fuse(Arena& other) { upb_Arena_Fuse(ptr(), other.ptr()); }
 
- private:
+ protected:
   std::unique_ptr<upb_Arena, decltype(&upb_Arena_Free)> ptr_;
 };
 
@@ -97,6 +97,11 @@ template <int N>
 class InlinedArena : public Arena {
  public:
   InlinedArena() : Arena(initial_block_, N) {}
+  ~InlinedArena() {
+    // Explicitly destroy the arena now so that it does not outlive
+    // initial_block_.
+    ptr_.reset();
+  }
 
  private:
   InlinedArena(const InlinedArena*) = delete;
