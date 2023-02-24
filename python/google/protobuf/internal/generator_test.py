@@ -49,7 +49,6 @@ from google.protobuf import unittest_import_public_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_mset_wire_format_pb2
 from google.protobuf import unittest_pb2
-from google.protobuf import unittest_retention_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_no_generic_services_pb2
 
@@ -152,82 +151,6 @@ class GeneratorTest(unittest.TestCase):
     self.assertTrue(enum_options is not None)
     # TODO(gps): We really should test for the presence of the enum_opt1
     # extension and for its value to be set to -789.
-
-  # Options that are explicitly marked RETENTION_SOURCE should not be present
-  # in the descriptors in the binary.
-  def testOptionRetention(self):
-    # Direct options
-    options = unittest_retention_pb2.DESCRIPTOR.GetOptions()
-    self.assertTrue(options.HasExtension(unittest_retention_pb2.plain_option))
-    self.assertTrue(
-        options.HasExtension(unittest_retention_pb2.runtime_retention_option)
-    )
-    self.assertFalse(
-        options.HasExtension(unittest_retention_pb2.source_retention_option)
-    )
-
-    def check_options_message_is_stripped_correctly(options):
-      self.assertEqual(options.plain_field, 1)
-      self.assertEqual(options.runtime_retention_field, 2)
-      self.assertFalse(options.HasField('source_retention_field'))
-      self.assertEqual(options.source_retention_field, 0)
-
-    # Verify that our test OptionsMessage is stripped correctly on all
-    # different entity types.
-    check_options_message_is_stripped_correctly(
-        options.Extensions[unittest_retention_pb2.file_option]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2.TopLevelMessage.DESCRIPTOR.GetOptions().Extensions[
-            unittest_retention_pb2.message_option
-        ]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2.TopLevelMessage.NestedMessage.DESCRIPTOR.GetOptions().Extensions[
-            unittest_retention_pb2.message_option
-        ]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2._TOPLEVELENUM.GetOptions().Extensions[
-            unittest_retention_pb2.enum_option
-        ]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2._TOPLEVELMESSAGE_NESTEDENUM.GetOptions().Extensions[
-            unittest_retention_pb2.enum_option
-        ]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2._TOPLEVELENUM.values[0]
-        .GetOptions()
-        .Extensions[unittest_retention_pb2.enum_entry_option]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2.DESCRIPTOR.extensions_by_name['i']
-        .GetOptions()
-        .Extensions[unittest_retention_pb2.field_option]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2.TopLevelMessage.DESCRIPTOR.fields[0]
-        .GetOptions()
-        .Extensions[unittest_retention_pb2.field_option]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2.TopLevelMessage.DESCRIPTOR.oneofs[0]
-        .GetOptions()
-        .Extensions[unittest_retention_pb2.oneof_option]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2.DESCRIPTOR.services_by_name['Service']
-        .GetOptions()
-        .Extensions[unittest_retention_pb2.service_option]
-    )
-    check_options_message_is_stripped_correctly(
-        unittest_retention_pb2.DESCRIPTOR.services_by_name['Service']
-        .methods[0]
-        .GetOptions()
-        .Extensions[unittest_retention_pb2.method_option]
-    )
 
   def testNestedTypes(self):
     self.assertEqual(
