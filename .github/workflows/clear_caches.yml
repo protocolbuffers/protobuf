@@ -2,8 +2,8 @@ name: Clear expensive caches to prevent unbounded growth
 
 on:
   schedule:
-    # Run every 1st of the month at 10 AM UTC (2 AM PDT)
-    - cron: 0 10 1 * *
+    # Run every 4 months at 10 AM UTC (2 AM PDT)
+    - cron: 0 10 1 */4 *
 
   # manual
   workflow_dispatch:
