@@ -16,11 +16,11 @@ jobs:
         include:
           - name: OpenJDK 8
             version: '8'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/bazel:8-03a376b5d6ef66f827fc307716e3b841cc26b709
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-03a376b5d6ef66f827fc307716e3b841cc26b709
             targets: //java/... //java/internal:java_version
           - name: OpenJDK 11
             version: '11'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/bazel:11-03a376b5d6ef66f827fc307716e3b841cc26b709
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-03a376b5d6ef66f827fc307716e3b841cc26b709
             targets: //java/... //java/internal:java_version
           - name: OpenJDK 17
             version: '17'
