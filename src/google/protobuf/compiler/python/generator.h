@@ -41,7 +41,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/descriptor.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -167,8 +166,9 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   std::string PublicPackage() const;
   std::string InternalPackage() const;
 
-  template <typename DescriptorProtoT>
-  void PrintSerializedPbInterval(const DescriptorProtoT& descriptor_proto,
+  template <typename DescriptorT, typename DescriptorProtoT>
+  void PrintSerializedPbInterval(const DescriptorT& descriptor,
+                                 DescriptorProtoT& proto,
                                  absl::string_view name) const;
 
   void FixAllDescriptorOptions() const;
@@ -178,9 +178,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   void FixOptionsForService(const ServiceDescriptor& descriptor) const;
   void FixOptionsForMessage(const Descriptor& descriptor) const;
 
-  void SetSerializedPbInterval(const FileDescriptorProto& file) const;
-  void SetMessagePbInterval(const DescriptorProto& message_proto,
-                            const Descriptor& descriptor) const;
+  void SetSerializedPbInterval() const;
+  void SetMessagePbInterval(const Descriptor& descriptor) const;
 
   void CopyPublicDependenciesAliases(absl::string_view copy_from,
                                      const FileDescriptor* file) const;
