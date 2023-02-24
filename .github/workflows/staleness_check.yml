@@ -24,7 +24,7 @@ jobs:
           ref: ${{ matrix.branch}}
 
       - name: Run all staleness tests
-        uses: ./.github/actions/bazel
+        uses: protocolbuffers/protobuf-ci/bazel@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: staleness_check/${{ matrix.branch}}_${{ matrix.os.value }}

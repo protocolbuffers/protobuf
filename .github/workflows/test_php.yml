@@ -43,7 +43,7 @@ jobs:
           submodules: recursive
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: ./.github/actions/docker
+        uses: protocolbuffers/protobuf-ci/docker@v1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-6e95c0e221e4bd52e3b4dc1398c6336985196931
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -78,13 +78,13 @@ jobs:
 
       - name: Cross compile protoc for i386
         id: cross-compile
-        uses: ./.github/actions/cross-compile-protoc
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Run tests
-        uses: ./.github/actions/docker
+        uses: protocolbuffers/protobuf-ci/docker@v1
         with:
           image: ${{ env.image }}
           skip-staleness-check: true
@@ -109,13 +109,13 @@ jobs:
 
       - name: Cross compile protoc for aarch64
         id: cross-compile
-        uses: ./.github/actions/cross-compile-protoc
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
       - name: Run tests
-        uses: ./.github/actions/docker
+        uses: protocolbuffers/protobuf-ci/docker@v1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64:0cc100b6e03d14c1e8f71ae794dc162ed122fe31@sha256:77b70feba68dced1f0fd21b52a08d3d2e0c5c797bfe68435a0038ce87ecfd310
           platform: linux/arm64
@@ -157,7 +157,7 @@ jobs:
         run: php --version | grep ${{ matrix.version }} || (echo "Invalid PHP version - $(php --version)" && exit 1)
 
       - name: Run tests
-        uses: ./.github/actions/bazel
+        uses: protocolbuffers/protobuf-ci/bazel@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
@@ -171,7 +171,7 @@ jobs:
             popd
 
       - name: Run conformance tests
-        uses: ./.github/actions/bazel
+        uses: protocolbuffers/protobuf-ci/bazel@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
