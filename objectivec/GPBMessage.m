@@ -47,6 +47,12 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
 
+// Returns a new instance that was automatically created by |autocreator| for
+// its field |field|.
+static GPBMessage *GPBCreateMessageWithAutocreator(Class msgClass, GPBMessage *autocreator,
+                                                   GPBFieldDescriptor *field)
+    __attribute__((ns_returns_retained));
+
 // Direct access is use for speed, to avoid even internally declaring things
 // read/write, etc. The warning is enabled in the project to ensure code calling
 // protos can turn on -Wdirect-ivar-access without issues.
@@ -827,8 +833,8 @@ static void ExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOO
   }
 }
 
-GPBMessage *GPBCreateMessageWithAutocreator(Class msgClass, GPBMessage *autocreator,
-                                            GPBFieldDescriptor *field) {
+static GPBMessage *GPBCreateMessageWithAutocreator(Class msgClass, GPBMessage *autocreator,
+                                                   GPBFieldDescriptor *field) {
   GPBMessage *message = [[msgClass alloc] init];
   message->autocreator_ = autocreator;
   message->autocreatorField_ = [field retain];

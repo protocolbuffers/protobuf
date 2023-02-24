@@ -36,7 +36,6 @@
 // clang-format on
 
 #import "GPBDescriptor_PackagePrivate.h"
-#import "GPBExtensionInternals.h"
-#import "GPBMessage_PackagePrivate.h"
+#import "GPBMessage.h"
 #import "GPBRootObject_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
