@@ -281,6 +281,10 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_X(fn##P1)             \
   PROTOBUF_TC_PARSE_FUNCTION_X(fn##P2)
 
+#define PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP() \
+  PROTOBUF_TC_PARSE_FUNCTION_X(FastEndG1)           \
+  PROTOBUF_TC_PARSE_FUNCTION_X(FastEndG2)
+
 // TcParseFunction defines the set of table driven, tail call optimized parse
 // functions. This list currently does not include all types such as maps.
 //
@@ -307,6 +311,7 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
 //     Gt  - group width table driven parse tables
 //     Md  - message
 //     Mt  - message width table driven parse tables
+//     End - End group tag
 //
 // * string types can have a `c` or `i` suffix, indicating the
 //   underlying storage type to be cord or inlined respectively.
@@ -325,13 +330,14 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
 //    S - singular / optional
 //    R - repeated
 //    P - packed
+//    G - group terminated
 //
 //  tag_width:
 //    1: single byte encoded tag
 //    2: two byte encoded tag
 //
 // Examples:
-//   FastV8S1, FastEr1P2, FastBcS1
+//   FastV8S1, FastZ64S2, FastEr1P2, FastBcS1, FastMtR2, FastEndG1
 //
 #define PROTOBUF_TC_PARSE_FUNCTION_LIST            \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV8)   \
@@ -357,7 +363,8 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd) \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt) \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMd) \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMt)
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMt) \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP()
 
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) k##value,
 enum class TcParseFunction { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
