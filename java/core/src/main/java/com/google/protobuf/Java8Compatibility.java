@@ -28,14 +28,40 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// This header is meant to only be used by the generated source, it should not
-// be included in code using protocol buffers.
+package com.google.protobuf;
 
-// clang-format off
-#import "GPBBootstrap.h"
-// clang-format on
+import java.nio.Buffer;
 
-#import "GPBDescriptor_PackagePrivate.h"
-#import "GPBMessage.h"
-#import "GPBRootObject_PackagePrivate.h"
-#import "GPBUtilities_PackagePrivate.h"
+/**
+ * Wrappers around {@link Buffer} methods that are covariantly overridden in Java 9+. See
+ * https://github.com/protocolbuffers/protobuf/issues/11393
+ *
+ * <p>TODO(b/270454719) remove when Java 8 support is no longer needed.
+ */
+final class Java8Compatibility {
+  static void clear(Buffer b) {
+    b.clear();
+  }
+
+  static void flip(Buffer b) {
+    b.flip();
+  }
+
+  static void limit(Buffer b, int limit) {
+    b.limit(limit);
+  }
+
+  static void mark(Buffer b) {
+    b.mark();
+  }
+
+  static void position(Buffer b, int position) {
+    b.position(position);
+  }
+
+  static void reset(Buffer b) {
+    b.reset();
+  }
+
+  private Java8Compatibility() {}
+}
