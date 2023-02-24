@@ -316,4 +316,19 @@ TEST(FuzzTest, RoundTripDescriptorRegression) {
                                                })pb"));
 }
 
+// Multiple oneof fields which have the same name.
+TEST(FuzzTest, RoundTripDescriptorRegressionOneofSameName) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "N"
+             package: ""
+             message_type {
+               name: "b"
+               field { name: "W" number: 1 type: TYPE_BYTES oneof_index: 0 }
+               field { name: "W" number: 17 type: TYPE_UINT32 oneof_index: 0 }
+               oneof_decl { name: "k" }
+             }
+           })pb"));
+}
+
 }  // namespace upb_test

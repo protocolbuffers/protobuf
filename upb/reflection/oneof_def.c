@@ -128,9 +128,15 @@ void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
   // inserting into the message's table. Unfortunately that step occurs after
   // this one and moving things around could be tricky so let's leave it for
   // a future refactoring.
-  const bool exists = upb_inttable_lookup(&o->itof, number, NULL);
-  if (UPB_UNLIKELY(exists)) {
+  const bool number_exists = upb_inttable_lookup(&o->itof, number, NULL);
+  if (UPB_UNLIKELY(number_exists)) {
     _upb_DefBuilder_Errf(ctx, "oneof fields have the same number (%d)", number);
+  }
+
+  // TODO(salo): More redundant work happening here.
+  const bool name_exists = upb_strtable_lookup2(&o->ntof, name, size, NULL);
+  if (UPB_UNLIKELY(name_exists)) {
+    _upb_DefBuilder_Errf(ctx, "oneof fields have the same name (%s)", name);
   }
 
   const bool ok = upb_inttable_insert(&o->itof, number, v, ctx->arena) &&
