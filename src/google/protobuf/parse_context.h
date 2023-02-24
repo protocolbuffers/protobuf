@@ -667,7 +667,9 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
 }
 
 #ifdef __aarch64__
+PROTOBUF_EXPORT
 const char* VarintParseSlowArm64(const char* p, uint64_t* out, uint64_t first8);
+PROTOBUF_EXPORT
 const char* VarintParseSlowArm32(const char* p, uint32_t* out, uint64_t first8);
 
 inline const char* VarintParseSlowArm(const char* p, uint32_t* out,
