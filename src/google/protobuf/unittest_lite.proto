@@ -47,6 +47,7 @@ message TestAllTypesLite {
   message NestedMessage {
     optional int32 bb = 1;
     optional int64 cc = 2;
+    repeated int32 dd = 3 [packed = true];
   }
 
   message NestedMessage2 {
