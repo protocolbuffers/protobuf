@@ -40,12 +40,12 @@ public class JavaVersionTest {
   @Test
   public void testJavaVersion() throws Exception {
     String exp = System.getenv("KOKORO_JAVA_VERSION");
-    // Java 8's version is read as "1.8"
-    if(exp.equals("8")) exp = "1.8";
     if(exp == null || exp.isEmpty()) {
       System.err.println("No kokoro java version found, skipping check");
       return;
     }
+    // Java 8's version is read as "1.8"
+    if(exp.equals("8")) exp = "1.8";
     String version = System.getProperty("java.version");
     assertWithMessage("Expected Java " + exp + " but found Java " + version)
       .that(version.startsWith(exp))
