@@ -41,12 +41,7 @@ public class JavaVersionTest {
   public void testJavaVersion() throws Exception {
     String exp = System.getenv("KOKORO_JAVA_VERSION");
     // Java 8's version is read as "1.8"
-    if(exp == "8") {
-      System.out.println("The version was 8");
-      exp = "1.8";
-    } else {
-      System.out.println("The version was not 8, it was: " + exp);
-    }
+    if(exp.equals("8")) exp = "1.8";
     if(exp == null || exp.isEmpty()) {
       System.err.println("No kokoro java version found, skipping check");
       return;
