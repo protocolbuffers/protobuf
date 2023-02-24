@@ -123,6 +123,7 @@
                     <include>Internal.java</include>
                     <include>InvalidProtocolBufferException.java</include>
                     <include>IterableByteBufferInputStream.java</include>
+                    <include>Java8Compatibility.java</include>
                     <include>JavaType.java</include>
                     <include>LazyField.java</include>
                     <include>LazyFieldLite.java</include>

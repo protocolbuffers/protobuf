@@ -189,6 +189,18 @@ public class LiteTest {
   }
 
   @Test
+  public void testParsedOneofSubMessageIsImmutable() throws InvalidProtocolBufferException {
+    TestAllTypesLite message =
+        TestAllTypesLite.parseFrom(
+            TestAllTypesLite.newBuilder()
+                .setOneofNestedMessage(NestedMessage.newBuilder().addDd(1234).build())
+                .build()
+                .toByteArray());
+    IntArrayList subList = (IntArrayList) message.getOneofNestedMessage().getDdList();
+    assertThat(subList.isModifiable()).isFalse();
+  }
+
+  @Test
   public void testMemoization() throws Exception {
     GeneratedMessageLite<?, ?> message = TestUtilLite.getAllLiteExtensionsSet();
 
@@ -2346,8 +2358,7 @@ public class LiteTest {
     Foo fooWithOnlyValue = Foo.newBuilder().setValue(1).build();
 
     Foo fooWithValueAndExtension =
-        fooWithOnlyValue
-            .toBuilder()
+        fooWithOnlyValue.toBuilder()
             .setValue(1)
             .setExtension(Bar.fooExt, Bar.newBuilder().setName("name").build())
             .build();
@@ -2363,8 +2374,7 @@ public class LiteTest {
     Foo fooWithOnlyValue = Foo.newBuilder().setValue(1).build();
 
     Foo fooWithValueAndExtension =
-        fooWithOnlyValue
-            .toBuilder()
+        fooWithOnlyValue.toBuilder()
             .setValue(1)
             .setExtension(Bar.fooExt, Bar.newBuilder().setName("name").build())
             .build();

@@ -107,7 +107,7 @@ final class ByteBufferWriter {
       }
     } finally {
       // Restore the initial position.
-      buffer.position(initialPos);
+      Java8Compatibility.position(buffer, initialPos);
     }
   }
 
