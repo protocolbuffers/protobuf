@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
  * `NullValue` is a singleton enumeration to represent the null value for the
  * `Value` type union.
  *
- *  The JSON representation for `NullValue` is JSON `null`.
+ * The JSON representation for `NullValue` is JSON `null`.
  **/
 typedef GPB_ENUM(GPBNullValue) {
   /**
