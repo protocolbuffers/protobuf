@@ -599,7 +599,7 @@ const char* Type::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
       // .google.protobuf.Syntax syntax = 6;
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 48)) {
-          ::uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          ::int32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
           _internal_set_syntax(static_cast<::PROTOBUF_NAMESPACE_ID::Syntax>(val));
         } else {
@@ -965,7 +965,7 @@ const char* Field::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
       // .google.protobuf.Field.Kind kind = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 8)) {
-          ::uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          ::int32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
           _internal_set_kind(static_cast<::PROTOBUF_NAMESPACE_ID::Field_Kind>(val));
         } else {
@@ -975,7 +975,7 @@ const char* Field::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
       // .google.protobuf.Field.Cardinality cardinality = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 16)) {
-          ::uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          ::int32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
           _internal_set_cardinality(static_cast<::PROTOBUF_NAMESPACE_ID::Field_Cardinality>(val));
         } else {
@@ -1497,7 +1497,7 @@ const char* Enum::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
       // .google.protobuf.Syntax syntax = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 40)) {
-          ::uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          ::int32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
           _internal_set_syntax(static_cast<::PROTOBUF_NAMESPACE_ID::Syntax>(val));
         } else {
