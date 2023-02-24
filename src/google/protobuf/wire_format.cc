@@ -874,7 +874,7 @@ const char* WireFormat::_InternalParseAndMergeField(
             ptr = internal::PackedEnumParser(rep_enum, ptr, ctx);
           } else {
             return ctx->ReadPackedVarint(
-                ptr, [rep_enum, field, reflection, msg](uint64_t val) {
+                ptr, [rep_enum, field, reflection, msg](int32_t val) {
                   if (field->enum_type()->FindValueByNumber(val) != nullptr) {
                     rep_enum->Add(val);
                   } else {

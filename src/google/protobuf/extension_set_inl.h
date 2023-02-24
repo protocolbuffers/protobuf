@@ -141,14 +141,14 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 #undef HANDLE_FIXED_TYPE
 
       case WireFormatLite::TYPE_ENUM: {
-        uint64_t val;
-        ptr = VarintParse(ptr, &val);
+        uint64_t tmp;
+        ptr = VarintParse(ptr, &tmp);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        int value = val;
+        int value = tmp;
 
         if (!extension.enum_validity_check.func(
                 extension.enum_validity_check.arg, value)) {
-          WriteVarint(number, val, metadata->mutable_unknown_fields<T>());
+          WriteVarint(number, value, metadata->mutable_unknown_fields<T>());
         } else if (extension.is_repeated) {
           AddEnum(number, WireFormatLite::TYPE_ENUM, extension.is_packed, value,
                   extension.descriptor);

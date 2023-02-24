@@ -1224,16 +1224,34 @@ PROTOBUF_NOINLINE const char* TcParser::FastZ64P2(PROTOBUF_TC_PARAM_DECL) {
 
 PROTOBUF_NOINLINE const char* TcParser::FastUnknownEnumFallback(
     PROTOBUF_TC_PARAM_DECL) {
-  // If we know we want to put this field directly into the unknown field set,
-  // then we can skip the call to MiniParse and directly call table->fallback.
-  // However, we first have to update `data` to contain the decoded tag.
+  // Skip MiniParse/fallback and insert the element directly into the unknown
+  // field set. We also normalize the value into an int32 as we do for known
+  // enum values.
   uint32_t tag;
   ptr = ReadTag(ptr, &tag);
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-  data.data = tag;
-  PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+  uint64_t tmp;
+  ptr = ParseVarint(ptr, &tmp);
+  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  AddUnknownEnum(msg, table, tag, static_cast<int32_t>(tmp));
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::MpUnknownEnumFallback(
+    PROTOBUF_TC_PARAM_DECL) {
+  // Like FastUnknownEnumFallback, but with the Mp ABI.
+  uint32_t tag = data.tag();
+  uint64_t tmp;
+  ptr = ParseVarint(ptr, &tmp);
+  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  AddUnknownEnum(msg, table, tag, static_cast<int32_t>(tmp));
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 template <typename TagType, uint16_t xform_val>
@@ -1325,9 +1343,10 @@ const TcParser::UnknownFieldOps& TcParser::GetUnknownFieldOps(
   return *reinterpret_cast<const UnknownFieldOps*>(ptr);
 }
 
-PROTOBUF_NOINLINE void TcParser::UnknownPackedEnum(
-    MessageLite* msg, const TcParseTableBase* table, uint32_t tag,
-    int32_t enum_value) {
+PROTOBUF_NOINLINE void TcParser::AddUnknownEnum(MessageLite* msg,
+                                                const TcParseTableBase* table,
+                                                uint32_t tag,
+                                                int32_t enum_value) {
   GetUnknownFieldOps(table).write_varint(msg, tag >> 3, enum_value);
 }
 
@@ -1351,7 +1370,7 @@ const char* TcParser::PackedEnum(PROTOBUF_TC_PARAM_DECL) {
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
   return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
     if (!EnumIsValidAux(value, xform_val, aux)) {
-      UnknownPackedEnum(msg, table, FastDecodeTag(saved_tag), value);
+      AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), value);
     } else {
       field->Add(value);
     }
@@ -1498,7 +1517,7 @@ const char* TcParser::PackedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
 
   return ctx->ReadPackedVarint(ptr, [=](int32_t v) {
     if (PROTOBUF_PREDICT_FALSE(min > v || v > max)) {
-      UnknownPackedEnum(msg, table, FastDecodeTag(saved_tag), v);
+      AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
     } else {
       field->Add(v);
     }
@@ -2021,7 +2040,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
     if (is_validated_enum) {
       if (!EnumIsValidAux(tmp, xform_val, *table->field_aux(&entry))) {
         ptr = ptr2;
-        PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+        PROTOBUF_MUSTTAIL return MpUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
       }
     } else if (is_zigzag) {
       tmp = WireFormatLite::ZigZagDecode32(static_cast<uint32_t>(tmp));
@@ -2099,7 +2118,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
       if (is_validated_enum) {
         if (!EnumIsValidAux(tmp, xform_val, *table->field_aux(&entry))) {
           ptr = ptr2;
-          PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+          PROTOBUF_MUSTTAIL return MpUnknownEnumFallback(
+              PROTOBUF_TC_PARAM_PASS);
         }
       } else if (is_zigzag) {
         tmp = WireFormatLite::ZigZagDecode32(tmp);
@@ -2163,7 +2183,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
       const TcParseTableBase::FieldAux aux = *table->field_aux(entry.aux_idx);
       return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
         if (!EnumIsValidAux(value, xform_val, aux)) {
-          UnknownPackedEnum(msg, table, data.tag(), value);
+          AddUnknownEnum(msg, table, data.tag(), value);
         } else {
           field->Add(value);
         }

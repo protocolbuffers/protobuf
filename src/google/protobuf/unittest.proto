@@ -1547,6 +1547,13 @@ message EnumParseTester {
   repeated Arbitrary packed_arbitrary_midfield = 1012 [packed = true];
   repeated Arbitrary packed_arbitrary_hifield = 1000012 [packed = true];
 
+  extensions 2000000 to max;
+  extend EnumParseTester {
+    optional Arbitrary optional_arbitrary_ext = 2000000;
+    repeated Arbitrary repeated_arbitrary_ext = 2000001;
+    repeated Arbitrary packed_arbitrary_ext = 2000002 [packed = true];
+  }
+
   // An arbitrary field we can append to to break the runs of repeated fields.
   optional int32 other_field = 99;
 }
@@ -1564,6 +1571,13 @@ message BoolParseTester {
   repeated bool packed_bool_midfield = 1003 [packed = true];
   repeated bool packed_bool_hifield = 1000003 [packed = true];
 
+  extensions 2000000 to max;
+  extend BoolParseTester {
+    optional bool optional_bool_ext = 2000000;
+    repeated bool repeated_bool_ext = 2000001;
+    repeated bool packed_bool_ext = 2000002 [packed = true];
+  }
+
   // An arbitrary field we can append to to break the runs of repeated fields.
   optional int32 other_field = 99;
 }
@@ -1579,6 +1593,13 @@ message Int32ParseTester {
   repeated int32 packed_int32_midfield = 1003 [packed = true];
   repeated int32 packed_int32_hifield = 1000003 [packed = true];
 
+  extensions 2000000 to max;
+  extend Int32ParseTester {
+    optional int32 optional_int32_ext = 2000000;
+    repeated int32 repeated_int32_ext = 2000001;
+    repeated int32 packed_int32_ext = 2000002 [packed = true];
+  }
+
   // An arbitrary field we can append to to break the runs of repeated fields.
   optional int32 other_field = 99;
 }
@@ -1593,6 +1614,13 @@ message Int64ParseTester {
   repeated int64 packed_int64_lowfield = 3 [packed = true];
   repeated int64 packed_int64_midfield = 1003 [packed = true];
   repeated int64 packed_int64_hifield = 1000003 [packed = true];
+
+  extensions 2000000 to max;
+  extend Int64ParseTester {
+    optional int64 optional_int64_ext = 2000000;
+    repeated int64 repeated_int64_ext = 2000001;
+    repeated int64 packed_int64_ext = 2000002 [packed = true];
+  }
 
   // An arbitrary field we can append to to break the runs of repeated fields.
   optional int32 other_field = 99;
@@ -1617,6 +1645,12 @@ message StringParseTester {
   repeated string repeated_string_lowfield = 2;
   repeated string repeated_string_midfield = 1002;
   repeated string repeated_string_hifield = 1000002;
+
+  extensions 2000000 to max;
+  extend StringParseTester {
+    optional string optional_string_ext = 2000000;
+    repeated string repeated_string_ext = 2000001;
+  }
 }
 
 message BadFieldNames{
