@@ -117,6 +117,7 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
       )cc",
       ClassName(descriptor), MessageName(descriptor));
   WriteFieldAccessorsInHeader(descriptor, output);
+  WriteOneofAccessorsInHeader(descriptor, output);
   output.Indent();
   output(
       R"cc(

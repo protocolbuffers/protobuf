@@ -672,7 +672,51 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
       }
     }
   }
+  for (int i = 0; i < desc->real_oneof_decl_count(); ++i) {
+    const protobuf::OneofDescriptor* oneof = desc->oneof_decl(i);
+    output("using $0Access::$1_case;\n", class_name, oneof->name());
+    output("using $0Access::$1Case;\n", class_name,
+           ToCamelCase(oneof->name(), /*lower_first=*/false));
+    for (int j = 0; j < oneof->field_count(); ++j) {
+      const protobuf::FieldDescriptor* field = oneof->field(j);
+      output("using $0Access::k$1;\n", class_name,
+             ToCamelCase(field->name(), /*lower_first=*/false),
+             field->number());
+    }
+    output("using $0Access::$1_NOT_SET;\n", class_name,
+           absl::AsciiStrToUpper(oneof->name()));
+  }
   output("using $0Access::msg;\n", class_name);
+}
+
+void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
+                                 Output& output) {
+  // Generate const methods.
+  OutputIndenter i(output);
+  std::string class_name = ClassName(desc);
+  auto field_names = CreateFieldNameMap(desc);
+  for (int i = 0; i < desc->real_oneof_decl_count(); ++i) {
+    const protobuf::OneofDescriptor* oneof = desc->oneof_decl(i);
+    output("enum $0Case {\n",
+           ToCamelCase(oneof->name(), /*lower_first=*/false));
+    for (int j = 0; j < oneof->field_count(); ++j) {
+      const protobuf::FieldDescriptor* field = oneof->field(j);
+      output("  k$0 = $1,\n", ToCamelCase(field->name(), /*lower_first=*/false),
+             field->number());
+    }
+    output("  $0_NOT_SET = 0,\n", absl::AsciiStrToUpper(oneof->name()));
+    output("};\n\n");
+    output("$0Case $1_case() const {\n",
+           ToCamelCase(oneof->name(), /*lower_first=*/false), oneof->name());
+    for (int j = 0; j < oneof->field_count(); ++j) {
+      const protobuf::FieldDescriptor* field = oneof->field(j);
+      std::string resolved_field_name = ResolveFieldName(field, field_names);
+      output("  if (has_$0()) { return k$1; }\n", resolved_field_name,
+             ToCamelCase(field->name(), /*lower_first=*/false));
+    }
+    output("  return $0_NOT_SET;\n", absl::AsciiStrToUpper(oneof->name()));
+    output("}\n;");
+  }
 }
 
 std::string ResolveFieldName(const protobuf::FieldDescriptor* field,

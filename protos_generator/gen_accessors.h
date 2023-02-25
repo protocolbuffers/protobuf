@@ -39,6 +39,8 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
 void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output);
 void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
                                  MessageClassType handle_type, Output& output);
+void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
+                                 Output& output);
 }  // namespace protos_generator
 
 #endif  // UPB_PROTOS_GENERATOR_ACCESSORS_H_

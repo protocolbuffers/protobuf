@@ -27,6 +27,7 @@
 
 #include "protos_generator/gen_utils.h"
 
+#include <algorithm>
 #include <string>
 
 #include "absl/log/absl_check.h"
@@ -264,6 +265,7 @@ std::vector<const protobuf::FieldDescriptor*> SortedExtensions(
 std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
     const protobuf::Descriptor* message) {
   std::vector<const protobuf::FieldDescriptor*> fields;
+  fields.reserve(message->field_count());
   for (int i = 0; i < message->field_count(); i++) {
     fields.push_back(message->field(i));
   }
@@ -273,6 +275,30 @@ std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
               return a->number() < b->number();
             });
   return fields;
+}
+
+std::string ToCamelCase(const std::string& input, bool lower_first) {
+  bool capitalize_next = !lower_first;
+  std::string result;
+  result.reserve(input.size());
+
+  for (char character : input) {
+    if (character == '_') {
+      capitalize_next = true;
+    } else if (capitalize_next) {
+      result.push_back(absl::ascii_toupper(character));
+      capitalize_next = false;
+    } else {
+      result.push_back(character);
+    }
+  }
+
+  // Lower-case the first letter.
+  if (lower_first && !result.empty()) {
+    result[0] = absl::ascii_tolower(result[0]);
+  }
+
+  return result;
 }
 
 }  // namespace protos_generator

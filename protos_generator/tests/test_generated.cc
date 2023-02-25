@@ -24,6 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <limits>
+#include <memory>
 
 #include "gtest/gtest.h"
 #include "protos/protos.h"
@@ -271,22 +272,26 @@ TEST(CppGeneratedCode, OneOfFields) {
 
   EXPECT_FALSE(test_model.has_oneof_member1());
   EXPECT_FALSE(test_model.has_oneof_member2());
+  EXPECT_EQ(TestModel::CHILD_ONEOF1_NOT_SET, test_model.child_oneof1_case());
 
   test_model.set_oneof_member1("one of string");
   EXPECT_TRUE(test_model.has_oneof_member1());
   EXPECT_FALSE(test_model.has_oneof_member2());
   EXPECT_EQ(test_model.oneof_member1(), "one of string");
+  EXPECT_EQ(TestModel::kOneofMember1, test_model.child_oneof1_case());
 
   test_model.set_oneof_member2(true);
   EXPECT_FALSE(test_model.has_oneof_member1());
   EXPECT_TRUE(test_model.has_oneof_member2());
   EXPECT_EQ(test_model.oneof_member2(), true);
+  EXPECT_EQ(TestModel::kOneofMember2, test_model.child_oneof1_case());
 
   test_model.clear_oneof_member2();
   EXPECT_FALSE(test_model.has_oneof_member1());
   EXPECT_FALSE(test_model.has_oneof_member2());
   EXPECT_EQ(test_model.oneof_member1(), "");
   EXPECT_EQ(test_model.oneof_member2(), false);
+  EXPECT_EQ(TestModel::CHILD_ONEOF1_NOT_SET, test_model.child_oneof1_case());
 }
 
 TEST(CppGeneratedCode, Messages) {
@@ -619,7 +624,7 @@ TEST(CppGeneratedCode, SharedPointer) {
 }
 
 TEST(CppGeneratedCode, UniquePointer) {
-  std::unique_ptr<TestModel> model = std::make_unique<TestModel>();
+  auto model = std::make_unique<TestModel>();
   ::upb::Arena arena;
   auto bytes = protos::Serialize(model, arena);
   EXPECT_TRUE(protos::Parse(model, bytes.value()));

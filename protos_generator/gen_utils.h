@@ -28,6 +28,8 @@
 #ifndef UPB_PROTOS_GENERATOR_GEN_UTILS_H_
 #define UPB_PROTOS_GENERATOR_GEN_UTILS_H_
 
+#include <vector>
+
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
@@ -87,6 +89,8 @@ std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
     const protobuf::Descriptor* message);
 
 inline constexpr absl::string_view kNoPackageNamePrefix = "protos_";
+
+std::string ToCamelCase(const std::string& input, bool lower_first);
 
 }  // namespace protos_generator
 
