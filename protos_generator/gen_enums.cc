@@ -25,6 +25,11 @@
 
 #include "protos_generator/gen_enums.h"
 
+#include <algorithm>
+#include <limits>
+#include <string>
+#include <vector>
+
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_utils.h"
@@ -106,10 +111,6 @@ void WriteEnumValues(const protobuf::EnumDescriptor* desc, Output& output) {
   for (size_t i = 0; i < values.size(); i++) {
     auto value = values[i];
     output("  $0", EnumValueSymbolInNameSpace(desc, value));
-    if (value->options().deprecated()) {
-      output(" ABSL_DEPRECATED(\"Proto enum $0\")",
-             EnumValueSymbolInNameSpace(desc, value));
-    }
     output(" = $0", EnumInt32ToString(value->number()));
     if (i != values.size() - 1) {
       output(",");

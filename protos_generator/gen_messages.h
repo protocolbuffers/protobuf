@@ -37,6 +37,7 @@ namespace protobuf = ::google::protobuf;
 void WriteMessageClassDeclarations(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
+    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
     Output& output);
 void WriteMessageImplementation(
     const protobuf::Descriptor* descriptor,

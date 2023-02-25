@@ -27,9 +27,13 @@
 
 #include "protos_generator/gen_messages.h"
 
+#include <string>
+#include <vector>
+
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_accessors.h"
+#include "protos_generator/gen_enums.h"
 #include "protos_generator/gen_extensions.h"
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/output.h"
@@ -45,6 +49,7 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
 void WriteModelPublicDeclaration(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
+    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
     Output& output);
 void WriteExtensionIdentifiersInClassHeader(
     const protobuf::Descriptor* message,
@@ -62,6 +67,10 @@ void WriteExtensionIdentifiersImplementation(
     const protobuf::Descriptor* message,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
     Output& output);
+void WriteUsingEnumsInHeader(
+    const protobuf::Descriptor* message,
+    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
+    Output& output);
 
 // Writes message class declarations into .upb.proto.h.
 //
@@ -70,6 +79,7 @@ void WriteExtensionIdentifiersImplementation(
 void WriteMessageClassDeclarations(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
+    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
     Output& output) {
   if (IsMapEntryMessage(descriptor)) {
     // Skip map entry generation. Low level accessors for maps are
@@ -85,7 +95,7 @@ void WriteMessageClassDeclarations(
   WriteInternalForwardDeclarationsInHeader(descriptor, output);
   output("\n");
   output("}  // namespace internal\n");
-  WriteModelPublicDeclaration(descriptor, file_exts, output);
+  WriteModelPublicDeclaration(descriptor, file_exts, file_enums, output);
   output("namespace internal {\n");
   WriteModelProxyDeclaration(descriptor, output);
   WriteModelCProxyDeclaration(descriptor, output);
@@ -131,6 +141,7 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
 void WriteModelPublicDeclaration(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
+    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
     Output& output) {
   output(
       R"cc(
@@ -157,6 +168,7 @@ void WriteModelPublicDeclaration(
       ClassName(descriptor));
 
   WriteUsingAccessorsInHeader(descriptor, MessageClassType::kMessage, output);
+  WriteUsingEnumsInHeader(descriptor, file_enums, output);
   WriteDefaultInstanceHeader(descriptor, output);
   WriteExtensionIdentifiersInClassHeader(descriptor, file_exts, output);
   output.Indent();
@@ -372,6 +384,44 @@ void WriteExtensionIdentifiersImplementation(
     if (ext->extension_scope() &&
         ext->extension_scope()->full_name() == message->full_name()) {
       WriteExtensionIdentifier(ext, output);
+    }
+  }
+}
+
+void WriteUsingEnumsInHeader(
+    const protobuf::Descriptor* message,
+    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
+    Output& output) {
+  for (auto* enum_descriptor : file_enums) {
+    std::string enum_type_name = EnumTypeName(enum_descriptor);
+    std::string enum_resolved_type_name =
+        enum_descriptor->file()->package().empty() &&
+                enum_descriptor->containing_type() == nullptr
+            ? absl::StrCat(kNoPackageNamePrefix,
+                           ToCIdent(enum_descriptor->name()))
+            : enum_type_name;
+    if (enum_descriptor->containing_type() == nullptr ||
+        enum_descriptor->containing_type()->full_name() !=
+            message->full_name()) {
+      continue;
+    }
+    output("using $0", enum_descriptor->name());
+    if (enum_descriptor->options().deprecated()) {
+      output(" ABSL_DEPRECATED(\"Proto enum $0\")", enum_descriptor->name());
+    }
+    output(" = $0;", enum_resolved_type_name);
+    output("\n");
+    int value_count = enum_descriptor->value_count();
+    for (int i = 0; i < value_count; i++) {
+      output("static constexpr $0 $1", enum_descriptor->name(),
+             enum_descriptor->value(i)->name());
+      if (enum_descriptor->options().deprecated() ||
+          enum_descriptor->value(i)->options().deprecated()) {
+        output(" ABSL_DEPRECATED(\"Proto enum value $0\") ",
+               enum_descriptor->value(i)->name());
+      }
+      output(" = $0;\n", EnumValueSymbolInNameSpace(enum_descriptor,
+                                                    enum_descriptor->value(i)));
     }
   }
 }

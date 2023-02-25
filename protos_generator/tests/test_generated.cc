@@ -36,6 +36,7 @@ using ::protos_generator::test::protos::other_ext;
 using ::protos_generator::test::protos::RED;
 using ::protos_generator::test::protos::TestEnum;
 using ::protos_generator::test::protos::TestModel;
+using ::protos_generator::test::protos::TestModel_Category;
 using ::protos_generator::test::protos::TestModel_Category_IMAGES;
 using ::protos_generator::test::protos::TestModel_Category_NEWS;
 using ::protos_generator::test::protos::TestModel_Category_VIDEO;
@@ -51,6 +52,16 @@ TEST(CppGeneratedCode, ImportedEnum) { EXPECT_EQ(3, TestEnum::DEVICE_MONITOR); }
 TEST(CppGeneratedCode, Enum) { EXPECT_EQ(1, RED); }
 
 TEST(CppGeneratedCode, EnumNoPackage) { EXPECT_EQ(1, ::protos_CELSIUS); }
+
+TEST(CppGeneratedCode, MessageEnumType) {
+  TestModel_Category category1 = TestModel_Category_IMAGES;
+  TestModel::Category category2 = TestModel::IMAGES;
+  EXPECT_EQ(category1, category2);
+}
+
+TEST(CppGeneratedCode, MessageEnumValue) {
+  EXPECT_EQ(TestModel_Category_IMAGES, TestModel::IMAGES);
+}
 
 TEST(CppGeneratedCode, ArenaConstructor) {
   ::protos::Arena arena;

@@ -171,7 +171,8 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   output("\n");
 
   for (auto message : this_file_messages) {
-    WriteMessageClassDeclarations(message, this_file_exts, output);
+    WriteMessageClassDeclarations(message, this_file_exts, this_file_enums,
+                                  output);
   }
   output("\n");
 
