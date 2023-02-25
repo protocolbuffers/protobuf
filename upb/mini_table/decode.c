@@ -992,6 +992,21 @@ const char* _upb_MiniTableExtension_Init(const char* data, size_t len,
                                                extendee, sub);
 }
 
+upb_MiniTableExtension* _upb_MiniTableExtension_Build(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_MiniTableSub sub, upb_MiniTablePlatform platform, upb_Arena* arena,
+    upb_Status* status) {
+  upb_MiniTableExtension* ext =
+      upb_Arena_Malloc(arena, sizeof(upb_MiniTableExtension));
+  if (UPB_UNLIKELY(!ext)) return NULL;
+
+  const char* ptr = _upb_MiniTableExtension_Init(data, len, ext, extendee, sub,
+                                                 platform, status);
+  if (UPB_UNLIKELY(!ptr)) return NULL;
+
+  return ext;
+}
+
 upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
                                     upb_MiniTablePlatform platform,
                                     upb_Arena* arena, upb_Status* status) {

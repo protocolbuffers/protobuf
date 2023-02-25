@@ -80,7 +80,7 @@ UPB_API bool upb_MiniTable_SetSubEnum(upb_MiniTable* table,
                                       const upb_MiniTableEnum* sub);
 
 // Initializes a MiniTableExtension buffer that has already been allocated.
-// This is needed (for example) by upb_FileDef, which allocates all of the
+// This is needed by upb_FileDef and upb_MessageDef, which allocate all of the
 // extensions together in a single contiguous array.
 const char* _upb_MiniTableExtension_Init(const char* data, size_t len,
                                          upb_MiniTableExtension* ext,
@@ -94,6 +94,35 @@ UPB_API_INLINE const char* upb_MiniTableExtension_Init(
     const upb_MiniTable* extendee, upb_MiniTableSub sub, upb_Status* status) {
   return _upb_MiniTableExtension_Init(data, len, ext, extendee, sub,
                                       kUpb_MiniTablePlatform_Native, status);
+}
+
+UPB_API upb_MiniTableExtension* _upb_MiniTableExtension_Build(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_MiniTableSub sub, upb_MiniTablePlatform platform, upb_Arena* arena,
+    upb_Status* status);
+
+UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_Build(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_Arena* arena, upb_Status* status) {
+  upb_MiniTableSub sub = {.submsg = NULL};
+  return _upb_MiniTableExtension_Build(
+      data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
+}
+
+UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildMessage(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_MiniTable* submsg, upb_Arena* arena, upb_Status* status) {
+  upb_MiniTableSub sub = {.submsg = submsg};
+  return _upb_MiniTableExtension_Build(
+      data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
+}
+
+UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildEnum(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_MiniTableEnum* subenum, upb_Arena* arena, upb_Status* status) {
+  upb_MiniTableSub sub = {.subenum = subenum};
+  return _upb_MiniTableExtension_Build(
+      data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
 }
 
 UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
