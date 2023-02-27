@@ -1344,7 +1344,7 @@ public final class Descriptors {
      * <p>Care should be taken when using this function to respect the target runtime's enum
      * handling quirks.
      */
-    boolean legacyEnumFieldTreatedAsClosed() {
+    public boolean legacyEnumFieldTreatedAsClosed() {
       return getType() == Type.ENUM && getFile().getSyntax() == Syntax.PROTO2;
     }
 
