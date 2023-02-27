@@ -5510,6 +5510,12 @@ final class MessageSchema<T> implements Schema<T> {
             getMessageFieldSchema(pos).makeImmutable(UNSAFE.getObject(message, offset));
           }
           break;
+        case 60: // ONEOF_MESSAGE
+        case 68: // ONEOF_GROUP
+          if (isOneofPresent(message, numberAt(pos), pos)) {
+            getMessageFieldSchema(pos).makeImmutable(UNSAFE.getObject(message, offset));
+          }
+          break;
         case 18: // DOUBLE_LIST:
         case 19: // FLOAT_LIST:
         case 20: // INT64_LIST:
