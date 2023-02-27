@@ -182,6 +182,17 @@ public final class Descriptors {
       return Syntax.PROTO2;
     }
 
+    public void copyHeadingTo(FileDescriptorProto.Builder protoBuilder) {
+      protoBuilder.setName(getName()).setSyntax(getSyntax().name);
+      if (!getPackage().isEmpty()) {
+        protoBuilder.setPackage(getPackage());
+      }
+
+      if (!getOptions().equals(FileOptions.getDefaultInstance())) {
+        protoBuilder.setOptions(getOptions());
+      }
+    }
+
     /**
      * Find a message type in the file by name. Does not find nested types.
      *
