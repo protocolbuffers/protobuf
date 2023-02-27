@@ -9,6 +9,3 @@ target_link_libraries(protoc
   ${protobuf_ABSL_USED_TARGETS}
 )
 add_executable(protobuf::protoc ALIAS protoc)
-
-set_target_properties(protoc PROPERTIES
-    VERSION ${protobuf_VERSION})
