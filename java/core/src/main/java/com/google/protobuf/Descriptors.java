@@ -634,10 +634,6 @@ public final class Descriptors {
         extensions[i].setProto(proto.getExtension(i));
       }
     }
-
-    boolean supportsUnknownEnumValue() {
-      return getSyntax() == Syntax.PROTO3;
-    }
   }
 
   // =================================================================
@@ -1326,6 +1322,30 @@ public final class Descriptors {
             String.format("This field is not of enum type. (%s)", fullName));
       }
       return enumType;
+    }
+
+    /**
+     * Determines if the given enum field is treated as closed based on legacy non-conformant
+     * behavior.
+     *
+     * <p>Conformant behavior determines closedness based on the enum and can be queried using
+     * {@code EnumDescriptor.isClosed()}.
+     *
+     * <p>Some runtimes currently have a quirk where non-closed enums are treated as closed when
+     * used as the type of fields defined in a `syntax = proto2;` file. This quirk is not present in
+     * all runtimes; as of writing, we know that:
+     *
+     * <ul>
+     *   <li>C++, Java, and C++-based Python share this quirk.
+     *   <li>UPB and UPB-based Python do not.
+     *   <li>PHP and Ruby treat all enums as open regardless of declaration.
+     * </ul>
+     *
+     * <p>Care should be taken when using this function to respect the target runtime's enum
+     * handling quirks.
+     */
+    boolean legacyEnumFieldTreatedAsClosed() {
+      return getType() == Type.ENUM && getFile().getSyntax() == Syntax.PROTO2;
     }
 
     /**
