@@ -59,7 +59,7 @@ Please refer to our official github site for more installation instructions:
 
 pkg_files(
     name = "protoc_files",
-    srcs = ["//:protoc"],
+    srcs = ["//:protoc_static"],
     attributes = pkg_attributes(mode = "0555"),
     prefix = "bin/",
     visibility = ["//visibility:private"],

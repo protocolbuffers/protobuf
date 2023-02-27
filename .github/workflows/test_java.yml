@@ -16,15 +16,15 @@ jobs:
         include:
           - name: OpenJDK 11
             version: '11'
-            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-aec4d74f2eb6938fc53ef7d9a79a4bf2da24abc1
+            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
             targets: //java/... //java/internal:java_version
           - name: OpenJDK 17
             version: '17'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-65526ea124d1034eac33e7c37cc6d65c5bef054f
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-508417e5215994ade7585d28ba3aad681a25fa5d
             targets: //java/... //java/internal:java_version
           - name: aarch64
             version: 'aarch64'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-508417e5215994ade7585d28ba3aad681a25fa5d
             targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: Linux ${{ matrix.name }}
