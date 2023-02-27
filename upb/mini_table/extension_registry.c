@@ -53,23 +53,22 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena) {
   return r;
 }
 
+UPB_API bool upb_ExtensionRegistry_Add(upb_ExtensionRegistry* r,
+                                       const upb_MiniTableExtension* e) {
+  char buf[EXTREG_KEY_SIZE];
+  extreg_key(buf, e->extendee, e->field.number);
+  if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, NULL)) return false;
+  return upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
+                             upb_value_constptr(e), r->arena);
+}
+
 bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
                                     const upb_MiniTableExtension** e,
                                     size_t count) {
-  char buf[EXTREG_KEY_SIZE];
   const upb_MiniTableExtension** start = e;
   const upb_MiniTableExtension** end = UPB_PTRADD(e, count);
   for (; e < end; e++) {
-    const upb_MiniTableExtension* ext = *e;
-    extreg_key(buf, ext->extendee, ext->field.number);
-    upb_value v;
-    if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, &v)) {
-      goto failure;
-    }
-    if (!upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
-                             upb_value_constptr(ext), r->arena)) {
-      goto failure;
-    }
+    if (!upb_ExtensionRegistry_Add(r, *e)) goto failure;
   }
   return true;
 
@@ -77,6 +76,7 @@ failure:
   // Back out the entries previously added.
   for (end = e, e = start; e < end; e++) {
     const upb_MiniTableExtension* ext = *e;
+    char buf[EXTREG_KEY_SIZE];
     extreg_key(buf, ext->extendee, ext->field.number);
     upb_strtable_remove2(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
   }
