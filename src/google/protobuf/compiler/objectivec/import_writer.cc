@@ -140,15 +140,11 @@ void ImportWriter::AddFile(const FileDescriptor* file,
     return;
   }
 
-  // Lazy parse any mappings.
-  if (need_to_parse_mapping_file_) {
-    ParseFrameworkMappings();
-  }
+  auto module_name = ModuleForFile(file);
 
-  auto proto_lookup = proto_file_to_framework_name_.find(file->name());
-  if (proto_lookup != proto_file_to_framework_name_.end()) {
+  if (!module_name.empty()) {
     other_framework_imports_.emplace_back(absl::StrCat(
-        proto_lookup->second, "/", FilePathBasename(file), header_extension));
+        module_name, "/", FilePathBasename(file), header_extension));
     return;
   }
 
@@ -164,6 +160,23 @@ void ImportWriter::AddFile(const FileDescriptor* file,
 
 void ImportWriter::AddRuntimeImport(const std::string& header_name) {
   protobuf_imports_.push_back(header_name);
+}
+
+std::string ImportWriter::ModuleForFile(const FileDescriptor* file) {
+  ABSL_DCHECK(!IsProtobufLibraryBundledProtoFile(file));
+
+  // Lazy parse any mappings.
+  if (need_to_parse_mapping_file_) {
+    ParseFrameworkMappings();
+  }
+
+  auto proto_lookup = proto_file_to_framework_name_.find(file->name());
+
+  if (proto_lookup != proto_file_to_framework_name_.end()) {
+    return proto_lookup->second;
+  }
+
+  return "";
 }
 
 void ImportWriter::PrintFileImports(io::Printer* p) const {
