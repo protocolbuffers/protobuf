@@ -43,7 +43,8 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-class RustGenerator final : public google::protobuf::compiler::CodeGenerator {
+class PROTOC_EXPORT RustGenerator final
+    : public google::protobuf::compiler::CodeGenerator {
  public:
   RustGenerator() = default;
   RustGenerator(const RustGenerator&) = delete;
