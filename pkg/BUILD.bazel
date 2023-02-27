@@ -386,6 +386,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
+        "//src/google/protobuf/compiler/rust",
     ],
     dist_deps = [
         ":protobuf",

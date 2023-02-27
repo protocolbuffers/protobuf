@@ -115,6 +115,7 @@ cc_library(
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
+        "//src/google/protobuf/compiler/rust",
         "@com_google_absl//absl/log:initialize",
     ],
 )

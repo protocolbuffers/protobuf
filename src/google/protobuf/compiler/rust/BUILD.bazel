@@ -7,6 +7,7 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "rust",
+    srcs = ["generator.cc"],
     hdrs = ["generator.h"],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/rust",

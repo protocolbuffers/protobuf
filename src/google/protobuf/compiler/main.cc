@@ -39,6 +39,7 @@
 #include "google/protobuf/compiler/python/generator.h"
 #include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
+#include "google/protobuf/compiler/rust/generator.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -112,6 +113,10 @@ int ProtobufMain(int argc, char* argv[]) {
   cli.RegisterGenerator("--objc_out", "--objc_opt", &objc_generator,
                         "Generate Objective-C header and source.");
 
+  // Rust
+  rust::RustGenerator rust_generator;
+  cli.RegisterGenerator("--rust_out", &rust_generator,
+                        "Generate Rust sources.");
   return cli.Run(argc, argv);
 }
 
