@@ -669,76 +669,75 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    p->Emit(
-        {{"field_comment", FieldComment(field)},
-         Sub("const_impl", "const;").WithSuffix(";"),
-         Sub("impl", ";").WithSuffix(";"),
-         {"sizer",
-          [&] {
-            if (!field->is_repeated()) return;
-            p->Emit({Sub("name_size", absl::StrCat(name, "_size"))
-                         .AnnotatedAs(field)},
-                    R"cc(
-                      $deprecated_attr $int $name_size$() $const_impl$;
-                    )cc");
+    p->Emit({{"field_comment", FieldComment(field)},
+             Sub("const_impl", "const;").WithSuffix(";"),
+             Sub("impl", ";").WithSuffix(";"),
+             {"sizer",
+              [&] {
+                if (!field->is_repeated()) return;
+                p->Emit({Sub("name_size", absl::StrCat(name, "_size"))
+                             .AnnotatedAs(field)},
+                        R"cc(
+                          $deprecated_attr $int $name_size$() $const_impl$;
+                        )cc");
 
-            p->Emit({Sub("_internal_name_size",
-                         absl::StrCat("_internal_", name, "_size"))
-                         .AnnotatedAs(field)},
-                    R"cc(
-                      private:
-                      int $_internal_name_size$() const;
+                p->Emit({Sub("_internal_name_size",
+                             absl::StrCat("_internal_", name, "_size"))
+                             .AnnotatedAs(field)},
+                        R"cc(
+                          private:
+                          int $_internal_name_size$() const;
 
-                      public:
-                    )cc");
-          }},
-         {"hazzer",
-          [&] {
-            if (!field->has_presence()) return;
-            p->Emit({Sub("has_name", absl::StrCat("has_", name))
-                         .AnnotatedAs(field)},
-                    R"cc(
-                      $deprecated_attr $bool $has_name$() $const_impl$;
-                    )cc");
-          }},
-         {"internal_hazzer",
-          [&] {
-            if (field->is_repeated() || !HasInternalHasMethod(field)) {
-              return;
-            }
-            p->Emit(
-                {Sub("_internal_has_name", absl::StrCat("_internal_has_", name))
-                     .AnnotatedAs(field)},
-                R"cc(
-                  private:
-                  bool $_internal_has_name$() const;
+                          public:
+                        )cc");
+              }},
+             {"hazzer",
+              [&] {
+                if (!field->has_presence()) return;
+                p->Emit({Sub("has_name", absl::StrCat("has_", name))
+                             .AnnotatedAs(field)},
+                        R"cc(
+                          $deprecated_attr $bool $has_name$() $const_impl$;
+                        )cc");
+              }},
+             {"internal_hazzer",
+              [&] {
+                if (field->is_repeated() || !HasInternalHasMethod(field)) {
+                  return;
+                }
+                p->Emit({Sub("_internal_has_name",
+                             absl::StrCat("_internal_has_", name))
+                             .AnnotatedAs(field)},
+                        R"cc(
+                          private:
+                          bool $_internal_has_name$() const;
 
-                  public:
-                )cc");
-          }},
-         {"clearer",
-          [&] {
-            p->Emit({Sub("clear_name", absl::StrCat("clear_", name))
-                         .AnnotatedAs({
-                             field,
-                             Semantic::kSet,
-                         })},
-                    R"cc(
-                      $deprecated_attr $void $clear_name$() $impl$;
-                    )cc");
-          }},
-         {"accessors",
-          [&] {
-            field_generators_.get(field).GenerateAccessorDeclarations(p);
-          }}},
-        R"cc(
-          // $field_comment$
-          $sizer$;
-          $hazzer$;
-          $internal_hazzer$;
-          $clearer$;
-          $accessors$;
-        )cc");
+                          public:
+                        )cc");
+              }},
+             {"clearer",
+              [&] {
+                p->Emit({Sub("clear_name", absl::StrCat("clear_", name))
+                             .AnnotatedAs({
+                                 field,
+                                 Semantic::kSet,
+                             })},
+                        R"cc(
+                          $deprecated_attr $void $clear_name$() $impl$;
+                        )cc");
+              }},
+             {"accessors",
+              [&] {
+                field_generators_.get(field).GenerateAccessorDeclarations(p);
+              }}},
+            R"cc(
+              // $field_comment$
+              $sizer$;
+              $hazzer$;
+              $internal_hazzer$;
+              $clearer$;
+              $accessors$;
+            )cc");
   }
 
   if (descriptor_->extension_range_count() > 0) {
@@ -3637,9 +3636,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
   class LazySerializerEmitter {
    public:
     LazySerializerEmitter(MessageGenerator* mg, io::Printer* p)
-        : mg_(mg),
-          p_(p),
-          cached_has_bit_index_(kNoHasbit) {}
+        : mg_(mg), p_(p), cached_has_bit_index_(kNoHasbit) {}
 
     ~LazySerializerEmitter() { Flush(); }
 
