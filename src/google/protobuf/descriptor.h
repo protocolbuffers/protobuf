@@ -85,6 +85,7 @@
 namespace google {
 namespace protobuf {
 
+
 // Defined in this file.
 class Descriptor;
 class FieldDescriptor;
@@ -118,7 +119,6 @@ class MethodOptions;
 class FileOptions;
 class UninterpretedOption;
 class SourceCodeInfo;
-class ExtensionMetadata;
 
 // Defined in message.h
 class Message;

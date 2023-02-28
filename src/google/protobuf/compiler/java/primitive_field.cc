@@ -141,7 +141,7 @@ void SetPrimitiveVariables(
   }
   (*variables)["on_changed"] = "onChanged();";
 
-  if (HasHasbit(descriptor)) {
+  if (descriptor->has_presence()) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     // Note that these have a trailing ";".
@@ -221,7 +221,7 @@ int ImmutablePrimitiveFieldGenerator::GetNumBitsForBuilder() const { return 1; }
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
                    "$deprecation$boolean has$capitalized_name$();\n");
@@ -234,7 +234,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $field_type$ $name$_ = $default$;\n");
   PrintExtraFieldInfo(variables_, printer);
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -258,7 +258,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $field_type$ $name$_ $default_init$;\n");
 
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -332,7 +332,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateKotlinDslMembers(
                  "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
                  "}\n");
 
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                  /* builder */ false, /* kdoc */ true);
     printer->Print(
@@ -363,7 +363,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutablePrimitiveFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     printer->Print(variables_,
                    "if (other.has$capitalized_name$()) {\n"
                    "  set$capitalized_name$(other.get$capitalized_name$());\n"
@@ -527,7 +527,7 @@ ImmutablePrimitiveOneofFieldGenerator::
 void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(descriptor_->has_presence());
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -550,7 +550,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(descriptor_->has_presence());
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"

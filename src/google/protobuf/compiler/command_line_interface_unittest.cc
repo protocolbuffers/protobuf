@@ -1693,6 +1693,43 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   EXPECT_TRUE(descriptor_set.file(1).has_source_code_info());
 }
 
+TEST_F(CommandLineInterfaceTest, DescriptorSetOptionRetention) {
+  // clang-format off
+  CreateTempFile(
+      "foo.proto",
+      absl::Substitute(R"pb(
+          syntax = "proto2";
+          import "$0";
+          extend google.protobuf.FileOptions {
+            optional int32 runtime_retention_option = 50001
+                [retention = RETENTION_RUNTIME];
+            optional int32 source_retention_option = 50002
+                [retention = RETENTION_SOURCE];
+          }
+          option (runtime_retention_option) = 2;
+          option (source_retention_option) = 3;)pb",
+          DescriptorProto::descriptor()->file()->name()));
+  // clang-format on
+  std::string descriptor_proto_base_dir = "src";
+  Run(absl::Substitute(
+      "protocol_compiler --descriptor_set_out=$$tmpdir/descriptor_set "
+      "--proto_path=$$tmpdir --proto_path=$0 foo.proto",
+      descriptor_proto_base_dir));
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  const UnknownFieldSet& unknown_fields =
+      descriptor_set.file(0).options().unknown_fields();
+
+  // We expect runtime_retention_option to be present while
+  // source_retention_option should have been stripped.
+  ASSERT_EQ(unknown_fields.field_count(), 1);
+  EXPECT_EQ(unknown_fields.field(0).number(), 50001);
+  EXPECT_EQ(unknown_fields.field(0).varint(), 2);
+}
+
 #ifdef _WIN32
 // TODO(teboring): Figure out how to write test on windows.
 #else

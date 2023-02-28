@@ -79,8 +79,7 @@ std::string GetOutputFilename(absl::string_view proto_file) {
 }
 
 std::string LabelForField(const FieldDescriptor* field) {
-  if (field->has_optional_keyword() &&
-      field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+  if (field->has_optional_keyword() && field->containing_oneof() != nullptr) {
     return "proto3_optional";
   }
   switch (field->label()) {
@@ -520,11 +519,9 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     printer->Print("\n");
   }
 
-  // TODO: Remove this when ruby supports extensions for proto2 syntax.
-  if (file->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
-      file->extension_count() > 0) {
-    ABSL_LOG(WARNING)
-        << "Extensions are not yet supported for proto2 .proto files.";
+  // TODO: Remove this when ruby supports extensions.
+  if (file->extension_count() > 0) {
+    ABSL_LOG(WARNING) << "Extensions are not yet supported in Ruby.";
   }
 
   bool use_raw_descriptor = file->name() == "google/protobuf/descriptor.proto";
@@ -560,9 +557,7 @@ bool Generator::Generate(
     const std::string& parameter,
     GeneratorContext* generator_context,
     std::string* error) const {
-
-  if (file->syntax() != FileDescriptor::SYNTAX_PROTO3 &&
-      file->syntax() != FileDescriptor::SYNTAX_PROTO2) {
+  if (file->syntax() == FileDescriptor::SYNTAX_UNKNOWN) {
     *error = "Invalid or unsupported proto syntax";
     return false;
   }

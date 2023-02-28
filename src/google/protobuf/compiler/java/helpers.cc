@@ -932,7 +932,7 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
   }
 
   if (field->is_map()) {
-    if (!SupportUnknownEnumValue(field)) {
+    if (!SupportUnknownEnumValue(MapValueField(field))) {
       const FieldDescriptor* value = field->message_type()->map_value();
       if (GetJavaType(value) == JAVATYPE_ENUM) {
         extra_bits |= kMapWithProto2EnumValue;
@@ -975,6 +975,20 @@ void EscapeUtf16ToString(uint16_t code, std::string* output) {
   } else {
     output->append(absl::StrFormat("\\u%04x", code));
   }
+}
+
+const FieldDescriptor* MapKeyField(const FieldDescriptor* descriptor) {
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  const Descriptor* message = descriptor->message_type();
+  ABSL_CHECK(message->options().map_entry());
+  return message->map_key();
+}
+
+const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  const Descriptor* message = descriptor->message_type();
+  ABSL_CHECK(message->options().map_entry());
+  return message->map_value();
 }
 
 }  // namespace java
