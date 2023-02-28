@@ -43,7 +43,6 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -53,6 +52,7 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
+
 std::string NumberedCcFileName(absl::string_view basename, int number) {
   return absl::StrCat(basename, ".out/", number, ".cc");
 }
@@ -163,8 +163,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     } else if (key == "annotate_accessor") {
       file_options.annotate_accessor = true;
     } else if (key == "protos_for_field_listener_events") {
-      for (absl::string_view proto :
-           absl::StrSplit(value, CommandLineInterface::kPathSeparator)) {
+      for (absl::string_view proto : absl::StrSplit(value, ':')) {
         if (proto == file->name()) {
           file_options.field_listener_options.inject_field_listener_events =
               true;
