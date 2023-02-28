@@ -942,7 +942,8 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
             // makes no sense to attach a comment to the following token.
             collector.Flush();
           }
-          if (prev_line == line_ || trailing_comment_end_line == line_) {
+          if (result &&
+              (prev_line == line_ || trailing_comment_end_line == line_)) {
             // When previous token and this one are on the same line, or
             // even if a multi-line trailing comment ends on the same line
             // as this token, it's unclear to what token the comment
