@@ -262,9 +262,9 @@ bool Generator::Generate(const FileDescriptor* file,
       std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
       io::Printer printer(output.get(), '$');
       printer.Print(
-          "from $internal_package$ import descriptor_pb2\n"
-          "\n",
-          "internal_package", InternalPackage());
+          "from google3.net.google.protobuf.python.internal import "
+          "descriptor_pb2\n"
+          "\n");
 
       // For static checkers, we need to explicitly assign to the symbols we
       // publicly export.
@@ -373,11 +373,10 @@ void Generator::PrintTopBoilerplate() const {
     printer_->Print("import google3\n");
   }
   printer_->Print(
-      "from $internal_package$ import builder as _builder\n"
-      "from $public_package$ import descriptor as _descriptor\n"
-      "from $public_package$ import descriptor_pool as _descriptor_pool\n"
-      "from $public_package$ import symbol_database as _symbol_database\n",
-      "internal_package", InternalPackage(), "public_package", PublicPackage());
+      "from google.protobuf import descriptor as _descriptor\n"
+      "from google.protobuf import descriptor_pool as _descriptor_pool\n"
+      "from google.protobuf import symbol_database as _symbol_database\n"
+      "from google.protobuf.internal import builder as _builder\n");
 
   printer_->Print("# @@protoc_insertion_point(imports)\n\n");
   printer_->Print("_sym_db = _symbol_database.Default()\n");
@@ -1204,16 +1203,6 @@ std::string Generator::ModuleLevelServiceDescriptorName(
     name = absl::StrCat(ModuleAlias(descriptor.file()->name()), ".", name);
   }
   return name;
-}
-
-std::string Generator::PublicPackage() const {
-  return opensource_runtime_ ? "google.protobuf"
-                             : "google3.net.google.protobuf.python.public";
-}
-
-std::string Generator::InternalPackage() const {
-  return opensource_runtime_ ? "google.protobuf.internal"
-                             : "google3.net.google.protobuf.python.internal";
 }
 
 // Prints standard constructor arguments serialized_start and serialized_end.
