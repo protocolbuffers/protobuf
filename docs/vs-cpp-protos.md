@@ -1,4 +1,7 @@
-<?% config.freshness.reviewed = '2022-04-12' %?>
+<!--*
+# Document freshness: For more information, see go/fresh-source.
+freshness: { owner: 'haberman' reviewed: '2023-02-24' }
+*-->
 
 # upb vs. C++ Protobuf Design
 
@@ -73,10 +76,10 @@ message field, this will always trivially overwrite the pointer and will never
 perform an implicit copy.
 
 upb's `upb::Arena` is **thread-compatible**, which means it cannot be used
-concurrently without synchronization.  The arena can be seeded with an initial
+concurrently without synchronization. The arena can be seeded with an initial
 block of memory, but it does not explicitly support any parameters for choosing
-block size.  It support a custom alloc/dealloc function, and this function is
-allowed to return `NULL` if no dynamic memory is available.  This allows upb
+block size. It supports a custom alloc/dealloc function, and this function is
+allowed to return `NULL` if no dynamic memory is available. This allows upb
 arenas to have a max/fixed size, and makes it possible in theory to write code
 that is tolerant to out-of-memory errors.
 
@@ -88,7 +91,8 @@ message with one that may be on a different arena.
 
 ### Comparison
 
-**hybrid allocation vs. arena-only**:
+**hybrid allocation vs. arena-only**
+
 * The C++ hybrid allocation model introduces a great deal of complexity and
   unpredictability into the library.  upb benefits from having a much simpler
   and more predictable design.
@@ -101,6 +105,7 @@ message with one that may be on a different arena.
   perform a deep copy or extend the lifetime.
 
 **thread-compatible vs. thread-safe arena**
+
 * A thread-safe arena (as in C++) is safer and easier to use.  A thread-compatible
   arena requires that the user prove that the arena cannot be used concurrently.
 * [Thread Sanitizer](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual)
@@ -114,6 +119,7 @@ message with one that may be on a different arena.
   performance.
 
 **fuse vs. no fuse**
+
 * The `upb_Arena_Fuse()` operation is a key part of how upb supports reparenting
   of messages when the parent may be on a different arena.  Without this, upb has
   no way of supporting `foo.bar = bar` in dynamic languages without performing a
