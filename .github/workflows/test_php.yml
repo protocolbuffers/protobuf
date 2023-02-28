@@ -45,7 +45,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/docker
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-6e95c0e221e4bd52e3b4dc1398c6336985196931
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-508417e5215994ade7585d28ba3aad681a25fa5d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: ${{ matrix.command }}
 
@@ -80,6 +80,7 @@ jobs:
         id: cross-compile
         uses: ./.github/actions/cross-compile-protoc
         with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
@@ -111,6 +112,7 @@ jobs:
         id: cross-compile
         uses: ./.github/actions/cross-compile-protoc
         with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
