@@ -827,6 +827,7 @@ message TestOneof {
       optional int32 a = 5;
       optional string b = 6;
     }
+    bytes foo_bytes_cord = 7 [ctype=CORD];
   }
 }
 
@@ -1660,4 +1661,9 @@ message BadFieldNames{
 
 message RedactedFields{
   optional string optional_redacted_string = 1 [debug_redact = true];
+}
+
+message TestCord{
+  optional bytes optional_bytes_cord = 1 [ctype=CORD];
+  optional bytes optional_bytes_cord_default = 2 [ctype=CORD, default = "hello"];
 }

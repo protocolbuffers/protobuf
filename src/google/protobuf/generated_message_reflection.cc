@@ -1797,6 +1797,56 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
   }
 }
 
+void Reflection::SetString(Message* message, const FieldDescriptor* field,
+                           const absl::Cord& value) const {
+  USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
+  if (field->is_extension()) {
+    return absl::CopyCordToString(value,
+                                  MutableExtensionSet(message)->MutableString(
+                                      field->number(), field->type(), field));
+  } else {
+    switch (field->options().ctype()) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          if (!HasOneofField(*message, field)) {
+            ClearOneof(message, field->containing_oneof());
+            *MutableField<absl::Cord*>(message, field) =
+                Arena::Create<absl::Cord>(message->GetArenaForAllocation());
+          }
+          *(*MutableField<absl::Cord*>(message, field)) = value;
+        } else {
+          *MutableField<absl::Cord>(message, field) = value;
+        }
+        break;
+      default:
+      case FieldOptions::STRING: {
+        // Oneof string fields are never set as a default instance.
+        // We just need to pass some arbitrary default string to make it work.
+        // This allows us to not have the real default accessible from
+        // reflection.
+        if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
+          ClearOneof(message, field->containing_oneof());
+          MutableField<ArenaStringPtr>(message, field)->InitDefault();
+        }
+        if (IsInlined(field)) {
+          auto* str = MutableField<InlinedStringField>(message, field);
+          const uint32_t index = schema_.InlinedStringIndex(field);
+          ABSL_DCHECK_GT(index, 0);
+          uint32_t* states =
+              &MutableInlinedStringDonatedArray(message)[index / 32];
+          uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
+          str->Set(std::string(value), message->GetArenaForAllocation(),
+                   IsInlinedStringDonated(*message, field), states, mask,
+                   message);
+        } else {
+          auto* str = MutableField<ArenaStringPtr>(message, field);
+          str->Set(std::string(value), message->GetArenaForAllocation());
+        }
+        break;
+      }
+    }
+  }
+}
 
 std::string Reflection::GetRepeatedString(const Message& message,
                                           const FieldDescriptor* field,

@@ -1103,6 +1103,14 @@ inline bool VerifyUTF8(const std::string* s, const char* field_name) {
 PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* InlineGreedyStringParser(
     std::string* s, const char* ptr, ParseContext* ctx);
 
+PROTOBUF_NODISCARD inline const char* InlineCordParser(::absl::Cord* cord,
+                                                       const char* ptr,
+                                                       ParseContext* ctx) {
+  int size = ReadSize(&ptr);
+  if (!ptr) return nullptr;
+  return ctx->ReadCord(ptr, size, cord);
+}
+
 
 template <typename T>
 PROTOBUF_NODISCARD const char* FieldParser(uint64_t tag, T& field_parser,
