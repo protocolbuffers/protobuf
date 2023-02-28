@@ -1088,6 +1088,38 @@ TEST(GENERATED_ENUM_TEST_NAME, Name) {
   EXPECT_EQ("SPARSE_E", UNITTEST::TestSparseEnum_Name(UNITTEST::SPARSE_E));
   EXPECT_EQ("SPARSE_F", UNITTEST::TestSparseEnum_Name(UNITTEST::SPARSE_F));
   EXPECT_EQ("SPARSE_G", UNITTEST::TestSparseEnum_Name(UNITTEST::SPARSE_G));
+
+  // Value without a label shows an empty string.
+  EXPECT_EQ("", UNITTEST::TestEnumWithDupValue_Name(
+                    static_cast<UNITTEST::TestEnumWithDupValue>(-123)));
+  EXPECT_EQ("", UNITTEST::TestSparseEnum_Name(
+                    static_cast<UNITTEST::TestSparseEnum>(-123)));
+}
+
+template <typename Enum>
+static void TestEnumStringify(Enum value, absl::string_view expected_label) {
+  EXPECT_EQ(expected_label, absl::StrCat(value));
+  EXPECT_EQ(absl::StrCat(static_cast<int>(value)),
+            absl::StrFormat("%d", value));
+  EXPECT_EQ(expected_label, absl::StrFormat("%v", value));
+}
+
+TEST(GENERATED_ENUM_TEST_NAME, Stringify) {
+  // "Names" in the presence of dup values map to the first alias.
+  TestEnumStringify(UNITTEST::FOO1, "FOO1");
+  TestEnumStringify(UNITTEST::FOO2, "FOO1");
+
+  TestEnumStringify(UNITTEST::SPARSE_A, "SPARSE_A");
+  TestEnumStringify(UNITTEST::SPARSE_B, "SPARSE_B");
+  TestEnumStringify(UNITTEST::SPARSE_C, "SPARSE_C");
+  TestEnumStringify(UNITTEST::SPARSE_D, "SPARSE_D");
+  TestEnumStringify(UNITTEST::SPARSE_E, "SPARSE_E");
+  TestEnumStringify(UNITTEST::SPARSE_F, "SPARSE_F");
+  TestEnumStringify(UNITTEST::SPARSE_G, "SPARSE_G");
+
+  // Value without a label shows an empty string.
+  TestEnumStringify(static_cast<UNITTEST::TestEnumWithDupValue>(-123), "-123");
+  TestEnumStringify(static_cast<UNITTEST::TestSparseEnum>(-123), "-123");
 }
 
 TEST(GENERATED_ENUM_TEST_NAME, Parse) {

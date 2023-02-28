@@ -269,6 +269,18 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
       bool $Msg_Enum$_Parse(absl::string_view name, $Msg_Enum$* value);
     )cc");
   }
+
+  p->Emit(R"cc(
+    template <typename Sink>
+    void AbslStringify(Sink& sink, $Msg_Enum$ value) {
+      const auto& name = $Msg_Enum$_Name(value);
+      if (name.empty()) {
+        sink.Append(absl::StrCat(static_cast<int>(value)));
+      } else {
+        sink.Append(name);
+      }
+    }
+  )cc");
 }
 
 void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {

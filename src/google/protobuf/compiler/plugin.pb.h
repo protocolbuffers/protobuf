@@ -113,6 +113,15 @@ inline bool CodeGeneratorResponse_Feature_Parse(absl::string_view name, CodeGene
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<CodeGeneratorResponse_Feature>(
       CodeGeneratorResponse_Feature_descriptor(), name, value);
 }
+template <typename Sink>
+void AbslStringify(Sink& sink, CodeGeneratorResponse_Feature value) {
+  const auto& name = CodeGeneratorResponse_Feature_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
+}
 
 // ===================================================================
 

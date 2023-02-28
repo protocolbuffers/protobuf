@@ -234,6 +234,15 @@ inline bool FieldDescriptorProto_Type_Parse(absl::string_view name, FieldDescrip
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Type>(
       FieldDescriptorProto_Type_descriptor(), name, value);
 }
+template <typename Sink>
+void AbslStringify(Sink& sink, FieldDescriptorProto_Type value) {
+  const auto& name = FieldDescriptorProto_Type_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
+}
 enum FieldDescriptorProto_Label : int {
   FieldDescriptorProto_Label_LABEL_OPTIONAL = 1,
   FieldDescriptorProto_Label_LABEL_REQUIRED = 2,
@@ -262,6 +271,15 @@ inline const std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_L
 inline bool FieldDescriptorProto_Label_Parse(absl::string_view name, FieldDescriptorProto_Label* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Label>(
       FieldDescriptorProto_Label_descriptor(), name, value);
+}
+template <typename Sink>
+void AbslStringify(Sink& sink, FieldDescriptorProto_Label value) {
+  const auto& name = FieldDescriptorProto_Label_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
 }
 enum FileOptions_OptimizeMode : int {
   FileOptions_OptimizeMode_SPEED = 1,
@@ -292,6 +310,15 @@ inline bool FileOptions_OptimizeMode_Parse(absl::string_view name, FileOptions_O
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FileOptions_OptimizeMode>(
       FileOptions_OptimizeMode_descriptor(), name, value);
 }
+template <typename Sink>
+void AbslStringify(Sink& sink, FileOptions_OptimizeMode value) {
+  const auto& name = FileOptions_OptimizeMode_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
+}
 enum FieldOptions_CType : int {
   FieldOptions_CType_STRING = 0,
   FieldOptions_CType_CORD = 1,
@@ -320,6 +347,15 @@ inline const std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
 inline bool FieldOptions_CType_Parse(absl::string_view name, FieldOptions_CType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_CType>(
       FieldOptions_CType_descriptor(), name, value);
+}
+template <typename Sink>
+void AbslStringify(Sink& sink, FieldOptions_CType value) {
+  const auto& name = FieldOptions_CType_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
 }
 enum FieldOptions_JSType : int {
   FieldOptions_JSType_JS_NORMAL = 0,
@@ -350,6 +386,15 @@ inline bool FieldOptions_JSType_Parse(absl::string_view name, FieldOptions_JSTyp
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_JSType>(
       FieldOptions_JSType_descriptor(), name, value);
 }
+template <typename Sink>
+void AbslStringify(Sink& sink, FieldOptions_JSType value) {
+  const auto& name = FieldOptions_JSType_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
+}
 enum FieldOptions_OptionRetention : int {
   FieldOptions_OptionRetention_RETENTION_UNKNOWN = 0,
   FieldOptions_OptionRetention_RETENTION_RUNTIME = 1,
@@ -378,6 +423,15 @@ inline const std::string& FieldOptions_OptionRetention_Name(FieldOptions_OptionR
 inline bool FieldOptions_OptionRetention_Parse(absl::string_view name, FieldOptions_OptionRetention* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_OptionRetention>(
       FieldOptions_OptionRetention_descriptor(), name, value);
+}
+template <typename Sink>
+void AbslStringify(Sink& sink, FieldOptions_OptionRetention value) {
+  const auto& name = FieldOptions_OptionRetention_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
 }
 enum FieldOptions_OptionTargetType : int {
   FieldOptions_OptionTargetType_TARGET_TYPE_UNKNOWN = 0,
@@ -415,6 +469,15 @@ inline bool FieldOptions_OptionTargetType_Parse(absl::string_view name, FieldOpt
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_OptionTargetType>(
       FieldOptions_OptionTargetType_descriptor(), name, value);
 }
+template <typename Sink>
+void AbslStringify(Sink& sink, FieldOptions_OptionTargetType value) {
+  const auto& name = FieldOptions_OptionTargetType_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
+}
 enum MethodOptions_IdempotencyLevel : int {
   MethodOptions_IdempotencyLevel_IDEMPOTENCY_UNKNOWN = 0,
   MethodOptions_IdempotencyLevel_NO_SIDE_EFFECTS = 1,
@@ -444,6 +507,15 @@ inline bool MethodOptions_IdempotencyLevel_Parse(absl::string_view name, MethodO
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<MethodOptions_IdempotencyLevel>(
       MethodOptions_IdempotencyLevel_descriptor(), name, value);
 }
+template <typename Sink>
+void AbslStringify(Sink& sink, MethodOptions_IdempotencyLevel value) {
+  const auto& name = MethodOptions_IdempotencyLevel_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
+}
 enum GeneratedCodeInfo_Annotation_Semantic : int {
   GeneratedCodeInfo_Annotation_Semantic_NONE = 0,
   GeneratedCodeInfo_Annotation_Semantic_SET = 1,
@@ -472,6 +544,15 @@ inline const std::string& GeneratedCodeInfo_Annotation_Semantic_Name(GeneratedCo
 inline bool GeneratedCodeInfo_Annotation_Semantic_Parse(absl::string_view name, GeneratedCodeInfo_Annotation_Semantic* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<GeneratedCodeInfo_Annotation_Semantic>(
       GeneratedCodeInfo_Annotation_Semantic_descriptor(), name, value);
+}
+template <typename Sink>
+void AbslStringify(Sink& sink, GeneratedCodeInfo_Annotation_Semantic value) {
+  const auto& name = GeneratedCodeInfo_Annotation_Semantic_Name(value);
+  if (name.empty()) {
+    sink.Append(absl::StrCat(static_cast<int>(value)));
+  } else {
+    sink.Append(name);
+  }
 }
 
 // ===================================================================
