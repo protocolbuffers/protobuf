@@ -28,7 +28,7 @@ jobs:
             targets: //java/... //java/internal:java_version
           - name: aarch64
             version: 'aarch64'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-508417e5215994ade7585d28ba3aad681a25fa5d
             targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: Linux ${{ matrix.name }}

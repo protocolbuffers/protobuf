@@ -17,25 +17,25 @@ jobs:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
           - { name: ASAN, flags: --config=asan }
-          - { name: MSAN, flags: --config=kokoro-msan }
+          - { name: MSAN, flags: --config=docker-msan }
           - { name: TSAN, flags: --config=tsan }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
           # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:dbd2f15fb69734d72c3fd10cb819bbe2ce4890acf49e9a2f9403983fe48e8807
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:309dae3122031447d714414814d262e5f31cb93c0e248e9c02f9d8cdafd7e3b9
           - targets: //pkg/... //src/... @com_google_protobuf_examples//...
 
           # Override cases with custom images
           - config: { name: "TCMalloc" }
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:9d975616c3fd44d5a091aeb60ee94f37e22fb367d471d258fc18cb4a2387c943"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:4df3b4749e787ba0a671ec0b783d0f1ba05f60be4c9e9fd72c875550a0cde1ea"
             targets: "//src/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e863f8ec6b1dfe41f7dc573bac9c8072a0a68b1b"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-508417e5215994ade7585d28ba3aad681a25fa5d"
           - config: { name: "Bazel4" }
             targets: "//src/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-3b71de326b62f67bf754c4dc4016d6a2fa9dd664"
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-6361b3a6e5c97e9951d03a4de28542fc45f1adab"
     name: Linux ${{ matrix.config.name }}
     runs-on: ubuntu-latest
     steps:
