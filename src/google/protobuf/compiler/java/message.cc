@@ -1305,9 +1305,6 @@ void ImmutableMessageGenerator::GenerateKotlinMembers(
                  "camelcase_name",
                  name_resolver_->GetKotlinFactoryName(descriptor_));
 
-  if (!context_->options().opensource_runtime) {
-    printer->Print("@com.google.errorprone.annotations.CheckReturnValue\n");
-  }
 
   printer->Print(
       "public inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> "
@@ -1340,9 +1337,6 @@ void ImmutableMessageGenerator::GenerateTopLevelKotlinMembers(
     io::Printer* printer) const {
   printer->Print("@kotlin.jvm.JvmSynthetic\n");
 
-  if (context_->options().opensource_runtime) {
-    printer->Print("@com.google.errorprone.annotations.CheckReturnValue\n");
-  }
 
   printer->Print(
       "public inline fun $message$.copy(block: $message_kt$.Dsl.() -> "
