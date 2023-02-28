@@ -3,6 +3,8 @@
     extern "C++" {
       *google*;
     };
+    scc_info_*;
+    descriptor_table_*;
 
   local:
     *;
