@@ -43,6 +43,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -161,6 +162,15 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     } else if (key == "proto_static_reflection_h") {
     } else if (key == "annotate_accessor") {
       file_options.annotate_accessor = true;
+    } else if (key == "protos_for_field_listener_events") {
+      for (absl::string_view proto :
+           absl::StrSplit(value, CommandLineInterface::kPathSeparator)) {
+        if (proto == file->name()) {
+          file_options.field_listener_options.inject_field_listener_events =
+              true;
+          break;
+        }
+      }
     } else if (key == "inject_field_listener_events") {
       file_options.field_listener_options.inject_field_listener_events = true;
     } else if (key == "forbidden_field_listener_events") {
