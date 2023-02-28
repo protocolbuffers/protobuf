@@ -25,7 +25,6 @@ kt_jvm_library(
     deps = [
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         "//java/lite",
-        "@maven//:com_google_errorprone_error_prone_annotations",
     ],
 )
 
