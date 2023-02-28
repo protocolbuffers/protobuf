@@ -85,7 +85,6 @@ cc_library(
         ":names",
         ":names_internal",
         "//src/google/protobuf/compiler:code_generator",
-        "//src/google/protobuf/compiler:command_line_interface",
         "//src/google/protobuf/compiler:retention",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:btree",
