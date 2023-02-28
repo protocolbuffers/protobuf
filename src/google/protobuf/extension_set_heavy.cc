@@ -285,7 +285,7 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
   } else {
     output->type = extension->type();
     output->is_repeated = extension->is_repeated();
-    output->is_packed = extension->options().packed();
+    output->is_packed = extension->is_packed();
     output->descriptor = extension;
     if (extension->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       output->message_info.prototype =
