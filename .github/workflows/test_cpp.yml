@@ -80,7 +80,6 @@ jobs:
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-3af05275178e16af30961976af126eabbbb2c733
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          skip-staleness-check: true
           entrypoint: bash
           command: >
             -c "set -ex;
