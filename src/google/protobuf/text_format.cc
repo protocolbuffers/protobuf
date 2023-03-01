@@ -64,7 +64,6 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/reflection_mode.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -74,9 +73,6 @@
 
 namespace google {
 namespace protobuf {
-
-using internal::ReflectionMode;
-using internal::ScopedReflectionMode;
 
 namespace {
 
@@ -107,8 +103,6 @@ PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
 }  // namespace internal
 
 std::string Message::DebugString() const {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
   std::string debug_string;
 
   TextFormat::Printer printer;
@@ -128,8 +122,6 @@ std::string Message::DebugString() const {
 }
 
 std::string Message::ShortDebugString() const {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
   std::string debug_string;
 
   TextFormat::Printer printer;
@@ -154,8 +146,6 @@ std::string Message::ShortDebugString() const {
 }
 
 std::string Message::Utf8DebugString() const {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
   std::string debug_string;
 
   TextFormat::Printer printer;
@@ -181,9 +171,6 @@ namespace internal {
 
 void PerformAbslStringify(const Message& message,
                           absl::FunctionRef<void(absl::string_view)> append) {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
-
   // TODO(b/249835002): consider using the single line version for short
   TextFormat::Printer printer;
   printer.SetExpandAny(true);
