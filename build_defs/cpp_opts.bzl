@@ -41,10 +41,3 @@ LINK_OPTS = select({
         "-lm",
     ],
 })
-
-# When cross-compiling for Windows we need to statically link pthread and the C++ library.
-PROTOC_LINK_OPTS = select({
-    "//build_defs:config_win32": ["-static"],
-    "//build_defs:config_win64": ["-static"],
-    "//conditions:default": [],
-})

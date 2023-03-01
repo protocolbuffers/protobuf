@@ -34,7 +34,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/bazel-docker
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-{1}-75e79f791b96e056086f43ace729cf3ebf9a9f5d', matrix.ruby, matrix.bazel) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-{1}-508417e5215994ade7585d28ba3aad681a25fa5d', matrix.ruby, matrix.bazel) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION
@@ -52,6 +52,7 @@ jobs:
         id: cross-compile
         uses: ./.github/actions/cross-compile-protoc
         with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
@@ -125,7 +126,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/bazel-docker
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-75e79f791b96e056086f43ace729cf3ebf9a9f5d
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-508417e5215994ade7585d28ba3aad681a25fa5d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >
