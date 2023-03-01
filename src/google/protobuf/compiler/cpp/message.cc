@@ -1288,16 +1288,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "}\n"
       "\n");
 
-  if (PublicUnknownFieldsAccessors(descriptor_)) {
-    format(
-        "inline const $unknown_fields_type$& unknown_fields() const {\n"
-        "  return $unknown_fields$;\n"
-        "}\n"
-        "inline $unknown_fields_type$* mutable_unknown_fields() {\n"
-        "  return $mutable_unknown_fields$;\n"
-        "}\n"
-        "\n");
-  }
+  format(
+      "inline const $unknown_fields_type$& unknown_fields() const {\n"
+      "  return $unknown_fields$;\n"
+      "}\n"
+      "inline $unknown_fields_type$* mutable_unknown_fields() {\n"
+      "  return $mutable_unknown_fields$;\n"
+      "}\n"
+      "\n");
 
   // Only generate this member if it's not disabled.
   if (HasDescriptorMethods(descriptor_->file(), options_) &&
