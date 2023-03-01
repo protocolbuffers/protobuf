@@ -88,6 +88,7 @@ cc_library(
     deps = [
         ":code_generator",
         ":importer",
+        ":retention",
         "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/log:absl_check",
@@ -255,6 +256,7 @@ cc_test(
     data = [
         ":test_plugin",
         "//:test_proto_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//src/google/protobuf:testdata",
     ],
     deps = [
@@ -374,10 +376,13 @@ pkg_files(
 
 filegroup(
     name = "test_srcs",
-    srcs = glob([
-        "*_test.cc",
-        "*unittest.cc",
-    ], allow_empty = True) + [
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ) + [
         "//src/google/protobuf/compiler/cpp:test_srcs",
         "//src/google/protobuf/compiler/csharp:test_srcs",
         "//src/google/protobuf/compiler/java:test_srcs",
