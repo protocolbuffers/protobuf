@@ -1092,10 +1092,6 @@ bool ShouldVerify(const FileDescriptor* file, const Options& options,
   return false;
 }
 
-bool IsUtf8String(const FieldDescriptor* field) {
-  return IsProto3(field->file()) &&
-         field->type() == FieldDescriptor::TYPE_STRING;
-}
 
 VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
   (void)descriptor;
