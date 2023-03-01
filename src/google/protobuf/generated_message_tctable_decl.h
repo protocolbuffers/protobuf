@@ -165,6 +165,114 @@ struct Offset {
 
 struct FieldAuxDefaultMessage {};
 
+// Small type card used by mini parse to handle map entries.
+// Map key/values are very limited, so we can encode the whole thing in a single
+// byte.
+class MapTypeCard {
+ public:
+  enum CppType { kBool, k32, k64, kString, kMessage };
+  MapTypeCard() = default;
+  constexpr MapTypeCard(WireFormatLite::WireType wiretype, CppType cpp_type,
+                        bool is_zigzag_utf8)
+      : data_(
+            static_cast<uint8_t>((static_cast<uint8_t>(wiretype) << 0) |
+                                 (static_cast<uint8_t>(cpp_type) << 3) |
+                                 (static_cast<uint8_t>(is_zigzag_utf8) << 6))) {
+  }
+
+  WireFormatLite::WireType wiretype() const {
+    return static_cast<WireFormatLite::WireType>((data_ >> 0) & 0x7);
+  }
+
+  CppType cpp_type() const { return static_cast<CppType>((data_ >> 3) & 0x7); }
+
+  bool is_zigzag() const {
+    ABSL_DCHECK(wiretype() == WireFormatLite::WIRETYPE_VARINT);
+    ABSL_DCHECK(cpp_type() == CppType::k32 || cpp_type() == CppType::k64);
+    return is_zigzag_utf8();
+  }
+  bool is_utf8() const {
+    ABSL_DCHECK(wiretype() == WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+    ABSL_DCHECK(cpp_type() == CppType::kString);
+    return is_zigzag_utf8();
+  }
+
+ private:
+  bool is_zigzag_utf8() const { return static_cast<bool>((data_ >> 6) & 0x1); }
+  uint8_t data_;
+};
+static_assert(sizeof(MapTypeCard) == sizeof(uint8_t), "");
+
+// Make the map entry type card for a specified field type.
+constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
+  switch (type) {
+    case WireFormatLite::TYPE_FLOAT:
+    case WireFormatLite::TYPE_FIXED32:
+    case WireFormatLite::TYPE_SFIXED32:
+      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false};
+
+    case WireFormatLite::TYPE_DOUBLE:
+    case WireFormatLite::TYPE_FIXED64:
+    case WireFormatLite::TYPE_SFIXED64:
+      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false};
+
+    case WireFormatLite::TYPE_BOOL:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::kBool, false};
+
+    case WireFormatLite::TYPE_ENUM:
+      // Enum validation is handled via `value_is_validated_enum` below.
+    case WireFormatLite::TYPE_INT32:
+    case WireFormatLite::TYPE_UINT32:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false};
+
+    case WireFormatLite::TYPE_INT64:
+    case WireFormatLite::TYPE_UINT64:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, false};
+
+    case WireFormatLite::TYPE_SINT32:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, true};
+    case WireFormatLite::TYPE_SINT64:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, true};
+
+    case WireFormatLite::TYPE_STRING:
+      return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kString,
+              true};
+    case WireFormatLite::TYPE_BYTES:
+      return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kString,
+              false};
+
+    case WireFormatLite::TYPE_MESSAGE:
+      return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kMessage,
+              false};
+
+    default:
+      PROTOBUF_ASSUME(false);
+  }
+}
+
+enum class MapNodeSizeInfoT : uint32_t;
+
+// Aux entry for map fields.
+struct MapAuxInfo {
+  MapTypeCard key_type_card;
+  MapTypeCard value_type_card;
+  // When off, we fall back to table->fallback to handle the parse. An example
+  // of this is for DynamicMessage.
+  uint8_t is_supported : 1;
+  // Determines if we are using LITE or the full runtime. When using the full
+  // runtime we have to synchronize with reflection before accessing the map.
+  uint8_t use_lite : 1;
+  // If true UTF8 errors cause the parsing to fail.
+  uint8_t fail_on_utf8_failure : 1;
+  // If true UTF8 errors are logged, but they are accepted.
+  uint8_t log_debug_utf8_failure : 1;
+  // If true the next aux contains the enum validator.
+  uint8_t value_is_validated_enum : 1;
+  // Size information derived from the actual node type.
+  MapNodeSizeInfoT node_size_info;
+};
+static_assert(sizeof(MapAuxInfo) <= 8, "");
+
 // Base class for message-level table with info for the tail-call parser.
 struct alignas(uint64_t) TcParseTableBase {
   // Common attributes for message layout:
@@ -291,6 +399,9 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
         : message_default_p(msg) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
+    constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
+    constexpr FieldAux(void (*create_in_arena)(Arena*, void*))
+        : create_in_arena(create_in_arena) {}
     bool (*enum_validator)(int);
     struct {
       int16_t start;    // minimum enum number (if it fits)
@@ -299,6 +410,8 @@ struct alignas(uint64_t) TcParseTableBase {
     uint32_t offset;
     const void* message_default_p;
     const TcParseTableBase* table;
+    MapAuxInfo map_info;
+    void (*create_in_arena)(Arena*, void*);
 
     const MessageLite* message_default() const {
       return static_cast<const MessageLite*>(message_default_p);

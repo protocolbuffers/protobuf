@@ -516,6 +516,13 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
                                     bool>::type = true>
   PROTOBUF_NODISCARD const char* ParseMessage(T* msg, const char* ptr);
 
+  // Read the length prefix, push the new limit, call the func(ptr), and then
+  // pop the limit. Useful for situations that don't value an actual message,
+  // like map entries.
+  template <typename Func>
+  PROTOBUF_NODISCARD const char* ParseLengthDelimitedInlined(const char*,
+                                                             const Func& func);
+
   template <typename TcParser, typename Table>
   PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
       MessageLite* msg, const char* ptr, const Table* table) {
@@ -647,6 +654,11 @@ T UnalignedLoad(const char* p) {
   T res;
   memcpy(&res, &tmp, sizeof(T));
   return res;
+}
+template <typename T, typename Void,
+          typename = std::enable_if_t<std::is_same<Void, void>::value>>
+T UnalignedLoad(const Void* p) {
+  return UnalignedLoad<T>(reinterpret_cast<const char*>(p));
 }
 
 PROTOBUF_EXPORT
@@ -939,6 +951,18 @@ PROTOBUF_NODISCARD const char* ParseContext::ParseMessage(T* msg,
   auto old_depth = depth_;
   ptr = msg->_InternalParse(ptr, this);
   if (ptr != nullptr) ABSL_DCHECK_EQ(old_depth, depth_);
+  depth_++;
+  if (!PopLimit(std::move(old))) return nullptr;
+  return ptr;
+}
+
+template <typename Func>
+PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
+  LimitToken old;
+  ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
+  if (ptr == nullptr) return ptr;
+  PROTOBUF_ALWAYS_INLINE_CALL ptr = func(ptr);
   depth_++;
   if (!PopLimit(std::move(old))) return nullptr;
   return ptr;

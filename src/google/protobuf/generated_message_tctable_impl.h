@@ -40,6 +40,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/map.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -617,6 +618,33 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* FastEndG1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastEndG2(PROTOBUF_TC_PARAM_DECL);
 
+  // For `map` mini parsing generate a type card for the key/value.
+  template <typename MapField>
+  static constexpr MapAuxInfo GetMapAuxInfo(bool fail_on_utf8_failure,
+                                            bool log_debug_utf8_failure,
+                                            bool validated_enum_value) {
+    using MapType = typename MapField::MapType;
+    using Node = typename MapType::Node;
+    static_assert(alignof(Node) == alignof(NodeBase), "");
+    // Verify the assumption made in MpMap, guaranteed by Map<>.
+    assert(PROTOBUF_FIELD_OFFSET(Node, kv.first) == sizeof(NodeBase));
+    return {
+        MakeMapTypeCard(MapField::kKeyFieldType),
+        MakeMapTypeCard(MapField::kValueFieldType),
+        true,
+        !std::is_base_of<MapFieldBaseForParse, MapField>::value,
+        fail_on_utf8_failure,
+        log_debug_utf8_failure,
+        validated_enum_value,
+        Node::size_info(),
+    };
+  }
+
+  template <typename T>
+  static void CreateInArenaStorageCb(Arena* arena, void* p) {
+    Arena::CreateInArenaStorage(static_cast<T*>(p), arena);
+  }
+
  private:
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>
@@ -774,6 +802,21 @@ class PROTOBUF_EXPORT TcParser final {
   static void AddUnknownEnum(MessageLite* msg, const TcParseTableBase* table,
                              uint32_t tag, int32_t enum_value);
 
+  static void WriteMapEntryAsUnknown(MessageLite* msg,
+                                     const TcParseTableBase* table,
+                                     uint32_t tag, NodeBase* node,
+                                     MapAuxInfo map_info);
+
+  static void InitializeMapNodeEntry(void* obj, MapTypeCard type_card,
+                                     UntypedMapBase& map,
+                                     const TcParseTableBase::FieldAux* aux);
+  static void DestroyMapNode(NodeBase* node, MapAuxInfo map_info,
+                             UntypedMapBase& map);
+  static const char* ParseOneMapEntry(
+      NodeBase* node, const char* ptr, ParseContext* ctx,
+      const TcParseTableBase::FieldAux* aux, const TcParseTableBase* table,
+      const TcParseTableBase::FieldEntry& entry);
+
   // Mini field lookup:
   static const TcParseTableBase::FieldEntry* FindFieldEntry(
       const TcParseTableBase* table, uint32_t field_num);
@@ -815,6 +858,7 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* MpMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpMap(PROTOBUF_TC_PARAM_DECL);
 };
 
 // Dispatch to the designated parse function

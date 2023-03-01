@@ -261,6 +261,21 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 # define PROTOBUF_ALWAYS_INLINE
 #endif
 
+#ifdef PROTOBUF_ALWAYS_INLINE_CALL
+#error PROTOBUF_ALWAYS_INLINE_CALL was previously defined
+#endif
+// For functions we want to force inline from the caller, instead of in the
+// declaration of the callee.
+// This is useful for lambdas where it is not easy to specify ALWAYS_INLINE.
+// Use like:
+//   PROTOBUF_ALWAYS_INLINE_CALL res = SomeFunc(args...);
+#if defined(__clang__) && !defined(PROTOBUF_NO_INLINE_CALL) && \
+    __has_cpp_attribute(clang::always_inline)
+#define PROTOBUF_ALWAYS_INLINE_CALL [[clang::always_inline]]
+#else
+#define PROTOBUF_ALWAYS_INLINE_CALL
+#endif
+
 #ifdef PROTOBUF_NDEBUG_INLINE
 #error PROTOBUF_NDEBUG_INLINE was previously defined
 #endif

@@ -90,6 +90,8 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType value_wire_type>
 class MapField;
 
+struct MapTestPeer;
+
 template <typename Key, typename T>
 class TypeDefinedMapFieldBase;
 
@@ -291,11 +293,30 @@ struct TransparentSupport<std::string> {
   using key_arg = K;
 };
 
+enum class MapNodeSizeInfoT : uint32_t;
+inline uint16_t SizeFromInfo(MapNodeSizeInfoT node_size_info) {
+  return static_cast<uint16_t>(static_cast<uint32_t>(node_size_info) >> 16);
+}
+inline uint16_t ValueOffsetFromInfo(MapNodeSizeInfoT node_size_info) {
+  return static_cast<uint16_t>(static_cast<uint32_t>(node_size_info) >> 0);
+}
+constexpr MapNodeSizeInfoT MakeNodeInfo(uint16_t size, uint16_t value_offset) {
+  return static_cast<MapNodeSizeInfoT>((static_cast<uint32_t>(size) << 16) |
+                                       value_offset);
+}
+
 struct NodeBase {
   // Align the node to allow KeyNode to predict the location of the key.
   // This way sizeof(NodeBase) contains any possible padding it was going to
   // have between NodeBase and the key.
   alignas(kMaxMessageAlignment) NodeBase* next;
+
+  void* GetVoidKey() { return this + 1; }
+  const void* GetVoidKey() const { return this + 1; }
+
+  void* GetVoidValue(MapNodeSizeInfoT size_info) {
+    return reinterpret_cast<char*>(this) + ValueOffsetFromInfo(size_info);
+  }
 };
 
 inline NodeBase* EraseFromLinkedList(NodeBase* item, NodeBase* head) {
@@ -474,6 +495,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
  protected:
   friend class TcParser;
+  friend struct MapTestPeer;
 
   struct NodeAndBucket {
     NodeBase* node;
@@ -538,9 +560,17 @@ class PROTOBUF_EXPORT UntypedMapBase {
   using AllocFor = absl::allocator_traits<Allocator>::template rebind_alloc<T>;
 
   // Alignment of the nodes is the same as alignment of NodeBase.
+  NodeBase* AllocNode(MapNodeSizeInfoT size_info) {
+    return AllocNode(SizeFromInfo(size_info));
+  }
+
   NodeBase* AllocNode(size_t node_size) {
     PROTOBUF_ASSUME(node_size % sizeof(NodeBase) == 0);
     return AllocFor<NodeBase>(alloc_).allocate(node_size / sizeof(NodeBase));
+  }
+
+  void DeallocNode(NodeBase* node, MapNodeSizeInfoT size_info) {
+    DeallocNode(node, SizeFromInfo(size_info));
   }
 
   void DeallocNode(NodeBase* node, size_t node_size) {
@@ -595,6 +625,17 @@ class PROTOBUF_EXPORT UntypedMapBase {
   Allocator alloc_;
 };
 
+// Base class used by TcParser to extract the map object from a map field.
+// We keep it here to avoid a dependency into map_field.h from the main TcParser
+// code, since that would bring in Message too.
+class MapFieldBaseForParse {
+ public:
+  virtual UntypedMapBase* MutableMap() = 0;
+
+ protected:
+  ~MapFieldBaseForParse() = default;
+};
+
 // The value might be of different signedness, so use memcpy to extract it.
 template <typename T, std::enable_if_t<std::is_integral<T>::value, int> = 0>
 T ReadKey(const void* ptr) {
@@ -607,6 +648,12 @@ template <typename T, std::enable_if_t<!std::is_integral<T>::value, int> = 0>
 const T& ReadKey(const void* ptr) {
   return *reinterpret_cast<const T*>(ptr);
 }
+
+template <typename Key>
+struct KeyNode : NodeBase {
+  static constexpr size_t kOffset = sizeof(NodeBase);
+  decltype(auto) key() const { return ReadKey<Key>(GetVoidKey()); }
+};
 
 // KeyMapBase is a chaining hash map with the additional feature that some
 // buckets can be converted to use an ordered container.  This ensures O(lg n)
@@ -644,12 +691,7 @@ class KeyMapBase : public UntypedMapBase {
   using UntypedMapBase::UntypedMapBase;
 
  protected:
-  struct KeyNode : NodeBase {
-    static constexpr size_t kOffset = sizeof(NodeBase);
-    decltype(auto) key() const {
-      return ReadKey<Key>(reinterpret_cast<const char*>(this) + kOffset);
-    }
-  };
+  using KeyNode = internal::KeyNode<Key>;
 
   // Trees. The payload type is a copy of Key, so that we can query the tree
   // with Keys that are not in any particular data structure.
@@ -728,6 +770,9 @@ class KeyMapBase : public UntypedMapBase {
   hasher hash_function() const { return {}; }
 
  protected:
+  friend class TcParser;
+  friend struct MapTestPeer;
+
   PROTOBUF_NOINLINE void erase_no_destroy(size_type b, KeyNode* node) {
     TreeIterator tree_it;
     const bool is_list = revalidate_if_necessary(b, node, &tree_it);
@@ -783,6 +828,25 @@ class KeyMapBase : public UntypedMapBase {
       }
     }
     return {nullptr, b};
+  }
+
+  // Insert the given node.
+  // If the key is a duplicate, it inserts the new node and returns the old one.
+  // Gives ownership to the caller.
+  // If the key is unique, it returns `nullptr`.
+  KeyNode* InsertOrReplaceNode(KeyNode* node) {
+    KeyNode* to_erase = nullptr;
+    auto p = this->FindHelper(node->key());
+    if (p.node != nullptr) {
+      erase_no_destroy(p.bucket, static_cast<KeyNode*>(p.node));
+      to_erase = static_cast<KeyNode*>(p.node);
+    } else if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
+      p = FindHelper(node->key());
+    }
+    const size_type b = p.bucket;  // bucket number
+    InsertUnique(b, node);
+    ++num_elements_;
+    return to_erase;
   }
 
   // Insert the given Node in bucket b.  If that would make bucket b too big,
@@ -1417,6 +1481,10 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   // Linked-list nodes, as one would expect for a chaining hash table.
   struct Node : Base::KeyNode {
+    static constexpr internal::MapNodeSizeInfoT size_info() {
+      return internal::MakeNodeInfo(sizeof(Node),
+                                    PROTOBUF_FIELD_OFFSET(Node, kv.second));
+    }
     value_type kv;
   };
 
@@ -1543,6 +1611,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
             internal::WireFormatLite::FieldType key_wire_type,
             internal::WireFormatLite::FieldType value_wire_type>
   friend class internal::MapFieldLite;
+  friend class internal::TcParser;
+  friend struct internal::MapTestPeer;
 };
 
 namespace internal {

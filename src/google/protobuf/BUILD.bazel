@@ -550,6 +550,7 @@ filegroup(
     srcs = [
         "any_test.proto",
         "map_proto2_unittest.proto",
+        "map_proto3_unittest.proto",
         "map_unittest.proto",
         "unittest.proto",
         "unittest_arena.proto",
@@ -606,6 +607,7 @@ proto_library(
     name = "generic_test_protos",
     srcs = [
         "map_proto2_unittest.proto",
+        "map_proto3_unittest.proto",
         "map_unittest.proto",
         "unittest.proto",
         "unittest_arena.proto",

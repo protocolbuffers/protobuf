@@ -59,6 +59,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     bool use_direct_tcparser_table;
     bool is_lite;
     bool should_split;
+    bool uses_codegen;
   };
   class OptionProvider {
    public:
@@ -106,6 +107,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     kEnumRange,
     kEnumValidator,
     kNumericOffset,
+    kMapAuxInfo,
+    kCreateInArena,
   };
   struct AuxEntry {
     AuxType type;
@@ -115,6 +118,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     };
     union {
       const FieldDescriptor* field;
+      const Descriptor* desc;
       uint32_t offset;
       EnumRange enum_range;
     };
