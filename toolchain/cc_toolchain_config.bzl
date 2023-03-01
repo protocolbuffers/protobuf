@@ -98,6 +98,7 @@ def _impl(ctx):
                         flags = [
                             "-B" + ctx.attr.linker_path,
                             "-lstdc++",
+                            "-lm",
                             "--target=" + ctx.attr.target_full_name,
                         ] + ctx.attr.extra_linker_flags,
                     ),
