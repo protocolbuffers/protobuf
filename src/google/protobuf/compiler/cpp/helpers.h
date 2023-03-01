@@ -465,10 +465,6 @@ bool IsStringOrMessage(const FieldDescriptor* field);
 std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool cap_next_letter);
 
-inline bool IsProto3(const FileDescriptor* file) {
-  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
-
 inline bool IsCrossFileMessage(const FieldDescriptor* field) {
   return field->type() == FieldDescriptor::TYPE_MESSAGE &&
          field->message_type()->file() != field->file();
@@ -1044,8 +1040,6 @@ enum class VerifySimpleType {
 
 // Returns VerifySimpleType if messages can be verified by predefined methods.
 VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor);
-
-bool IsUtf8String(const FieldDescriptor* field);
 
 bool HasMessageFieldOrExtension(const Descriptor* desc);
 
