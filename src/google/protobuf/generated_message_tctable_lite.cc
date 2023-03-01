@@ -2242,10 +2242,6 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   }
   const uint16_t xform_val = type_card & field_layout::kTvMask;
   const uint16_t rep = type_card & field_layout::kRepMask;
-  if (rep == field_layout::kRepIString) {
-    // TODO(b/198211897): support InilnedStringField.
-    PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
-  }
 
   // Mark the field as present:
   const bool is_oneof = card == field_layout::kFcOneof;
@@ -2275,6 +2271,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
     }
 
     case field_layout::kRepIString: {
+      ABSL_DCHECK(false);
       break;
     }
   }
