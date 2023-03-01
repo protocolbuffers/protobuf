@@ -91,7 +91,7 @@ config_setting(
 
 config_setting(
     name = "config_osx_x86_64",
-    values = {"cpu": "osx-aarch_64"},
+    values = {"cpu": "osx-x86_64"},
 )
 
 selects.config_setting_group(
