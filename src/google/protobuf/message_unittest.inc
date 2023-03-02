@@ -333,6 +333,13 @@ TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
       absl::string_view{encoded, sizeof(encoded) - 1}));
 }
 
+TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroField) {
+  const char encoded[] = {"\012\x6\205\0\0\0\0\0"};
+  UNITTEST::NestedTestAllTypes parsed;
+  EXPECT_FALSE(parsed.ParsePartialFromString(
+      absl::string_view{encoded, sizeof(encoded) - 1}));
+}
+
 TEST(MESSAGE_TEST_NAME, NestedExplicitLazyExceedRecursionLimit) {
   UNITTEST::NestedTestAllTypes original, parsed;
   // Build proto with recursion depth of 5, with nested annotated LazyField.
