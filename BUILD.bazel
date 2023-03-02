@@ -173,20 +173,6 @@ cc_binary(
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
 
-cc_binary(
-    name = "protoc_static",
-    copts = COPTS,
-    linkopts = LINK_OPTS,
-    features = select({
-      # This isn't possible on mac because there is no static library for lcrt0.o
-      "//build_defs:config_osx": [],
-      # When cross-compiling we need to statically link all C++ libraries.
-      "//conditions:default": ["fully_static_link"],
-    }),
-    visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf/compiler:protoc_lib"],
-)
-
 ################################################################################
 # C++ runtime
 ################################################################################

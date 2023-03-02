@@ -6,6 +6,7 @@ load(
     "pkg_files",
     "strip_prefix",
 )
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load("//:protobuf_release.bzl", "package_naming")
 load(":build_systems.bzl", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
@@ -37,6 +38,20 @@ pkg_files(
 # Generates protoc release artifacts.
 ################################################################################
 
+cc_binary(
+    name = "protoc",
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    features = select({
+      # This isn't possible on mac because there is no static library for lcrt0.o
+      "//build_defs:config_osx": [],
+      # When cross-compiling we need to statically link all C++ libraries.
+      "//conditions:default": ["fully_static_link"],
+    }),
+    visibility = ["//visibility:public"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib"],
+)
+
 genrule(
     name = "protoc_readme",
     outs = ["readme.txt"],
@@ -59,7 +74,7 @@ Please refer to our official github site for more installation instructions:
 
 pkg_files(
     name = "protoc_files",
-    srcs = ["//:protoc_static"],
+    srcs = [":protoc"],
     attributes = pkg_attributes(mode = "0555"),
     prefix = "bin/",
     visibility = ["//visibility:private"],
