@@ -354,19 +354,9 @@ inline bool HasPackedFields(const Descriptor* descriptor) {
 // them has a required field. Return true if a required field is found.
 bool HasRequiredFields(const Descriptor* descriptor);
 
-inline bool IsProto2(const FileDescriptor* descriptor) {
-  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
-}
-
 inline bool IsRealOneof(const FieldDescriptor* descriptor) {
   return descriptor->containing_oneof() &&
          !descriptor->containing_oneof()->is_synthetic();
-}
-
-inline bool HasHazzer(const FieldDescriptor* descriptor) {
-  return !descriptor->is_repeated() &&
-         (descriptor->message_type() || descriptor->has_optional_keyword() ||
-          IsProto2(descriptor->file()) || IsRealOneof(descriptor));
 }
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
@@ -375,7 +365,8 @@ inline bool HasHasbit(const FieldDescriptor* descriptor) {
   // you change this method to remove hasbits for oneofs, a few tests fail.
   // TODO(b/124347790): remove hasbits for oneofs
   return !descriptor->is_repeated() &&
-         (descriptor->has_optional_keyword() || IsProto2(descriptor->file()));
+         (descriptor->has_optional_keyword() ||
+          descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO2);
 }
 
 // Whether generate classes expose public PARSER instances.
@@ -387,12 +378,8 @@ inline bool ExposePublicParser(const FileDescriptor* descriptor) {
 // Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
 // but in the message and can be queried using additional getters that return
 // ints.
-inline bool SupportUnknownEnumValue(const FileDescriptor* descriptor) {
-  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
-
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+  return !field->legacy_enum_field_treated_as_closed();
 }
 
 // Check whether a message has repeated fields.
@@ -415,7 +402,7 @@ inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
 }
 
 inline bool CheckUtf8(const FieldDescriptor* descriptor) {
-  return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
+  return descriptor->requires_utf8_validation() ||
          descriptor->file()->options().java_string_check_utf8();
 }
 
@@ -448,6 +435,11 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field);
 // and the first field number that are not in the table part
 std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
     const FieldDescriptor** fields, int count);
+
+const FieldDescriptor* MapKeyField(const FieldDescriptor* descriptor);
+
+const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor);
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
