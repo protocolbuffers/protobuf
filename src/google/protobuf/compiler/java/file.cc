@@ -51,6 +51,7 @@
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/service.h"
 #include "google/protobuf/compiler/java/shared_code_generator.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
@@ -452,8 +453,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   // To find those extensions, we need to parse the data into a dynamic message
   // of the FileDescriptor based on the builder-pool, then we can use
   // reflections to find all extension fields
-  FileDescriptorProto file_proto;
-  file_->CopyTo(&file_proto);
+  FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
   std::string file_data;
   file_proto.SerializeToString(&file_data);
   FieldDescriptorSet extensions;
@@ -521,8 +521,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(
 
   // Check if custom options exist. If any, try to load immutable classes since
   // custom options are only represented with immutable messages.
-  FileDescriptorProto file_proto;
-  file_->CopyTo(&file_proto);
+  FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
   std::string file_data;
   file_proto.SerializeToString(&file_data);
   FieldDescriptorSet extensions;
