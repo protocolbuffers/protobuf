@@ -49,20 +49,6 @@ namespace java {
 
 namespace {
 
-const FieldDescriptor* KeyField(const FieldDescriptor* descriptor) {
-  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
-  const Descriptor* message = descriptor->message_type();
-  ABSL_CHECK(message->options().map_entry());
-  return message->map_key();
-}
-
-const FieldDescriptor* ValueField(const FieldDescriptor* descriptor) {
-  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
-  const Descriptor* message = descriptor->message_type();
-  ABSL_CHECK(message->options().map_entry());
-  return message->map_value();
-}
-
 std::string TypeName(const FieldDescriptor* field,
                      ClassNameResolver* name_resolver, bool boxed) {
   if (GetJavaType(field) == JAVATYPE_MESSAGE) {
@@ -100,8 +86,8 @@ void SetMessageVariables(
   ClassNameResolver* name_resolver = context->GetNameResolver();
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->message_type());
-  const FieldDescriptor* key = KeyField(descriptor);
-  const FieldDescriptor* value = ValueField(descriptor);
+  const FieldDescriptor* key = MapKeyField(descriptor);
+  const FieldDescriptor* value = MapValueField(descriptor);
   const JavaType keyJavaType = GetJavaType(key);
   const JavaType valueJavaType = GetJavaType(value);
 
@@ -144,7 +130,7 @@ void SetMessageVariables(
         {"value_enum_type_pass_through_nullness",
          absl::StrCat(pass_through_nullness, (*variables)["value_enum_type"])});
 
-    if (SupportUnknownEnumValue(descriptor->file())) {
+    if (SupportUnknownEnumValue(value)) {
       // Map unknown values to a special UNRECOGNIZED value if supported.
       variables->insert(
           {"unrecognized_value",
@@ -217,7 +203,8 @@ void ImmutableMapFieldLiteGenerator::GenerateInterfaceMembers(
                  "$deprecation$boolean ${$contains$capitalized_name$$}$(\n"
                  "    $key_type$ key);\n");
   printer->Annotate("{", "}", descriptor_);
-  if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
     if (context_->options().opensource_runtime) {
       printer->Print(variables_,
                      "/**\n"
@@ -248,7 +235,7 @@ void ImmutableMapFieldLiteGenerator::GenerateInterfaceMembers(
         "$deprecation$$value_enum_type$ ${$get$capitalized_name$OrThrow$}$(\n"
         "    $key_type$ key);\n");
     printer->Annotate("{", "}", descriptor_);
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(value)) {
       printer->Print(
           variables_,
           "/**\n"
@@ -363,7 +350,9 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
                  "  return internalGet$capitalized_name$().containsKey(key);\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
+
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
     printer->Print(
         variables_,
         "private static final\n"
@@ -432,7 +421,7 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
         "  return $name$ValueConverter.doForward(map.get(key));\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(value)) {
       printer->Print(
           variables_,
           "/**\n"
@@ -545,7 +534,7 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
   }
 
   // Generate private setters for the builder to proxy into.
-  if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
     WriteFieldDocComment(printer, descriptor_);
     printer->Print(
         variables_,
@@ -556,7 +545,7 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
         "          internalGetMutable$capitalized_name$(),\n"
         "          $name$ValueConverter);\n"
         "}\n");
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(value)) {
       WriteFieldDocComment(printer, descriptor_);
       printer->Print(
           variables_,
@@ -583,9 +572,9 @@ void ImmutableMapFieldLiteGenerator::GenerateFieldInfo(
   printer->Print(variables_,
                  "\"$name$_\",\n"
                  "$default_entry$,\n");
-  if (!SupportUnknownEnumValue(descriptor_) &&
-      GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
-    PrintEnumVerifierLogic(printer, ValueField(descriptor_), variables_,
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (!SupportUnknownEnumValue(value) && GetJavaType(value) == JAVATYPE_ENUM) {
+    PrintEnumVerifierLogic(printer, MapValueField(descriptor_), variables_,
                            /*var_name=*/"$value_enum_type$",
                            /*terminating_string=*/",\n",
                            /*enforce_lite=*/context_->EnforceLite());
@@ -631,7 +620,8 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
     if (context_->options().opensource_runtime) {
       printer->Print(
           variables_,
@@ -711,7 +701,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(value)) {
       printer->Print(
           variables_,
           "/**\n"

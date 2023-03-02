@@ -47,6 +47,7 @@ cc_library(
         "enum.cc",
         "extension.cc",
         "field.cc",
+        "field_generators/cord_field.cc",
         "field_generators/enum_field.cc",
         "field_generators/map_field.cc",
         "field_generators/message_field.cc",

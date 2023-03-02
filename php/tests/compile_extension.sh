@@ -33,6 +33,6 @@ if [[ ! -f BUILD_STAMP ]] || [[ "$(cat BUILD_STAMP)" != "$FINGERPRINT" ]]; then
   echo "$FINGERPRINT" > BUILD_STAMP
 fi
 
-make
-TEST_PHP_ARGS="-q" make test
+make -j8
+TEST_PHP_ARGS="-q" make -j8 test
 popd > /dev/null
