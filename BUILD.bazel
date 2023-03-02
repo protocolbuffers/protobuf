@@ -179,6 +179,7 @@ cc_binary(
     linkopts = LINK_OPTS,
     features = select({
       # This isn't possible on mac because there is no static library for lcrt0.o
+      "@platforms//os:osx": [],
       "//build_defs:config_osx": [],
       # When cross-compiling we need to statically link all C++ libraries.
       "//conditions:default": ["fully_static_link"],
