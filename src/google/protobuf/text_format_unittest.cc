@@ -297,6 +297,22 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
             message.DebugString());
 }
 
+TEST_F(TextFormatTest, PrintUnknownFieldsDeepestStackWorks) {
+  // Test printing of unknown fields in a message.
+
+  unittest::TestEmptyMessage message;
+  UnknownFieldSet* unknown_fields = message.mutable_unknown_fields();
+
+  for (int i = 0; i < 200; ++i) {
+    unknown_fields = unknown_fields->AddGroup(1);
+  }
+
+  unknown_fields->AddVarint(2, 100);
+
+  std::string str;
+  EXPECT_TRUE(TextFormat::PrintToString(message, &str));
+}
+
 TEST_F(TextFormatTest, PrintUnknownFieldsHidden) {
   // Test printing of unknown fields in a message when suppressed.
 
@@ -2349,6 +2365,7 @@ TEST(TextFormatFloatingPointTest, PreservesNegative0) {
   EXPECT_EQ(std::signbit(in_message.optional_double()),
             std::signbit(out_message.optional_double()));
 }
+
 
 }  // namespace text_format_unittest
 }  // namespace protobuf

@@ -141,7 +141,7 @@ class PROTOBUF_EXPORT TextFormat {
     // Print text to the output stream.
     virtual void Print(const char* text, size_t size) = 0;
 
-    void PrintString(const std::string& str) { Print(str.data(), str.size()); }
+    void PrintString(absl::string_view str) { Print(str.data(), str.size()); }
 
     template <size_t n>
     void PrintLiteral(const char (&text)[n]) {
@@ -724,6 +724,11 @@ class PROTOBUF_EXPORT TextFormat {
                                     ParseLocationRange location);
   static inline ParseInfoTree* CreateNested(ParseInfoTree* info_tree,
                                             const FieldDescriptor* field);
+  // To reduce stack frame bloat we use an out-of-line function to print
+  // strings. This avoid local std::string temporaries.
+  template <typename... T>
+  static void OutOfLinePrintString(BaseTextGenerator* generator,
+                                   const T&... values);
 };
 
 
