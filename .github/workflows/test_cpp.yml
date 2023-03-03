@@ -51,6 +51,46 @@ jobs:
           bazel-cache: cpp_linux/${{ matrix.config.name }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
 
+  linux-release:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: x86
+            arch: linux-x86_64
+            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          - name: aarch64
+            arch: linux-aarch64
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-508417e5215994ade7585d28ba3aad681a25fa5d
+    name: Linux Release ${{ matrix.name}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+      - name: Build protoc
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_release/${{ matrix.name }}
+          bazel: build //:protoc_static --config=${{ matrix.arch }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        env:
+          DOCKER_RUN_FLAGS: --entrypoint bash
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          skip-staleness-check: true
+          command: >
+            -c "set -ex;
+            cmake . -DCMAKE_VERBOSE_MAKEFILE=ON -DWITH_PROTOC=$(pwd)/bazel-bin/protoc_static -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14 -Dprotobuf_WITH_ZLIB=OFF;
+            VERBOSE=1 cmake --build . --parallel 20;
+            ctest --parallel 20;"
+
   linux-cmake:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
