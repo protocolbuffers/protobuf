@@ -68,6 +68,13 @@ enum {
 
 #define UPB_DECODE_MAXDEPTH(depth) ((depth) << 16)
 
+// Enforce an upper bound on recursion depth.
+UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
+  uint32_t max_depth = decode_options >> 16;
+  if (max_depth > limit) max_depth = limit;
+  return (max_depth << 16) | (decode_options & 0xffff);
+}
+
 typedef enum {
   kUpb_DecodeStatus_Ok = 0,
   kUpb_DecodeStatus_Malformed = 1,         // Wire format was corrupt
