@@ -350,6 +350,8 @@ void WriteMessageImplementation(
           }
         )cc",
         ClassName(descriptor));
+
+    WriteExtensionIdentifiersImplementation(descriptor, file_exts, output);
   }
 }
 

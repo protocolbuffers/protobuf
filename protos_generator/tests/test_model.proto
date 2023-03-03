@@ -119,6 +119,9 @@ enum PrimaryColors {
 
 // TestModel extension.
 message ThemeExtension {
+  extend TestModel {
+    optional ThemeExtension theme_extension = 12003;
+  }
   optional string ext_name = 1;
   optional bool ext_bool = 2;
 }

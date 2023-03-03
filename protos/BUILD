@@ -41,7 +41,6 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:message_accessors",
         "//:mini_table",
         "//:upb",
         "@com_google_absl//absl/status",

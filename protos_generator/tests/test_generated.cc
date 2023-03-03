@@ -598,14 +598,25 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
   EXPECT_EQ(true, ::protos::SetExtension(model, theme, extension1).ok());
+  EXPECT_EQ(true, ::protos::SetExtension(model, ThemeExtension::theme_extension,
+                                         extension1)
+                      .ok());
   ::upb::Arena arena;
   auto bytes = ::protos::Serialize(model, arena);
   EXPECT_EQ(true, bytes.ok());
-  ::protos::ExtensionRegistry extensions({&theme, &other_ext}, arena);
+  ::protos::ExtensionRegistry extensions(
+      {&theme, &other_ext, &ThemeExtension::theme_extension}, arena);
   TestModel parsed_model =
       ::protos::Parse<TestModel>(bytes.value(), extensions).value();
   EXPECT_EQ("Test123", parsed_model.str1());
   EXPECT_EQ(true, ::protos::GetExtension(parsed_model, theme).ok());
+  EXPECT_EQ(true, ::protos::GetExtension(parsed_model,
+                                         ThemeExtension::theme_extension)
+                      .ok());
+  EXPECT_EQ("Hello World", ::protos::GetExtension(
+                               parsed_model, ThemeExtension::theme_extension)
+                               .value()
+                               ->ext_name());
 }
 
 TEST(CppGeneratedCode, NameCollisions) {
