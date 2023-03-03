@@ -97,7 +97,7 @@ void SetEnumVariables(
            : ""});
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
-  if (descriptor->has_presence()) {
+  if (HasHasbit(descriptor)) {
     if (!context->options().opensource_runtime) {
       (*variables)["bit_field_id"] = absl::StrCat(messageBitIndex / 32);
       (*variables)["bit_field_name"] = GetBitFieldNameForBit(messageBitIndex);
@@ -122,11 +122,6 @@ void SetEnumVariables(
                        absl::StrCat((*variables)["name"], "_ != ",
                                     (*variables)["default"], ".getNumber()")});
   }
-
-  (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builderBitIndex);
-  (*variables)["set_has_field_bit_to_local"] =
-      GenerateSetBitToLocal(messageBitIndex);
 
   if (SupportUnknownEnumValue(descriptor)) {
     variables->insert(
@@ -193,7 +188,7 @@ void ImmutableEnumFieldLiteGenerator::GenerateMembers(
         "  fieldNumber=$number$,\n"
         "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
         "  isRequired=$required$)\n");
-    if (descriptor_->has_presence()) {
+    if (HasHasbit(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
                      "  presenceBitsId=$bit_field_id$,\n"
@@ -369,7 +364,7 @@ void ImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (descriptor_->has_presence()) {
+  if (HasHasbit(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");

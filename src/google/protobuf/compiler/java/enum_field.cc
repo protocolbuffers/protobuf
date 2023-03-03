@@ -88,7 +88,7 @@ void SetEnumVariables(
            ? absl::StrCat("@kotlin.Deprecated(message = \"Field ",
                           (*variables)["name"], " is deprecated\") ")
            : ""});
-  if (descriptor->has_presence()) {
+  if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     // Note that these have a trailing ";".
