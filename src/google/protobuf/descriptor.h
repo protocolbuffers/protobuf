@@ -2457,11 +2457,6 @@ inline bool FieldDescriptor::has_presence() const {
          file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 
-inline bool FieldDescriptor::requires_utf8_validation() const {
-  return type() == TYPE_STRING &&
-         file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
-
 inline bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
   return type() == TYPE_ENUM &&
          file()->syntax() == FileDescriptor::SYNTAX_PROTO2;

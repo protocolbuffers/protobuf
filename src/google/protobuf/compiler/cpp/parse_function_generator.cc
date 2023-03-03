@@ -1034,7 +1034,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
           const FieldDescriptor* val = field->message_type()->map_value();
           ABSL_CHECK(val);
           if (val->type() == FieldDescriptor::TYPE_ENUM &&
-              !internal::cpp::HasPreservingUnknownEnumSemantics(field)) {
+              !internal::cpp::HasPreservingUnknownEnumSemantics(val)) {
             format(
                 "auto object = "
                 "::$proto_ns$::internal::InitEnumParseWrapper<"
