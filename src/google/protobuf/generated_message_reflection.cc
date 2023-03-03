@@ -1760,6 +1760,7 @@ const std::string& Reflection::GetStringReference(const Message& message,
 }
 
 
+
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
   USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
