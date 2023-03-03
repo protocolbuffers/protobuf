@@ -3639,8 +3639,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     LazySerializerEmitter(MessageGenerator* mg, io::Printer* p)
         : mg_(mg),
           p_(p),
-          eager_(mg->descriptor_->file()->syntax() ==
-                 FileDescriptor::SYNTAX_PROTO3),
           cached_has_bit_index_(kNoHasbit) {}
 
     ~LazySerializerEmitter() { Flush(); }
@@ -3649,13 +3647,14 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     // oneof, and handle them at the next Flush().
     void Emit(const FieldDescriptor* field) {
       Formatter format(p_);
-      if (eager_ || MustFlush(field)) {
+
+      if (!field->has_presence() || MustFlush(field)) {
         Flush();
       }
       if (!field->real_containing_oneof()) {
         // TODO(ckennelly): Defer non-oneof fields similarly to oneof fields.
 
-        if (!field->options().weak() && !field->is_repeated() && !eager_) {
+        if (HasHasbit(field) && field->has_presence()) {
           // We speculatively load the entire _has_bits_[index] contents, even
           // if it is for only one field.  Deferring non-oneof emitting would
           // allow us to determine whether this is going to be useful.
@@ -3699,7 +3698,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
 
     MessageGenerator* mg_;
     io::Printer* p_;
-    bool eager_;
     std::vector<const FieldDescriptor*> v_;
 
     // cached_has_bit_index_ maintains that:
