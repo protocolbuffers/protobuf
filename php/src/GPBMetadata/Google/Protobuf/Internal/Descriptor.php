@@ -163,7 +163,7 @@ class Descriptor
             ->optional('php_namespace', \Google\Protobuf\Internal\GPBType::STRING, 41)
             ->optional('php_metadata_namespace', \Google\Protobuf\Internal\GPBType::STRING, 44)
             ->optional('ruby_package', \Google\Protobuf\Internal\GPBType::STRING, 45)
-            ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.internal.UninterpretedOption')
+            ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.UninterpretedOption')
             ->finalizeToPool();
 
         $pool->addEnum('google.protobuf.FileOptions.OptimizeMode', \Google\Protobuf\Internal\OptimizeMode::class)
