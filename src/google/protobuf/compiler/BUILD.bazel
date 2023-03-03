@@ -90,6 +90,7 @@ cc_library(
         ":importer",
         ":retention",
         "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler/allowlists",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
