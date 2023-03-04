@@ -1062,3 +1062,64 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
   table_sub->subenum = sub;
   return true;
 }
+
+uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* mt,
+                                  const upb_MiniTableField** subs) {
+  uint32_t msg_count = 0;
+  uint32_t enum_count = 0;
+
+  for (int i = 0; i < mt->field_count; i++) {
+    const upb_MiniTableField* f = &mt->fields[i];
+    if (upb_MiniTableField_CType(f) == kUpb_CType_Message) {
+      *subs = f;
+      ++subs;
+      msg_count++;
+    }
+  }
+
+  for (int i = 0; i < mt->field_count; i++) {
+    const upb_MiniTableField* f = &mt->fields[i];
+    if (upb_MiniTableField_CType(f) == kUpb_CType_Enum) {
+      *subs = f;
+      ++subs;
+      enum_count++;
+    }
+  }
+
+  return (msg_count << 16) | enum_count;
+}
+
+// The list of sub_tables and sub_enums must exactly match the number and order
+// of sub-message fields and sub-enum fields given by upb_MiniTable_GetSubList()
+// above.
+bool upb_MiniTable_Link(upb_MiniTable* mt, const upb_MiniTable** sub_tables,
+                        size_t sub_table_count,
+                        const upb_MiniTableEnum** sub_enums,
+                        size_t sub_enum_count) {
+  uint32_t msg_count = 0;
+  uint32_t enum_count = 0;
+
+  for (int i = 0; i < mt->field_count; i++) {
+    upb_MiniTableField* f = (upb_MiniTableField*)&mt->fields[i];
+    if (upb_MiniTableField_CType(f) == kUpb_CType_Message) {
+      const upb_MiniTable* sub = sub_tables[msg_count++];
+      if (msg_count > sub_table_count) return false;
+      if (sub != NULL) {
+        if (!upb_MiniTable_SetSubMessage(mt, f, sub)) return false;
+      }
+    }
+  }
+
+  for (int i = 0; i < mt->field_count; i++) {
+    upb_MiniTableField* f = (upb_MiniTableField*)&mt->fields[i];
+    if (upb_MiniTableField_CType(f) == kUpb_CType_Enum) {
+      const upb_MiniTableEnum* sub = sub_enums[enum_count++];
+      if (enum_count > sub_table_count) return false;
+      if (sub != NULL) {
+        if (!upb_MiniTable_SetSubEnum(mt, f, sub)) return false;
+      }
+    }
+  }
+
+  return true;
+}

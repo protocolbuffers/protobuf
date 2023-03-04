@@ -5,9 +5,22 @@ package upbc;
 import "src/google/protobuf/compiler/plugin.proto";
 
 message CodeGeneratorRequest {
+  message UpbInfo {
+    optional string mini_descriptor = 1;
+
+    // An ordered list of fully qualified sub-message names whose upb_MiniTable
+    // should be passed to upb_MiniTable_Link().
+    repeated string sub_message = 3;
+
+    // An ordered list of fully qualified sub-enum names whose upb_MiniTableEnum
+    // should be passed to upb_MiniTable_Link().
+    repeated string sub_enum = 4;
+  }
+
   // The pb sent by protoc to its plugins.
   optional google.protobuf.compiler.CodeGeneratorRequest request = 1;
 
-  // Mini descriptors for the above pb, keyed by the fully qualified names.
-  map<string, string> mini_descriptors = 2;
+  // upb-specific info for the messages/enums/extensions in the request, keyed
+  // by the fully qualified names.
+  map<string, UpbInfo> upb_info = 2;
 }

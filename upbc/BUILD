@@ -225,6 +225,7 @@ cc_library(
         "//:base",
         "//:json",
         "//:mem",
+        "//:mini_table",
         "//:port",
         "//:reflection",
     ],
