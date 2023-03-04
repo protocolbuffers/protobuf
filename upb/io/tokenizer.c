@@ -884,6 +884,7 @@ upb_StringView upb_Parse_String(const char* text, upb_Arena* arena) {
             " have been tokenized as a string: %s",
             text);
     UPB_ASSERT(0);
+    return upb_StringView_FromDataAndSize(NULL, 0);
   }
 
   // Reserve room for new string.
