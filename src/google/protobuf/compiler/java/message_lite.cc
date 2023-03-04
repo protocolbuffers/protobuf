@@ -507,7 +507,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   std::vector<uint16_t> chars;
 
   int flags = 0;
-  if (IsProto2(descriptor_->file())) {
+  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
     flags |= 0x1;
   }
   if (descriptor_->options().message_set_wire_format()) {

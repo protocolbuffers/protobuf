@@ -3740,10 +3740,10 @@ class DescriptorBuilder {
   // Maximum recursion depth corresponds to 32 nested message declarations.
   int recursion_depth_ = 32;
 
-  void AddError(absl::string_view element_name, const Message& descriptor,
+  void AddError(const std::string& element_name, const Message& descriptor,
                 DescriptorPool::ErrorCollector::ErrorLocation location,
-                absl::string_view error);
-  void AddError(absl::string_view element_name, const Message& descriptor,
+                const std::string& error);
+  void AddError(const std::string& element_name, const Message& descriptor,
                 DescriptorPool::ErrorCollector::ErrorLocation location,
                 const char* error);
   void AddRecursiveImportError(const FileDescriptorProto& proto, int from_here);
@@ -3936,7 +3936,6 @@ class DescriptorBuilder {
                        const MethodDescriptorProto& proto);
   void SuggestFieldNumbers(FileDescriptor* file,
                            const FileDescriptorProto& proto);
-
 
   // Must be run only after cross-linking.
   void InterpretOptions();
@@ -4190,9 +4189,9 @@ DescriptorBuilder::DescriptorBuilder(
 DescriptorBuilder::~DescriptorBuilder() {}
 
 PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
-    absl::string_view element_name, const Message& descriptor,
+    const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
-    absl::string_view error) {
+    const std::string& error) {
   if (error_collector_ == nullptr) {
     if (!had_errors_) {
       ABSL_LOG(ERROR) << "Invalid proto descriptor for file \"" << filename_
@@ -4207,7 +4206,7 @@ PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
 }
 
 PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
-    absl::string_view element_name, const Message& descriptor,
+    const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location, const char* error) {
   AddError(element_name, descriptor, location, std::string(error));
 }
@@ -6461,7 +6460,6 @@ void DescriptorBuilder::CrossLinkExtensionRange(
     range->options_ = &ExtensionRangeOptions::default_instance();
   }
 }
-
 
 
 void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
