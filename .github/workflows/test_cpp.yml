@@ -32,7 +32,7 @@ jobs:
             targets: "//src/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-508417e5215994ade7585d28ba3aad681a25fa5d"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-3af05275178e16af30961976af126eabbbb2c733"
           - config: { name: "Bazel4" }
             targets: "//src/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-6361b3a6e5c97e9951d03a4de28542fc45f1adab"
@@ -50,6 +50,45 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/${{ matrix.config.name }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
+
+  linux-release:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        arch: [x86_64, aarch64]
+    name: Linux Release ${{ matrix.arch}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+          ref: ${{ inputs.safe-checkout }}
+      - name: Cross compile protoc for ${{ matrix.arch }}
+        id: cross-compile
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-${{ matrix.arch }}
+      - name: Setup ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
+        with:
+          cache-prefix: linux-release-${{ matrix.arch }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-3af05275178e16af30961976af126eabbbb2c733
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          skip-staleness-check: true
+          entrypoint: bash
+          command: >
+            -c "set -ex;
+            ccache -z;
+            cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14 -Dprotobuf_WITH_ZLIB=OFF ${{ env.CCACHE_CMAKE_FLAGS }};
+            cmake --build . --parallel 20;
+            ctest --parallel 20;
+            ccache -s -v"
 
   linux-cmake:
     strategy:
@@ -91,7 +130,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e8282f42b1c1c0e6227d746e861954fd6fad0bd2e7424e6ceb23c249289a4016
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e0eb6c69b7551d89f0dbdbe11906077a1d501229c28db39623b945e0c5d7029a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: ${{ matrix.command }} ${{ env.CCACHE_CMAKE_FLAGS }}
 
@@ -113,7 +152,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e8282f42b1c1c0e6227d746e861954fd6fad0bd2e7424e6ceb23c249289a4016
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e0eb6c69b7551d89f0dbdbe11906077a1d501229c28db39623b945e0c5d7029a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} \&\&
