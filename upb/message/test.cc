@@ -512,7 +512,7 @@ TEST(MessageTest, MapField) {
 //   const upb_MiniTable* mini_table =
 //       upb::fuzz::BuildMiniTable(input, &exts, arena.ptr());
 //   if (!mini_table) return;
-//   decode_options = upb_Decode_LimitDepth(decode_options, 90);
+//   decode_options = upb_Decode_LimitDepth(decode_options, 80);
 //   upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
 //   upb_Decode(proto_payload.data(), proto_payload.size(), msg, mini_table, exts,
 //              decode_options, arena.ptr());
