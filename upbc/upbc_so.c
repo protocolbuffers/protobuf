@@ -63,6 +63,28 @@ UPB_API_INLINE bool upb_Array_AppendInt64Split(upb_Array* array, uint32_t hi,
   return upb_Array_Append(array, val, arena);
 }
 
+UPB_API_INLINE uint32_t upb_Array_GetUInt64Hi(const upb_Array* array,
+                                              size_t i) {
+  return (uint32_t)(upb_Array_Get(array, i).uint64_val >> 32);
+}
+
+UPB_API_INLINE uint32_t upb_Array_GetUInt64Lo(const upb_Array* array,
+                                              size_t i) {
+  return (uint32_t)upb_Array_Get(array, i).uint64_val;
+}
+
+UPB_API_INLINE void upb_Array_SetUInt64Split(upb_Array* array, size_t i,
+                                             uint32_t hi, uint32_t lo) {
+  const upb_MessageValue val = {.uint64_val = ((uint64_t)hi) << 32 | lo};
+  upb_Array_Set(array, i, val);
+}
+
+UPB_API_INLINE bool upb_Array_AppendUInt64Split(upb_Array* array, uint32_t hi,
+                                                uint32_t lo, upb_Arena* arena) {
+  const upb_MessageValue val = {.uint64_val = ((uint64_t)hi) << 32 | lo};
+  return upb_Array_Append(array, val, arena);
+}
+
 UPB_API_INLINE uint32_t upb_Message_GetInt64Hi(const upb_Message* msg,
                                                const upb_MiniTableField* field,
                                                uint32_t default_value) {
