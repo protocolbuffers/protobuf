@@ -45,6 +45,7 @@ import static com.google.protobuf.util.Timestamps.NANOS_PER_SECOND;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CompileTimeConstant;
 import com.google.protobuf.Duration;
+import com.google.protobuf.Internal;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Comparator;

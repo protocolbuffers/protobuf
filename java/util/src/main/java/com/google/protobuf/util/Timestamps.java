@@ -40,6 +40,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CompileTimeConstant;
 import com.google.j2objc.annotations.J2ObjCIncompatible;
 import com.google.protobuf.Duration;
+import com.google.protobuf.Internal;
 import com.google.protobuf.Timestamp;
 import java.io.Serializable;
 import java.text.ParseException;
