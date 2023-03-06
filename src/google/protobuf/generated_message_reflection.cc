@@ -2986,7 +2986,11 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTableForMessageSet()
   // `operator delete` unconditionally.
   void* p = ::operator new(sizeof(Table));
   auto* full_table = ::new (p)
-      Table{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr},
+      Table{{0,
+#ifdef PROTOBUF_VARINT_DISPATCH
+             0,
+#endif
+             0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr},
             {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
   ABSL_DCHECK_EQ(static_cast<void*>(&full_table->header),
                  static_cast<void*>(full_table));
@@ -3178,9 +3182,18 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
 
   const size_t fast_entries_count = table_info.fast_path_fields.size();
   ABSL_CHECK_EQ(fast_entries_count, 1 << table_info.table_size_log2);
+#ifdef PROTOBUF_VARINT_DISPATCH
+  const uint16_t varint_counters_offset = AlignTo<uint16_t>(
+      sizeof(TcParseTableBase) +
+      fast_entries_count * sizeof(TcParseTableBase::FastFieldEntry));
+  const uint16_t lookup_table_offset = AlignTo<uint16_t>(
+      varint_counters_offset +
+      fast_entries_count * sizeof(internal::LossyVarintCounter));
+#else
   const uint16_t lookup_table_offset = AlignTo<uint16_t>(
       sizeof(TcParseTableBase) +
       fast_entries_count * sizeof(TcParseTableBase::FastFieldEntry));
+#endif
   const uint32_t field_entry_offset = AlignTo<TcParseTableBase::FieldEntry>(
       lookup_table_offset +
       sizeof(uint16_t) * table_info.num_to_entry_table.size16());
@@ -3196,6 +3209,9 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   void* p = ::operator new(byte_size);
   auto* res = ::new (p) TcParseTableBase{
       static_cast<uint16_t>(schema_.HasHasbits() ? schema_.HasBitsOffset() : 0),
+#ifdef PROTOBUF_VARINT_DISPATCH
+      varint_counters_offset,
+#endif
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},

@@ -481,6 +481,9 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       } else {
         format("0,  // no _has_bits_\n");
       }
+      format("#ifdef PROTOBUF_VARINT_DISPATCH\n");
+      format("offsetof(decltype(_table_), varint_counters),\n");
+      format("#endif\n");
       if (descriptor_->extension_range_count() != 0) {
         format("PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n");
       } else {
@@ -523,6 +526,9 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       GenerateFastFieldEntries(format);
     }
     format("}}, {{\n");
+    format("#ifdef PROTOBUF_VARINT_DISPATCH\n");
+    format("}}, {{\n");
+    format("#endif\n");
     {
       // field_lookup_table[]
       auto field_lookup_scope = format.ScopedIndent();

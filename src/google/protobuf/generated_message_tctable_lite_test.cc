@@ -36,6 +36,10 @@
 #include "absl/types/optional.h"
 #include "google/protobuf/wire_format_lite.h"
 
+
+// Must be included last
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -94,8 +98,11 @@ TEST(FastVarints, NameHere) {
   const TcParseTable<0, 1, 0, 0, 2> parse_table = {
       {
           kHasBitsOffset,  //
-          0,               // no _extensions_
-          1, 0,            // max_field_number, fast_idx_mask
+#ifdef PROTOBUF_VARINT_DISPATCH
+          0,  // varint_counters_offset_
+#endif
+          0,     // no _extensions_
+          1, 0,  // max_field_number, fast_idx_mask
           offsetof(decltype(parse_table), field_lookup_table),
           0xFFFFFFFF - 1,  // skipmap
           offsetof(decltype(parse_table), field_entries),
@@ -112,6 +119,9 @@ TEST(FastVarints, NameHere) {
                                           kHasBitIndex>(),
            {/* coded_tag= */ 8, kHasBitIndex, /* aux_idx= */ 0, kFieldOffset}},
       }},
+#ifdef PROTOBUF_VARINT_DISPATCH
+      {},  //  varint_counters
+#endif
       // Field Lookup Table:
       {{65535, 65535}},
       // Field Entries:
@@ -285,7 +295,11 @@ TEST(IsEntryForFieldNumTest, Matcher) {
   TcParseTable<0, 3, 0, 0, 2> table = {
       // header:
       {
-          0, 0,  // has_bits_offset, extensions
+          0,     // has_bits_offset
+#ifdef PROTOBUF_VARINT_DISPATCH
+          0,     // varint_counters_offset_
+#endif
+          0,     // extensions
           0,     // max_field_number
           0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
@@ -352,7 +366,11 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
   TcParseTable<0, 5, 0, 0, 8> table = {
       // header:
       {
-          0, 0,  // has_bits_offset, extensions
+          0,     // has_bits_offset
+#ifdef PROTOBUF_VARINT_DISPATCH
+          0,     // varint_counters_offset_
+#endif
+          0,     // extensions
           111,   // max_field_number
           0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
@@ -365,6 +383,9 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
           {},          // fallback function
       },
       {},  // fast_entries
+#ifdef PROTOBUF_VARINT_DISPATCH
+      {},  // varint_counters
+#endif
       // field_lookup_table for 2, 3, 4, 5, 111:
       {{
         111,      0,                  // field 111
@@ -393,7 +414,11 @@ TEST_F(FindFieldEntryTest, SmallScanRange) {
   TcParseTable<0, 6, 0, 0, 8> table = {
       // header:
       {
-          0, 0,  // has_bits_offset, extensions
+          0,     // has_bits_offset
+#ifdef PROTOBUF_VARINT_DISPATCH
+          0,     // varint_counters_offset_
+#endif
+          0,     // extensions
           111,   // max_field_number
           0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
@@ -405,6 +430,9 @@ TEST_F(FindFieldEntryTest, SmallScanRange) {
           {},          // fallback function
       },
       {},  // fast_entries
+#ifdef PROTOBUF_VARINT_DISPATCH
+      {},  // varint_counters
+#endif
       // field_lookup_table for 1, 3, 4, 5, 7, 111:
       {{
         111, 0,                                              // field 111
@@ -439,7 +467,11 @@ TEST_F(FindFieldEntryTest, BinarySearchRange) {
   TcParseTable<0, 10, 0, 0, 8> table = {
       // header:
       {
-          0, 0,  // has_bits_offset, extensions
+          0,     // has_bits_offset
+#ifdef PROTOBUF_VARINT_DISPATCH
+          0,     // varint_counters_offset_
+#endif
+          0,     // extensions
           70,    // max_field_number
           0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
@@ -453,6 +485,9 @@ TEST_F(FindFieldEntryTest, BinarySearchRange) {
           {},          // fallback function
       },
       {},  // fast_entries
+#ifdef PROTOBUF_VARINT_DISPATCH
+      {},  // varint_counters
+#endif
       // field_lookup_table for 1, 3, 4, 5, 6, 8, 9, 11, 12, 70
       {{
         70, 0,                                              // field 70
@@ -485,7 +520,11 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
   TcParseTable<0, 3, 0, 15, 2> table = {
       // header:
       {
-          0, 0,  // has_bits_offset, extensions
+          0,     // has_bits_offset
+#ifdef PROTOBUF_VARINT_DISPATCH
+          0,     // varint_counters_offset_
+#endif
+          0,     // extensions
           3,     // max_field_number
           0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
@@ -498,6 +537,9 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
           {},          // fallback function
       },
       {},  // fast_entries
+#ifdef PROTOBUF_VARINT_DISPATCH
+      {},  // varint_counters
+#endif
       {{// field lookup table
         65535, 65535                       // end of table
       }},
@@ -535,7 +577,11 @@ TEST_F(FindFieldEntryTest, EmptyMessage) {
   TableType table = {
       // header:
       {
-          0, 0,  // has_bits_offset, extensions
+          0,     // has_bits_offset
+#ifdef PROTOBUF_VARINT_DISPATCH
+          0,     // varint_counters_offset_
+#endif
+          0,     // extensions
           0,     // max_field_number
           0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
@@ -548,6 +594,9 @@ TEST_F(FindFieldEntryTest, EmptyMessage) {
           nullptr,     // fallback function
       },
       {},  // fast_entries
+#ifdef PROTOBUF_VARINT_DISPATCH
+      {},  // varint_counters
+#endif
       {{// empty field lookup table
         65535, 65535
       }},
@@ -586,7 +635,11 @@ int32_t test_all_types_table_field_numbers[] = {
 const TcParseTable<5, 134, 5, 2176, 55> test_all_types_table = {
     // header:
     {
-        0, 0,  // has_bits_offset, extensions
+          0,         // has_bits_offset
+#ifdef PROTOBUF_VARINT_DISPATCH
+          0,         // varint_counters_offset_
+#endif
+          0,         // extensions
         418, 248,    // max_field_number, fast_idx_mask
         offsetof(decltype(test_all_types_table), field_lookup_table),
         977895424,  // skipmap for fields 1-15,18-19,21-22,24-25,27,31-32
@@ -600,6 +653,9 @@ const TcParseTable<5, 134, 5, 2176, 55> test_all_types_table = {
     {{
         // tail-call table
     }},
+#ifdef PROTOBUF_VARINT_DISPATCH
+    {},  // varint_counters
+#endif
     {{  // field lookup table
         //
         // fields 33-417, over 25 skipmap / offset pairs
