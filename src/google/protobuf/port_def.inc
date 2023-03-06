@@ -590,6 +590,9 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #error PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG was previously defined
 #endif
 
+// Allow varint dispatch thunks based on sampled varint data
+#define PROTOBUF_VARINT_DISPATCH
+
 // Force copy the default string to a string field so that non-optimized builds
 // have harder-to-rely-on address stability.
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
