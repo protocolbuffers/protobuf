@@ -272,11 +272,13 @@ set(libprotobuf_lite_hdrs
 
 # @//pkg:protoc
 set(libprotoc_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlists.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/extension.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_generators/cord_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_generators/enum_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_generators/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_generators/message_field.cc
@@ -370,6 +372,8 @@ set(libprotoc_srcs
 
 # @//pkg:protoc
 set(libprotoc_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlist.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlists.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/enum.h
