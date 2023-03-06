@@ -85,6 +85,7 @@ enum {
 namespace field_layout {
 // clang-format off
 
+
 // Field kind (3 bits):
 // These values broadly represent a wire type and an in-memory storage class.
 enum FieldKind : uint16_t {
@@ -128,6 +129,7 @@ enum Cardinality : uint16_t {
   kFcRepeated = 2 << kFcShift,
   kFcOneof    = 3 << kFcShift,
 };
+
 
 // Field representation (3 bits):
 // These values are the specific refinements of storage classes in FieldType.
