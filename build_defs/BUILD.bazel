@@ -97,7 +97,6 @@ config_setting(
 selects.config_setting_group(
     name = "config_osx",
     match_any = [
-        "@platforms//os:osx",
         ":config_osx_aarch64",
         ":config_osx_x86_64",
     ]

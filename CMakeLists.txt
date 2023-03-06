@@ -50,9 +50,6 @@ endif()
 
 # Options
 option(protobuf_INSTALL "Install protobuf binaries and files" ON)
-if(WITH_PROTOC)
-  set(protobuf_PROTOC_EXE ${WITH_PROTOC} CACHE FILEPATH "Protocol Buffer Compiler executable" FORCE)
-endif()
 option(protobuf_BUILD_TESTS "Build tests" ON)
 option(protobuf_BUILD_CONFORMANCE "Build conformance tests" OFF)
 option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
@@ -76,6 +73,14 @@ option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT
 set(protobuf_DEBUG_POSTFIX "d"
   CACHE STRING "Default debug postfix")
 mark_as_advanced(protobuf_DEBUG_POSTFIX)
+
+if(WITH_PROTOC)
+  set(protobuf_PROTOC_EXE protoc)
+  set(protobuf_BUILD_PROTOC_BINARIES OFF)
+  add_executable(protoc IMPORTED)
+  set_property(TARGET protoc PROPERTY IMPORTED_LOCATION ${WITH_PROTOC})
+endif()
+
 # User options
 include(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake)
 

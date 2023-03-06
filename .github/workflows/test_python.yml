@@ -27,7 +27,7 @@ jobs:
             targets: //python/... //python:aarch64_test
             # TODO(b/262628111) Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-508417e5215994ade7585d28ba3aad681a25fa5d
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-3af05275178e16af30961976af126eabbbb2c733
 
     name: Linux ${{ matrix.type }} ${{ matrix.version }}
     runs-on: ubuntu-latest
