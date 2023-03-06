@@ -405,16 +405,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 # define PROTOBUF_DEPRECATED_MSG(msg)
 #endif
 
-#if defined(PROTOBUF_DEPRECATED_ENUM)
-#error PROTOBUF_DEPRECATED_ENUM was previously defined
-#endif
-#if defined(__clang__) || defined(__GNUC__)
-// https://gcc.gnu.org/gcc-6/changes.html
-# define PROTOBUF_DEPRECATED_ENUM __attribute__((deprecated))
-#else
-# define PROTOBUF_DEPRECATED_ENUM
-#endif
-
 #if defined(__clang__)
 #define PROTOBUF_IGNORE_DEPRECATION_START                     \
   _Pragma("clang diagnostic push")                                  \
