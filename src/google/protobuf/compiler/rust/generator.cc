@@ -75,9 +75,20 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   auto outfile = absl::WrapUnique(
       generator_context->Open(absl::StrCat(basename, ".pb.rs")));
 
-  google::protobuf::io::Printer(outfile.get()).Emit(R"cc(
-    // TODO: Generate Bindings
-  )cc");
+  google::protobuf::io::Printer p(outfile.get());
+  // TODO(b/270138878): Remove `do_nothing` import once we have real logic. This
+  // is there only to smoke test rustc actions in rust_proto_library.
+  p.Emit(R"rs(
+#[allow(unused_imports)]
+    use protobuf::do_nothing;
+  )rs");
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    // TODO(b/270138878): Implement real logic
+    p.Emit({{"Msg", file->message_type(i)->name()}}, R"rs(
+                    pub struct $Msg$ {}
+                  )rs");
+  }
+
   return true;
 }
 
