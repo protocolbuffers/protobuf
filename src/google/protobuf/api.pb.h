@@ -308,6 +308,10 @@ class PROTOBUF_EXPORT Api final :
   public:
   // .google.protobuf.SourceContext source_context = 5;
   bool has_source_context() const;
+  private:
+  bool _internal_has_source_context() const;
+
+  public:
   void clear_source_context() ;
   const ::PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
@@ -338,8 +342,6 @@ class PROTOBUF_EXPORT Api final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Method > methods_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option > options_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Mixin > mixins_;
@@ -347,6 +349,7 @@ class PROTOBUF_EXPORT Api final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr version_;
     ::PROTOBUF_NAMESPACE_ID::SourceContext* source_context_;
     int syntax_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
@@ -990,10 +993,11 @@ inline void Api::set_allocated_version(std::string* value) {
 }
 
 // .google.protobuf.SourceContext source_context = 5;
+inline bool Api::_internal_has_source_context() const {
+  return this != internal_default_instance() && _impl_.source_context_ != nullptr;
+}
 inline bool Api::has_source_context() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.source_context_ != nullptr);
-  return value;
+  return _internal_has_source_context();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::SourceContext& Api::_internal_source_context() const {
   const ::PROTOBUF_NAMESPACE_ID::SourceContext* p = _impl_.source_context_;
@@ -1010,15 +1014,10 @@ inline void Api::unsafe_arena_set_allocated_source_context(
     delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.source_context_);
   }
   _impl_.source_context_ = source_context;
-  if (source_context) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Api.source_context)
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceContext* Api::release_source_context() {
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  
   ::PROTOBUF_NAMESPACE_ID::SourceContext* temp = _impl_.source_context_;
   _impl_.source_context_ = nullptr;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -1034,13 +1033,13 @@ inline ::PROTOBUF_NAMESPACE_ID::SourceContext* Api::release_source_context() {
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceContext* Api::unsafe_arena_release_source_context() {
   // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  
   ::PROTOBUF_NAMESPACE_ID::SourceContext* temp = _impl_.source_context_;
   _impl_.source_context_ = nullptr;
   return temp;
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceContext* Api::_internal_mutable_source_context() {
-  _impl_._has_bits_[0] |= 0x00000001u;
+  
   if (_impl_.source_context_ == nullptr) {
     auto* p = CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::SourceContext>(GetArenaForAllocation());
     _impl_.source_context_ = p;
@@ -1065,9 +1064,9 @@ inline void Api::set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceCon
       source_context = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, source_context, submessage_arena);
     }
-    _impl_._has_bits_[0] |= 0x00000001u;
+
   } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
+
   }
   _impl_.source_context_ = source_context;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.source_context)

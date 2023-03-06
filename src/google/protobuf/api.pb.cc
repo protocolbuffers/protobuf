@@ -21,9 +21,7 @@ namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR Api::Api(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_._has_bits_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.methods_)*/{}
+    /*decltype(_impl_.methods_)*/{}
   , /*decltype(_impl_.options_)*/{}
   , /*decltype(_impl_.mixins_)*/{}
   , /*decltype(_impl_.name_)*/ {
@@ -36,7 +34,8 @@ PROTOBUF_CONSTEXPR Api::Api(
 
   , /*decltype(_impl_.source_context_)*/nullptr
   , /*decltype(_impl_.syntax_)*/ 0
-} {}
+
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct ApiDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ApiDefaultTypeInternal() {}
@@ -108,7 +107,7 @@ static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
 const ::uint32_t TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
     protodesc_cold) = {
-    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Api, _impl_._has_bits_),
+    ~0u,  // no _has_bits_
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Api, _internal_metadata_),
     ~0u,  // no _extensions_
     ~0u,  // no _oneof_case_
@@ -123,13 +122,6 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] PROTOBUF
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Api, _impl_.source_context_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Api, _impl_.mixins_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Api, _impl_.syntax_),
-    ~0u,
-    ~0u,
-    ~0u,
-    ~0u,
-    0,
-    ~0u,
-    ~0u,
     ~0u,  // no _has_bits_
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Method, _internal_metadata_),
     ~0u,  // no _extensions_
@@ -159,9 +151,9 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] PROTOBUF
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, 15, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Api)},
-        { 22, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Method)},
-        { 37, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Mixin)},
+        { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Api)},
+        { 15, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Method)},
+        { 30, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Mixin)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -236,13 +228,7 @@ PROTOBUF_NAMESPACE_OPEN
 
 class Api::_Internal {
  public:
-  using HasBits = decltype(std::declval<Api>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(Api, _impl_._has_bits_);
   static const ::PROTOBUF_NAMESPACE_ID::SourceContext& source_context(const Api* msg);
-  static void set_has_source_context(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
 const ::PROTOBUF_NAMESPACE_ID::SourceContext&
@@ -253,8 +239,10 @@ void Api::clear_options() {
   _impl_.options_.Clear();
 }
 void Api::clear_source_context() {
-  if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  if (GetArenaForAllocation() == nullptr && _impl_.source_context_ != nullptr) {
+    delete _impl_.source_context_;
+  }
+  _impl_.source_context_ = nullptr;
 }
 Api::Api(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
@@ -265,9 +253,7 @@ Api::Api(const Api& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   Api* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){from._impl_._has_bits_}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.methods_){from._impl_.methods_}
+      decltype(_impl_.methods_){from._impl_.methods_}
     , decltype(_impl_.options_){from._impl_.options_}
     , decltype(_impl_.mixins_){from._impl_.mixins_}
     , decltype(_impl_.name_) {}
@@ -276,7 +262,8 @@ Api::Api(const Api& from)
 
     , decltype(_impl_.source_context_){nullptr}
     , decltype(_impl_.syntax_) {}
-  };
+
+    , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.name_.InitDefault();
@@ -293,7 +280,7 @@ Api::Api(const Api& from)
   if (!from._internal_version().empty()) {
     _this->_impl_.version_.Set(from._internal_version(), _this->GetArenaForAllocation());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if (from._internal_has_source_context()) {
     _this->_impl_.source_context_ = new ::PROTOBUF_NAMESPACE_ID::SourceContext(*from._impl_.source_context_);
   }
   _this->_impl_.syntax_ = from._impl_.syntax_;
@@ -303,9 +290,7 @@ Api::Api(const Api& from)
 inline void Api::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.methods_){arena}
+      decltype(_impl_.methods_){arena}
     , decltype(_impl_.options_){arena}
     , decltype(_impl_.mixins_){arena}
     , decltype(_impl_.name_) {}
@@ -315,6 +300,7 @@ inline void Api::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.source_context_){nullptr}
     , decltype(_impl_.syntax_) { 0 }
 
+    , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -360,19 +346,16 @@ void Api::Clear() {
   _impl_.mixins_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.version_.ClearToEmpty();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.source_context_ != nullptr);
-    _impl_.source_context_->Clear();
+  if (GetArenaForAllocation() == nullptr && _impl_.source_context_ != nullptr) {
+    delete _impl_.source_context_;
   }
+  _impl_.source_context_ = nullptr;
   _impl_.syntax_ = 0;
-  _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* Api::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
@@ -476,7 +459,6 @@ const char* Api::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
     CHK_(ptr != nullptr);
   }  // while
 message_done:
-  _impl_._has_bits_.Or(has_bits);
   return ptr;
 failure:
   ptr = nullptr;
@@ -522,9 +504,8 @@ failure:
     target = stream->WriteStringMaybeAliased(4, _s, target);
   }
 
-  cached_has_bits = _impl_._has_bits_[0];
   // .google.protobuf.SourceContext source_context = 5;
-  if (cached_has_bits & 0x00000001u) {
+  if (this->_internal_has_source_context()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessage(5, _Internal::source_context(this),
         _Internal::source_context(this).GetCachedSize(), target, stream);
@@ -595,8 +576,7 @@ failure:
   }
 
   // .google.protobuf.SourceContext source_context = 5;
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
+  if (this->_internal_has_source_context()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *_impl_.source_context_);
@@ -635,7 +615,7 @@ void Api::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_N
   if (!from._internal_version().empty()) {
     _this->_internal_set_version(from._internal_version());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if (from._internal_has_source_context()) {
     _this->_internal_mutable_source_context()->::PROTOBUF_NAMESPACE_ID::SourceContext::MergeFrom(
         from._internal_source_context());
   }
@@ -661,7 +641,6 @@ void Api::InternalSwap(Api* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.methods_.InternalSwap(&other->_impl_.methods_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
   _impl_.mixins_.InternalSwap(&other->_impl_.mixins_);
