@@ -57,11 +57,17 @@ Please refer to our official github site for more installation instructions:
     visibility = ["//visibility:private"],
 )
 
+genrule(
+    name = "rename_protoc",
+    srcs = ["//:protoc_static"],
+    outs = ["bin/protoc"],
+    cmd = "cp $< $@",
+)
+
 pkg_files(
     name = "protoc_files",
-    srcs = ["//:protoc_static"],
+    srcs = ["bin/protoc"],
     attributes = pkg_attributes(mode = "0555"),
-    prefix = "bin/",
     visibility = ["//visibility:private"],
 )
 
