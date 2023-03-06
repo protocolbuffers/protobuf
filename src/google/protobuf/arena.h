@@ -389,7 +389,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // message, or nullptr otherwise. If possible, the call resolves at compile
   // time. Note that we can often devirtualize calls to `value->GetArena()` so
   // usually calling this method is unnecessary.
+  // TODO(b/271599886): remove this function.
   template <typename T>
+  ABSL_DEPRECATED(
+      "This will be removed in a future release. Call value->GetArena() "
+      "instead.")
   PROTOBUF_ALWAYS_INLINE static Arena* GetArena(T* value) {
     return GetArenaInternal(value);
   }

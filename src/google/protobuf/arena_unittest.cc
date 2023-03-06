@@ -1472,44 +1472,21 @@ TEST(ArenaTest, GetArenaShouldReturnTheArenaForArenaAllocatedMessages) {
   Arena arena;
   ArenaMessage* message = Arena::CreateMessage<ArenaMessage>(&arena);
   const ArenaMessage* const_pointer_to_message = message;
-  EXPECT_EQ(&arena, Arena::GetArena(message));
-  EXPECT_EQ(&arena, Arena::GetArena(const_pointer_to_message));
+  EXPECT_EQ(&arena, message->GetArena());
+  EXPECT_EQ(&arena, const_pointer_to_message->GetArena());
 
   // Test that the Message* / MessageLite* specialization SFINAE works.
   const Message* const_pointer_to_message_type = message;
-  EXPECT_EQ(&arena, Arena::GetArena(const_pointer_to_message_type));
+  EXPECT_EQ(&arena, const_pointer_to_message_type->GetArena());
   const MessageLite* const_pointer_to_message_lite_type = message;
-  EXPECT_EQ(&arena, Arena::GetArena(const_pointer_to_message_lite_type));
+  EXPECT_EQ(&arena, const_pointer_to_message_lite_type->GetArena());
 }
 
 TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaAllocatedMessages) {
   ArenaMessage message;
   const ArenaMessage* const_pointer_to_message = &message;
-  EXPECT_EQ(nullptr, Arena::GetArena(&message));
-  EXPECT_EQ(nullptr, Arena::GetArena(const_pointer_to_message));
-}
-
-TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaCompatibleTypes) {
-  // Test that GetArena returns nullptr for types that have a GetArena method
-  // that doesn't return Arena*.
-  struct {
-    int GetArena() const { return 0; }
-  } has_get_arena_method_wrong_return_type;
-  EXPECT_EQ(nullptr, Arena::GetArena(&has_get_arena_method_wrong_return_type));
-
-  // Test that GetArena returns nullptr for types that have a GetArena alias.
-  struct {
-    using GetArena = Arena*;
-    GetArena unused;
-  } has_get_arena_alias;
-  EXPECT_EQ(nullptr, Arena::GetArena(&has_get_arena_alias));
-
-  // Test that GetArena returns nullptr for types that have a GetArena data
-  // member.
-  struct {
-    Arena GetArena;
-  } has_get_arena_data_member;
-  EXPECT_EQ(nullptr, Arena::GetArena(&has_get_arena_data_member));
+  EXPECT_EQ(nullptr, message.GetArena());
+  EXPECT_EQ(nullptr, const_pointer_to_message->GetArena());
 }
 
 TEST(ArenaTest, AddCleanup) {
