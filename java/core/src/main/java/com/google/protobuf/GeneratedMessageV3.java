@@ -139,9 +139,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return internalGetFieldAccessorTable().descriptor;
   }
 
-  // TODO(b/248143958): This method should be removed. It enables parsing directly into an
-  // "immutable" message. Have to leave it for now to support old gencode.
-  // @deprecated use newBuilder().mergeFrom() instead
+  /**
+   * TODO(b/248143958): This method should be removed. It enables parsing directly into an
+   * "immutable" message. Have to leave it for now to support old gencode.
+   *
+   * @deprecated use newBuilder().mergeFrom() instead
+   */
   @Deprecated
   protected void mergeFromAndMakeImmutableInternal(
       CodedInputStream input, ExtensionRegistryLite extensionRegistry)
@@ -242,7 +245,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
   @Override
   public Map<FieldDescriptor, Object> getAllFields() {
-    return Collections.unmodifiableMap(getAllFieldsMutable(/* getBytesForString = */ false));
+    return Collections.unmodifiableMap(getAllFieldsMutable(/* getBytesForString= */ false));
   }
 
   /**
@@ -254,7 +257,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    * fields in order by field number.
    */
   Map<FieldDescriptor, Object> getAllFieldsRaw() {
-    return Collections.unmodifiableMap(getAllFieldsMutable(/* getBytesForString = */ true));
+    return Collections.unmodifiableMap(getAllFieldsMutable(/* getBytesForString= */ true));
   }
 
   @Override
@@ -948,7 +951,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     protected MapField internalGetMutableMapField(int fieldNumber) {
       // Note that we can't use descriptor names here because this method will
       // be called when descriptor is being initialized.
-      throw new RuntimeException("No map fields found in " + getClass().getName());
+      throw new IllegalArgumentException("No map fields found in " + getClass().getName());
     }
   }
 
@@ -1344,7 +1347,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     @Override
     public Map<FieldDescriptor, Object> getAllFields() {
       final Map<FieldDescriptor, Object> result =
-          super.getAllFieldsMutable(/* getBytesForString = */ false);
+          super.getAllFieldsMutable(/* getBytesForString= */ false);
       result.putAll(getExtensionFields());
       return Collections.unmodifiableMap(result);
     }
@@ -1352,7 +1355,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     @Override
     public Map<FieldDescriptor, Object> getAllFieldsRaw() {
       final Map<FieldDescriptor, Object> result =
-          super.getAllFieldsMutable(/* getBytesForString = */ false);
+          super.getAllFieldsMutable(/* getBytesForString= */ false);
       result.putAll(getExtensionFields());
       return Collections.unmodifiableMap(result);
     }
@@ -2300,6 +2303,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     // ---------------------------------------------------------------
 
+    @SuppressWarnings("SameNameButDifferent")
     private static class SingularFieldAccessor implements FieldAccessor {
       private interface MethodInvoker {
         Object get(final GeneratedMessageV3 message);
@@ -2532,6 +2536,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
     }
 
+    @SuppressWarnings("SameNameButDifferent")
     private static class RepeatedFieldAccessor implements FieldAccessor {
       interface MethodInvoker {
         Object get(final GeneratedMessageV3 message);
