@@ -131,9 +131,6 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   };
   std::vector<AuxEntry> aux_entries;
 
-  // Fields parsed by generated fallback function.
-  std::vector<const FieldDescriptor*> fallback_fields;
-
   struct SkipEntry16 {
     uint16_t skipmap;
     uint16_t field_entry_offset;
@@ -161,8 +158,6 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
 
   // Table size.
   int table_size_log2;
-  // True if a generated fallback function is required instead of generic.
-  bool use_generated_fallback;
 };
 
 }  // namespace internal

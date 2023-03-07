@@ -146,8 +146,6 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
       "net/proto2/z_generated_example/test_messages_proto2";
   rpath_map["third_party/protobuf/test_messages_proto3"] =
       "net/proto2/z_generated_example/test_messages_proto3";
-  rpath_map["net/proto2/internal/proto2_weak"] =
-      "net/proto2/z_generated_example/proto2_weak";
 
   DiskSourceTree source_tree;
   source_tree.MapPath("", TestUtil::TestSourceDir());

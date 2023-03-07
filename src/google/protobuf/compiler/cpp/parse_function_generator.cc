@@ -189,9 +189,6 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
   if (need_parse_function) {
     GenerateTailcallParseFunction(format);
   }
-  if (tc_table_info_->use_generated_fallback) {
-    GenerateTailcallFallbackFunction(format);
-  }
   if (should_generate_guarded_tctable()) {
     if (need_parse_function) {
       format("\n#else  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n\n");
@@ -224,50 +221,6 @@ void ParseFunctionGenerator::GenerateTailcallParseFunction(Formatter& format) {
   format(
       "  return ptr;\n"
       "}\n\n");
-}
-
-void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
-    Formatter& format) {
-  ABSL_CHECK(should_generate_tctable());
-  format(
-      "const char* $classname$::Tct_ParseFallback(PROTOBUF_TC_PARAM_DECL) {\n"
-      "#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) return nullptr\n");
-  format.Indent();
-  format("auto* typed_msg = static_cast<$classname$*>(msg);\n");
-
-  // Generate the check to jump to the generic handler to deal with the side
-  // channel data.
-  format(
-      "if (PROTOBUF_PREDICT_FALSE(\n"
-      "    _pbi::TcParser::MustFallbackToGeneric(PROTOBUF_TC_PARAM_PASS))) "
-      "{\n"
-      "  PROTOBUF_MUSTTAIL return "
-      "::_pbi::TcParser::GenericFallback$1$(PROTOBUF_TC_PARAM_PASS);\n"
-      "}\n",
-      GetOptimizeFor(descriptor_->file(), options_) == FileOptions::LITE_RUNTIME
-          ? "Lite"
-          : "");
-
-  if (num_hasbits_ > 0) {
-    // Sync hasbits
-    format("typed_msg->_impl_._has_bits_[0] |= hasbits;\n");
-  }
-  format("::uint32_t tag = data.tag();\n");
-
-  format.Set("msg", "typed_msg->");
-  format.Set("this", "typed_msg");
-  format.Set("has_bits", "typed_msg->_impl_._has_bits_");
-  format.Set("next_tag", "goto next_tag");
-  GenerateParseIterationBody(format, descriptor_,
-                             tc_table_info_->fallback_fields);
-
-  format.Outdent();
-  format(
-      "next_tag:\n"
-      "message_done:\n"
-      "  return ptr;\n"
-      "#undef CHK_\n"
-      "}\n");
 }
 
 struct SkipEntry16 {
@@ -452,15 +405,10 @@ static NumToEntryTable MakeNumToEntryTable(
 void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
   ABSL_CHECK(should_generate_tctable());
   // All entries without a fast-path parsing function need a fallback.
-  std::string fallback;
-  if (tc_table_info_->use_generated_fallback) {
-    fallback = absl::StrCat(ClassName(descriptor_), "::Tct_ParseFallback");
-  } else {
-    fallback = "::_pbi::TcParser::GenericFallback";
-    if (GetOptimizeFor(descriptor_->file(), options_) ==
-        FileOptions::LITE_RUNTIME) {
-      absl::StrAppend(&fallback, "Lite");
-    }
+  std::string fallback = "::_pbi::TcParser::GenericFallback";
+  if (GetOptimizeFor(descriptor_->file(), options_) ==
+      FileOptions::LITE_RUNTIME) {
+    absl::StrAppend(&fallback, "Lite");
   }
 
   // For simplicity and speed, the table is not covering all proto
@@ -856,34 +804,28 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
     const FieldDescriptor* field = entry.field;
     PrintFieldComment(format, field);
     format("{");
-    if (IsWeak(field, options_)) {
-      // Weak fields are handled by the generated fallback function.
-      // (These are handled by legacy Google-internal logic.)
-      format("/* weak */ 0, 0, 0, 0");
+    const OneofDescriptor* oneof = field->real_containing_oneof();
+    bool split = ShouldSplit(field, options_);
+    if (split) {
+      format("PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, $1$), ",
+             absl::StrCat(FieldName(field), "_"));
     } else {
-      const OneofDescriptor* oneof = field->real_containing_oneof();
-      bool split = ShouldSplit(field, options_);
-      if (split) {
-        format("PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, $1$), ",
-               absl::StrCat(FieldName(field), "_"));
-      } else {
-        format("PROTOBUF_FIELD_OFFSET($classname$, $1$), ",
-               FieldMemberName(field, /*cold=*/false));
-      }
-      if (oneof) {
-        format("_Internal::kOneofCaseOffset + $1$, ", 4 * oneof->index());
-      } else if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
-        if (entry.hasbit_idx >= 0) {
-          format("_Internal::kHasBitsOffset + $1$, ", entry.hasbit_idx);
-        } else {
-          format("$1$, ", entry.hasbit_idx);
-        }
-      } else {
-        format("0, ");
-      }
-      format("$1$,\n ", entry.aux_idx);
-      FormatFieldKind(format, entry);
+      format("PROTOBUF_FIELD_OFFSET($classname$, $1$), ",
+             FieldMemberName(field, /*cold=*/false));
     }
+    if (oneof) {
+      format("_Internal::kOneofCaseOffset + $1$, ", 4 * oneof->index());
+    } else if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
+      if (entry.hasbit_idx >= 0) {
+        format("_Internal::kHasBitsOffset + $1$, ", entry.hasbit_idx);
+      } else {
+        format("$1$, ", entry.hasbit_idx);
+      }
+    } else {
+      format("0, ");
+    }
+    format("$1$,\n ", entry.aux_idx);
+    FormatFieldKind(format, entry);
     format("},\n");
   }
 }
@@ -1119,15 +1061,6 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
                 "), ptr);\n",
                 QualifiedDefaultInstanceName(field->message_type(), options_));
           }
-        } else if (IsWeak(field, options_)) {
-          format(
-              "{\n"
-              "  auto* default_ = &reinterpret_cast<const Message&>($1$);\n"
-              "  ptr = ctx->ParseMessage($msg$$weak_field_map$.MutableMessage("
-              "$2$, default_), ptr);\n"
-              "}\n",
-              QualifiedDefaultInstanceName(field->message_type(), options_),
-              field->number());
         } else {
           format(
               "ptr = ctx->ParseMessage($msg$_internal_$mutable_field$(), "

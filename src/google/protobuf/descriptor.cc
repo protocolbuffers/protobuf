@@ -835,8 +835,6 @@ const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
   return nullptr;
 }
 
-static const char* const kNonLinkedWeakMessageReplacementName = "google.protobuf.Empty";
-
 #if !defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912)
 const int FieldDescriptor::kMaxNumber;
 const int FieldDescriptor::kFirstReservedNumber;
@@ -5338,7 +5336,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     }
   }
 
-
   // Again, see comments at InternalSetLazilyBuildDependencies about error
   // checking. Also, don't log unused dependencies if there were previous
   // errors, since the results might be inaccurate.
@@ -6525,15 +6522,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     bool expecting_enum = (proto.type() == FieldDescriptorProto::TYPE_ENUM) ||
                           proto.has_default_value();
 
-    // In case of weak fields we force building the dependency. We need to know
-    // if the type exist or not. If it doesn't exist we substitute Empty which
-    // should only be done if the type can't be found in the generated pool.
-    // TODO(gerbens) Ideally we should query the database directly to check
-    // if weak fields exist or not so that we don't need to force building
-    // weak dependencies. However the name lookup rules for symbols are
-    // somewhat complicated, so I defer it too another CL.
-    bool is_weak = !pool_->enforce_weak_ && proto.options().weak();
-    bool is_lazy = pool_->lazily_build_dependencies_ && !is_weak;
+    bool is_lazy = pool_->lazily_build_dependencies_;
 
     Symbol type =
         LookupSymbol(proto.type_name(), field->full_name(),
@@ -6570,11 +6559,6 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
         }
         return;
       } else {
-        // If the type is a weak type, we change the type to a google.protobuf.Empty
-        // field.
-        if (is_weak) {
-          type = FindSymbol(kNonLinkedWeakMessageReplacementName);
-        }
         if (type.IsNull()) {
           AddNotDefinedError(field->full_name(), proto,
                              DescriptorPool::ErrorCollector::TYPE,
@@ -8430,8 +8414,7 @@ bool HasHasbit(const FieldDescriptor* field) {
   // message fields a hasbit only if "optional" is present. If the user is
   // explicitly writing "optional", it is likely they are writing it on
   // primitive fields also.
-  return (field->has_optional_keyword() || field->is_required()) &&
-         !field->options().weak();
+  return (field->has_optional_keyword() || field->is_required());
 }
 
 static bool FieldEnforceUtf8(const FieldDescriptor* field) {

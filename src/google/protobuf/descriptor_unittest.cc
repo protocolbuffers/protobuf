@@ -6897,7 +6897,6 @@ TEST_F(ValidationErrorTest, ValidateProto3Group) {
       "syntax.\n");
 }
 
-
 TEST_F(ValidationErrorTest, ValidateProto3EnumFromProto2) {
   // Define an enum in a proto2 file.
   BuildFile(

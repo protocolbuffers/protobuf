@@ -334,14 +334,6 @@ inline bool UseUnknownFieldSet(const FileDescriptor* file,
   return GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME;
 }
 
-inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
-  if (field->options().weak()) {
-    ABSL_CHECK(!options.opensource_runtime);
-    return true;
-  }
-  return false;
-}
-
 bool IsProfileDriven(const Options& options);
 
 bool IsStringInlined(const FieldDescriptor* descriptor, const Options& options);
@@ -609,9 +601,6 @@ void ForEachMessage(const FileDescriptor* descriptor, F&& func) {
   for (int i = 0; i < descriptor->message_type_count(); i++)
     ForEachMessage(descriptor->message_type(i), std::forward<F&&>(func));
 }
-
-bool HasWeakFields(const Descriptor* desc, const Options& options);
-bool HasWeakFields(const FileDescriptor* desc, const Options& options);
 
 // Returns true if the "required" restriction check should be ignored for the
 // given field.

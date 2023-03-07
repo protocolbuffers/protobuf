@@ -1286,20 +1286,6 @@ void FlattenMessagesInFile(const FileDescriptor* file,
   }
 }
 
-bool HasWeakFields(const Descriptor* descriptor, const Options& options) {
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    if (IsWeak(descriptor->field(i), options)) return true;
-  }
-  return false;
-}
-
-bool HasWeakFields(const FileDescriptor* file, const Options& options) {
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasWeakFields(file->message_type(i), options)) return true;
-  }
-  return false;
-}
-
 bool UsingImplicitWeakFields(const FileDescriptor* file,
                              const Options& options) {
   return options.lite_implicit_weak_fields &&
@@ -1337,9 +1323,6 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
       const FieldDescriptor* field = descriptor->field(j);
       if (field->is_required()) {
         result.contains_required = true;
-      }
-      if (field->options().weak()) {
-        result.contains_weak = true;
       }
       switch (field->type()) {
         case FieldDescriptor::TYPE_STRING:

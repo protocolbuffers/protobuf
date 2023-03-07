@@ -264,7 +264,6 @@ class DynamicMessage : public Message {
 
   void* MutableRaw(int i);
   void* MutableExtensionsRaw();
-  void* MutableWeakFieldMapRaw();
   void* MutableOneofCaseRaw(int i);
   void* MutableOneofFieldRaw(const FieldDescriptor* f);
 
@@ -293,7 +292,6 @@ struct DynamicMessageFactory::TypeInfo {
   // looking back at this field. This would assume details about the
   // implementation of unique_ptr.
   const DynamicMessage* prototype;
-  int weak_field_map_offset;  // The offset for the weak_field_map;
 
   TypeInfo() : prototype(nullptr) {}
 
@@ -343,9 +341,6 @@ inline void* DynamicMessage::MutableRaw(int i) {
 }
 inline void* DynamicMessage::MutableExtensionsRaw() {
   return OffsetToPointer(type_info_->extensions_offset);
-}
-inline void* DynamicMessage::MutableWeakFieldMapRaw() {
-  return OffsetToPointer(type_info_->weak_field_map_offset);
 }
 inline void* DynamicMessage::MutableOneofCaseRaw(int i) {
   return OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32_t) * i);
@@ -596,8 +591,7 @@ void DynamicMessage::CrossLinkPrototypes() {
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !field->options().weak() && !InRealOneof(field) &&
-        !field->is_repeated()) {
+        !InRealOneof(field) && !field->is_repeated()) {
       void* field_ptr = MutableRaw(i);
       // For fields with message types, we need to cross-link with the
       // prototype for the field's type.
@@ -765,8 +759,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     }
   }
 
-  type_info->weak_field_map_offset = -1;
-
   // Align the final size to make sure no clever allocators think that
   // alignment is not necessary.
   type_info->size = size;
@@ -805,7 +797,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->extensions_offset,
       type_info->oneof_case_offset,
       type_info->size,
-      type_info->weak_field_map_offset,
       nullptr,  // inlined_string_indices_
       0,        // inlined_string_donated_offset_
       -1,       // split_offset_

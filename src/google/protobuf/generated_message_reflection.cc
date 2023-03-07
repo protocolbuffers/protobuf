@@ -283,10 +283,7 @@ Reflection::Reflection(const Descriptor* descriptor,
       schema_(schema),
       descriptor_pool_(
           (pool == nullptr) ? DescriptorPool::internal_generated_pool() : pool),
-      message_factory_(factory),
-      last_non_weak_field_index_(-1) {
-  last_non_weak_field_index_ = descriptor_->field_count() - 1;
-}
+      message_factory_(factory) {}
 
 Reflection::~Reflection() {
   // No need to use sized delete. This code path is uncommon and it would not be
@@ -340,7 +337,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
   if (schema_.HasExtensionSet()) {
     total_size += GetExtensionSet(message).SpaceUsedExcludingSelfLong();
   }
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
+  for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->is_repeated()) {
       switch (field->cpp_type()) {
@@ -1167,7 +1164,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
 
   MutableInternalMetadata(lhs)->InternalSwap(MutableInternalMetadata(rhs));
 
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
+  for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (schema_.InRealOneof(field)) continue;
     if (schema_.IsSplit(field)) {
@@ -1572,14 +1569,13 @@ void Reflection::ListFields(const Message& message,
       schema_.HasHasbits() ? GetHasBits(message) : nullptr;
   const uint32_t* const has_bits_indices = schema_.has_bit_indices_;
   output->reserve(descriptor_->field_count());
-  const int last_non_weak_field_index = last_non_weak_field_index_;
   // Fields in messages are usually added with the increasing tags.
   uint32_t last = 0;  // UINT32_MAX if out-of-order
   auto append_to_output = [&last, &output](const FieldDescriptor* field) {
     CheckInOrder(field, &last);
     output->push_back(field);
   };
-  for (int i = 0; i <= last_non_weak_field_index; i++) {
+  for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->is_repeated()) {
       if (FieldSize(message, field) > 0) {
@@ -2041,8 +2037,8 @@ const Message* Reflection::GetDefaultMessageInstance(
   // instances to allow for this. But only do this for real fields.
   // This is an optimization to avoid going to GetPrototype() below, as that
   // requires a lock and a map lookup.
-  if (!field->is_extension() && !field->options().weak() &&
-      !IsLazyField(field) && !schema_.InRealOneof(field)) {
+  if (!field->is_extension() && !IsLazyField(field) &&
+      !schema_.InRealOneof(field)) {
     auto* res = DefaultRaw<const Message*>(field);
     if (res != nullptr) {
       return res;
@@ -2113,7 +2109,6 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     Message* message, Message* sub_message,
     const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
-
 
   if (field->is_extension()) {
     MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
@@ -2639,7 +2634,6 @@ void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
 // Simple accessors for manipulating has_bits_.
 bool Reflection::HasBit(const Message& message,
                         const FieldDescriptor* field) const {
-  ABSL_DCHECK(!field->options().weak());
   if (schema_.HasBitIndex(field) != static_cast<uint32_t>(-1)) {
     return IsIndexInHasBitSet(GetHasBits(message), schema_.HasBitIndex(field));
   }
@@ -2704,7 +2698,6 @@ bool Reflection::HasBit(const Message& message,
 }
 
 void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
-  ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(-1)) return;
   MutableHasBits(message)[index / 32] |=
@@ -2713,7 +2706,6 @@ void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
 
 void Reflection::ClearBit(Message* message,
                           const FieldDescriptor* field) const {
-  ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(-1)) return;
   MutableHasBits(message)[index / 32] &=
@@ -2722,7 +2714,6 @@ void Reflection::ClearBit(Message* message,
 
 void Reflection::SwapBit(Message* message1, Message* message2,
                          const FieldDescriptor* field) const {
-  ABSL_DCHECK(!field->options().weak());
   if (!schema_.HasHasbits()) {
     return;
   }
@@ -3037,13 +3028,9 @@ void Reflection::PopulateTcParseEntries(
     TcParseTableBase::FieldEntry* entries) const {
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
-    if (field->options().weak()) {
-      // Weak fields are handled by the generated fallback function.
-      // (These are handled by legacy Google-internal logic.)
-      *entries = {};
-    } else if (field->type() == field->TYPE_ENUM &&
-               table_info.aux_entries[entry.aux_idx].type ==
-                   internal::TailCallTableInfo::kEnumValidator) {
+    if (field->type() == field->TYPE_ENUM &&
+        table_info.aux_entries[entry.aux_idx].type ==
+            internal::TailCallTableInfo::kEnumValidator) {
       // Mini parse can't handle it. Fallback to reflection.
       *entries = {};
       table_info.aux_entries[entry.aux_idx] = {};
@@ -3255,7 +3242,8 @@ ReflectionSchema MigrationToReflectionSchema(
   result.extensions_offset_ = offsets[migration_schema.offsets_index + 2];
   result.oneof_case_offset_ = offsets[migration_schema.offsets_index + 3];
   result.object_size_ = migration_schema.object_size;
-  result.weak_field_map_offset_ = offsets[migration_schema.offsets_index + 4];
+  // How do we remove this from the offsets?
+  // XXX offsets[migration_schema.offsets_index + 4];
   result.inlined_string_donated_offset_ =
       offsets[migration_schema.offsets_index + 5];
   result.split_offset_ = offsets[migration_schema.offsets_index + 6];

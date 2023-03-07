@@ -72,7 +72,6 @@ namespace internal {
 class DefaultEmptyOneof;
 // Defined in other files.
 class ExtensionSet;  // extension_set.h
-class WeakFieldMap;  // weak_field_map.h
 
 // Tag used on offsets for fields that don't have a real offset.
 // For example, weak message fields go into the WeakFieldMap and not in an
@@ -214,10 +213,6 @@ struct ReflectionSchema {
     return static_cast<uint32_t>(extensions_offset_);
   }
 
-  // The off set of WeakFieldMap when the message contains weak fields.
-  // The default is 0 for now.
-  int GetWeakFieldMapOffset() const { return weak_field_map_offset_; }
-
   bool IsDefaultInstance(const Message& message) const {
     return &message == default_instance_;
   }
@@ -254,9 +249,6 @@ struct ReflectionSchema {
     return static_cast<uint32_t>(sizeof_split_);
   }
 
-
-  bool HasWeakFields() const { return weak_field_map_offset_ > 0; }
-
   // These members are intended to be private, but we cannot actually make them
   // private because this prevents us from using aggregate initialization of
   // them, ie.
@@ -271,7 +263,6 @@ struct ReflectionSchema {
   int extensions_offset_;
   int oneof_case_offset_;
   int object_size_;
-  int weak_field_map_offset_;
   const uint32_t* inlined_string_indices_;
   int inlined_string_donated_offset_;
   int split_offset_;

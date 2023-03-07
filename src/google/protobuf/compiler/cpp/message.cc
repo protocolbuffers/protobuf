@@ -118,18 +118,14 @@ void PrintPresenceCheck(const FieldDescriptor* field,
                         const std::vector<int>& has_bit_indices, io::Printer* p,
                         int* cached_has_word_index) {
   Formatter format(p);
-  if (!field->options().weak()) {
-    int has_bit_index = has_bit_indices[field->index()];
-    if (*cached_has_word_index != (has_bit_index / 32)) {
-      *cached_has_word_index = (has_bit_index / 32);
-      format("cached_has_bits = $has_bits$[$1$];\n", *cached_has_word_index);
-    }
-    const std::string mask =
-        absl::StrCat(absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-    format("if (cached_has_bits & 0x$1$u) {\n", mask);
-  } else {
-    format("if (has_$1$()) {\n", FieldName(field));
+  int has_bit_index = has_bit_indices[field->index()];
+  if (*cached_has_word_index != (has_bit_index / 32)) {
+    *cached_has_word_index = (has_bit_index / 32);
+    format("cached_has_bits = $has_bits$[$1$];\n", *cached_has_word_index);
   }
+  const std::string mask =
+      absl::StrCat(absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
+  format("if (cached_has_bits & 0x$1$u) {\n", mask);
   format.Indent();
 }
 
@@ -537,11 +533,6 @@ MessageGenerator::MessageGenerator(
   // Compute optimized field order to be used for layout and initialization
   // purposes.
   for (auto field : FieldRange(descriptor_)) {
-    if (IsWeak(field, options_)) {
-      ++num_weak_fields_;
-      continue;
-    }
-
     if (!field->real_containing_oneof()) {
       optimized_order_.push_back(field);
     }
@@ -638,7 +629,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                         optimized_order_.end());
 
   for (auto field : FieldRange(descriptor_)) {
-    if (!field->real_containing_oneof() && !field->options().weak()) {
+    if (!field->real_containing_oneof()) {
       continue;
     }
     ordered_fields.push_back(field);
@@ -951,14 +942,6 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     const FieldDescriptor* field, io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
   Formatter format(p);
-  if (field->options().weak()) {
-    format(
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  return $weak_field_map$.Has($number$);\n"
-        "}\n");
-    return;
-  }
   if (HasHasbit(field)) {
     int has_bit_index = HasBitIndex(field);
     ABSL_CHECK_NE(has_bit_index, kNoHasbit);
@@ -1646,8 +1629,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
   for (auto field : FieldRange(descriptor_)) {
     // set_has_***() generated in all oneofs.
-    if (!field->is_repeated() && !field->options().weak() &&
-        field->real_containing_oneof()) {
+    if (!field->is_repeated() && field->real_containing_oneof()) {
       format("void set_has_$1$();\n", FieldName(field));
     }
   }
@@ -1796,9 +1778,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         descriptor_->real_oneof_decl_count());
   }
 
-  if (num_weak_fields_) {
-    format("::$proto_ns$::internal::WeakFieldMap _weak_field_map_;\n");
-  }
   // Generate _any_metadata_ for the Any type.
   if (IsAnyMessage(descriptor_, options_)) {
     format("::$proto_ns$::internal::AnyMetadata _any_metadata_;\n");
@@ -2093,11 +2072,8 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
   } else {
     format("~0u,  // no _oneof_case_\n");
   }
-  if (num_weak_fields_ > 0) {
-    format("PROTOBUF_FIELD_OFFSET($classtype$, $weak_field_map$),\n");
-  } else {
-    format("~0u,  // no _weak_field_map_\n");
-  }
+  // XXX
+  format("~0u,  // no _weak_field_map_\n");
   if (!inlined_string_indices_.empty()) {
     format(
         "PROTOBUF_FIELD_OFFSET($classtype$, "
@@ -2121,7 +2097,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
   for (auto field : FieldRange(descriptor_)) {
     // TODO(sbenza): We should not have an entry in the offset table for fields
     // that do not use them.
-    if (field->options().weak() || field->real_containing_oneof()) {
+    if (field->real_containing_oneof()) {
       // Mark the field to prevent unintentional access through reflection.
       // Don't use the top bit because that is for unused fields.
       format("::_pbi::kInvalidFieldOffsetTag");
@@ -2260,10 +2236,6 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
     put_sep();
     format("/*decltype($oneof_case$)*/{}");
   }
-  if (num_weak_fields_ > 0) {
-    put_sep();
-    format("decltype($weak_field_map$){arena}");
-  }
   if (IsAnyMessage(descriptor_, options_)) {
     put_sep();
     // AnyMetadata has no move constructor.
@@ -2374,10 +2346,6 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
         "  clear_$1$();\n"
         "}\n",
         oneof->name());
-  }
-
-  if (num_weak_fields_) {
-    format("$weak_field_map$.ClearAll();\n");
   }
 
   if (IsAnyMessage(descriptor_, options_)) {
@@ -2512,11 +2480,6 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
     format("/*decltype($oneof_case$)*/{}");
   }
 
-  if (num_weak_fields_) {
-    put_sep();
-    format("/*decltype($weak_field_map$)*/{}");
-  }
-
   if (IsAnyMessage(descriptor_, options_)) {
     put_sep();
     format(
@@ -2616,11 +2579,10 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
 
   // If the message contains only scalar fields (ints and enums),
   // then we can copy the entire impl_ section with a single statement.
-  bool copy_construct_impl =
-      !ShouldSplit(descriptor_, options_) &&
-      !HasSimpleBaseClass(descriptor_, options_) &&
-      (descriptor_->extension_range_count() == 0 &&
-       descriptor_->real_oneof_decl_count() == 0 && num_weak_fields_ == 0);
+  bool copy_construct_impl = !ShouldSplit(descriptor_, options_) &&
+                             !HasSimpleBaseClass(descriptor_, options_) &&
+                             (descriptor_->extension_range_count() == 0 &&
+                              descriptor_->real_oneof_decl_count() == 0);
   for (const auto& field : optimized_order_) {
     if (!copy_construct_impl) break;
     if (field->is_repeated() || field->is_extension()) {
@@ -2727,10 +2689,6 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       if (descriptor_->real_oneof_decl_count() != 0) {
         put_sep();
         format("/*decltype($oneof_case$)*/{}");
-      }
-      if (num_weak_fields_ > 0) {
-        put_sep();
-        format("decltype($weak_field_map$){from.$weak_field_map$}");
       }
       if (IsAnyMessage(descriptor_, options_)) {
         put_sep();
@@ -3019,10 +2977,6 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
     format("clear_$1$();\n", oneof->name());
   }
 
-  if (num_weak_fields_) {
-    format("$weak_field_map$.ClearAll();\n");
-  }
-
   // We don't clear donated status.
 
   if (!has_bit_indices_.empty()) {
@@ -3162,12 +3116,6 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
 
     for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
       format("swap($oneof_case$[$1$], other->$oneof_case$[$1$]);\n", i);
-    }
-
-    if (num_weak_fields_) {
-      format(
-          "$weak_field_map$.UnsafeArenaSwap(&other->$weak_field_map$)"
-          ";\n");
     }
 
     if (!inlined_string_indices_.empty()) {
@@ -3329,8 +3277,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           format.Outdent();
           format("}\n");
         }
-      } else if (field->options().weak() ||
-                 cached_has_word_index != HasWordIndex(field)) {
+      } else if (cached_has_word_index != HasWordIndex(field)) {
         // Check hasbit, not using cached bits.
         ABSL_CHECK(HasHasbit(field));
         auto v = p->WithVars(HasbitVars(HasBitIndex(field)));
@@ -3400,11 +3347,6 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format("}\n");
-  }
-  if (num_weak_fields_) {
-    format(
-        "_this->$weak_field_map$.MergeFrom(from.$weak_field_map$);"
-        "\n");
   }
 
   // Merging of extensions and unknown fields is done last, to maximize
@@ -3521,14 +3463,10 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
                                                  int cached_has_bits_index) {
   auto v = p->WithVars(FieldVars(field, options_));
   Formatter format(p);
-  if (!field->options().weak()) {
-    // For weakfields, PrintFieldComment is called during iteration.
-    PrintFieldComment(format, field);
-  }
+  PrintFieldComment(format, field);
 
   bool have_enclosing_if = false;
-  if (field->options().weak()) {
-  } else if (HasHasbit(field)) {
+  if (HasHasbit(field)) {
     // Attempt to use the state of cached_has_bits, if possible.
     int has_bit_index = HasBitIndex(field);
     auto v = p->WithVars(HasbitVars(has_bit_index));
@@ -3770,11 +3708,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
   }
   std::sort(sorted_extensions.begin(), sorted_extensions.end(),
             ExtensionRangeSorter());
-  if (num_weak_fields_) {
-    format(
-        "::_pbi::WeakFieldMap::FieldWriter field_writer("
-        "$weak_field_map$);\n");
-  }
 
   format(
       "$uint32$ cached_has_bits = 0;\n"
@@ -3784,7 +3717,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
   {
     LazySerializerEmitter e(this, p);
     LazyExtensionRangeEmitter re(this, p);
-    LargestWeakFieldHolder largest_weak_field;
     int i, j;
     for (i = 0, j = 0;
          i < ordered_fields.size() || j < sorted_extensions.size();) {
@@ -3793,21 +3725,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
            ordered_fields[i]->number() < sorted_extensions[j]->start)) {
         const FieldDescriptor* field = ordered_fields[i++];
         re.Flush();
-        if (field->options().weak()) {
-          largest_weak_field.ReplaceIfLarger(field);
-          PrintFieldComment(format, field);
-        } else {
-          e.EmitIfNotNull(largest_weak_field.Release());
-          e.Emit(field);
-        }
+        e.Emit(field);
       } else {
-        e.EmitIfNotNull(largest_weak_field.Release());
         e.Flush();
         re.AddToRange(sorted_extensions[j++]);
       }
     }
     re.Flush();
-    e.EmitIfNotNull(largest_weak_field.Release());
   }
 
   format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
@@ -3853,12 +3777,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
   ABSL_CHECK_LT(num_fields, kLargePrime)
       << "Prime offset must be greater than the number of fields to ensure "
          "those are coprime.";
-
-  if (num_weak_fields_) {
-    format(
-        "::_pbi::WeakFieldMap::FieldWriter field_writer("
-        "$weak_field_map$);\n");
-  }
 
   format("for (int i = $1$; i >= 0; i-- ) {\n", num_fields - 1);
 
@@ -4145,11 +4063,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     format("}\n");
   }
 
-  if (num_weak_fields_) {
-    // TagSize + MessageSize
-    format("total_size += $weak_field_map$.ByteSizeLong();\n");
-  }
-
   if (UseUnknownFieldSet(descriptor_->file(), options_)) {
     // We go out of our way to put the computation of the uncommon path of
     // unknown fields in tail position. This allows for better code generation
@@ -4201,10 +4114,6 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
   // Now check that all non-oneof embedded messages are initialized.
   for (auto field : optimized_order_) {
     field_generators_.get(field).GenerateIsInitialized(p);
-  }
-  if (num_weak_fields_) {
-    // For Weak fields.
-    format("if (!$weak_field_map$.IsInitialized()) return false;\n");
   }
   // Go through the oneof fields, emitting a switch if any might have required
   // fields.
