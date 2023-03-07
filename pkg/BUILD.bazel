@@ -62,11 +62,23 @@ genrule(
     srcs = ["//:protoc_static"],
     outs = ["bin/protoc"],
     cmd = "cp $< $@",
+    tags = ["manual"],
+)
+
+genrule(
+    name = "rename_protoc_exe",
+    srcs = ["//:protoc_static"],
+    outs = ["bin/protoc.exe"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
 )
 
 pkg_files(
     name = "protoc_files",
-    srcs = ["bin/protoc"],
+    srcs = select({
+        "//build_defs:config_win": ["bin/protoc.exe"],
+        "//conditions:default": ["bin/protoc"],
+    }),
     attributes = pkg_attributes(mode = "0555"),
     prefix = "bin/",
     visibility = ["//visibility:private"],

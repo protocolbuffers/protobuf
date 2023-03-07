@@ -14,13 +14,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: OpenJDK 8
+            version: '8'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-03a376b5d6ef66f827fc307716e3b841cc26b709
+            targets: //java/... //java/internal:java_version
           - name: OpenJDK 11
             version: '11'
-            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-03a376b5d6ef66f827fc307716e3b841cc26b709
             targets: //java/... //java/internal:java_version
           - name: OpenJDK 17
             version: '17'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-508417e5215994ade7585d28ba3aad681a25fa5d
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-03a376b5d6ef66f827fc307716e3b841cc26b709
             targets: //java/... //java/internal:java_version
           - name: aarch64
             version: 'aarch64'

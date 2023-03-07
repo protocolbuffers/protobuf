@@ -56,6 +56,7 @@ internal_copy_files(
     srcs = [
         "//:well_known_type_protos",
         "//src/google/protobuf:descriptor_proto_srcs",
+        "//src/google/protobuf/compiler:plugin.proto",
     ],
     strip_prefix = "src",
 )
