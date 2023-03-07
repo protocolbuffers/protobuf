@@ -67,18 +67,16 @@ PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {
 }
 
 void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
-  
   // Note: in multiple places, this code assumes that all fields
   // that support presence are either nullable, or use a presence field bit.
   // Fields which are oneof members are not generated here; they're generated in PrimitiveOneofFieldGenerator below.
   // Extensions are not generated here either.
 
-
-  // Proto2 allows different default values to be specified. These are retained
-  // via static fields. They don't particularly need to be, but we don't need
-  // to change that. In Proto3 the default value we don't generate these
-  // fields, just using the literal instead.
-  if (IsProto2(descriptor_->file())) {
+  // Explicit presence allows different default values to be specified. These
+  // are retained via static fields. They don't particularly need to be, but we
+  // don't need to change that. Under implicit presence we don't use static
+  // fields for default values and just use the literals instead.
+  if (descriptor_->has_presence()) {
     // Note: "private readonly static" isn't as idiomatic as
     // "private static readonly", but changing this now would create a lot of
     // churn in generated code with near-to-zero benefit.
