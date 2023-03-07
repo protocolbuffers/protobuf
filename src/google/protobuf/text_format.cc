@@ -918,7 +918,7 @@ class TextFormat::Parser::ParserImpl {
 
         if (enum_value == nullptr) {
           if (int_value != kint64max &&
-              reflection->SupportsUnknownEnumValues()) {
+              !field->legacy_enum_field_treated_as_closed()) {
             SET_FIELD(EnumValue, int_value);
             return true;
           } else if (!allow_unknown_enum_) {
