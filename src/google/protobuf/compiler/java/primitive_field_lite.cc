@@ -151,7 +151,7 @@ void SetPrimitiveVariables(
     (*variables)["fixed_size"] = absl::StrCat(fixed_size);
   }
 
-  if (descriptor->has_presence()) {
+  if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
 
@@ -187,10 +187,6 @@ void SetPrimitiveVariables(
     }
   }
 
-  (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builderBitIndex);
-  (*variables)["set_has_field_bit_to_local"] =
-      GenerateSetBitToLocal(messageBitIndex);
   // Annotations often use { and } variables to denote ranges.
   (*variables)["{"] = "";
   (*variables)["}"] = "";
@@ -246,7 +242,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
         "  fieldNumber=$number$,\n"
         "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
         "  isRequired=$required$)\n");
-    if (descriptor_->has_presence()) {
+    if (HasHasbit(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
                      "  presenceBitsId=$bit_field_id$,\n"
@@ -378,7 +374,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (descriptor_->has_presence()) {
+  if (HasHasbit(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");

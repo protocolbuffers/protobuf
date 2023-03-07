@@ -97,7 +97,7 @@ void SetPrimitiveVariables(
     (*variables)["enforce_utf8"] = CheckUtf8(descriptor) ? "true" : "false";
   }
 
-  if (descriptor->has_presence()) {
+  if (HasHasbit(descriptor)) {
     if (!context->options().opensource_runtime) {
       (*variables)["bit_field_id"] = absl::StrCat(messageBitIndex / 32);
       (*variables)["bit_field_name"] = GetBitFieldNameForBit(messageBitIndex);
@@ -122,10 +122,6 @@ void SetPrimitiveVariables(
                        absl::StrCat("!", (*variables)["name"], "_.isEmpty()")});
   }
 
-  (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builderBitIndex);
-  (*variables)["set_has_field_bit_to_local"] =
-      GenerateSetBitToLocal(messageBitIndex);
   // Annotations often use { and } variables to denote text ranges.
   (*variables)["{"] = "";
   (*variables)["}"] = "";
@@ -207,7 +203,7 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
         "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
         "  isRequired=$required$,\n"
         "  isEnforceUtf8=$enforce_utf8$)\n");
-    if (descriptor_->has_presence()) {
+    if (HasHasbit(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
                      "  presenceBitsId=$bit_field_id$,\n"
@@ -377,7 +373,7 @@ void ImmutableStringFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (descriptor_->has_presence()) {
+  if (HasHasbit(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");

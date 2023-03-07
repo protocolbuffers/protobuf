@@ -971,18 +971,6 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 
 // ===================================================================
 
-namespace {
-bool CheckHasBitsForEqualsAndHashCode(const FieldDescriptor* field) {
-  if (field->is_repeated()) {
-    return false;
-  }
-  if (HasHasbit(field)) {
-    return true;
-  }
-  return GetJavaType(field) == JAVATYPE_MESSAGE && !IsRealOneof(field);
-}
-}  // namespace
-
 void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     io::Printer* printer) {
   printer->Print(
@@ -1011,8 +999,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     const FieldDescriptor* field = descriptor_->field(i);
     if (!IsRealOneof(field)) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
-      bool check_has_bits = CheckHasBitsForEqualsAndHashCode(field);
-      if (check_has_bits) {
+      if (field->has_presence()) {
         printer->Print(
             "if (has$name$() != other.has$name$()) return false;\n"
             "if (has$name$()) {\n",
@@ -1020,7 +1007,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
         printer->Indent();
       }
       field_generators_.get(field).GenerateEqualsCode(printer);
-      if (check_has_bits) {
+      if (field->has_presence()) {
         printer->Outdent();
         printer->Print("}\n");
       }
@@ -1095,13 +1082,12 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     const FieldDescriptor* field = descriptor_->field(i);
     if (!IsRealOneof(field)) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
-      bool check_has_bits = CheckHasBitsForEqualsAndHashCode(field);
-      if (check_has_bits) {
+      if (field->has_presence()) {
         printer->Print("if (has$name$()) {\n", "name", info->capitalized_name);
         printer->Indent();
       }
       field_generators_.get(field).GenerateHashCode(printer);
-      if (check_has_bits) {
+      if (field->has_presence()) {
         printer->Outdent();
         printer->Print("}\n");
       }
