@@ -84,6 +84,14 @@ config_setting(
     },
 )
 
+selects.config_setting_group(
+    name = "config_win",
+    match_any = [
+        ":config_win32",
+        ":config_win64",
+    ]
+)
+
 config_setting(
     name = "config_osx_aarch64",
     values = {"cpu": "osx-aarch_64"},
