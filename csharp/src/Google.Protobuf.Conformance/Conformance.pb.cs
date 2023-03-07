@@ -362,10 +362,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pb::ByteString ProtobufPayload {
-      get { return payloadCase_ == PayloadOneofCase.ProtobufPayload ? (pb::ByteString) payload_ : pb::ByteString.Empty; }
+      get { return HasProtobufPayload ? (pb::ByteString) payload_ : pb::ByteString.Empty; }
       set {
         payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         payloadCase_ = PayloadOneofCase.ProtobufPayload;
+      }
+    }
+    /// <summary>Gets whether the "protobuf_payload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasProtobufPayload {
+      get { return payloadCase_ == PayloadOneofCase.ProtobufPayload; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "protobuf_payload" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearProtobufPayload() {
+      if (HasProtobufPayload) {
+        ClearPayload();
       }
     }
 
@@ -374,10 +388,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JsonPayload {
-      get { return payloadCase_ == PayloadOneofCase.JsonPayload ? (string) payload_ : ""; }
+      get { return HasJsonPayload ? (string) payload_ : ""; }
       set {
         payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         payloadCase_ = PayloadOneofCase.JsonPayload;
+      }
+    }
+    /// <summary>Gets whether the "json_payload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasJsonPayload {
+      get { return payloadCase_ == PayloadOneofCase.JsonPayload; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "json_payload" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearJsonPayload() {
+      if (HasJsonPayload) {
+        ClearPayload();
       }
     }
 
@@ -389,10 +417,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JspbPayload {
-      get { return payloadCase_ == PayloadOneofCase.JspbPayload ? (string) payload_ : ""; }
+      get { return HasJspbPayload ? (string) payload_ : ""; }
       set {
         payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         payloadCase_ = PayloadOneofCase.JspbPayload;
+      }
+    }
+    /// <summary>Gets whether the "jspb_payload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasJspbPayload {
+      get { return payloadCase_ == PayloadOneofCase.JspbPayload; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "jspb_payload" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearJspbPayload() {
+      if (HasJspbPayload) {
+        ClearPayload();
       }
     }
 
@@ -401,10 +443,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string TextPayload {
-      get { return payloadCase_ == PayloadOneofCase.TextPayload ? (string) payload_ : ""; }
+      get { return HasTextPayload ? (string) payload_ : ""; }
       set {
         payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         payloadCase_ = PayloadOneofCase.TextPayload;
+      }
+    }
+    /// <summary>Gets whether the "text_payload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasTextPayload {
+      get { return payloadCase_ == PayloadOneofCase.TextPayload; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "text_payload" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearTextPayload() {
+      if (HasTextPayload) {
+        ClearPayload();
       }
     }
 
@@ -543,10 +599,10 @@ namespace Conformance {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (payloadCase_ == PayloadOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
-      if (payloadCase_ == PayloadOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
-      if (payloadCase_ == PayloadOneofCase.JspbPayload) hash ^= JspbPayload.GetHashCode();
-      if (payloadCase_ == PayloadOneofCase.TextPayload) hash ^= TextPayload.GetHashCode();
+      if (HasProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
+      if (HasJsonPayload) hash ^= JsonPayload.GetHashCode();
+      if (HasJspbPayload) hash ^= JspbPayload.GetHashCode();
+      if (HasTextPayload) hash ^= TextPayload.GetHashCode();
       if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) hash ^= RequestedOutputFormat.GetHashCode();
       if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
       if (TestCategory != global::Conformance.TestCategory.UnspecifiedTest) hash ^= TestCategory.GetHashCode();
@@ -571,11 +627,11 @@ namespace Conformance {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
+      if (HasProtobufPayload) {
         output.WriteRawTag(10);
         output.WriteBytes(ProtobufPayload);
       }
-      if (payloadCase_ == PayloadOneofCase.JsonPayload) {
+      if (HasJsonPayload) {
         output.WriteRawTag(18);
         output.WriteString(JsonPayload);
       }
@@ -595,11 +651,11 @@ namespace Conformance {
         output.WriteRawTag(50);
         output.WriteMessage(JspbEncodingOptions);
       }
-      if (payloadCase_ == PayloadOneofCase.JspbPayload) {
+      if (HasJspbPayload) {
         output.WriteRawTag(58);
         output.WriteString(JspbPayload);
       }
-      if (payloadCase_ == PayloadOneofCase.TextPayload) {
+      if (HasTextPayload) {
         output.WriteRawTag(66);
         output.WriteString(TextPayload);
       }
@@ -617,11 +673,11 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
+      if (HasProtobufPayload) {
         output.WriteRawTag(10);
         output.WriteBytes(ProtobufPayload);
       }
-      if (payloadCase_ == PayloadOneofCase.JsonPayload) {
+      if (HasJsonPayload) {
         output.WriteRawTag(18);
         output.WriteString(JsonPayload);
       }
@@ -641,11 +697,11 @@ namespace Conformance {
         output.WriteRawTag(50);
         output.WriteMessage(JspbEncodingOptions);
       }
-      if (payloadCase_ == PayloadOneofCase.JspbPayload) {
+      if (HasJspbPayload) {
         output.WriteRawTag(58);
         output.WriteString(JspbPayload);
       }
-      if (payloadCase_ == PayloadOneofCase.TextPayload) {
+      if (HasTextPayload) {
         output.WriteRawTag(66);
         output.WriteString(TextPayload);
       }
@@ -663,16 +719,16 @@ namespace Conformance {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
+      if (HasProtobufPayload) {
         size += 1 + pb::CodedOutputStream.ComputeBytesSize(ProtobufPayload);
       }
-      if (payloadCase_ == PayloadOneofCase.JsonPayload) {
+      if (HasJsonPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(JsonPayload);
       }
-      if (payloadCase_ == PayloadOneofCase.JspbPayload) {
+      if (HasJspbPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(JspbPayload);
       }
-      if (payloadCase_ == PayloadOneofCase.TextPayload) {
+      if (HasTextPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(TextPayload);
       }
       if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) {
@@ -938,10 +994,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string ParseError {
-      get { return resultCase_ == ResultOneofCase.ParseError ? (string) result_ : ""; }
+      get { return HasParseError ? (string) result_ : ""; }
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.ParseError;
+      }
+    }
+    /// <summary>Gets whether the "parse_error" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasParseError {
+      get { return resultCase_ == ResultOneofCase.ParseError; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "parse_error" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearParseError() {
+      if (HasParseError) {
+        ClearResult();
       }
     }
 
@@ -955,10 +1025,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string SerializeError {
-      get { return resultCase_ == ResultOneofCase.SerializeError ? (string) result_ : ""; }
+      get { return HasSerializeError ? (string) result_ : ""; }
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.SerializeError;
+      }
+    }
+    /// <summary>Gets whether the "serialize_error" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasSerializeError {
+      get { return resultCase_ == ResultOneofCase.SerializeError; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "serialize_error" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearSerializeError() {
+      if (HasSerializeError) {
+        ClearResult();
       }
     }
 
@@ -972,10 +1056,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string TimeoutError {
-      get { return resultCase_ == ResultOneofCase.TimeoutError ? (string) result_ : ""; }
+      get { return HasTimeoutError ? (string) result_ : ""; }
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.TimeoutError;
+      }
+    }
+    /// <summary>Gets whether the "timeout_error" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasTimeoutError {
+      get { return resultCase_ == ResultOneofCase.TimeoutError; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "timeout_error" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearTimeoutError() {
+      if (HasTimeoutError) {
+        ClearResult();
       }
     }
 
@@ -989,10 +1087,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string RuntimeError {
-      get { return resultCase_ == ResultOneofCase.RuntimeError ? (string) result_ : ""; }
+      get { return HasRuntimeError ? (string) result_ : ""; }
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.RuntimeError;
+      }
+    }
+    /// <summary>Gets whether the "runtime_error" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasRuntimeError {
+      get { return resultCase_ == ResultOneofCase.RuntimeError; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "runtime_error" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearRuntimeError() {
+      if (HasRuntimeError) {
+        ClearResult();
       }
     }
 
@@ -1005,10 +1117,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pb::ByteString ProtobufPayload {
-      get { return resultCase_ == ResultOneofCase.ProtobufPayload ? (pb::ByteString) result_ : pb::ByteString.Empty; }
+      get { return HasProtobufPayload ? (pb::ByteString) result_ : pb::ByteString.Empty; }
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.ProtobufPayload;
+      }
+    }
+    /// <summary>Gets whether the "protobuf_payload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasProtobufPayload {
+      get { return resultCase_ == ResultOneofCase.ProtobufPayload; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "protobuf_payload" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearProtobufPayload() {
+      if (HasProtobufPayload) {
+        ClearResult();
       }
     }
 
@@ -1021,10 +1147,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JsonPayload {
-      get { return resultCase_ == ResultOneofCase.JsonPayload ? (string) result_ : ""; }
+      get { return HasJsonPayload ? (string) result_ : ""; }
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.JsonPayload;
+      }
+    }
+    /// <summary>Gets whether the "json_payload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasJsonPayload {
+      get { return resultCase_ == ResultOneofCase.JsonPayload; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "json_payload" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearJsonPayload() {
+      if (HasJsonPayload) {
+        ClearResult();
       }
     }
 
@@ -1037,10 +1177,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Skipped {
-      get { return resultCase_ == ResultOneofCase.Skipped ? (string) result_ : ""; }
+      get { return HasSkipped ? (string) result_ : ""; }
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.Skipped;
+      }
+    }
+    /// <summary>Gets whether the "skipped" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasSkipped {
+      get { return resultCase_ == ResultOneofCase.Skipped; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "skipped" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearSkipped() {
+      if (HasSkipped) {
+        ClearResult();
       }
     }
 
@@ -1054,10 +1208,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JspbPayload {
-      get { return resultCase_ == ResultOneofCase.JspbPayload ? (string) result_ : ""; }
+      get { return HasJspbPayload ? (string) result_ : ""; }
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.JspbPayload;
+      }
+    }
+    /// <summary>Gets whether the "jspb_payload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasJspbPayload {
+      get { return resultCase_ == ResultOneofCase.JspbPayload; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "jspb_payload" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearJspbPayload() {
+      if (HasJspbPayload) {
+        ClearResult();
       }
     }
 
@@ -1070,10 +1238,24 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string TextPayload {
-      get { return resultCase_ == ResultOneofCase.TextPayload ? (string) result_ : ""; }
+      get { return HasTextPayload ? (string) result_ : ""; }
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.TextPayload;
+      }
+    }
+    /// <summary>Gets whether the "text_payload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasTextPayload {
+      get { return resultCase_ == ResultOneofCase.TextPayload; }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "text_payload" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearTextPayload() {
+      if (HasTextPayload) {
+        ClearResult();
       }
     }
 
@@ -1137,15 +1319,15 @@ namespace Conformance {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (resultCase_ == ResultOneofCase.ParseError) hash ^= ParseError.GetHashCode();
-      if (resultCase_ == ResultOneofCase.SerializeError) hash ^= SerializeError.GetHashCode();
-      if (resultCase_ == ResultOneofCase.TimeoutError) hash ^= TimeoutError.GetHashCode();
-      if (resultCase_ == ResultOneofCase.RuntimeError) hash ^= RuntimeError.GetHashCode();
-      if (resultCase_ == ResultOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
-      if (resultCase_ == ResultOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
-      if (resultCase_ == ResultOneofCase.Skipped) hash ^= Skipped.GetHashCode();
-      if (resultCase_ == ResultOneofCase.JspbPayload) hash ^= JspbPayload.GetHashCode();
-      if (resultCase_ == ResultOneofCase.TextPayload) hash ^= TextPayload.GetHashCode();
+      if (HasParseError) hash ^= ParseError.GetHashCode();
+      if (HasSerializeError) hash ^= SerializeError.GetHashCode();
+      if (HasTimeoutError) hash ^= TimeoutError.GetHashCode();
+      if (HasRuntimeError) hash ^= RuntimeError.GetHashCode();
+      if (HasProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
+      if (HasJsonPayload) hash ^= JsonPayload.GetHashCode();
+      if (HasSkipped) hash ^= Skipped.GetHashCode();
+      if (HasJspbPayload) hash ^= JspbPayload.GetHashCode();
+      if (HasTextPayload) hash ^= TextPayload.GetHashCode();
       hash ^= (int) resultCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1165,39 +1347,39 @@ namespace Conformance {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (resultCase_ == ResultOneofCase.ParseError) {
+      if (HasParseError) {
         output.WriteRawTag(10);
         output.WriteString(ParseError);
       }
-      if (resultCase_ == ResultOneofCase.RuntimeError) {
+      if (HasRuntimeError) {
         output.WriteRawTag(18);
         output.WriteString(RuntimeError);
       }
-      if (resultCase_ == ResultOneofCase.ProtobufPayload) {
+      if (HasProtobufPayload) {
         output.WriteRawTag(26);
         output.WriteBytes(ProtobufPayload);
       }
-      if (resultCase_ == ResultOneofCase.JsonPayload) {
+      if (HasJsonPayload) {
         output.WriteRawTag(34);
         output.WriteString(JsonPayload);
       }
-      if (resultCase_ == ResultOneofCase.Skipped) {
+      if (HasSkipped) {
         output.WriteRawTag(42);
         output.WriteString(Skipped);
       }
-      if (resultCase_ == ResultOneofCase.SerializeError) {
+      if (HasSerializeError) {
         output.WriteRawTag(50);
         output.WriteString(SerializeError);
       }
-      if (resultCase_ == ResultOneofCase.JspbPayload) {
+      if (HasJspbPayload) {
         output.WriteRawTag(58);
         output.WriteString(JspbPayload);
       }
-      if (resultCase_ == ResultOneofCase.TextPayload) {
+      if (HasTextPayload) {
         output.WriteRawTag(66);
         output.WriteString(TextPayload);
       }
-      if (resultCase_ == ResultOneofCase.TimeoutError) {
+      if (HasTimeoutError) {
         output.WriteRawTag(74);
         output.WriteString(TimeoutError);
       }
@@ -1211,39 +1393,39 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (resultCase_ == ResultOneofCase.ParseError) {
+      if (HasParseError) {
         output.WriteRawTag(10);
         output.WriteString(ParseError);
       }
-      if (resultCase_ == ResultOneofCase.RuntimeError) {
+      if (HasRuntimeError) {
         output.WriteRawTag(18);
         output.WriteString(RuntimeError);
       }
-      if (resultCase_ == ResultOneofCase.ProtobufPayload) {
+      if (HasProtobufPayload) {
         output.WriteRawTag(26);
         output.WriteBytes(ProtobufPayload);
       }
-      if (resultCase_ == ResultOneofCase.JsonPayload) {
+      if (HasJsonPayload) {
         output.WriteRawTag(34);
         output.WriteString(JsonPayload);
       }
-      if (resultCase_ == ResultOneofCase.Skipped) {
+      if (HasSkipped) {
         output.WriteRawTag(42);
         output.WriteString(Skipped);
       }
-      if (resultCase_ == ResultOneofCase.SerializeError) {
+      if (HasSerializeError) {
         output.WriteRawTag(50);
         output.WriteString(SerializeError);
       }
-      if (resultCase_ == ResultOneofCase.JspbPayload) {
+      if (HasJspbPayload) {
         output.WriteRawTag(58);
         output.WriteString(JspbPayload);
       }
-      if (resultCase_ == ResultOneofCase.TextPayload) {
+      if (HasTextPayload) {
         output.WriteRawTag(66);
         output.WriteString(TextPayload);
       }
-      if (resultCase_ == ResultOneofCase.TimeoutError) {
+      if (HasTimeoutError) {
         output.WriteRawTag(74);
         output.WriteString(TimeoutError);
       }
@@ -1257,31 +1439,31 @@ namespace Conformance {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (resultCase_ == ResultOneofCase.ParseError) {
+      if (HasParseError) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ParseError);
       }
-      if (resultCase_ == ResultOneofCase.SerializeError) {
+      if (HasSerializeError) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(SerializeError);
       }
-      if (resultCase_ == ResultOneofCase.TimeoutError) {
+      if (HasTimeoutError) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(TimeoutError);
       }
-      if (resultCase_ == ResultOneofCase.RuntimeError) {
+      if (HasRuntimeError) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(RuntimeError);
       }
-      if (resultCase_ == ResultOneofCase.ProtobufPayload) {
+      if (HasProtobufPayload) {
         size += 1 + pb::CodedOutputStream.ComputeBytesSize(ProtobufPayload);
       }
-      if (resultCase_ == ResultOneofCase.JsonPayload) {
+      if (HasJsonPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(JsonPayload);
       }
-      if (resultCase_ == ResultOneofCase.Skipped) {
+      if (HasSkipped) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Skipped);
       }
-      if (resultCase_ == ResultOneofCase.JspbPayload) {
+      if (HasJspbPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(JspbPayload);
       }
-      if (resultCase_ == ResultOneofCase.TextPayload) {
+      if (HasTextPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(TextPayload);
       }
       if (_unknownFields != null) {
