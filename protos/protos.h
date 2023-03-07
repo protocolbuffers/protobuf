@@ -116,6 +116,12 @@ typename T::Proxy CreateMessage(::protos::Arena& arena) {
                            arena.ptr());
 }
 
+template <typename T>
+typename T::Proxy CloneMessage(Ptr<T> message, upb::Arena& arena) {
+  return typename T::Proxy(
+      upb_Message_DeepClone(message, T::minitable(), arena.ptr()), arena.ptr());
+}
+
 // begin:github_only
 // This type exists to work around an absl type that has not yet been
 // released.

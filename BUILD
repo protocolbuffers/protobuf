@@ -282,6 +282,26 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "message_copy",
+    srcs = [
+        "upb/message/copy.c",
+    ],
+    hdrs = [
+        "upb/message/copy.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":collections_internal",
+        ":message_accessors",
+        ":message_internal",
+        ":mini_table_internal",
+        ":port",
+        ":upb",
+    ],
+)
+
 cc_test(
     name = "mini_table_encode_test",
     srcs = [
@@ -306,6 +326,24 @@ cc_test(
     deps = [
         ":collections",
         ":message_accessors",
+        ":mini_table_internal",
+        ":upb",
+        "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/test:test_upb_proto",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_test(
+    name = "message_copy_test",
+    srcs = ["upb/message/copy_test.cc"],
+    deps = [
+        ":collections",
+        ":message_accessors",
+        ":message_copy",
         ":mini_table_internal",
         ":upb",
         "//upb/test:test_messages_proto2_upb_proto",
