@@ -1431,12 +1431,12 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
 
     TestIllegalTags();
 
-    int64 kInt64Min = -9223372036854775808ULL;
-    int64 kInt64Max = 9223372036854775807ULL;
-    uint64 kUint64Max = 18446744073709551615ULL;
-    int32 kInt32Max = 2147483647;
-    int32 kInt32Min = -2147483648;
-    uint32 kUint32Max = 4294967295UL;
+    int64_t kInt64Min = -9223372036854775808ULL;
+    int64_t kInt64Max = 9223372036854775807ULL;
+    uint64_t kUint64Max = 18446744073709551615ULL;
+    int32_t kInt32Max = 2147483647;
+    int32_t kInt32Min = -2147483648;
+    uint32_t kUint32Max = 4294967295UL;
 
     TestValidDataForType(
         FieldDescriptor::TYPE_DOUBLE,
@@ -2318,11 +2318,11 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
   {
     TestAllTypesProto3 message;
     message.set_optional_double(
-        WireFormatLite::DecodeDouble(int64{0x7FFA123456789ABC}));
+        WireFormatLite::DecodeDouble(int64_t{0x7FFA123456789ABC}));
     RunValidJsonTestWithProtobufInput("DoubleFieldNormalizeQuietNan", REQUIRED,
                                       message, "optional_double: nan");
     message.set_optional_double(
-        WireFormatLite::DecodeDouble(uint64{0xFFFBCBA987654321}));
+        WireFormatLite::DecodeDouble(uint64_t{0xFFFBCBA987654321}));
     RunValidJsonTestWithProtobufInput("DoubleFieldNormalizeSignalingNan",
                                       REQUIRED, message,
                                       "optional_double: nan");
