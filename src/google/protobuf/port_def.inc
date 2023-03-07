@@ -394,12 +394,9 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #if defined(PROTOBUF_DEPRECATED_MSG)
 #error PROTOBUF_DEPRECATED_MSG was previously defined
 #endif
-#if __has_attribute(deprecated) || defined(__GNUC__)
-# define PROTOBUF_DEPRECATED __attribute__((deprecated))
-# define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
-#elif defined(_MSC_VER)
-# define PROTOBUF_DEPRECATED __declspec(deprecated)
-# define PROTOBUF_DEPRECATED_MSG(msg) __declspec(deprecated(msg))
+#if __has_cpp_attribute(deprecated)
+# define PROTOBUF_DEPRECATED [[deprecated]]
+# define PROTOBUF_DEPRECATED_MSG(msg) [[deprecated(msg)]]
 #else
 # define PROTOBUF_DEPRECATED
 # define PROTOBUF_DEPRECATED_MSG(msg)
