@@ -648,9 +648,9 @@ class PROTOBUF_EXPORT TcParser final {
   }
 
  private:
-  // Optimized small tag varint parser for int32/int64
-  template <typename FieldType>
-  static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);
+  // Optimized varint parser for int32/int64
+  template <int tag_width, typename VarintType, int predicted_length = 0>
+  struct FastVarint;
 
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
@@ -766,15 +766,9 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Implementations for fast varint field parsing functions:
   template <typename FieldType, typename TagType, bool zigzag = false>
-  static inline const char* SingularVarint(PROTOBUF_TC_PARAM_DECL);
-  template <typename FieldType, typename TagType, bool zigzag = false>
   static inline const char* RepeatedVarint(PROTOBUF_TC_PARAM_DECL);
   template <typename FieldType, typename TagType, bool zigzag = false>
   static inline const char* PackedVarint(PROTOBUF_TC_PARAM_DECL);
-
-  // Helper for ints > 127:
-  template <typename FieldType, typename TagType, bool zigzag = false>
-  static const char* SingularVarBigint(PROTOBUF_TC_PARAM_DECL);
 
   // Implementations for fast enum field parsing functions:
   template <typename TagType, uint16_t xform_val>

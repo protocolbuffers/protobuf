@@ -51,6 +51,37 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+#ifdef PROTOBUF_VARINT_DISPATCH
+
+class LossyVarintCounter {
+ public:
+  constexpr LossyVarintCounter() = default;
+  LossyVarintCounter(const LossyVarintCounter& rhs)
+      : counts_(rhs.counts_.load(std::memory_order_relaxed)) {}
+
+  bool Add(int index) {
+    assert(index < 10);
+    int shift = index <= 2 ? index * 7 : 3 + index * 6;
+    uint64_t mask = index <= 2 ? 0x7F : 0x3F;
+    uint64_t counts = counts_.load(std::memory_order_relaxed);
+    if (((counts >> shift) & mask) == mask) return false;
+    counts += uint64_t{1} << shift;
+    counts_.store(counts, std::memory_order_relaxed);
+    return true;
+  }
+
+  int Count(int index) const {
+    int shift = (index <= 2) ? index * 7 : 3 + index * 6;
+    uint64_t mask = index <= 2 ? 0x7F : 0x3F;
+    uint64_t counts = counts_.load(std::memory_order_relaxed);
+    return (counts >> shift) & mask;
+  }
+
+ private:
+  std::atomic<uint64_t> counts_{0};
+};
+#endif
+
 // Additional information about this field:
 struct TcFieldData {
   constexpr TcFieldData() : data(0) {}
@@ -277,6 +308,9 @@ static_assert(sizeof(MapAuxInfo) <= 8, "");
 struct alignas(uint64_t) TcParseTableBase {
   // Common attributes for message layout:
   uint16_t has_bits_offset;
+#ifdef PROTOBUF_VARINT_DISPATCH
+  uint16_t varint_counters_offset;
+#endif
   uint16_t extension_offset;
   uint32_t max_field_number;
   uint8_t fast_idx_mask;
@@ -298,14 +332,22 @@ struct alignas(uint64_t) TcParseTableBase {
   // fields, because it can be overloaded with an additional constructor,
   // temporarily allowing both old and new protocol buffer headers to be
   // compiled.
-  constexpr TcParseTableBase(
-      uint16_t has_bits_offset, uint16_t extension_offset,
-      uint32_t max_field_number, uint8_t fast_idx_mask,
-      uint16_t lookup_table_offset, uint32_t skipmap32,
-      uint32_t field_entries_offset, uint16_t num_field_entries,
-      uint16_t num_aux_entries, uint32_t aux_offset,
-      const MessageLite* default_instance, TailCallParseFunc fallback)
+  constexpr TcParseTableBase(uint16_t has_bits_offset,
+#ifdef PROTOBUF_VARINT_DISPATCH
+                             uint16_t varint_counters_offset,
+#endif
+                             uint16_t extension_offset,
+                             uint32_t max_field_number, uint8_t fast_idx_mask,
+                             uint16_t lookup_table_offset, uint32_t skipmap32,
+                             uint32_t field_entries_offset,
+                             uint16_t num_field_entries,
+                             uint16_t num_aux_entries, uint32_t aux_offset,
+                             const MessageLite* default_instance,
+                             TailCallParseFunc fallback)
       : has_bits_offset(has_bits_offset),
+#ifdef PROTOBUF_VARINT_DISPATCH
+        varint_counters_offset(varint_counters_offset),
+#endif
         extension_offset(extension_offset),
         max_field_number(max_field_number),
         fast_idx_mask(fast_idx_mask),
@@ -316,7 +358,8 @@ struct alignas(uint64_t) TcParseTableBase {
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
         default_instance(default_instance),
-        fallback(fallback) {}
+        fallback(fallback) {
+  }
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
@@ -358,6 +401,13 @@ struct alignas(uint64_t) TcParseTableBase {
   FastFieldEntry* fast_entry(size_t idx) {
     return reinterpret_cast<FastFieldEntry*>(this + 1) + idx;
   }
+
+#ifdef PROTOBUF_VARINT_DISPATCH
+  LossyVarintCounter* varint_counter(size_t idx) const {
+    return reinterpret_cast<LossyVarintCounter*>(
+        reinterpret_cast<uintptr_t>(this) + varint_counters_offset);
+  }
+#endif
 
   // Returns a begin iterator (pointer) to the start of the field lookup table.
   const uint16_t* field_lookup_begin() const {
@@ -470,7 +520,12 @@ struct TcParseTable {
   // this field directly.
   std::array<TcParseTableBase::FastFieldEntry, (1 << kFastTableSizeLog2)>
       fast_entries;
-
+#ifdef PROTOBUF_VARINT_DISPATCH
+  // Varint counters for fast field entries. These are used for dynamically
+  // sampling varint fields to dispatch to the most efficient parse function.
+  mutable std::array<LossyVarintCounter, (1 << kFastTableSizeLog2)>
+      varint_counters;
+#endif
   // Just big enough to find all the field entries.
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   // Entries for all fields:
@@ -490,6 +545,10 @@ struct TcParseTable<kFastTableSizeLog2, kNumFieldEntries, 0, kNameTableSize,
   TcParseTableBase header;
   std::array<TcParseTableBase::FastFieldEntry, (1 << kFastTableSizeLog2)>
       fast_entries;
+#ifdef PROTOBUF_VARINT_DISPATCH
+  mutable std::array<LossyVarintCounter, (1 << kFastTableSizeLog2)>
+      varint_counters;
+#endif
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
   std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
@@ -503,6 +562,9 @@ struct TcParseTable<0, 0, 0, kNameTableSize, kFieldLookupSize> {
   // N.B.: the fast entries are sized by log2, so 2**0 fields = 1 entry.
   // The fast parsing loop will always use this entry, so it must be present.
   std::array<TcParseTableBase::FastFieldEntry, 1> fast_entries;
+#ifdef PROTOBUF_VARINT_DISPATCH
+  mutable std::array<LossyVarintCounter, 1> varint_counters;
+#endif
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
 };
