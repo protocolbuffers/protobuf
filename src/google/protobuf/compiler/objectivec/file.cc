@@ -711,6 +711,9 @@ void FileGenerator::PrintFileDescription(io::Printer* p) const {
     case FileDescriptor::SYNTAX_PROTO3:
       vars["syntax"] = "GPBFileSyntaxProto3";
       break;
+    case FileDescriptor::SYNTAX_EDITIONS:
+      vars["syntax"] = "GPBFileSyntaxProtoEditions";
+      break;
   }
   if (objc_prefix.empty() && !file_->options().has_objc_class_prefix()) {
     vars["prefix_value"] = "NULL";
