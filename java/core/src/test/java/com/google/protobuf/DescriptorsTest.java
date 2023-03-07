@@ -99,6 +99,7 @@ public class DescriptorsTest {
     FileDescriptor file = UnittestProto.getDescriptor();
 
     assertThat(file.getName()).isEqualTo("google/protobuf/unittest.proto");
+    assertThat(file.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO2);
     assertThat(file.getPackage()).isEqualTo("protobuf_unittest");
     assertThat(file.getOptions().getJavaOuterClassname()).isEqualTo("UnittestProto");
     assertThat(file.toProto().getName()).isEqualTo("google/protobuf/unittest.proto");
@@ -145,6 +146,17 @@ public class DescriptorsTest {
     for (int i = 0; i < file.getExtensions().size(); i++) {
       assertThat(file.getExtensions().get(i).getIndex()).isEqualTo(i);
     }
+  }
+
+  @Test
+  public void testFileDescriptorGetSyntax() throws Exception {
+    FileDescriptorProto proto2 = FileDescriptorProto.newBuilder().setSyntax("proto2").build();
+    FileDescriptor file2 = Descriptors.FileDescriptor.buildFrom(proto2, new FileDescriptor[0]);
+    assertThat(file2.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO2);
+
+    FileDescriptorProto proto3 = FileDescriptorProto.newBuilder().setSyntax("proto3").build();
+    FileDescriptor file3 = Descriptors.FileDescriptor.buildFrom(proto3, new FileDescriptor[0]);
+    assertThat(file3.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO3);
   }
 
   @Test
