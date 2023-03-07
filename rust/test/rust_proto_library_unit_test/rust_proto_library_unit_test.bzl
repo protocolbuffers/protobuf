@@ -21,6 +21,8 @@ def _find_rust_lib_input(inputs, target_name):
         ))
     return input[0]
 
+####################################################################################################
+
 def _rust_compilation_action_has_runtime_as_input_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
@@ -46,16 +48,48 @@ def _test_rust_compilation_action_has_runtime_as_input():
         tags = ["not_build:arm"],
     )
 
+####################################################################################################
+
+def _rust_compilation_action_has_deps_as_inputs_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target_under_test = analysistest.target_under_test(env)
+    actions = target_under_test[ActionsInfo].actions
+    rustc_action = _find_action_with_mnemonic(actions, "Rustc")
+    _find_rust_lib_input(rustc_action.inputs, "parent")
+
+    return analysistest.end(env)
+
+rust_compilation_action_has_deps_as_input_test = analysistest.make(
+    _rust_compilation_action_has_deps_as_inputs_test_impl,
+)
+
+def _test_rust_compilation_action_has_deps_as_input():
+    native.proto_library(name = "parent_proto", srcs = ["parent.proto"])
+    native.proto_library(name = "child_proto", srcs = ["child.proto"], deps = [":parent_proto"])
+
+    attach_aspect(name = "child_proto_with_aspect", dep = ":child_proto")
+
+    rust_compilation_action_has_deps_as_input_test(
+        name = "rust_compilation_action_has_deps_as_input_test",
+        target_under_test = ":child_proto_with_aspect",
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        tags = ["not_build:arm"],
+    )
+
+####################################################################################################
+
 def rust_proto_library_unit_test(name):
     """Sets up rust_proto_library_unit_test test suite.
 
     Args:
       name: name of the test suite"""
     _test_rust_compilation_action_has_runtime_as_input()
+    _test_rust_compilation_action_has_deps_as_input()
 
     native.test_suite(
         name = name,
         tests = [
             ":rust_compilation_action_has_runtime_as_input_test",
+            ":rust_compilation_action_has_deps_as_input_test",
         ],
     )
