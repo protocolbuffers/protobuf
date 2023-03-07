@@ -28,6 +28,10 @@ PROTOBUF_CONSTEXPR Type::Type(
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
+  , /*decltype(_impl_.edition_)*/ {
+    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
+  }
+
   , /*decltype(_impl_.source_context_)*/nullptr
   , /*decltype(_impl_.syntax_)*/ 0
 
@@ -87,6 +91,10 @@ PROTOBUF_CONSTEXPR Enum::Enum(
     /*decltype(_impl_.enumvalue_)*/{}
   , /*decltype(_impl_.options_)*/{}
   , /*decltype(_impl_.name_)*/ {
+    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
+  }
+
+  , /*decltype(_impl_.edition_)*/ {
     &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
   }
 
@@ -163,6 +171,7 @@ const ::uint32_t TableStruct_google_2fprotobuf_2ftype_2eproto::offsets[] PROTOBU
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Type, _impl_.options_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Type, _impl_.source_context_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Type, _impl_.syntax_),
+    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Type, _impl_.edition_),
     ~0u,  // no _has_bits_
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Field, _internal_metadata_),
     ~0u,  // no _extensions_
@@ -194,6 +203,7 @@ const ::uint32_t TableStruct_google_2fprotobuf_2ftype_2eproto::offsets[] PROTOBU
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Enum, _impl_.options_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Enum, _impl_.source_context_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Enum, _impl_.syntax_),
+    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Enum, _impl_.edition_),
     ~0u,  // no _has_bits_
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumValue, _internal_metadata_),
     ~0u,  // no _extensions_
@@ -220,10 +230,10 @@ const ::uint32_t TableStruct_google_2fprotobuf_2ftype_2eproto::offsets[] PROTOBU
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
         { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Type)},
-        { 14, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Field)},
-        { 32, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Enum)},
-        { 45, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValue)},
-        { 56, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Option)},
+        { 15, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Field)},
+        { 33, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Enum)},
+        { 47, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValue)},
+        { 58, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Option)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -236,44 +246,46 @@ static const ::_pb::Message* const file_default_instances[] = {
 const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
     "\n\032google/protobuf/type.proto\022\017google.pro"
     "tobuf\032\031google/protobuf/any.proto\032$google"
-    "/protobuf/source_context.proto\"\327\001\n\004Type\022"
+    "/protobuf/source_context.proto\"\350\001\n\004Type\022"
     "\014\n\004name\030\001 \001(\t\022&\n\006fields\030\002 \003(\0132\026.google.p"
     "rotobuf.Field\022\016\n\006oneofs\030\003 \003(\t\022(\n\007options"
     "\030\004 \003(\0132\027.google.protobuf.Option\0226\n\016sourc"
     "e_context\030\005 \001(\0132\036.google.protobuf.Source"
     "Context\022\'\n\006syntax\030\006 \001(\0162\027.google.protobu"
-    "f.Syntax\"\325\005\n\005Field\022)\n\004kind\030\001 \001(\0162\033.googl"
-    "e.protobuf.Field.Kind\0227\n\013cardinality\030\002 \001"
-    "(\0162\".google.protobuf.Field.Cardinality\022\016"
-    "\n\006number\030\003 \001(\005\022\014\n\004name\030\004 \001(\t\022\020\n\010type_url"
-    "\030\006 \001(\t\022\023\n\013oneof_index\030\007 \001(\005\022\016\n\006packed\030\010 "
-    "\001(\010\022(\n\007options\030\t \003(\0132\027.google.protobuf.O"
-    "ption\022\021\n\tjson_name\030\n \001(\t\022\025\n\rdefault_valu"
-    "e\030\013 \001(\t\"\310\002\n\004Kind\022\020\n\014TYPE_UNKNOWN\020\000\022\017\n\013TY"
-    "PE_DOUBLE\020\001\022\016\n\nTYPE_FLOAT\020\002\022\016\n\nTYPE_INT6"
-    "4\020\003\022\017\n\013TYPE_UINT64\020\004\022\016\n\nTYPE_INT32\020\005\022\020\n\014"
-    "TYPE_FIXED64\020\006\022\020\n\014TYPE_FIXED32\020\007\022\r\n\tTYPE"
-    "_BOOL\020\010\022\017\n\013TYPE_STRING\020\t\022\016\n\nTYPE_GROUP\020\n"
-    "\022\020\n\014TYPE_MESSAGE\020\013\022\016\n\nTYPE_BYTES\020\014\022\017\n\013TY"
-    "PE_UINT32\020\r\022\r\n\tTYPE_ENUM\020\016\022\021\n\rTYPE_SFIXE"
-    "D32\020\017\022\021\n\rTYPE_SFIXED64\020\020\022\017\n\013TYPE_SINT32\020"
-    "\021\022\017\n\013TYPE_SINT64\020\022\"t\n\013Cardinality\022\027\n\023CAR"
-    "DINALITY_UNKNOWN\020\000\022\030\n\024CARDINALITY_OPTION"
-    "AL\020\001\022\030\n\024CARDINALITY_REQUIRED\020\002\022\030\n\024CARDIN"
-    "ALITY_REPEATED\020\003\"\316\001\n\004Enum\022\014\n\004name\030\001 \001(\t\022"
-    "-\n\tenumvalue\030\002 \003(\0132\032.google.protobuf.Enu"
-    "mValue\022(\n\007options\030\003 \003(\0132\027.google.protobu"
-    "f.Option\0226\n\016source_context\030\004 \001(\0132\036.googl"
-    "e.protobuf.SourceContext\022\'\n\006syntax\030\005 \001(\016"
-    "2\027.google.protobuf.Syntax\"S\n\tEnumValue\022\014"
-    "\n\004name\030\001 \001(\t\022\016\n\006number\030\002 \001(\005\022(\n\007options\030"
-    "\003 \003(\0132\027.google.protobuf.Option\";\n\006Option"
-    "\022\014\n\004name\030\001 \001(\t\022#\n\005value\030\002 \001(\0132\024.google.p"
-    "rotobuf.Any*.\n\006Syntax\022\021\n\rSYNTAX_PROTO2\020\000"
-    "\022\021\n\rSYNTAX_PROTO3\020\001B{\n\023com.google.protob"
-    "ufB\tTypeProtoP\001Z-google.golang.org/proto"
-    "buf/types/known/typepb\370\001\001\242\002\003GPB\252\002\036Google"
-    ".Protobuf.WellKnownTypesb\006proto3"
+    "f.Syntax\022\017\n\007edition\030\007 \001(\t\"\325\005\n\005Field\022)\n\004k"
+    "ind\030\001 \001(\0162\033.google.protobuf.Field.Kind\0227"
+    "\n\013cardinality\030\002 \001(\0162\".google.protobuf.Fi"
+    "eld.Cardinality\022\016\n\006number\030\003 \001(\005\022\014\n\004name\030"
+    "\004 \001(\t\022\020\n\010type_url\030\006 \001(\t\022\023\n\013oneof_index\030\007"
+    " \001(\005\022\016\n\006packed\030\010 \001(\010\022(\n\007options\030\t \003(\0132\027."
+    "google.protobuf.Option\022\021\n\tjson_name\030\n \001("
+    "\t\022\025\n\rdefault_value\030\013 \001(\t\"\310\002\n\004Kind\022\020\n\014TYP"
+    "E_UNKNOWN\020\000\022\017\n\013TYPE_DOUBLE\020\001\022\016\n\nTYPE_FLO"
+    "AT\020\002\022\016\n\nTYPE_INT64\020\003\022\017\n\013TYPE_UINT64\020\004\022\016\n"
+    "\nTYPE_INT32\020\005\022\020\n\014TYPE_FIXED64\020\006\022\020\n\014TYPE_"
+    "FIXED32\020\007\022\r\n\tTYPE_BOOL\020\010\022\017\n\013TYPE_STRING\020"
+    "\t\022\016\n\nTYPE_GROUP\020\n\022\020\n\014TYPE_MESSAGE\020\013\022\016\n\nT"
+    "YPE_BYTES\020\014\022\017\n\013TYPE_UINT32\020\r\022\r\n\tTYPE_ENU"
+    "M\020\016\022\021\n\rTYPE_SFIXED32\020\017\022\021\n\rTYPE_SFIXED64\020"
+    "\020\022\017\n\013TYPE_SINT32\020\021\022\017\n\013TYPE_SINT64\020\022\"t\n\013C"
+    "ardinality\022\027\n\023CARDINALITY_UNKNOWN\020\000\022\030\n\024C"
+    "ARDINALITY_OPTIONAL\020\001\022\030\n\024CARDINALITY_REQ"
+    "UIRED\020\002\022\030\n\024CARDINALITY_REPEATED\020\003\"\337\001\n\004En"
+    "um\022\014\n\004name\030\001 \001(\t\022-\n\tenumvalue\030\002 \003(\0132\032.go"
+    "ogle.protobuf.EnumValue\022(\n\007options\030\003 \003(\013"
+    "2\027.google.protobuf.Option\0226\n\016source_cont"
+    "ext\030\004 \001(\0132\036.google.protobuf.SourceContex"
+    "t\022\'\n\006syntax\030\005 \001(\0162\027.google.protobuf.Synt"
+    "ax\022\017\n\007edition\030\006 \001(\t\"S\n\tEnumValue\022\014\n\004name"
+    "\030\001 \001(\t\022\016\n\006number\030\002 \001(\005\022(\n\007options\030\003 \003(\0132"
+    "\027.google.protobuf.Option\";\n\006Option\022\014\n\004na"
+    "me\030\001 \001(\t\022#\n\005value\030\002 \001(\0132\024.google.protobu"
+    "f.Any*C\n\006Syntax\022\021\n\rSYNTAX_PROTO2\020\000\022\021\n\rSY"
+    "NTAX_PROTO3\020\001\022\023\n\017SYNTAX_EDITIONS\020\002B{\n\023co"
+    "m.google.protobufB\tTypeProtoP\001Z-google.g"
+    "olang.org/protobuf/types/known/typepb\370\001\001"
+    "\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTypesb"
+    "\006proto3"
 };
 static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2ftype_2eproto_deps[2] =
     {
@@ -284,7 +296,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2ftype_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2ftype_2eproto = {
     false,
     false,
-    1592,
+    1647,
     descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto,
     "google/protobuf/type.proto",
     &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
@@ -411,6 +423,7 @@ bool Syntax_IsValid(int value) {
   switch (value) {
     case 0:
     case 1:
+    case 2:
       return true;
     default:
       return false;
@@ -447,6 +460,8 @@ Type::Type(const Type& from)
     , decltype(_impl_.options_){from._impl_.options_}
     , decltype(_impl_.name_) {}
 
+    , decltype(_impl_.edition_) {}
+
     , decltype(_impl_.source_context_){nullptr}
     , decltype(_impl_.syntax_) {}
 
@@ -459,6 +474,13 @@ Type::Type(const Type& from)
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_name().empty()) {
     _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  _impl_.edition_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.edition_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_edition().empty()) {
+    _this->_impl_.edition_.Set(from._internal_edition(), _this->GetArenaForAllocation());
   }
   if (from._internal_has_source_context()) {
     _this->_impl_.source_context_ = new ::PROTOBUF_NAMESPACE_ID::SourceContext(*from._impl_.source_context_);
@@ -475,6 +497,8 @@ inline void Type::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.options_){arena}
     , decltype(_impl_.name_) {}
 
+    , decltype(_impl_.edition_) {}
+
     , decltype(_impl_.source_context_){nullptr}
     , decltype(_impl_.syntax_) { 0 }
 
@@ -483,6 +507,10 @@ inline void Type::SharedCtor(::_pb::Arena* arena) {
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.edition_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.edition_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
@@ -501,6 +529,7 @@ inline void Type::SharedDtor() {
   _impl_.oneofs_.~RepeatedPtrField();
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
+  _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
 }
 
@@ -518,6 +547,7 @@ void Type::Clear() {
   _impl_.oneofs_.Clear();
   _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
+  _impl_.edition_.ClearToEmpty();
   if (GetArenaForAllocation() == nullptr && _impl_.source_context_ != nullptr) {
     delete _impl_.source_context_;
   }
@@ -606,6 +636,17 @@ const char* Type::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           goto handle_unusual;
         }
         continue;
+      // string edition = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 58)) {
+          auto str = _internal_mutable_edition();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "google.protobuf.Type.edition"));
+        } else {
+          goto handle_unusual;
+        }
+        continue;
       default:
         goto handle_unusual;
     }  // switch
@@ -681,6 +722,14 @@ failure:
         6, this->_internal_syntax(), target);
   }
 
+  // string edition = 7;
+  if (!this->_internal_edition().empty()) {
+    const std::string& _s = this->_internal_edition();
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+        _s.data(), static_cast<int>(_s.length()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.edition");
+    target = stream->WriteStringMaybeAliased(7, _s, target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -723,6 +772,12 @@ failure:
                                     this->_internal_name());
   }
 
+  // string edition = 7;
+  if (!this->_internal_edition().empty()) {
+    total_size += 1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+                                    this->_internal_edition());
+  }
+
   // .google.protobuf.SourceContext source_context = 5;
   if (this->_internal_has_source_context()) {
     total_size += 1 +
@@ -760,6 +815,9 @@ void Type::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
+  if (!from._internal_edition().empty()) {
+    _this->_internal_set_edition(from._internal_edition());
+  }
   if (from._internal_has_source_context()) {
     _this->_internal_mutable_source_context()->::PROTOBUF_NAMESPACE_ID::SourceContext::MergeFrom(
         from._internal_source_context());
@@ -791,6 +849,8 @@ void Type::InternalSwap(Type* other) {
   _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, lhs_arena,
+                                       &other->_impl_.edition_, rhs_arena);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Type, _impl_.syntax_)
       + sizeof(Type::_impl_.syntax_)
@@ -1364,6 +1424,8 @@ Enum::Enum(const Enum& from)
     , decltype(_impl_.options_){from._impl_.options_}
     , decltype(_impl_.name_) {}
 
+    , decltype(_impl_.edition_) {}
+
     , decltype(_impl_.source_context_){nullptr}
     , decltype(_impl_.syntax_) {}
 
@@ -1376,6 +1438,13 @@ Enum::Enum(const Enum& from)
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_name().empty()) {
     _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  _impl_.edition_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.edition_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_edition().empty()) {
+    _this->_impl_.edition_.Set(from._internal_edition(), _this->GetArenaForAllocation());
   }
   if (from._internal_has_source_context()) {
     _this->_impl_.source_context_ = new ::PROTOBUF_NAMESPACE_ID::SourceContext(*from._impl_.source_context_);
@@ -1391,6 +1460,8 @@ inline void Enum::SharedCtor(::_pb::Arena* arena) {
     , decltype(_impl_.options_){arena}
     , decltype(_impl_.name_) {}
 
+    , decltype(_impl_.edition_) {}
+
     , decltype(_impl_.source_context_){nullptr}
     , decltype(_impl_.syntax_) { 0 }
 
@@ -1399,6 +1470,10 @@ inline void Enum::SharedCtor(::_pb::Arena* arena) {
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.edition_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.edition_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
@@ -1416,6 +1491,7 @@ inline void Enum::SharedDtor() {
   _impl_.enumvalue_.~RepeatedPtrField();
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
+  _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
 }
 
@@ -1432,6 +1508,7 @@ void Enum::Clear() {
   _impl_.enumvalue_.Clear();
   _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
+  _impl_.edition_.ClearToEmpty();
   if (GetArenaForAllocation() == nullptr && _impl_.source_context_ != nullptr) {
     delete _impl_.source_context_;
   }
@@ -1504,6 +1581,17 @@ const char* Enum::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           goto handle_unusual;
         }
         continue;
+      // string edition = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 50)) {
+          auto str = _internal_mutable_edition();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "google.protobuf.Enum.edition"));
+        } else {
+          goto handle_unusual;
+        }
+        continue;
       default:
         goto handle_unusual;
     }  // switch
@@ -1571,6 +1659,14 @@ failure:
         5, this->_internal_syntax(), target);
   }
 
+  // string edition = 6;
+  if (!this->_internal_edition().empty()) {
+    const std::string& _s = this->_internal_edition();
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+        _s.data(), static_cast<int>(_s.length()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.edition");
+    target = stream->WriteStringMaybeAliased(6, _s, target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -1605,6 +1701,12 @@ failure:
   if (!this->_internal_name().empty()) {
     total_size += 1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
                                     this->_internal_name());
+  }
+
+  // string edition = 6;
+  if (!this->_internal_edition().empty()) {
+    total_size += 1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+                                    this->_internal_edition());
   }
 
   // .google.protobuf.SourceContext source_context = 4;
@@ -1643,6 +1745,9 @@ void Enum::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
+  if (!from._internal_edition().empty()) {
+    _this->_internal_set_edition(from._internal_edition());
+  }
   if (from._internal_has_source_context()) {
     _this->_internal_mutable_source_context()->::PROTOBUF_NAMESPACE_ID::SourceContext::MergeFrom(
         from._internal_source_context());
@@ -1673,6 +1778,8 @@ void Enum::InternalSwap(Enum* other) {
   _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, lhs_arena,
+                                       &other->_impl_.edition_, rhs_arena);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Enum, _impl_.syntax_)
       + sizeof(Enum::_impl_.syntax_)

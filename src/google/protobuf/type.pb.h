@@ -168,6 +168,7 @@ inline bool Field_Cardinality_Parse(absl::string_view name, Field_Cardinality* v
 enum Syntax : int {
   SYNTAX_PROTO2 = 0,
   SYNTAX_PROTO3 = 1,
+  SYNTAX_EDITIONS = 2,
   Syntax_INT_MIN_SENTINEL_DO_NOT_USE_ =
       std::numeric_limits<::int32_t>::min(),
   Syntax_INT_MAX_SENTINEL_DO_NOT_USE_ =
@@ -176,8 +177,8 @@ enum Syntax : int {
 
 PROTOBUF_EXPORT bool Syntax_IsValid(int value);
 constexpr Syntax Syntax_MIN = static_cast<Syntax>(0);
-constexpr Syntax Syntax_MAX = static_cast<Syntax>(1);
-constexpr int Syntax_ARRAYSIZE = 1 + 1;
+constexpr Syntax Syntax_MAX = static_cast<Syntax>(2);
+constexpr int Syntax_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor*
 Syntax_descriptor();
 template <typename T>
@@ -190,7 +191,7 @@ const std::string& Syntax_Name(T value) {
 template <>
 inline const std::string& Syntax_Name(Syntax value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum<Syntax_descriptor,
-                                                 0, 1>(
+                                                 0, 2>(
       static_cast<int>(value));
 }
 inline bool Syntax_Parse(absl::string_view name, Syntax* value) {
@@ -334,6 +335,7 @@ class PROTOBUF_EXPORT Type final :
     kOneofsFieldNumber = 3,
     kOptionsFieldNumber = 4,
     kNameFieldNumber = 1,
+    kEditionFieldNumber = 7,
     kSourceContextFieldNumber = 5,
     kSyntaxFieldNumber = 6,
   };
@@ -421,6 +423,26 @@ class PROTOBUF_EXPORT Type final :
   std::string* _internal_mutable_name();
 
   public:
+  // string edition = 7;
+  void clear_edition() ;
+  const std::string& edition() const;
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_edition(Arg_&& arg, Args_... args);
+  std::string* mutable_edition();
+  PROTOBUF_NODISCARD std::string* release_edition();
+  void set_allocated_edition(std::string* ptr);
+
+  private:
+  const std::string& _internal_edition() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(
+      const std::string& value);
+  std::string* _internal_mutable_edition();
+
+  public:
   // .google.protobuf.SourceContext source_context = 5;
   bool has_source_context() const;
   private:
@@ -461,6 +483,7 @@ class PROTOBUF_EXPORT Type final :
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> oneofs_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option > options_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr edition_;
     ::PROTOBUF_NAMESPACE_ID::SourceContext* source_context_;
     int syntax_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -968,6 +991,7 @@ class PROTOBUF_EXPORT Enum final :
     kEnumvalueFieldNumber = 2,
     kOptionsFieldNumber = 3,
     kNameFieldNumber = 1,
+    kEditionFieldNumber = 6,
     kSourceContextFieldNumber = 4,
     kSyntaxFieldNumber = 5,
   };
@@ -1027,6 +1051,26 @@ class PROTOBUF_EXPORT Enum final :
   std::string* _internal_mutable_name();
 
   public:
+  // string edition = 6;
+  void clear_edition() ;
+  const std::string& edition() const;
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_edition(Arg_&& arg, Args_... args);
+  std::string* mutable_edition();
+  PROTOBUF_NODISCARD std::string* release_edition();
+  void set_allocated_edition(std::string* ptr);
+
+  private:
+  const std::string& _internal_edition() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(
+      const std::string& value);
+  std::string* _internal_mutable_edition();
+
+  public:
   // .google.protobuf.SourceContext source_context = 4;
   bool has_source_context() const;
   private:
@@ -1066,6 +1110,7 @@ class PROTOBUF_EXPORT Enum final :
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumValue > enumvalue_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option > options_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr edition_;
     ::PROTOBUF_NAMESPACE_ID::SourceContext* source_context_;
     int syntax_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -1777,6 +1822,53 @@ inline void Type::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
   _impl_.syntax_ = value;
 }
 
+// string edition = 7;
+inline void Type::clear_edition() {
+  _impl_.edition_.ClearToEmpty();
+}
+inline const std::string& Type::edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Type.edition)
+  return _internal_edition();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Type::set_edition(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.Type.edition)
+}
+inline std::string* Type::mutable_edition() {
+  std::string* _s = _internal_mutable_edition();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Type.edition)
+  return _s;
+}
+inline const std::string& Type::_internal_edition() const {
+  return _impl_.edition_.Get();
+}
+inline void Type::_internal_set_edition(const std::string& value) {
+  ;
+
+
+  _impl_.edition_.Set(value, GetArenaForAllocation());
+}
+inline std::string* Type::_internal_mutable_edition() {
+  ;
+  return _impl_.edition_.Mutable( GetArenaForAllocation());
+}
+inline std::string* Type::release_edition() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Type.edition)
+  return _impl_.edition_.Release();
+}
+inline void Type::set_allocated_edition(std::string* value) {
+  _impl_.edition_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.edition_.IsDefault()) {
+          _impl_.edition_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.Type.edition)
+}
+
 // -------------------------------------------------------------------
 
 // Field
@@ -2338,6 +2430,53 @@ inline ::PROTOBUF_NAMESPACE_ID::Syntax Enum::_internal_syntax() const {
 inline void Enum::_internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value) {
   ;
   _impl_.syntax_ = value;
+}
+
+// string edition = 6;
+inline void Enum::clear_edition() {
+  _impl_.edition_.ClearToEmpty();
+}
+inline const std::string& Enum::edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Enum.edition)
+  return _internal_edition();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Enum::set_edition(Arg_&& arg,
+                                                     Args_... args) {
+  ;
+  _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.Enum.edition)
+}
+inline std::string* Enum::mutable_edition() {
+  std::string* _s = _internal_mutable_edition();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.edition)
+  return _s;
+}
+inline const std::string& Enum::_internal_edition() const {
+  return _impl_.edition_.Get();
+}
+inline void Enum::_internal_set_edition(const std::string& value) {
+  ;
+
+
+  _impl_.edition_.Set(value, GetArenaForAllocation());
+}
+inline std::string* Enum::_internal_mutable_edition() {
+  ;
+  return _impl_.edition_.Mutable( GetArenaForAllocation());
+}
+inline std::string* Enum::release_edition() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Enum.edition)
+  return _impl_.edition_.Release();
+}
+inline void Enum::set_allocated_edition(std::string* value) {
+  _impl_.edition_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.edition_.IsDefault()) {
+          _impl_.edition_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.Enum.edition)
 }
 
 // -------------------------------------------------------------------
