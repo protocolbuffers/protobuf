@@ -17,7 +17,7 @@
   </description>
   <dependencies>
     <dependency>
-      <groupId>${groupId}</groupId>
+      <groupId>{groupId}</groupId>
       <artifactId>protobuf-java</artifactId>
     </dependency>
     {dependencies}
