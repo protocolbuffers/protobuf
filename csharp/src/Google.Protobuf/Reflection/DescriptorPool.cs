@@ -187,35 +187,24 @@ namespace Google.Protobuf.Reflection
                 throw new DescriptorValidationException(descriptor, "Missing name.");
             }
 
-            if (!IsValidSymbolNameFormat(descriptor.Name))
-            {
-                throw new DescriptorValidationException(descriptor,
-                                                        "\"" + descriptor.Name + "\" is not a valid identifier.");
-            }
-        }
-
-        /// <summary>
-        /// Symbol name must start with a letter or underscore, and it can contain letters, numbers and underscores.
-        /// </summary>
-        private static bool IsValidSymbolNameFormat(string name)
-        {
+            // Symbol name must start with a letter or underscore, and it can contain letters, numbers and underscores.
+            string name = descriptor.Name;
             if (!IsAsciiLetter(name[0]) && name[0] != '_')
             {
-                return false;
+                ThrowInvalidSymbolNameException(descriptor);
             }
-
             for (int i = 1; i < name.Length; i++)
             {
                 if (!IsAsciiLetter(name[i]) && !IsAsciiDigit(name[i]) && name[i] != '_')
                 {
-                    return false;
+                    ThrowInvalidSymbolNameException(descriptor);
                 }
             }
 
-            return true;
-
             static bool IsAsciiLetter(char c) => (uint) ((c | 0x20) - 'a') <= 'z' - 'a';
-            static bool IsAsciiDigit(char c) => (uint) (c - '0') <= ('9' - '0');
+            static bool IsAsciiDigit(char c) => (uint) (c - '0') <= '9' - '0';
+            static void ThrowInvalidSymbolNameException(IDescriptor descriptor) =>
+                throw new DescriptorValidationException(descriptor, "\"" + descriptor.Name + "\" is not a valid identifier.");
         }
 
         /// <summary>
