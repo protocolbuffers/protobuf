@@ -76,11 +76,7 @@
         <dependency>
           <groupId>com.google.protobuf</groupId>
           <artifactId>protobuf-java-util</artifactId>
-<<<<<<< HEAD
-          <version>3.21.12</version>
-=======
           <version>3.22.1</version>
->>>>>>> upstream/22.x
         </dependency>
         <dependency>
             <groupId>org.jruby</groupId>
