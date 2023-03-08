@@ -715,8 +715,9 @@ inline PROTOBUF_ALWAYS_INLINE bool shift_left_fill_with_ones_was_negative(
 template <class VarintType>
 inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, VarintType>
 ParseFallbackPair(const char* p, int64_t res1) {
-  constexpr bool kIs64BitVarint = std::is_same<VarintType, uint64_t>::value;
-  constexpr bool kIs32BitVarint = std::is_same<VarintType, uint32_t>::value;
+  using Unsigned = std::make_unsigned_t<VarintType>;
+  constexpr bool kIs64BitVarint = std::is_same<Unsigned, uint64_t>::value;
+  constexpr bool kIs32BitVarint = std::is_same<Unsigned, uint32_t>::value;
   static_assert(kIs64BitVarint || kIs32BitVarint,
                 "Only 32 or 64 bit varints are supported");
   auto ptr = reinterpret_cast<const int8_t*>(p);
@@ -895,6 +896,24 @@ inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
   return p;
 }
 
+template <int width>
+using SelectTag = std::conditional_t<width == 1, uint8_t, uint16_t>;
+
+template <typename FieldType>
+FieldType ZigZagDecode(FieldType value) {
+  return value;
+}
+
+template <>
+int32_t ZigZagDecode(int32_t value) {
+  return WireFormatLite::ZigZagDecode32(value);
+}
+
+template <>
+int64_t ZigZagDecode(int64_t value) {
+  return WireFormatLite::ZigZagDecode64(value);
+}
+
 template <typename FieldType, bool zigzag = false>
 inline FieldType ZigZagDecodeHelper(FieldType value) {
   return static_cast<FieldType>(value);
@@ -921,96 +940,102 @@ bool EnumIsValidAux(int32_t val, uint16_t xform_val,
 
 }  // namespace
 
-template <typename FieldType, typename TagType, bool zigzag>
-PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
-    PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
-    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-  }
-  ptr += sizeof(TagType);  // Consume tag
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
+// FASTV32S2, FASTV64S2, FASTZ32S2, FASTZ64S2
+template <typename FieldType, int predicted_length>
+struct TcParser::FastVarint<2, FieldType, predicted_length> {
+  static constexpr int tag_width = 2;  // NOLINT
+  using TagType = SelectTag<tag_width>;
 
-  // clang isn't smart enough to be able to only conditionally save
-  // registers to the stack, so we turn the integer-greater-than-128
-  // case into a separate routine.
-  if (PROTOBUF_PREDICT_FALSE(static_cast<int8_t>(*ptr) < 0)) {
-    PROTOBUF_MUSTTAIL return SingularVarBigint<FieldType, TagType, zigzag>(
-        PROTOBUF_TC_PARAM_PASS);
-  }
-
-  RefAt<FieldType>(msg, data.offset()) =
-      ZigZagDecodeHelper<FieldType, zigzag>(static_cast<uint8_t>(*ptr++));
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-}
-
-template <typename FieldType, typename TagType, bool zigzag>
-PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
-    PROTOBUF_TC_PARAM_DECL) {
-  // For some reason clang wants to save 5 registers to the stack here,
-  // but we only need four for this code, so save the data we don't need
-  // to the stack.  Happily, saving them this way uses regular store
-  // instructions rather than PUSH/POP, which saves time at the cost of greater
-  // code size, but for this heavily-used piece of code, that's fine.
-  struct Spill {
-    uint64_t field_data;
-    ::google::protobuf::MessageLite* msg;
-    const ::google::protobuf::internal::TcParseTableBase* table;
-    uint64_t hasbits;
-  };
-  Spill spill = {data.data, msg, table, hasbits};
+  PROTOBUF_ALWAYS_INLINE static const char* ParseBigint(
+      PROTOBUF_TC_PARAM_DECL) {
+    // For some reason clang wants to save 5 registers to the stack here,
+    // but we only need four for this code, so save the data we don't need
+    // to the stack.  Happily, saving them this way uses regular store
+    // instructions rather than PUSH/POP, which saves time at the cost of
+    // greater code size, but for this heavily-used piece of code, that's fine.
+    struct Spill {
+      uint64_t field_data;
+      ::google::protobuf::MessageLite* msg;
+      const ::google::protobuf::internal::TcParseTableBase* table;
+      uint64_t hasbits;
+    };
+    Spill spill = {data.data, msg, table, hasbits};
 #if defined(__GNUC__)
-  // This empty asm block convinces the compiler that the contents of spill may
-  // have changed, and thus can't be cached in registers.  It's similar to, but
-  // more optimal than, the effect of declaring it "volatile".
-  asm("" : "+m"(spill));
+    // This empty asm block convinces the compiler that the contents of spill
+    // may have changed, and thus can't be cached in registers.  It's similar
+    // to, but more optimal than, the effect of declaring it "volatile".
+    asm("" : "+m"(spill));
 #endif
 
-  FieldType tmp;
-  PROTOBUF_ASSUME(static_cast<int8_t>(*ptr) < 0);
-  ptr = ParseVarint(ptr, &tmp);
+    FieldType tmp;
+    PROTOBUF_ASSUME(static_cast<int8_t>(*ptr) < 0);
+    ptr = ParseVarint(ptr, &tmp);
 
-  data.data = spill.field_data;
-  msg = spill.msg;
-  table = spill.table;
-  hasbits = spill.hasbits;
+    data.data = spill.field_data;
+    msg = spill.msg;
+    table = spill.table;
+    hasbits = spill.hasbits;
 
-  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
-    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-  }
-  RefAt<FieldType>(msg, data.offset()) =
-      ZigZagDecodeHelper<FieldType, zigzag>(tmp);
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-}
-
-template <typename FieldType>
-PROTOBUF_ALWAYS_INLINE const char* TcParser::FastVarintS1(
-    PROTOBUF_TC_PARAM_DECL) {
-  using TagType = uint8_t;
-  // super-early success test...
-  if (PROTOBUF_PREDICT_TRUE(((data.data) & 0x80FF) == 0)) {
-    ptr += sizeof(TagType);  // Consume tag
-    hasbits |= (uint64_t{1} << data.hasbit_idx());
-    uint8_t value = data.data >> 8;
-    RefAt<FieldType>(msg, data.offset()) = value;
-    ptr += 1;
+    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+    RefAt<FieldType>(msg, data.offset()) = ZigZagDecode<FieldType>(tmp);
     PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
-    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-  }
-  ptr += sizeof(TagType);  // Consume tag
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
 
-  auto tmp =
-      ParseFallbackPair<FieldType>(ptr, static_cast<int8_t>(data.data >> 8));
-  ptr = tmp.first;
-  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
-    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-  }
+  PROTOBUF_ALWAYS_INLINE static const char* Parse(PROTOBUF_TC_PARAM_DECL) {
+    if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+      PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+    ptr += sizeof(TagType);  // Consume tag
+    hasbits |= (uint64_t{1} << data.hasbit_idx());
 
-  RefAt<FieldType>(msg, data.offset()) = tmp.second;
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-}
+    // clang isn't smart enough to be able to only conditionally save
+    // registers to the stack, so we turn the integer-greater-than-128
+    // case into a separate routine.
+    if (PROTOBUF_PREDICT_FALSE(static_cast<int8_t>(*ptr) < 0)) {
+      PROTOBUF_MUSTTAIL return ParseBigint(PROTOBUF_TC_PARAM_PASS);
+    }
+
+    auto value = static_cast<uint8_t>(*ptr++);
+    RefAt<FieldType>(msg, data.offset()) = ZigZagDecode<FieldType>(value);
+    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+};
+
+// FASTV32S1, FASTV64S1, FASTZ32S1, FASTZ64S1
+template <typename FieldType, int predicted_length>
+struct TcParser::FastVarint<1, FieldType, predicted_length> {
+  static constexpr int tag_width = 1;  // NOLINT
+  using TagType = SelectTag<tag_width>;
+
+  PROTOBUF_ALWAYS_INLINE static const char* Parse(PROTOBUF_TC_PARAM_DECL) {
+    // super-early success test...
+    if (PROTOBUF_PREDICT_TRUE(((data.data) & 0x80FF) == 0)) {
+      ptr += sizeof(TagType);  // Consume tag
+      hasbits |= (uint64_t{1} << data.hasbit_idx());
+      uint8_t value = data.data >> 8;
+      RefAt<FieldType>(msg, data.offset()) = ZigZagDecode<FieldType>(value);
+      ptr += 1;
+      PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+    if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+      PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+    ptr += sizeof(TagType);  // Consume tag
+    hasbits |= (uint64_t{1} << data.hasbit_idx());
+
+    auto tmp =
+        ParseFallbackPair<FieldType>(ptr, static_cast<int8_t>(data.data >> 8));
+    ptr = tmp.first;
+    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+
+    RefAt<FieldType>(msg, data.offset()) = ZigZagDecode<FieldType>(tmp.second);
+    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+};
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
   using TagType = uint8_t;
@@ -1043,38 +1068,53 @@ PROTOBUF_NOINLINE const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8S2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularVarint<bool, uint16_t>(
+  using TagType = uint16_t;
+
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+
+  bool value;
+  ptr = ParseVarint(ptr + sizeof(TagType), &value);
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  RefAt<bool>(msg, data.offset()) = value;
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastV32S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return FastVarint<1, uint32_t>::Parse(
       PROTOBUF_TC_PARAM_PASS);
 }
-PROTOBUF_NOINLINE const char* TcParser::FastV32S1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return FastVarintS1<uint32_t>(PROTOBUF_TC_PARAM_PASS);
-}
 PROTOBUF_NOINLINE const char* TcParser::FastV32S2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularVarint<uint32_t, uint16_t>(
+  PROTOBUF_MUSTTAIL return FastVarint<2, uint32_t>::Parse(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64S1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return FastVarintS1<uint64_t>(PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return FastVarint<1, uint64_t>::Parse(
+      PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64S2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularVarint<uint64_t, uint16_t>(
+  PROTOBUF_MUSTTAIL return FastVarint<2, uint64_t>::Parse(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastZ32S1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularVarint<int32_t, uint8_t, true>(
+  PROTOBUF_MUSTTAIL return FastVarint<1, int32_t>::Parse(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ32S2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularVarint<int32_t, uint16_t, true>(
+  PROTOBUF_MUSTTAIL return FastVarint<2, int32_t>::Parse(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ64S1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularVarint<int64_t, uint8_t, true>(
+  PROTOBUF_MUSTTAIL return FastVarint<1, int64_t>::Parse(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastZ64S2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularVarint<int64_t, uint16_t, true>(
+  PROTOBUF_MUSTTAIL return FastVarint<2, int64_t>::Parse(
       PROTOBUF_TC_PARAM_PASS);
 }
 
