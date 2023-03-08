@@ -3521,11 +3521,6 @@ bool FieldDescriptor::is_packed() const {
   }
 }
 
-bool FieldDescriptor::requires_utf8_validation() const {
-  return type() == TYPE_STRING &&
-         file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
-
 bool Descriptor::GetSourceLocation(SourceLocation* out_location) const {
   std::vector<int> path;
   GetLocationPath(&path);
@@ -8420,7 +8415,7 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
 
 namespace cpp {
 bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
-  return !field->legacy_enum_field_treated_as_closed();
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
 bool HasHasbit(const FieldDescriptor* field) {
