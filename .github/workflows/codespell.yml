@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - uses: codespell-project/actions-codespell@master
+      - uses: codespell-project/actions-codespell@22ff5a2e4b591290baf82d47c9feadac31c65441 # v1.0
         with:
           check_filenames: true
-          skip: ./.git,./third_party,./conformance/third_party,*.snk,*.pb,*.pb.cc,*.pb.h,./src/google/protobuf/testdata,./objectivec/Tests,./python/compatibility_tests/v2.5.0/tests/google/protobuf/internal,./.github/workflows/codespell.yml
-          ignore_words_list: "alow,alse,atleast,ba,chec,cleare,copyable,cloneable,crate,dedup,dur,errorprone,falsy,files',fo,fundementals,hel,importd,inout,leapyear,nd,nin,ois,ons,parseable,process',ro,te,testof,ue,unparseable,wasn,wee,gae,keyserver,objext,od,optin,streem,sur,falsy,cleary"
+          skip: ./.git,./third_party,./conformance/third_party,*.snk,*.pb,*.pb.cc,*.pb.h,*.pb.cs,*-upb.h,*-upb.c,./src/google/protobuf/testdata,./objectivec/Tests,./python/compatibility_tests/v2.5.0/tests/google/protobuf/internal,./.github/workflows/codespell.yml
+          ignore_words_list: "alow,alse,atleast,ba,chec,cleare,copyable,couldn,cloneable,crate,dedup,dur,errorprone,falsy,files',fo,fundementals,hel,importd,inout,leapyear,nd,nin,ois,ons,parseable,process',ro,te,testof,ue,unparseable,wasn,wee,gae,keyserver,objext,od,optin,streem,sur,falsy,cleary"
