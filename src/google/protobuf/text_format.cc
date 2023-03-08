@@ -48,6 +48,7 @@
 
 #include "absl/container/btree_set.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
@@ -62,6 +63,7 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection_mode.h"
@@ -1670,8 +1672,8 @@ TextFormat::Parser::~Parser() {}
 
 namespace {
 
-bool CheckParseInputSize(absl::string_view input,
-                         io::ErrorCollector* error_collector) {
+template <typename T>
+bool CheckParseInputSize(T& input, io::ErrorCollector* error_collector) {
   if (input.size() > INT_MAX) {
     error_collector->RecordError(
         -1, 0,
@@ -1706,6 +1708,13 @@ bool TextFormat::Parser::ParseFromString(absl::string_view input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
+  return Parse(&input_stream, output);
+}
+
+bool TextFormat::Parser::ParseFromCord(const absl::Cord& input,
+                                       Message* output) {
+  DO(CheckParseInputSize(input, error_collector_));
+  io::CordInputStream input_stream(&input);
   return Parse(&input_stream, output);
 }
 
@@ -1768,6 +1777,11 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
 /* static */ bool TextFormat::ParseFromString(absl::string_view input,
                                               Message* output) {
   return Parser().ParseFromString(input, output);
+}
+
+/* static */ bool TextFormat::ParseFromCord(const absl::Cord& input,
+                                            Message* output) {
+  return Parser().ParseFromCord(input, output);
 }
 
 /* static */ bool TextFormat::MergeFromString(absl::string_view input,

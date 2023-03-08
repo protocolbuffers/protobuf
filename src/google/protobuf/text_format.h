@@ -45,6 +45,7 @@
 
 #include "google/protobuf/port.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -535,6 +536,8 @@ class PROTOBUF_EXPORT TextFormat {
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
   static bool ParseFromString(absl::string_view input, Message* output);
+  // Like Parse(), but reads directly from a Cord.
+  static bool ParseFromCord(const absl::Cord& input, Message* output);
 
   // Like Parse(), but the data is merged into the given message, as if
   // using Message::MergeFrom().
@@ -626,6 +629,8 @@ class PROTOBUF_EXPORT TextFormat {
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::ParseFromString().
     bool ParseFromString(absl::string_view input, Message* output);
+    // Like TextFormat::ParseFromCord().
+    bool ParseFromCord(const absl::Cord& input, Message* output);
     // Like TextFormat::Merge().
     bool Merge(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::MergeFromString().
