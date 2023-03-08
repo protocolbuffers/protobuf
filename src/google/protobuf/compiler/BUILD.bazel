@@ -20,6 +20,7 @@ proto_library(
         "//:__pkg__",
         "//pkg:__pkg__",
     ],
+    strip_import_prefix = "/src",
     deps = ["//:descriptor_proto"],
 )
 
@@ -210,7 +211,10 @@ filegroup(
 
 exports_files(
     srcs = ["plugin.proto"],
-    visibility = ["//:__pkg__"],
+    visibility = [
+        "//:__pkg__",
+        "//python:__pkg__",
+    ],
 )
 
 cc_library(
