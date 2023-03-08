@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-fn main() {
-    // This is currently just a smoke test checking that we can generate gencode, compile it, and
-    // link the test binary.
-    let _test_all_types: unittest_proto::TestAllTypes;
+#[test]
+fn test_serialization() {
+    let test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
+    assert_eq!(*test_all_types.serialize(), []);
 }
