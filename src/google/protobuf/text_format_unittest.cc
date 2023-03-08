@@ -51,6 +51,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/die_if_null.h"
 #include "absl/log/scoped_mock_log.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -833,6 +834,12 @@ TEST_F(TextFormatTest, ParseBasic) {
   io::ArrayInputStream input_stream(proto_text_format_.data(),
                                     proto_text_format_.size());
   TextFormat::Parse(&input_stream, &proto_);
+  TestUtil::ExpectAllFieldsSet(proto_);
+}
+
+TEST_F(TextFormatTest, ParseCordBasic) {
+  absl::Cord cord(proto_text_format_);
+  TextFormat::ParseFromCord(cord, &proto_);
   TestUtil::ExpectAllFieldsSet(proto_);
 }
 
