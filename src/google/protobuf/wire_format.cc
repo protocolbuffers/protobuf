@@ -411,6 +411,10 @@ bool WireFormat::ParseAndMergeMessageSetField(uint32_t field_number,
   }
 }
 
+static bool StrictUtf8Check(const FieldDescriptor* field) {
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
 bool WireFormat::ParseAndMergeField(
     uint32_t tag,
     const FieldDescriptor* field,  // May be nullptr for unknown
@@ -480,7 +484,8 @@ bool WireFormat::ParseAndMergeField(
           if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
                   input, &value))
             return false;
-          if (!field->legacy_enum_field_treated_as_closed()) {
+          if (message->GetDescriptor()->file()->syntax() ==
+              FileDescriptor::SYNTAX_PROTO3) {
             message_reflection->AddEnumValue(message, field, value);
           } else {
             const EnumValueDescriptor* enum_value =
@@ -561,7 +566,7 @@ bool WireFormat::ParseAndMergeField(
 
       // Handle strings separately so that we can optimize the ctype=CORD case.
       case FieldDescriptor::TYPE_STRING: {
-        bool strict_utf8_check = field->requires_utf8_validation();
+        bool strict_utf8_check = StrictUtf8Check(field);
         std::string value;
         if (!WireFormatLite::ReadString(input, &value)) return false;
         if (strict_utf8_check) {
@@ -863,7 +868,9 @@ const char* WireFormat::_InternalParseAndMergeField(
         case FieldDescriptor::TYPE_ENUM: {
           auto rep_enum =
               reflection->MutableRepeatedFieldInternal<int>(msg, field);
-          if (!field->legacy_enum_field_treated_as_closed()) {
+          bool open_enum = false;
+          if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
+              open_enum) {
             ptr = internal::PackedEnumParser(rep_enum, ptr, ctx);
           } else {
             return ctx->ReadPackedVarint(
@@ -975,7 +982,7 @@ const char* WireFormat::_InternalParseAndMergeField(
     // Handle strings separately so that we can optimize the ctype=CORD case.
     case FieldDescriptor::TYPE_STRING:
       utf8_check = true;
-      strict_utf8_check = field->requires_utf8_validation();
+      strict_utf8_check = StrictUtf8Check(field);
       PROTOBUF_FALLTHROUGH_INTENDED;
     case FieldDescriptor::TYPE_BYTES: {
       int size = ReadSize(&ptr);
@@ -1411,7 +1418,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       // Handle strings separately so that we can get string references
       // instead of copying.
       case FieldDescriptor::TYPE_STRING: {
-        bool strict_utf8_check = field->requires_utf8_validation();
+        bool strict_utf8_check = StrictUtf8Check(field);
         std::string scratch;
         const std::string& value =
             field->is_repeated()

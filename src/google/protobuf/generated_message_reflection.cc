@@ -1551,7 +1551,7 @@ void CheckInOrder(const FieldDescriptor* field, uint32_t* last) {
 namespace internal {
 bool CreateUnknownEnumValues(const FieldDescriptor* field) {
   bool open_enum = false;
-  return !field->legacy_enum_field_treated_as_closed() || open_enum;
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 || open_enum;
 }
 }  // namespace internal
 using internal::CreateUnknownEnumValues;
