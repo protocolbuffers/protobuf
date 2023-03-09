@@ -112,6 +112,15 @@ EnumRangeInfo GetEnumRangeInfo(const FieldDescriptor* field,
   return EnumRangeInfo::kContiguous;
 }
 
+// options.lazy_opt might be on for fields that don't really support lazy, so we
+// make sure we only use lazy rep for singular TYPE_MESSAGE fields.
+// We can't trust the `lazy=true` annotation.
+bool HasLazyRep(const FieldDescriptor* field,
+                const TailCallTableInfo::PerFieldOptions options) {
+  return field->type() == field->TYPE_MESSAGE && !field->is_repeated() &&
+         options.lazy_opt != 0;
+}
+
 void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
                             const TailCallTableInfo::PerFieldOptions& options,
                             TailCallTableInfo::FastFieldInfo& info) {
@@ -134,11 +143,6 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
        ? PROTOBUF_PICK_FUNCTION(fn##cS)                         \
    : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS) \
                                : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
-
-#define PROTOBUF_PICK_MESSAGE_FUNCTION(fn)        \
-  (options.use_direct_tcparser_table              \
-       ? PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##t) \
-       : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##d))
 
   const FieldDescriptor* field = entry.field;
   info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
@@ -216,10 +220,16 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
       }
       break;
     case FieldDescriptor::TYPE_MESSAGE:
-      picked = PROTOBUF_PICK_MESSAGE_FUNCTION(kFastM);
+      picked =
+          (HasLazyRep(field, options) ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
+           : options.use_direct_tcparser_table
+               ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt)
+               : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMd));
       break;
     case FieldDescriptor::TYPE_GROUP:
-      picked = PROTOBUF_PICK_MESSAGE_FUNCTION(kFastG);
+      picked = (options.use_direct_tcparser_table
+                    ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGt)
+                    : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGd));
       break;
   }
 
@@ -232,7 +242,6 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
 #undef PROTOBUF_PICK_REPEATABLE_FUNCTION
 #undef PROTOBUF_PICK_PACKABLE_FUNCTION
 #undef PROTOBUF_PICK_STRING_FUNCTION
-#undef PROTOBUF_PICK_MESSAGE_FUNCTION
 }
 
 bool IsFieldEligibleForFastParsing(
@@ -243,7 +252,17 @@ bool IsFieldEligibleForFastParsing(
   // Map, oneof, weak, and lazy fields are not handled on the fast path.
   if (field->is_map() || field->real_containing_oneof() ||
       field->options().weak() || options.is_implicitly_weak ||
-      options.is_lazy || options.should_split) {
+      options.should_split) {
+    return false;
+  }
+
+  if (HasLazyRep(field, options) && !options.uses_codegen) {
+    // Can't use TDP on lazy fields if we can't do codegen.
+    return false;
+  }
+
+  if (HasLazyRep(field, options) && options.lazy_opt == field_layout::kTvLazy) {
+    // We only support eagerly verified lazy fields in the fast path.
     return false;
   }
 
@@ -391,13 +410,10 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
 // Filter out fields that will be handled by mini parsing.
 std::vector<const FieldDescriptor*> FilterMiniParsedFields(
     const std::vector<const FieldDescriptor*>& fields,
-    const TailCallTableInfo::OptionProvider& option_provider
-) {
+    const TailCallTableInfo::OptionProvider& option_provider) {
   std::vector<const FieldDescriptor*> generated_fallback_fields;
 
   for (const auto* field : fields) {
-    auto options = option_provider.GetForField(field);
-
     bool handled = false;
     switch (field->type()) {
       case FieldDescriptor::TYPE_DOUBLE:
@@ -425,7 +441,7 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
       case FieldDescriptor::TYPE_MESSAGE:
       case FieldDescriptor::TYPE_GROUP:
         // TODO(b/210762816): support remaining field types.
-        if (field->options().weak() || options.is_lazy) {
+        if (field->options().weak()) {
           handled = false;
         } else {
           handled = true;
@@ -709,16 +725,18 @@ uint16_t MakeTypeCardForField(
         type_card |= fl::kMap;
       } else {
         type_card |= fl::kMessage;
-        if (options.is_lazy) {
-          type_card |= fl::kRepLazy;
-        }
-
-        if (options.is_implicitly_weak) {
-          type_card |= fl::kTvWeakPtr;
-        } else if (options.use_direct_tcparser_table) {
-          type_card |= fl::kTvTable;
+        if (HasLazyRep(field, options)) {
+          ABSL_CHECK(options.lazy_opt == field_layout::kTvEager ||
+                     options.lazy_opt == field_layout::kTvLazy);
+          type_card |= +fl::kRepLazy | options.lazy_opt;
         } else {
-          type_card |= fl::kTvDefault;
+          if (options.is_implicitly_weak) {
+            type_card |= fl::kTvWeakPtr;
+          } else if (options.use_direct_tcparser_table) {
+            type_card |= fl::kTvTable;
+          } else {
+            type_card |= fl::kTvDefault;
+          }
         }
       }
       break;
@@ -799,8 +817,19 @@ TailCallTableInfo::TailCallTableInfo(
       } else if (field->options().weak()) {
         // Don't generate anything for weak fields. They are handled by the
         // generated fallback.
-      } else if (options.is_lazy) {
-        // Lazy fields are handled by the generated fallback function.
+      } else if (HasLazyRep(field, options)) {
+        if (options.uses_codegen) {
+          field_entries.back().aux_idx = aux_entries.size();
+          aux_entries.push_back({kSubMessage, {field}});
+          if (options.lazy_opt == field_layout::kTvEager) {
+            aux_entries.push_back({kMessageVerifyFunc, {field}});
+          } else {
+            aux_entries.push_back({kNothing});
+          }
+        } else {
+          field_entries.back().aux_idx =
+              TcParseTableBase::FieldEntry::kNoAuxIdx;
+        }
       } else {
         field_entries.back().aux_idx = aux_entries.size();
         aux_entries.push_back({options.is_implicitly_weak ? kSubMessageWeak
@@ -891,8 +920,7 @@ TailCallTableInfo::TailCallTableInfo(
 
   // Filter out fields that are handled by MiniParse. We don't need to generate
   // a fallback for these, which saves code size.
-  fallback_fields = FilterMiniParsedFields(ordered_fields, option_provider
-  );
+  fallback_fields = FilterMiniParsedFields(ordered_fields, option_provider);
 
   num_to_entry_table = MakeNumToEntryTable(ordered_fields);
   ABSL_CHECK_EQ(field_entries.size(), ordered_fields.size());

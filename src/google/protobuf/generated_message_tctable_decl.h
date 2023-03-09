@@ -375,6 +375,8 @@ struct alignas(uint64_t) TcParseTableBase {
     int32_t has_idx;     // has-bit index, relative to the message object
     uint16_t aux_idx;    // index for `field_aux`.
     uint16_t type_card;  // `FieldType` and `Cardinality` (see _impl.h)
+
+    static constexpr uint16_t kNoAuxIdx = 0xFFFF;
   };
 
   // Returns a begin iterator (pointer) to the start of the field entries array.
@@ -402,6 +404,8 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(void (*create_in_arena)(Arena*, void*))
         : create_in_arena(create_in_arena) {}
+    constexpr FieldAux(LazyEagerVerifyFnType verify_func)
+        : verify_func(verify_func) {}
     bool (*enum_validator)(int);
     struct {
       int16_t start;    // minimum enum number (if it fits)
@@ -412,6 +416,7 @@ struct alignas(uint64_t) TcParseTableBase {
     const TcParseTableBase* table;
     MapAuxInfo map_info;
     void (*create_in_arena)(Arena*, void*);
+    LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
       return static_cast<const MessageLite*>(message_default_p);
