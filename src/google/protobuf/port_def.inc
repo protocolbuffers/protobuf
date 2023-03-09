@@ -217,6 +217,10 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Owner: mvels@, mkruskal@
 #define PROTOBUF_FUTURE_OPENSOURCE_CORD 1
 
+// Used to remove `RepeatedPtrField::GetArena() const`.
+// Owner: ezb@
+#define PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API 1
+
 #endif
 
 #ifdef PROTOBUF_VERSION
