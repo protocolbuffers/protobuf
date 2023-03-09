@@ -181,8 +181,9 @@ void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
 
 namespace internal {
 
-void PerformAbslStringify(const Message& message,
-                          absl::FunctionRef<void(absl::string_view)> append) {
+void PerformAbslStringify(
+    const Message& message,
+    absl::FunctionRef<void(const absl::string_view)> append) {
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
 
@@ -355,7 +356,7 @@ class TextFormat::Parser::ParserImpl {
   }
   ParserImpl(const ParserImpl&) = delete;
   ParserImpl& operator=(const ParserImpl&) = delete;
-  ~ParserImpl() {}
+  ~ParserImpl() = default;
 
   // Parses the ASCII representation specified in input and saves the
   // information into the output pointer (a Message). Returns
@@ -391,7 +392,7 @@ class TextFormat::Parser::ParserImpl {
     return suc && LookingAtType(io::Tokenizer::TYPE_END);
   }
 
-  void ReportError(int line, int col, absl::string_view message) {
+  void ReportError(int line, int col, const absl::string_view message) {
     had_errors_ = true;
     if (error_collector_ == nullptr) {
       if (line >= 0) {
@@ -431,14 +432,14 @@ class TextFormat::Parser::ParserImpl {
 
   // Reports an error with the given message with information indicating
   // the position (as derived from the current token).
-  void ReportError(absl::string_view message) {
+  void ReportError(const absl::string_view message) {
     ReportError(tokenizer_.current().line, tokenizer_.current().column,
                 message);
   }
 
   // Reports a warning with the given message with information indicating
   // the position (as derived from the current token).
-  void ReportWarning(absl::string_view message) {
+  void ReportWarning(const absl::string_view message) {
     ReportWarning(tokenizer_.current().line, tokenizer_.current().column,
                   message);
   }
@@ -1372,14 +1373,15 @@ class TextFormat::Parser::ParserImpl {
 
     ParserErrorCollector(const ParserErrorCollector&) = delete;
     ParserErrorCollector& operator=(const ParserErrorCollector&) = delete;
-    ~ParserErrorCollector() override {}
+    ~ParserErrorCollector() override = default;
 
-    void RecordError(int line, int column, absl::string_view message) override {
+    void RecordError(int line, int column,
+                     const absl::string_view message) override {
       parser_->ReportError(line, column, message);
     }
 
     void RecordWarning(int line, int column,
-                       absl::string_view message) override {
+                       const absl::string_view message) override {
       parser_->ReportWarning(line, column, message);
     }
 
@@ -1495,15 +1497,16 @@ class TextFormat::Printer::TextGenerator
   // error.)
   bool failed() const { return failed_; }
 
-  void PrintMaybeWithMarker(MarkerToken, absl::string_view text) override {
+  void PrintMaybeWithMarker(MarkerToken,
+                            const absl::string_view text) override {
     Print(text.data(), text.size());
     if (ConsumeInsertSilentMarker()) {
       PrintLiteral(internal::kDebugStringSilentMarker);
     }
   }
 
-  void PrintMaybeWithMarker(MarkerToken, absl::string_view text_head,
-                            absl::string_view text_tail) override {
+  void PrintMaybeWithMarker(MarkerToken, const absl::string_view text_head,
+                            const absl::string_view text_tail) override {
     Print(text_head.data(), text_head.size());
     if (ConsumeInsertSilentMarker()) {
       PrintLiteral(internal::kDebugStringSilentMarker);
@@ -1629,7 +1632,7 @@ class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
 
 // ===========================================================================
 // Implementation of the default Finder for extensions.
-TextFormat::Finder::~Finder() {}
+TextFormat::Finder::~Finder() = default;
 
 const FieldDescriptor* TextFormat::Finder::FindExtension(
     Message* message, const std::string& name) const {
@@ -1668,7 +1671,7 @@ TextFormat::Parser::Parser()
       allow_singular_overwrites_(false),
       recursion_limit_(std::numeric_limits<int>::max()) {}
 
-TextFormat::Parser::~Parser() {}
+TextFormat::Parser::~Parser() = default;
 
 namespace {
 
@@ -1704,7 +1707,7 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
   return MergeUsingImpl(input, output, &parser);
 }
 
-bool TextFormat::Parser::ParseFromString(absl::string_view input,
+bool TextFormat::Parser::ParseFromString(const absl::string_view input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
@@ -1729,7 +1732,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
   return MergeUsingImpl(input, output, &parser);
 }
 
-bool TextFormat::Parser::MergeFromString(absl::string_view input,
+bool TextFormat::Parser::MergeFromString(const absl::string_view input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
@@ -1774,7 +1777,7 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
   return Parser().Merge(input, output);
 }
 
-/* static */ bool TextFormat::ParseFromString(absl::string_view input,
+/* static */ bool TextFormat::ParseFromString(const absl::string_view input,
                                               Message* output) {
   return Parser().ParseFromString(input, output);
 }
@@ -1784,7 +1787,7 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
   return Parser().ParseFromCord(input, output);
 }
 
-/* static */ bool TextFormat::MergeFromString(absl::string_view input,
+/* static */ bool TextFormat::MergeFromString(const absl::string_view input,
                                               Message* output) {
   return Parser().MergeFromString(input, output);
 }
@@ -1793,7 +1796,7 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
 
 // ===========================================================================
 
-TextFormat::BaseTextGenerator::~BaseTextGenerator() {}
+TextFormat::BaseTextGenerator::~BaseTextGenerator() = default;
 
 namespace {
 
@@ -1815,8 +1818,8 @@ class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
 // The default implementation for FieldValuePrinter. We just delegate the
 // implementation to the default FastFieldValuePrinter to avoid duplicating the
 // logic.
-TextFormat::FieldValuePrinter::FieldValuePrinter() {}
-TextFormat::FieldValuePrinter::~FieldValuePrinter() {}
+TextFormat::FieldValuePrinter::FieldValuePrinter() = default;
+TextFormat::FieldValuePrinter::~FieldValuePrinter() = default;
 
 #define FORWARD_IMPL(fn, ...)            \
   StringBaseTextGenerator generator;     \
@@ -1875,8 +1878,8 @@ std::string TextFormat::FieldValuePrinter::PrintMessageEnd(
 }
 #undef FORWARD_IMPL
 
-TextFormat::FastFieldValuePrinter::FastFieldValuePrinter() {}
-TextFormat::FastFieldValuePrinter::~FastFieldValuePrinter() {}
+TextFormat::FastFieldValuePrinter::FastFieldValuePrinter() = default;
+TextFormat::FastFieldValuePrinter::~FastFieldValuePrinter() = default;
 void TextFormat::FastFieldValuePrinter::PrintBool(
     bool val, BaseTextGenerator* generator) const {
   if (val) {

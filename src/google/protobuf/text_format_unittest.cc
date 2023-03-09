@@ -43,10 +43,8 @@
 #include <string>
 
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/log/die_if_null.h"
@@ -58,7 +56,6 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/tokenizer.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
@@ -78,8 +75,14 @@ namespace protobuf {
 namespace text_format_unittest {
 
 using ::google::protobuf::internal::kDebugStringSilentMarker;
+using ::testing::_;
 using ::testing::AllOf;
+using ::testing::DoNotOptimize;
+using ::testing::EqualsProto;
 using ::testing::HasSubstr;
+using ::testing::MatchesRegex;
+using ::testing::Test;
+using ::testing::proto::TreatingNaNsAsEqual;
 
 // A basic string with different escapable characters for testing.
 constexpr absl::string_view kEscapeTestString =
@@ -91,7 +94,7 @@ constexpr absl::string_view kEscapeTestStringEscaped =
     "\"\\\"A string with \\' characters \\n and \\r newlines "
     "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
-class TextFormatTest : public testing::Test {
+class TextFormatTest : public Test {
  public:
   static void SetUpTestSuite() {
     ABSL_CHECK_OK(File::GetContents(
@@ -113,7 +116,7 @@ class TextFormatTest : public testing::Test {
 };
 std::string TextFormatTest::static_proto_text_format_;
 
-class TextFormatExtensionsTest : public testing::Test {
+class TextFormatExtensionsTest : public Test {
  public:
   static void SetUpTestSuite() {
     ABSL_CHECK_OK(File::GetContents(
@@ -374,12 +377,12 @@ TEST_F(TextFormatTest, PrintUnknownMessage) {
   EXPECT_TRUE(unknown_fields.ParseFromString(data));
   EXPECT_TRUE(TextFormat::PrintUnknownFieldsToString(unknown_fields, &text));
   // Field 44 and 48 can be printed in any order.
-  EXPECT_THAT(text, testing::HasSubstr("44: \"abc\"\n"
-                                       "44: \"def\"\n"
-                                       "44: \"\"\n"));
-  EXPECT_THAT(text, testing::HasSubstr("48 {\n"
-                                       "  1: 123\n"
-                                       "}\n"));
+  EXPECT_THAT(text, HasSubstr("44: \"abc\"\n"
+                              "44: \"def\"\n"
+                              "44: \"\"\n"));
+  EXPECT_THAT(text, HasSubstr("48 {\n"
+                              "  1: 123\n"
+                              "}\n"));
 }
 
 TEST_F(TextFormatTest, PrintDeeplyNestedUnknownMessage) {
@@ -793,8 +796,8 @@ TEST_F(TextFormatTest, MultilineStringPrinter) {
 
 class CustomNestedMessagePrinter : public TextFormat::MessagePrinter {
  public:
-  CustomNestedMessagePrinter() {}
-  ~CustomNestedMessagePrinter() override {}
+  CustomNestedMessagePrinter() = default;
+  ~CustomNestedMessagePrinter() override = default;
   void Print(const Message& message, bool single_line_mode,
              TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintLiteral("// custom\n");
@@ -830,15 +833,21 @@ TEST_F(TextFormatTest, CustomMessagePrinter) {
   EXPECT_EQ("optional_nested_message {\n  // custom\n  bb: 1\n}\n", text);
 }
 
-TEST_F(TextFormatTest, ParseBasic) {
+TEST_F(TextFormatTest, ParseStreamBasic) {
   io::ArrayInputStream input_stream(proto_text_format_.data(),
                                     proto_text_format_.size());
   TextFormat::Parse(&input_stream, &proto_);
   TestUtil::ExpectAllFieldsSet(proto_);
 }
 
+TEST_F(TextFormatTest, ParseStringViewBasic) {
+  const absl::string_view view(proto_text_format_);
+  TextFormat::ParseFromString(view, &proto_);
+  TestUtil::ExpectAllFieldsSet(proto_);
+}
+
 TEST_F(TextFormatTest, ParseCordBasic) {
-  absl::Cord cord(proto_text_format_);
+  const absl::Cord cord(proto_text_format_);
   TextFormat::ParseFromCord(cord, &proto_);
   TestUtil::ExpectAllFieldsSet(proto_);
 }
@@ -1429,7 +1438,7 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
       text);
 }
 
-class TextFormatParserTest : public testing::Test {
+class TextFormatParserTest : public Test {
  protected:
   void ExpectFailure(const std::string& input, const std::string& message,
                      int line, int col) {
@@ -1482,8 +1491,8 @@ class TextFormatParserTest : public testing::Test {
   // block of text which can be checked.
   class MockErrorCollector : public io::ErrorCollector {
    public:
-    MockErrorCollector() {}
-    ~MockErrorCollector() override {}
+    MockErrorCollector() = default;
+    ~MockErrorCollector() override = default;
 
     std::string text_;
 
@@ -1911,7 +1920,7 @@ TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
     absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
     EXPECT_CALL(
         log,
-        Log(absl::LogSeverity::kError, testing::_,
+        Log(absl::LogSeverity::kError, _,
             "Error parsing text-format protobuf_unittest.TestAllTypes: "
             "1:14: Message type \"protobuf_unittest.TestAllTypes\" has no field "
             "named \"no_such_field\"."))
@@ -1926,7 +1935,7 @@ TEST_F(TextFormatParserTest, FailsOnTokenizationError) {
   {
     absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
     EXPECT_CALL(log,
-                Log(absl::LogSeverity::kError, testing::_,
+                Log(absl::LogSeverity::kError, _,
                     "Error parsing text-format protobuf_unittest.TestAllTypes: "
                     "1:1: Invalid control characters encountered in text."))
         .Times(1);
@@ -2111,7 +2120,7 @@ TEST_F(TextFormatParserTest, ParseSkippedFieldWithAdditionalWhiteSpaces) {
   EXPECT_EQ(text, "optional_int32: 321\n");
 }
 
-class TextFormatMessageSetTest : public testing::Test {
+class TextFormatMessageSetTest : public Test {
  protected:
   static const char proto_text_format_[];
 };
@@ -2303,7 +2312,7 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
 }
 
 template <bool silent, bool redact, bool randomize>
-class TextFormatBaseMarkerTest : public testing::Test {
+class TextFormatBaseMarkerTest : public Test {
  public:
   void SetUp() override {
     saved_enable_debug_text_format_marker_ =
@@ -2338,12 +2347,10 @@ using TextFormatRedactionTest = TextFormatBaseMarkerTest<false, true, false>;
 TEST_F(TextFormatRedactionTest, TestRedactedField) {
   unittest::RedactedFields proto;
   proto.set_optional_redacted_string("foo");
-  EXPECT_THAT(
-      proto.DebugString(),
-      testing::MatchesRegex("optional_redacted_string: \\[REDACTED\\]\n"));
-  EXPECT_THAT(
-      proto.ShortDebugString(),
-      testing::MatchesRegex("optional_redacted_string: \\[REDACTED\\]"));
+  EXPECT_THAT(proto.DebugString(),
+              MatchesRegex("optional_redacted_string: \\[REDACTED\\]\n"));
+  EXPECT_THAT(proto.ShortDebugString(),
+              MatchesRegex("optional_redacted_string: \\[REDACTED\\]"));
 }
 
 TEST_F(TextFormatRedactionTest, TestTextFormatIsNotRedacted) {
