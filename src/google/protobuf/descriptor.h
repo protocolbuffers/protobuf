@@ -2134,7 +2134,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // the caller should search for the thing again.  These are declared
   // const because they are called by (semantically) const methods.
   bool TryFindFileInFallbackDatabase(absl::string_view name) const;
-  bool TryFindSymbolInFallbackDatabase(absl::string_view name) const;
+  bool IsSymbolInFallbackDatabase(absl::string_view name) const;
   bool TryFindExtensionInFallbackDatabase(const Descriptor* containing_type,
                                           int field_number) const;
 

@@ -1506,7 +1506,7 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
 
   if (result.IsNull()) {
     // Symbol still not found, so check fallback database.
-    if (pool->TryFindSymbolInFallbackDatabase(name)) {
+    if (pool->IsSymbolInFallbackDatabase(name)) {
       result = FindSymbol(name);
     }
   }
@@ -1994,7 +1994,7 @@ const FileDescriptor* DescriptorPool::FindFileContainingSymbol(
         underlay_->FindFileContainingSymbol(symbol_name);
     if (file_result != nullptr) return file_result;
   }
-  if (TryFindSymbolInFallbackDatabase(symbol_name)) {
+  if (IsSymbolInFallbackDatabase(symbol_name)) {
     result = tables_->FindSymbol(symbol_name);
     if (!result.IsNull()) return result.GetFile();
   }
@@ -2421,7 +2421,7 @@ bool DescriptorPool::IsSubSymbolOfBuiltType(absl::string_view name) const {
   return false;
 }
 
-bool DescriptorPool::TryFindSymbolInFallbackDatabase(
+bool DescriptorPool::IsSymbolInFallbackDatabase(
     absl::string_view name) const {
   if (fallback_database_ == nullptr) return false;
 
@@ -4291,7 +4291,7 @@ Symbol DescriptorBuilder::FindSymbolNotEnforcingDepsHelper(
     // to build the file containing the symbol, and build_it will be set.
     // Also, build_it will be true when !lazily_build_dependencies_, to provide
     // better error reporting of missing dependencies.
-    if (build_it && pool->TryFindSymbolInFallbackDatabase(name)) {
+    if (build_it && pool->IsSymbolInFallbackDatabase(name)) {
       result = pool->tables_->FindSymbol(name);
     }
   }
