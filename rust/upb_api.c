@@ -28,11 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Rust Protobuf Runtime
+// This file's purpose is to generate symbols for UPB runtime functions that we
+// want to call from Rust.
+#define UPB_BUILD_API
 
-// Not yet implemented.
-
-mod upb;
-
-// TODO(b/270138878): Remove once we have real logic in the runtime.
-pub fn do_nothing() {}
+#include "third_party/upb/upb/message/accessors.h" // IWYU pragma: keep

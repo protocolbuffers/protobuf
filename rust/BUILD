@@ -7,7 +7,21 @@ package(default_visibility = ["//src/google/protobuf:__subpackages__"])
 
 rust_library(
     name = "protobuf",
-    srcs = ["lib.rs"],
+    srcs = [
+        "lib.rs",
+        "upb.rs",
+    ],
+    deps = [
+        ":upb_api",
+    ],
+)
+
+cc_library(
+    name = "upb_api",
+    srcs = ["upb_api.c"],
+    deps = [
+        "//third_party/upb:message_accessors",
+    ],
 )
 
 # TODO(b/270125787): Move to the right location once rust_proto_library is no longer experimental.
