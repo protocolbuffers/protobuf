@@ -36,6 +36,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -786,7 +787,11 @@ TailCallTableInfo::TailCallTableInfo(
       break;
     }
   }
-
+  // Cache for subtables, submessages and enum ranges. Their aux id can be
+  // deduplicated.
+  absl::flat_hash_map<const Descriptor*, uint16_t> subtables_to_aux_id;
+  absl::flat_hash_map<const Descriptor*, uint16_t> submessages_to_aux_id;
+  absl::flat_hash_map<const EnumDescriptor*, uint16_t> enums_to_aux_id;
   // Fill in mini table entries.
   for (const FieldDescriptor* field : ordered_fields) {
     auto options = option_provider.GetForField(field);
@@ -831,12 +836,32 @@ TailCallTableInfo::TailCallTableInfo(
               TcParseTableBase::FieldEntry::kNoAuxIdx;
         }
       } else {
-        field_entries.back().aux_idx = aux_entries.size();
-        aux_entries.push_back({options.is_implicitly_weak ? kSubMessageWeak
-                               : options.use_direct_tcparser_table
-                                   ? kSubTable
-                                   : kSubMessage,
-                               {field}});
+        if (options.is_implicitly_weak) {
+          field_entries.back().aux_idx = aux_entries.size();
+          aux_entries.push_back({kSubMessageWeak, {field}});
+        } else if (options.use_direct_tcparser_table) {
+          auto it = subtables_to_aux_id.find(field->message_type());
+          if (it != subtables_to_aux_id.end()) {
+            // Deduplicate kSubTable, no other information except the message
+            // type is needed.
+            field_entries.back().aux_idx = it->second;
+          } else {
+            field_entries.back().aux_idx = aux_entries.size();
+            subtables_to_aux_id[field->message_type()] = aux_entries.size();
+            aux_entries.push_back({kSubTable, {field}});
+          }
+        } else {
+          auto it = submessages_to_aux_id.find(field->message_type());
+          if (it != submessages_to_aux_id.end()) {
+            // Deduplicate kSubMessage, no other information except the message
+            // type is needed.
+            field_entries.back().aux_idx = it->second;
+          } else {
+            field_entries.back().aux_idx = aux_entries.size();
+            submessages_to_aux_id[field->message_type()] = aux_entries.size();
+            aux_entries.push_back({kSubMessage, {field}});
+          }
+        }
       }
     } else if (field->type() == FieldDescriptor::TYPE_ENUM &&
                !cpp::HasPreservingUnknownEnumSemantics(field)) {
@@ -851,6 +876,14 @@ TailCallTableInfo::TailCallTableInfo(
       // an int16_t) and count (a uint16_t). Otherwise, the entry holds a
       // pointer to the generated Name_IsValid function.
 
+      // Deduplicate kEnumRange, no other information except the enum
+      // type and enum_range is needed.
+      auto it = enums_to_aux_id.find(field->enum_type());
+      if (it != enums_to_aux_id.end()) {
+        entry.aux_idx = it->second;
+        continue;
+      }
+
       entry.aux_idx = aux_entries.size();
       aux_entries.push_back({});
       auto& aux_entry = aux_entries.back();
@@ -858,6 +891,7 @@ TailCallTableInfo::TailCallTableInfo(
       if (GetEnumValidationRange(field->enum_type(), aux_entry.enum_range.start,
                                  aux_entry.enum_range.size)) {
         aux_entry.type = kEnumRange;
+        enums_to_aux_id[field->enum_type()] = aux_entries.size() - 1;
       } else {
         aux_entry.type = kEnumValidator;
         aux_entry.field = field;
