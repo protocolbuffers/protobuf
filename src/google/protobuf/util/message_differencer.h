@@ -975,6 +975,14 @@ class PROTOBUF_EXPORT MessageDifferencer {
   MessageDifferencer::UnpackAnyField unpack_any_field_;
 };
 
+bool AbslParseFlag(
+    absl::string_view text,
+    MessageDifferencer::RepeatedFieldComparison* repeated_field_comparison,
+    std::string* error);
+
+std::string AbslUnparseFlag(
+    MessageDifferencer::RepeatedFieldComparison repeated_field_comparison);
+
 // This class provides extra information to the FieldComparator::Compare
 // function.
 class PROTOBUF_EXPORT FieldContext {

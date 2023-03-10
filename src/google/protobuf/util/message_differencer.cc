@@ -2295,6 +2295,49 @@ MessageDifferencer::CreateMultipleFieldsMapKeyComparator(
   return new MultipleFieldsMapKeyComparator(this, key_field_paths);
 }
 
+bool AbslParseFlag(
+    absl::string_view text,
+    MessageDifferencer::RepeatedFieldComparison* repeated_field_comparison,
+    std::string* error) {
+  if (text == "AS_LIST") {
+    *repeated_field_comparison =
+        MessageDifferencer::RepeatedFieldComparison::AS_LIST;
+    return true;
+  }
+  if (text == "AS_SET") {
+    *repeated_field_comparison =
+        MessageDifferencer::RepeatedFieldComparison::AS_SET;
+    return true;
+  }
+  if (text == "AS_SMART_LIST") {
+    *repeated_field_comparison =
+        MessageDifferencer::RepeatedFieldComparison::AS_SMART_LIST;
+    return true;
+  }
+  if (text == "AS_SMART_SET") {
+    *repeated_field_comparison =
+        MessageDifferencer::RepeatedFieldComparison::AS_SMART_SET;
+    return true;
+  }
+  *error = absl::StrCat("unknown value ", text, " for enumeration");
+  return false;
+}
+
+std::string AbslUnparseFlag(
+    MessageDifferencer::RepeatedFieldComparison repeated_field_comparison) {
+  switch (repeated_field_comparison) {
+    case MessageDifferencer::RepeatedFieldComparison::AS_LIST:
+      return "AS_LIST";
+    case MessageDifferencer::RepeatedFieldComparison::AS_SET:
+      return "AS_SET";
+    case MessageDifferencer::RepeatedFieldComparison::AS_SMART_LIST:
+      return "AS_SMART_LIST";
+    case MessageDifferencer::RepeatedFieldComparison::AS_SMART_SET:
+      return "AS_SMART_SET";
+  }
+  return absl::StrCat(repeated_field_comparison);
+}
+
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
