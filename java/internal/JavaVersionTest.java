@@ -45,10 +45,10 @@ public class JavaVersionTest {
       return;
     }
     // Java 8's version is read as "1.8"
-    if(exp.equals("8")) exp = "1.8";
+    if (exp.equals("8")) exp = "1.8";
     String version = System.getProperty("java.version");
     assertWithMessage("Expected Java " + exp + " but found Java " + version)
-      .that(version.startsWith(exp))
-      .isTrue();
+        .that(version.startsWith(exp))
+        .isTrue();
   }
 }

@@ -14,9 +14,8 @@
   <description>Utilities for Protocol Buffers</description>
   <dependencies>
     <dependency>
-      <groupId>{groupId}</groupId>
+      <groupId>${groupId}</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>{version}</version>
     </dependency>
     {dependencies}
   </dependencies>
