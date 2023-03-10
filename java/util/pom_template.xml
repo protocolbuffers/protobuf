@@ -16,6 +16,7 @@
     <dependency>
       <groupId>{groupId}</groupId>
       <artifactId>protobuf-java</artifactId>
+      <version>{version}</version>
     </dependency>
     {dependencies}
   </dependencies>
