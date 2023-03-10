@@ -1,8 +1,9 @@
 """This module contains unit tests for rust_proto_library and its aspect."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load(":defs.bzl", "ActionsInfo", "attach_aspect")
-load("//rust:defs.bzl", "RustProtoInfo")
+load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
+load("//rust:aspects.bzl", "RustProtoInfo")
+load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", "cc_proto_library")
 
 def _find_action_with_mnemonic(actions, mnemonic):
     action = [a for a in actions if a.mnemonic == mnemonic]
@@ -49,7 +50,7 @@ def _find_linker_input(rust_proto_info, basename_substring):
 
 ####################################################################################################
 
-def _rust_aspect_test_impl(ctx):
+def _rust_upb_aspect_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
     actions = target_under_test[ActionsInfo].actions
@@ -67,14 +68,45 @@ def _rust_aspect_test_impl(ctx):
 
     return analysistest.end(env)
 
-rust_aspect_test = analysistest.make(_rust_aspect_test_impl)
+rust_upb_aspect_test = analysistest.make(_rust_upb_aspect_test_impl)
 
-def _test_aspect():
-    attach_aspect(name = "child_proto_with_aspect", dep = ":child_proto")
+def _test_upb_aspect():
+    attach_upb_aspect(name = "child_proto_with_upb_aspect", dep = ":child_proto")
 
-    rust_aspect_test(
-        name = "rust_aspect_test",
-        target_under_test = ":child_proto_with_aspect",
+    rust_upb_aspect_test(
+        name = "rust_upb_aspect_test",
+        target_under_test = ":child_proto_with_upb_aspect",
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        tags = ["not_build:arm"],
+    )
+
+####################################################################################################
+def _rust_cc_aspect_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target_under_test = analysistest.target_under_test(env)
+    actions = target_under_test[ActionsInfo].actions
+    rustc_action = _find_action_with_mnemonic(actions, "Rustc")
+
+    # The action needs to have the Rust runtime as an input
+    _find_rust_lib_input(rustc_action.inputs, "protobuf")
+
+    # The action needs to produce a .rlib artifact (sometimes .rmeta as well, not tested here).
+    asserts.true(env, rustc_action.outputs.to_list()[0].path.endswith(".rlib"))
+
+    # The aspect needs to provide CcInfo that passes UPB gencode to the eventual linking.
+    _find_linker_input(target_under_test[RustProtoInfo], "child.pb")
+    _find_linker_input(target_under_test[RustProtoInfo], "parent.pb")
+
+    return analysistest.end(env)
+
+rust_cc_aspect_test = analysistest.make(_rust_cc_aspect_test_impl)
+
+def _test_cc_aspect():
+    attach_cc_aspect(name = "child_proto_with_cc_aspect", dep = ":child_cc_proto")
+
+    rust_cc_aspect_test(
+        name = "rust_cc_aspect_test",
+        target_under_test = ":child_proto_with_cc_aspect",
         # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
         tags = ["not_build:arm"],
     )
@@ -88,12 +120,15 @@ def rust_proto_library_unit_test(name):
       name: name of the test suite"""
     native.proto_library(name = "parent_proto", srcs = ["parent.proto"])
     native.proto_library(name = "child_proto", srcs = ["child.proto"], deps = [":parent_proto"])
+    cc_proto_library(name = "child_cc_proto", deps = [":child_proto"])
 
-    _test_aspect()
+    _test_upb_aspect()
+    _test_cc_aspect()
 
     native.test_suite(
         name = name,
         tests = [
-            ":rust_aspect_test",
+            ":rust_upb_aspect_test",
+            ":rust_cc_aspect_test",
         ],
     )
