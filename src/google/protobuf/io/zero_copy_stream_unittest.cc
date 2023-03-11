@@ -155,7 +155,7 @@ const int IoTest::kBlockSizeCount = ABSL_ARRAYSIZE(IoTest::kBlockSizes);
 
 bool IoTest::WriteToOutput(ZeroCopyOutputStream* output, const void* data,
                            int size) {
-  const uint8* in = reinterpret_cast<const uint8*>(data);
+  const uint8_t* in = reinterpret_cast<const uint8_t*>(data);
   int in_size = size;
 
   void* out;
@@ -182,7 +182,7 @@ bool IoTest::WriteToOutput(ZeroCopyOutputStream* output, const void* data,
 #define MAX_REPEATED_ZEROS 100
 
 int IoTest::ReadFromInput(ZeroCopyInputStream* input, void* data, int size) {
-  uint8* out = reinterpret_cast<uint8*>(data);
+  uint8_t* out = reinterpret_cast<uint8_t*>(data);
   int out_size = size;
 
   const void* in;
@@ -256,7 +256,7 @@ void IoTest::ReadStuff(ZeroCopyInputStream* input, bool read_eof) {
   EXPECT_EQ(input->ByteCount(), 68);
 
   if (read_eof) {
-    uint8 byte;
+    uint8_t byte;
     EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
   }
 }
@@ -288,7 +288,7 @@ void IoTest::ReadStuffLarge(ZeroCopyInputStream* input) {
 
   EXPECT_EQ(input->ByteCount(), 200055);
 
-  uint8 byte;
+  uint8_t byte;
   EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
 }
 
@@ -296,7 +296,7 @@ void IoTest::ReadStuffLarge(ZeroCopyInputStream* input) {
 
 TEST_F(IoTest, ArrayIo) {
   const int kBufferSize = 256;
-  uint8 buffer[kBufferSize];
+  uint8_t buffer[kBufferSize];
 
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
@@ -319,7 +319,7 @@ TEST_F(IoTest, TwoSessionWrite) {
   static const char* strA = "0123456789";
   static const char* strB = "WhirledPeas";
   const int kBufferSize = 2 * 1024;
-  uint8* buffer = new uint8[kBufferSize];
+  uint8_t* buffer = new uint8_t[kBufferSize];
   char* temp_buffer = new char[40];
 
   for (int i = 0; i < kBlockSizeCount; i++) {
@@ -330,7 +330,7 @@ TEST_F(IoTest, TwoSessionWrite) {
       coded_output->WriteVarint32(strlen(strA));
       coded_output->WriteRaw(strA, strlen(strA));
       delete coded_output;  // flush
-      int64 pos = output->ByteCount();
+      int64_t pos = output->ByteCount();
       delete output;
       output = new ArrayOutputStream(buffer + pos, kBufferSize - pos,
                                      kBlockSizes[i]);
@@ -338,13 +338,13 @@ TEST_F(IoTest, TwoSessionWrite) {
       coded_output->WriteVarint32(strlen(strB));
       coded_output->WriteRaw(strB, strlen(strB));
       delete coded_output;  // flush
-      int64 size = pos + output->ByteCount();
+      int64_t size = pos + output->ByteCount();
       delete output;
 
       ArrayInputStream* input =
           new ArrayInputStream(buffer, size, kBlockSizes[j]);
       CodedInputStream* coded_input = new CodedInputStream(input);
-      uint32 insize;
+      uint32_t insize;
       EXPECT_TRUE(coded_input->ReadVarint32(&insize));
       EXPECT_EQ(strlen(strA), insize);
       EXPECT_TRUE(coded_input->ReadRaw(temp_buffer, insize));
@@ -1534,7 +1534,7 @@ TEST_F(IoTest, BlockingFileIoWithTimeout) {
     };
     ASSERT_EQ(setsockopt(fd[0], SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)), 0);
     FileInputStream input(fd[0], kBlockSizes[i]);
-    uint8 byte;
+    uint8_t byte;
     EXPECT_EQ(ReadFromInput(&input, &byte, 1), 0);
     EXPECT_EQ(EAGAIN, input.GetErrno());
   }
@@ -1713,7 +1713,7 @@ TEST_F(IoTest, IostreamIo) {
 // covering a buffer and then concatenate them.
 TEST_F(IoTest, ConcatenatingInputStream) {
   const int kBufferSize = 256;
-  uint8 buffer[kBufferSize];
+  uint8_t buffer[kBufferSize];
 
   // Fill the buffer.
   ArrayOutputStream output(buffer, kBufferSize);
@@ -1746,7 +1746,7 @@ TEST_F(IoTest, ConcatenatingInputStream) {
 // bytes written.
 TEST_F(IoTest, LimitingInputStream) {
   const int kBufferSize = 256;
-  uint8 buffer[kBufferSize];
+  uint8_t buffer[kBufferSize];
 
   // Fill the buffer.
   ArrayOutputStream output(buffer, kBufferSize);
@@ -1764,7 +1764,7 @@ TEST_F(IoTest, LimitingInputStream) {
 TEST_F(IoTest, LimitingInputStreamByteCount) {
   const int kHalfBufferSize = 128;
   const int kBufferSize = kHalfBufferSize * 2;
-  uint8 buffer[kBufferSize] = {};
+  uint8_t buffer[kBufferSize] = {};
 
   // Set up input. Only allow half to be read at once.
   ArrayInputStream array_input(buffer, kBufferSize, kHalfBufferSize);
