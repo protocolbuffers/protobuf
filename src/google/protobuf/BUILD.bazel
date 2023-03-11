@@ -480,6 +480,17 @@ cc_library(
     ]),
 )
 
+cc_library(
+    name = "descriptor_legacy",
+    hdrs = ["descriptor_legacy.h"],
+    deps = [
+        ":protobuf_nowkt",
+        ":port_def",
+        "@com_google_absl//absl/strings",
+    ],
+    visibility = ["//:__subpackages__"]
+)
+
 filegroup(
     name = "well_known_type_protos",
     srcs = [
