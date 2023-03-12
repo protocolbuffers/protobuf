@@ -32,5 +32,3 @@ Required.Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.PackedInput.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.UnpackedInput.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataScalar.FLOAT[2].JsonOutput
-Recommended.ValueRejectInfNumberValue.JsonOutput
-Recommended.ValueRejectNanNumberValue.JsonOutput

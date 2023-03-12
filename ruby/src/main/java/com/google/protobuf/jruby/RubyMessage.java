@@ -306,11 +306,7 @@ public class RubyMessage extends RubyObject {
     if (methodName.startsWith(HAS_PREFIX) && methodName.endsWith(QUESTION_MARK)) {
       String strippedMethodName = methodName.substring(4, methodName.length() - 1);
       FieldDescriptor fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
-      if (fieldDescriptor != null
-          && (!proto3
-              || fieldDescriptor.getContainingOneof() == null
-              || fieldDescriptor.getContainingOneof().isSynthetic())
-          && fieldDescriptor.hasPresence()) {
+      if (fieldDescriptor != null && fieldDescriptor.hasPresence()) {
         return context.runtime.getTrue();
       }
       oneofDescriptor =
@@ -459,11 +455,7 @@ public class RubyMessage extends RubyObject {
 
         fieldDescriptor = descriptor.findFieldByName(methodName);
 
-        if (fieldDescriptor != null
-            && (!proto3
-                || fieldDescriptor.getContainingOneof() == null
-                || fieldDescriptor.getContainingOneof().isSynthetic())
-            && fieldDescriptor.hasPresence()) {
+        if (fieldDescriptor != null && fieldDescriptor.hasPresence()) {
           return fields.containsKey(fieldDescriptor) ? runtime.getTrue() : runtime.getFalse();
         }
 
@@ -677,6 +669,7 @@ public class RubyMessage extends RubyObject {
    * @param options [Hash] options for the decoder
    *  preserve_proto_fieldnames: set true to use original fieldnames (default is to camelCase)
    *  emit_defaults: set true to emit 0/false values (default is to omit them)
+   *  format_enums_as_integers: set true to emit enum values as integer (default is string)
    */
   @JRubyMethod(name = "encode_json", required = 1, optional = 1, meta = true)
   public static IRubyObject encodeJson(
@@ -698,6 +691,8 @@ public class RubyMessage extends RubyObject {
 
       IRubyObject emitDefaults = options.fastARef(runtime.newSymbol("emit_defaults"));
       IRubyObject preserveNames = options.fastARef(runtime.newSymbol("preserve_proto_fieldnames"));
+      IRubyObject printingEnumsAsInts =
+          options.fastARef(runtime.newSymbol("format_enums_as_integers"));
 
       if (emitDefaults != null && emitDefaults.isTrue()) {
         printer = printer.includingDefaultValueFields();
@@ -705,6 +700,10 @@ public class RubyMessage extends RubyObject {
 
       if (preserveNames != null && preserveNames.isTrue()) {
         printer = printer.preservingProtoFieldNames();
+      }
+
+      if (printingEnumsAsInts != null && printingEnumsAsInts.isTrue()) {
+        printer = printer.printingEnumsAsInts();
       }
     }
     printer =

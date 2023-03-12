@@ -45,10 +45,7 @@ import java.util.RandomAccess;
 final class IntArrayList extends AbstractProtobufList<Integer>
     implements IntList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final IntArrayList EMPTY_LIST = new IntArrayList(new int[0], 0);
-  static {
-    EMPTY_LIST.makeImmutable();
-  }
+  private static final IntArrayList EMPTY_LIST = new IntArrayList(new int[0], 0, false);
 
   public static IntArrayList emptyList() {
     return EMPTY_LIST;
@@ -65,13 +62,14 @@ final class IntArrayList extends AbstractProtobufList<Integer>
 
   /** Constructs a new mutable {@code IntArrayList} with default capacity. */
   IntArrayList() {
-    this(new int[DEFAULT_CAPACITY], 0);
+    this(new int[DEFAULT_CAPACITY], 0, true);
   }
 
   /**
    * Constructs a new mutable {@code IntArrayList} containing the same elements as {@code other}.
    */
-  private IntArrayList(int[] other, int size) {
+  private IntArrayList(int[] other, int size, boolean isMutable) {
+    super(isMutable);
     array = other;
     this.size = size;
   }
@@ -125,7 +123,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
-    return new IntArrayList(Arrays.copyOf(array, capacity), size);
+    return new IntArrayList(Arrays.copyOf(array, capacity), size, true);
   }
 
   @Override

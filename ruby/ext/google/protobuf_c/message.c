@@ -53,6 +53,8 @@ VALUE MessageOrEnum_GetDescriptor(VALUE klass) {
 // -----------------------------------------------------------------------------
 
 typedef struct {
+  // IMPORTANT: WB_PROTECTED objects must only use the RB_OBJ_WRITE()
+  // macro to update VALUE references, as to trigger write barriers.
   VALUE arena;
   const upb_Message* msg;  // Can get as mutable when non-frozen.
   const upb_MessageDef*
@@ -65,9 +67,9 @@ static void Message_mark(void* _self) {
 }
 
 static rb_data_type_t Message_type = {
-    "Message",
+    "Google::Protobuf::Message",
     {Message_mark, RUBY_DEFAULT_FREE, NULL},
-    .flags = RUBY_TYPED_FREE_IMMEDIATELY,
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
 static Message* ruby_to_Message(VALUE msg_rb) {
@@ -105,7 +107,7 @@ upb_Message* Message_GetMutable(VALUE msg_rb, const upb_MessageDef** m) {
 void Message_InitPtr(VALUE self_, upb_Message* msg, VALUE arena) {
   Message* self = ruby_to_Message(self_);
   self->msg = msg;
-  self->arena = arena;
+  RB_OBJ_WRITE(self_, &self->arena, arena);
   ObjectCache_Add(msg, self_);
 }
 
@@ -243,15 +245,6 @@ static int extract_method_call(VALUE method_name, Message* self,
   if (Match(m, name, f, o, "clear_", "")) return METHOD_CLEAR;
   if (Match(m, name, f, o, "has_", "?") &&
       (*o || (*f && upb_FieldDef_HasPresence(*f)))) {
-    // Disallow oneof hazzers for proto3.
-    // TODO(haberman): remove this test when we are enabling oneof hazzers for
-    // proto3.
-    if (*f && !upb_FieldDef_IsSubMessage(*f) &&
-        upb_FieldDef_RealContainingOneof(*f) &&
-        upb_MessageDef_Syntax(upb_FieldDef_ContainingType(*f)) !=
-            kUpb_Syntax_Proto2) {
-      return METHOD_UNKNOWN;
-    }
     return METHOD_PRESENCE;
   }
   if (Match(m, name, f, o, "", "_as_value") && *f &&
@@ -1171,6 +1164,12 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
                               Qfalse))) {
       options |= upb_JsonEncode_EmitDefaults;
     }
+
+    if (RTEST(rb_hash_lookup2(hash_args,
+                              ID2SYM(rb_intern("format_enums_as_integers")),
+                              Qfalse))) {
+      options |= upb_JsonEncode_FormatEnumsAsIntegers;
+    }
   }
 
   upb_Status_Clear(&status);
@@ -1287,12 +1286,12 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
     int32_t value = upb_EnumValueDef_Number(ev);
     if (name[0] < 'A' || name[0] > 'Z') {
       if (name[0] >= 'a' && name[0] <= 'z') {
-        name[0] -= 32; // auto capitalize
+        name[0] -= 32;  // auto capitalize
       } else {
         rb_warn(
-          "Enum value '%s' does not start with an uppercase letter "
-          "as is required for Ruby constants.",
-          name);
+            "Enum value '%s' does not start with an uppercase letter "
+            "as is required for Ruby constants.",
+            name);
       }
     }
     rb_define_const(mod, name, INT2NUM(value));

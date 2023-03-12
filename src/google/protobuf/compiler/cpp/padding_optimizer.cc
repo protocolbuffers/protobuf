@@ -30,7 +30,7 @@
 
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
 namespace google {
@@ -138,7 +138,7 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
         aligned_to_8[f].push_back(FieldGroup(j, field));
         break;
       default:
-        GOOGLE_ABSL_LOG(FATAL) << "Unknown alignment size "
+        ABSL_LOG(FATAL) << "Unknown alignment size "
                         << EstimateAlignmentSize(field) << "for a field "
                         << field->full_name() << ".";
     }

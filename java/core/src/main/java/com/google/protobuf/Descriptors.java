@@ -303,9 +303,7 @@ public final class Descriptors {
      *     two messages were defined with the same name.
      */
     public static FileDescriptor buildFrom(
-        FileDescriptorProto proto,
-        FileDescriptor[] dependencies,
-        boolean allowUnknownDependencies)
+        FileDescriptorProto proto, FileDescriptor[] dependencies, boolean allowUnknownDependencies)
         throws DescriptorValidationException {
       // Building descriptors involves two steps:  translating and linking.
       // In the translation step (implemented by FileDescriptor's
@@ -462,9 +460,9 @@ public final class Descriptors {
     }
 
     /**
-     * This method is to be called by generated code only. It updates the
-     * FileDescriptorProto associated with the descriptor by parsing it again with the given
-     * ExtensionRegistry. This is needed to recognize custom options.
+     * This method is to be called by generated code only. It updates the FileDescriptorProto
+     * associated with the descriptor by parsing it again with the given ExtensionRegistry. This is
+     * needed to recognize custom options.
      */
     public static void internalUpdateFileDescriptor(
         FileDescriptor descriptor, ExtensionRegistry registry) {
@@ -635,10 +633,6 @@ public final class Descriptors {
       for (int i = 0; i < extensions.length; i++) {
         extensions[i].setProto(proto.getExtension(i));
       }
-    }
-
-    boolean supportsUnknownEnumValue() {
-      return getSyntax() == Syntax.PROTO3;
     }
   }
 
@@ -1331,6 +1325,30 @@ public final class Descriptors {
     }
 
     /**
+     * Determines if the given enum field is treated as closed based on legacy non-conformant
+     * behavior.
+     *
+     * <p>Conformant behavior determines closedness based on the enum and can be queried using
+     * {@code EnumDescriptor.isClosed()}.
+     *
+     * <p>Some runtimes currently have a quirk where non-closed enums are treated as closed when
+     * used as the type of fields defined in a `syntax = proto2;` file. This quirk is not present in
+     * all runtimes; as of writing, we know that:
+     *
+     * <ul>
+     *   <li>C++, Java, and C++-based Python share this quirk.
+     *   <li>UPB and UPB-based Python do not.
+     *   <li>PHP and Ruby treat all enums as open regardless of declaration.
+     * </ul>
+     *
+     * <p>Care should be taken when using this function to respect the target runtime's enum
+     * handling quirks.
+     */
+    public boolean legacyEnumFieldTreatedAsClosed() {
+      return getType() == Type.ENUM && getFile().getSyntax() == Syntax.PROTO2;
+    }
+
+    /**
      * Compare with another {@code FieldDescriptor}. This orders fields in "canonical" order, which
      * simply means ascending order by field number. {@code other} must be a field of the same type.
      * That is, {@code getContainingType()} must return the same {@code Descriptor} for both fields.
@@ -1770,6 +1788,34 @@ public final class Descriptors {
     @Override
     public FileDescriptor getFile() {
       return file;
+    }
+
+    /**
+     * Determines if the given enum is closed.
+     *
+     * <p>Closed enum means that it:
+     *
+     * <ul>
+     *   <li>Has a fixed set of values, rather than being equivalent to an int32.
+     *   <li>Encountering values not in this set causes them to be treated as unknown fields.
+     *   <li>The first value (i.e., the default) may be nonzero.
+     * </ul>
+     *
+     * <p>WARNING: Some runtimes currently have a quirk where non-closed enums are treated as closed
+     * when used as the type of fields defined in a `syntax = proto2;` file. This quirk is not
+     * present in all runtimes; as of writing, we know that:
+     *
+     * <ul>
+     *   <li> C++, Java, and C++-based Python share this quirk.
+     *   <li> UPB and UPB-based Python do not.
+     *   <li> PHP and Ruby treat all enums as open regardless of declaration.
+     * </ul>
+     *
+     * <p>Care should be taken when using this function to respect the target runtime's enum
+     * handling quirks.
+     */
+    public boolean isClosed() {
+      return getFile().getSyntax() != Syntax.PROTO3;
     }
 
     /** If this is a nested type, get the outer descriptor, otherwise null. */

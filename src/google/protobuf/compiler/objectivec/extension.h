@@ -44,7 +44,7 @@ namespace objectivec {
 
 class ExtensionGenerator {
  public:
-  ExtensionGenerator(const std::string& root_class_name,
+  ExtensionGenerator(absl::string_view root_class_name,
                      const FieldDescriptor* descriptor);
   ~ExtensionGenerator() = default;
 

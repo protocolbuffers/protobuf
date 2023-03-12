@@ -1,11 +1,11 @@
 load("@rules_java//java:defs.bzl", "java_proto_library")
-load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
 
-java_library(
+protobuf_java_library(
     name = "util",
     srcs = glob([
         "src/main/java/com/google/protobuf/util/*.java",
@@ -22,7 +22,7 @@ java_library(
 )
 
 # Bazel users, don't depend on this target, use :util.
-java_export(
+protobuf_java_export(
     name = "util_mvn",
     deploy_env = ["//java/core"],
     maven_coordinates = "com.google.protobuf:protobuf-java-util:%s" % PROTOBUF_JAVA_VERSION,

@@ -40,7 +40,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -72,7 +72,7 @@ class DescriptorCapturingGenerator : public CodeGenerator {
 }  // namespace
 
 void AddFile(absl::string_view filename, absl::string_view data) {
-  GOOGLE_ABSL_CHECK_OK(File::SetContents(
+  ABSL_CHECK_OK(File::SetContents(
       absl::StrCat(TestTempDir(), "/", filename), data, true));
 }
 
@@ -96,7 +96,7 @@ bool RunProtoCompiler(const std::string& filename,
 
 bool DecodeMetadata(const std::string& path, GeneratedCodeInfo* info) {
   std::string data;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(path, &data, true));
+  ABSL_CHECK_OK(File::GetContents(path, &data, true));
   io::ArrayInputStream input(data.data(), data.size());
   return info->ParseFromZeroCopyStream(&input);
 }
@@ -162,6 +162,17 @@ bool AnnotationMatchesSubstring(const std::string& file_content,
   annotations.push_back(annotation);
   return AtLeastOneAnnotationMatchesSubstring(file_content, annotations,
                                               expected_text);
+}
+
+absl::optional<absl::string_view> GetAnnotationSubstring(
+    absl::string_view file_content,
+    const GeneratedCodeInfo::Annotation& annotation) {
+  auto begin = annotation.begin();
+  auto end = annotation.end();
+  if (begin < 0 || end < begin || end > file_content.size()) {
+    return absl::nullopt;
+  }
+  return file_content.substr(begin, end - begin);
 }
 }  // namespace annotation_test_util
 }  // namespace compiler

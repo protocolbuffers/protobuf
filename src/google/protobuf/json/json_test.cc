@@ -704,24 +704,35 @@ TEST_P(JsonTest, TestParsingAny) {
           R"("int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}})"));
 }
 
-TEST_P(JsonTest, TestParsingAnyMiddleAtType) {
+TEST_P(JsonTest, TestParsingAnyWithRequiredFields) {
   auto m = ToProto<TestAny>(R"json(
     {
       "value": {
-        "int32_value": 5,
-        "string_value": "expected_value",
-        "@type": "type.googleapis.com/proto3.TestMessage",
-        "message_value": {"value": 1}
+        "@type": "type.googleapis.com/protobuf_unittest.TestRequired",
+        "a": 5,
+        "dummy2": 6,
+        "b": 7
       }
     }
   )json");
   ASSERT_OK(m);
 
-  TestMessage t;
-  ASSERT_TRUE(m->value().UnpackTo(&t));
-  EXPECT_EQ(t.int32_value(), 5);
-  EXPECT_EQ(t.string_value(), "expected_value");
-  EXPECT_EQ(t.message_value().value(), 1);
+  protobuf_unittest::TestRequired t;
+  // Can't use UnpackTo directly, since that checks IsInitialized.
+  ASSERT_FALSE(m->value().UnpackTo(&t));
+
+  t.Clear();
+  EXPECT_TRUE(t.ParsePartialFromString(m->value().value()));
+  EXPECT_EQ(t.a(), 5);
+  EXPECT_EQ(t.dummy2(), 6);
+  EXPECT_EQ(t.b(), 7);
+  EXPECT_FALSE(t.has_c());
+
+  EXPECT_THAT(
+      ToJson(*m),
+      IsOkAndHolds(
+          R"({"value":{"@type":"type.googleapis.com/protobuf_unittest.TestRequired",)"
+          R"("a":5,"dummy2":6,"b":7}})"));
 }
 
 TEST_P(JsonTest, TestParsingAnyEndAtType) {
@@ -1044,9 +1055,14 @@ TEST_P(JsonTest, Extensions) {
           R"("[protobuf_unittest.TestMixedFieldsAndExtensions.d]":[1,1,2,3,5,8,13]})"));
 
   auto m2 = ToProto<protobuf_unittest::TestAllTypes>(R"json({
-    "[protobuf_unittest.TestMixedFieldsAndExtensions.c]": 42
+    "[this.extension.does.not.exist]": 42
   })json");
   EXPECT_THAT(m2, StatusIs(absl::StatusCode::kInvalidArgument));
+
+  auto m3 = ToProto<protobuf_unittest::TestAllTypes>(R"json({
+    "[protobuf_unittest.TestMixedFieldsAndExtensions.c]": 42
+  })json");
+  EXPECT_THAT(m3, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 // Parsing does NOT work like MergeFrom: existing repeated field values are

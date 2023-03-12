@@ -37,7 +37,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
@@ -90,13 +90,23 @@ class ParseFunctionGenerator::GeneratedOptionProvider final
   explicit GeneratedOptionProvider(ParseFunctionGenerator* gen) : gen_(gen) {}
   TailCallTableInfo::PerFieldOptions GetForField(
       const FieldDescriptor* field) const final {
-    return {IsLazy(field, gen_->options_, gen_->scc_analyzer_),
-            IsStringInlined(field, gen_->options_),
-            IsImplicitWeakField(field, gen_->options_, gen_->scc_analyzer_),
-            UseDirectTcParserTable(field, gen_->options_),
-            GetOptimizeFor(field->file(), gen_->options_) ==
-                FileOptions::LITE_RUNTIME,
-            ShouldSplit(field, gen_->options_)};
+    const auto verify_flag = [&] {
+      if (IsEagerlyVerifiedLazy(field, gen_->options_, gen_->scc_analyzer_))
+        return internal::field_layout::kTvEager;
+      if (IsLazilyVerifiedLazy(field, gen_->options_))
+        return internal::field_layout::kTvLazy;
+      return internal::field_layout::TransformValidation{};
+    };
+    return {
+        verify_flag(),
+        IsStringInlined(field, gen_->options_),
+        IsImplicitWeakField(field, gen_->options_, gen_->scc_analyzer_),
+        UseDirectTcParserTable(field, gen_->options_),
+        GetOptimizeFor(field->file(), gen_->options_) ==
+            FileOptions::LITE_RUNTIME,
+        ShouldSplit(field, gen_->options_),
+        /* uses_codegen */ true,
+    };
   }
 
  private:
@@ -202,7 +212,7 @@ bool ParseFunctionGenerator::should_generate_tctable() const {
 }
 
 void ParseFunctionGenerator::GenerateTailcallParseFunction(Formatter& format) {
-  GOOGLE_ABSL_CHECK(should_generate_tctable());
+  ABSL_CHECK(should_generate_tctable());
 
   // Generate an `_InternalParse` that starts the tail-calling loop.
   format(
@@ -216,41 +226,27 @@ void ParseFunctionGenerator::GenerateTailcallParseFunction(Formatter& format) {
       "}\n\n");
 }
 
-static bool NeedsUnknownEnumSupport(const Descriptor* descriptor) {
-  for (int i = 0; i < descriptor->field_count(); ++i) {
-    auto* field = descriptor->field(i);
-    if (field->is_repeated() && field->cpp_type() == field->CPPTYPE_ENUM &&
-        !internal::cpp::HasPreservingUnknownEnumSemantics(field)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
     Formatter& format) {
-  GOOGLE_ABSL_CHECK(should_generate_tctable());
+  ABSL_CHECK(should_generate_tctable());
   format(
       "const char* $classname$::Tct_ParseFallback(PROTOBUF_TC_PARAM_DECL) {\n"
       "#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) return nullptr\n");
   format.Indent();
   format("auto* typed_msg = static_cast<$classname$*>(msg);\n");
 
-  // If we need a side channel, generate the check to jump to the generic
-  // handler to deal with the side channel data.
-  if (NeedsUnknownEnumSupport(descriptor_)) {
-    format(
-        "if (PROTOBUF_PREDICT_FALSE(\n"
-        "    _pbi::TcParser::MustFallbackToGeneric(PROTOBUF_TC_PARAM_PASS))) "
-        "{\n"
-        "  PROTOBUF_MUSTTAIL return "
-        "::_pbi::TcParser::GenericFallback$1$(PROTOBUF_TC_PARAM_PASS);\n"
-        "}\n",
-        GetOptimizeFor(descriptor_->file(), options_) ==
-                FileOptions::LITE_RUNTIME
-            ? "Lite"
-            : "");
-  }
+  // Generate the check to jump to the generic handler to deal with the side
+  // channel data.
+  format(
+      "if (PROTOBUF_PREDICT_FALSE(\n"
+      "    _pbi::TcParser::MustFallbackToGeneric(PROTOBUF_TC_PARAM_PASS))) "
+      "{\n"
+      "  PROTOBUF_MUSTTAIL return "
+      "::_pbi::TcParser::GenericFallback$1$(PROTOBUF_TC_PARAM_PASS);\n"
+      "}\n",
+      GetOptimizeFor(descriptor_->file(), options_) == FileOptions::LITE_RUNTIME
+          ? "Lite"
+          : "");
 
   if (num_hasbits_ > 0) {
     // Sync hasbits
@@ -421,7 +417,7 @@ static NumToEntryTable MakeNumToEntryTable(
   for (; field_entry_index != N; ++field_entry_index) {
     auto* field_descriptor = field_descriptors[field_entry_index];
     uint32_t fnum = field_descriptor->number();
-    GOOGLE_ABSL_CHECK_GT(fnum, last_skip_entry_start);
+    ABSL_CHECK_GT(fnum, last_skip_entry_start);
     if (start_new_block == false) {
       // If the next field number is within 15 of the last_skip_entry_start, we
       // continue writing just to that entry.  If it's between 16 and 31 more,
@@ -454,16 +450,16 @@ static NumToEntryTable MakeNumToEntryTable(
 }
 
 void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
-  GOOGLE_ABSL_CHECK(should_generate_tctable());
+  ABSL_CHECK(should_generate_tctable());
   // All entries without a fast-path parsing function need a fallback.
   std::string fallback;
   if (tc_table_info_->use_generated_fallback) {
-    fallback = ClassName(descriptor_) + "::Tct_ParseFallback";
+    fallback = absl::StrCat(ClassName(descriptor_), "::Tct_ParseFallback");
   } else {
     fallback = "::_pbi::TcParser::GenericFallback";
     if (GetOptimizeFor(descriptor_->file(), options_) ==
         FileOptions::LITE_RUNTIME) {
-      fallback += "Lite";
+      absl::StrAppend(&fallback, "Lite");
     }
   }
 
@@ -494,14 +490,10 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       } else {
         format("0,  // no _has_bits_\n");
       }
-      if (descriptor_->extension_range_count() == 1) {
-        format(
-            "PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n"
-            "$1$, $2$,  // extension_range_{low,high}\n",
-            descriptor_->extension_range(0)->start,
-            descriptor_->extension_range(0)->end);
+      if (descriptor_->extension_range_count() != 0) {
+        format("PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n");
       } else {
-        format("0, 0, 0,  // no _extensions_\n");
+        format("0, // no _extensions_\n");
       }
       format("$1$, $2$,  // max_field_number, fast_idx_mask\n",
              (ordered_fields_.empty() ? 0 : ordered_fields_.back()->number()),
@@ -565,7 +557,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       format("65535, 65535\n");
     }
     if (ordered_fields_.empty()) {
-      GOOGLE_ABSL_LOG_IF(DFATAL, !tc_table_info_->aux_entries.empty())
+      ABSL_DLOG_IF(FATAL, !tc_table_info_->aux_entries.empty())
           << "Invalid message: " << descriptor_->full_name() << " has "
           << tc_table_info_->aux_entries.size()
           << " auxiliary field entries, but no fields";
@@ -622,6 +614,11 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
                        QualifiedDefaultInstancePtr(
                            aux_entry.field->message_type(), options_));
                 break;
+              case TailCallTableInfo::kMessageVerifyFunc:
+                format("{$1$::InternalVerify},\n",
+                       QualifiedClassName(aux_entry.field->message_type(),
+                                          options_));
+                break;
               case TailCallTableInfo::kEnumRange:
                 format("{$1$, $2$},\n", aux_entry.enum_range.start,
                        aux_entry.enum_range.size);
@@ -633,6 +630,29 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
                 break;
               case TailCallTableInfo::kNumericOffset:
                 format("{_fl::Offset{$1$}},\n", aux_entry.offset);
+                break;
+              case TailCallTableInfo::kMapAuxInfo: {
+                auto utf8_check = internal::cpp::GetUtf8CheckMode(
+                    aux_entry.field,
+                    GetOptimizeFor(aux_entry.field->file(), options_) ==
+                        FileOptions::LITE_RUNTIME);
+                auto* map_value = aux_entry.field->message_type()->map_value();
+                const bool validated_enum =
+                    map_value->type() == FieldDescriptor::TYPE_ENUM &&
+                    !internal::cpp::HasPreservingUnknownEnumSemantics(
+                        map_value);
+                format(
+                    "{::_pbi::TcParser::GetMapAuxInfo<decltype($classname$("
+                    ").$1$)>($2$, $3$, $4$)},\n",
+                    FieldMemberName(aux_entry.field, /*split=*/false),
+                    utf8_check == internal::cpp::Utf8CheckMode::kStrict,
+                    utf8_check == internal::cpp::Utf8CheckMode::kVerify,
+                    validated_enum);
+                break;
+              }
+              case TailCallTableInfo::kCreateInArena:
+                format("{::_pbi::TcParser::CreateInArenaStorageCb<$1$>},\n",
+                       QualifiedClassName(aux_entry.desc, options_));
                 break;
             }
           }
@@ -662,7 +682,7 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
       format("{$1$, {$2$, $3$}},\n", info.func_name, info.coded_tag,
              info.nonfield_info);
     } else {
-      GOOGLE_ABSL_CHECK(!ShouldSplit(info.field, options_));
+      ABSL_CHECK(!ShouldSplit(info.field, options_));
 
       std::string func_name = info.func_name;
       if (GetOptimizeFor(info.field->file(), options_) == FileOptions::SPEED) {
@@ -731,7 +751,7 @@ static void FormatFieldKind(Formatter& format,
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(RawString);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Utf8String);
         default:
-          GOOGLE_ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
+          ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
       }
 
       static constexpr const char* kRepNames[] = {"AString", "IString", "Cord",
@@ -757,13 +777,16 @@ static void FormatFieldKind(Formatter& format,
         format(" | ::_fl::kRep$1$", rep);
       }
 
-      static constexpr const char* kXFormNames[] = {nullptr, "Default", "Table",
-                                                    "WeakPtr"};
+      static constexpr const char* kXFormNames[2][4] = {
+          {nullptr, "Default", "Table", "WeakPtr"}, {nullptr, "Eager", "Lazy"}};
+
       static_assert((fl::kTvDefault >> fl::kTvShift) == 1, "");
       static_assert((fl::kTvTable >> fl::kTvShift) == 2, "");
       static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 3, "");
+      static_assert((fl::kTvEager >> fl::kTvShift) == 1, "");
+      static_assert((fl::kTvLazy >> fl::kTvShift) == 2, "");
 
-      if (auto* xform = kXFormNames[tv_index]) {
+      if (auto* xform = kXFormNames[rep_index == 2][tv_index]) {
         format(" | ::_fl::kTv$1$", xform);
       }
       break;
@@ -814,7 +837,7 @@ static void FormatFieldKind(Formatter& format,
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSInt64);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedDouble);
         default:
-          GOOGLE_ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
+          ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
       }
     }
   }
@@ -842,7 +865,7 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
       bool split = ShouldSplit(field, options_);
       if (split) {
         format("PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, $1$), ",
-               FieldName(field) + "_");
+               absl::StrCat(FieldName(field), "_"));
       } else {
         format("PROTOBUF_FIELD_OFFSET($classname$, $1$), ",
                FieldMemberName(field, /*cold=*/false));
@@ -907,13 +930,13 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
       "if (arena != nullptr) {\n"
       "  ptr = ctx->ReadArenaString(ptr, &$msg$$field$, arena");
   if (IsStringInlined(field, options_)) {
-    GOOGLE_ABSL_DCHECK(!inlined_string_indices_.empty());
+    ABSL_DCHECK(!inlined_string_indices_.empty());
     int inlined_string_index = inlined_string_indices_[field->index()];
-    GOOGLE_ABSL_DCHECK_GT(inlined_string_index, 0);
+    ABSL_DCHECK_GT(inlined_string_index, 0);
     format(", &$msg$$inlined_string_donated_array$[0], $1$, $this$",
            inlined_string_index);
   } else {
-    GOOGLE_ABSL_DCHECK(field->default_value_string().empty());
+    ABSL_DCHECK(field->default_value_string().empty());
   }
   format(
       ");\n"
@@ -1026,9 +1049,9 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
       case FieldDescriptor::TYPE_MESSAGE: {
         if (field->is_map()) {
           const FieldDescriptor* val = field->message_type()->map_value();
-          GOOGLE_ABSL_CHECK(val);
+          ABSL_CHECK(val);
           if (val->type() == FieldDescriptor::TYPE_ENUM &&
-              !internal::cpp::HasPreservingUnknownEnumSemantics(field)) {
+              !internal::cpp::HasPreservingUnknownEnumSemantics(val)) {
             format(
                 "auto object = "
                 "::$proto_ns$::internal::InitEnumParseWrapper<"
@@ -1114,7 +1137,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
         break;
       }
       default:
-        GOOGLE_ABSL_LOG(FATAL) << "Illegal combination for length delimited wiretype "
+        ABSL_LOG(FATAL) << "Illegal combination for length delimited wiretype "
                         << " filed type is " << field->type();
     }
   }
@@ -1151,7 +1174,7 @@ void ParseFunctionGenerator::GenerateFieldBody(
         format.Set("enum_type",
                    QualifiedClassName(field->enum_type(), options_));
         format(
-            "$uint32$ val = ::$proto_ns$::internal::ReadVarint32(&ptr);\n"
+            "$int32$ val = ::$proto_ns$::internal::ReadVarint32(&ptr);\n"
             "CHK_(ptr);\n");
         if (!internal::cpp::HasPreservingUnknownEnumSemantics(field)) {
           format(
@@ -1229,7 +1252,7 @@ void ParseFunctionGenerator::GenerateFieldBody(
       break;
     }
     case WireFormatLite::WIRETYPE_END_GROUP: {
-      GOOGLE_ABSL_LOG(FATAL) << "Can't have end group field\n";
+      ABSL_LOG(FATAL) << "Can't have end group field\n";
       break;
     }
   }  // switch (wire_type)
@@ -1243,7 +1266,7 @@ static uint32_t ExpectedTag(const FieldDescriptor* field,
   if (field->is_packable()) {
     auto expected_wiretype = WireFormat::WireTypeForFieldType(field->type());
     expected_tag = WireFormatLite::MakeTag(field->number(), expected_wiretype);
-    GOOGLE_ABSL_CHECK(expected_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+    ABSL_CHECK(expected_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
     auto fallback_wiretype = WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
     uint32_t fallback_tag =
         WireFormatLite::MakeTag(field->number(), fallback_wiretype);

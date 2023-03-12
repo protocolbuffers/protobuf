@@ -37,7 +37,7 @@
 #include "google/protobuf/repeated_field.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map_test_util.h"
@@ -76,6 +76,7 @@ class MapFieldBaseStub : public MapFieldBase {
   void SetRepeatedDirty() {
     state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
   }
+  UntypedMapBase* MutableMap() override { return nullptr; }
   bool ContainsMapKey(const MapKey& map_key) const override { return false; }
   bool InsertOrLookupMapValue(const MapKey& map_key,
                               MapValueRef* val) override {

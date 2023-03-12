@@ -129,7 +129,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -844,7 +844,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   inline uint8_t* Next();
   int Flush(uint8_t* ptr);
   std::ptrdiff_t GetSize(uint8_t* ptr) const {
-    GOOGLE_ABSL_DCHECK(ptr <= end_ + kSlopBytes);  // NOLINT
+    ABSL_DCHECK(ptr <= end_ + kSlopBytes);  // NOLINT
     return end_ + kSlopBytes - ptr;
   }
 
@@ -865,7 +865,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteTag(uint32_t num, uint32_t wt,
                                            uint8_t* ptr) {
-    GOOGLE_ABSL_DCHECK(ptr < end_);  // NOLINT
+    ABSL_DCHECK(ptr < end_);  // NOLINT
     return UnsafeVarint((num << 3) | wt, ptr);
   }
 
@@ -1074,7 +1074,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // errors.
   bool HadError() {
     cur_ = impl_.FlushAndResetBuffer(cur_);
-    GOOGLE_ABSL_DCHECK(cur_);
+    ABSL_DCHECK(cur_);
     return impl_.HadError();
   }
 
@@ -1727,15 +1727,15 @@ inline size_t CodedOutputStream::VarintSize32(uint32_t value) {
   // Use an explicit multiplication to implement the divide of
   // a number in the 1..31 range.
   //
-  // Explicit OR 0x1 to avoid calling absl::bit_width(0), which is
+  // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
   // requires a branch to check for on many platforms.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 inline size_t CodedOutputStream::VarintSize32PlusOne(uint32_t value) {
   // Same as above, but one more.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
 }
 
@@ -1744,15 +1744,15 @@ inline size_t CodedOutputStream::VarintSize64(uint64_t value) {
   // Use an explicit multiplication to implement the divide of
   // a number in the 1..63 range.
   //
-  // Explicit OR 0x1 to avoid calling absl::bit_width(0), which is
+  // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
   // requires a branch to check for on many platforms.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 inline size_t CodedOutputStream::VarintSize64PlusOne(uint64_t value) {
   // Same as above, but one more.
-  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
+  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
   return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
 }
 

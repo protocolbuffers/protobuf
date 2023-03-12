@@ -315,80 +315,81 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
       if (fd.getContainingOneof() != null) {
         // Build a oneof member field.
         builder.withField(buildOneofMember(messageType, fd, oneofState, enforceUtf8, enumVerifier));
-      } else {
-        Field field = field(messageType, fd);
-        int number = fd.getNumber();
-        FieldType type = getFieldType(fd);
-
-        if (fd.isMapField()) {
-          // Map field points to an auto-generated message entry type with the definition:
-          //   message MapEntry {
-          //     K key = 1;
-          //     V value = 2;
-          //   }
-          final FieldDescriptor valueField = fd.getMessageType().findFieldByNumber(2);
-          if (valueField.getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
-            enumVerifier =
-                new Internal.EnumVerifier() {
-                  @Override
-                  public boolean isInRange(int number) {
-                    return valueField.getEnumType().findValueByNumber(number) != null;
-                  }
-                };
-          }
-          builder.withField(
-              forMapField(
-                  field,
-                  number,
-                  SchemaUtil.getMapDefaultEntry(messageType, fd.getName()),
-                  enumVerifier));
-          continue;
-        }
-
-        if (fd.isRepeated()) {
-          // Repeated fields are not presence-checked.
-          if (enumVerifier != null) {
-            if (fd.isPacked()) {
-              builder.withField(
-                  forPackedFieldWithEnumVerifier(
-                      field, number, type, enumVerifier, cachedSizeField(messageType, fd)));
-            } else {
-              builder.withField(forFieldWithEnumVerifier(field, number, type, enumVerifier));
-            }
-          } else if (fd.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-            builder.withField(
-                forRepeatedMessageField(
-                    field, number, type, getTypeForRepeatedMessageField(messageType, fd)));
-          } else {
-            if (fd.isPacked()) {
-              builder.withField(
-                  forPackedField(field, number, type, cachedSizeField(messageType, fd)));
-            } else {
-              builder.withField(forField(field, number, type, enforceUtf8));
-            }
-          }
-          continue;
-        }
-
-        if (bitField == null) {
-          // Lazy-create the next bitfield since we know it must exist.
-          bitField = bitField(messageType, bitFieldIndex);
-        }
-
-        // It's a presence-checked field.
-        if (fd.isRequired()) {
-          builder.withField(
-              forProto2RequiredField(
-                  field, number, type, bitField, presenceMask, enforceUtf8, enumVerifier));
-        } else {
-          builder.withField(
-              forProto2OptionalField(
-                  field, number, type, bitField, presenceMask, enforceUtf8, enumVerifier));
-        }
+        continue;
       }
 
-      // Update the presence mask for the next iteration. If the shift clears out the mask, we will
-      // go to the next bitField.
+      Field field = field(messageType, fd);
+      int number = fd.getNumber();
+      FieldType type = getFieldType(fd);
+
+      if (fd.isMapField()) {
+        // Map field points to an auto-generated message entry type with the definition:
+        //   message MapEntry {
+        //     K key = 1;
+        //     V value = 2;
+        //   }
+        final FieldDescriptor valueField = fd.getMessageType().findFieldByNumber(2);
+        if (valueField.getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
+          enumVerifier =
+              new Internal.EnumVerifier() {
+                @Override
+                public boolean isInRange(int number) {
+                  return valueField.getEnumType().findValueByNumber(number) != null;
+                }
+              };
+        }
+        builder.withField(
+            forMapField(
+                field,
+                number,
+                SchemaUtil.getMapDefaultEntry(messageType, fd.getName()),
+                enumVerifier));
+        continue;
+      }
+
+      if (fd.isRepeated()) {
+        // Repeated fields are not presence-checked.
+        if (enumVerifier != null) {
+          if (fd.isPacked()) {
+            builder.withField(
+                forPackedFieldWithEnumVerifier(
+                    field, number, type, enumVerifier, cachedSizeField(messageType, fd)));
+          } else {
+            builder.withField(forFieldWithEnumVerifier(field, number, type, enumVerifier));
+          }
+        } else if (fd.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+          builder.withField(
+              forRepeatedMessageField(
+                  field, number, type, getTypeForRepeatedMessageField(messageType, fd)));
+        } else {
+          if (fd.isPacked()) {
+            builder.withField(
+                forPackedField(field, number, type, cachedSizeField(messageType, fd)));
+          } else {
+            builder.withField(forField(field, number, type, enforceUtf8));
+          }
+        }
+        continue;
+      }
+
+      if (bitField == null) {
+        // Lazy-create the next bitfield since we know it must exist.
+        bitField = bitField(messageType, bitFieldIndex);
+      }
+
+      // It's a presence-checked field.
+      if (fd.isRequired()) {
+        builder.withField(
+            forProto2RequiredField(
+                field, number, type, bitField, presenceMask, enforceUtf8, enumVerifier));
+      } else {
+        builder.withField(
+            forProto2OptionalField(
+                field, number, type, bitField, presenceMask, enforceUtf8, enumVerifier));
+      }
+
+      // Update the presence mask for the next iteration. If the shift clears out the mask, we
+      // will go to the next bitField.
       presenceMask <<= 1;
       if (presenceMask == 0) {
         bitField = null;

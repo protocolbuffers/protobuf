@@ -1,0 +1,32 @@
+name: Staleness tests
+
+on:
+  schedule:
+    # Run daily at 10 AM UTC (2 AM PDT)
+    - cron: 0 10 * * *
+  workflow_dispatch:
+
+permissions: {}
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: [main, 22.x]
+        os: [{ name: Linux, value: ubuntu-latest}]
+
+    name: Test staleness ${{ matrix.os.name }} ${{ matrix.branch}}
+    runs-on: ${{ matrix.os.value }}
+    if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' || matrix.branch == 'main '}}
+    steps:
+      - name: Checkout ${{ matrix.branch }}
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ matrix.branch}}
+
+      - name: Run all staleness tests
+        uses: protocolbuffers/protobuf-ci/bazel@v1
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: staleness_check/${{ matrix.branch}}_${{ matrix.os.value }}
+          bash: bazel query 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS

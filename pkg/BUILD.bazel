@@ -57,9 +57,28 @@ Please refer to our official github site for more installation instructions:
     visibility = ["//visibility:private"],
 )
 
+genrule(
+    name = "rename_protoc",
+    srcs = ["//:protoc_static"],
+    outs = ["bin/protoc"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
+)
+
+genrule(
+    name = "rename_protoc_exe",
+    srcs = ["//:protoc_static"],
+    outs = ["bin/protoc.exe"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
+)
+
 pkg_files(
     name = "protoc_files",
-    srcs = ["//:protoc"],
+    srcs = select({
+        "//build_defs:config_win": ["bin/protoc.exe"],
+        "//conditions:default": ["bin/protoc"],
+    }),
     attributes = pkg_attributes(mode = "0555"),
     prefix = "bin/",
     visibility = ["//visibility:private"],
@@ -385,6 +404,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
+        "//src/google/protobuf/compiler/rust",
     ],
     dist_deps = [
         ":protobuf",

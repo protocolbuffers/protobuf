@@ -36,7 +36,6 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
@@ -58,7 +57,7 @@ class DecodeDataBuilder {
  public:
   DecodeDataBuilder() { Reset(); }
 
-  bool AddCharacter(const char desired, const char input);
+  bool AddCharacter(char desired, char input);
   void AddUnderscore() {
     Push();
     need_underscore_ = true;
@@ -122,7 +121,7 @@ class DecodeDataBuilder {
   std::string decode_data_;
 };
 
-bool DecodeDataBuilder::AddCharacter(const char desired, const char input) {
+bool DecodeDataBuilder::AddCharacter(char desired, char input) {
   // If we've hit the max size, push to start a new segment.
   if (segment_len_ == kMaxSegmentLen) {
     Push();
@@ -175,13 +174,10 @@ void TextFormatDecodeData::AddString(int32_t key,
                                      const std::string& desired_output) {
   for (std::vector<DataEntry>::const_iterator i = entries_.begin();
        i != entries_.end(); ++i) {
-    if (i->first == key) {
-      std::cerr << "error: duplicate key (" << key
-                << ") making TextFormat data, input: \"" << input_for_decode
-                << "\", desired: \"" << desired_output << "\"." << std::endl;
-      std::cerr.flush();
-      abort();
-    }
+    ABSL_CHECK(i->first != key)
+        << "error: duplicate key (" << key
+        << ") making TextFormat data, input: \"" << input_for_decode
+        << "\", desired: \"" << desired_output << "\".";
   }
 
   const std::string& data = TextFormatDecodeData::DecodeDataForString(
@@ -211,22 +207,14 @@ std::string TextFormatDecodeData::Data() const {
 // static
 std::string TextFormatDecodeData::DecodeDataForString(
     const std::string& input_for_decode, const std::string& desired_output) {
-  if (input_for_decode.empty() || desired_output.empty()) {
-    std::cerr << "error: got empty string for making TextFormat data, input: \""
-              << input_for_decode << "\", desired: \"" << desired_output
-              << "\"." << std::endl;
-    std::cerr.flush();
-    abort();
-  }
-  if ((absl::StrContains(input_for_decode, '\0')) ||
-      (absl::StrContains(desired_output, '\0'))) {
-    std::cerr
-        << "error: got a null char in a string for making TextFormat data,"
-        << " input: \"" << absl::CEscape(input_for_decode) << "\", desired: \""
-        << absl::CEscape(desired_output) << "\"." << std::endl;
-    std::cerr.flush();
-    abort();
-  }
+  ABSL_CHECK(!input_for_decode.empty() && !desired_output.empty())
+      << "error: got empty string for making TextFormat data, input: \""
+      << input_for_decode << "\", desired: \"" << desired_output << "\".";
+  ABSL_CHECK(!absl::StrContains(input_for_decode, '\0') &&
+             !absl::StrContains(desired_output, '\0'))
+      << "error: got a null char in a string for making TextFormat data,"
+      << " input: \"" << absl::CEscape(input_for_decode) << "\", desired: \""
+      << absl::CEscape(desired_output) << "\".";
 
   DecodeDataBuilder builder;
 

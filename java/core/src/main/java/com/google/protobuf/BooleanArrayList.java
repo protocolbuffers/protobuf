@@ -45,10 +45,7 @@ import java.util.RandomAccess;
 final class BooleanArrayList extends AbstractProtobufList<Boolean>
     implements BooleanList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList(new boolean[0], 0);
-  static {
-    EMPTY_LIST.makeImmutable();
-  }
+  private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList(new boolean[0], 0, false);
 
   public static BooleanArrayList emptyList() {
     return EMPTY_LIST;
@@ -65,15 +62,16 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
 
   /** Constructs a new mutable {@code BooleanArrayList} with default capacity. */
   BooleanArrayList() {
-    this(new boolean[DEFAULT_CAPACITY], 0);
+    this(new boolean[DEFAULT_CAPACITY], 0, true);
   }
 
   /**
    * Constructs a new mutable {@code BooleanArrayList} containing the same elements as {@code
    * other}.
    */
-  private BooleanArrayList(boolean[] other, int size) {
-    array = other;
+  private BooleanArrayList(boolean[] other, int size, boolean isMutable) {
+    super(isMutable);
+    this.array = other;
     this.size = size;
   }
 
@@ -126,7 +124,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
-    return new BooleanArrayList(Arrays.copyOf(array, capacity), size);
+    return new BooleanArrayList(Arrays.copyOf(array, capacity), size, true);
   }
 
   @Override

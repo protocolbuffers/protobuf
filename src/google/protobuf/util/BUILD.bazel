@@ -52,6 +52,8 @@ cc_library(
         "//src/google/protobuf/stubs",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
     ],
 )
 
@@ -100,6 +102,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf/stubs",
         "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/memory",
     ],
 )
@@ -138,6 +141,7 @@ cc_library(
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/log:absl_check",
     ],
 )
 
@@ -167,6 +171,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status",
     ],
 )

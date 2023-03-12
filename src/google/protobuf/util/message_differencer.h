@@ -55,7 +55,7 @@
 #include "absl/container/fixed_array.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
@@ -342,7 +342,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
     virtual bool IsMatch(const Message& message1, const Message& message2,
                          int /* unmapped_any */,
                          const std::vector<SpecificField>& fields) const {
-      GOOGLE_ABSL_CHECK(false) << "IsMatch() is not implemented.";
+      ABSL_CHECK(false) << "IsMatch() is not implemented.";
       return false;
     }
   };
@@ -553,9 +553,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // Note that this method must be called before Compare for the comparator to
   // be used.
   void set_field_comparator(FieldComparator* comparator);
-#ifdef PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR
   void set_field_comparator(DefaultFieldComparator* comparator);
-#endif  // PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR
 
   // DEPRECATED. Pass a DefaultFieldComparator instance instead.
   // Sets the fraction and margin for the float comparison of a given field.

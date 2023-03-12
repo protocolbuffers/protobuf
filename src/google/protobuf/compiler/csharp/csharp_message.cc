@@ -35,7 +35,7 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
@@ -175,11 +175,13 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   // Access the message descriptor via the relevant file descriptor or containing message descriptor.
   if (!descriptor_->containing_type()) {
-    vars["descriptor_accessor"] = GetReflectionClassName(descriptor_->file())
-        + ".Descriptor.MessageTypes[" + absl::StrCat(descriptor_->index()) + "]";
+    vars["descriptor_accessor"] =
+        absl::StrCat(GetReflectionClassName(descriptor_->file()),
+                     ".Descriptor.MessageTypes[", descriptor_->index(), "]");
   } else {
-    vars["descriptor_accessor"] = GetClassName(descriptor_->containing_type())
-        + ".Descriptor.NestedTypes[" + absl::StrCat(descriptor_->index()) + "]";
+    vars["descriptor_accessor"] =
+        absl::StrCat(GetClassName(descriptor_->containing_type()),
+                     ".Descriptor.NestedTypes[", descriptor_->index(), "]");
   }
 
   WriteGeneratedCodeAttributes(printer);
@@ -765,7 +767,7 @@ int MessageGenerator::GetPresenceIndex(const FieldDescriptor* descriptor) {
       index++;
     }
   }
-  GOOGLE_ABSL_LOG(DFATAL) << "Could not find presence index for field "
+  ABSL_DLOG(FATAL) << "Could not find presence index for field "
                    << descriptor->name();
   return -1;
 }

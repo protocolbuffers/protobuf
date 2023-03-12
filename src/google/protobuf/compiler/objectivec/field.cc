@@ -36,8 +36,8 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -82,7 +82,7 @@ void SetCommonFieldVariables(
   (*variables)["capitalized_name"] = capitalized_name;
   (*variables)["raw_field_name"] = raw_field_name;
   (*variables)["field_number_name"] =
-      classname + "_FieldNumber_" + capitalized_name;
+      absl::StrCat(classname, "_FieldNumber_", capitalized_name);
   (*variables)["field_number"] = absl::StrCat(descriptor->number());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
   (*variables)["deprecated_attribute"] =
@@ -120,8 +120,8 @@ void SetCommonFieldVariables(
   (*variables)["dataTypeSpecific_name"] = "clazz";
   (*variables)["dataTypeSpecific_value"] = "Nil";
 
-  (*variables)["storage_offset_value"] = "(uint32_t)offsetof(" + classname +
-                                         "__storage_, " + camel_case_name + ")";
+  (*variables)["storage_offset_value"] = absl::StrCat(
+      "(uint32_t)offsetof(", classname, "__storage_, ", camel_case_name, ")");
   (*variables)["storage_offset_comment"] = "";
 
   // Clear some common things so they can be set just when needed.
@@ -169,7 +169,7 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return false;
 }
 
@@ -289,12 +289,8 @@ void FieldGenerator::SetNoHasBit() { variables_["has_index"] = "GPBNoHasBit"; }
 int FieldGenerator::ExtraRuntimeHasBitsNeeded() const { return 0; }
 
 void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
-  // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
-  // error cases, so it seems to be ok to use as a back door for errors.
-  std::cerr << "Error: should have overridden SetExtraRuntimeHasBitsBase()."
-            << std::endl;
-  std::cerr.flush();
-  abort();
+  ABSL_LOG(FATAL)
+      << "Error: should have overridden SetExtraRuntimeHasBitsBase().";
 }
 
 void FieldGenerator::SetOneofIndexBase(int index_base) {
@@ -379,7 +375,7 @@ void ObjCObjFieldGenerator::GenerateFieldStorageDeclaration(
 void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
     io::Printer* printer) const {
   // Differs from SingleFieldGenerator::GeneratePropertyDeclaration() in that
-  // it uses pointers and deals with Objective C's rules around storage name
+  // it uses pointers and deals with Objective-C's rules around storage name
   // conventions (init*, new*, etc.)
 
   printer->Print(variables_, "$comments$");
@@ -435,7 +431,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
   // Repeated fields don't need the has* properties, but they do expose a
   // *Count (to check without autocreation).  So for the field property we need
   // the same logic as ObjCObjFieldGenerator::GeneratePropertyDeclaration() for
-  // dealing with needing Objective C's rules around storage name conventions
+  // dealing with needing Objective-C's rules around storage name conventions
   // (init*, new*, etc.)
 
   // clang-format off
@@ -478,7 +474,7 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
 
 const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
-  GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
+  ABSL_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
 }
 

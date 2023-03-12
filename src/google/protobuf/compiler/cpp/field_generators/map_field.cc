@@ -30,9 +30,10 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
@@ -48,7 +49,6 @@ void SetMessageVariables(
     const FieldDescriptor* descriptor,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
     const Options& options) {
-  SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = ClassName(descriptor->message_type(), false);
   (*variables)["full_name"] = descriptor->full_name();
 
@@ -65,10 +65,10 @@ void SetMessageVariables(
     default:
       (*variables)["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
   }
-  (*variables)["key_wire_type"] =
-      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type()));
-  (*variables)["val_wire_type"] =
-      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type()));
+  (*variables)["key_wire_type"] = absl::StrCat(
+      "TYPE_", absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type())));
+  (*variables)["val_wire_type"] = absl::StrCat(
+      "TYPE_", absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type())));
   (*variables)["map_classname"] = ClassName(descriptor->message_type(), false);
   (*variables)["number"] = absl::StrCat(descriptor->number());
   (*variables)["tag"] = absl::StrCat(internal::WireFormat::MakeTag(descriptor));
@@ -142,10 +142,12 @@ void MapFieldGenerator::GenerateAccessorDeclarations(
       "    ${1$_internal_mutable_$name$$}$();\n"
       "public:\n"
       "$deprecated_attr$const ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >&\n"
-      "    ${1$$name$$}$() const;\n"
+      "    ${1$$name$$}$() const;\n",
+      descriptor_);
+  format(
       "$deprecated_attr$::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
       "    ${1$mutable_$name$$}$();\n",
-      descriptor_);
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
 }
 
 void MapFieldGenerator::GenerateInlineAccessorDefinitions(

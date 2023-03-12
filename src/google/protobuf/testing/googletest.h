@@ -36,17 +36,8 @@
 
 #include <gmock/gmock.h>
 
+#include <string>
 #include <vector>
-
-#include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
-
-// Disable death tests if we use exceptions in CHECK().
-#if !PROTOBUF_USE_EXCEPTIONS && defined(GTEST_HAS_DEATH_TEST) && \
-    !GTEST_OS_WINDOWS
-#define PROTOBUF_HAS_DEATH_TEST
-#endif
 
 namespace google {
 namespace protobuf {
@@ -65,41 +56,6 @@ void CaptureTestStderr();
 // Stop capturing stdout or stderr and return the text captured.
 std::string GetCapturedTestStdout();
 std::string GetCapturedTestStderr();
-
-// For use with ScopedMemoryLog::GetMessages().  Inside Google the LogLevel
-// constants don't have the LOGLEVEL_ prefix, so the code that used
-// ScopedMemoryLog refers to LOGLEVEL_ERROR as just ERROR.
-#undef ERROR  // defend against promiscuous windows.h
-static const LogLevel ERROR = LOGLEVEL_ERROR;
-static const LogLevel WARNING = LOGLEVEL_WARNING;
-
-// Receives copies of all LOG(ERROR) messages while in scope.  Sample usage:
-//   {
-//     ScopedMemoryLog log;  // constructor registers object as a log sink
-//     SomeRoutineThatMayLogMessages();
-//     const vector<string>& warnings = log.GetMessages(ERROR);
-//   }  // destructor unregisters object as a log sink
-// This is a dummy implementation which covers only what is used by protocol
-// buffer unit tests.
-class ScopedMemoryLog {
- public:
-  ScopedMemoryLog();
-  ScopedMemoryLog(const ScopedMemoryLog&) = delete;
-  ScopedMemoryLog& operator=(const ScopedMemoryLog&) = delete;
-  virtual ~ScopedMemoryLog();
-
-  // Fetches all messages with the given severity level.
-  const std::vector<std::string>& GetMessages(LogLevel error);
-
- private:
-  absl::flat_hash_map<LogLevel, std::vector<std::string> > messages_;
-  LogHandler* old_handler_;
-
-  static void HandleLog(LogLevel level, const char* filename, int line,
-                        const std::string& message);
-
-  static ScopedMemoryLog* active_log_;
-};
 
 }  // namespace protobuf
 }  // namespace google

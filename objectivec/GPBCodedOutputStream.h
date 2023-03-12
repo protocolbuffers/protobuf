@@ -63,6 +63,7 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
  *
  * @note Subclassing of GPBCodedOutputStream is NOT supported.
  **/
+__attribute__((objc_subclassing_restricted))
 @interface GPBCodedOutputStream : NSObject
 
 /**
@@ -107,6 +108,11 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
  * Flush any buffered data out.
  **/
 - (void)flush;
+
+/**
+ * @return The number of bytes written out. Includes bytes not yet flused.
+ **/
+- (size_t)bytesWritten;
 
 /**
  * Write the raw byte out.

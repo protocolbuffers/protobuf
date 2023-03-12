@@ -40,7 +40,7 @@
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/message_differencer.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -147,7 +147,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     }
 
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unspecified input format";
+      ABSL_LOG(FATAL) << "Unspecified input format";
   }
 
   request_.set_test_category(test_category);
@@ -162,12 +162,19 @@ ConformanceTestSuite::ConformanceRequestSetting::NewTestMessage() const {
 }
 
 string ConformanceTestSuite::ConformanceRequestSetting::GetTestName() const {
-  string rname = prototype_message_.GetDescriptor()->file()->syntax() ==
-                         FileDescriptor::SYNTAX_PROTO3
-                     ? "Proto3"
-                     : "Proto2";
+  string rname;
+  switch (prototype_message_.GetDescriptor()->file()->syntax()) {
+    case FileDescriptor::SYNTAX_PROTO3:
+      rname = ".Proto3.";
+      break;
+    case FileDescriptor::SYNTAX_PROTO2:
+      rname = ".Proto2.";
+      break;
+    default:
+      break;
+  }
 
-  return absl::StrCat(ConformanceLevelToString(level_), ".", rname, ".",
+  return absl::StrCat(ConformanceLevelToString(level_), rname,
                       InputFormatString(input_format_), ".", test_name_, ".",
                       OutputFormatString(output_format_));
 }
@@ -181,7 +188,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceLevelToString(
     case RECOMMENDED:
       return "Recommended";
   }
-  GOOGLE_ABSL_LOG(FATAL) << "Unknown value: " << level;
+  ABSL_LOG(FATAL) << "Unknown value: " << level;
   return "";
 }
 
@@ -195,7 +202,7 @@ string ConformanceTestSuite::ConformanceRequestSetting::InputFormatString(
     case conformance::TEXT_FORMAT:
       return "TextFormatInput";
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unspecified output format";
+      ABSL_LOG(FATAL) << "Unspecified output format";
   }
   return "";
 }
@@ -210,7 +217,7 @@ string ConformanceTestSuite::ConformanceRequestSetting::OutputFormatString(
     case conformance::TEXT_FORMAT:
       return "TextFormatOutput";
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unspecified output format";
+      ABSL_LOG(FATAL) << "Unspecified output format";
   }
   return "";
 }
@@ -315,7 +322,7 @@ void ConformanceTestSuite::RunValidInputTest(
     const ConformanceRequestSetting& setting,
     const string& equivalent_text_format) {
   std::unique_ptr<Message> reference_message(setting.NewTestMessage());
-  GOOGLE_ABSL_CHECK(TextFormat::ParseFromString(equivalent_text_format,
+  ABSL_CHECK(TextFormat::ParseFromString(equivalent_text_format,
                                          reference_message.get()))
       << "Failed to parse data for test case: " << setting.GetTestName()
       << ", data: " << equivalent_text_format;
@@ -343,7 +350,7 @@ void ConformanceTestSuite::VerifyResponse(
   ConformanceLevel level = setting.GetLevel();
   std::unique_ptr<Message> reference_message = setting.NewTestMessage();
 
-  GOOGLE_ABSL_CHECK(reference_message->ParseFromString(equivalent_wire_format))
+  ABSL_CHECK(reference_message->ParseFromString(equivalent_wire_format))
       << "Failed to parse wire data for test case: " << test_name;
 
   switch (response.result_case()) {
@@ -378,7 +385,7 @@ void ConformanceTestSuite::VerifyResponse(
   bool check = false;
 
   if (require_same_wire_format) {
-    GOOGLE_ABSL_DCHECK_EQ(response.result_case(),
+    ABSL_DCHECK_EQ(response.result_case(),
                    ConformanceResponse::kProtobufPayload);
     const string& protobuf_payload = response.protobuf_payload();
     check = equivalent_wire_format == protobuf_payload;
@@ -404,7 +411,7 @@ void ConformanceTestSuite::RunTest(const string& test_name,
                                    const ConformanceRequest& request,
                                    ConformanceResponse* response) {
   if (test_names_.insert(test_name).second == false) {
-    GOOGLE_ABSL_LOG(FATAL) << "Duplicated test name: " << test_name;
+    ABSL_LOG(FATAL) << "Duplicated test name: " << test_name;
   }
 
   string serialized_request;
@@ -439,7 +446,7 @@ string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
     case conformance::UNSPECIFIED:
       return "UNSPECIFIED";
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "unknown wire type: " << wire_format;
+      ABSL_LOG(FATAL) << "unknown wire type: " << wire_format;
   }
   return "";
 }

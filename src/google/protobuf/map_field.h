@@ -70,7 +70,7 @@ class MapIterator;
 
 #define TYPE_CHECK(EXPECTEDTYPE, METHOD)                                  \
   if (type() != EXPECTEDTYPE) {                                           \
-    GOOGLE_ABSL_LOG(FATAL) << "Protocol Buffer map usage error:\n"               \
+    ABSL_LOG(FATAL) << "Protocol Buffer map usage error:\n"               \
                     << METHOD << " type does not match\n"                 \
                     << "  Expected : "                                    \
                     << FieldDescriptor::CppTypeName(EXPECTEDTYPE) << "\n" \
@@ -98,7 +98,7 @@ class PROTOBUF_EXPORT MapKey {
 
   FieldDescriptor::CppType type() const {
     if (type_ == FieldDescriptor::CppType()) {
-      GOOGLE_ABSL_LOG(FATAL) << "Protocol Buffer map usage error:\n"
+      ABSL_LOG(FATAL) << "Protocol Buffer map usage error:\n"
                       << "MapKey::type MapKey is not initialized. "
                       << "Call set methods to initialize MapKey.";
     }
@@ -159,14 +159,14 @@ class PROTOBUF_EXPORT MapKey {
     if (type_ != other.type_) {
       // We could define a total order that handles this case, but
       // there currently no need.  So, for now, fail.
-      GOOGLE_ABSL_LOG(FATAL) << "Unsupported: type mismatch";
+      ABSL_LOG(FATAL) << "Unsupported: type mismatch";
     }
     switch (type()) {
       case FieldDescriptor::CPPTYPE_DOUBLE:
       case FieldDescriptor::CPPTYPE_FLOAT:
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
+        ABSL_LOG(FATAL) << "Unsupported";
         return false;
       case FieldDescriptor::CPPTYPE_STRING:
         return val_.string_value_.get() < other.val_.string_value_.get();
@@ -187,14 +187,14 @@ class PROTOBUF_EXPORT MapKey {
   bool operator==(const MapKey& other) const {
     if (type_ != other.type_) {
       // To be consistent with operator<, we don't allow this either.
-      GOOGLE_ABSL_LOG(FATAL) << "Unsupported: type mismatch";
+      ABSL_LOG(FATAL) << "Unsupported: type mismatch";
     }
     switch (type()) {
       case FieldDescriptor::CPPTYPE_DOUBLE:
       case FieldDescriptor::CPPTYPE_FLOAT:
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
+        ABSL_LOG(FATAL) << "Unsupported";
         break;
       case FieldDescriptor::CPPTYPE_STRING:
         return val_.string_value_.get() == other.val_.string_value_.get();
@@ -209,7 +209,7 @@ class PROTOBUF_EXPORT MapKey {
       case FieldDescriptor::CPPTYPE_BOOL:
         return val_.bool_value_ == other.val_.bool_value_;
     }
-    GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+    ABSL_LOG(FATAL) << "Can't get here.";
     return false;
   }
 
@@ -220,7 +220,7 @@ class PROTOBUF_EXPORT MapKey {
       case FieldDescriptor::CPPTYPE_FLOAT:
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
+        ABSL_LOG(FATAL) << "Unsupported";
         break;
       case FieldDescriptor::CPPTYPE_STRING:
         *val_.string_value_.get_mutable() = other.val_.string_value_.get();
@@ -291,7 +291,7 @@ struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_FLOAT:
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_ENUM:
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(FATAL) << "Unsupported";
+        ABSL_LOG(FATAL) << "Unsupported";
         break;
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
         return hash<std::string>()(map_key.GetStringValue());
@@ -315,7 +315,7 @@ struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
         return hash<bool>()(map_key.GetBoolValue());
       }
     }
-    GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+    ABSL_LOG(FATAL) << "Can't get here.";
     return 0;
   }
   bool operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key1,
@@ -336,7 +336,7 @@ class MapFieldAccessor;
 // This class provides access to map field using reflection, which is the same
 // as those provided for RepeatedPtrField<Message>. It is used for internal
 // reflection implementation only. Users should never use this directly.
-class PROTOBUF_EXPORT MapFieldBase {
+class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
  public:
   MapFieldBase()
       : arena_(nullptr), repeated_field_(nullptr), state_(STATE_MODIFIED_MAP) {}
@@ -358,7 +358,7 @@ class PROTOBUF_EXPORT MapFieldBase {
 
  protected:
   ~MapFieldBase() {  // "protected" stops users from deleting a `MapFieldBase *`
-    GOOGLE_ABSL_DCHECK(repeated_field_ == nullptr);
+    ABSL_DCHECK(repeated_field_ == nullptr);
   }
   void Destruct();
 
@@ -434,7 +434,7 @@ class PROTOBUF_EXPORT MapFieldBase {
   // MapFieldBase-derived object, and there is no synchronization going
   // on between them, tsan will alert.
 #if defined(__SANITIZE_THREAD__) || defined(THREAD_SANITIZER)
-  void ConstAccess() const { GOOGLE_ABSL_CHECK_EQ(seq1_, seq2_); }
+  void ConstAccess() const { ABSL_CHECK_EQ(seq1_, seq2_); }
   void MutableAccess() {
     if (seq1_ & 1) {
       seq2_ = ++seq1_;
@@ -523,7 +523,9 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   bool EqualIterator(const MapIterator& a, const MapIterator& b) const override;
 
   virtual const Map<Key, T>& GetMap() const = 0;
-  virtual Map<Key, T>* MutableMap() = 0;
+  // This overrides the base's method to specialize the signature via
+  // covariance, but we do not yet provide an implementation here, so `= 0`.
+  Map<Key, T>* MutableMap() override = 0;
 
  protected:
   typename Map<Key, T>::const_iterator& InternalGetIterator(
@@ -543,19 +545,19 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 // internal generated message implementation only. Users should never use this
 // directly.
 template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
+          WireFormatLite::FieldType kKeyFieldType_,
+          WireFormatLite::FieldType kValueFieldType_>
 class MapField : public TypeDefinedMapFieldBase<Key, T> {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
-  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
-  typedef MapTypeHandler<kValueFieldType, T> ValueTypeHandler;
+  typedef MapTypeHandler<kKeyFieldType_, Key> KeyTypeHandler;
+  typedef MapTypeHandler<kValueFieldType_, T> ValueTypeHandler;
 
   // Define message type for internal repeated field.
   typedef Derived EntryType;
 
   // Define abbreviation for parent MapFieldLite
-  typedef MapFieldLite<Derived, Key, T, kKeyFieldType, kValueFieldType>
+  typedef MapFieldLite<Derived, Key, T, kKeyFieldType_, kValueFieldType_>
       MapFieldLiteType;
 
   // Enum needs to be handled differently from other types because it has
@@ -567,6 +569,8 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
 
  public:
   typedef Map<Key, T> MapType;
+  static constexpr WireFormatLite::FieldType kKeyFieldType = kKeyFieldType_;
+  static constexpr WireFormatLite::FieldType kValueFieldType = kValueFieldType_;
 
   MapField() : impl_() {}
   MapField(const MapField&) = delete;
@@ -774,7 +778,7 @@ class PROTOBUF_EXPORT MapValueConstRef {
 
   FieldDescriptor::CppType type() const {
     if (type_ == FieldDescriptor::CppType() || data_ == nullptr) {
-      GOOGLE_ABSL_LOG(FATAL)
+      ABSL_LOG(FATAL)
           << "Protocol Buffer map usage error:\n"
           << "MapValueConstRef::type MapValueConstRef is not initialized.";
     }

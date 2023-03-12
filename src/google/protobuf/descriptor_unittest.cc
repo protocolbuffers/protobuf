@@ -44,7 +44,10 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/die_if_null.h"
+#include "absl/log/scoped_mock_log.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/stubs/common.h"
@@ -56,8 +59,8 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
@@ -92,7 +95,7 @@ DescriptorProto* AddNestedMessage(DescriptorProto* parent,
 }
 
 EnumDescriptorProto* AddEnum(FileDescriptorProto* file,
-                             const std::string& name) {
+                             absl::string_view name) {
   EnumDescriptorProto* result = file->add_enum_type();
   result->set_name(name);
   return result;
@@ -196,8 +199,8 @@ MethodDescriptorProto* AddMethod(ServiceDescriptorProto* service,
 
 // Empty enums technically aren't allowed.  We need to insert a dummy value
 // into them.
-void AddEmptyEnum(FileDescriptorProto* file, const std::string& name) {
-  AddEnumValue(AddEnum(file, name), name + "_DUMMY", 1);
+void AddEmptyEnum(FileDescriptorProto* file, absl::string_view name) {
+  AddEnumValue(AddEnum(file, name), absl::StrCat(name, "_DUMMY"), 1);
 }
 
 class MockErrorCollector : public DescriptorPool::ErrorCollector {
@@ -209,9 +212,9 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
   std::string warning_text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* descriptor, ErrorLocation location,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
     const char* location_name = nullptr;
     switch (location) {
       case NAME:
@@ -254,9 +257,9 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
   }
 
   // implements ErrorCollector ---------------------------------------
-  void AddWarning(const std::string& filename, const std::string& element_name,
-                  const Message* descriptor, ErrorLocation location,
-                  const std::string& message) override {
+  void RecordWarning(absl::string_view filename, absl::string_view element_name,
+                     const Message* descriptor, ErrorLocation location,
+                     absl::string_view message) override {
     const char* location_name = nullptr;
     switch (location) {
       case NAME:
@@ -593,7 +596,7 @@ void ExtractDebugString(
 class SimpleErrorCollector : public io::ErrorCollector {
  public:
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) override {
+  void RecordError(int line, int column, absl::string_view message) override {
     last_error_ = absl::StrFormat("%d:%d:%s", line, column, message);
   }
 
@@ -1117,6 +1120,66 @@ TEST_F(DescriptorTest, NeedsUtf8Check) {
   EXPECT_FALSE(bar3->requires_utf8_validation());
 }
 
+TEST_F(DescriptorTest, EnumFieldTreatedAsClosed) {
+  // Make an open enum definition.
+  FileDescriptorProto open_enum_file;
+  open_enum_file.set_name("open_enum.proto");
+  open_enum_file.set_syntax("proto3");
+  AddEnumValue(AddEnum(&open_enum_file, "TestEnumOpen"), "TestEnumOpen_VALUE0",
+               0);
+
+  const EnumDescriptor* open_enum =
+      pool_.BuildFile(open_enum_file)->enum_type(0);
+  EXPECT_FALSE(open_enum->is_closed());
+
+  // Create a message that treats enum fields as closed.
+  FileDescriptorProto closed_file;
+  closed_file.set_name("closed_enum_field.proto");
+  closed_file.add_dependency("open_enum.proto");
+  closed_file.add_dependency("foo.proto");
+
+  DescriptorProto* message = AddMessage(&closed_file, "TestClosedEnumField");
+  AddField(message, "int_field", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_INT32);
+  AddField(message, "open_enum", 2, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_ENUM)
+      ->set_type_name("TestEnumOpen");
+  AddField(message, "closed_enum", 3, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_ENUM)
+      ->set_type_name("TestEnum");
+  const Descriptor* closed_message =
+      pool_.BuildFile(closed_file)->message_type(0);
+
+  EXPECT_FALSE(closed_message->FindFieldByName("int_field")
+                   ->legacy_enum_field_treated_as_closed());
+  EXPECT_TRUE(closed_message->FindFieldByName("closed_enum")
+                  ->legacy_enum_field_treated_as_closed());
+  EXPECT_TRUE(closed_message->FindFieldByName("open_enum")
+                  ->legacy_enum_field_treated_as_closed());
+}
+
+TEST_F(DescriptorTest, EnumFieldTreatedAsOpen) {
+  FileDescriptorProto open_enum_file;
+  open_enum_file.set_name("open_enum.proto");
+  open_enum_file.set_syntax("proto3");
+  AddEnumValue(AddEnum(&open_enum_file, "TestEnumOpen"), "TestEnumOpen_VALUE0",
+               0);
+  DescriptorProto* message = AddMessage(&open_enum_file, "TestOpenEnumField");
+  AddField(message, "int_field", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_INT32);
+  AddField(message, "open_enum", 2, FieldDescriptorProto::LABEL_OPTIONAL,
+           FieldDescriptorProto::TYPE_ENUM)
+      ->set_type_name("TestEnumOpen");
+  const FileDescriptor* open_enum_file_desc = pool_.BuildFile(open_enum_file);
+  const Descriptor* open_message = open_enum_file_desc->message_type(0);
+  const EnumDescriptor* open_enum = open_enum_file_desc->enum_type(0);
+  EXPECT_FALSE(open_enum->is_closed());
+  EXPECT_FALSE(open_message->FindFieldByName("int_field")
+                   ->legacy_enum_field_treated_as_closed());
+  EXPECT_FALSE(open_message->FindFieldByName("open_enum")
+                   ->legacy_enum_field_treated_as_closed());
+}
+
 TEST_F(DescriptorTest, IsMap) {
   EXPECT_TRUE(map_->is_map());
   EXPECT_FALSE(baz_->is_map());
@@ -1277,6 +1340,10 @@ class StylizedFieldNamesTest : public testing::Test {
     AddExtensionRange(AddMessage(&file, "ExtendableMessage"), 1, 1000);
 
     DescriptorProto* message = AddMessage(&file, "TestMessage");
+    PROTOBUF_IGNORE_DEPRECATION_START
+    message->mutable_options()->set_deprecated_legacy_json_field_conflicts(
+        true);
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     AddField(message, "foo_foo", 1, FieldDescriptorProto::LABEL_OPTIONAL,
              FieldDescriptorProto::TYPE_INT32);
     AddField(message, "FooBar", 2, FieldDescriptorProto::LABEL_OPTIONAL,
@@ -2994,7 +3061,7 @@ class AllowUnknownDependenciesTest
         return pool_->FindFileByName(proto.name());
       }
     }
-    GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+    ABSL_LOG(FATAL) << "Can't get here.";
     return nullptr;
   }
 
@@ -3219,7 +3286,7 @@ TEST_P(AllowUnknownDependenciesTest,
 
   const FileDescriptor* file = BuildFile(test_proto);
   ASSERT_TRUE(file != nullptr);
-  GOOGLE_ABSL_LOG(INFO) << file->DebugString();
+  ABSL_LOG(INFO) << file->DebugString();
 
   EXPECT_EQ(0, file->dependency_count());
   ASSERT_EQ(1, file->message_type_count());
@@ -3928,8 +3995,9 @@ class ValidationErrorTest : public testing::Test {
   const FileDescriptor* BuildFile(const std::string& file_text) {
     FileDescriptorProto file_proto;
     EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
-    return GOOGLE_CHECK_NOTNULL(pool_.BuildFile(file_proto));
+    return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
   }
+
 
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect errors to be produced which match the
@@ -3969,6 +4037,16 @@ class ValidationErrorTest : public testing::Test {
   // the test pool, so we can test custom options.
   void BuildDescriptorMessagesInTestPool() {
     BuildFileInTestPool(DescriptorProto::descriptor()->file());
+  }
+
+  void BuildDescriptorMessagesInTestPoolWithErrors(
+      absl::string_view expected_errors) {
+    FileDescriptorProto file_proto;
+    DescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    MockErrorCollector error_collector;
+    EXPECT_TRUE(pool_.BuildFileCollectingErrors(file_proto, &error_collector) ==
+                nullptr);
+    EXPECT_EQ(error_collector.text_, expected_errors);
   }
 
   DescriptorPool pool_;
@@ -4582,50 +4660,6 @@ TEST_F(ValidationErrorTest, HugeFieldNumber) {
       "536870911.\n"
       "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1\n");
 }
-
-TEST_F(ValidationErrorTest, ReservedFieldNumber) {
-  BuildFileWithErrors(
-      R"pb(
-        name: "foo.proto"
-        message_type {
-          name: "Foo"
-          field {
-            name: "foo"
-            number: 18999
-            label: LABEL_OPTIONAL
-            type: TYPE_INT32
-          }
-          field {
-            name: "bar"
-            number: 19000
-            label: LABEL_OPTIONAL
-            type: TYPE_MESSAGE
-            type_name: "Foo"
-          }
-          field {
-            name: "baz"
-            number: 19999
-            label: LABEL_OPTIONAL
-            type: TYPE_MESSAGE
-            type_name: ".Foo"
-          }
-          field {
-            name: "moo"
-            number: 20000
-            label: LABEL_OPTIONAL
-            type: TYPE_INT32
-          }
-        }
-      )pb",
-
-      "foo.proto: Foo.bar: NUMBER: Field numbers 19000 through 19999 are "
-      "reserved for the protocol buffer library implementation, and the type "
-      "name must be fully qualified with a `.` prefix.\n"
-      "foo.proto: Foo.baz: NUMBER: Field numbers 19000 through 19999 are "
-      "reserved for the protocol buffer library implementation.\n"
-      "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1, 2\n");
-}
-
 
 TEST_F(ValidationErrorTest, ExtensionMissingExtendee) {
   BuildFileWithErrors(
@@ -6092,7 +6126,7 @@ TEST_F(ValidationErrorTest, RollbackAfterError) {
 }
 
 TEST_F(ValidationErrorTest, ErrorsReportedToLogError) {
-  // Test that errors are reported to GOOGLE_ABSL_LOG(ERROR) if no error collector is
+  // Test that errors are reported to ABSL_LOG(ERROR) if no error collector is
   // provided.
 
   FileDescriptorProto file_proto;
@@ -6101,19 +6135,15 @@ TEST_F(ValidationErrorTest, ErrorsReportedToLogError) {
                                   "message_type { name: \"Foo\" } "
                                   "message_type { name: \"Foo\" } ",
                                   &file_proto));
-
-  std::vector<std::string> errors;
-
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_,
+                         "Invalid proto descriptor for file \"foo.proto\":"));
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_,
+                         "  Foo: \"Foo\" is already defined."));
+    log.StartCapturingLogs();
     EXPECT_TRUE(pool_.BuildFile(file_proto) == nullptr);
-    errors = log.GetMessages(ERROR);
   }
-
-  ASSERT_EQ(2, errors.size());
-
-  EXPECT_EQ("Invalid proto descriptor for file \"foo.proto\":", errors[0]);
-  EXPECT_EQ("  Foo: \"Foo\" is already defined.", errors[1]);
 }
 
 TEST_F(ValidationErrorTest, DisallowEnumAlias) {
@@ -7076,6 +7106,7 @@ TEST_F(ValidationErrorTest, UnusedImportWithOtherError) {
 }
 
 
+
 TEST_F(ValidationErrorTest, PackageTooLong) {
   BuildFileWithErrors(
       "name: \"foo.proto\" "
@@ -7099,6 +7130,7 @@ TEST_F(ValidationErrorTest, PackageTooLong) {
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       "aaaaaaaa: NAME: Package name is too long\n");
 }
+
 
 // ===================================================================
 // DescriptorDatabase
@@ -7346,15 +7378,13 @@ TEST_F(DatabaseBackedPoolTest, ErrorWithoutErrorCollector) {
   ErrorDescriptorDatabase error_database;
   DescriptorPool pool(&error_database);
 
-  std::vector<std::string> errors;
-
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log;
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_))
+        .Times(testing::AtLeast(1));
+    log.StartCapturingLogs();
     EXPECT_TRUE(pool.FindFileByName("error.proto") == nullptr);
-    errors = log.GetMessages(ERROR);
   }
-
-  EXPECT_FALSE(errors.empty());
 }
 
 TEST_F(DatabaseBackedPoolTest, ErrorWithErrorCollector) {
@@ -7375,7 +7405,7 @@ TEST_F(DatabaseBackedPoolTest, ErrorWithErrorCollector) {
 
 TEST_F(DatabaseBackedPoolTest, UndeclaredDependencyOnUnbuiltType) {
   // Check that we find and report undeclared dependencies on types that exist
-  // in the descriptor database but that have not not been built yet.
+  // in the descriptor database but that have not been built yet.
   MockErrorCollector error_collector;
   DescriptorPool pool(&database_, &error_collector);
   EXPECT_TRUE(pool.FindMessageTypeByName("Baz") == nullptr);
@@ -7539,11 +7569,11 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
                  absl::string_view end_with, int32_t* file_num) {
     if (!absl::ConsumePrefix(&name, begin_with)) return;
     if (!absl::ConsumeSuffix(&name, end_with)) return;
-    GOOGLE_ABSL_CHECK(absl::SimpleAtoi(name, file_num));
+    ABSL_CHECK(absl::SimpleAtoi(name, file_num));
   }
 
   bool PopulateFile(int file_num, FileDescriptorProto* output) {
-    GOOGLE_ABSL_CHECK_GE(file_num, 0);
+    ABSL_CHECK_GE(file_num, 0);
     output->Clear();
     output->set_name(absl::Substitute("file$0.proto", file_num));
     // file0.proto doesn't define Message0
@@ -7568,7 +7598,7 @@ TEST_F(DatabaseBackedPoolTest, DoesntReloadKnownBadFiles) {
   ExponentialErrorDatabase error_database;
   DescriptorPool pool(&error_database);
 
-  GOOGLE_ABSL_LOG(INFO) << "A timeout in this test probably indicates a real bug.";
+  ABSL_LOG(INFO) << "A timeout in this test probably indicates a real bug.";
 
   EXPECT_TRUE(pool.FindFileByName("file40.proto") == nullptr);
   EXPECT_TRUE(pool.FindMessageTypeByName("Message40") == nullptr);
@@ -7610,10 +7640,10 @@ class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
   AbortingErrorCollector(const AbortingErrorCollector&) = delete;
   AbortingErrorCollector& operator=(const AbortingErrorCollector&) = delete;
 
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* message, ErrorLocation location,
-                const std::string& error_message) override {
-    GOOGLE_ABSL_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* message, ErrorLocation location,
+                   absl::string_view error_message) override {
+    ABSL_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
                     << element_name << "]: " << error_message;
   }
 };
@@ -7758,7 +7788,7 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   const Descriptor* a_desc = file_desc->FindMessageTypeByName("A");
   EXPECT_TRUE(a_desc->GetSourceLocation(&loc));
@@ -7789,7 +7819,7 @@ TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   const FieldDescriptor* int32_extension_desc =
       file_desc->FindExtensionByName("int32_extension");
@@ -7816,7 +7846,7 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   // File options
   {
@@ -8179,7 +8209,7 @@ TEST_F(SourceLocationTest, GetSourceLocation_MissingSourceCodeInfo) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   FileDescriptorProto proto;
   file_desc->CopyTo(&proto);  // Note, this discards the SourceCodeInfo.
@@ -8187,7 +8217,7 @@ TEST_F(SourceLocationTest, GetSourceLocation_MissingSourceCodeInfo) {
 
   DescriptorPool bad1_pool(&pool_);
   const FileDescriptor* bad1_file_desc =
-      GOOGLE_CHECK_NOTNULL(bad1_pool.BuildFile(proto));
+      ABSL_DIE_IF_NULL(bad1_pool.BuildFile(proto));
   const Descriptor* bad1_a_desc = bad1_file_desc->FindMessageTypeByName("A");
   EXPECT_FALSE(bad1_a_desc->GetSourceLocation(&loc));
 }
@@ -8197,7 +8227,7 @@ TEST_F(SourceLocationTest, GetSourceLocation_BogusSourceCodeInfo) {
   SourceLocation loc;
 
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
 
   FileDescriptorProto proto;
   file_desc->CopyTo(&proto);  // Note, this discards the SourceCodeInfo.
@@ -8213,7 +8243,7 @@ TEST_F(SourceLocationTest, GetSourceLocation_BogusSourceCodeInfo) {
 
   DescriptorPool bad2_pool(&pool_);
   const FileDescriptor* bad2_file_desc =
-      GOOGLE_CHECK_NOTNULL(bad2_pool.BuildFile(proto));
+      ABSL_DIE_IF_NULL(bad2_pool.BuildFile(proto));
   const Descriptor* bad2_a_desc = bad2_file_desc->FindMessageTypeByName("A");
   EXPECT_FALSE(bad2_a_desc->GetSourceLocation(&loc));
 }
@@ -8244,7 +8274,7 @@ class CopySourceCodeInfoToTest : public testing::Test {
 
 TEST_F(CopySourceCodeInfoToTest, CopyTo_DoesNotCopySourceCodeInfo) {
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
   FileDescriptorProto file_desc_proto;
   ASSERT_FALSE(file_desc_proto.has_source_code_info());
 
@@ -8254,7 +8284,7 @@ TEST_F(CopySourceCodeInfoToTest, CopyTo_DoesNotCopySourceCodeInfo) {
 
 TEST_F(CopySourceCodeInfoToTest, CopySourceCodeInfoTo) {
   const FileDescriptor* file_desc =
-      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
   FileDescriptorProto file_desc_proto;
   ASSERT_FALSE(file_desc_proto.has_source_code_info());
 
@@ -8280,46 +8310,41 @@ class LazilyBuildDependenciesTest : public testing::Test {
     pool_.InternalSetLazilyBuildDependencies();
   }
 
-  void ParseProtoAndAddToDb(const char* proto) {
+  void ParseProtoAndAddToDb(absl::string_view proto) {
     FileDescriptorProto tmp;
     ASSERT_TRUE(TextFormat::ParseFromString(proto, &tmp));
     db_.Add(tmp);
   }
 
-  void ParseProtoAndAddToDb(const std::string& proto) {
-    FileDescriptorProto tmp;
-    ASSERT_TRUE(TextFormat::ParseFromString(proto, &tmp));
-    db_.Add(tmp);
+  void AddSimpleMessageProtoFileToDb(absl::string_view file_name,
+                                     absl::string_view message_name) {
+    ParseProtoAndAddToDb(absl::StrCat("name: '", file_name,
+                                      ".proto' "
+                                      "package: \"protobuf_unittest\" "
+                                      "message_type { "
+                                      "  name:'",
+                                      message_name,
+                                      "' "
+                                      "  field { name:'a' number:1 "
+                                      "  label:LABEL_OPTIONAL "
+                                      "  type_name:'int32' } "
+                                      "}"));
   }
 
-  void AddSimpleMessageProtoFileToDb(const char* file_name,
-                                     const char* message_name) {
-    ParseProtoAndAddToDb("name: '" + std::string(file_name) +
-                         ".proto' "
-                         "package: \"protobuf_unittest\" "
-                         "message_type { "
-                         "  name:'" +
-                         std::string(message_name) +
-                         "' "
-                         "  field { name:'a' number:1 "
-                         "  label:LABEL_OPTIONAL "
-                         "  type_name:'int32' } "
-                         "}");
-  }
-
-  void AddSimpleEnumProtoFileToDb(const char* file_name, const char* enum_name,
-                                  const char* enum_value_name) {
-    ParseProtoAndAddToDb("name: '" + std::string(file_name) +
-                         ".proto' "
-                         "package: 'protobuf_unittest' "
-                         "enum_type { "
-                         "  name:'" +
-                         std::string(enum_name) +
-                         "' "
-                         "  value { name:'" +
-                         std::string(enum_value_name) +
-                         "' number:1 } "
-                         "}");
+  void AddSimpleEnumProtoFileToDb(absl::string_view file_name,
+                                  absl::string_view enum_name,
+                                  absl::string_view enum_value_name) {
+    ParseProtoAndAddToDb(absl::StrCat("name: '", file_name,
+                                      ".proto' "
+                                      "package: 'protobuf_unittest' "
+                                      "enum_type { "
+                                      "  name:'",
+                                      enum_name,
+                                      "' "
+                                      "  value { name:'",
+                                      enum_value_name,
+                                      "' number:1 } "
+                                      "}"));
   }
 
  protected:
@@ -8549,7 +8574,7 @@ TEST_F(LazilyBuildDependenciesTest, GeneratedFile) {
       "google/protobuf/unittest_lazy_dependencies_enum.proto"));
 
   // Verify calling autogenerated function to get a descriptor in the base
-  // file will build that file but none of it's imports. This verifies that
+  // file will build that file but none of its imports. This verifies that
   // lazily_build_dependencies_ is set on the generated pool, and also that
   // the generated function "descriptor()" doesn't somehow subvert the laziness
   // by manually loading the dependencies or something.
@@ -8613,7 +8638,7 @@ TEST_F(LazilyBuildDependenciesTest, Dependency) {
 
   const FileDescriptor* foo_file = pool_.FindFileByName("foo.proto");
   EXPECT_TRUE(foo_file != nullptr);
-  // As expected, requesting foo.proto shouldn't build it's dependencies
+  // As expected, requesting foo.proto shouldn't build its dependencies
   EXPECT_TRUE(pool_.InternalIsFileLoaded("foo.proto"));
   EXPECT_FALSE(pool_.InternalIsFileLoaded("bar.proto"));
   EXPECT_FALSE(pool_.InternalIsFileLoaded("baz.proto"));

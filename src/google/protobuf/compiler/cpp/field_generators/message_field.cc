@@ -34,9 +34,10 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -49,13 +50,13 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-std::string ReinterpretCast(const std::string& type,
-                            const std::string& expression,
+std::string ReinterpretCast(absl::string_view type,
+                            absl::string_view expression,
                             bool implicit_weak_field) {
   if (implicit_weak_field) {
-    return "reinterpret_cast< " + type + " >(" + expression + ")";
+    return absl::StrCat("reinterpret_cast< ", type, " >(", expression, ")");
   } else {
-    return expression;
+    return std::string(expression);
   }
 }
 
@@ -63,16 +64,17 @@ void SetMessageVariables(
     const FieldDescriptor* descriptor, const Options& options,
     bool implicit_weak,
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
-  SetCommonFieldVariables(descriptor, variables, options);
+  bool split = ShouldSplit(descriptor, options);
+  std::string field_name = FieldMemberName(descriptor, split);
+
   (*variables)["type"] = FieldMessageTypeName(descriptor, options);
   variables->insert(
       {"casted_member", ReinterpretCast(absl::StrCat((*variables)["type"], "*"),
-                                        (*variables)["field"], implicit_weak)});
+                                        field_name, implicit_weak)});
   variables->insert(
       {"casted_member_const",
        ReinterpretCast(absl::StrCat("const ", (*variables)["type"], "&"),
-                       absl::StrCat("*", (*variables)["field"]),
-                       implicit_weak)});
+                       absl::StrCat("*", field_name), implicit_weak)});
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_default_instance_ptr"] = ReinterpretCast(
@@ -202,8 +204,11 @@ void MessageFieldGenerator::GenerateAccessorDeclarations(
   format(
       "$deprecated_attr$const $type$& ${1$$name$$}$() const;\n"
       "PROTOBUF_NODISCARD $deprecated_attr$$type$* "
-      "${1$$release_name$$}$();\n"
-      "$deprecated_attr$$type$* ${1$mutable_$name$$}$();\n"
+      "${1$$release_name$$}$();\n",
+      descriptor_);
+  format("$deprecated_attr$$type$* ${1$mutable_$name$$}$();\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
+  format(
       "$deprecated_attr$void ${1$set_allocated_$name$$}$"
       "($type$* $name$);\n"
       "private:\n"
@@ -593,7 +598,6 @@ MessageOneofFieldGenerator::MessageOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options,
     MessageSCCAnalyzer* scc_analyzer)
     : MessageFieldGenerator(descriptor, options, scc_analyzer) {
-  SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
 void MessageOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
@@ -793,18 +797,23 @@ void RepeatedMessageFieldGenerator::GeneratePrivateMembers(
 void RepeatedMessageFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
+  format("$deprecated_attr$$type$* ${1$mutable_$name$$}$(int index);\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
   format(
-      "$deprecated_attr$$type$* ${1$mutable_$name$$}$(int index);\n"
       "$deprecated_attr$::$proto_ns$::RepeatedPtrField< $type$ >*\n"
-      "    ${1$mutable_$name$$}$();\n"
+      "    ${1$mutable_$name$$}$();\n",
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
+  format(
       "private:\n"
       "const $type$& ${1$_internal_$name$$}$(int index) const;\n"
       "$type$* ${1$_internal_add_$name$$}$();\n"
       "public:\n",
       descriptor_);
+  format("$deprecated_attr$const $type$& ${1$$name$$}$(int index) const;\n",
+         descriptor_);
+  format("$deprecated_attr$$type$* ${1$add_$name$$}$();\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
   format(
-      "$deprecated_attr$const $type$& ${1$$name$$}$(int index) const;\n"
-      "$deprecated_attr$$type$* ${1$add_$name$$}$();\n"
       "$deprecated_attr$const ::$proto_ns$::RepeatedPtrField< $type$ >&\n"
       "    ${1$$name$$}$() const;\n",
       descriptor_);

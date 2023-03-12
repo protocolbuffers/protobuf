@@ -552,6 +552,9 @@ message TestMutualRecursionA {
     optional SubMessage sub_message = 3;  // Needed because of bug in javatest
     optional TestAllTypes not_in_this_scc = 4;
   }
+  repeated group SubGroupR = 5 {
+    optional TestAllTypes payload = 6;
+  }
 }
 
 message TestMutualRecursionB {
@@ -1544,9 +1547,16 @@ message EnumParseTester {
   repeated Arbitrary packed_arbitrary_midfield = 1012 [packed = true];
   repeated Arbitrary packed_arbitrary_hifield = 1000012 [packed = true];
 
+  extensions 2000000 to max;
+  extend EnumParseTester {
+    optional Arbitrary optional_arbitrary_ext = 2000000;
+    repeated Arbitrary repeated_arbitrary_ext = 2000001;
+    repeated Arbitrary packed_arbitrary_ext = 2000002 [packed = true];
+  }
+
   // An arbitrary field we can append to to break the runs of repeated fields.
   optional int32 other_field = 99;
-};
+}
 
 // This message contains different kind of bool fields to exercise the different
 // parsers in table-drived.
@@ -1561,9 +1571,72 @@ message BoolParseTester {
   repeated bool packed_bool_midfield = 1003 [packed = true];
   repeated bool packed_bool_hifield = 1000003 [packed = true];
 
+  extensions 2000000 to max;
+  extend BoolParseTester {
+    optional bool optional_bool_ext = 2000000;
+    repeated bool repeated_bool_ext = 2000001;
+    repeated bool packed_bool_ext = 2000002 [packed = true];
+  }
+
   // An arbitrary field we can append to to break the runs of repeated fields.
   optional int32 other_field = 99;
-};
+}
+
+message Int32ParseTester {
+  optional int32 optional_int32_lowfield = 1;
+  optional int32 optional_int32_midfield = 1001;
+  optional int32 optional_int32_hifield = 1000001;
+  repeated int32 repeated_int32_lowfield = 2;
+  repeated int32 repeated_int32_midfield = 1002;
+  repeated int32 repeated_int32_hifield = 1000002;
+  repeated int32 packed_int32_lowfield = 3 [packed = true];
+  repeated int32 packed_int32_midfield = 1003 [packed = true];
+  repeated int32 packed_int32_hifield = 1000003 [packed = true];
+
+  extensions 2000000 to max;
+  extend Int32ParseTester {
+    optional int32 optional_int32_ext = 2000000;
+    repeated int32 repeated_int32_ext = 2000001;
+    repeated int32 packed_int32_ext = 2000002 [packed = true];
+  }
+
+  // An arbitrary field we can append to to break the runs of repeated fields.
+  optional int32 other_field = 99;
+}
+
+message Int64ParseTester {
+  optional int64 optional_int64_lowfield = 1;
+  optional int64 optional_int64_midfield = 1001;
+  optional int64 optional_int64_hifield = 1000001;
+  repeated int64 repeated_int64_lowfield = 2;
+  repeated int64 repeated_int64_midfield = 1002;
+  repeated int64 repeated_int64_hifield = 1000002;
+  repeated int64 packed_int64_lowfield = 3 [packed = true];
+  repeated int64 packed_int64_midfield = 1003 [packed = true];
+  repeated int64 packed_int64_hifield = 1000003 [packed = true];
+
+  extensions 2000000 to max;
+  extend Int64ParseTester {
+    optional int64 optional_int64_ext = 2000000;
+    repeated int64 repeated_int64_ext = 2000001;
+    repeated int64 packed_int64_ext = 2000002 [packed = true];
+  }
+
+  // An arbitrary field we can append to to break the runs of repeated fields.
+  optional int32 other_field = 99;
+}
+
+message InlinedStringIdxRegressionProto {
+  // We mix data to make sure aux ids and inlined string idx do not match.
+  // aux_idx == inlined_string_idx == 1
+  optional string str1 = 1;
+  // aux_idx == 2
+  optional InlinedStringIdxRegressionProto sub = 2;
+  // aux_idx == 3, inlined_string_idx == 2
+  optional string str2 = 3;
+  // aux_idx == 4, inlined_string_idx == 3
+  optional bytes str3 = 4;
+}
 
 message StringParseTester {
   optional string optional_string_lowfield = 1;
@@ -1572,7 +1645,13 @@ message StringParseTester {
   repeated string repeated_string_lowfield = 2;
   repeated string repeated_string_midfield = 1002;
   repeated string repeated_string_hifield = 1000002;
-};
+
+  extensions 2000000 to max;
+  extend StringParseTester {
+    optional string optional_string_ext = 2000000;
+    repeated string repeated_string_ext = 2000001;
+  }
+}
 
 message BadFieldNames{
   optional int32 OptionalInt32 = 1;

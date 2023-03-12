@@ -76,7 +76,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       case WireFormatLite::TYPE_BYTES:
       case WireFormatLite::TYPE_GROUP:
       case WireFormatLite::TYPE_MESSAGE:
-        GOOGLE_ABSL_LOG(FATAL) << "Non-primitive types can't be packed.";
+        ABSL_LOG(FATAL) << "Non-primitive types can't be packed.";
         break;
     }
   } else {
@@ -141,14 +141,14 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 #undef HANDLE_FIXED_TYPE
 
       case WireFormatLite::TYPE_ENUM: {
-        uint64_t val;
-        ptr = VarintParse(ptr, &val);
+        uint64_t tmp;
+        ptr = VarintParse(ptr, &tmp);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        int value = val;
+        int value = tmp;
 
         if (!extension.enum_validity_check.func(
                 extension.enum_validity_check.arg, value)) {
-          WriteVarint(number, val, metadata->mutable_unknown_fields<T>());
+          WriteVarint(number, value, metadata->mutable_unknown_fields<T>());
         } else if (extension.is_repeated) {
           AddEnum(number, WireFormatLite::TYPE_ENUM, extension.is_packed, value,
                   extension.descriptor);
@@ -206,7 +206,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
     const char* ptr, const Msg* extendee, internal::InternalMetadata* metadata,
     internal::ParseContext* ctx) {
   std::string payload;
-  uint32_t type_id;
+  uint32_t type_id = 0;
   enum class State { kNoTag, kHasType, kHasPayload, kDone };
   State state = State::kNoTag;
 

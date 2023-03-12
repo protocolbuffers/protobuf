@@ -39,10 +39,8 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
-#include "absl/strings/str_cat.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -50,6 +48,7 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/tracker.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -61,22 +60,24 @@ namespace cpp {
 using ::google::protobuf::internal::WireFormat;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
-absl::flat_hash_map<absl::string_view, std::string> FieldVars(
-    const FieldDescriptor* field, const Options& opts) {
+std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
-  absl::flat_hash_map<absl::string_view, std::string> vars = {
-      {"ns", Namespace(field, opts)},
+  std::vector<Sub> vars = {
+      // This will eventually be renamed to "field", once the existing "field"
+      // variable is replaced with "field_" everywhere.
       {"name", FieldName(field)},
-      {"index", absl::StrCat(field->index())},
-      {"number", absl::StrCat(field->number())},
-      {"classname", ClassName(FieldScope(field), false)},
-      {"declared_type", DeclaredTypeMethodName(field->type())},
-      {"field", FieldMemberName(field, split)},
-      {"tag_size",
-       absl::StrCat(WireFormat::TagSize(field->number(), field->type()))},
-      {"deprecated_attr", DeprecatedAttribute(opts, field)},
-      {"maybe_prepare_split_message",
-       split ? "PrepareSplitMessageForWrite();" : ""},
+
+      {"index", field->index()},
+      {"number", field->number()},
+      {"pkg.Msg.field", field->full_name()},
+
+      {"field_", FieldMemberName(field, split)},
+      {"DeclaredType", DeclaredTypeMethodName(field->type())},
+      {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
+      Sub("PrepareSplitMessageForWrite",
+          split ? "PrepareSplitMessageForWrite();" : "")
+          .WithSuffix(";"),
+      Sub("DEPRECATED", DeprecatedAttribute(opts, field)).WithSuffix(" "),
 
       // These variables are placeholders to pick out the beginning and ends of
       // identifiers for annotations (when doing so with existing variables
@@ -84,45 +85,32 @@ absl::flat_hash_map<absl::string_view, std::string> FieldVars(
       // but the empty string.
       {"{", ""},
       {"}", ""},
+
+      // Old-style names.
+      {"field", FieldMemberName(field, split)},
+      {"maybe_prepare_split_message",
+       split ? "PrepareSplitMessageForWrite();" : ""},
+      {"declared_type", DeclaredTypeMethodName(field->type())},
+      {"classname", ClassName(FieldScope(field), false)},
+      {"ns", Namespace(field, opts)},
+      {"tag_size", WireFormat::TagSize(field->number(), field->type())},
+      {"deprecated_attr", DeprecatedAttribute(opts, field)},
   };
 
   if (const auto* oneof = field->containing_oneof()) {
     auto field_name = UnderscoresToCamelCase(field->name(), true);
 
-    vars.insert({"oneof_name", oneof->name()});
-    vars.insert({"field_name", field_name});
-    vars.insert({"oneof_index", absl::StrCat(oneof->index())});
-    vars.insert({"has_field", absl::StrFormat("%s_case() == k%s", oneof->name(),
-                                              field_name)});
-    vars.insert({"not_has_field", absl::StrFormat("%s_case() != k%s",
-                                                  oneof->name(), field_name)});
+    vars.push_back({"oneof_name", oneof->name()});
+    vars.push_back({"field_name", field_name});
+    vars.push_back({"oneof_index", oneof->index()});
+    vars.push_back({"has_field", absl::StrFormat("%s_case() == k%s",
+                                                 oneof->name(), field_name)});
+    vars.push_back(
+        {"not_has_field",
+         absl::StrFormat("%s_case() != k%s", oneof->name(), field_name)});
   }
 
   return vars;
-}
-
-void SetCommonFieldVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables,
-    const Options& options) {
-  SetCommonMessageDataVariables(descriptor->containing_type(), variables);
-
-  for (auto& pair : FieldVars(descriptor, options)) {
-    variables->emplace(pair);
-  }
-}
-
-absl::flat_hash_map<absl::string_view, std::string> OneofFieldVars(
-    const FieldDescriptor* descriptor) {
-  return {};
-}
-
-void SetCommonOneofFieldVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
-  for (auto& pair : OneofFieldVars(descriptor)) {
-    variables->emplace(pair);
-  }
 }
 
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
@@ -156,7 +144,7 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
 }
 
 void FieldGeneratorBase::GenerateIfHasField(io::Printer* p) const {
-  GOOGLE_ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
+  ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
 
   Formatter format(p);
   format("if (($has_hasbit$) != 0) {\n");
@@ -183,17 +171,9 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
     }
   }
 
-  if (field->real_containing_oneof()) {
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return MakeOneofMessageGenerator(field, options, scc);
-      case FieldDescriptor::CPPTYPE_STRING:
-        return MakeOneofStringGenerator(field, options, scc);
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return MakeOneofEnumGenerator(field, options, scc);
-      default:
-        return MakeOneofPrimitiveGenerator(field, options, scc);
-    }
+  if (field->real_containing_oneof() &&
+      field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    return MakeOneofMessageGenerator(field, options, scc);
   }
 
   switch (field->cpp_type()) {
@@ -216,7 +196,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
     return;
   }
 
-  GOOGLE_ABSL_CHECK(internal::cpp::HasHasbit(field));
+  ABSL_CHECK(internal::cpp::HasHasbit(field));
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
@@ -225,23 +205,24 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
                                    ? "_has_bits_"
                                    : "_impl_._has_bits_";
 
-  vars.emplace_back("has_hasbit",
-                    absl::StrFormat("%s[%d] & %s", has_bits, index, mask));
-  vars.emplace_back("set_hasbit",
-                    absl::StrFormat("%s[%d] |= %s;", has_bits, index, mask));
-  vars.emplace_back("clear_hasbit",
-                    absl::StrFormat("%s[%d] &= ~%s;", has_bits, index, mask));
+  auto has = absl::StrFormat("%s[%d] & %s", has_bits, index, mask);
+  auto set = absl::StrFormat("%s[%d] |= %s;", has_bits, index, mask);
+  auto clr = absl::StrFormat("%s[%d] &= ~%s;", has_bits, index, mask);
+
+  vars.emplace_back("has_hasbit", has);
+  vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
+  vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
 }
 
 void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
                        absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
   if (!IsStringInlined(field, opts)) {
-    GOOGLE_ABSL_CHECK(!idx.has_value());
+    ABSL_CHECK(!idx.has_value());
     return;
   }
 
   // The first bit is the tracking bit for on demand registering ArenaDtor.
-  GOOGLE_ABSL_CHECK_GT(*idx, 0)
+  ABSL_CHECK_GT(*idx, 0)
       << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
 
   int32_t index = *idx / 32;
@@ -265,15 +246,9 @@ FieldGenerator::FieldGenerator(const FieldDescriptor* field,
                                absl::optional<uint32_t> hasbit_index,
                                absl::optional<uint32_t> inlined_string_index)
     : impl_(MakeGenerator(field, options, scc_analyzer)),
+      field_vars_(FieldVars(field, options)),
       tracker_vars_(MakeTrackerCalls(field, options)),
       per_generator_vars_(impl_->MakeVars()) {
-  for (auto&& kv : FieldVars(field, options)) {
-    field_vars_.push_back(Sub{std::string(kv.first), kv.second});
-  }
-  for (auto&& kv : OneofFieldVars(field)) {
-    field_vars_.push_back(Sub{std::string(kv.first), kv.second});
-  }
-
   HasBitVars(field, options, hasbit_index, field_vars_);
   InlinedStringVars(field, options, inlined_string_index, field_vars_);
 }

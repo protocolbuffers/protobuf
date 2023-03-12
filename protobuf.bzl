@@ -307,6 +307,7 @@ def _internal_gen_well_known_protos_java_impl(ctx):
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
+        mnemonic = "ProtoCompile",
         use_default_shell_env = True,
     )
 
@@ -369,6 +370,7 @@ def _internal_gen_kt_protos(ctx):
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
+        mnemonic = "ProtoCompile",
         use_default_shell_env = True,
     )
 

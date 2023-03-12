@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2018 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -86,10 +86,10 @@ namespace Google.Protobuf.Test.Reflection
         {
             var message = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
             Assert.NotNull(message.Declaration);
-            Assert.AreEqual(389, message.Declaration.StartLine);
+            Assert.AreEqual(386, message.Declaration.StartLine);
             Assert.AreEqual(1, message.Declaration.StartColumn);
 
-            Assert.AreEqual(404, message.Declaration.EndLine);
+            Assert.AreEqual(401, message.Declaration.EndLine);
             Assert.AreEqual(2, message.Declaration.EndColumn);
         }
 
@@ -169,7 +169,7 @@ namespace Google.Protobuf.Test.Reflection
             }
             var byteStrings = descriptorSet.File.Select(f => f.ToByteString()).ToList();
             var descriptors = FileDescriptor.BuildFromByteStrings(byteStrings);
-            return descriptors.Single(d => d.Name == "unittest_proto3.proto");
+            return descriptors.Single(d => d.Name == "csharp/protos/unittest_proto3.proto");
         }
     }
 }

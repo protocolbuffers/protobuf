@@ -31,10 +31,11 @@
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
 
 #include <iomanip>
+#include <memory>
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -49,15 +50,15 @@ namespace ruby {
 // Forward decls.
 template <class numeric_type>
 std::string NumberToString(numeric_type value);
-std::string GetRequireName(const std::string& proto_file);
+std::string GetRequireName(absl::string_view proto_file);
 std::string LabelForField(FieldDescriptor* field);
 std::string TypeName(FieldDescriptor* field);
 bool GenerateMessage(const Descriptor* message, io::Printer* printer,
                      std::string* error);
 void GenerateEnum(const EnumDescriptor* en, io::Printer* printer);
-void GenerateMessageAssignment(const std::string& prefix,
+void GenerateMessageAssignment(absl::string_view prefix,
                                const Descriptor* message, io::Printer* printer);
-void GenerateEnumAssignment(const std::string& prefix, const EnumDescriptor* en,
+void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
                             io::Printer* printer);
 std::string DefaultValueForField(const FieldDescriptor* field);
 
@@ -68,18 +69,17 @@ std::string NumberToString(numeric_type value) {
   return os.str();
 }
 
-std::string GetRequireName(const std::string& proto_file) {
-  int lastindex = proto_file.find_last_of('.');
-  return proto_file.substr(0, lastindex) + "_pb";
+std::string GetRequireName(absl::string_view proto_file) {
+  size_t lastindex = proto_file.find_last_of('.');
+  return absl::StrCat(proto_file.substr(0, lastindex), "_pb");
 }
 
-std::string GetOutputFilename(const std::string& proto_file) {
-  return GetRequireName(proto_file) + ".rb";
+std::string GetOutputFilename(absl::string_view proto_file) {
+  return absl::StrCat(GetRequireName(proto_file), ".rb");
 }
 
 std::string LabelForField(const FieldDescriptor* field) {
-  if (field->has_optional_keyword() &&
-      field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+  if (field->has_optional_keyword() && field->containing_oneof() != nullptr) {
     return "proto3_optional";
   }
   switch (field->label()) {
@@ -122,7 +122,7 @@ std::string StringifySyntax(FileDescriptor::Syntax syntax) {
       return "proto3";
     case FileDescriptor::SYNTAX_UNKNOWN:
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unsupported syntax; this generator only supports "
+      ABSL_LOG(FATAL) << "Unsupported syntax; this generator only supports "
                          "proto2 and proto3 syntax.";
       return "";
   }
@@ -248,7 +248,7 @@ void GenerateOneof(const OneofDescriptor* oneof, io::Printer* printer) {
 bool GenerateMessage(const Descriptor* message, io::Printer* printer,
                      std::string* error) {
   if (message->extension_range_count() > 0 || message->extension_count() > 0) {
-    GOOGLE_ABSL_LOG(WARNING)
+    ABSL_LOG(WARNING)
         << "Extensions are not yet supported for proto2 .proto files.";
   }
 
@@ -323,7 +323,7 @@ char UpperChar(char ch) { return IsLower(ch) ? (ch - 'a' + 'A') : ch; }
 // names must be PascalCased.
 //
 //   foo_bar_baz -> FooBarBaz
-std::string PackageToModule(const std::string& name) {
+std::string PackageToModule(absl::string_view name) {
   bool next_upper = true;
   std::string result;
   result.reserve(name.size());
@@ -348,8 +348,8 @@ std::string PackageToModule(const std::string& name) {
 // since there is nothing enforcing this we need to ensure that they are valid
 // Ruby constants.  That mainly means making sure that the first character is
 // an upper-case letter.
-std::string RubifyConstant(const std::string& name) {
-  std::string ret = name;
+std::string RubifyConstant(absl::string_view name) {
+  std::string ret(name);
   if (!ret.empty()) {
     if (IsLower(ret[0])) {
       // If it starts with a lowercase letter, capitalize it.
@@ -360,14 +360,14 @@ std::string RubifyConstant(const std::string& name) {
       // here, e.g. try to strip leading underscores, but this may cause other
       // problems if the user really intended the name. So let's just prepend a
       // well-known suffix.
-      ret = "PB_" + ret;
+      return absl::StrCat("PB_", ret);
     }
   }
 
   return ret;
 }
 
-void GenerateMessageAssignment(const std::string& prefix,
+void GenerateMessageAssignment(absl::string_view prefix,
                                const Descriptor* message,
                                io::Printer* printer) {
   // Don't generate MapEntry messages -- we use the Ruby extension's native
@@ -385,7 +385,8 @@ void GenerateMessageAssignment(const std::string& prefix,
     "lookup(\"$full_name$\").msgclass\n",
     "full_name", message->full_name());
 
-  std::string nested_prefix = prefix + RubifyConstant(message->name()) + "::";
+  std::string nested_prefix =
+      absl::StrCat(prefix, RubifyConstant(message->name()), "::");
   for (int i = 0; i < message->nested_type_count(); i++) {
     GenerateMessageAssignment(nested_prefix, message->nested_type(i), printer);
   }
@@ -394,7 +395,7 @@ void GenerateMessageAssignment(const std::string& prefix,
   }
 }
 
-void GenerateEnumAssignment(const std::string& prefix, const EnumDescriptor* en,
+void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
                             io::Printer* printer) {
   printer->Print(
     "$prefix$$name$ = ",
@@ -424,7 +425,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
     if (package_name.find("::") != std::string::npos) {
       need_change_to_module = false;
     } else if (package_name.find('.') != std::string::npos) {
-      GOOGLE_ABSL_LOG(WARNING) << "ruby_package option should be in the form of:"
+      ABSL_LOG(WARNING) << "ruby_package option should be in the form of:"
                         << " 'A::B::C' and not 'A.B.C'";
     }
   } else {
@@ -518,11 +519,9 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     printer->Print("\n");
   }
 
-  // TODO: Remove this when ruby supports extensions for proto2 syntax.
-  if (file->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
-      file->extension_count() > 0) {
-    GOOGLE_ABSL_LOG(WARNING)
-        << "Extensions are not yet supported for proto2 .proto files.";
+  // TODO: Remove this when ruby supports extensions.
+  if (file->extension_count() > 0) {
+    ABSL_LOG(WARNING) << "Extensions are not yet supported in Ruby.";
   }
 
   bool use_raw_descriptor = file->name() == "google/protobuf/descriptor.proto";
@@ -558,9 +557,7 @@ bool Generator::Generate(
     const std::string& parameter,
     GeneratorContext* generator_context,
     std::string* error) const {
-
-  if (file->syntax() != FileDescriptor::SYNTAX_PROTO3 &&
-      file->syntax() != FileDescriptor::SYNTAX_PROTO2) {
+  if (file->syntax() == FileDescriptor::SYNTAX_UNKNOWN) {
     *error = "Invalid or unsupported proto syntax";
     return false;
   }

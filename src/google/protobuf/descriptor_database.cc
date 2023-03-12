@@ -54,7 +54,7 @@ namespace {
 void RecordMessageNames(const DescriptorProto& desc_proto,
                         absl::string_view prefix,
                         absl::btree_set<std::string>* output) {
-  GOOGLE_ABSL_CHECK(desc_proto.has_name());
+  ABSL_CHECK(desc_proto.has_name());
   std::string full_name = prefix.empty()
                               ? desc_proto.name()
                               : absl::StrCat(prefix, ".", desc_proto.name());
@@ -84,7 +84,7 @@ bool ForAllFileProtos(DescriptorDatabase* db, Fn callback,
   for (const auto& f : file_names) {
     file_proto.Clear();
     if (!db->FindFileByName(f, &file_proto)) {
-      GOOGLE_ABSL_LOG(ERROR) << "File not found in database (unexpected): " << f;
+      ABSL_LOG(ERROR) << "File not found in database (unexpected): " << f;
       return false;
     }
     callback(file_proto, &set);
@@ -125,7 +125,7 @@ template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
     const FileDescriptorProto& file, Value value) {
   if (!by_name_.emplace(file.name(), value).second) {
-    GOOGLE_ABSL_LOG(ERROR) << "File already exists in database: " << file.name();
+    ABSL_LOG(ERROR) << "File already exists in database: " << file.name();
     return false;
   }
 
@@ -209,7 +209,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
   // relies on the fact that '.' sorts before all other characters that are
   // valid in symbol names).
   if (!ValidateSymbolName(name)) {
-    GOOGLE_ABSL_LOG(ERROR) << "Invalid symbol name: " << name;
+    ABSL_LOG(ERROR) << "Invalid symbol name: " << name;
     return false;
   }
 
@@ -224,7 +224,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
   }
 
   if (IsSubSymbol(iter->first, name)) {
-    GOOGLE_ABSL_LOG(ERROR) << "Symbol name \"" << name
+    ABSL_LOG(ERROR) << "Symbol name \"" << name
                     << "\" conflicts with the existing "
                        "symbol \""
                     << iter->first << "\".";
@@ -239,7 +239,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
   ++iter;
 
   if (iter != by_symbol_.end() && IsSubSymbol(name, iter->first)) {
-    GOOGLE_ABSL_LOG(ERROR) << "Symbol name \"" << name
+    ABSL_LOG(ERROR) << "Symbol name \"" << name
                     << "\" conflicts with the existing "
                        "symbol \""
                     << iter->first << "\".";
@@ -281,7 +281,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
                  std::make_pair(field.extendee().substr(1), field.number()),
                  value)
              .second) {
-      GOOGLE_ABSL_LOG(ERROR)
+      ABSL_LOG(ERROR)
           << "Extension conflicts with extension already in database: "
              "extend "
           << field.extendee() << " { " << field.name() << " = "
@@ -570,7 +570,7 @@ bool EncodedDescriptorDatabase::Add(const void* encoded_file_descriptor,
   if (file.ParseFromArray(encoded_file_descriptor, size)) {
     return index_->AddFile(file, std::make_pair(encoded_file_descriptor, size));
   } else {
-    GOOGLE_ABSL_LOG(ERROR) << "Invalid file descriptor data passed to "
+    ABSL_LOG(ERROR) << "Invalid file descriptor data passed to "
                        "EncodedDescriptorDatabase::Add().";
     return false;
   }
@@ -642,7 +642,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
   all_values_.push_back({value.first, value.second, {}});
 
   if (!ValidateSymbolName(file.package())) {
-    GOOGLE_ABSL_LOG(ERROR) << "Invalid package name: " << file.package();
+    ABSL_LOG(ERROR) << "Invalid package name: " << file.package();
     return false;
   }
   all_values_.back().encoded_package = EncodeString(file.package());
@@ -653,7 +653,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
            .second ||
       std::binary_search(by_name_flat_.begin(), by_name_flat_.end(),
                          file.name(), by_name_.key_comp())) {
-    GOOGLE_ABSL_LOG(ERROR) << "File already exists in database: " << file.name();
+    ABSL_LOG(ERROR) << "File already exists in database: " << file.name();
     return false;
   }
 
@@ -680,7 +680,7 @@ static bool CheckForMutualSubsymbols(absl::string_view symbol_name, Iter* iter,
                                      Iter2 end, const Index& index) {
   if (*iter != end) {
     if (IsSubSymbol((*iter)->AsString(index), symbol_name)) {
-      GOOGLE_ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
+      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
                       << "\" conflicts with the existing symbol \""
                       << (*iter)->AsString(index) << "\".";
       return false;
@@ -694,7 +694,7 @@ static bool CheckForMutualSubsymbols(absl::string_view symbol_name, Iter* iter,
     ++*iter;
 
     if (*iter != end && IsSubSymbol(symbol_name, (*iter)->AsString(index))) {
-      GOOGLE_ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
+      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
                       << "\" conflicts with the existing symbol \""
                       << (*iter)->AsString(index) << "\".";
       return false;
@@ -715,7 +715,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
   // relies on the fact that '.' sorts before all other characters that are
   // valid in symbol names).
   if (!ValidateSymbolName(symbol)) {
-    GOOGLE_ABSL_LOG(ERROR) << "Invalid symbol name: " << entry_as_string;
+    ABSL_LOG(ERROR) << "Invalid symbol name: " << entry_as_string;
     return false;
   }
 
@@ -768,7 +768,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddExtension(
             by_extension_flat_.begin(), by_extension_flat_.end(),
             std::make_pair(field.extendee().substr(1), field.number()),
             by_extension_.key_comp())) {
-      GOOGLE_ABSL_LOG(ERROR)
+      ABSL_LOG(ERROR)
           << "Extension conflicts with extension already in database: "
              "extend "
           << field.extendee() << " { " << field.name() << " = "

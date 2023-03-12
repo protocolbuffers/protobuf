@@ -65,8 +65,9 @@ namespace ProtobufUnittest {
             "bzNPcHRpb25hbEV4dGVuc2lvbnMyPAoPZXh0X25vX29wdGlvbmFsEh8uZ29v",
             "Z2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGIjN2akBIAEoBTJBChFleHRf",
             "d2l0aF9vcHRpb25hbBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u",
-            "cxiJzdmpASABKAWIAQE6DMDozM0KCMjozM0KEEIlCiFjb20uZ29vZ2xlLnBy",
-            "b3RvYnVmLnRlc3RpbmcucHJvdG9QAWIGcHJvdG8z"));
+            "cxiJzdmpASABKAWIAQE6DMDozM0KCMjozM0KEEI4CiFjb20uZ29vZ2xlLnBy",
+            "b3RvYnVmLnRlc3RpbmcucHJvdG9QAaoCEFByb3RvYnVmVW5pdHRlc3RiBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -147,6 +148,8 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 1;
+    private readonly static int OptionalInt32DefaultValue = 0;
+
     private int optionalInt32_;
     /// <summary>
     /// Singular
@@ -154,7 +157,7 @@ namespace ProtobufUnittest {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalInt32 {
-      get { if ((_hasBits0 & 1) != 0) { return optionalInt32_; } else { return 0; } }
+      get { if ((_hasBits0 & 1) != 0) { return optionalInt32_; } else { return OptionalInt32DefaultValue; } }
       set {
         _hasBits0 |= 1;
         optionalInt32_ = value;
@@ -175,11 +178,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_int64" field.</summary>
     public const int OptionalInt64FieldNumber = 2;
+    private readonly static long OptionalInt64DefaultValue = 0L;
+
     private long optionalInt64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long OptionalInt64 {
-      get { if ((_hasBits0 & 2) != 0) { return optionalInt64_; } else { return 0L; } }
+      get { if ((_hasBits0 & 2) != 0) { return optionalInt64_; } else { return OptionalInt64DefaultValue; } }
       set {
         _hasBits0 |= 2;
         optionalInt64_ = value;
@@ -200,11 +205,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_uint32" field.</summary>
     public const int OptionalUint32FieldNumber = 3;
+    private readonly static uint OptionalUint32DefaultValue = 0;
+
     private uint optionalUint32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public uint OptionalUint32 {
-      get { if ((_hasBits0 & 4) != 0) { return optionalUint32_; } else { return 0; } }
+      get { if ((_hasBits0 & 4) != 0) { return optionalUint32_; } else { return OptionalUint32DefaultValue; } }
       set {
         _hasBits0 |= 4;
         optionalUint32_ = value;
@@ -225,11 +232,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_uint64" field.</summary>
     public const int OptionalUint64FieldNumber = 4;
+    private readonly static ulong OptionalUint64DefaultValue = 0UL;
+
     private ulong optionalUint64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong OptionalUint64 {
-      get { if ((_hasBits0 & 8) != 0) { return optionalUint64_; } else { return 0UL; } }
+      get { if ((_hasBits0 & 8) != 0) { return optionalUint64_; } else { return OptionalUint64DefaultValue; } }
       set {
         _hasBits0 |= 8;
         optionalUint64_ = value;
@@ -250,11 +259,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_sint32" field.</summary>
     public const int OptionalSint32FieldNumber = 5;
+    private readonly static int OptionalSint32DefaultValue = 0;
+
     private int optionalSint32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalSint32 {
-      get { if ((_hasBits0 & 16) != 0) { return optionalSint32_; } else { return 0; } }
+      get { if ((_hasBits0 & 16) != 0) { return optionalSint32_; } else { return OptionalSint32DefaultValue; } }
       set {
         _hasBits0 |= 16;
         optionalSint32_ = value;
@@ -275,11 +286,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_sint64" field.</summary>
     public const int OptionalSint64FieldNumber = 6;
+    private readonly static long OptionalSint64DefaultValue = 0L;
+
     private long optionalSint64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long OptionalSint64 {
-      get { if ((_hasBits0 & 32) != 0) { return optionalSint64_; } else { return 0L; } }
+      get { if ((_hasBits0 & 32) != 0) { return optionalSint64_; } else { return OptionalSint64DefaultValue; } }
       set {
         _hasBits0 |= 32;
         optionalSint64_ = value;
@@ -300,11 +313,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_fixed32" field.</summary>
     public const int OptionalFixed32FieldNumber = 7;
+    private readonly static uint OptionalFixed32DefaultValue = 0;
+
     private uint optionalFixed32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public uint OptionalFixed32 {
-      get { if ((_hasBits0 & 64) != 0) { return optionalFixed32_; } else { return 0; } }
+      get { if ((_hasBits0 & 64) != 0) { return optionalFixed32_; } else { return OptionalFixed32DefaultValue; } }
       set {
         _hasBits0 |= 64;
         optionalFixed32_ = value;
@@ -325,11 +340,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_fixed64" field.</summary>
     public const int OptionalFixed64FieldNumber = 8;
+    private readonly static ulong OptionalFixed64DefaultValue = 0UL;
+
     private ulong optionalFixed64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong OptionalFixed64 {
-      get { if ((_hasBits0 & 128) != 0) { return optionalFixed64_; } else { return 0UL; } }
+      get { if ((_hasBits0 & 128) != 0) { return optionalFixed64_; } else { return OptionalFixed64DefaultValue; } }
       set {
         _hasBits0 |= 128;
         optionalFixed64_ = value;
@@ -350,11 +367,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_sfixed32" field.</summary>
     public const int OptionalSfixed32FieldNumber = 9;
+    private readonly static int OptionalSfixed32DefaultValue = 0;
+
     private int optionalSfixed32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalSfixed32 {
-      get { if ((_hasBits0 & 256) != 0) { return optionalSfixed32_; } else { return 0; } }
+      get { if ((_hasBits0 & 256) != 0) { return optionalSfixed32_; } else { return OptionalSfixed32DefaultValue; } }
       set {
         _hasBits0 |= 256;
         optionalSfixed32_ = value;
@@ -375,11 +394,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_sfixed64" field.</summary>
     public const int OptionalSfixed64FieldNumber = 10;
+    private readonly static long OptionalSfixed64DefaultValue = 0L;
+
     private long optionalSfixed64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long OptionalSfixed64 {
-      get { if ((_hasBits0 & 512) != 0) { return optionalSfixed64_; } else { return 0L; } }
+      get { if ((_hasBits0 & 512) != 0) { return optionalSfixed64_; } else { return OptionalSfixed64DefaultValue; } }
       set {
         _hasBits0 |= 512;
         optionalSfixed64_ = value;
@@ -400,11 +421,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_float" field.</summary>
     public const int OptionalFloatFieldNumber = 11;
+    private readonly static float OptionalFloatDefaultValue = 0F;
+
     private float optionalFloat_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public float OptionalFloat {
-      get { if ((_hasBits0 & 1024) != 0) { return optionalFloat_; } else { return 0F; } }
+      get { if ((_hasBits0 & 1024) != 0) { return optionalFloat_; } else { return OptionalFloatDefaultValue; } }
       set {
         _hasBits0 |= 1024;
         optionalFloat_ = value;
@@ -425,11 +448,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_double" field.</summary>
     public const int OptionalDoubleFieldNumber = 12;
+    private readonly static double OptionalDoubleDefaultValue = 0D;
+
     private double optionalDouble_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double OptionalDouble {
-      get { if ((_hasBits0 & 2048) != 0) { return optionalDouble_; } else { return 0D; } }
+      get { if ((_hasBits0 & 2048) != 0) { return optionalDouble_; } else { return OptionalDoubleDefaultValue; } }
       set {
         _hasBits0 |= 2048;
         optionalDouble_ = value;
@@ -450,11 +475,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_bool" field.</summary>
     public const int OptionalBoolFieldNumber = 13;
+    private readonly static bool OptionalBoolDefaultValue = false;
+
     private bool optionalBool_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool OptionalBool {
-      get { if ((_hasBits0 & 4096) != 0) { return optionalBool_; } else { return false; } }
+      get { if ((_hasBits0 & 4096) != 0) { return optionalBool_; } else { return OptionalBoolDefaultValue; } }
       set {
         _hasBits0 |= 4096;
         optionalBool_ = value;
@@ -475,11 +502,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_string" field.</summary>
     public const int OptionalStringFieldNumber = 14;
+    private readonly static string OptionalStringDefaultValue = "";
+
     private string optionalString_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string OptionalString {
-      get { return optionalString_ ?? ""; }
+      get { return optionalString_ ?? OptionalStringDefaultValue; }
       set {
         optionalString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
@@ -499,11 +528,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_bytes" field.</summary>
     public const int OptionalBytesFieldNumber = 15;
+    private readonly static pb::ByteString OptionalBytesDefaultValue = pb::ByteString.Empty;
+
     private pb::ByteString optionalBytes_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pb::ByteString OptionalBytes {
-      get { return optionalBytes_ ?? pb::ByteString.Empty; }
+      get { return optionalBytes_ ?? OptionalBytesDefaultValue; }
       set {
         optionalBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
@@ -523,11 +554,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_cord" field.</summary>
     public const int OptionalCordFieldNumber = 16;
+    private readonly static string OptionalCordDefaultValue = "";
+
     private string optionalCord_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string OptionalCord {
-      get { return optionalCord_ ?? ""; }
+      get { return optionalCord_ ?? OptionalCordDefaultValue; }
       set {
         optionalCord_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
@@ -571,11 +604,13 @@ namespace ProtobufUnittest {
 
     /// <summary>Field number for the "optional_nested_enum" field.</summary>
     public const int OptionalNestedEnumFieldNumber = 21;
+    private readonly static global::ProtobufUnittest.TestProto3Optional.Types.NestedEnum OptionalNestedEnumDefaultValue = global::ProtobufUnittest.TestProto3Optional.Types.NestedEnum.Unspecified;
+
     private global::ProtobufUnittest.TestProto3Optional.Types.NestedEnum optionalNestedEnum_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::ProtobufUnittest.TestProto3Optional.Types.NestedEnum OptionalNestedEnum {
-      get { if ((_hasBits0 & 8192) != 0) { return optionalNestedEnum_; } else { return global::ProtobufUnittest.TestProto3Optional.Types.NestedEnum.Unspecified; } }
+      get { if ((_hasBits0 & 8192) != 0) { return optionalNestedEnum_; } else { return OptionalNestedEnumDefaultValue; } }
       set {
         _hasBits0 |= 8192;
         optionalNestedEnum_ = value;
@@ -1314,6 +1349,8 @@ namespace ProtobufUnittest {
 
         /// <summary>Field number for the "bb" field.</summary>
         public const int BbFieldNumber = 1;
+        private readonly static int BbDefaultValue = 0;
+
         private int bb_;
         /// <summary>
         /// The field name "b" fails to compile in proto1 because it conflicts with
@@ -1323,7 +1360,7 @@ namespace ProtobufUnittest {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int Bb {
-          get { if ((_hasBits0 & 1) != 0) { return bb_; } else { return 0; } }
+          get { if ((_hasBits0 & 1) != 0) { return bb_; } else { return BbDefaultValue; } }
           set {
             _hasBits0 |= 1;
             bb_ = value;

@@ -37,12 +37,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("com_google_absl"):
-        # Abseil LTS from November 2021
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "273292d1cfc0a94a65082ee350509af1d113344d",
-            sha256 = "6764f226bd6e2d8ab9fe2f3cab5f45fb1a4a15c04b58b87ba7fa87456054f98b",
+            commit = "78be63686ba732b25052be15f8d6dee891c05749",  # Abseil LTS 20230125
+            sha256 = "4f356a07b9ec06ef51f943928508566e992f621ed5fa4dd588865d7bed1284cd",
         )
 
     if not native.existing_rule("zlib"):
@@ -58,12 +57,12 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("jsoncpp"):
-        http_archive(
+        _github_archive(
             name = "jsoncpp",
+            repo = "https://github.com/open-source-parsers/jsoncpp",
+            commit = "9059f5cad030ba11d37818847443a53918c327b1",  # 1.9.4
+            sha256 = "c0c583c7b53a53bcd1f7385f15439dcdf0314d550362379e2db9919a918d1996",
             build_file = Label("//:third_party/jsoncpp.BUILD"),
-            sha256 = "e34a628a8142643b976c7233ef381457efad79468c67cb1ae0b83a33d7493999",
-            strip_prefix = "jsoncpp-1.9.4",
-            urls = ["https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/1.9.4.tar.gz"],
         )
 
     if not native.existing_rule("utf8_range"):
@@ -99,19 +98,19 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_python"):
-        http_archive(
+        _github_archive(
             name = "rules_python",
-            sha256 = "a868059c8c6dd6ad45a205cca04084c652cfe1852e6df2d5aca036f6e5438380",
-            strip_prefix = "rules_python-0.14.0",
-            url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.14.0.tar.gz",
+            repo = "https://github.com/bazelbuild/rules_python",
+            commit = "912a5051f51581784fd64094f6bdabf93f6d698f",  # 0.14.0
+            sha256 = "a3e4b4ade7c4a52e757b16a16e94d0b2640333062180cba577d81fac087a501d",
         )
 
     if not native.existing_rule("rules_ruby"):
         _github_archive(
             name = "rules_ruby",
             repo = "https://github.com/protocolbuffers/rules_ruby",
-            commit = "59732544ce3a4bc4e8e4d4e8c8f318c931c17eae",
-            sha256 = "4fc45adf1056c824afde9a52b743b915eeada3633539eb1dbd641a66dc9f4c4f",
+            commit = "5cf6ff74161d7f985b9bf86bb3c5fb16cef6337b",
+            sha256 = "c88dd69eb50fcfd7fbc5d7db79adc6631ef0e1d80b3c94efe33ac5ee3ccc37f7",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -150,7 +149,7 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "0c6b72dbf891eafc91050ad60733ea3022fac2b3",
-            sha256 = "9c8cdfa013450548c9f03fac8e1390aeb21a75413f443790815b71d475c9af49",
+            commit = "662497f1d3dcced2bba1620cea9aae8b484bd3cd",
+            sha256 = "57c87ca4145d2cbc162a6c613b114b9325b577f4f6525bd78747a34b3d03627c",
             patches = ["@com_google_protobuf//build_defs:upb.patch"],
         )
