@@ -110,8 +110,12 @@ extern VALUE cTypeError;
   do {                      \
   } while (false && (expr))
 #else
+#ifdef RUBY_ASSERT
+#define PBRUBY_ASSERT RUBY_ASSERT
+#else
 #define PBRUBY_ASSERT(expr) assert(expr)
-#endif
+#endif // RUBY_ASSERT
+#endif // NDEBUG
 
 #define PBRUBY_MAX(x, y) (((x) > (y)) ? (x) : (y))
 
