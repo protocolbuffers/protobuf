@@ -84,6 +84,26 @@ class PROTOBUF_EXPORT FileDescriptorLegacy {
   const FileDescriptor* desc_;
 };
 
+class PROTOBUF_EXPORT FieldDescriptorLegacy {
+ public:
+  explicit FieldDescriptorLegacy(const FieldDescriptor* desc) : desc_(desc) {}
+
+  bool has_optional_keyword() const { return desc_->has_optional_keyword(); }
+
+ private:
+  const FieldDescriptor* desc_;
+};
+
+class PROTOBUF_EXPORT OneofDescriptorLegacy {
+ public:
+  explicit OneofDescriptorLegacy(const OneofDescriptor* desc) : desc_(desc) {}
+
+  bool is_synthetic() const { return desc_->is_synthetic(); }
+
+ private:
+  const OneofDescriptor* desc_;
+};
+
 }  // namespace protobuf
 }  // namespace google
 
