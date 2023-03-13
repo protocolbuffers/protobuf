@@ -45,9 +45,6 @@
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
-#include "upb/mini_table/enum_internal.h"
-#include "upb/mini_table/extension_internal.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
 #include "upbc/common.h"
@@ -206,7 +203,19 @@ std::string FieldDefault(upb::FieldDefPtr field) {
     case kUpb_CType_Int32:
       return absl::Substitute("(int32_t)$0", field.default_value().int32_val);
     case kUpb_CType_Int64:
-      return absl::Substitute("(int64_t)$0ll", field.default_value().int64_val);
+      if (field.default_value().int64_val == INT64_MIN) {
+        // Special-case to avoid:
+        //   integer literal is too large to be represented in a signed integer
+        //   type, interpreting as unsigned
+        //   [-Werror,-Wimplicitly-unsigned-literal]
+        //   int64_t default_val = (int64_t)-9223372036854775808ll;
+        //
+        // More info here: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
+        return "INT64_MIN";
+      } else {
+        return absl::Substitute("(int64_t)$0ll",
+                                field.default_value().int64_val);
+      }
     case kUpb_CType_UInt32:
       return absl::Substitute("(uint32_t)$0u",
                               field.default_value().uint32_val);

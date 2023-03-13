@@ -88,3 +88,7 @@ message ModelWithMaps {
   map<string, string> map_ss = 3;
   map<int32, int32> map_ii = 4;
 }
+
+message ExtremeDefaults {
+  optional int64 int64_min = 1 [default = -9223372036854775808];
+}
