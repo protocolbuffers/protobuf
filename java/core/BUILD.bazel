@@ -2,7 +2,7 @@ load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
-load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library")
+load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library", "protobuf_versioned_java_library")
 load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
@@ -121,11 +121,17 @@ internal_gen_well_known_protos_java(
 )
 
 # Should be used as `//java/lite`.
-protobuf_java_library(
+protobuf_versioned_java_library(
     name = "lite",
     srcs = LITE_SRCS + [
         ":gen_well_known_protos_javalite",
     ],
+    bundle_description = "Lite version of Protocol Buffers library. This " +
+                         "version is optimized for code size, but does not " +
+                         "guarantee API/ABI stability.",
+    bundle_name = "Protocol Buffers [Lite]",
+    bundle_symbolic_name = "com.google.protobuf",
+    bundle_version = "3.21.12",
     visibility = [
         "//java/lite:__pkg__",
     ],
@@ -166,7 +172,7 @@ internal_gen_well_known_protos_java(
     ],
 )
 
-protobuf_java_library(
+protobuf_versioned_java_library(
     name = "core",
     srcs = glob(
         [
@@ -176,6 +182,12 @@ protobuf_java_library(
     ) + [
         ":gen_well_known_protos_java",
     ],
+    bundle_description = "Core Protocol Buffers library. Protocol Buffers " +
+                         "are a way of encoding structured data in an " +
+                         "efficient yet extensible format.",
+    bundle_name = "Protocol Buffers [Core]",
+    bundle_symbolic_name = "com.google.protobuf",
+    bundle_version = "3.21.12",
     visibility = ["//visibility:public"],
     exports = [
         ":lite_runtime_only",

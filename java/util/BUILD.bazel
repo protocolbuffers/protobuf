@@ -1,12 +1,16 @@
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library")
+load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_versioned_java_library")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
 
-protobuf_java_library(
+protobuf_versioned_java_library(
     name = "util",
+    bundle_description = "Utilities for Protocol Buffers",
+    bundle_name = "Protocol Buffers [Util]",
+    bundle_symbolic_name = "com.google.protobuf.util",
+    bundle_version = "3.21.12",
     srcs = glob([
         "src/main/java/com/google/protobuf/util/*.java",
     ]),
