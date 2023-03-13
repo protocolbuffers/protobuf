@@ -67,7 +67,7 @@
  *
  * @interface BarClass : NSObject
  * @property (nonatomic) enum Foo_Enum value;
- * - (void)bazMethod:(enum Foo_Enum):value;
+ * - (void)bazMethod:(enum Foo_Enum)value;
  * @end
  * ```
  **/
