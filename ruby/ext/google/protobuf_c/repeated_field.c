@@ -432,7 +432,7 @@ static VALUE RepeatedField_dup(VALUE _self) {
  */
 VALUE RepeatedField_to_ary(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  int size = upb_Array_Size(self->array);
+  int size = self->array ? upb_Array_Size(self->array) : 0;
   VALUE ary = rb_ary_new2(size);
   int i;
 

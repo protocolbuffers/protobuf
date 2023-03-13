@@ -403,6 +403,9 @@ void ObjectCache_Add(const void *key, VALUE val) {
 #if USE_SECONDARY_MAP
   rb_mutex_unlock(secondary_map_mutex);
 #endif
+  if (ObjectCache_Get(key) != val) {
+      rb_bug("ObjectCache_Get(key) != val");
+  }
   PBRUBY_ASSERT(ObjectCache_Get(key) == val);
 }
 

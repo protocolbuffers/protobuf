@@ -467,6 +467,19 @@ module BasicTest
       run_asserts.call(m4)
     end
 
+    def test_gc_stress
+      GC.stress = true
+      o = Outer.new
+      o.items[0] = Inner.new
+      raw = Outer.encode(o)
+
+      10.times do
+        assert_equal o, Outer.decode(raw)
+      end
+    ensure
+      GC.stress = false
+    end
+
     def test_concurrent_decoding
       o = Outer.new
       o.items[0] = Inner.new
