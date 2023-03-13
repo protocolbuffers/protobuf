@@ -244,14 +244,14 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
     field->offset = kHasbitPresence;
     if (type == kUpb_EncodedType_Group || type == kUpb_EncodedType_Message) {
       field->mode |= pointer_rep << kUpb_FieldRep_Shift;
-    } else if (type >= sizeof(kUpb_EncodedToFieldRep)) {
+    } else if ((unsigned long)type >= sizeof(kUpb_EncodedToFieldRep)) {
       upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", (int)type);
       UPB_UNREACHABLE();
     } else {
       field->mode |= kUpb_EncodedToFieldRep[type] << kUpb_FieldRep_Shift;
     }
   }
-  if (type >= sizeof(kUpb_EncodedToType)) {
+  if ((unsigned long)type >= sizeof(kUpb_EncodedToType)) {
     upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", (int)type);
     UPB_UNREACHABLE();
   }
@@ -667,7 +667,7 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
 
 static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
                                              const upb_MiniTableField* f,
-                                             int expected_num) {
+                                             uint32_t expected_num) {
   const char* name = expected_num == 1 ? "key" : "val";
   if (f->number != expected_num) {
     upb_MtDecoder_ErrorFormat(d,

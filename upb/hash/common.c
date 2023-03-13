@@ -776,7 +776,7 @@ bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
                        intptr_t* iter) {
   intptr_t i = *iter;
   if ((size_t)(i + 1) <= t->array_size) {
-    while (++i < t->array_size) {
+    while ((size_t)++i < t->array_size) {
       upb_tabval ent = t->array[i];
       if (upb_arrhas(ent)) {
         *key = i;
@@ -802,7 +802,7 @@ bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
 
 void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter) {
   intptr_t i = *iter;
-  if (i < t->array_size) {
+  if ((size_t)i < t->array_size) {
     t->array_count--;
     mutable_array(t)[i].val = -1;
   } else {

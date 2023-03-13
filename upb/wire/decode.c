@@ -887,7 +887,7 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
   if (t->dense_below < t->field_count) {
     /* Linear search non-dense fields. Resume scanning from last_field_index
      * since fields are usually in order. */
-    int last = *last_field_index;
+    size_t last = *last_field_index;
     for (idx = last; idx < t->field_count; idx++) {
       if (t->fields[idx].number == field_number) {
         goto found;

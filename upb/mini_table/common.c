@@ -68,7 +68,7 @@ const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   int hi = t->field_count - 1;
   while (lo <= hi) {
     int mid = (lo + hi) / 2;
-    int num = t->fields[mid].number;
+    uint32_t num = t->fields[mid].number;
     if (num < number) {
       lo = mid + 1;
       continue;
