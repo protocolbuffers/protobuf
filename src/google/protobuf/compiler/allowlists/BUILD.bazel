@@ -19,7 +19,10 @@ cc_library(
 
 cc_library(
     name = "allowlists",
-    srcs = ["allowlists.cc"],
+    srcs = [
+        "empty_package.cc",
+        "weak_imports.cc",
+    ],
     hdrs = ["allowlists.h"],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/allowlists",

@@ -28,23 +28,25 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_ALLOWLISTS_ALLOWLISTS_H__
-#define GOOGLE_PROTOBUF_COMPILER_ALLOWLISTS_ALLOWLISTS_H__
+#include "google/protobuf/compiler/allowlists/allowlists.h"
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/allowlists/allowlist.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 
-// Returns whether a file can use the `import weak` syntax.
-bool IsWeakImportFile(absl::string_view file);
+// NOTE: Allowlists in this file are not accepting new entries unless otherwise
+// specified.
 
-// Returns whether a file can have an empty package.
-bool IsEmptyPackageFile(absl::string_view file);
+static constexpr auto kWeakImports = internal::MakeAllowlist({
+// Intentionally left blank.
+});
 
+bool IsWeakImportFile(absl::string_view file) {
+  return kWeakImports.Allows(file);
+}
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_ALLOWLISTS_COMPILER_ALLOWLISTS_H__

@@ -28,26 +28,34 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/compiler/allowlists/allowlists.h"
-
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/allowlists/allowlist.h"
+#include "google/protobuf/compiler/allowlists/allowlists.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
-
 // NOTE: Allowlists in this file are not accepting new entries unless otherwise
 // specified.
 
-static constexpr auto kWeakImports = internal::MakeAllowlist({
+static constexpr auto kEmptyPackage = internal::MakeAllowlist(
+    {
+// Intentionally left blank.
+    },
+    internal::AllowlistFlags::kAllowAllInOss);
+
+static constexpr auto kTradeFedProtos = internal::MakeAllowlist({
 // Intentionally left blank.
 });
 
-bool IsWeakImportFile(absl::string_view filename) {
-  return kWeakImports.Allows(filename);
-}
+static constexpr auto k3pCriuProtos = internal::MakeAllowlist({
+// Intentionally left blank.
+});
 
+bool IsEmptyPackageFile(absl::string_view file) {
+  return kEmptyPackage.Allows(file) || kTradeFedProtos.Allows(file) ||
+         k3pCriuProtos.Allows(file);
+}
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
