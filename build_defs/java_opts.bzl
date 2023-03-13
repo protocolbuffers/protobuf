@@ -1,6 +1,6 @@
 """Java options and protobuf-specific java build rules with those options."""
 
-load("@rules_java//java:defs.bzl", "java_import", "java_library")
+load("@rules_java//java:defs.bzl", "java_library")
 load("@rules_jvm_external//:defs.bzl", "java_export")
 load("//java/osgi:osgi.bzl", "osgi_jar")
 
