@@ -160,6 +160,40 @@ public class DescriptorsTest {
   }
 
   @Test
+  public void testFileDescriptorCopyHeadingTo() throws Exception {
+    FileDescriptorProto.Builder protoBuilder =
+        FileDescriptorProto.newBuilder()
+            .setName("foo.proto")
+            .setPackage("foo.bar.baz")
+            .setSyntax("proto2")
+            .setOptions(FileOptions.newBuilder().setJavaPackage("foo.bar.baz").build())
+            // Won't be copied.
+            .addMessageType(DescriptorProto.newBuilder().setName("Foo").build());
+    FileDescriptor file2 =
+        Descriptors.FileDescriptor.buildFrom(protoBuilder.build(), new FileDescriptor[0]);
+    FileDescriptorProto.Builder protoBuilder2 = FileDescriptorProto.newBuilder();
+    file2.copyHeadingTo(protoBuilder2);
+    FileDescriptorProto toProto2 = protoBuilder2.build();
+    assertThat(toProto2.getName()).isEqualTo("foo.proto");
+    assertThat(toProto2.getPackage()).isEqualTo("foo.bar.baz");
+    assertThat(toProto2.getSyntax()).isEqualTo("proto2");
+    assertThat(toProto2.getOptions().getJavaPackage()).isEqualTo("foo.bar.baz");
+    assertThat(toProto2.getMessageTypeList()).isEmpty();
+
+    protoBuilder.setSyntax("proto3");
+    FileDescriptor file3 =
+        Descriptors.FileDescriptor.buildFrom(protoBuilder.build(), new FileDescriptor[0]);
+    FileDescriptorProto.Builder protoBuilder3 = FileDescriptorProto.newBuilder();
+    file3.copyHeadingTo(protoBuilder3);
+    FileDescriptorProto toProto3 = protoBuilder3.build();
+    assertThat(toProto3.getName()).isEqualTo("foo.proto");
+    assertThat(toProto3.getPackage()).isEqualTo("foo.bar.baz");
+    assertThat(toProto3.getSyntax()).isEqualTo("proto3");
+    assertThat(toProto2.getOptions().getJavaPackage()).isEqualTo("foo.bar.baz");
+    assertThat(toProto3.getMessageTypeList()).isEmpty();
+  }
+
+  @Test
   public void testDescriptor() throws Exception {
     Descriptor messageType = TestAllTypes.getDescriptor();
     Descriptor nestedType = TestAllTypes.NestedMessage.getDescriptor();
