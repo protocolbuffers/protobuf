@@ -335,11 +335,9 @@ void MapFieldGenerator::GenerateAggregateInitializer(
 void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (ShouldSplit(descriptor_, options_)) {
-    format("$cached_split_ptr$->$name$_.Destruct();\n");
     format("$cached_split_ptr$->$name$_.~MapField$lite$();\n");
     return;
   }
-  format("$field$.Destruct();\n");
   format("$field$.~MapField$lite$();\n");
 }
 
@@ -351,7 +349,7 @@ void MapFieldGenerator::GenerateArenaDestructorCode(
 
   Formatter format(printer, variables_);
   // _this is the object being destructed (we are inside a static method here).
-  format("_this->$field$.Destruct();\n");
+  format("_this->$field$.ArenaDestruct();\n");
 }
 
 ArenaDtorNeeds MapFieldGenerator::NeedsArenaDestructor() const {

@@ -358,9 +358,11 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
  protected:
   ~MapFieldBase() {  // "protected" stops users from deleting a `MapFieldBase *`
-    ABSL_DCHECK(repeated_field_ == nullptr);
+    ABSL_DCHECK_EQ(arena_, nullptr);
+    delete repeated_field_;
   }
-  void Destruct();
+  void ArenaDestruct() { mutex_.~Mutex(); }
+  void OwnMutexDestructor(Arena& arena) { arena.OwnDestructor(&mutex_); }
 
  public:
   // Returns reference to internal repeated field. Data written using
@@ -515,7 +517,7 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 
  protected:
   ~TypeDefinedMapFieldBase() {}
-  using MapFieldBase::Destruct;
+  using MapFieldBase::ArenaDestruct;
 
  public:
   void MapBegin(MapIterator* map_iter) const override;
@@ -575,11 +577,8 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   MapField() : impl_() {}
   MapField(const MapField&) = delete;
   MapField& operator=(const MapField&) = delete;
-  virtual ~MapField() {}  // Destruct() must already have been called!
-  void Destruct() {
-    impl_.Destruct();
-    TypeDefinedMapFieldBase<Key, T>::Destruct();
-  }
+  virtual ~MapField() = default;
+  void ArenaDestruct() { TypeDefinedMapFieldBase<Key, T>::ArenaDestruct(); }
 
   // This constructor is for constant initialized global instances.
   // It uses a linker initialized mutex, so it is not compatible with regular

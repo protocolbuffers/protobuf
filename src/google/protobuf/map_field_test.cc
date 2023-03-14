@@ -55,12 +55,17 @@ namespace internal {
 using unittest::TestAllTypes;
 
 // ArenaHolder from map_test_util.h works fine for fields other than map
-// fields.  For map fields, the Destruct() call must be made before the
-// actual destructor is called.
+// fields.  For arena-owned map fields, the ArenaDestruct() call must be made
+// because the destructor will be skipped.
 template <typename MapType>
 struct ArenaDestructor : ArenaHolder<MapType> {
-  using ArenaHolder<MapType>::ArenaHolder;
-  ~ArenaDestructor() { ArenaHolder<MapType>::get()->Destruct(); }
+  ArenaDestructor(Arena* arena)
+      : ArenaHolder<MapType>(arena), owned_by_arena(arena != nullptr) {}
+  ~ArenaDestructor() {
+    if (owned_by_arena) ArenaHolder<MapType>::get()->ArenaDestruct();
+  }
+
+  bool owned_by_arena;
 };
 
 class MapFieldBaseStub : public MapFieldBase {
@@ -68,7 +73,7 @@ class MapFieldBaseStub : public MapFieldBase {
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   MapFieldBaseStub() {}
-  virtual ~MapFieldBaseStub() { MapFieldBase::Destruct(); }
+  virtual ~MapFieldBaseStub() {}
   explicit MapFieldBaseStub(Arena* arena) : MapFieldBase(arena) {}
   void SetMapDirty() {
     state_.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
