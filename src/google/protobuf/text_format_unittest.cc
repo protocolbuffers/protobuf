@@ -901,6 +901,89 @@ TEST_F(TextFormatTest, ParseUnknownEnumFieldProto3) {
   EXPECT_EQ(-2147483648, proto.repeated_nested_enum(3));
 }
 
+TEST_F(TextFormatTest, ErrorOnNoOpFieldsProto3) {
+  proto3_unittest::TestAllTypes proto;
+  TextFormat::Parser parser;
+  parser.ErrorOnNoOpFields(true);
+
+  {
+    const absl::string_view singular_int_parse_string = "optional_int32: 0";
+    EXPECT_TRUE(TextFormat::ParseFromString(singular_int_parse_string, &proto));
+    EXPECT_FALSE(parser.ParseFromString(singular_int_parse_string, &proto));
+  }
+  {
+    const absl::string_view singular_bool_parse_string = "optional_bool: false";
+    EXPECT_TRUE(
+        TextFormat::ParseFromString(singular_bool_parse_string, &proto));
+    EXPECT_FALSE(parser.ParseFromString(singular_bool_parse_string, &proto));
+  }
+  {
+    const absl::string_view singular_string_parse_string =
+        "optional_string: ''";
+    EXPECT_TRUE(
+        TextFormat::ParseFromString(singular_string_parse_string, &proto));
+    EXPECT_FALSE(parser.ParseFromString(singular_string_parse_string, &proto));
+  }
+  {
+    const absl::string_view nested_message_parse_string =
+        "optional_nested_message { bb: 0 } ";
+    EXPECT_TRUE(
+        TextFormat::ParseFromString(nested_message_parse_string, &proto));
+    EXPECT_FALSE(parser.ParseFromString(nested_message_parse_string, &proto));
+  }
+  {
+    const absl::string_view foreign_message_parse_string =
+        "optional_foreign_message { c: 0 } ";
+    EXPECT_TRUE(
+        TextFormat::ParseFromString(foreign_message_parse_string, &proto));
+    EXPECT_FALSE(parser.ParseFromString(foreign_message_parse_string, &proto));
+  }
+  {
+    const absl::string_view nested_enum_parse_string =
+        "optional_nested_enum: ZERO ";
+    EXPECT_TRUE(TextFormat::ParseFromString(nested_enum_parse_string, &proto));
+    EXPECT_FALSE(parser.ParseFromString(nested_enum_parse_string, &proto));
+  }
+  {
+    const absl::string_view foreign_enum_parse_string =
+        "optional_foreign_enum: FOREIGN_ZERO ";
+    EXPECT_TRUE(TextFormat::ParseFromString(foreign_enum_parse_string, &proto));
+    EXPECT_FALSE(parser.ParseFromString(foreign_enum_parse_string, &proto));
+  }
+  {
+    const absl::string_view string_piece_parse_string =
+        "optional_string_piece: '' ";
+    EXPECT_TRUE(TextFormat::ParseFromString(string_piece_parse_string, &proto));
+    EXPECT_FALSE(parser.ParseFromString(string_piece_parse_string, &proto));
+  }
+  {
+    const absl::string_view cord_parse_string = "optional_cord: '' ";
+    EXPECT_TRUE(TextFormat::ParseFromString(cord_parse_string, &proto));
+    EXPECT_FALSE(parser.ParseFromString(cord_parse_string, &proto));
+  }
+  {
+    // Sanity check that repeated fields work the same.
+    const absl::string_view repeated_int32_parse_string = "repeated_int32: 0 ";
+    EXPECT_TRUE(
+        TextFormat::ParseFromString(repeated_int32_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(repeated_int32_parse_string, &proto));
+  }
+  {
+    const absl::string_view repeated_bool_parse_string =
+        "repeated_bool: false  ";
+    EXPECT_TRUE(
+        TextFormat::ParseFromString(repeated_bool_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(repeated_bool_parse_string, &proto));
+  }
+  {
+    const absl::string_view repeated_string_parse_string =
+        "repeated_string: '' ";
+    EXPECT_TRUE(
+        TextFormat::ParseFromString(repeated_string_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(repeated_string_parse_string, &proto));
+  }
+}
+
 TEST_F(TextFormatTest, ParseStringEscape) {
   // Create a parse string with escaped characters in it.
   std::string parse_string =
