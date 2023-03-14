@@ -602,9 +602,11 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         && !descriptor.isPacked()) {
       Object value = entry.getValue();
       if (value instanceof LazyField) {
-        value = ((LazyField) value).getValue();
+        ByteString valueBytes = ((LazyField) value).toByteString();
+        output.writeRawMessageSetExtension(entry.getKey().getNumber(), valueBytes);
+      } else {
+        output.writeMessageSetExtension(entry.getKey().getNumber(), (MessageLite) value);
       }
-      output.writeMessageSetExtension(entry.getKey().getNumber(), (MessageLite) value);
     } else {
       writeField(descriptor, entry.getValue(), output);
     }
