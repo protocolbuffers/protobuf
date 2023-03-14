@@ -1191,8 +1191,8 @@ class PROTOBUF_EXPORT Reflection final {
 
   inline const uint32_t* GetHasBits(const Message& message) const;
   inline uint32_t* MutableHasBits(Message* message) const;
-  inline uint32_t GetOneofCase(const Message& message,
-                               const OneofDescriptor* oneof_descriptor) const;
+  uint32_t GetOneofCase(const Message& message,
+                        const OneofDescriptor* oneof_descriptor) const;
   inline uint32_t* MutableOneofCase(
       Message* message, const OneofDescriptor* oneof_descriptor) const;
   inline bool HasExtensionSet(const Message& /* message */) const {
@@ -1525,13 +1525,6 @@ inline RepeatedPtrField<PB>* Reflection::MutableRepeatedPtrFieldInternal(
 template <typename Type>
 const Type& Reflection::DefaultRaw(const FieldDescriptor* field) const {
   return *reinterpret_cast<const Type*>(schema_.GetFieldDefault(field));
-}
-
-uint32_t Reflection::GetOneofCase(
-    const Message& message, const OneofDescriptor* oneof_descriptor) const {
-  ABSL_DCHECK(!oneof_descriptor->is_synthetic());
-  return internal::GetConstRefAtOffset<uint32_t>(
-      message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
 
 bool Reflection::HasOneofField(const Message& message,

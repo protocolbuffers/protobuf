@@ -35,6 +35,7 @@ cc_library(
     include_prefix = "google/protobuf/compiler/java",
     visibility = ["//pkg:__pkg__"],
     deps = [
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/container:flat_hash_set",
@@ -112,6 +113,7 @@ cc_library(
     deps = [
         ":names",
         ":names_internal",
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:retention",

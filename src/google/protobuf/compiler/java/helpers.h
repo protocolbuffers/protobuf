@@ -43,6 +43,7 @@
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 
 // Must be last.
@@ -354,10 +355,7 @@ inline bool HasPackedFields(const Descriptor* descriptor) {
 // them has a required field. Return true if a required field is found.
 bool HasRequiredFields(const Descriptor* descriptor);
 
-inline bool IsRealOneof(const FieldDescriptor* descriptor) {
-  return descriptor->containing_oneof() &&
-         !descriptor->containing_oneof()->is_synthetic();
-}
+bool IsRealOneof(const FieldDescriptor* descriptor);
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
   return internal::cpp::HasHasbit(descriptor);
@@ -366,7 +364,8 @@ inline bool HasHasbit(const FieldDescriptor* descriptor) {
 // Whether generate classes expose public PARSER instances.
 inline bool ExposePublicParser(const FileDescriptor* descriptor) {
   // TODO(liujisi): Mark the PARSER private in 3.1.x releases.
-  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
+  return FileDescriptorLegacy(descriptor).syntax() ==
+         FileDescriptorLegacy::Syntax::SYNTAX_PROTO2;
 }
 
 // Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
