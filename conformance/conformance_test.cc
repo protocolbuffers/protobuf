@@ -46,6 +46,7 @@
 #include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
@@ -163,11 +164,12 @@ ConformanceTestSuite::ConformanceRequestSetting::NewTestMessage() const {
 
 string ConformanceTestSuite::ConformanceRequestSetting::GetTestName() const {
   string rname;
-  switch (prototype_message_.GetDescriptor()->file()->syntax()) {
-    case FileDescriptor::SYNTAX_PROTO3:
+  switch (FileDescriptorLegacy(prototype_message_.GetDescriptor()->file())
+              .syntax()) {
+    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
       rname = ".Proto3.";
       break;
-    case FileDescriptor::SYNTAX_PROTO2:
+    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
       rname = ".Proto2.";
       break;
     default:

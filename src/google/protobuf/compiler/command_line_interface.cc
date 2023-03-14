@@ -37,6 +37,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
+#include "google/protobuf/descriptor_legacy.h"
 
 #include "google/protobuf/stubs/platform_macros.h"
 
@@ -949,7 +950,7 @@ namespace {
 
 bool ContainsProto3Optional(const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); i++) {
-    if (desc->field(i)->has_optional_keyword()) {
+    if (FieldDescriptorLegacy(desc->field(i)).has_optional_keyword()) {
       return true;
     }
   }
@@ -962,7 +963,8 @@ bool ContainsProto3Optional(const Descriptor* desc) {
 }
 
 bool ContainsProto3Optional(const FileDescriptor* file) {
-  if (file->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+  if (FileDescriptorLegacy(file).syntax() ==
+      FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
     for (int i = 0; i < file->message_type_count(); i++) {
       if (ContainsProto3Optional(file->message_type(i))) {
         return true;

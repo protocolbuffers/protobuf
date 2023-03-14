@@ -47,6 +47,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -2292,7 +2293,9 @@ bool Generator::Generate(const FileDescriptor* file, const Options& options,
     return false;
   }
 
-  if (!options.is_descriptor && file->syntax() != FileDescriptor::SYNTAX_PROTO3) {
+  if (!options.is_descriptor &&
+      FileDescriptorLegacy(file).syntax() !=
+          FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
     *error =
         "Can only generate PHP code for proto3 .proto files.\n"
         "Please add 'syntax = \"proto3\";' to the top of your .proto file.\n";

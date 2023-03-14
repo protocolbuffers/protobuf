@@ -67,6 +67,7 @@
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -173,13 +174,13 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
   return "";
 }
 
-std::string StringifySyntax(FileDescriptor::Syntax syntax) {
+std::string StringifySyntax(FileDescriptorLegacy::Syntax syntax) {
   switch (syntax) {
-    case FileDescriptor::SYNTAX_PROTO2:
+    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
       return "proto2";
-    case FileDescriptor::SYNTAX_PROTO3:
+    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
       return "proto3";
-    case FileDescriptor::SYNTAX_UNKNOWN:
+    case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
     default:
       ABSL_LOG(FATAL)
           << "Unsupported syntax; this generator only supports proto2 "
@@ -440,7 +441,7 @@ void Generator::PrintFileDescriptor() const {
   m["descriptor_name"] = kDescriptorKey;
   m["name"] = file_->name();
   m["package"] = file_->package();
-  m["syntax"] = StringifySyntax(file_->syntax());
+  m["syntax"] = StringifySyntax(FileDescriptorLegacy(file_).syntax());
   m["options"] = OptionsValue(
       StripLocalSourceRetentionOptions(*file_).SerializeAsString());
   m["serialized_descriptor"] = absl::CHexEscape(file_descriptor_serialized_);
@@ -690,7 +691,9 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
       "syntax='$syntax$'",
       "options_value", OptionsValue(options_string), "extendable",
       message_descriptor.extension_range_count() > 0 ? "True" : "False",
-      "syntax", StringifySyntax(message_descriptor.file()->syntax()));
+      "syntax",
+      StringifySyntax(
+          FileDescriptorLegacy(message_descriptor.file()).syntax()));
   printer_->Print(",\n");
 
   // Extension ranges

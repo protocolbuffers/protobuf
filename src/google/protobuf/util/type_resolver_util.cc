@@ -43,6 +43,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/util/type_resolver.h"
 
@@ -273,7 +274,7 @@ void ConvertFieldDescriptor(absl::string_view url_prefix,
   ConvertFieldOptions(descriptor.options(), *field->mutable_options());
 }
 
-Syntax ConvertSyntax(FileDescriptor::Syntax syntax) {
+Syntax ConvertSyntax(FileDescriptorLegacy::Syntax syntax) {
   switch (syntax) {
     default:
       return Syntax::SYNTAX_PROTO2;
@@ -282,7 +283,8 @@ Syntax ConvertSyntax(FileDescriptor::Syntax syntax) {
 
 void ConvertEnumDescriptor(const EnumDescriptor& descriptor, Enum* enum_type) {
   enum_type->Clear();
-  enum_type->set_syntax(ConvertSyntax(descriptor.file()->syntax()));
+  enum_type->set_syntax(
+      ConvertSyntax(FileDescriptorLegacy(descriptor.file()).syntax()));
 
   enum_type->set_name(descriptor.full_name());
   enum_type->mutable_source_context()->set_file_name(descriptor.file()->name());
@@ -303,7 +305,8 @@ void ConvertDescriptor(absl::string_view url_prefix,
                        const Descriptor& descriptor, Type* type) {
   type->Clear();
   type->set_name(descriptor.full_name());
-  type->set_syntax(ConvertSyntax(descriptor.file()->syntax()));
+  type->set_syntax(
+      ConvertSyntax(FileDescriptorLegacy(descriptor.file()).syntax()));
   for (int i = 0; i < descriptor.field_count(); ++i) {
     ConvertFieldDescriptor(url_prefix, *descriptor.field(i),
                            type->add_fields());

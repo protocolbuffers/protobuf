@@ -44,6 +44,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/unittest.pb.h"
@@ -466,7 +467,8 @@ class DescriptorPoolTypeResolverSyntaxTest : public testing::Test {
 
 TEST_F(DescriptorPoolTypeResolverSyntaxTest, SyntaxProto2) {
   const FileDescriptor* file = BuildFile("proto2");
-  ASSERT_EQ(FileDescriptor::SYNTAX_PROTO2, file->syntax());
+  ASSERT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_PROTO2,
+            FileDescriptorLegacy(file).syntax());
 
   Type type;
   ASSERT_TRUE(
@@ -477,7 +479,8 @@ TEST_F(DescriptorPoolTypeResolverSyntaxTest, SyntaxProto2) {
 
 TEST_F(DescriptorPoolTypeResolverSyntaxTest, SyntaxProto3) {
   const FileDescriptor* file = BuildFile("proto3");
-  ASSERT_EQ(FileDescriptor::SYNTAX_PROTO3, file->syntax());
+  ASSERT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_PROTO3,
+            FileDescriptorLegacy(file).syntax());
 
   Type type;
   ASSERT_TRUE(
