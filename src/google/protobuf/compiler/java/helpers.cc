@@ -52,6 +52,7 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
 
@@ -830,6 +831,11 @@ bool HasRequiredFields(const Descriptor* type,
 bool HasRequiredFields(const Descriptor* type) {
   absl::flat_hash_set<const Descriptor*> already_seen;
   return HasRequiredFields(type, &already_seen);
+}
+
+bool IsRealOneof(const FieldDescriptor* descriptor) {
+  return descriptor->containing_oneof() &&
+         !OneofDescriptorLegacy(descriptor->containing_oneof()).is_synthetic();
 }
 
 bool HasRepeatedFields(const Descriptor* descriptor) {

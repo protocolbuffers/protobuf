@@ -48,6 +48,7 @@
 #include "absl/log/scoped_mock_log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/stubs/common.h"
@@ -540,7 +541,7 @@ TEST_F(FileDescriptorTest, Syntax) {
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     EXPECT_TRUE(file != nullptr);
-    EXPECT_EQ(FileDescriptor::SYNTAX_PROTO2, file->syntax());
+    EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_PROTO2, FileDescriptorLegacy(file).syntax());
     FileDescriptorProto other;
     file->CopyTo(&other);
     EXPECT_EQ("proto2", other.syntax());
@@ -551,7 +552,8 @@ TEST_F(FileDescriptorTest, Syntax) {
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     EXPECT_TRUE(file != nullptr);
-    EXPECT_EQ(FileDescriptor::SYNTAX_PROTO3, file->syntax());
+    EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_PROTO3,
+              FileDescriptorLegacy(file).syntax());
     FileDescriptorProto other;
     file->CopyTo(&other);
     EXPECT_EQ("proto3", other.syntax());
