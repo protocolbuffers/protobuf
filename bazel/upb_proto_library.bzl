@@ -192,11 +192,12 @@ GeneratedSrcsInfo = provider(
     fields = {
         "srcs": "list of srcs",
         "hdrs": "list of hdrs",
+        "thunks": "Experimental, do not use. List of srcs defining C API. Incompatible with hdrs.",
         "includes": "list of extra includes",
     },
 )
 
-UpbWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info"])
+UpbWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info", "cc_info_with_thunks"])
 _UpbDefsWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info"])
 _UpbWrappedGeneratedSrcsInfo = provider("Provider for generated sources", fields = ["srcs"])
 _WrappedDefsGeneratedSrcsInfo = provider(
@@ -212,6 +213,9 @@ def _compile_upb_protos(ctx, generator, proto_info, proto_sources):
     tool = getattr(ctx.executable, "_gen_" + generator)
     srcs = [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
     hdrs = [_generate_output_file(ctx, name, ext + ".h") for name in proto_sources]
+    thunks = []
+    if generator == "upb":
+        thunks = [_generate_output_file(ctx, name, ext + ".thunks.c") for name in proto_sources]
     transitive_sets = proto_info.transitive_descriptor_sets.to_list()
 
     args = ctx.actions.args()
@@ -235,9 +239,21 @@ def _compile_upb_protos(ctx, generator, proto_info, proto_sources):
         progress_message = "Generating upb protos for :" + ctx.label.name,
         mnemonic = "GenUpbProtos",
     )
+    if generator == "upb":
+        ctx.actions.run_shell(
+            inputs = hdrs,
+            outputs = thunks,
+            command = " && ".join([
+                "sed 's/UPB_INLINE //' {} > {}".format(hdr.path, thunk.path)
+                for (hdr, thunk) in zip(hdrs, thunks)
+            ]),
+            progress_message = "Generating thunks for upb protos API for: " + ctx.label.name,
+            mnemonic = "GenUpbProtosThunks",
+        )
     return GeneratedSrcsInfo(
         srcs = srcs,
         hdrs = hdrs,
+        thunks = thunks,
         includes = [_generate_include_path(proto_sources[0], hdrs[0], ext + ".h")],
     )
 
@@ -294,7 +310,29 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
         copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
         dep_ccinfos = dep_ccinfos,
     )
-    return [cc_provider(cc_info = cc_info), file_provider(srcs = files)]
+
+    if files.thunks:
+        cc_info_with_thunks = _cc_library_func(
+            ctx = ctx,
+            name = ctx.rule.attr.name + "." + generator + ".thunks",
+            hdrs = [],
+            srcs = files.thunks,
+            includes = files.includes,
+            copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
+            dep_ccinfos = dep_ccinfos + [cc_info],
+        )
+        wrapped_cc_info = cc_provider(
+            cc_info = cc_info,
+            cc_info_with_thunks = cc_info_with_thunks,
+        )
+    else:
+        wrapped_cc_info = cc_provider(
+            cc_info = cc_info,
+        )
+    return [
+        wrapped_cc_info,
+        file_provider(srcs = files),
+    ]
 
 def upb_proto_library_aspect_impl(target, ctx):
     return _upb_proto_aspect_impl(target, ctx, "upb", UpbWrappedCcInfo, _UpbWrappedGeneratedSrcsInfo)
