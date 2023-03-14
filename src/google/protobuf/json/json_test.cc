@@ -315,6 +315,28 @@ TEST_P(JsonTest, EvilString) {
   EXPECT_EQ(m->string_value(), "\n\r\b\f\1\2\3");
 }
 
+TEST_P(JsonTest, Unquoted64) {
+  TestMessage m;
+  m.add_repeated_int64_value(0);
+  m.add_repeated_int64_value(42);
+  m.add_repeated_int64_value(-((int64_t{1} << 60) + 1));
+  m.add_repeated_int64_value(INT64_MAX);
+  // This is a power of two and is therefore representable.
+  m.add_repeated_int64_value(INT64_MIN);
+  m.add_repeated_uint64_value(0);
+  m.add_repeated_uint64_value(42);
+  m.add_repeated_uint64_value((uint64_t{1} << 60) + 1);
+  // This will be UB without the min/max check in RoundTripsThroughDouble().
+  m.add_repeated_uint64_value(UINT64_MAX);
+
+  PrintOptions opts;
+  opts.unquote_int64_if_possible = true;
+  EXPECT_THAT(
+      ToJson(m, opts),
+      R"({"repeatedInt64Value":[0,42,"-1152921504606846977","9223372036854775807",-9223372036854775808],)"
+      R"("repeatedUint64Value":[0,42,"1152921504606846977","18446744073709551615"]})");
+}
+
 TEST_P(JsonTest, TestAlwaysPrintEnumsAsInts) {
   TestMessage orig;
   orig.set_enum_value(proto3::BAR);

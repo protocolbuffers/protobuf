@@ -69,6 +69,9 @@ struct WriterOptions {
   bool always_print_enums_as_ints = false;
   // Whether to preserve proto field names
   bool preserve_proto_field_names = false;
+  // If set, int64 values that can be represented exactly as a double are
+  // printed without quotes.
+  bool unquote_int64_if_possible = false;
   // The original parser used by json_util2 accepted a number of non-standard
   // options. Setting this flag enables them.
   //
@@ -153,8 +156,19 @@ class JsonWriter {
     Write(view);
   }
 
-  void Write(int64_t) = delete;
-  void Write(uint64_t) = delete;
+  void Write(int64_t val) {
+    char buf[22];
+    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
+    absl::string_view view(buf, static_cast<size_t>(len));
+    Write(view);
+  }
+
+  void Write(uint64_t val) {
+    char buf[22];
+    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
+    absl::string_view view(buf, static_cast<size_t>(len));
+    Write(view);
+  }
 
   template <typename... Ts>
   void Write(Quoted<Ts...> val) {
@@ -205,20 +219,6 @@ class JsonWriter {
   }
 
   void WriteQuoted(absl::string_view val) { WriteEscapedUtf8(val); }
-
-  void WriteQuoted(int64_t val) {
-    char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
-  }
-
-  void WriteQuoted(uint64_t val) {
-    char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
-  }
 
   // Tries to write a non-finite double if necessary; returns false if
   // nothing was written.
