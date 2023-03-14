@@ -483,6 +483,9 @@ cc_library(
 cc_library(
     name = "descriptor_legacy",
     hdrs = ["descriptor_legacy.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf",
+    linkopts = LINK_OPTS,
     deps = [
         ":protobuf_nowkt",
         ":port_def",

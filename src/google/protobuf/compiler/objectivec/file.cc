@@ -50,6 +50,7 @@
 #include "google/protobuf/compiler/objectivec/message.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -701,14 +702,14 @@ void FileGenerator::PrintFileDescription(io::Printer* p) const {
   vars["package_value"] = file_->package().empty()
                               ? "NULL"
                               : absl::StrCat("\"", file_->package(), "\"");
-  switch (file_->syntax()) {
-    case FileDescriptor::SYNTAX_UNKNOWN:
+  switch (FileDescriptorLegacy(file_).syntax()) {
+    case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
       vars["syntax"] = "GPBFileSyntaxUnknown";
       break;
-    case FileDescriptor::SYNTAX_PROTO2:
+    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
       vars["syntax"] = "GPBFileSyntaxProto2";
       break;
-    case FileDescriptor::SYNTAX_PROTO3:
+    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
       vars["syntax"] = "GPBFileSyntaxProto3";
       break;
   }
