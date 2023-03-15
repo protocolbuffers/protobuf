@@ -131,7 +131,6 @@ protobuf_versioned_java_library(
                          "guarantee API/ABI stability.",
     bundle_name = "Protocol Buffers [Lite]",
     bundle_symbolic_name = "com.google.protobuf",
-    bundle_version = "3.21.12",
     visibility = [
         "//java/lite:__pkg__",
     ],
@@ -187,7 +186,6 @@ protobuf_versioned_java_library(
                          "efficient yet extensible format.",
     bundle_name = "Protocol Buffers [Core]",
     bundle_symbolic_name = "com.google.protobuf",
-    bundle_version = "3.21.12",
     visibility = ["//visibility:public"],
     exports = [
         ":lite_runtime_only",
