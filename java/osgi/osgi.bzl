@@ -108,7 +108,7 @@ def osgi_java_library(
         bundle_version = bundle_version,
         export_package = bundle_additional_exports + ["*;version=${Bundle-Version}"],
         import_package = bundle_additional_imports + ["*"],
-        target = ":%s" % private_library_name,
+        target = private_library_name,
         deps = deps,
         runtime_deps = runtime_deps,
         exported_plugins = exported_plugins,
