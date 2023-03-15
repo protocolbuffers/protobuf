@@ -348,6 +348,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   }
 
   /** Used by generated code. */
+  @SuppressWarnings("ProtoParseWithRegistry")
   protected static <M extends Message> M parseWithIOException(Parser<M> parser, InputStream input)
       throws IOException {
     try {
@@ -368,6 +369,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   }
 
   /** Used by generated code. */
+  @SuppressWarnings("ProtoParseWithRegistry")
   protected static <M extends Message> M parseWithIOException(
       Parser<M> parser, CodedInputStream input) throws IOException {
     try {
@@ -389,6 +391,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   }
 
   /** Used by generated code. */
+  @SuppressWarnings("ProtoParseWithRegistry")
   protected static <M extends Message> M parseDelimitedWithIOException(
       Parser<M> parser, InputStream input) throws IOException {
     try {
