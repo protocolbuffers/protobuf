@@ -322,8 +322,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.mergeFrom(value);\n",
 
-      "$set_has_field_bit_builder$\n"
-      "$on_changed$\n"
+      "if ($name$_ != null) {\n"
+      "  $set_has_field_bit_builder$\n"
+      "  $on_changed$\n"
+      "}\n"
       "return this;\n");
 
   // Message.Builder clearField()
