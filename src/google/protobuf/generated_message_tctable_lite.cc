@@ -41,6 +41,7 @@
 #include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/varint_shuffle.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
@@ -697,136 +698,6 @@ PROTOBUF_NOINLINE const char* TcParser::FastF64P2(PROTOBUF_TC_PARAM_DECL) {
 
 namespace {
 
-// Shift "byte" left by n * 7 bits, filling vacated bits with ones.
-template <int n>
-inline PROTOBUF_ALWAYS_INLINE int64_t shift_left_fill_with_ones(uint64_t byte,
-                                                                uint64_t ones) {
-  return static_cast<int64_t>((byte << (n * 7)) | (ones >> (64 - (n * 7))));
-}
-
-// Shift "byte" left by n * 7 bits, filling vacated bits with ones, and
-// put the new value in res.  Return whether the result was negative.
-template <int n>
-inline PROTOBUF_ALWAYS_INLINE bool shift_left_fill_with_ones_was_negative(
-    uint64_t byte, uint64_t ones, int64_t& res) {
-#if defined(__GCC_ASM_FLAG_OUTPUTS__) && defined(__x86_64__)
-  // For the first two rounds (up to 2 varint bytes), micro benchmarks show a
-  // substantial improvement from capturing the sign from the condition code
-  // register on x86-64.
-  bool sign_bit;
-  asm("shldq %3, %2, %1"
-      : "=@ccs"(sign_bit), "+r"(byte)
-      : "r"(ones), "i"(n * 7));
-  res = static_cast<int64_t>(byte);
-  return sign_bit;
-#else
-  // Generic fallback:
-  res = shift_left_fill_with_ones<n>(byte, ones);
-  return res < 0;
-#endif
-}
-
-template <class VarintType>
-inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, VarintType>
-ParseFallbackPair(const char* p, int64_t res1) {
-  constexpr bool kIs64BitVarint = std::is_same<VarintType, uint64_t>::value;
-  constexpr bool kIs32BitVarint = std::is_same<VarintType, uint32_t>::value;
-  static_assert(kIs64BitVarint || kIs32BitVarint,
-                "Only 32 or 64 bit varints are supported");
-  auto ptr = reinterpret_cast<const int8_t*>(p);
-
-  // The algorithm relies on sign extension for each byte to set all high bits
-  // when the varint continues. It also relies on asserting all of the lower
-  // bits for each successive byte read. This allows the result to be aggregated
-  // using a bitwise AND. For example:
-  //
-  //          8       1          64     57 ... 24     17  16      9  8       1
-  // ptr[0] = 1aaa aaaa ; res1 = 1111 1111 ... 1111 1111  1111 1111  1aaa aaaa
-  // ptr[1] = 1bbb bbbb ; res2 = 1111 1111 ... 1111 1111  11bb bbbb  b111 1111
-  // ptr[2] = 0ccc cccc ; res3 = 0000 0000 ... 000c cccc  cc11 1111  1111 1111
-  //                             ---------------------------------------------
-  //        res1 & res2 & res3 = 0000 0000 ... 000c cccc  ccbb bbbb  baaa aaaa
-  //
-  // On x86-64, a shld from a single register filled with enough 1s in the high
-  // bits can accomplish all this in one instruction. It so happens that res1
-  // has 57 high bits of ones, which is enough for the largest shift done.
-  //
-  // Just as importantly, by keeping results in res1, res2, and res3, we take
-  // advantage of the superscalar abilities of the CPU.
-  ABSL_DCHECK_EQ(res1 >> 7, -1);
-  uint64_t ones = res1;  // save the high 1 bits from res1 (input to SHLD)
-  int64_t res2, res3;    // accumulated result chunks
-
-  if (!shift_left_fill_with_ones_was_negative<1>(ptr[1], ones, res2))
-    goto done2;
-  if (!shift_left_fill_with_ones_was_negative<2>(ptr[2], ones, res3))
-    goto done3;
-
-  // For the remainder of the chunks, check the sign of the AND result.
-  res2 &= shift_left_fill_with_ones<3>(ptr[3], ones);
-  if (res2 >= 0) goto done4;
-  res1 &= shift_left_fill_with_ones<4>(ptr[4], ones);
-  if (res1 >= 0) goto done5;
-  if (kIs64BitVarint) {
-    res2 &= shift_left_fill_with_ones<5>(ptr[5], ones);
-    if (res2 >= 0) goto done6;
-    res3 &= shift_left_fill_with_ones<6>(ptr[6], ones);
-    if (res3 >= 0) goto done7;
-    res1 &= shift_left_fill_with_ones<7>(ptr[7], ones);
-    if (res1 >= 0) goto done8;
-    res3 &= shift_left_fill_with_ones<8>(ptr[8], ones);
-    if (res3 >= 0) goto done9;
-  } else if (kIs32BitVarint) {
-    if (PROTOBUF_PREDICT_TRUE(!(ptr[5] & 0x80))) goto done6;
-    if (PROTOBUF_PREDICT_TRUE(!(ptr[6] & 0x80))) goto done7;
-    if (PROTOBUF_PREDICT_TRUE(!(ptr[7] & 0x80))) goto done8;
-    if (PROTOBUF_PREDICT_TRUE(!(ptr[8] & 0x80))) goto done9;
-  }
-
-  // For valid 64bit varints, the 10th byte/ptr[9] should be exactly 1. In this
-  // case, the continuation bit of ptr[8] already set the top bit of res3
-  // correctly, so all we have to do is check that the expected case is true.
-  if (PROTOBUF_PREDICT_TRUE(kIs64BitVarint && ptr[9] == 1)) goto done10;
-
-  if (PROTOBUF_PREDICT_FALSE(ptr[9] & 0x80)) {
-    // If the continue bit is set, it is an unterminated varint.
-    return {nullptr, 0};
-  }
-
-  // A zero value of the first bit of the 10th byte represents an
-  // over-serialized varint. This case should not happen, but if does (say, due
-  // to a nonconforming serializer), deassert the continuation bit that came
-  // from ptr[8].
-  if (kIs64BitVarint && (ptr[9] & 1) == 0) {
-#if defined(__GCC_ASM_FLAG_OUTPUTS__) && defined(__x86_64__)
-    // Use a small instruction since this is an uncommon code path.
-    asm("btcq $63,%0" : "+r"(res3));
-#else
-    res3 ^= static_cast<uint64_t>(1) << 63;
-#endif
-  }
-  goto done10;
-
-done2:
-  return {p + 2, res1 & res2};
-done3:
-  return {p + 3, res1 & res2 & res3};
-done4:
-  return {p + 4, res1 & res2 & res3};
-done5:
-  return {p + 5, res1 & res2 & res3};
-done6:
-  return {p + 6, res1 & res2 & res3};
-done7:
-  return {p + 7, res1 & res2 & res3};
-done8:
-  return {p + 8, res1 & res2 & res3};
-done9:
-  return {p + 9, res1 & res2 & res3};
-done10:
-  return {p + 10, res1 & res2 & res3};
-}
-
 template <typename Type>
 inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
                                                       Type* value) {
@@ -841,17 +712,10 @@ inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
   }
   return p;
 #endif
-  int64_t byte = static_cast<int8_t>(*p);
-  if (PROTOBUF_PREDICT_TRUE(byte >= 0)) {
-    *value = byte;
-    return p + 1;
-  } else {
-    auto tmp = ParseFallbackPair<std::make_unsigned_t<Type>>(p, byte);
-    if (PROTOBUF_PREDICT_TRUE(tmp.first)) {
-      *value = static_cast<Type>(tmp.second);
-    }
-    return tmp.first;
-  }
+  int64_t res;
+  p = ShiftMixParseVarint<Type>(p, res);
+  *value = res;
+  return p;
 }
 
 // This overload is specifically for handling bool, because bools have very
@@ -979,7 +843,7 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
   asm("" : "+m"(spill));
 #endif
 
-  FieldType tmp;
+  uint64_t tmp;
   PROTOBUF_ASSUME(static_cast<int8_t>(*ptr) < 0);
   ptr = ParseVarint(ptr, &tmp);
 
@@ -1000,29 +864,16 @@ template <typename FieldType>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::FastVarintS1(
     PROTOBUF_TC_PARAM_DECL) {
   using TagType = uint8_t;
-  // super-early success test...
-  if (PROTOBUF_PREDICT_TRUE(((data.data) & 0x80FF) == 0)) {
-    ptr += sizeof(TagType);  // Consume tag
-    hasbits |= (uint64_t{1} << data.hasbit_idx());
-    uint8_t value = data.data >> 8;
-    RefAt<FieldType>(msg, data.offset()) = value;
-    ptr += 1;
-    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-  }
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-  ptr += sizeof(TagType);  // Consume tag
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
-
-  auto tmp =
-      ParseFallbackPair<FieldType>(ptr, static_cast<int8_t>(data.data >> 8));
-  ptr = tmp.first;
+  int64_t res;
+  ptr = ShiftMixParseVarint<FieldType>(ptr + sizeof(TagType), res);
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-
-  RefAt<FieldType>(msg, data.offset()) = tmp.second;
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  RefAt<FieldType>(msg, data.offset()) = res;
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
