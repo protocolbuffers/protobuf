@@ -1,9 +1,90 @@
 """ Custom rule to generate OSGi Manifest """
+
 load("@rules_java//java:defs.bzl", "java_library")
 
-def osgi_java_library(name, bundle_description, bundle_doc_url, bundle_license, bundle_name, 
-    bundle_symbolic_name, bundle_version, exports = [], visibility = [], neverlink = False, deps = [],
-    runtime_deps = [], exported_plugins = [], **kwargs):
+def osgi_java_library(
+        name,
+        bundle_description,
+        bundle_doc_url,
+        bundle_license,
+        bundle_name,
+        bundle_symbolic_name,
+        bundle_version,
+        bundle_additional_imports = [],
+        bundle_additional_exports = [],
+        deps = [],
+        exports = [],
+        exported_plugins = [],
+        neverlink = False,
+        runtime_deps = [],
+        visibility = [],
+        **kwargs):
+    """Extends `java_library` to add OSGi headers to the MANIFEST.MF using bndlib
+
+    This macro should be useable as a drop-in replacement for java_library.
+
+    The additional arguments are given the bndlib tool to generate an OSGi-compliant manifest file.
+    See [bnd documentation](https://bnd.bndtools.org/chapters/110-introduction.html)
+
+    Args:
+        name: (required) A unique name for this target.
+        bundle_description: (required) The Bundle-Description header defines a short
+            description of this bundle.
+        bundle_doc_url: (required) The Bundle-DocURL headers must contain a URL pointing
+            to documentation about this bundle.
+        bundle_license: (required) The Bundle-License header provides an optional machine
+            readable form of license information.
+        bundle_name: (required) The Bundle-Name header defines a readable name for this
+            bundle. This should be a short, human-readable name that can
+            contain spaces.
+        bundle_symbolic_name: (required) The Bundle-SymbolicName header specifies a 
+            non-localizable name for this bundle. The bundle symbolic name 
+            together with a version must identify a unique bundle though it can
+            be installed multiple times in a framework. The bundle symbolic
+            name should be based on the reverse domain name convention.
+        bundle_version: (required) The Bundle-Version header specifies the version string
+            for this bundle. The version string is expected to follow semantic
+            versioning conventions MAJOR.MINOR.PATCH[.BUILD]
+        bundle_additional_exports: The Export-Package header contains a
+            declaration of exported packages. These are additional export
+            package statements to be added before the default wildcard export
+            "*;version={$Bundle-Version}".
+        bundle_additional_imports: The Import-Package header declares the
+            imported packages for this bundle. These are additional import
+            package statements to be added before the default wildcard import
+            "*".
+        deps: The list of libraries to link into this library. See general
+            comments about deps at Typical attributes defined by most build
+            rules. The jars built by java_library rules listed in deps will be
+            on the compile-time classpath of this rule. Furthermore the
+            transitive closure of their deps, runtime_deps and exports will be
+            on the runtime classpath. By contrast, targets in the data
+            attribute are included in the runfiles but on neither the
+            compile-time nor runtime classpath.
+        exports: Exported libraries.
+        exported_plugins: The list of java_plugins (e.g. annotation processors)
+            to export to libraries that directly depend on this library. The
+            specified list of java_plugins will be applied to any library which
+            directly depends on this library, just as if that library had
+            explicitly declared these labels in plugins.
+        neverlink: Whether this library should only be used for compilation and
+            not at runtime. Useful if the library will be provided by the runtime
+            environment during execution. Examples of such libraries are the IDE
+            APIs for IDE plug-ins or tools.jar for anything running on a standard
+            JDK.
+        runtime_deps: Libraries to make available to the final binary or test
+            at runtime only. Like ordinary deps, these will appear on the runtime
+            classpath, but unlike them, not on the compile-time classpath.
+            Dependencies needed only at runtime should be listed here.
+            Dependency-analysis tools should ignore targets that appear in both
+            runtime_deps and deps
+        visibility: The visibility attribute on a target controls whether the
+            target can be used in other packages. See the documentation for
+            visibility.
+        **kwargs: Additional key-word arguments that are passed to the internal
+            java_library target.
+    """
+
     # Build the private jar without the OSGI manifest
     private_library_name = "%s-no-manifest-do-not-use" % name
     java_library(
@@ -16,7 +97,7 @@ def osgi_java_library(name, bundle_description, bundle_doc_url, bundle_license, 
         **kwargs
     )
 
-    # Add the OSGI manifest
+    # Repackage the jar with an OSGI manifest
     _osgi_jar(
         name = name,
         bundle_description = bundle_description,
@@ -25,8 +106,8 @@ def osgi_java_library(name, bundle_description, bundle_doc_url, bundle_license, 
         bundle_name = bundle_name,
         bundle_symbolic_name = bundle_symbolic_name,
         bundle_version = bundle_version,
-        export_package = ["*;version=${Bundle-Version}"],
-        import_package = ["sun.misc;resolution:=optional", "*"],
+        export_package = bundle_additional_exports + ["*;version=${Bundle-Version}"],
+        import_package = bundle_additional_imports + ["*"],
         target = ":%s" % private_library_name,
         deps = deps,
         runtime_deps = runtime_deps,
@@ -62,11 +143,11 @@ def _run_osgi_wrapper(ctx, input_jar, classpath_jars, output_jar):
 def _osgi_jar_impl(ctx):
     if len(ctx.attr.target[JavaInfo].java_outputs) != 1:
         fail("osgi_jar rule can only be used on a single java target.")
-
     target_java_output = ctx.attr.target[JavaInfo].java_outputs[0]
 
     if len(target_java_output.source_jars) > 1:
         fail("osgi_jar rule doesn't know how to deal with more than one source jar.")
+    source_jar = target_java_output.source_jars[0]
 
     output_jar = ctx.outputs.output_jar
 
@@ -74,7 +155,7 @@ def _osgi_jar_impl(ctx):
     classpath_jars = ctx.attr.target[JavaInfo].compilation_info.compilation_classpath.to_list()
 
     _run_osgi_wrapper(ctx, input_jar, classpath_jars, output_jar)
-    
+
     return [
         DefaultInfo(
             files = depset([output_jar]),
@@ -85,8 +166,11 @@ def _osgi_jar_impl(ctx):
         ),
         JavaInfo(
             output_jar = output_jar,
-            compile_jar = output_jar, #ijar, #using ijar results in missing protobuf import version.
-            source_jar = target_java_output.source_jars[0],
+
+            # compile_jar should be an ijar, but using an ijar results in
+            # missing protobuf import version.
+            compile_jar = output_jar,
+            source_jar = source_jar,
             compile_jdeps = target_java_output.compile_jdeps,
             generated_class_jar = target_java_output.generated_class_jar,
             generated_source_jar = target_java_output.generated_source_jar,
@@ -102,6 +186,10 @@ def _osgi_jar_impl(ctx):
     ]
 
 _osgi_jar = rule(
+    implementation = _osgi_jar_impl,
+    outputs = {
+        "output_jar": "lib%{name}.jar",
+    },
     attrs = {
         "bundle_copyright": attr.string(),
         "bundle_description": attr.string(),
@@ -124,13 +212,5 @@ _osgi_jar = rule(
             allow_files = True,
             default = Label("//java/osgi:osgi_wrapper"),
         ),
-        "_java_toolchain": attr.label(
-            default = "@bazel_tools//tools/jdk:current_java_toolchain",
-        ),
     },
-    fragments = ["java"],
-    outputs = {
-        "output_jar": "lib%{name}.jar",
-    },
-    implementation = _osgi_jar_impl,
 )

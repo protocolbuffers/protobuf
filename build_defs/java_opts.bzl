@@ -32,5 +32,6 @@ def protobuf_versioned_java_library(**kwargs):
         bundle_doc_url = BUNDLE_DOC_URL,
         bundle_license = BUNDLE_LICENSE,
         bundle_version = PROTOBUF_JAVA_VERSION,
+        bundle_additional_imports = ["sun.misc;resolution:=optional"],
         **kwargs
     )
