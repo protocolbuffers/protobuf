@@ -45,6 +45,8 @@
 #include "google/protobuf/message.h"
 #include "absl/base/attributes.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
@@ -1302,7 +1304,9 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
 absl::Status JsonStringToMessage(absl::string_view input, Message* message,
                                  json_internal::ParseOptions options) {
   MessagePath path(message->GetDescriptor()->full_name());
-  PROTOBUF_DLOG(INFO) << "json2/input: " << absl::CHexEscape(input);
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/input: " << absl::CHexEscape(input);
+  }
   io::ArrayInputStream in(input.data(), input.size());
   JsonLexer lex(&in, options, &path);
 
@@ -1315,9 +1319,10 @@ absl::Status JsonStringToMessage(absl::string_view input, Message* message,
         "extraneous characters after end of JSON object");
   }
 
-  PROTOBUF_DLOG(INFO) << "json2/status: " << s;
-  PROTOBUF_DLOG(INFO) << "json2/output: " << message->DebugString();
-
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/status: " << s;
+    ABSL_DLOG(INFO) << "json2/output: " << message->DebugString();
+  }
   return s;
 }
 
@@ -1350,7 +1355,9 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
     tee_output.emplace(&out);
   }
 
-  PROTOBUF_DLOG(INFO) << "json2/input: " << absl::CHexEscape(copy);
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/input: " << absl::CHexEscape(copy);
+  }
 
   // This scope forces the CodedOutputStream inside of `msg` to flush before we
   // possibly handle logging the binary protobuf output.
@@ -1379,8 +1386,10 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
         .Append(out.data(), out.size());
   }
 
-  PROTOBUF_DLOG(INFO) << "json2/status: " << s;
-  PROTOBUF_DLOG(INFO) << "json2/output: " << absl::BytesToHexString(out);
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/status: " << s;
+    ABSL_DLOG(INFO) << "json2/output: " << absl::BytesToHexString(out);
+  }
   return s;
 }
 }  // namespace json_internal
