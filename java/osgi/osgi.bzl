@@ -21,7 +21,7 @@ def osgi_java_library(
         **kwargs):
     """Extends `java_library` to add OSGi headers to the MANIFEST.MF using bndlib
 
-    This macro should be useable as a drop-in replacement for java_library.
+    This macro should be usable as a drop-in replacement for java_library.
 
     The additional arguments are given the bndlib tool to generate an OSGi-compliant manifest file.
     See [bnd documentation](https://bnd.bndtools.org/chapters/110-introduction.html)
