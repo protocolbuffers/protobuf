@@ -26,8 +26,14 @@
 #ifndef UPB_UPBC_PLUGIN_H_
 #define UPB_UPBC_PLUGIN_H_
 
+#include <stdio.h>
+
 #include <string>
 #include <vector>
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
 
 // begin:google_only
 // #ifndef UPB_BOOTSTRAP_STAGE0
@@ -156,7 +162,10 @@ class Plugin {
 
   std::string ReadAllStdinBinary() {
     std::string data;
-    stdin = freopen(nullptr, "rb", stdin);
+#ifdef _WIN32
+    setmode(STDIN_FILENO, _O_BINARY);
+    setmode(STDOUT_FILENO, _O_BINARY);
+#endif
     char buf[4096];
     while (size_t len = fread(buf, 1, sizeof(buf), stdin)) {
       data.append(buf, len);
