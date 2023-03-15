@@ -2,6 +2,25 @@
 
 load("@rules_java//java:defs.bzl", "java_library")
 
+# Note that this rule is currently agnostic of protobuf concerns and could be 
+# pulled out as a general purpose helper to allow migrations from maven to bazel
+# for OSS release builds.
+#
+# There are (at least) 3 things that would nice to fix about this rule:
+# 1. `deps` are captured by wrapping the java_library target into the 
+#    osgi_java_library target -- if possible, it would be better to get
+#    the deps from the JavaInfo or some other provider from any java_library
+#    target.
+# 2. imports are probably not being calculated properly for deps that are more
+#    than 1 step deep in the dependency chain. For example: //java:core depends
+#    on //java/core:lite_runtime_only but does not calculate the need for 
+#    "sun.misc" like the //java/core:lite target does (even though the same code
+#    is transitively included. Those imports can be explicitly added through 
+#    `bundle_additional_imports`, but it would be better if the calculation 
+#    applied correctly to transitive dependencies.
+# 3. Versioned imports didn't work properly when an ijar is used as the 
+#    "compile_jar". Thus, this rule uses the full jar as the compile_jar,
+#    which is probably sub-optimal.
 def osgi_java_library(
         name,
         bundle_description,
