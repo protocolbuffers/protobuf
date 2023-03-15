@@ -62,6 +62,9 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/wire_format.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -2303,6 +2306,7 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
       !LookingAt("required")) {
     return false;
   }
+
   LocationRecorder location(field_location,
                             FieldDescriptorProto::kLabelFieldNumber);
   if (TryConsume("optional")) {
@@ -2485,3 +2489,5 @@ void SourceLocationTable::Clear() { location_map_.clear(); }
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
