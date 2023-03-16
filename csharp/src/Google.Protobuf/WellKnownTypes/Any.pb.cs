@@ -69,7 +69,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///       foo = any.unpack(Foo.getDefaultInstance());
   ///     }
   ///
-  /// Example 3: Pack and unpack a message in Python.
+  ///  Example 3: Pack and unpack a message in Python.
   ///
   ///     foo = Foo(...)
   ///     any = Any()
@@ -79,7 +79,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///       any.Unpack(foo)
   ///       ...
   ///
-  /// Example 4: Pack and unpack a message in Go
+  ///  Example 4: Pack and unpack a message in Go
   ///
   ///      foo := &amp;pb.Foo{...}
   ///      any, err := anypb.New(foo)
@@ -99,7 +99,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// name "y.z".
   ///
   /// JSON
-  ///
+  /// ====
   /// The JSON representation of an `Any` value uses the regular
   /// representation of the deserialized, embedded message, with an
   /// additional field `@type` which contains the type URL. Example:
