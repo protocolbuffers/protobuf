@@ -7,22 +7,6 @@ local_repository(
     path = "examples",
 )
 
-http_archive(
-    name = "com_google_googletest",
-    sha256 = "833bfaf9f8f508a4ef4a35e25131112ed55bf9ff5c073e272397ff38eb4d90ec",
-    strip_prefix = "googletest-4c9a3bb62bf3ba1f1010bf96f9c8ed767b363774",
-    urls = [
-        "https://github.com/google/googletest/archive/4c9a3bb62bf3ba1f1010bf96f9c8ed767b363774.zip",
-    ],
-)
-
-http_archive(
-    name = "com_googlesource_code_re2",
-    sha256 = "906d0df8ff48f8d3a00a808827f009a840190f404559f649cb8e4d7143255ef9",
-    strip_prefix = "re2-a276a8c738735a0fe45a6ee590fe2df69bcf4502",
-    urls = ["https://github.com/google/re2/archive/a276a8c738735a0fe45a6ee590fe2df69bcf4502.zip"],  # 2022-04-08
-)
-
 # Bazel platform rules.
 http_archive(
     name = "platforms",
@@ -30,6 +14,19 @@ http_archive(
     strip_prefix = "platforms-da5541f26b7de1dc8e04c075c99df5351742a4a2",
     urls = ["https://github.com/bazelbuild/platforms/archive/da5541f26b7de1dc8e04c075c99df5351742a4a2.zip"],  # 2022-05-27
 )
+
+http_archive(
+    name = "com_google_googletest",
+    sha256 = "730215d76eace9dd49bf74ce044e8daa065d175f1ac891cc1d6bb184ef94e565",
+    strip_prefix = "googletest-f53219cdcb7b084ef57414efea92ee5b71989558",
+    urls = [
+        "https://github.com/google/googletest/archive/f53219cdcb7b084ef57414efea92ee5b71989558.tar.gz" # 2023-03-16
+    ],
+)
+
+load("@com_google_googletest//:googletest_deps.bzl", "googletest_deps")
+
+googletest_deps()
 
 # Load common dependencies.
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
