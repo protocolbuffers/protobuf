@@ -461,6 +461,10 @@ class PROTOBUF_EXPORT MessageLite {
 
   virtual void OnDemandRegisterArenaDtor(Arena* /*arena*/) {}
 
+  // Returns the arena, used for allocating internal objects(e.g., child
+  // messages, etc), or owning incoming objects (e.g., set allocated).
+  Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
+
  protected:
   // Message implementations require access to internally visible API.
   static constexpr internal::InternalVisibility internal_visibility() {
@@ -480,10 +484,6 @@ class PROTOBUF_EXPORT MessageLite {
   // swapping, moving and setting allocated, for deciding whether the ownership
   // of this message or its internal memory could be changed.
   Arena* GetOwningArena() const { return _internal_metadata_.arena(); }
-
-  // Returns the arena, used for allocating internal objects(e.g., child
-  // messages, etc), or owning incoming objects (e.g., set allocated).
-  Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
 
   internal::InternalMetadata _internal_metadata_;
 

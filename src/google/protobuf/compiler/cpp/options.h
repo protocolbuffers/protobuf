@@ -78,6 +78,7 @@ struct Options {
   bool opensource_runtime = false;
   bool annotate_accessor = false;
   bool profile_driven_inline_string = true;
+  bool profile_driven_inline_messages = true;
   bool force_split = false;
   bool profile_driven_split = true;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
@@ -86,6 +87,7 @@ struct Options {
 #else   // PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = false;
   bool force_inline_string = false;
+  bool force_inline_messages = false;
 #endif  // !PROTOBUF_STABLE_EXPERIMENTS
   bool strip_nonfunctional_codegen = false;
 };

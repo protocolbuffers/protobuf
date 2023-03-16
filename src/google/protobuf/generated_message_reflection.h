@@ -83,6 +83,7 @@ constexpr uint32_t kInvalidFieldOffsetTag = 0x40000000u;
 constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
 constexpr uint32_t kLazyMask = 0x1u;
 constexpr uint32_t kInlinedMask = 0x1u;
+constexpr uint32_t kInlinedProtoMask = 0x20000000u;
 
 // This struct describes the internal layout of the message, hence this is
 // used to act on the message reflectively.
@@ -280,9 +281,11 @@ struct ReflectionSchema {
   // "unused" or "lazy" or "inlined").
   static uint32_t OffsetValue(uint32_t v, FieldDescriptor::Type type) {
     if (type == FieldDescriptor::TYPE_MESSAGE ||
+        type == FieldDescriptor::TYPE_GROUP ||
         type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
-      return v & (~kSplitFieldOffsetMask) & (~kInlinedMask) & (~kLazyMask);
+      return v & (~kSplitFieldOffsetMask) & (~kInlinedMask) & (~kLazyMask) &
+             (~kInlinedProtoMask);
     }
     return v & (~kSplitFieldOffsetMask);
   }
@@ -291,6 +294,9 @@ struct ReflectionSchema {
     if (type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
       return (v & kInlinedMask) != 0u;
+    } else if (type == FieldDescriptor::TYPE_MESSAGE ||
+               type == FieldDescriptor::TYPE_GROUP) {
+      return (v & kInlinedProtoMask) != 0u;
     } else {
       // Non string/byte fields are not inlined.
       return false;

@@ -120,6 +120,7 @@ class ParseFunctionGenerator::GeneratedOptionProvider final
         IsImplicitWeakField(field, gen_->options_, gen_->scc_analyzer_),
         UseDirectTcParserTable(field, gen_->options_),
         ShouldSplit(field, gen_->options_),
+        IsMessageInlined(field, gen_->options_, gen_->scc_analyzer_),
     };
   }
 
@@ -733,9 +734,11 @@ static void FormatFieldKind(Formatter& format,
     case fl::kFkMessage: {
       format(" | ::_fl::kMessage");
 
-      static constexpr const char* kRepNames[] = {nullptr, "Group", "Lazy"};
+      static constexpr const char* kRepNames[] = {nullptr, "Group", "Lazy",
+                                                  "Inlined"};
       static_assert((fl::kRepGroup >> fl::kRepShift) == 1, "");
       static_assert((fl::kRepLazy >> fl::kRepShift) == 2, "");
+      static_assert((fl::kRepInlined >> fl::kRepShift) == 3, "");
 
       if (auto* rep = kRepNames[rep_index]) {
         format(" | ::_fl::kRep$1$", rep);
@@ -827,9 +830,13 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
     } else {
       const OneofDescriptor* oneof = field->real_containing_oneof();
       bool split = ShouldSplit(field, options_);
+      bool inlined = IsMessageInlined(field, options_, scc_analyzer_);
       if (split) {
         format("PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, $1$), ",
                absl::StrCat(FieldName(field), "_"));
+      } else if (inlined) {
+        format("PROTOBUF_FIELD_OFFSET($classname$, $1$ptr_), ",
+               FieldMemberName(field, /*cold=*/false));
       } else {
         format("PROTOBUF_FIELD_OFFSET($classname$, $1$), ",
                FieldMemberName(field, /*cold=*/false));

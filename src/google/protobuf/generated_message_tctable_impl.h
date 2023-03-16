@@ -156,6 +156,7 @@ enum FieldRep : uint16_t {
   kRepMessage  = 0,               // MessageLite*
   kRepGroup    = 1 << kRepShift,  // MessageLite* (WT=3,4)
   kRepLazy     = 2 << kRepShift,  // LazyField*
+  kRepInlined  = 3 << kRepShift,  // Inlined*
 };
 
 // Transform/validation (2 bits):
@@ -915,6 +916,7 @@ class PROTOBUF_EXPORT TcParser final {
   template <bool is_split, bool is_group>
   static const char* MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL);
   static const char* MpLazyMessage(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpInlinedMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
   static const char* MpMap(PROTOBUF_TC_PARAM_DECL);

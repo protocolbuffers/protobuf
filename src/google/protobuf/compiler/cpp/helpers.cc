@@ -942,6 +942,49 @@ bool IsStringInlined(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
+bool IsRecursiveFieldHelper(
+    const Descriptor* desc,
+    absl::flat_hash_map<const Descriptor*, int>& visited, int& time) {
+  int current_descriptor_time = time;
+  visited.emplace(desc, time);
+  ++time;
+  // Go over the fields of this message.
+  for (int i = 0; i < desc->field_count(); ++i) {
+    const FieldDescriptor* fd = desc->field(i);
+    const Descriptor* fdd = fd->message_type();
+    // Skip fields that are not messages.
+    if (fdd == nullptr) continue;
+    auto it = visited.find(fdd);
+    // Visit the field if it was not previously visited.
+    if (it == visited.end()) {
+      bool ret = IsRecursiveFieldHelper(fdd, visited, time);
+      if (ret == true) return true;
+    } else {
+      // The field has already been visited.  If the time at which the field was
+      // visited is less than or equal to the current descriptor's time, this
+      // means we have a recursive message.  So, we cannot inline the original
+      // field.
+      if (it->second <= current_descriptor_time) return true;
+    }
+  }
+  // We are here, this means the DFS did not find any recursive fields.
+  return false;
+}
+
+bool IsRecursiveField(const FieldDescriptor* field_descriptor) {
+  absl::flat_hash_map<const Descriptor*, int> visited;
+  int time = 0;
+  return IsRecursiveFieldHelper(field_descriptor->message_type(), visited,
+                                time);
+}
+
+bool IsMessageInlined(const FieldDescriptor* field, const Options& options,
+                      MessageSCCAnalyzer* scc_analyzer) {
+  (void)field;
+  (void)options;
+  return false;
+}
+
 static bool HasLazyFields(const Descriptor* descriptor, const Options& options,
                           MessageSCCAnalyzer* scc_analyzer) {
   for (int field_idx = 0; field_idx < descriptor->field_count(); field_idx++) {

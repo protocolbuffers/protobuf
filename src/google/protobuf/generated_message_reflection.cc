@@ -616,6 +616,9 @@ class SwapFieldHelper {
   static void SwapMessageField(const Reflection* r, Message* lhs, Message* rhs,
                                const FieldDescriptor* field);
 
+  static void SwapInlinedMessage(const Reflection* r, Message* lhs,
+                                 Message* rhs, const FieldDescriptor* field);
+
   static void SwapMessage(const Reflection* r, Message* lhs, Arena* lhs_arena,
                           Message* rhs, Arena* rhs_arena,
                           const FieldDescriptor* field);
@@ -772,6 +775,38 @@ void SwapFieldHelper::SwapMessageField(const Reflection* r, Message* lhs,
   } else {
     SwapMessage(r, lhs, lhs->GetArenaForAllocation(), rhs,
                 rhs->GetArenaForAllocation(), field);
+  }
+}
+
+void SwapFieldHelper::SwapInlinedMessage(const Reflection* r, Message* lhs,
+                                         Message* rhs,
+                                         const FieldDescriptor* field) {
+  Message** lhs_sub = r->MutableRaw<Message*>(lhs, field);
+  Message** rhs_sub = r->MutableRaw<Message*>(rhs, field);
+  if (*lhs_sub == *rhs_sub) return;
+
+  Message* lhs_obj = r->MutableRawInlined<Message>(lhs, field);
+  Message* rhs_obj = r->MutableRawInlined<Message>(rhs, field);
+  if (*lhs_sub != nullptr && *rhs_sub != nullptr) {
+    if (*lhs_sub == lhs_obj || *rhs_sub == rhs_obj) {
+      // Is calling InternalSwap through r OK?
+      (*lhs_sub)->GetReflection()->InternalSwap(*lhs_sub, *rhs_sub);
+    } else {
+      SwapMessage(r, lhs, lhs->GetArenaForAllocation(), rhs,
+                  rhs->GetArenaForAllocation(), field);
+    }
+  } else if (*lhs_sub == nullptr && r->HasBit(*rhs, field)) {
+    *lhs_sub = lhs_obj;
+    (*lhs_sub)->CopyFrom(**rhs_sub);
+    r->ClearField(rhs, field);
+    // Ensures has bit is unchanged after ClearField.
+    r->SetBit(rhs, field);
+  } else if (*rhs_sub == nullptr && r->HasBit(*lhs, field)) {
+    *rhs_sub = rhs_obj;
+    (*rhs_sub)->CopyFrom(**lhs_sub);
+    r->ClearField(lhs, field);
+    // Ensures has bit is unchanged after ClearField.
+    r->SetBit(lhs, field);
   }
 }
 
@@ -1174,6 +1209,7 @@ void Reflection::SwapFieldsImpl(
         if (!field->is_repeated()) {
           SwapBit(message1, message2, field);
           if (field->options().ctype() == FieldOptions::STRING &&
+              field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE &&
               IsInlined(field)) {
             ABSL_DCHECK(!unsafe_shallow_swap ||
                         message1->GetArenaForAllocation() ==
@@ -2292,8 +2328,12 @@ Message* Reflection::MutableMessage(Message* message,
     }
 
     if (*result_holder == nullptr) {
-      const Message* default_message = GetDefaultMessageInstance(field);
-      *result_holder = default_message->New(message->GetArenaForAllocation());
+      if (!IsInlined(field)) {
+        const Message* default_message = GetDefaultMessageInstance(field);
+        *result_holder = default_message->New(message->GetArenaForAllocation());
+      } else {
+        *result_holder = MutableRawInlined<Message>(message, field);
+      }
     }
     result = *result_holder;
     return result;
@@ -2301,6 +2341,40 @@ Message* Reflection::MutableMessage(Message* message,
 }
 
 void Reflection::UnsafeArenaSetAllocatedMessage(
+    Message* message, Message* sub_message,
+    const FieldDescriptor* field) const {
+  USAGE_MUTABLE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
+
+
+  if (field->is_extension()) {
+    MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
+        field->number(), field->type(), field, sub_message);
+  } else {
+    if (schema_.InRealOneof(field)) {
+      if (sub_message == nullptr) {
+        ClearOneof(message, field->containing_oneof());
+        return;
+      }
+        ClearOneof(message, field->containing_oneof());
+        *MutableRaw<Message*>(message, field) = sub_message;
+      SetOneofCase(message, field);
+      return;
+    }
+
+    if (sub_message == nullptr) {
+      ClearBit(message, field);
+    } else {
+      SetBit(message, field);
+    }
+    Message** sub_message_holder = MutableRaw<Message*>(message, field);
+    if (message->GetArenaForAllocation() == nullptr) {
+      delete *sub_message_holder;
+    }
+    *sub_message_holder = sub_message;
+  }
+}
+
+void Reflection::UnsafeArenaSetAllocatedMessageABC2(
     Message* message, Message* sub_message,
     const FieldDescriptor* field) const {
   USAGE_MUTABLE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
@@ -2368,6 +2442,35 @@ void Reflection::SetAllocatedMessage(Message* message, Message* sub_message,
 Message* Reflection::UnsafeArenaReleaseMessage(Message* message,
                                                const FieldDescriptor* field,
                                                MessageFactory* factory) const {
+  USAGE_MUTABLE_CHECK_ALL(ReleaseMessage, SINGULAR, MESSAGE);
+
+  if (factory == nullptr) factory = message_factory_;
+
+  if (field->is_extension()) {
+    return static_cast<Message*>(
+        MutableExtensionSet(message)->UnsafeArenaReleaseMessage(field,
+                                                                factory));
+  } else {
+    if (!(field->is_repeated() || schema_.InRealOneof(field))) {
+      ClearBit(message, field);
+    }
+    if (schema_.InRealOneof(field)) {
+      if (HasOneofField(*message, field)) {
+        *MutableOneofCase(message, field->containing_oneof()) = 0;
+      } else {
+        return nullptr;
+      }
+    }
+    Message** result = MutableRaw<Message*>(message, field);
+    Message* ret = *result;
+    *result = nullptr;
+    return ret;
+  }
+}
+
+Message* Reflection::UnsafeArenaReleaseMessageABC2(
+    Message* message, const FieldDescriptor* field,
+    MessageFactory* factory) const {
   USAGE_MUTABLE_CHECK_ALL(ReleaseMessage, SINGULAR, MESSAGE);
 
   if (factory == nullptr) factory = message_factory_;
@@ -2758,6 +2861,15 @@ Type* Reflection::MutableRaw(Message* message,
                           message->GetArenaForAllocation());
   }
   return GetPointerAtOffset<Type>(*split, field_offset);
+}
+
+template <typename Type>
+Type* Reflection::MutableRawInlined(Message* message,
+                                    const FieldDescriptor* field) const {
+  return GetPointerAtOffset<Type>(
+      message, schema_.GetFieldOffset(field) +
+                   std::max({sizeof(Message*), alignof(double), alignof(void*),
+                             alignof(Message)}));
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {

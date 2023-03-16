@@ -70,6 +70,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     bool is_implicitly_weak;
     bool use_direct_tcparser_table;
     bool should_split;
+    bool is_message_inlined = false;
   };
   class OptionProvider {
    public:

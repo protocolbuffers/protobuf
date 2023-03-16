@@ -696,6 +696,9 @@ class PROTOBUF_EXPORT Reflection final {
   // the same arena or paired with a call to `UnsafeArenaReleaseMessage`.
   void UnsafeArenaSetAllocatedMessage(Message* message, Message* sub_message,
                                       const FieldDescriptor* field) const;
+  void UnsafeArenaSetAllocatedMessageABC2(Message* message,
+                                          Message* sub_message,
+                                          const FieldDescriptor* field) const;
 
   // Releases the message specified by 'field' and returns the pointer,
   // ReleaseMessage() will return the message the message object if it exists.
@@ -714,6 +717,9 @@ class PROTOBUF_EXPORT Reflection final {
   Message* UnsafeArenaReleaseMessage(Message* message,
                                      const FieldDescriptor* field,
                                      MessageFactory* factory = nullptr) const;
+  Message* UnsafeArenaReleaseMessageABC2(
+      Message* message, const FieldDescriptor* field,
+      MessageFactory* factory = nullptr) const;
 
 
   // Repeated field getters ------------------------------------------
@@ -984,6 +990,8 @@ class PROTOBUF_EXPORT Reflection final {
   // Message::New() is an easier way to accomplish this.
   MessageFactory* GetMessageFactory() const;
 
+  bool IsInlined(const FieldDescriptor* field) const;
+
  private:
   template <typename T>
   const RepeatedField<T>& GetRepeatedFieldInternal(
@@ -1198,6 +1206,10 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename Type>
   inline Type* MutableRaw(Message* message, const FieldDescriptor* field) const;
   template <typename Type>
+  inline Type* MutableRawInlined(Message* message,
+                                 const FieldDescriptor* field) const;
+
+  template <typename Type>
   const Type& DefaultRaw(const FieldDescriptor* field) const;
 
   const Message* GetDefaultMessageInstance(const FieldDescriptor* field) const;
@@ -1218,8 +1230,6 @@ class PROTOBUF_EXPORT Reflection final {
       const Message& message) const;
 
   internal::InternalMetadata* MutableInternalMetadata(Message* message) const;
-
-  inline bool IsInlined(const FieldDescriptor* field) const;
 
   inline bool HasBit(const Message& message,
                      const FieldDescriptor* field) const;

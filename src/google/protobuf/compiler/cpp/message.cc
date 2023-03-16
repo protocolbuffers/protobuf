@@ -977,7 +977,8 @@ void MessageGenerator::GenerateSingularFieldHasBits(
         {Sub{"ASSUME",
              [&] {
                if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-                   !IsLazy(field, options_, scc_analyzer_)) {
+                   !IsLazy(field, options_, scc_analyzer_) &&
+                   !IsMessageInlined(field, options_, scc_analyzer_)) {
                  // We maintain the invariant that for a submessage x, has_x()
                  // returning true implies that x_ is not null. By giving this
                  // information to the compiler, we allow it to eliminate
@@ -1562,7 +1563,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       // TODO(gerbens) Make this private! Currently people are deriving from
       // protos to give access to this constructor, breaking the invariants
       // we rely on.
-      "protected:\n"
+      "public:\n"
       "explicit $classname$(::$proto_ns$::Arena* arena);\n");
 
   switch (NeedsArenaDestructor()) {
@@ -2153,6 +2154,10 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
       // Mark the field to prevent unintentional access through reflection.
       // Don't use the top bit because that is for unused fields.
       format("::_pbi::kInvalidFieldOffsetTag");
+    } else if (IsMessageInlined(field, options_, scc_analyzer_)) {
+      format("PROTOBUF_FIELD_OFFSET($classtype$, $1$ptr_)",
+             FieldMemberName(field, /*cold=*/false));
+      format(" | ::_pbi::kInlinedProtoMask /*inlined*/");
     } else {
       format("PROTOBUF_FIELD_OFFSET($classtype$$1$, $2$)",
              ShouldSplit(field, options_) ? "::Impl_::Split" : "",
@@ -3242,6 +3247,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
     const RunMap runs =
         FindRuns(optimized_order_, [this](const FieldDescriptor* field) {
           return !ShouldSplit(field, options_) &&
+                 !IsMessageInlined(field, options_, scc_analyzer_) &&
                  HasTrivialSwap(field, options_, scc_analyzer_);
         });
 

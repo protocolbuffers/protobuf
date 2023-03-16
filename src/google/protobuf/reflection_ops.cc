@@ -273,8 +273,9 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   {
     const int field_count = descriptor->field_count();
     for (int i = 0; i < field_count; i++) {
-      if (descriptor->field(i)->is_required()) {
-        if (!reflection->HasField(message, descriptor->field(i))) {
+      const FieldDescriptor* field = descriptor->field(i);
+      if (field->is_required()) {
+        if (!reflection->HasField(message, field)) {
           return false;
         }
       }

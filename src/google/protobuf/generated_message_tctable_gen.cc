@@ -123,6 +123,16 @@ bool HasLazyRep(const FieldDescriptor* field,
          options.lazy_opt != 0;
 }
 
+// options.inlined_opt might be on for fields that aren't really inlined, so
+// we make sure we only use inlined rep for singular TYPE_MESSAGE fields.  We
+// can't trust the `inlined=true` annotation.
+bool HasInlinedRep(const FieldDescriptor* field,
+                   const TailCallTableInfo::PerFieldOptions options) {
+  return (field->type() == field->TYPE_MESSAGE ||
+          field->type() == field->TYPE_GROUP) &&
+         !field->is_repeated() && options.is_message_inlined != 0;
+}
+
 TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
     const TailCallTableInfo::FieldEntryInfo& entry,
     const TailCallTableInfo::MessageOptions& message_options,
@@ -269,6 +279,10 @@ bool IsFieldEligibleForFastParsing(
 
   if (HasLazyRep(field, options) && options.lazy_opt == field_layout::kTvLazy) {
     // We only support eagerly verified lazy fields in the fast path.
+    return false;
+  }
+
+  if (HasInlinedRep(field, options)) {
     return false;
   }
 
@@ -701,6 +715,9 @@ uint16_t MakeTypeCardForField(
       } else {
         type_card |= fl::kTvDefault;
       }
+      if (HasInlinedRep(field, options)) {
+        type_card |= fl::kRepInlined;
+      }
       break;
     case FieldDescriptor::TYPE_MESSAGE:
       if (field->is_map()) {
@@ -712,6 +729,9 @@ uint16_t MakeTypeCardForField(
                      options.lazy_opt == field_layout::kTvLazy);
           type_card |= +fl::kRepLazy | options.lazy_opt;
         } else {
+          if (HasInlinedRep(field, options)) {
+            type_card |= fl::kRepInlined;
+          }
           if (options.is_implicitly_weak) {
             type_card |= fl::kTvWeakPtr;
           } else if (options.use_direct_tcparser_table) {

@@ -51,6 +51,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/port.h"
@@ -351,6 +352,13 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
+bool IsMessageInlined(const FieldDescriptor* descriptor, const Options& options,
+                      MessageSCCAnalyzer* scc_analyzer);
+
+inline bool IsMessage(const FieldDescriptor* field, const Options& options) {
+  return field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
+}
+
 inline bool IsCord(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
@@ -640,7 +648,8 @@ void ForEachMessage(const Descriptor* descriptor, F&& func) {
 }
 
 template <typename F>
-void ForEachMessage(const FileDescriptor* descriptor, F&& func) {
+void ForEachMessage(const FileDescriptor* descriptor, const Options& options,
+                    F&& func) {
   for (int i = 0; i < descriptor->message_type_count(); i++)
     ForEachMessage(descriptor->message_type(i), std::forward<F&&>(func));
 }
@@ -688,11 +697,12 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
 
  private:
   struct DepsGenerator {
-    std::vector<const Descriptor*> operator()(const Descriptor* desc) const {
-      std::vector<const Descriptor*> deps;
+    absl::flat_hash_set<const Descriptor*> operator()(
+        const Descriptor* desc) const {
+      absl::flat_hash_set<const Descriptor*> deps;
       for (int i = 0; i < desc->field_count(); i++) {
         if (desc->field(i)->message_type()) {
-          deps.push_back(desc->field(i)->message_type());
+          deps.insert(desc->field(i)->message_type());
         }
       }
       return deps;
@@ -764,7 +774,7 @@ inline bool HasSimpleBaseClass(const Descriptor* desc, const Options& options) {
 inline bool HasSimpleBaseClasses(const FileDescriptor* file,
                                  const Options& options) {
   bool v = false;
-  ForEachMessage(file, [&v, &options](const Descriptor* desc) {
+  ForEachMessage(file, options, [&v, &options](const Descriptor* desc) {
     v |= HasSimpleBaseClass(desc, options);
   });
   return v;
