@@ -182,11 +182,13 @@ class _Printer(object):
   def __init__(
       self,
       including_default_value_fields=False,
+      use_oneof_name=False,
       preserving_proto_field_name=False,
       use_integers_for_enums=False,
       descriptor_pool=None,
       float_precision=None):
     self.including_default_value_fields = including_default_value_fields
+    self.use_oneof_name = use_oneof_name
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
@@ -211,16 +213,22 @@ class _Printer(object):
     js = {}
     return self._RegularMessageToJsonObject(message, js)
 
+  def _get_field_name(self, message, field):
+    if field.containing_oneof and self.use_oneof_name:
+      name = field.containing_oneof.name
+    elif self.preserving_proto_field_name:
+      name = field.name
+    else:
+      name = field.json_name
+    return name
+
   def _RegularMessageToJsonObject(self, message, js):
     """Converts normal message according to Proto3 JSON Specification."""
     fields = message.ListFields()
 
     try:
       for field, value in fields:
-        if self.preserving_proto_field_name:
-          name = field.name
-        else:
-          name = field.json_name
+        name = self._get_field_name(message, field)
         if _IsMapEntry(field):
           # Convert a map field.
           v_field = field.message_type.fields_by_name['value']
@@ -255,10 +263,7 @@ class _Printer(object):
                field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE) or
               field.containing_oneof):
             continue
-          if self.preserving_proto_field_name:
-            name = field.name
-          else:
-            name = field.json_name
+          name = self._get_field_name(message, field)
           if name in js:
             # Skip the field which has been serialized already.
             continue
