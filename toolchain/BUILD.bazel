@@ -10,6 +10,7 @@ TOOLCHAINS = {
     "linux-aarch_64": "cc-compiler-linux-aarch_64",
     "linux-ppcle_64": "cc-compiler-linux-ppcle_64",
     "linux-s390_64": "cc-compiler-linux-s390_64",
+    "linux-riscv_64": "cc-compiler-linux-riscv_64",
     "linux-x86_32": "cc-compiler-linux-x86_32",
     "linux-x86_64": "cc-compiler-linux-x86_64",
     "win32": "cc-compiler-windows-x86_32",
@@ -70,6 +71,14 @@ cc_toolchain_config(
     sysroot = "/opt/manylinux/2014/s390x",
     target_cpu = "systemz",
     target_full_name = "s390x-linux-gnu",
+)
+
+cc_toolchain_config(
+    name = "linux-riscv_64-config",
+    linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/riscv64",
+    target_cpu = "systemz",
+    target_full_name = "riscv64-linux-gnu",
 )
 
 cc_toolchain_config(
