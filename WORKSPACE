@@ -23,16 +23,6 @@ http_archive(
 )
 
 http_archive(
-    name = "com_google_googletest",
-    sha256 = "81964fe578e9bd7c94dfdb09c8e4d6e6759e19967e397dbea48d1c10e45d0df2",
-    strip_prefix = "googletest-release-1.12.1",
-    urls = [
-        "https://mirror.bazel.build/github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz",
-        "https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz",
-    ],
-)
-
-http_archive(
     name = "com_github_google_benchmark",
     urls = ["https://github.com/google/benchmark/archive/0baacde3618ca617da95375e0af13ce1baadea47.zip"],
     strip_prefix = "benchmark-0baacde3618ca617da95375e0af13ce1baadea47",
@@ -55,6 +45,19 @@ http_archive(
         "https://github.com/abseil/abseil-cpp/archive/e6044634dd7caec2d79a13aecc9e765023768757.tar.gz"
     ],
 )
+
+http_archive(
+    name = "com_google_googletest",
+    sha256 = "730215d76eace9dd49bf74ce044e8daa065d175f1ac891cc1d6bb184ef94e565",
+    strip_prefix = "googletest-f53219cdcb7b084ef57414efea92ee5b71989558",
+    urls = [
+        "https://github.com/google/googletest/archive/f53219cdcb7b084ef57414efea92ee5b71989558.tar.gz" # 2023-03-16
+    ],
+)
+
+load("@com_google_googletest//:googletest_deps.bzl", "googletest_deps")
+
+googletest_deps()
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 

@@ -277,6 +277,9 @@ class WorkspaceFileFunctions(object):
   def fuzzing_py_install_deps(self):
     pass
 
+  def googletest_deps(self):
+    pass
+
 
 class Converter(object):
   def __init__(self):
