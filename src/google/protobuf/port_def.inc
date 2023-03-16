@@ -621,21 +621,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #define PROTOBUF_FALLTHROUGH_INTENDED
 #endif
 
-// PROTOBUF_ASSUME(pred) tells the compiler that it can assume pred is true. To
-// be safe, we also validate the assumption with a ABSL_DCHECK in unoptimized
-// builds. The macro does not do anything useful if the compiler does not
-// support __builtin_assume.
-#ifdef PROTOBUF_ASSUME
-#error PROTOBUF_ASSUME was previously defined
-#endif
-#if __has_builtin(__builtin_assume)
-#define PROTOBUF_ASSUME(pred) \
-  ABSL_DCHECK(pred);               \
-  __builtin_assume(pred)
-#else
-#define PROTOBUF_ASSUME(pred) ABSL_DCHECK(pred)
-#endif
-
 // Specify memory alignment for structs, classes, etc.
 // Use like:
 //   class PROTOBUF_ALIGNAS(16) MyClass { ... }
@@ -1075,20 +1060,53 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #define PROTOBUF_DEBUG false
 #endif
 
-// This `for` allows us to condition the `ABSL_LOG` on the define above, so that
-// code can write `PROTOBUF_DLOG(INFO) << ...;` and have it turned off when
-// debug logging is off.
-//
-// This is a `for`, not and `if`, to avoid it accidentally chaining with an
-// `else` below it.
-#define PROTOBUF_DLOG(x) \
-  for (bool b = PROTOBUF_DEBUG; b; b = false) ABSL_LOG(x)
-
 #define PROTO2_IS_OSS true
 
 #ifdef PROTOBUF_NO_THREADLOCAL
 #error PROTOBUF_NO_THREADLOCAL was previously defined
 #endif
+
+// port_def.inc may be included in very large compilation targets, so we need to
+// minimize adding symbol and source file information here. For this reason we
+// implement our own simple `protobuf_assumption_failed()` function for
+// asserting PROTOBUF_ASSUME predicates in debug builds.
+namespace google {
+namespace protobuf {
+namespace internal {
+PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
+                                                const char *file, int line);
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+// PROTOBUF_ASSUME(pred) tells the compiler that it can assume pred is true.
+// To be safe, we also validate the assumption in debug builds, printing an
+// assert style "Assumption failed: ..." message and aborting the program if
+// the predicate is false. The macro does not do anything useful if the
+// compiler does not support __builtin_assume.
+#ifdef PROTOBUF_ASSUME
+#error PROTOBUF_ASSUME was previously defined
+#endif
+#if __has_builtin(__builtin_assume)
+#ifdef NDEBUG
+#define PROTOBUF_ASSUME(pred) __builtin_assume(pred)
+#else  // NDEBUG
+#define PROTOBUF_ASSUME(pred)                                                  \
+  if (!(pred)) {                                                               \
+    ::google::protobuf::internal::protobuf_assumption_failed(#pred, __FILE__, __LINE__); \
+  }                                                                            \
+  __builtin_assume(pred)
+#endif  // NDEBUG
+#else   // has_builtin(__builtin_assume)
+#ifndef NDEBUG
+#define PROTOBUF_ASSUME(pred)                                                  \
+  if (!(pred)) {                                                               \
+    ::google::protobuf::internal::protobuf_assumption_failed(#pred, __FILE__, __LINE__); \
+  }
+#else  // !NDEBUG
+#define PROTOBUF_ASSUME(pred)
+#endif  // !NDEBUG
+#endif  // has_builtin(__builtin_assume)
 
 // We don't want code outside port_def doing complex testing, so
 // remove our portable condition test macros to nudge folks away from
