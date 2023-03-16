@@ -122,6 +122,7 @@
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/functional/function_ref.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -130,7 +131,6 @@
 #include "google/protobuf/map.h"  // TODO(b/211442718): cleanup
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -630,6 +630,12 @@ class PROTOBUF_EXPORT Reflection final {
                                         const FieldDescriptor* field,
                                         std::string* scratch) const;
 
+  // Returns a Cord containing the value of the string field.  If the
+  // underlying field is stored as a cord (e.g. it has the [ctype=CORD]
+  // option), this involves no copies (just reference counting).  If the
+  // underlying representation is not a Cord, a copy will have to be made.
+  absl::Cord GetCord(const Message& message,
+                     const FieldDescriptor* field) const;
 
 
   // Singular field mutators -----------------------------------------

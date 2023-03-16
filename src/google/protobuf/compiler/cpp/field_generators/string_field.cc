@@ -206,7 +206,7 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
   // reflection interface since the reflection interface is independent of
   // the string's underlying representation.
   bool unknown_ctype =
-      field_->options().ctype() != EffectiveStringCType(field_, options_);
+      field_->options().ctype() != internal::cpp::EffectiveStringCType(field_);
 
   if (unknown_ctype) {
     p->Emit(R"cc(
@@ -759,7 +759,7 @@ class RepeatedString : public FieldGeneratorBase {
 
 void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
   bool unknown_ctype =
-      field_->options().ctype() != EffectiveStringCType(field_, options_);
+      field_->options().ctype() != internal::cpp::EffectiveStringCType(field_);
 
   if (unknown_ctype) {
     p->Emit(R"cc(
