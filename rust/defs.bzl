@@ -9,6 +9,7 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("@rules_rust//rust:defs.bzl", "rust_common")
+load("//third_party/upb/bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 
 proto_common = proto_common_do_not_use
 
@@ -155,13 +156,18 @@ def _rust_proto_aspect_impl(target, ctx):
         build_info = None,
     )
 
+    upb_gencode_cc_info = target[UpbWrappedCcInfo].cc_info_with_thunks
+    upb_gencode_dep_variant_info = DepVariantInfo(cc_info = upb_gencode_cc_info)
+
     proto_dep = getattr(ctx.rule.attr, "deps", [])
     dep_variant_info = _compile_rust(
         ctx = ctx,
         attr = ctx.rule.attr,
         src = gencode[0],
         extra_srcs = gencode[1:],
-        deps = [dep_variant_info_for_runtime] + ([proto_dep[0][RustProtoInfo].dep_variant_info] if proto_dep else []),
+        deps = [dep_variant_info_for_runtime, upb_gencode_dep_variant_info] + (
+            [proto_dep[0][RustProtoInfo].dep_variant_info] if proto_dep else []
+        ),
     )
     return [RustProtoInfo(
         dep_variant_info = dep_variant_info,
@@ -170,6 +176,7 @@ def _rust_proto_aspect_impl(target, ctx):
 rust_proto_library_aspect = aspect(
     implementation = _rust_proto_aspect_impl,
     attr_aspects = ["deps"],
+    requires = [upb_proto_library_aspect],
     attrs = {
         "_cc_toolchain": attr.label(
             doc = (

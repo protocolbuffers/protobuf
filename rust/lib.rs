@@ -30,7 +30,56 @@
 
 //! Rust Protobuf Runtime
 
-// Not yet implemented.
+pub use upb::*;
 
-// TODO(b/270138878): Remove once we have real logic in the runtime.
-pub fn do_nothing() {}
+use std::ops::Deref;
+use std::ptr::NonNull;
+use std::slice;
+
+/// Represents serialized Protobuf wire format data. It's typically produced by
+/// `<Message>.serialize()`.
+pub struct SerializedData {
+    data: NonNull<u8>,
+    len: usize,
+    arena: *mut upb_Arena,
+}
+
+impl SerializedData {
+    pub unsafe fn from_raw_parts(arena: *mut upb_Arena, data: NonNull<u8>, len: usize) -> Self {
+        SerializedData { arena, data, len }
+    }
+}
+
+impl Deref for SerializedData {
+    type Target = [u8];
+    fn deref(&self) -> &Self::Target {
+        unsafe { slice::from_raw_parts(self.data.as_ptr() as *const _, self.len) }
+    }
+}
+
+impl Drop for SerializedData {
+    fn drop(&mut self) {
+        unsafe { upb_Arena_Free(self.arena) };
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_serialized_data_roundtrip() {
+        let arena = unsafe { upb_Arena_New() };
+        let original_data = b"Hello world";
+        let len = original_data.len();
+
+        let serialized_data = unsafe {
+            SerializedData::from_raw_parts(
+                arena,
+                NonNull::new(original_data as *const _ as *mut _).unwrap(),
+                len,
+            )
+        };
+        assert_eq!(&*serialized_data, b"Hello world");
+    }
+}

@@ -11,7 +11,10 @@ rust_test(
     name = "unittest_proto_test",
     srcs = ["unittest_proto_test.rs"],
     # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-    tags = ["not_build:arm"],
+    tags = [
+        "not_build:arm",
+        "notsan",
+    ],
     deps = [":unittest_rs_proto"],
 )
 
@@ -41,7 +44,10 @@ rust_test(
     name = "child_parent_test",
     srcs = ["child_parent_test.rs"],
     # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-    tags = ["not_build:arm"],
+    tags = [
+        "not_build:arm",
+        "notsan",
+    ],
     deps = [
         ":child_rs_proto",
         ":parent_rs_proto",

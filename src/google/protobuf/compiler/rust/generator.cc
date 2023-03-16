@@ -89,15 +89,11 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   // TODO(b/270138878): Remove `do_nothing` import once we have real logic. This
   // is there only to smoke test rustc actions in rust_proto_library.
   p.Emit(R"rs(
-#[allow(unused_imports)]
-    use protobuf::do_nothing;
+    extern crate protobuf as __pb;
+    extern crate std as __std;
+    
   )rs");
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    // TODO(b/270138878): Implement real logic
-    p.Emit({{"Msg", file->message_type(i)->name()}}, R"rs(
-                    pub struct $Msg$ {}
-                  )rs");
-  }
+
   // TODO(b/270124215): Delete the following "placeholder impl" of `import
   // public`. Also make sure to figure out how to map FileDescriptor#name to
   // Rust crate names (currently Bazel labels).
@@ -112,6 +108,41 @@ bool RustGenerator::Generate(const FileDescriptor* file,
                 pub use $crate$::$type_name$;
               )rs");
     }
+  }
+
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    // TODO(b/270138878): Implement real logic
+    std::string full_name = file->message_type(i)->full_name();
+    absl::StrReplaceAll({{".", "_"}}, &full_name);
+    p.Emit({{"Msg", file->message_type(i)->name()}, {"pkg_Msg", full_name}},
+           R"rs(
+      pub struct $Msg$ {
+        msg: ::__std::ptr::NonNull<u8>,
+        arena: *mut ::__pb::upb_Arena,
+      }
+
+      impl $Msg$ {
+        pub fn new() -> $Msg$ {
+          let arena = unsafe { ::__pb::upb_Arena_New() };
+          let msg = unsafe { $pkg_Msg$_new(arena) };
+          $Msg$ { msg, arena }
+        }
+        pub fn serialize(&self) -> ::__pb::SerializedData {
+          let arena = unsafe { ::__pb::upb_Arena_New() };
+          let mut len = 0;
+          let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
+          unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
+        }
+      }
+
+      extern "C" {
+        fn $pkg_Msg$_new(arena: *mut ::__pb::upb_Arena) -> ::__std::ptr::NonNull<u8>;
+        fn $pkg_Msg$_serialize(
+          msg: ::__std::ptr::NonNull<u8>,
+          arena: *mut ::__pb::upb_Arena,
+          len: &mut usize) -> ::__std::ptr::NonNull<u8>;
+      }
+    )rs");
   }
 
   return true;

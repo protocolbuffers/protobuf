@@ -28,21 +28,26 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#[test]
-fn test_canonical_types() {
-    let _child = child_proto::Child::new();
-    let _parent = parent_proto::Parent::new();
-    // Parent from child_proto crate should be the same type as Parent from
-    // parent_proto crate.
-    let _parent_from_child: child_proto::Parent = parent_proto::Parent::new();
+// Rust bindings for UPB
+
+#[repr(C)]
+pub struct upb_Arena {
+    _data: [u8; 0],
+    _marker: core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>,
 }
 
-#[test]
-fn test_parent_serialization() {
-    assert_eq!(*parent_proto::Parent::new().serialize(), []);
+extern "C" {
+    pub fn upb_Arena_New() -> *mut upb_Arena;
+    pub fn upb_Arena_Free(arena: *mut upb_Arena);
 }
 
-#[test]
-fn test_child_serialization() {
-    assert_eq!(*child_proto::Child::new().serialize(), []);
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_arena_new_and_free() {
+        let arena = unsafe { upb_Arena_New() };
+        unsafe { upb_Arena_Free(arena) };
+    }
 }
