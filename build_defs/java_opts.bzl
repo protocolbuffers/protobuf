@@ -68,6 +68,10 @@ def protobuf_versioned_java_library(
         bundle_doc_url = BUNDLE_DOC_URL,
         bundle_license = BUNDLE_LICENSE,
         bundle_version = PROTOBUF_JAVA_VERSION,
-        bundle_additional_imports = ["sun.misc;resolution:=optional"],
+        bundle_description = bundle_description,
+        bundle_name = bundle_name,
+        bundle_symbolic_name = bundle_symbolic_name,
+        bundle_additional_exports = bundle_additional_exports,
+        bundle_additional_imports = bundle_additional_imports + ["sun.misc;resolution:=optional"],
         **kwargs
     )
