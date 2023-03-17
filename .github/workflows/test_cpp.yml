@@ -49,7 +49,7 @@ jobs:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/${{ matrix.config.name }}
-          bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
+          bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }}
 
   linux-release:
     strategy:
