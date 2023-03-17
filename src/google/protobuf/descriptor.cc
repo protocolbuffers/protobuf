@@ -4118,6 +4118,14 @@ class DescriptorBuilder {
   void ValidateExtensionRangeOptions(
       const std::string& full_name, Descriptor::ExtensionRange* extension_range,
       const DescriptorProto_ExtensionRange& proto);
+  void ValidateExtensionMetadata(
+      const std::string& full_name,
+      const Descriptor::ExtensionRange& extension_range,
+      const DescriptorProto_ExtensionRange& proto);
+  void ValidateExtensionDeclaration(
+      const std::string& full_name,
+      const Descriptor::ExtensionRange& extension_range,
+      const DescriptorProto_ExtensionRange& proto);
   void ValidateServiceOptions(ServiceDescriptor* service,
                               const ServiceDescriptorProto& proto);
   void ValidateMethodOptions(MethodDescriptor* method,
@@ -5384,6 +5392,7 @@ struct IncrementWhenDestroyed {
 }  // namespace
 
 
+
 void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                      const Descriptor* parent,
                                      Descriptor* result,
@@ -5481,7 +5490,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                 name));
     }
   }
-
 
   // Check that fields aren't using reserved names or numbers and that they
   // aren't using extension numbers.
@@ -7155,6 +7163,7 @@ void DescriptorBuilder::ValidateEnumValueOptions(
     const EnumValueDescriptorProto& /* proto */) {
   // Nothing to do so far.
 }
+
 
 void DescriptorBuilder::ValidateExtensionRangeOptions(
     const std::string& full_name, Descriptor::ExtensionRange* extension_range,
