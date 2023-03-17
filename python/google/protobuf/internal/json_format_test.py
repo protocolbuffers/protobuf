@@ -1060,7 +1060,7 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidTimestamp(self):
     message = json_format_proto3_pb2.TestTimestamp()
     text = '{"value": "10000-01-01T00:00:00.00Z"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError, 'Failed to parse value field: '
         'time data \'10000-01-01T00:00:00\' does not match'
         ' format \'%Y-%m-%dT%H:%M:%S\' at TestTimestamp.value.',
@@ -1097,7 +1097,7 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidOneof(self):
     message = json_format_proto3_pb2.TestOneof()
     text = '{"oneofInt32Value": 1, "oneofStringValue": "2"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError, 'Message type "proto3.TestOneof"'
         ' should not have multiple "oneof_value" oneof fields at "TestOneof".',
         json_format.Parse, text, message)
