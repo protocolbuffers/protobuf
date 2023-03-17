@@ -752,10 +752,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   bool is_map() const;       // shorthand for type() == TYPE_MESSAGE &&
                              // message_type()->options().map_entry()
 
-  // Returns true if this field was syntactically written with "optional" in the
-  // .proto file. Excludes singular proto3 fields that do not have a label.
-  bool has_optional_keyword() const;
-
   // Returns true if this field tracks presence, ie. does the field
   // distinguish between "unset" and "present with default value."
   // This includes required, optional, and oneof fields. It excludes maps,
@@ -920,6 +916,11 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
   friend class Reflection;
+  friend class FieldDescriptorLegacy;
+
+  // Returns true if this field was syntactically written with "optional" in the
+  // .proto file. Excludes singular proto3 fields that do not have a label.
+  bool has_optional_keyword() const;
 
   // Fill the json_name field of FieldDescriptorProto.
   void CopyJsonNameTo(FieldDescriptorProto* proto) const;
@@ -1040,10 +1041,6 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   // Index of this oneof within the message's oneof array.
   int index() const;
 
-  // Returns whether this oneof was inserted by the compiler to wrap a proto3
-  // optional field. If this returns true, code generators should *not* emit it.
-  bool is_synthetic() const;
-
   // The .proto file in which this oneof was defined.  Never nullptr.
   const FileDescriptor* file() const;
   // The Descriptor for the message containing this oneof.
@@ -1080,6 +1077,11 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
+  friend class OneofDescriptorLegacy;
+
+  // Returns whether this oneof was inserted by the compiler to wrap a proto3
+  // optional field. If this returns true, code generators should *not* emit it.
+  bool is_synthetic() const;
 
   // See Descriptor::DebugString().
   void DebugString(int depth, std::string* contents,
@@ -1651,7 +1653,11 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // descriptor.proto, and any available extensions of that message.
   const FileOptions& options() const;
 
-  // Syntax of this file.
+ private:
+  // With the upcoming release of editions, syntax should not be used for
+  // business logic.  Instead, the various feature helpers defined in this file
+  // should be used to query more targeted behaviors.  For example:
+  // has_presence, is_closed, requires_utf8_validation.
   enum Syntax
 #ifndef SWIG
       : int
@@ -1662,7 +1668,14 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
     SYNTAX_PROTO3 = 3,
   };
   Syntax syntax() const;
+
+  // Define a visibility-restricted wrapper for internal use until the migration
+  // is complete.
+  friend class FileDescriptorLegacy;
+
   static const char* SyntaxName(Syntax syntax);
+
+ public:
 
   // Find a top-level message type by name (not full_name).  Returns nullptr if
   // not found.
