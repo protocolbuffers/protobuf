@@ -146,6 +146,9 @@ upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
   if (!cloned_array) {
     return NULL;
   }
+  if (!_upb_Array_ResizeUninitialized(cloned_array, size, arena)) {
+    return NULL;
+  }
   for (int i = 0; i < size; ++i) {
     upb_MessageValue val = upb_Array_Get(array, i);
     if (!upb_Clone_MessageValue(&val, value_type, sub, arena)) {

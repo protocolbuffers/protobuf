@@ -33,6 +33,9 @@
 
 #include "upb/message/copy.h"
 
+#include <cstdint>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
@@ -133,6 +136,35 @@ TEST(GeneratedCode, DeepCloneMessageSubMessage) {
   EXPECT_EQ(protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_a(
                 cloned_nested),
             kTestNestedInt32);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, DeepCloneMessageArrayField) {
+  upb_Arena* source_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(source_arena);
+  std::vector<int32_t> array_test_values = {3, 4, 5};
+  for (int32_t value : array_test_values) {
+    ASSERT_TRUE(
+        protobuf_test_messages_proto2_TestAllTypesProto2_add_repeated_int32(
+            msg, value, source_arena));
+  }
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* clone =
+      (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
+          msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
+          arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_repeated_sint32(msg);
+  upb_Arena_Free(source_arena);
+  size_t cloned_size = 0;
+  const int32_t* cloned_values =
+      protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(
+          clone, &cloned_size);
+  EXPECT_EQ(cloned_size, array_test_values.size());
+  int index = 0;
+  for (int32_t value : array_test_values) {
+    EXPECT_EQ(cloned_values[index++], value);
+  }
   upb_Arena_Free(arena);
 }
 
