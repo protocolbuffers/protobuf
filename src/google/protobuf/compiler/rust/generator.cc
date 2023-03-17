@@ -38,6 +38,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -55,6 +56,27 @@ bool ExperimentalRustGeneratorEnabled(
       options, [](std::pair<absl::string_view, absl::string_view> pair) {
         return pair == kMagicValue;
       });
+}
+
+// Marks which kernel Rust codegen assumes and generates gencode for.
+enum class Kernel {
+  kUpb,
+  kCpp,
+};
+
+absl::optional<Kernel> ParsekernelConfiguration(
+    const std::vector<std::pair<std::string, std::string>>& options) {
+  for (const auto& pair : options) {
+    if (pair.first == "kernel") {
+      if (pair.second == "upb") {
+        return Kernel::kUpb;
+      }
+      if (pair.second == "cpp") {
+        return Kernel::kCpp;
+      }
+    }
+  }
+  return absl::nullopt;
 }
 
 std::string get_crate_name(const FileDescriptor* dependency) {
@@ -81,17 +103,23 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     return false;
   }
 
+  absl::optional<Kernel> kernel = ParsekernelConfiguration(options);
+  if (!kernel.has_value()) {
+    *error =
+        "Mandatory option `kernel` missing, please specify `cpp` or "
+        "`upb`.";
+    return false;
+  }
+
   auto basename = StripProto(file->name());
   auto outfile = absl::WrapUnique(
       generator_context->Open(absl::StrCat(basename, ".pb.rs")));
 
   google::protobuf::io::Printer p(outfile.get());
-  // TODO(b/270138878): Remove `do_nothing` import once we have real logic. This
-  // is there only to smoke test rustc actions in rust_proto_library.
   p.Emit(R"rs(
     extern crate protobuf as __pb;
     extern crate std as __std;
-    
+
   )rs");
 
   // TODO(b/270124215): Delete the following "placeholder impl" of `import
@@ -101,7 +129,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     const FileDescriptor* dep = file->public_dependency(i);
     std::string crate_name = get_crate_name(dep);
     for (int j = 0; j < dep->message_type_count(); ++j) {
-      // TODO(b/270138878): Implement real logic
+      // TODO(b/272728844): Implement real logic
       p.Emit(
           {{"crate", crate_name}, {"type_name", dep->message_type(j)->name()}},
           R"rs(
@@ -111,38 +139,58 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   }
 
   for (int i = 0; i < file->message_type_count(); ++i) {
-    // TODO(b/270138878): Implement real logic
+    // TODO(b/272728844): Implement real logic
     std::string full_name = file->message_type(i)->full_name();
     absl::StrReplaceAll({{".", "_"}}, &full_name);
-    p.Emit({{"Msg", file->message_type(i)->name()}, {"pkg_Msg", full_name}},
-           R"rs(
-      pub struct $Msg$ {
-        msg: ::__std::ptr::NonNull<u8>,
-        arena: *mut ::__pb::upb_Arena,
-      }
+    switch (*kernel) {
+      case Kernel::kUpb: {
+        p.Emit({{"Msg", file->message_type(i)->name()}, {"pkg_Msg", full_name}},
+               R"rs(
+          pub struct $Msg$ {
+            msg: ::__std::ptr::NonNull<u8>,
+            arena: *mut ::__pb::Arena,
+          }
 
-      impl $Msg$ {
-        pub fn new() -> $Msg$ {
-          let arena = unsafe { ::__pb::upb_Arena_New() };
-          let msg = unsafe { $pkg_Msg$_new(arena) };
-          $Msg$ { msg, arena }
-        }
-        pub fn serialize(&self) -> ::__pb::SerializedData {
-          let arena = unsafe { ::__pb::upb_Arena_New() };
-          let mut len = 0;
-          let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
-          unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
-        }
-      }
+          impl $Msg$ {
+            pub fn new() -> Self {
+              let arena = unsafe { ::__pb::Arena::new() };
+              let msg = unsafe { $pkg_Msg$_new(arena) };
+              $Msg$ { msg, arena }
+            }
+            pub fn serialize(&self) -> ::__pb::SerializedData {
+              let arena = unsafe { ::__pb::__runtime::upb_Arena_New() };
+              let mut len = 0;
+              let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
+              unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
+            }
+          }
 
-      extern "C" {
-        fn $pkg_Msg$_new(arena: *mut ::__pb::upb_Arena) -> ::__std::ptr::NonNull<u8>;
-        fn $pkg_Msg$_serialize(
-          msg: ::__std::ptr::NonNull<u8>,
-          arena: *mut ::__pb::upb_Arena,
-          len: &mut usize) -> ::__std::ptr::NonNull<u8>;
-      }
+          extern "C" {
+            fn $pkg_Msg$_new(arena: *mut ::__pb::Arena) -> ::__std::ptr::NonNull<u8>;
+            fn $pkg_Msg$_serialize(
+              msg: ::__std::ptr::NonNull<u8>,
+              arena: *mut ::__pb::Arena,
+               len: &mut usize) -> ::__std::ptr::NonNull<u8>;
+          }
     )rs");
+        break;
+      }
+      case Kernel::kCpp: {
+        // TODO(b/272728844): Implement real logic
+        p.Emit({{"Msg", file->message_type(i)->name()}},
+               R"rs(
+          pub struct $Msg$ {
+            msg: ::__std::ptr::NonNull<u8>,
+          }
+
+          impl $Msg$ {
+            pub fn new() -> Self { Self { msg: ::__std::ptr::NonNull::dangling() }}
+            pub fn serialize(&self) -> Vec<u8> { vec![] }
+          }
+        )rs");
+        break;
+      }
+    }
   }
 
   return true;

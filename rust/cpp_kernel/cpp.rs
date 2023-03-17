@@ -28,26 +28,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Rust bindings for UPB
+// Rust Protobuf runtime using the C++ kernel.
 
+use std::boxed::Box;
+
+/// TODO(b/272728844): Replace this placeholder code with a real implementation.
 #[repr(C)]
-pub struct upb_Arena {
+pub struct Arena {
     _data: [u8; 0],
-    _marker: core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>,
 }
 
-extern "C" {
-    pub fn upb_Arena_New() -> *mut upb_Arena;
-    pub fn upb_Arena_Free(arena: *mut upb_Arena);
-}
+impl Arena {
+    pub unsafe fn new() -> *mut Self {
+        let arena = Box::new(Arena { _data: [] });
+        Box::leak(arena) as *mut _
+    }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_arena_new_and_free() {
-        let arena = unsafe { upb_Arena_New() };
-        unsafe { upb_Arena_Free(arena) };
+    pub unsafe fn free(arena: *mut Self) {
+        let arena = Box::from_raw(arena);
+        std::mem::drop(arena);
     }
 }
