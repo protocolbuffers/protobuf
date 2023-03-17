@@ -218,3 +218,9 @@ message DisambiguateCommonMembers {
   int32 on_construction = 11;
   int32 parser = 12;
 }
+
+message Issue11987Message {
+  int32 a = 1 [json_name = 'b'];
+  int32 b = 2 [json_name = 'a'];
+  int32 c = 3 [json_name = 'd'];
+}
