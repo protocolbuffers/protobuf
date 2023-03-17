@@ -161,3 +161,11 @@ jobs:
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
+
+  rust:
+    name: Rust
+    needs: [check-tag]
+    uses: ./.github/workflows/test_rust.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit

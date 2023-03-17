@@ -36,6 +36,8 @@ use std::ops::Deref;
 use std::ptr::NonNull;
 use std::slice;
 
+// Trigger a rebuild.
+
 /// Represents serialized Protobuf wire format data. It's typically produced by
 /// `<Message>.serialize()`.
 pub struct SerializedData {
