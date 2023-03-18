@@ -659,7 +659,7 @@ message FieldOptions {
     TARGET_TYPE_METHOD = 9;
   }
 
-  optional OptionTargetType target = 18;
+  repeated OptionTargetType targets = 19;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -667,7 +667,8 @@ message FieldOptions {
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
 
-  reserved 4;  // removed jtype
+  reserved 4;   // removed jtype
+  reserved 18;  // Changed singular target to repeated targets
 }
 
 message OneofOptions {
