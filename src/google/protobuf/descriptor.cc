@@ -1819,6 +1819,7 @@ const SourceCodeInfo_Location* FileDescriptorTables::GetSourceLocation(
 // ===================================================================
 // DescriptorPool
 
+
 DescriptorPool::ErrorCollector::~ErrorCollector() {}
 
 absl::string_view DescriptorPool::ErrorCollector::ErrorLocationName(
