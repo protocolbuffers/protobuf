@@ -380,6 +380,10 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // Get a oneof by index, where 0 <= index < oneof_decl_count().
   // These are returned in the order they were defined in the .proto file.
   const OneofDescriptor* oneof_decl(int index) const;
+  // Get a oneof by index, excluding synthetic oneofs, where 0 <= index <
+  // real_oneof_decl_count(). These are returned in the order they were defined
+  // in the .proto file.
+  const OneofDescriptor* real_oneof_decl(int index) const;
 
   // Looks up a oneof by name.  Returns nullptr if no such oneof exists.
   const OneofDescriptor* FindOneofByName(absl::string_view name) const;
@@ -2252,6 +2256,10 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, field, const FieldDescriptor*)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, oneof_decl, const OneofDescriptor*)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, nested_type, const Descriptor*)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, enum_type, const EnumDescriptor*)
+inline const OneofDescriptor* Descriptor::real_oneof_decl(int index) const {
+  ABSL_DCHECK(index < real_oneof_decl_count());
+  return oneof_decl(index);
+}
 
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, extension_range_count, int)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, extension_count, int)
