@@ -825,6 +825,18 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "arena_test",
+    srcs = ["upb/mem/arena_test.cc"],
+    deps = [
+        ":upb",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/random:distributions",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "mem_internal",
     srcs = [
