@@ -68,6 +68,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.cc
@@ -217,6 +218,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
@@ -606,6 +608,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/no_field_presence_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/port_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/preserve_unknown_enum_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_arena_lite_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_arena_unittest.cc
