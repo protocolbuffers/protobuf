@@ -37,8 +37,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "absl/log/absl_check.h"  // for PROTOBUF_ASSUME
-
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
