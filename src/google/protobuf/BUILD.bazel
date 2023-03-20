@@ -193,10 +193,7 @@ cc_library(
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
     ],
-    deps = [
-        ":port_def",
-        "@com_google_absl//absl/log:absl_check",
-    ],
+    deps = [":port_def"],
 )
 
 cc_test(
