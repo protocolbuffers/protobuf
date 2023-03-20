@@ -1424,179 +1424,6 @@ UPB_INLINE int upb_Log2CeilingSize(int x) { return 1 << upb_Log2Ceiling(x); }
 #include <stdlib.h>
 
 
-#ifndef UPB_MINI_TABLE_MESSAGE_INTERNAL_H_
-#define UPB_MINI_TABLE_MESSAGE_INTERNAL_H_
-
-
-// Must be last.
-
-struct upb_Decoder;
-typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
-                                     upb_Message* msg, intptr_t table,
-                                     uint64_t hasbits, uint64_t data);
-typedef struct {
-  uint64_t field_data;
-  _upb_FieldParser* field_parser;
-} _upb_FastTable_Entry;
-
-typedef enum {
-  kUpb_ExtMode_NonExtendable = 0,  // Non-extendable message.
-  kUpb_ExtMode_Extendable = 1,     // Normal extendable message.
-  kUpb_ExtMode_IsMessageSet = 2,   // MessageSet message.
-  kUpb_ExtMode_IsMessageSet_ITEM =
-      3,  // MessageSet item (temporary only, see decode.c)
-
-  // During table building we steal a bit to indicate that the message is a map
-  // entry.  *Only* used during table building!
-  kUpb_ExtMode_IsMapEntry = 4,
-} upb_ExtMode;
-
-// upb_MiniTable represents the memory layout of a given upb_MessageDef.
-// The members are public so generated code can initialize them,
-// but users MUST NOT directly read or write any of its members.
-struct upb_MiniTable {
-  const upb_MiniTableSub* subs;
-  const upb_MiniTableField* fields;
-
-  // Must be aligned to sizeof(void*). Doesn't include internal members like
-  // unknown fields, extension dict, pointer to msglayout, etc.
-  uint16_t size;
-
-  uint16_t field_count;
-  uint8_t ext;  // upb_ExtMode, declared as uint8_t so sizeof(ext) == 1
-  uint8_t dense_below;
-  uint8_t table_mask;
-  uint8_t required_count;  // Required fields have the lowest hasbits.
-
-  // To statically initialize the tables of variable length, we need a flexible
-  // array member, and we need to compile in gnu99 mode (constant initialization
-  // of flexible array members is a GNU extension, not in C99 unfortunately.
-  _upb_FastTable_Entry fasttable[];
-};
-
-// Map entries aren't actually stored for map fields, they are only used during
-// parsing. For parsing, it helps a lot if all map entry messages have the same
-// layout. The layout code in mini_table/decode.c will ensure that all map
-// entries have this layout.
-//
-// Note that users can and do create map entries directly, which will also use
-// this layout.
-//
-// NOTE: sync with mini_table/decode.c.
-typedef struct {
-  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
-  // and the uint64_t helps make this clear.
-  uint64_t hasbits;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-  } k;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-  } v;
-} upb_MapEntryData;
-
-typedef struct {
-  void* internal_data;
-  upb_MapEntryData data;
-} upb_MapEntry;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Computes a bitmask in which the |l->required_count| lowest bits are set,
-// except that we skip the lowest bit (because upb never uses hasbit 0).
-//
-// Sample output:
-//    requiredmask(1) => 0b10 (0x2)
-//    requiredmask(5) => 0b111110 (0x3e)
-UPB_INLINE uint64_t upb_MiniTable_requiredmask(const upb_MiniTable* l) {
-  int n = l->required_count;
-  assert(0 < n && n <= 63);
-  return ((1ULL << n) - 1) << 1;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_MESSAGE_INTERNAL_H_ */
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// _upb_mapsorter sorts maps and provides ordered iteration over the entries.
-// Since maps can be recursive (map values can be messages which contain other
-// maps), _upb_mapsorter can contain a stack of maps.
-
-typedef struct {
-  upb_tabent const** entries;
-  int size;
-  int cap;
-} _upb_mapsorter;
-
-typedef struct {
-  int start;
-  int pos;
-  int end;
-} _upb_sortedmap;
-
-UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
-  s->entries = NULL;
-  s->size = 0;
-  s->cap = 0;
-}
-
-UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
-  if (s->entries) free(s->entries);
-}
-
-UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
-                                    _upb_sortedmap* sorted, upb_MapEntry* ent) {
-  if (sorted->pos == sorted->end) return false;
-  const upb_tabent* tabent = s->entries[sorted->pos++];
-  upb_StringView key = upb_tabstrview(tabent->key);
-  _upb_map_fromkey(key, &ent->data.k, map->key_size);
-  upb_value val = {tabent->val.val};
-  _upb_map_fromvalue(val, &ent->data.v, map->val_size);
-  return true;
-}
-
-UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
-                                      _upb_sortedmap* sorted) {
-  s->size = sorted->start;
-}
-
-bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const upb_Map* map, _upb_sortedmap* sorted);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_ */
-
-/*
-** Our memory representation for parsing tables and messages themselves.
-** Functions in this file are used by generated code and possibly reflection.
-**
-** The definitions in this file are internal to upb.
-**/
-
-#ifndef UPB_MESSAGE_INTERNAL_H_
-#define UPB_MESSAGE_INTERNAL_H_
-
-#include <stdlib.h>
-#include <string.h>
-
-
 #ifndef UPB_MESSAGE_EXTENSION_INTERNAL_H_
 #define UPB_MESSAGE_EXTENSION_INTERNAL_H_
 
@@ -1869,6 +1696,191 @@ const upb_Message_Extension* _upb_Message_Getext(
 
 #endif /* UPB_MESSAGE_EXTENSION_INTERNAL_H_ */
 
+#ifndef UPB_MINI_TABLE_MESSAGE_INTERNAL_H_
+#define UPB_MINI_TABLE_MESSAGE_INTERNAL_H_
+
+
+// Must be last.
+
+struct upb_Decoder;
+typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
+                                     upb_Message* msg, intptr_t table,
+                                     uint64_t hasbits, uint64_t data);
+typedef struct {
+  uint64_t field_data;
+  _upb_FieldParser* field_parser;
+} _upb_FastTable_Entry;
+
+typedef enum {
+  kUpb_ExtMode_NonExtendable = 0,  // Non-extendable message.
+  kUpb_ExtMode_Extendable = 1,     // Normal extendable message.
+  kUpb_ExtMode_IsMessageSet = 2,   // MessageSet message.
+  kUpb_ExtMode_IsMessageSet_ITEM =
+      3,  // MessageSet item (temporary only, see decode.c)
+
+  // During table building we steal a bit to indicate that the message is a map
+  // entry.  *Only* used during table building!
+  kUpb_ExtMode_IsMapEntry = 4,
+} upb_ExtMode;
+
+// upb_MiniTable represents the memory layout of a given upb_MessageDef.
+// The members are public so generated code can initialize them,
+// but users MUST NOT directly read or write any of its members.
+struct upb_MiniTable {
+  const upb_MiniTableSub* subs;
+  const upb_MiniTableField* fields;
+
+  // Must be aligned to sizeof(void*). Doesn't include internal members like
+  // unknown fields, extension dict, pointer to msglayout, etc.
+  uint16_t size;
+
+  uint16_t field_count;
+  uint8_t ext;  // upb_ExtMode, declared as uint8_t so sizeof(ext) == 1
+  uint8_t dense_below;
+  uint8_t table_mask;
+  uint8_t required_count;  // Required fields have the lowest hasbits.
+
+  // To statically initialize the tables of variable length, we need a flexible
+  // array member, and we need to compile in gnu99 mode (constant initialization
+  // of flexible array members is a GNU extension, not in C99 unfortunately.
+  _upb_FastTable_Entry fasttable[];
+};
+
+// Map entries aren't actually stored for map fields, they are only used during
+// parsing. For parsing, it helps a lot if all map entry messages have the same
+// layout. The layout code in mini_table/decode.c will ensure that all map
+// entries have this layout.
+//
+// Note that users can and do create map entries directly, which will also use
+// this layout.
+//
+// NOTE: sync with mini_table/decode.c.
+typedef struct {
+  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
+  // and the uint64_t helps make this clear.
+  uint64_t hasbits;
+  union {
+    upb_StringView str;  // For str/bytes.
+    upb_value val;       // For all other types.
+  } k;
+  union {
+    upb_StringView str;  // For str/bytes.
+    upb_value val;       // For all other types.
+  } v;
+} upb_MapEntryData;
+
+typedef struct {
+  void* internal_data;
+  upb_MapEntryData data;
+} upb_MapEntry;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Computes a bitmask in which the |l->required_count| lowest bits are set,
+// except that we skip the lowest bit (because upb never uses hasbit 0).
+//
+// Sample output:
+//    requiredmask(1) => 0b10 (0x2)
+//    requiredmask(5) => 0b111110 (0x3e)
+UPB_INLINE uint64_t upb_MiniTable_requiredmask(const upb_MiniTable* l) {
+  int n = l->required_count;
+  assert(0 < n && n <= 63);
+  return ((1ULL << n) - 1) << 1;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_MESSAGE_INTERNAL_H_ */
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// _upb_mapsorter sorts maps and provides ordered iteration over the entries.
+// Since maps can be recursive (map values can be messages which contain other
+// maps), _upb_mapsorter can contain a stack of maps.
+
+typedef struct {
+  void const** entries;
+  int size;
+  int cap;
+} _upb_mapsorter;
+
+typedef struct {
+  int start;
+  int pos;
+  int end;
+} _upb_sortedmap;
+
+UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
+  s->entries = NULL;
+  s->size = 0;
+  s->cap = 0;
+}
+
+UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
+  if (s->entries) free(s->entries);
+}
+
+UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
+                                    _upb_sortedmap* sorted, upb_MapEntry* ent) {
+  if (sorted->pos == sorted->end) return false;
+  const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
+  upb_StringView key = upb_tabstrview(tabent->key);
+  _upb_map_fromkey(key, &ent->data.k, map->key_size);
+  upb_value val = {tabent->val.val};
+  _upb_map_fromvalue(val, &ent->data.v, map->val_size);
+  return true;
+}
+
+UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
+                                       _upb_sortedmap* sorted,
+                                       const upb_Message_Extension** ext) {
+  if (sorted->pos == sorted->end) return false;
+  *ext = (const upb_Message_Extension*)s->entries[sorted->pos++];
+  return true;
+}
+
+UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
+                                      _upb_sortedmap* sorted) {
+  s->size = sorted->start;
+}
+
+bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
+                            const upb_Map* map, _upb_sortedmap* sorted);
+
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
+                             const upb_Message_Extension* exts, size_t count,
+                             _upb_sortedmap* sorted);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_ */
+
+/*
+** Our memory representation for parsing tables and messages themselves.
+** Functions in this file are used by generated code and possibly reflection.
+**
+** The definitions in this file are internal to upb.
+**/
+
+#ifndef UPB_MESSAGE_INTERNAL_H_
+#define UPB_MESSAGE_INTERNAL_H_
+
+#include <stdlib.h>
+#include <string.h>
+
+
 #ifndef UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 #define UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 
@@ -1919,18 +1931,21 @@ typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
 // The arena must outlive any use of the extreg.
 UPB_API upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 
+UPB_API bool upb_ExtensionRegistry_Add(upb_ExtensionRegistry* r,
+                                       const upb_MiniTableExtension* e);
+
 // Adds the given extension info for the array |e| of size |count| into the
 // registry. If there are any errors, the entire array is backed out.
 // The extensions must outlive the registry.
 // Possible errors include OOM or an extension number that already exists.
-// TODO: There is currently no way to determine the exact reason for failure.
+// TODO(salo): There is currently no way to know the exact reason for failure.
 bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
                                     const upb_MiniTableExtension** e,
                                     size_t count);
 
 // Looks up the extension (if any) defined for message type |t| and field
 // number |num|. Returns the extension if found, otherwise NULL.
-const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
+UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num);
 
 #ifdef __cplusplus
@@ -2194,6 +2209,11 @@ extern "C" {
 UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);
 
+UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
+    const upb_MiniTable* t, uint32_t index) {
+  return &t->fields[index];
+}
+
 UPB_API upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
 
 UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f) {
@@ -2268,10 +2288,11 @@ UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
 const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
                                                  const upb_MiniTableField* f);
 
-// Returns the next field in the oneof. If this is the last field in the
-// oneof, returns NULL. The ordering of fields in the oneof is not
+// Iterates to the next field in the oneof. If this is the last field in the
+// oneof, returns false. The ordering of fields in the oneof is not
 // guaranteed.
-// REQUIRES: |iter| is and iterator.
+// REQUIRES: |f| is the field initialized by upb_MiniTable_GetOneof and updated
+//           by prior upb_MiniTable_NextOneofField calls.
 bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
                                   const upb_MiniTableField** f);
 
@@ -3039,6 +3060,13 @@ enum {
 };
 
 #define UPB_DECODE_MAXDEPTH(depth) ((depth) << 16)
+
+// Enforce an upper bound on recursion depth.
+UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
+  uint32_t max_depth = decode_options >> 16;
+  if (max_depth > limit) max_depth = limit;
+  return (max_depth << 16) | (decode_options & 0xffff);
+}
 
 typedef enum {
   kUpb_DecodeStatus_Ok = 0,
@@ -8826,6 +8854,7 @@ bool upb_FileDef_HasOptions(const upb_FileDef* f);
 const char* upb_FileDef_Name(const upb_FileDef* f);
 const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f);
 const char* upb_FileDef_Package(const upb_FileDef* f);
+const char* upb_FileDef_Edition(const upb_FileDef* f);
 const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
 
 const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i);
@@ -9802,18 +9831,50 @@ UPB_API bool upb_MiniTable_SetSubEnum(upb_MiniTable* table,
                                       upb_MiniTableField* field,
                                       const upb_MiniTableEnum* sub);
 
-const char* _upb_MiniTableExtension_Build(const char* data, size_t len,
-                                          upb_MiniTableExtension* ext,
-                                          const upb_MiniTable* extendee,
-                                          upb_MiniTableSub sub,
-                                          upb_MiniTablePlatform platform,
-                                          upb_Status* status);
+// Initializes a MiniTableExtension buffer that has already been allocated.
+// This is needed by upb_FileDef and upb_MessageDef, which allocate all of the
+// extensions together in a single contiguous array.
+const char* _upb_MiniTableExtension_Init(const char* data, size_t len,
+                                         upb_MiniTableExtension* ext,
+                                         const upb_MiniTable* extendee,
+                                         upb_MiniTableSub sub,
+                                         upb_MiniTablePlatform platform,
+                                         upb_Status* status);
 
-UPB_API_INLINE const char* upb_MiniTableExtension_Build(
+UPB_API_INLINE const char* upb_MiniTableExtension_Init(
     const char* data, size_t len, upb_MiniTableExtension* ext,
     const upb_MiniTable* extendee, upb_MiniTableSub sub, upb_Status* status) {
-  return _upb_MiniTableExtension_Build(data, len, ext, extendee, sub,
-                                       kUpb_MiniTablePlatform_Native, status);
+  return _upb_MiniTableExtension_Init(data, len, ext, extendee, sub,
+                                      kUpb_MiniTablePlatform_Native, status);
+}
+
+UPB_API upb_MiniTableExtension* _upb_MiniTableExtension_Build(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_MiniTableSub sub, upb_MiniTablePlatform platform, upb_Arena* arena,
+    upb_Status* status);
+
+UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_Build(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_Arena* arena, upb_Status* status) {
+  upb_MiniTableSub sub = {.submsg = NULL};
+  return _upb_MiniTableExtension_Build(
+      data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
+}
+
+UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildMessage(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_MiniTable* submsg, upb_Arena* arena, upb_Status* status) {
+  upb_MiniTableSub sub = {.submsg = submsg};
+  return _upb_MiniTableExtension_Build(
+      data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
+}
+
+UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildEnum(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_MiniTableEnum* subenum, upb_Arena* arena, upb_Status* status) {
+  upb_MiniTableSub sub = {.subenum = subenum};
+  return _upb_MiniTableExtension_Build(
+      data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
 }
 
 UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
@@ -9830,6 +9891,33 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
                                           upb_MiniTablePlatform platform,
                                           upb_Arena* arena, void** buf,
                                           size_t* buf_size, upb_Status* status);
+
+// Returns a list of fields that require linking at runtime, to connect the
+// MiniTable to its sub-messages and sub-enums.  The list of fields will be
+// written to the `subs` array, which must have been allocated by the caller
+// and must be large enough to hold a list of all fields in the message.
+//
+// The order of the fields returned by this function is significant: it matches
+// the order expected by upb_MiniTable_Link() below.
+//
+// The return value packs the sub-message count and sub-enum count into a single
+// integer like so:
+//  return (msg_count << 16) | enum_count;
+UPB_API uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* mt,
+                                          const upb_MiniTableField** subs);
+
+// Links a message to its sub-messages and sub-enums.  The caller must pass
+// arrays of sub-tables and sub-enums, in the same length and order as is
+// returned by upb_MiniTable_GetSubList() above.  However, individual elements
+// of the sub_tables may be NULL if those sub-messages were tree shaken.
+//
+// Returns false if either array is too short, or if any of the tables fails
+// to link.
+UPB_API bool upb_MiniTable_Link(upb_MiniTable* mt,
+                                const upb_MiniTable** sub_tables,
+                                size_t sub_table_count,
+                                const upb_MiniTableEnum** sub_enums,
+                                size_t sub_enum_count);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -9938,7 +10026,7 @@ size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s);
 upb_ExtensionRegistry* _upb_DefPool_ExtReg(const upb_DefPool* s);
 
 bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTableExtension* ext,
-                            upb_FieldDef* f);
+                            const upb_FieldDef* f);
 bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
                             upb_Status* status);
 bool _upb_DefPool_LookupSym(const upb_DefPool* s, const char* sym, size_t size,
@@ -10064,23 +10152,6 @@ UPB_INLINE upb_FileDef* _upb_DefBuilder_File(const upb_DefBuilder* ctx) {
 void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
                                     bool full);
 
-// Verify a relative identifier string. The loop is branchless for speed.
-UPB_INLINE void _upb_DefBuilder_CheckIdentNotFull(upb_DefBuilder* ctx,
-                                                  upb_StringView name) {
-  bool good = name.size > 0;
-
-  for (size_t i = 0; i < name.size; i++) {
-    const char c = name.data[i];
-    const char d = c | 0x20;  // force lowercase
-    const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
-    const bool is_numer = ('0' <= c) & (c <= '9') & (i != 0);
-
-    good &= is_alpha | is_numer;
-  }
-
-  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, false);
-}
-
 // Verify a full identifier string. This is slightly more complicated than
 // verifying a relative identifier string because we must track '.' chars.
 UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
@@ -10184,6 +10255,14 @@ int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
 uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f);
 void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
                            upb_FieldDef* f);
+void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
+                                           const upb_FieldDef* f);
+
+// Allocate and initialize an array of |n| extensions (field defs).
+upb_FieldDef* _upb_Extensions_New(
+    upb_DefBuilder* ctx, int n,
+    const UPB_DESC(FieldDescriptorProto) * const* protos, const char* prefix,
+    upb_MessageDef* m);
 
 // Allocate and initialize an array of |n| field defs.
 upb_FieldDef* _upb_FieldDefs_New(
@@ -10248,6 +10327,7 @@ bool _upb_MessageDef_Insert(upb_MessageDef* m, const char* name, size_t size,
 void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
                                  const upb_FieldDef* f);
 bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n);
+void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m);
 void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
                                    const upb_MessageDef* m);
 void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
@@ -10406,8 +10486,8 @@ extern "C" {
 #endif
 
 upb_OneofDef* _upb_OneofDef_At(const upb_OneofDef* o, int i);
-bool _upb_OneofDef_Insert(upb_OneofDef* o, const upb_FieldDef* f,
-                          const char* name, size_t size, upb_Arena* a);
+void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
+                          const upb_FieldDef* f, const char* name, size_t size);
 
 // Allocate and initialize an array of |n| oneof defs owned by |m|.
 upb_OneofDef* _upb_OneofDefs_New(
