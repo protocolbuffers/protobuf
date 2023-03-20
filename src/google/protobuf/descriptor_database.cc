@@ -637,6 +637,8 @@ bool EncodedDescriptorDatabase::FindAllExtensionNumbers(
 template <typename FileProto>
 bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
                                                          Value value) {
+  LOG(INFO) << "===========================================";
+  LOG(INFO) << "Adding " << file.name();
   // We push `value` into the array first. This is important because the AddXXX
   // functions below will expect it to be there.
   all_values_.push_back({value.first, value.second, {}});
