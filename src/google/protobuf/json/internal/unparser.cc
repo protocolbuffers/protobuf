@@ -46,6 +46,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -854,16 +855,20 @@ absl::Status WriteMessage(JsonWriter& writer, const Msg<Traits>& msg,
 
 absl::Status MessageToJsonString(const Message& message, std::string* output,
                                  json_internal::WriterOptions options) {
-  PROTOBUF_DLOG(INFO) << "json2/input: " << message.DebugString();
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/input: " << message.DebugString();
+  }
   io::StringOutputStream out(output);
   JsonWriter writer(&out, options);
   absl::Status s = WriteMessage<UnparseProto2Descriptor>(
       writer, message, *message.GetDescriptor(), /*is_top_level=*/true);
-  PROTOBUF_DLOG(INFO) << "json2/status: " << s;
+  if (PROTOBUF_DEBUG) ABSL_DLOG(INFO) << "json2/status: " << s;
   RETURN_IF_ERROR(s);
 
   writer.NewLine();
-  PROTOBUF_DLOG(INFO) << "json2/output: " << absl::CHexEscape(*output);
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/output: " << absl::CHexEscape(*output);
+  }
   return absl::OkStatus();
 }
 
@@ -894,9 +899,8 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
     }
     tee_input.emplace(copy.data(), copy.size());
     tee_output.emplace(&out);
+    ABSL_DLOG(INFO) << "json2/input: " << absl::BytesToHexString(copy);
   }
-
-  PROTOBUF_DLOG(INFO) << "json2/input: " << absl::BytesToHexString(copy);
 
   ResolverPool pool(resolver);
   auto desc = pool.FindMessage(type_url);
@@ -912,16 +916,15 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
   absl::Status s = WriteMessage<UnparseProto3Type>(
       writer, *msg, UnparseProto3Type::GetDesc(*msg),
       /*is_top_level=*/true);
-  PROTOBUF_DLOG(INFO) << "json2/status: " << s;
+  if (PROTOBUF_DEBUG) ABSL_DLOG(INFO) << "json2/status: " << s;
   RETURN_IF_ERROR(s);
 
   if (PROTOBUF_DEBUG) {
     tee_output.reset();  // Flush the output stream.
     io::zc_sink_internal::ZeroCopyStreamByteSink(json_output)
         .Append(out.data(), out.size());
+    ABSL_DLOG(INFO) << "json2/output: " << absl::CHexEscape(out);
   }
-
-  PROTOBUF_DLOG(INFO) << "json2/output: " << absl::CHexEscape(out);
 
   writer.NewLine();
   return absl::OkStatus();
