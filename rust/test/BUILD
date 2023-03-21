@@ -1,12 +1,12 @@
 load("//rust:defs.bzl", "rust_proto_library")
 load("@rules_rust//rust:defs.bzl", "rust_test")
 
-package(default_applicable_licenses = ["//third_party/protobuf:license"])
-
 rust_proto_library(
     name = "unittest_rust_proto",
     testonly = True,
-    deps = ["//third_party/protobuf:unittest_proto"],
+    deps = [
+        "//src/google/protobuf:test_protos",
+    ],
 )
 
 rust_test(

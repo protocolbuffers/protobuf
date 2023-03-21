@@ -2,12 +2,13 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
-package(default_applicable_licenses = ["//third_party/protobuf:license"])
-
 rust_library(
     name = "cpp",
     srcs = ["cpp.rs"],
-    visibility = ["//src/google/protobuf:__subpackages__"],
+    visibility = [
+        "//src/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
+    ],
 )
 
 rust_test(

@@ -2,8 +2,6 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
-package(default_applicable_licenses = ["//third_party/protobuf:license"])
-
 rust_library(
     name = "upb",
     srcs = ["upb.rs"],
@@ -24,6 +22,6 @@ cc_library(
     name = "upb_c_api",
     srcs = ["upb_api.c"],
     deps = [
-        "//third_party/upb",
+        "@upb//:upb",
     ],
 )

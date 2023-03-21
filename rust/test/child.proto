@@ -32,9 +32,6 @@ syntax = "proto2";
 
 package third_party_protobuf_rust_test;
 
-// copybara:strip_begin(Replace import path for Bazel)
-import public "google/protobuf/rust/test/parent.proto";
-
-// copybara:strip_end_and_replace import public "rust/test/parent.proto";
+import public "rust/test/parent.proto";
 
 message Child {}
