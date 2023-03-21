@@ -566,7 +566,6 @@ pkg_files(
         "LICENSE",
         "README.md",
         "WORKSPACE",
-        "cmake/CMakeLists.txt",
         "cmake/README.md",
         "generate_descriptor_proto.sh",
         "maven_install.json",
