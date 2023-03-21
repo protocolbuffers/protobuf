@@ -1122,7 +1122,12 @@ FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
                                          const Options& options) {
   ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
   if (options.opensource_runtime) {
-    // Open-source protobuf release only supports STRING ctype.
+    // Open-source protobuf release only supports STRING ctype and CORD for
+    // sinuglar bytes.
+    if (field->type() == FieldDescriptor::TYPE_BYTES && !field->is_repeated() &&
+        field->options().ctype() == FieldOptions::CORD) {
+      return FieldOptions::CORD;
+    }
     return FieldOptions::STRING;
   } else {
     // Google-internal supports all ctypes.

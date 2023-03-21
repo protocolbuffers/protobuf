@@ -146,8 +146,9 @@ void CordFieldGenerator::GenerateAccessorDeclarations(
       "$deprecated_attr$void ${1$set_$name$$}$(const ::absl::Cord& value);\n"
       "$deprecated_attr$void ${1$set_$name$$}$(::absl::string_view value);\n",
       std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
-  format("private:\n");
   format(
+      "private:\n"
+      "const ::absl::Cord& ${1$_internal_$name$$}$() const;\n"
       "void ${1$_internal_set_$name$$}$(const ::absl::Cord& value);\n"
       "::absl::Cord* ${1$_internal_mutable_$name$$}$();\n"
       "public:\n",
@@ -183,13 +184,17 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
       "  $field$ = value;\n"
       "$annotate_set$"
       "  // @@protoc_insertion_point(field_set_string_piece:$full_name$)\n"
+      "}\n"
+      "inline ::absl::Cord* $classname$::_internal_mutable_$name$() {\n"
+      "  $set_hasbit$\n"
+      "  return &$field$;\n"
       "}\n");
 }
 
 void CordFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (descriptor_->default_value_string().empty()) {
-    format("$field$.clear();\n");
+    format("$field$.Clear();\n");
   } else {
     format("$field$ = ::absl::string_view($default$, $default_length$);\n");
   }
@@ -358,12 +363,6 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "    }\n"
       "  }\n"
       "  return $field$;\n"
-      "}\n"
-      "inline ::absl::Cord* $classname$::mutable_$name$() {\n"
-      "  ::absl::Cord* _cord = _internal_mutable_$name$();\n"
-      "$annotate_mutable$"
-      "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
-      "  return _cord;\n"
       "}\n");
 }
 

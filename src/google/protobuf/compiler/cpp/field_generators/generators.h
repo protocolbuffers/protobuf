@@ -90,6 +90,15 @@ std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
 std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
+
+std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc);
+
+std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc);
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

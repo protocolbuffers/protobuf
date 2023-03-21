@@ -492,7 +492,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
 
   if (HasCordFields(file_, options_)) {
     p->Emit(R"(
-      #include "third_party/absl/strings/internal/string_constant.h"
+      #include "absl/strings/internal/string_constant.h"
     )");
   }
 
@@ -1322,11 +1322,11 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     if (HasStringPieceFields(file_, options_)) {
       IncludeFile("third_party/protobuf/string_piece_field_support.h", p);
     }
-    if (HasCordFields(file_, options_)) {
-      p->Emit(R"(
-        #include "third_party/absl/strings/cord.h"
+  }
+  if (HasCordFields(file_, options_)) {
+    p->Emit(R"(
+      #include "absl/strings/cord.h"
       )");
-    }
   }
   if (HasMapFields(file_)) {
     IncludeFileAndExport("third_party/protobuf/map.h", p);
