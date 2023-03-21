@@ -65,7 +65,7 @@ bootstrap_upb_proto_library(
     name = "plugin_upb_proto",
     base_dir = "",
     google3_src_files = [
-        "src/google/protobuf/compiler/plugin.proto",
+        "net/proto2/compiler/proto/plugin.proto",
         "net/proto2/compiler/proto/profile.proto",
     ],
     google3_src_rules = [

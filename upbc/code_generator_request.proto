@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package upbc;
 
-import "src/google/protobuf/compiler/plugin.proto";
+import "google/protobuf/compiler/plugin.proto";
 
 message CodeGeneratorRequest {
   message UpbInfo {
