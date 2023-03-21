@@ -1821,6 +1821,35 @@ const SourceCodeInfo_Location* FileDescriptorTables::GetSourceLocation(
 
 DescriptorPool::ErrorCollector::~ErrorCollector() {}
 
+absl::string_view DescriptorPool::ErrorCollector::ErrorLocationName(
+    ErrorLocation location) {
+  switch (location) {
+    case NAME:
+      return "NAME";
+    case NUMBER:
+      return "NUMBER";
+    case TYPE:
+      return "TYPE";
+    case EXTENDEE:
+      return "EXTENDEE";
+    case DEFAULT_VALUE:
+      return "DEFAULT_VALUE";
+    case OPTION_NAME:
+      return "OPTION_NAME";
+    case OPTION_VALUE:
+      return "OPTION_VALUE";
+    case INPUT_TYPE:
+      return "INPUT_TYPE";
+    case OUTPUT_TYPE:
+      return "OUTPUT_TYPE";
+    case IMPORT:
+      return "IMPORT";
+    case OTHER:
+      return "OTHER";
+  }
+  return "UNKNOWN";
+}
+
 DescriptorPool::DescriptorPool()
     : mutex_(nullptr),
       fallback_database_(nullptr),
