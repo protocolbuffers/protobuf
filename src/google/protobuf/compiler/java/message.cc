@@ -727,12 +727,14 @@ void ImmutableMessageGenerator::GenerateParseFromMethods(io::Printer* printer) {
       "  return com.google.protobuf.GeneratedMessage$ver$\n"
       "      .parseWithIOException(PARSER, input, extensionRegistry);\n"
       "}\n"
+      "$parsedelimitedreturnannotation$\n"
       "public static $classname$ parseDelimitedFrom(java.io.InputStream "
       "input)\n"
       "    throws java.io.IOException {\n"
       "  return com.google.protobuf.GeneratedMessage$ver$\n"
       "      .parseDelimitedWithIOException(PARSER, input);\n"
       "}\n"
+      "$parsedelimitedreturnannotation$\n"
       "public static $classname$ parseDelimitedFrom(\n"
       "    java.io.InputStream input,\n"
       "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
@@ -756,7 +758,10 @@ void ImmutableMessageGenerator::GenerateParseFromMethods(io::Printer* printer) {
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "ver",
-      GeneratedCodeVersionSuffix());
+      GeneratedCodeVersionSuffix(), "parsedelimitedreturnannotation",
+      context_->options().opensource_runtime
+          ? ""
+          : "@com.google.protobuf.Internal.ProtoMethodMayReturnNull");
 }
 
 // ===================================================================
