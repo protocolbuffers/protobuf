@@ -35,6 +35,8 @@
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
+#include "upb/base/log2.h"
+#include "upb/mem/arena.h"
 #include "upb/reflection/def.hpp"
 
 upb_StringView descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
@@ -72,6 +74,52 @@ static void BM_ArenaInitialBlockOneAlloc(benchmark::State& state) {
   }
 }
 BENCHMARK(BM_ArenaInitialBlockOneAlloc);
+
+static void BM_ArenaFuseUnbalanced(benchmark::State& state) {
+  std::vector<upb_Arena*> arenas(state.range(0));
+  size_t n = 0;
+  for (auto _ : state) {
+    for (auto& arena : arenas) {
+      arena = upb_Arena_New();
+    }
+    for (auto& arena : arenas) {
+      upb_Arena_Fuse(arenas[0], arena);
+    }
+    for (auto& arena : arenas) {
+      upb_Arena_Free(arena);
+    }
+    n += arenas.size();
+  }
+  state.SetItemsProcessed(n);
+}
+BENCHMARK(BM_ArenaFuseUnbalanced)->Range(2, 128);
+
+static void BM_ArenaFuseBalanced(benchmark::State& state) {
+  std::vector<upb_Arena*> arenas(state.range(0));
+  size_t n = 0;
+
+  for (auto _ : state) {
+    for (auto& arena : arenas) {
+      arena = upb_Arena_New();
+    }
+
+    // Perform a series of fuses that keeps the halves balanced.
+    size_t max = upb_Log2Ceiling(arenas.size());
+    for (size_t n = 0; n <= max; n++) {
+      size_t step = 1 << n;
+      for (size_t i = 0; i + step < arenas.size(); i += (step * 2)) {
+        upb_Arena_Fuse(arenas[i], arenas[i + step]);
+      }
+    }
+
+    for (auto& arena : arenas) {
+      upb_Arena_Free(arena);
+    }
+    n += arenas.size();
+  }
+  state.SetItemsProcessed(n);
+}
+BENCHMARK(BM_ArenaFuseBalanced)->Range(2, 128);
 
 enum LoadDescriptorMode {
   NoLayout,
