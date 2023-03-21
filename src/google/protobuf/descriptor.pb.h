@@ -5184,11 +5184,11 @@ class PROTOBUF_EXPORT FieldOptions final :
   void _internal_set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value);
 
   public:
-  // optional .google.protobuf.FieldOptions.OptionTargetType target = 18;
-  bool has_target() const;
-  void clear_target() ;
-  ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType target() const;
-  void set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
+  // optional .google.protobuf.FieldOptions.OptionTargetType target = 18 [deprecated = true];
+  PROTOBUF_DEPRECATED  bool has_target() const;
+  PROTOBUF_DEPRECATED  void clear_target() ;
+  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType target() const;
+  PROTOBUF_DEPRECATED void set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
 
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType _internal_target() const;
@@ -13064,7 +13064,7 @@ inline void FieldOptions::_internal_set_retention(::PROTOBUF_NAMESPACE_ID::Field
   _impl_.retention_ = value;
 }
 
-// optional .google.protobuf.FieldOptions.OptionTargetType target = 18;
+// optional .google.protobuf.FieldOptions.OptionTargetType target = 18 [deprecated = true];
 inline bool FieldOptions::has_target() const {
   bool value = (_impl_._has_bits_[0] & 0x00000200u) != 0;
   return value;

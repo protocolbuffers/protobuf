@@ -659,7 +659,7 @@ message FieldOptions {
     TARGET_TYPE_METHOD = 9;
   }
 
-  optional OptionTargetType target = 18;
+  optional OptionTargetType target = 18 [deprecated = true];
   repeated OptionTargetType targets = 19;
 
   // The parser stores options it doesn't recognize here. See above.
