@@ -43,5 +43,4 @@ set_target_properties(libprotobuf PROPERTIES
 )
 add_library(protobuf::libprotobuf ALIAS libprotobuf)
 
-target_include_directories(libprotobuf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/utf8_range)
 target_link_libraries(libprotobuf PRIVATE utf8_validity)
