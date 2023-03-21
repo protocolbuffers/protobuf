@@ -1322,6 +1322,49 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
 #endif  // GTEST_HAS_DEATH_TEST
 
 
+TEST(GeneratedMessageReflectionCordBytesAccessorsTest, CordSingularBytes) {
+  unittest::TestCord message;
+  absl::Cord cord_value("test");
+  message.set_optional_bytes_cord(cord_value);
+  EXPECT_EQ("test", message.optional_bytes_cord());
+
+  EXPECT_TRUE(message.has_optional_bytes_cord());
+  message.clear_optional_bytes_cord();
+  EXPECT_FALSE(message.has_optional_bytes_cord());
+
+  std::string string_value = "test";
+  message.set_optional_bytes_cord(string_value);
+  EXPECT_EQ("test", message.optional_bytes_cord());
+}
+
+TEST(GeneratedMessageReflectionCordBytesAccessorsTest,
+     CordSingularBytesDefault) {
+  unittest::TestCord message;
+  EXPECT_EQ("hello", message.optional_bytes_cord_default());
+  absl::Cord cord_value("world");
+  message.set_optional_bytes_cord_default(cord_value);
+  EXPECT_EQ("world", message.optional_bytes_cord_default());
+  message.clear_optional_bytes_cord_default();
+  EXPECT_EQ("hello", message.optional_bytes_cord_default());
+}
+
+TEST(GeneratedMessageReflectionCordBytesAccessorsTest, CordSingularOneofBytes) {
+  unittest::TestOneof message;
+  absl::Cord cord_value("test");
+  message.set_foo_bytes_cord(cord_value);
+  EXPECT_EQ("test", message.foo_bytes_cord());
+
+  EXPECT_TRUE(message.has_foo_bytes_cord());
+  message.clear_foo();
+  EXPECT_FALSE(message.has_foo_bytes_cord());
+
+  std::string string_value = "test";
+  message.set_foo_bytes_cord(string_value);
+  EXPECT_EQ("test", message.foo_bytes_cord());
+  EXPECT_TRUE(message.has_foo_bytes_cord());
+}
+
+
 using internal::IsDescendant;
 
 TEST(GeneratedMessageReflection, IsDescendantMessage) {
