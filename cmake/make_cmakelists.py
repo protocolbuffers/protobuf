@@ -349,20 +349,22 @@ class Converter(object):
     include_directories(../cmake)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-    if(EXISTS ../external/utf8_range)
-      # utf8_range is already installed
-      include_directories(../external/utf8_range)
-    else()
-      include(FetchContent)
-      FetchContent_Declare(
-        utf8_range
-        GIT_REPOSITORY "https://github.com/protocolbuffers/utf8_range.git"
-        GIT_TAG "%(utf8_range_commit)s"
-      )
-      FetchContent_GetProperties(utf8_range)
-      if(NOT utf8_range_POPULATED)
-        FetchContent_Populate(utf8_range)
-        include_directories(${utf8_range_SOURCE_DIR})
+    if(NOT TARGET utf8_range)
+      if(EXISTS ../external/utf8_range)
+        # utf8_range is already installed
+        include_directories(../external/utf8_range)
+      else()
+        include(FetchContent)
+        FetchContent_Declare(
+          utf8_range
+          GIT_REPOSITORY "https://github.com/protocolbuffers/utf8_range.git"
+          GIT_TAG "%(utf8_range_commit)s"
+        )
+        FetchContent_GetProperties(utf8_range)
+        if(NOT utf8_range_POPULATED)
+          FetchContent_Populate(utf8_range)
+          include_directories(${utf8_range_SOURCE_DIR})
+        endif()
       endif()
     endif()
 
