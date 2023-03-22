@@ -6,7 +6,7 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
-import "test_import_proto2.proto";
+import "tests/test_import_proto2.proto";
 
 message Foo {
   Bar bar = 1;
