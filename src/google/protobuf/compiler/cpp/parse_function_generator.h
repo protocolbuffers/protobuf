@@ -86,9 +86,6 @@ class ParseFunctionGenerator {
   // Generates a tail-calling `_InternalParse` function.
   void GenerateTailcallParseFunction(Formatter& format);
 
-  // Generates a fallback function for tailcall table-based parsing.
-  void GenerateTailcallFallbackFunction(Formatter& format);
-
   // Generates a looping `_InternalParse` function.
   void GenerateLoopingParseFunction(Formatter& format);
 

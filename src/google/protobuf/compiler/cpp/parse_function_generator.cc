@@ -55,13 +55,22 @@ using internal::cpp::Utf8CheckMode;
 using google::protobuf::internal::WireFormat;
 using google::protobuf::internal::WireFormatLite;
 
+bool HasWeakFields(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    if (descriptor->field(i)->options().weak()) {
+      return true;
+    }
+  }
+  return false;
+}
 bool UseDirectTcParserTable(const FieldDescriptor* field,
                             const Options& options) {
   if (field->cpp_type() != field->CPPTYPE_MESSAGE) return false;
   auto* m = field->message_type();
   return !m->options().message_set_wire_format() &&
          m->file()->options().optimize_for() != FileOptions::CODE_SIZE &&
-         !HasSimpleBaseClass(m, options) && !HasTracker(m, options)
+         !HasSimpleBaseClass(m, options) && !HasTracker(m, options) &&
+         !HasWeakFields(m)
       ;  // NOLINT(whitespace/semicolon)
 }
 
@@ -137,6 +146,11 @@ ParseFunctionGenerator::ParseFunctionGenerator(
 }
 
 void ParseFunctionGenerator::GenerateMethodDecls(io::Printer* printer) {
+  if (HasWeakFields(descriptor_)) {
+    // We use the reflection based one.
+    ABSL_CHECK(HasDescriptorMethods(descriptor_->file(), options_));
+    return;
+  }
   Formatter format(printer, variables_);
   if (should_generate_tctable()) {
     format.Outdent();
@@ -177,6 +191,11 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
         "      internal_default_instance(), &_internal_metadata_, ctx);\n"
         "}\n");
   }
+  if (HasWeakFields(descriptor_)) {
+    // We use the reflection based one.
+    ABSL_CHECK(HasDescriptorMethods(descriptor_->file(), options_));
+    need_parse_function = false;
+  }
   if (!should_generate_tctable()) {
     if (need_parse_function) {
       GenerateLoopingParseFunction(format);
@@ -188,9 +207,6 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
   }
   if (need_parse_function) {
     GenerateTailcallParseFunction(format);
-  }
-  if (tc_table_info_->use_generated_fallback) {
-    GenerateTailcallFallbackFunction(format);
   }
   if (should_generate_guarded_tctable()) {
     if (need_parse_function) {
@@ -205,7 +221,7 @@ bool ParseFunctionGenerator::should_generate_tctable() const {
   if (options_.tctable_mode == Options::kTCTableNever) {
     return false;
   }
-  if (HasSimpleBaseClass(descriptor_, options_)) {
+  if (HasSimpleBaseClass(descriptor_, options_) || HasWeakFields(descriptor_)) {
     return false;
   }
   return true;
@@ -224,50 +240,6 @@ void ParseFunctionGenerator::GenerateTailcallParseFunction(Formatter& format) {
   format(
       "  return ptr;\n"
       "}\n\n");
-}
-
-void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
-    Formatter& format) {
-  ABSL_CHECK(should_generate_tctable());
-  format(
-      "const char* $classname$::Tct_ParseFallback(PROTOBUF_TC_PARAM_DECL) {\n"
-      "#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) return nullptr\n");
-  format.Indent();
-  format("auto* typed_msg = static_cast<$classname$*>(msg);\n");
-
-  // Generate the check to jump to the generic handler to deal with the side
-  // channel data.
-  format(
-      "if (PROTOBUF_PREDICT_FALSE(\n"
-      "    _pbi::TcParser::MustFallbackToGeneric(PROTOBUF_TC_PARAM_PASS))) "
-      "{\n"
-      "  PROTOBUF_MUSTTAIL return "
-      "::_pbi::TcParser::GenericFallback$1$(PROTOBUF_TC_PARAM_PASS);\n"
-      "}\n",
-      GetOptimizeFor(descriptor_->file(), options_) == FileOptions::LITE_RUNTIME
-          ? "Lite"
-          : "");
-
-  if (num_hasbits_ > 0) {
-    // Sync hasbits
-    format("typed_msg->_impl_._has_bits_[0] |= hasbits;\n");
-  }
-  format("::uint32_t tag = data.tag();\n");
-
-  format.Set("msg", "typed_msg->");
-  format.Set("this", "typed_msg");
-  format.Set("has_bits", "typed_msg->_impl_._has_bits_");
-  format.Set("next_tag", "goto next_tag");
-  GenerateParseIterationBody(format, descriptor_,
-                             tc_table_info_->fallback_fields);
-
-  format.Outdent();
-  format(
-      "next_tag:\n"
-      "message_done:\n"
-      "  return ptr;\n"
-      "#undef CHK_\n"
-      "}\n");
 }
 
 struct SkipEntry16 {
@@ -452,15 +424,10 @@ static NumToEntryTable MakeNumToEntryTable(
 void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
   ABSL_CHECK(should_generate_tctable());
   // All entries without a fast-path parsing function need a fallback.
-  std::string fallback;
-  if (tc_table_info_->use_generated_fallback) {
-    fallback = absl::StrCat(ClassName(descriptor_), "::Tct_ParseFallback");
-  } else {
-    fallback = "::_pbi::TcParser::GenericFallback";
-    if (GetOptimizeFor(descriptor_->file(), options_) ==
-        FileOptions::LITE_RUNTIME) {
-      absl::StrAppend(&fallback, "Lite");
-    }
+  std::string fallback = "::_pbi::TcParser::GenericFallback";
+  if (GetOptimizeFor(descriptor_->file(), options_) ==
+      FileOptions::LITE_RUNTIME) {
+    absl::StrAppend(&fallback, "Lite");
   }
 
   // For simplicity and speed, the table is not covering all proto

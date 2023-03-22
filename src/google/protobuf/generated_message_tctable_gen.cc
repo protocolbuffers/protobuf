@@ -249,10 +249,10 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::OptionProvider& option_provider) {
   const auto* field = entry.field;
   const auto options = option_provider.GetForField(field);
+  ABSL_CHECK(!field->options().weak());
   // Map, oneof, weak, and lazy fields are not handled on the fast path.
   if (field->is_map() || field->real_containing_oneof() ||
-      field->options().weak() || options.is_implicitly_weak ||
-      options.should_split) {
+      options.is_implicitly_weak || options.should_split) {
     return false;
   }
 
@@ -405,57 +405,6 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     info.hasbit_idx = cpp::HasHasbit(field) ? entry.hasbit_idx : 63;
   }
   return result;
-}
-
-// Filter out fields that will be handled by mini parsing.
-std::vector<const FieldDescriptor*> FilterMiniParsedFields(
-    const std::vector<const FieldDescriptor*>& fields,
-    const TailCallTableInfo::OptionProvider& option_provider) {
-  std::vector<const FieldDescriptor*> generated_fallback_fields;
-
-  for (const auto* field : fields) {
-    bool handled = false;
-    switch (field->type()) {
-      case FieldDescriptor::TYPE_DOUBLE:
-      case FieldDescriptor::TYPE_FLOAT:
-      case FieldDescriptor::TYPE_FIXED32:
-      case FieldDescriptor::TYPE_SFIXED32:
-      case FieldDescriptor::TYPE_FIXED64:
-      case FieldDescriptor::TYPE_SFIXED64:
-      case FieldDescriptor::TYPE_BOOL:
-      case FieldDescriptor::TYPE_UINT32:
-      case FieldDescriptor::TYPE_SINT32:
-      case FieldDescriptor::TYPE_INT32:
-      case FieldDescriptor::TYPE_UINT64:
-      case FieldDescriptor::TYPE_SINT64:
-      case FieldDescriptor::TYPE_INT64:
-      case FieldDescriptor::TYPE_ENUM:
-      case FieldDescriptor::TYPE_BYTES:
-      case FieldDescriptor::TYPE_STRING:
-        // These are handled by MiniParse, so we don't need any generated
-        // fallback code.
-        handled = true;
-        break;
-
-
-      case FieldDescriptor::TYPE_MESSAGE:
-      case FieldDescriptor::TYPE_GROUP:
-        // TODO(b/210762816): support remaining field types.
-        if (field->options().weak()) {
-          handled = false;
-        } else {
-          handled = true;
-        }
-        break;
-
-      default:
-        handled = false;
-        break;
-    }
-    if (!handled) generated_fallback_fields.push_back(field);
-  }
-
-  return generated_fallback_fields;
 }
 
 // We only need field names for reporting UTF-8 parsing errors, so we only
@@ -814,9 +763,6 @@ TailCallTableInfo::TailCallTableInfo(
             aux_entries.push_back({kEnumValidator, {map_value}});
           }
         }
-      } else if (field->options().weak()) {
-        // Don't generate anything for weak fields. They are handled by the
-        // generated fallback.
       } else if (HasLazyRep(field, options)) {
         if (options.uses_codegen) {
           field_entries.back().aux_idx = aux_entries.size();
@@ -918,19 +864,10 @@ TailCallTableInfo::TailCallTableInfo(
     }
   }
 
-  // Filter out fields that are handled by MiniParse. We don't need to generate
-  // a fallback for these, which saves code size.
-  fallback_fields = FilterMiniParsedFields(ordered_fields, option_provider);
-
   num_to_entry_table = MakeNumToEntryTable(ordered_fields);
   ABSL_CHECK_EQ(field_entries.size(), ordered_fields.size());
   field_name_data =
       GenerateFieldNames(descriptor, field_entries, option_provider);
-
-  // If there are no fallback fields, and at most one extension range, the
-  // parser can use a generic fallback function. Otherwise, a message-specific
-  // fallback routine is needed.
-  use_generated_fallback = !fallback_fields.empty();
 }
 
 }  // namespace internal
