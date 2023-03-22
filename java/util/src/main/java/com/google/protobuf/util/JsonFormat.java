@@ -127,7 +127,7 @@ public class JsonFormat {
     // 1) Default - alwaysOutput is false & including is empty set. Fields only output if they are
     //    set to non-default values.
     // 2) No-args includingDefaultValueFields() called - alwaysOutput is true & including is
-    //    irrelevant (but set to empty set). All fields are output regardless of their values.
+    //    irrelevant (but set to empty set). All set fields are output regardless of their values.
     // 3) includingDefaultValueFields(Set<FieldDescriptor>) called - alwaysOutput is false &
     //    including is set to the specified set. Fields in that set are always output & fields not
     //    in that set are only output if set to non-default values.
@@ -1002,16 +1002,20 @@ public class JsonFormat {
       if (alwaysOutputDefaultValueFields || !includingDefaultValueFields.isEmpty()) {
         fieldsToPrint = new TreeMap<FieldDescriptor, Object>(message.getAllFields());
         for (FieldDescriptor field : message.getDescriptorForType().getFields()) {
-          if (field.isOptional()) {
+          if (field.hasPresence()) {
             if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE
                 && !message.hasField(field)) {
               // Always skip empty optional message fields. If not we will recurse indefinitely if
               // a message has itself as a sub-field.
               continue;
             }
-            OneofDescriptor oneof = field.getContainingOneof();
+            OneofDescriptor oneof = field.getRealContainingOneof();
             if (oneof != null && !message.hasField(field)) {
               // Skip all oneof fields except the one that is actually set
+              continue;
+            }
+            if (!message.hasField(field)) {
+              // Skip fields that are not set.
               continue;
             }
           }
