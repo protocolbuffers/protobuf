@@ -104,6 +104,7 @@ package_group(
 cc_library(
     name = "port",
     hdrs = [
+        "upb/port/atomic.h",
         "upb/port/vsnprintf_compat.h",
     ],
     copts = UPB_DEFAULT_COPTS,

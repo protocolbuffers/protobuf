@@ -49,21 +49,47 @@ struct upb_Arena {
 
   /* When multiple arenas are fused together, each arena points to a parent
    * arena (root points to itself). The root tracks how many live arenas
-   * reference it. */
-  uint32_t refcount; /* Only used when a->parent == a */
-  struct upb_Arena* parent;
+   * reference it.
+   *
+   * The low bit is tagged:
+   *   0: pointer to parent
+   *   1: count, left shifted by one
+   */
+  UPB_ATOMIC uintptr_t parent_or_count;
 
   /* Linked list of blocks to free/cleanup. */
   _upb_MemBlock *freelist, *freelist_tail;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+UPB_INLINE bool _upb_Arena_IsTaggedRefcount(uintptr_t parent_or_count) {
+  return (parent_or_count & 1) == 1;
+}
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+UPB_INLINE bool _upb_Arena_IsTaggedPointer(uintptr_t parent_or_count) {
+  return (parent_or_count & 1) == 0;
+}
+
+UPB_INLINE uint32_t _upb_Arena_RefCountFromTagged(uintptr_t parent_or_count) {
+  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
+  return parent_or_count >> 1;
+}
+
+UPB_INLINE uintptr_t _upb_Arena_TaggedFromRefcount(uint32_t refcount) {
+  uintptr_t parent_or_count = (((uintptr_t)refcount) << 1) | 1;
+  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
+  return parent_or_count;
+}
+
+UPB_INLINE upb_Arena* _upb_Arena_PointerFromTagged(uintptr_t parent_or_count) {
+  UPB_ASSERT(_upb_Arena_IsTaggedPointer(parent_or_count));
+  return (upb_Arena*)parent_or_count;
+}
+
+UPB_INLINE uintptr_t _upb_Arena_TaggedFromPointer(upb_Arena* a) {
+  uintptr_t parent_or_count = (uintptr_t)a;
+  UPB_ASSERT(_upb_Arena_IsTaggedPointer(parent_or_count));
+  return parent_or_count;
+}
 
 #include "upb/port/undef.inc"
 

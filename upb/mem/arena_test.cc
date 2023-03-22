@@ -136,8 +136,9 @@ TEST(ArenaTest, FuzzSingleThreaded) {
   }
 }
 
-// Disabled because this test currently fails.
-TEST(ArenaTest, DISABLED_FuzzFuseFreeRace) {
+#ifdef UPB_USE_C11_ATOMICS
+
+TEST(ArenaTest, FuzzFuseFreeRace) {
   Environment env;
 
   absl::Notification done;
@@ -183,5 +184,7 @@ TEST(ArenaTest, DISABLED_FuzzFuseFuseRace) {
   done.Notify();
   for (auto& t : threads) t.join();
 }
+
+#endif
 
 }  // namespace

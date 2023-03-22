@@ -31,8 +31,10 @@
 
 #include "upb/collections/array_internal.h"
 #include "upb/collections/map_internal.h"
+#include "upb/mem/arena_internal.h"
 #include "upb/mini_table/common.h"
 #include "upb/mini_table/enum_internal.h"
+#include "upb/port/atomic.h"
 #include "upb/wire/common_internal.h"
 #include "upb/wire/decode_internal.h"
 #include "upb/wire/encode.h"
@@ -1305,7 +1307,8 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
   state.arena.head = arena->head;
   state.arena.last_size = arena->last_size;
   state.arena.cleanup_metadata = arena->cleanup_metadata;
-  state.arena.parent = arena;
+  upb_Atomic_Init(&state.arena.parent_or_count,
+                  _upb_Arena_TaggedFromPointer(arena));
   state.status = kUpb_DecodeStatus_Ok;
 
   return upb_Decoder_Decode(&state, buf, msg, l, arena);
