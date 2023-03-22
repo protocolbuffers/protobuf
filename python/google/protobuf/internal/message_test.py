@@ -497,9 +497,6 @@ class MessageTest(unittest.TestCase):
     msg.repeated_nested_message.MergeFrom(other_msg.repeated_nested_message)
     self.assertEqual([1, 2, 3, 4], [m.bb for m in msg.repeated_nested_message])
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      "We can enable after protobuf updates to use the current upb repo")
   def testInternalMergeWithMissingRequiredField(self, message_module):
     req = more_messages_pb2.RequiredField()
     more_messages_pb2.RequiredWrapper(request=req)

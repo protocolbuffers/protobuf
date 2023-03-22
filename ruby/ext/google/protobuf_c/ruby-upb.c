@@ -166,6 +166,13 @@
 #define UPB_LONGJMP(buf, val) longjmp(buf, val)
 #endif
 
+#ifdef __GNUC__
+#define UPB_USE_C11_ATOMICS
+#define UPB_ATOMIC _Atomic
+#else
+#define UPB_ATOMIC
+#endif
+
 /* UPB_PTRADD(ptr, ofs): add pointer while avoiding "NULL + 0" UB */
 #define UPB_PTRADD(ptr, ofs) ((ofs) ? (ptr) + (ofs) : (ptr))
 
@@ -5122,19 +5129,42 @@ typedef struct cleanup_ent {
 static const size_t memblock_reserve =
     UPB_ALIGN_UP(sizeof(_upb_MemBlock), UPB_MALLOC_ALIGN);
 
-static upb_Arena* arena_findroot(upb_Arena* a) {
-  /* Path splitting keeps time complexity down, see:
-   *   https://en.wikipedia.org/wiki/Disjoint-set_data_structure */
-  while (a->parent != a) {
-    upb_Arena* next = a->parent;
-    a->parent = next->parent;
+static upb_Arena* _upb_Arena_FindRoot(upb_Arena* a) {
+  uintptr_t poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+  while (_upb_Arena_IsTaggedPointer(poc)) {
+    upb_Arena* next = _upb_Arena_PointerFromTagged(poc);
+    uintptr_t next_poc = upb_Atomic_LoadAcquire(&next->parent_or_count);
+
+    if (_upb_Arena_IsTaggedPointer(next_poc)) {
+      // To keep complexity down, we lazily collapse levels of the tree.  This
+      // keeps it flat in the final case, but doesn't cost much incrementally.
+      //
+      // Path splitting keeps time complexity down, see:
+      //   https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+      //
+      // We can safely use a relaxed atomic here because all threads doing this
+      // will converge on the same value and we don't need memory orderings to
+      // be visible.
+      //
+      // This is true because:
+      // - If no fuses occur, this will eventually become the root.
+      // - If fuses are actively occuring, the root may change, but the
+      //   invariant is that `parent_or_count` merely points to *a* parent.
+      //
+      // In other words, it is moving towards "the" root, and that root may move
+      // further away over time, but the path towards that root will continue to
+      // be valid and the creation of the path carries all the memory orderings
+      // required.
+      upb_Atomic_StoreRelaxed(&a->parent_or_count, next_poc);
+    }
     a = next;
+    poc = next_poc;
   }
   return a;
 }
 
 size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
-  arena = arena_findroot(arena);
+  arena = _upb_Arena_FindRoot(arena);
   size_t memsize = 0;
 
   _upb_MemBlock* block = arena->freelist;
@@ -5147,8 +5177,15 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
   return memsize;
 }
 
-uint32_t upb_Arena_DebugRefCount(upb_Arena* arena) {
-  return arena_findroot(arena)->refcount;
+uint32_t upb_Arena_DebugRefCount(upb_Arena* a) {
+  // These loads could probably be relaxed, but given that this is debug-only,
+  // it's not worth introducing a new variant for it.
+  uintptr_t poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+  while (_upb_Arena_IsTaggedPointer(poc)) {
+    a = _upb_Arena_PointerFromTagged(poc);
+    poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+  }
+  return _upb_Arena_RefCountFromTagged(poc);
 }
 
 static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
@@ -5172,7 +5209,7 @@ static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
 }
 
 static bool upb_Arena_Allocblock(upb_Arena* a, size_t size) {
-  upb_Arena* root = arena_findroot(a);
+  upb_Arena* root = _upb_Arena_FindRoot(a);
   size_t block_size = UPB_MAX(size, a->last_size * 2) + memblock_reserve;
   _upb_MemBlock* block = upb_malloc(root->block_alloc, block_size);
 
@@ -5203,8 +5240,7 @@ static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
   n -= sizeof(*a);
 
   a->block_alloc = alloc;
-  a->parent = a;
-  a->refcount = 1;
+  upb_Atomic_Init(&a->parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   a->freelist = NULL;
   a->freelist_tail = NULL;
   a->cleanup_metadata = upb_cleanup_metadata(NULL, false);
@@ -5236,8 +5272,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
 
   a->block_alloc = alloc;
-  a->parent = a;
-  a->refcount = 1;
+  upb_Atomic_Init(&a->parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   a->last_size = UPB_MAX(128, n);
   a->head.ptr = mem;
   a->head.end = UPB_PTR_AT(mem, n - sizeof(*a), char);
@@ -5250,8 +5285,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
 
 static void arena_dofree(upb_Arena* a) {
   _upb_MemBlock* block = a->freelist;
-  UPB_ASSERT(a->parent == a);
-  UPB_ASSERT(a->refcount == 0);
+  UPB_ASSERT(_upb_Arena_RefCountFromTagged(a->parent_or_count) == 1);
 
   while (block) {
     /* Load first since we are deleting block. */
@@ -5272,8 +5306,32 @@ static void arena_dofree(upb_Arena* a) {
 }
 
 void upb_Arena_Free(upb_Arena* a) {
-  a = arena_findroot(a);
-  if (--a->refcount == 0) arena_dofree(a);
+  uintptr_t poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+retry:
+  while (_upb_Arena_IsTaggedPointer(poc)) {
+    a = _upb_Arena_PointerFromTagged(poc);
+    poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+  }
+
+  // compare_exchange or fetch_sub are RMW operations, which are more
+  // expensive then direct loads.  As an optimization, we only do RMW ops
+  // when we need to update things for other threads to see.
+  if (poc == _upb_Arena_TaggedFromRefcount(1)) {
+    arena_dofree(a);
+    return;
+  }
+
+  if (upb_Atomic_CompareExchangeStrongAcqRel(
+          &a->parent_or_count, &poc,
+          _upb_Arena_TaggedFromRefcount(_upb_Arena_RefCountFromTagged(poc) -
+                                        1))) {
+    // We were >1 and we decremented it successfully, so we are done.
+    return;
+  }
+
+  // We failed our update, so someone has done something, retry the whole
+  // process, but the failed exchange reloaded `poc` for us.
+  goto retry;
 }
 
 bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func) {
@@ -5298,34 +5356,81 @@ bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func) {
 }
 
 bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
-  upb_Arena* r1 = arena_findroot(a1);
-  upb_Arena* r2 = arena_findroot(a2);
+  // SAFE IN THE PRESENCE OF FUSE/FREE RACES BUT NOT IN THE
+  // PRESENCE OF FUSE/FUSE RACES!!!
+  //
+  // `parent_or_count` has two disctint modes
+  // -  parent pointer mode
+  // -  refcount mode
+  //
+  // In parent pointer mode, it may change what pointer it refers to in the
+  // tree, but it will always approach a root.  Any operation that walks the
+  // tree to the root may collapse levels of the tree concurrently.
+  //
+  // In refcount mode, any free operation may lower the refcount.
+  //
+  // Only a fuse operation may increase the refcount.
+  // Only a fuse operation may switch `parent_or_count` from parent mode to
+  // refcount mode.
+  //
+  // Given that we do not allow fuse/fuse races, we may rely on the invariant
+  // that only refcounts can change once we have found the root.  Because the
+  // threads doing the fuse must hold references, we can guarantee that no
+  // refcounts will reach zero concurrently.
+  upb_Arena* r1 = _upb_Arena_FindRoot(a1);
+  upb_Arena* r2 = _upb_Arena_FindRoot(a2);
 
-  if (r1 == r2) return true; /* Already fused. */
+  if (r1 == r2) return true;  // Already fused.
 
-  /* Do not fuse initial blocks since we cannot lifetime extend them. */
+  // Do not fuse initial blocks since we cannot lifetime extend them.
   if (upb_cleanup_has_initial_block(r1->cleanup_metadata)) return false;
   if (upb_cleanup_has_initial_block(r2->cleanup_metadata)) return false;
 
-  /* Only allow fuse with a common allocator */
+  // Only allow fuse with a common allocator
   if (r1->block_alloc != r2->block_alloc) return false;
 
-  /* We want to join the smaller tree to the larger tree.
-   * So swap first if they are backwards. */
-  if (r1->refcount < r2->refcount) {
+  uintptr_t r1_poc = upb_Atomic_LoadAcquire(&r1->parent_or_count);
+  uintptr_t r2_poc = upb_Atomic_LoadAcquire(&r2->parent_or_count);
+  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(r1_poc));
+  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(r2_poc));
+
+  // Keep the tree shallow by joining the smaller tree to the larger.
+  if (_upb_Arena_RefCountFromTagged(r1_poc) <
+      _upb_Arena_RefCountFromTagged(r2_poc)) {
     upb_Arena* tmp = r1;
     r1 = r2;
     r2 = tmp;
+
+    uintptr_t tmp_poc = r1_poc;
+    r1_poc = r2_poc;
+    r2_poc = tmp_poc;
   }
 
-  /* r1 takes over r2's freelist and refcount. */
-  r1->refcount += r2->refcount;
+  // r1 takes over r2's freelist, this must happen before we update
+  // refcounts since the refcount carriers the memory dependencies.
   if (r2->freelist_tail) {
     UPB_ASSERT(r2->freelist_tail->next == NULL);
     r2->freelist_tail->next = r1->freelist;
     r1->freelist = r2->freelist;
   }
-  r2->parent = r1;
+
+  // The moment we install `r1` as the parent for `r2` all racing frees may
+  // immediately begin decrementing `r1`'s refcount.  So we must install all the
+  // refcounts that we know about first to prevent a premature unref to zero.
+  uint32_t r2_refcount = _upb_Arena_RefCountFromTagged(r2_poc);
+  upb_Atomic_AddRelease(&r1->parent_or_count, ((uintptr_t)r2_refcount) << 1);
+
+  // When installing `r1` as the parent for `r2` racing frees may have changed
+  // the refcount for `r2` so we need to capture the old value to fix up `r1`'s
+  // refcount based on the delta from what we saw the first time.
+  r2_poc = upb_Atomic_ExchangeAcqRel(&r2->parent_or_count,
+                                     _upb_Arena_TaggedFromPointer(r1));
+  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(r2_poc));
+  uint32_t delta_refcount = r2_refcount - _upb_Arena_RefCountFromTagged(r2_poc);
+  if (delta_refcount != 0) {
+    upb_Atomic_SubRelease(&r1->parent_or_count, ((uintptr_t)delta_refcount)
+                                                    << 1);
+  }
   return true;
 }
 
@@ -5999,7 +6104,7 @@ static bool upb_MiniTable_HasSub(upb_MiniTableField* field,
 
 static bool upb_MtDecoder_FieldIsPackable(upb_MiniTableField* field) {
   return (field->mode & kUpb_FieldMode_Array) &&
-         _upb_FieldType_IsPackable(field->descriptortype);
+         upb_FieldType_IsPackable(field->descriptortype);
 }
 
 static void upb_MiniTable_SetTypeAndSub(upb_MiniTableField* field,
@@ -7139,7 +7244,7 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
     // are bit flags).
     encoded_type += kUpb_EncodedType_RepeatedBase;
 
-    if (_upb_FieldType_IsPackable(type)) {
+    if (upb_FieldType_IsPackable(type)) {
       bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
       bool default_is_packed = in->state.msg_state.msg_modifiers &
                                kUpb_MessageModifier_DefaultIsPacked;
@@ -12392,7 +12497,8 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
   state.arena.head = arena->head;
   state.arena.last_size = arena->last_size;
   state.arena.cleanup_metadata = arena->cleanup_metadata;
-  state.arena.parent = arena;
+  upb_Atomic_Init(&state.arena.parent_or_count,
+                  _upb_Arena_TaggedFromPointer(arena));
   state.status = kUpb_DecodeStatus_Ok;
 
   return upb_Decoder_Decode(&state, buf, msg, l, arena);
@@ -14060,3 +14166,5 @@ const char* _upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME
 #undef UPB_DESC
 #undef UPB_IS_GOOGLE3
+#undef UPB_ATOMIC
+#undef UPB_USE_C11_ATOMICS
