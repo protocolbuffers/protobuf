@@ -165,6 +165,13 @@
 #define UPB_LONGJMP(buf, val) longjmp(buf, val)
 #endif
 
+#ifdef __GNUC__
+#define UPB_USE_C11_ATOMICS
+#define UPB_ATOMIC _Atomic
+#else
+#define UPB_ATOMIC
+#endif
+
 /* UPB_PTRADD(ptr, ofs): add pointer while avoiding "NULL + 0" UB */
 #define UPB_PTRADD(ptr, ofs) ((ofs) ? (ptr) + (ofs) : (ptr))
 
@@ -345,6 +352,8 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
 #ifndef UPB_BASE_DESCRIPTOR_CONSTANTS_H_
 #define UPB_BASE_DESCRIPTOR_CONSTANTS_H_
 
+// Must be last.
+
 // The types a field can have. Note that this list is not identical to the
 // types defined in descriptor.proto, which gives INT32 and SINT32 separate
 // types (we distinguish the two with the "integer encoding" enum below).
@@ -393,6 +402,26 @@ typedef enum {
 } upb_FieldType;
 
 #define kUpb_FieldType_SizeOf 19
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType type) {
+  // clang-format off
+  const unsigned kUnpackableTypes =
+      (1 << kUpb_FieldType_String) |
+      (1 << kUpb_FieldType_Bytes) |
+      (1 << kUpb_FieldType_Message) |
+      (1 << kUpb_FieldType_Group);
+  // clang-format on
+  return (1 << type) & ~kUnpackableTypes;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
 
 #endif /* UPB_BASE_DESCRIPTOR_CONSTANTS_H_ */
 
@@ -6533,27 +6562,12 @@ UPB_INLINE bool google_protobuf_FieldOptions_has_retention(const google_protobuf
   const upb_MiniTableField field = {17, 20, 9, 2, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
-UPB_INLINE void google_protobuf_FieldOptions_clear_target(google_protobuf_FieldOptions* msg) {
-  const upb_MiniTableField field = {18, 24, 10, 3, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
-  _upb_Message_ClearNonExtensionField(msg, &field);
-}
-UPB_INLINE int32_t google_protobuf_FieldOptions_target(const google_protobuf_FieldOptions* msg) {
-  int32_t default_val = 0;
-  int32_t ret;
-  const upb_MiniTableField field = {18, 24, 10, 3, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
-  _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
-  return ret;
-}
-UPB_INLINE bool google_protobuf_FieldOptions_has_target(const google_protobuf_FieldOptions* msg) {
-  const upb_MiniTableField field = {18, 24, 10, 3, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
-  return _upb_Message_HasNonExtensionField(msg, &field);
-}
 UPB_INLINE void google_protobuf_FieldOptions_clear_targets(google_protobuf_FieldOptions* msg) {
-  const upb_MiniTableField field = {19, UPB_SIZE(28, 32), 0, 4, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {19, 24, 0, 3, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   _upb_Message_ClearNonExtensionField(msg, &field);
 }
 UPB_INLINE int32_t const* google_protobuf_FieldOptions_targets(const google_protobuf_FieldOptions* msg, size_t* size) {
-  const upb_MiniTableField field = {19, UPB_SIZE(28, 32), 0, 4, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {19, 24, 0, 3, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   const upb_Array* arr = upb_Message_GetArray(msg, &field);
   if (arr) {
     if (size) *size = arr->size;
@@ -6569,11 +6583,11 @@ UPB_INLINE bool google_protobuf_FieldOptions_has_targets(const google_protobuf_F
   return size != 0;
 }
 UPB_INLINE void google_protobuf_FieldOptions_clear_uninterpreted_option(google_protobuf_FieldOptions* msg) {
-  const upb_MiniTableField field = {999, UPB_SIZE(32, 40), 0, 5, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {999, UPB_SIZE(28, 32), 0, 4, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   _upb_Message_ClearNonExtensionField(msg, &field);
 }
 UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_FieldOptions_uninterpreted_option(const google_protobuf_FieldOptions* msg, size_t* size) {
-  const upb_MiniTableField field = {999, UPB_SIZE(32, 40), 0, 5, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {999, UPB_SIZE(28, 32), 0, 4, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   const upb_Array* arr = upb_Message_GetArray(msg, &field);
   if (arr) {
     if (size) *size = arr->size;
@@ -6625,12 +6639,8 @@ UPB_INLINE void google_protobuf_FieldOptions_set_retention(google_protobuf_Field
   const upb_MiniTableField field = {17, 20, 9, 2, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_FieldOptions_set_target(google_protobuf_FieldOptions *msg, int32_t value) {
-  const upb_MiniTableField field = {18, 24, 10, 3, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
-  _upb_Message_SetNonExtensionField(msg, &field, &value);
-}
 UPB_INLINE int32_t* google_protobuf_FieldOptions_mutable_targets(google_protobuf_FieldOptions* msg, size_t* size) {
-  upb_MiniTableField field = {19, UPB_SIZE(28, 32), 0, 4, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  upb_MiniTableField field = {19, 24, 0, 3, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   upb_Array* arr = upb_Message_GetMutableArray(msg, &field);
   if (arr) {
     if (size) *size = arr->size;
@@ -6641,11 +6651,11 @@ UPB_INLINE int32_t* google_protobuf_FieldOptions_mutable_targets(google_protobuf
   }
 }
 UPB_INLINE int32_t* google_protobuf_FieldOptions_resize_targets(google_protobuf_FieldOptions* msg, size_t size, upb_Arena* arena) {
-  upb_MiniTableField field = {19, UPB_SIZE(28, 32), 0, 4, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  upb_MiniTableField field = {19, 24, 0, 3, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   return (int32_t*)upb_Message_ResizeArray(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_FieldOptions_add_targets(google_protobuf_FieldOptions* msg, int32_t val, upb_Arena* arena) {
-  upb_MiniTableField field = {19, UPB_SIZE(28, 32), 0, 4, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  upb_MiniTableField field = {19, 24, 0, 3, 14, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, &field, arena);
   if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
     return false;
@@ -6654,7 +6664,7 @@ UPB_INLINE bool google_protobuf_FieldOptions_add_targets(google_protobuf_FieldOp
   return true;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FieldOptions_mutable_uninterpreted_option(google_protobuf_FieldOptions* msg, size_t* size) {
-  upb_MiniTableField field = {999, UPB_SIZE(32, 40), 0, 5, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  upb_MiniTableField field = {999, UPB_SIZE(28, 32), 0, 4, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   upb_Array* arr = upb_Message_GetMutableArray(msg, &field);
   if (arr) {
     if (size) *size = arr->size;
@@ -6665,11 +6675,11 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FieldOptions_mu
   }
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FieldOptions_resize_uninterpreted_option(google_protobuf_FieldOptions* msg, size_t size, upb_Arena* arena) {
-  upb_MiniTableField field = {999, UPB_SIZE(32, 40), 0, 5, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  upb_MiniTableField field = {999, UPB_SIZE(28, 32), 0, 4, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_FieldOptions_add_uninterpreted_option(google_protobuf_FieldOptions* msg, upb_Arena* arena) {
-  upb_MiniTableField field = {999, UPB_SIZE(32, 40), 0, 5, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  upb_MiniTableField field = {999, UPB_SIZE(28, 32), 0, 4, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, &field, arena);
   if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
     return NULL;
@@ -9792,24 +9802,133 @@ struct upb_Arena {
 
   /* When multiple arenas are fused together, each arena points to a parent
    * arena (root points to itself). The root tracks how many live arenas
-   * reference it. */
-  uint32_t refcount; /* Only used when a->parent == a */
-  struct upb_Arena* parent;
+   * reference it.
+   *
+   * The low bit is tagged:
+   *   0: pointer to parent
+   *   1: count, left shifted by one
+   */
+  UPB_ATOMIC uintptr_t parent_or_count;
 
   /* Linked list of blocks to free/cleanup. */
   _upb_MemBlock *freelist, *freelist_tail;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+UPB_INLINE bool _upb_Arena_IsTaggedRefcount(uintptr_t parent_or_count) {
+  return (parent_or_count & 1) == 1;
+}
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+UPB_INLINE bool _upb_Arena_IsTaggedPointer(uintptr_t parent_or_count) {
+  return (parent_or_count & 1) == 0;
+}
+
+UPB_INLINE uint32_t _upb_Arena_RefCountFromTagged(uintptr_t parent_or_count) {
+  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
+  return parent_or_count >> 1;
+}
+
+UPB_INLINE uintptr_t _upb_Arena_TaggedFromRefcount(uint32_t refcount) {
+  uintptr_t parent_or_count = (((uintptr_t)refcount) << 1) | 1;
+  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
+  return parent_or_count;
+}
+
+UPB_INLINE upb_Arena* _upb_Arena_PointerFromTagged(uintptr_t parent_or_count) {
+  UPB_ASSERT(_upb_Arena_IsTaggedPointer(parent_or_count));
+  return (upb_Arena*)parent_or_count;
+}
+
+UPB_INLINE uintptr_t _upb_Arena_TaggedFromPointer(upb_Arena* a) {
+  uintptr_t parent_or_count = (uintptr_t)a;
+  UPB_ASSERT(_upb_Arena_IsTaggedPointer(parent_or_count));
+  return parent_or_count;
+}
 
 
 #endif /* UPB_MEM_ARENA_INTERNAL_H_ */
+
+#ifndef UPB_PORT_ATOMIC_H_
+#define UPB_PORT_ATOMIC_H_
+
+
+#ifdef UPB_USE_C11_ATOMICS
+
+#include <stdatomic.h>
+#include <stdbool.h>
+
+UPB_INLINE void upb_Atomic_Init(_Atomic uintptr_t* addr, uintptr_t val) {
+  atomic_init(addr, val);
+}
+
+UPB_INLINE uintptr_t upb_Atomic_LoadAcquire(_Atomic uintptr_t* addr) {
+  return atomic_load_explicit(addr, memory_order_acquire);
+}
+
+UPB_INLINE void upb_Atomic_StoreRelaxed(_Atomic uintptr_t* addr,
+                                        uintptr_t val) {
+  atomic_store_explicit(addr, val, memory_order_relaxed);
+}
+
+UPB_INLINE void upb_Atomic_AddRelease(_Atomic uintptr_t* addr, uintptr_t val) {
+  atomic_fetch_add_explicit(addr, val, memory_order_release);
+}
+
+UPB_INLINE void upb_Atomic_SubRelease(_Atomic uintptr_t* addr, uintptr_t val) {
+  atomic_fetch_sub_explicit(addr, val, memory_order_release);
+}
+
+UPB_INLINE uintptr_t upb_Atomic_ExchangeAcqRel(_Atomic uintptr_t* addr,
+                                               uintptr_t val) {
+  return atomic_exchange_explicit(addr, val, memory_order_acq_rel);
+}
+
+UPB_INLINE bool upb_Atomic_CompareExchangeStrongAcqRel(_Atomic uintptr_t* addr,
+                                                       uintptr_t* expected,
+                                                       uintptr_t desired) {
+  return atomic_compare_exchange_strong_explicit(
+      addr, expected, desired, memory_order_release, memory_order_acquire);
+}
+
+#else  // !UPB_USE_C11_ATOMICS
+
+UPB_INLINE void upb_Atomic_Init(uintptr_t* addr, uintptr_t val) { *addr = val; }
+
+UPB_INLINE uintptr_t upb_Atomic_LoadAcquire(uintptr_t* addr) { return *addr; }
+
+UPB_INLINE void upb_Atomic_StoreRelaxed(uintptr_t* addr, uintptr_t val) {
+  *addr = val;
+}
+
+UPB_INLINE void upb_Atomic_AddRelease(uintptr_t* addr, uintptr_t val) {
+  *addr += val;
+}
+
+UPB_INLINE void upb_Atomic_SubRelease(uintptr_t* addr, uintptr_t val) {
+  *addr -= val;
+}
+
+UPB_INLINE uintptr_t upb_Atomic_ExchangeAcqRel(uintptr_t* addr, uintptr_t val) {
+  uintptr_t ret = *addr;
+  *addr = val;
+  return ret;
+}
+
+UPB_INLINE bool upb_Atomic_CompareExchangeStrongAcqRel(uintptr_t* addr,
+                                                       uintptr_t* expected,
+                                                       uintptr_t desired) {
+  if (*addr == *expected) {
+    *addr = desired;
+    return true;
+  } else {
+    *expected = *addr;
+    return false;
+  }
+}
+
+#endif
+
+
+#endif  // UPB_PORT_ATOMIC_H_
 
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
@@ -10130,17 +10249,6 @@ UPB_INLINE char _upb_FromBase92(uint8_t ch) {
   extern const int8_t _kUpb_FromBase92[];
   if (' ' > ch || ch > '~') return -1;
   return _kUpb_FromBase92[ch - ' '];
-}
-
-UPB_INLINE bool _upb_FieldType_IsPackable(upb_FieldType type) {
-  // clang-format off
-  const unsigned kUnpackableTypes =
-      (1 << kUpb_FieldType_String) |
-      (1 << kUpb_FieldType_Bytes) |
-      (1 << kUpb_FieldType_Message) |
-      (1 << kUpb_FieldType_Group);
-  // clang-format on
-  return (1 << type) & ~kUnpackableTypes;
 }
 
 #ifdef __cplusplus
@@ -10948,3 +11056,5 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME
 #undef UPB_DESC
 #undef UPB_IS_GOOGLE3
+#undef UPB_ATOMIC
+#undef UPB_USE_C11_ATOMICS
