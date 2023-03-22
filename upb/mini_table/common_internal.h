@@ -102,17 +102,6 @@ UPB_INLINE char _upb_FromBase92(uint8_t ch) {
   return _kUpb_FromBase92[ch - ' '];
 }
 
-UPB_INLINE bool _upb_FieldType_IsPackable(upb_FieldType type) {
-  // clang-format off
-  const unsigned kUnpackableTypes =
-      (1 << kUpb_FieldType_String) |
-      (1 << kUpb_FieldType_Bytes) |
-      (1 << kUpb_FieldType_Message) |
-      (1 << kUpb_FieldType_Group);
-  // clang-format on
-  return (1 << type) & ~kUnpackableTypes;
-}
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

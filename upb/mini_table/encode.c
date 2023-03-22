@@ -203,7 +203,7 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
     // are bit flags).
     encoded_type += kUpb_EncodedType_RepeatedBase;
 
-    if (_upb_FieldType_IsPackable(type)) {
+    if (upb_FieldType_IsPackable(type)) {
       bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
       bool default_is_packed = in->state.msg_state.msg_modifiers &
                                kUpb_MessageModifier_DefaultIsPacked;

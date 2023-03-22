@@ -28,6 +28,7 @@
 #ifndef UPB_MINI_TABLE_ENCODE_INTERNAL_H_
 #define UPB_MINI_TABLE_ENCODE_INTERNAL_H_
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/common.h"
 
 // Must be last.

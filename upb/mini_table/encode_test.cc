@@ -25,6 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <string_view>
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_set.h"
@@ -208,7 +211,7 @@ TEST(MiniTablePlatformIndependentTest, Base92Roundtrip) {
 
 TEST(MiniTablePlatformIndependentTest, IsTypePackable) {
   for (int i = 1; i <= protobuf::FieldDescriptor::MAX_TYPE; i++) {
-    EXPECT_EQ(_upb_FieldType_IsPackable(static_cast<upb_FieldType>(i)),
+    EXPECT_EQ(upb_FieldType_IsPackable(static_cast<upb_FieldType>(i)),
               protobuf::FieldDescriptor::IsTypePackable(
                   static_cast<protobuf::FieldDescriptor::Type>(i)));
   }

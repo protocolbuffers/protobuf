@@ -156,7 +156,7 @@ static bool upb_MiniTable_HasSub(upb_MiniTableField* field,
 
 static bool upb_MtDecoder_FieldIsPackable(upb_MiniTableField* field) {
   return (field->mode & kUpb_FieldMode_Array) &&
-         _upb_FieldType_IsPackable(field->descriptortype);
+         upb_FieldType_IsPackable(field->descriptortype);
 }
 
 static void upb_MiniTable_SetTypeAndSub(upb_MiniTableField* field,
