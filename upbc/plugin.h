@@ -163,8 +163,8 @@ class Plugin {
   std::string ReadAllStdinBinary() {
     std::string data;
 #ifdef _WIN32
-    setmode(STDIN_FILENO, _O_BINARY);
-    setmode(STDOUT_FILENO, _O_BINARY);
+    _setmode(_fileno(stdin), _O_BINARY);
+    _setmode(_fileno(stdout), _O_BINARY);
 #endif
     char buf[4096];
     while (size_t len = fread(buf, 1, sizeof(buf), stdin)) {
