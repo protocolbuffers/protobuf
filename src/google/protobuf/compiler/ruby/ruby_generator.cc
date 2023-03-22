@@ -236,9 +236,13 @@ void EndPackageModules(int levels, io::Printer* printer) {
   }
 }
 
-std::string SerializedDescriptor(const FileDescriptor* file) {
+std::string SerializedDescriptor(const FileDescriptor* file,
+                                 bool strip_dependencies) {
   FileDescriptorProto file_proto;
   file->CopyTo(&file_proto);
+  if (strip_dependencies) {
+    file_proto.clear_dependency();
+  }
   std::string file_data;
   file_proto.SerializeToString(&file_data);
   return file_data;
@@ -247,10 +251,27 @@ std::string SerializedDescriptor(const FileDescriptor* file) {
 bool GenerateBinaryDescriptor(const FileDescriptor* file, io::Printer* printer,
                               std::string* error) {
   printer->Print(R"(descriptor_data = "$data$")", "data",
-                 absl::CHexEscape(SerializedDescriptor(file)));
+                 absl::CHexEscape(SerializedDescriptor(file, false)));
   printer->Print(
-      "\nGoogle::Protobuf::DescriptorPool.generated_pool.add_serialized_file("
-      "descriptor_data)\n\n");
+      "\nbegin\n"
+      "  Google::Protobuf::DescriptorPool.generated_pool.add_serialized_file("
+      "descriptor_data)\n"
+      "rescue TypeError => e\n"
+      "  legacy_descriptor = \"$legacy_descriptor$\"\n"
+      "  "
+      "Google::Protobuf::DescriptorPool.generated_pool.add_serialized_file("
+      "legacy_descriptor)\n"
+      "  warn \"Warning: Protobuf detected import path issue while loading "
+      "generated file #{__FILE__}.  An import was missing, but this is "
+      "probably "
+      "because it was loaded under a different name.  To fix this, please "
+      "check your proto path "
+      "on your protoc invocations and ensure that each import always has the "
+      "same file name.  This will "
+      "become an error in the next major version. "
+      "Original error: #{e}\"\n"
+      "end\n",
+      "legacy_descriptor", absl::CHexEscape(SerializedDescriptor(file, true)));
   return true;
 }
 

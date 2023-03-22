@@ -112,7 +112,7 @@ internal_ruby_proto_library(
     name = "test_ruby_protos",
     srcs = ["//ruby/tests:test_protos"],
     deps = ["//:well_known_ruby_protos"],
-    includes = ["."],
+    includes = [".", "src", "ruby/tests"],
     visibility = [
         "//ruby:__subpackages__",
     ],

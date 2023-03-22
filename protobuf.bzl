@@ -1,5 +1,4 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library")
@@ -542,9 +541,7 @@ def internal_ruby_proto_library(
         deps = deps,
         testonly = testonly,
         visibility = visibility,
-        # ruby_library() uses workspace-relative rather than package-relative
-        # paths, so we must convert here.
-        includes = [paths.join(native.package_name(), inc) for inc in includes],
+        includes = includes,
         **kwargs
     )
 
