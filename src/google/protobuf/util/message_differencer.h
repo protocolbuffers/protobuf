@@ -56,7 +56,6 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
-#include "absl/types/span.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
@@ -773,17 +772,17 @@ class PROTOBUF_EXPORT MessageDifferencer {
                           const FieldDescriptor* field2);
 
   // Retrieve all the set fields, including extensions.
-  class TemporaryArray;
-  TemporaryArray RetrieveFields(const Message& message, bool base_message);
+  FieldDescriptorArray RetrieveFields(const Message& message,
+                                      bool base_message);
 
   // Combine the two lists of fields into the combined_fields output vector.
   // All fields present in both lists will always be included in the combined
   // list.  Fields only present in one of the lists will only appear in the
   // combined list if the corresponding fields_scope option is set to FULL.
-  TemporaryArray CombineFields(absl::Span<const FieldDescriptor* const> fields1,
-                               Scope fields1_scope,
-                               absl::Span<const FieldDescriptor* const> fields2,
-                               Scope fields2_scope);
+  FieldDescriptorArray CombineFields(const FieldDescriptorArray& fields1,
+                                     Scope fields1_scope,
+                                     const FieldDescriptorArray& fields2,
+                                     Scope fields2_scope);
 
   // Internal version of the Compare method which performs the actual
   // comparison. The parent_fields vector is a vector containing field
@@ -803,16 +802,16 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // CompareWithFieldsInternal.
   bool CompareRequestedFieldsUsingSettings(
       const Message& message1, const Message& message2, int unpacked_any,
-      absl::Span<const FieldDescriptor* const> message1_fields,
-      absl::Span<const FieldDescriptor* const> message2_fields,
+      const FieldDescriptorArray& message1_fields,
+      const FieldDescriptorArray& message2_fields,
       std::vector<SpecificField>* parent_fields);
 
   // Compares the specified messages with the specified field lists.
-  bool CompareWithFieldsInternal(
-      const Message& message1, const Message& message2, int unpacked_any,
-      absl::Span<const FieldDescriptor* const> message1_fields,
-      absl::Span<const FieldDescriptor* const> message2_fields,
-      std::vector<SpecificField>* parent_fields);
+  bool CompareWithFieldsInternal(const Message& message1,
+                                 const Message& message2, int unpacked_any,
+                                 const FieldDescriptorArray& message1_fields,
+                                 const FieldDescriptorArray& message2_fields,
+                                 std::vector<SpecificField>* parent_fields);
 
   // Compares the repeated fields, and report the error.
   bool CompareRepeatedField(const Message& message1, const Message& message2,
@@ -954,42 +953,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
   std::vector<std::unique_ptr<IgnoreCriteria>> ignore_criteria_;
   // Reused multiple times in RetrieveFields to avoid extra allocations
   std::vector<const FieldDescriptor*> tmp_message_fields_;
-
-  // We use a manual stack of field descriptors to speed up the code.
-  // This class went through a few iterations:
-  //  - The initial implementation had std::vector. The continuous memory
-  //    allocation/deallocation slowed down the code.
-  //  - It changed to use google::protobuf::Arena for all the arrays, but this caused
-  //    unbounded memory growth on large messages. It had to be rolled back.
-  //  - It changed to use FixedArray to avoid both of the problems from above,
-  //    but it caused stack frame sizes to grow significantly, causing stack
-  //    overflow on deep messages.
-  //
-  // The current implementation uses a manual stack with large blocks:
-  //  - Amortizes memory allocation. The large blocks mean small allocations are
-  //    bundled together.
-  //  - Memory is returned to the descriptor stack via RAII. This prevents
-  //    unbounded growth and allow for memory reuse reducing allocations
-  //    further.
-  //  - The memory is allocated in the heap, with a bit of stack for the RAII
-  //    object. This reduces stack frame bloat.
-  class DescriptorStack {
-   public:
-    TemporaryArray Create(int size);
-
-    void Return(absl::Span<const FieldDescriptor*> data);
-
-   private:
-    struct Block {
-      std::unique_ptr<const FieldDescriptor*[]> data;
-      int space() const { return capacity - size; }
-      int capacity;
-      int size;
-    };
-    std::vector<Block> blocks_;
-    size_t next_ = 0;
-  };
-  DescriptorStack descriptor_stack_;
 
   absl::flat_hash_set<const FieldDescriptor*> ignored_fields_;
 
