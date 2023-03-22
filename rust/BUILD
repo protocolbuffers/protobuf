@@ -1,12 +1,11 @@
 # Protobuf Rust runtime packages.
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
-load("//third_party/bazel_skylib/rules:common_settings.bzl", "string_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 
 package(
-    default_applicable_licenses = ["//third_party/protobuf:license"],
     default_visibility = ["//src/google/protobuf:__subpackages__"],
 )
 

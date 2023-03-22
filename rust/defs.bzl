@@ -3,7 +3,7 @@
 Disclaimer: This project is experimental, under heavy development, and should not
 be used yet."""
 
-load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", "cc_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load(
     "//rust:aspects.bzl",
     "RustProtoInfo",
