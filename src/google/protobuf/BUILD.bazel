@@ -168,6 +168,7 @@ proto_library(
 
 cc_library(
     name = "port_def",
+    srcs = ["port.cc"],
     hdrs = [
         "port.h",
         "port_def.inc",
@@ -180,6 +181,42 @@ cc_library(
     ],
     deps = [
         "@com_google_absl//absl/meta:type_traits",
+    ],
+)
+
+cc_library(
+    name = "varint_shuffle",
+    hdrs = ["varint_shuffle.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [":port_def"],
+)
+
+cc_test(
+    name = "varint_shuffle_test",
+    srcs = ["varint_shuffle_test.cc"],
+    deps = [
+        ":port_def",
+        ":varint_shuffle",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "port_test",
+    srcs = ["port_test.cc"],
+    deps = [
+        ":port_def",
+        ":varint_shuffle",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -361,6 +398,7 @@ cc_library(
         ":arena_align",
         ":arena_config",
         ":string_block",
+        ":varint_shuffle",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/container:btree",
@@ -487,12 +525,12 @@ cc_library(
     copts = COPTS,
     include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    visibility = ["//:__subpackages__"],
     deps = [
-        ":protobuf_nowkt",
         ":port_def",
+        ":protobuf_nowkt",
         "@com_google_absl//absl/strings",
     ],
-    visibility = ["//:__subpackages__"]
 )
 
 filegroup(

@@ -630,6 +630,18 @@ namespace Google.Protobuf
             Assert.AreEqual(expectedJson, JsonFormatter.Default.Format(populated));
         }
 
+        // See See https://github.com/protocolbuffers/protobuf/issues/11987
+        [Test]
+        public void JsonNamePriority()
+        {
+            // This tests both the formatter and the parser, but the issue was when parsing.
+            var original = new Issue11987Message { A = 10, B = 20, C = 30 };
+            var json = JsonFormatter.Default.Format(original);
+            AssertJson("{ 'b': 10, 'a': 20, 'd': 30 }", json);
+            var parsed = Issue11987Message.Parser.ParseJson(json);
+            Assert.AreEqual(original, parsed);
+        }
+
         // Sanity tests for WriteValue. Not particularly comprehensive, as it's all covered above already,
         // as FormatMessage uses WriteValue.
 

@@ -951,10 +951,17 @@ void ParseFunctionGenerator::GenerateStrings(Formatter& format,
                                              const FieldDescriptor* field,
                                              bool check_utf8) {
   FieldOptions::CType ctype = FieldOptions::STRING;
-  if (!options_.opensource_runtime) {
-    // Open source doesn't support other ctypes;
-    ctype = field->options().ctype();
+
+  if (!field->is_repeated() && field->type() == FieldDescriptor::TYPE_BYTES &&
+      field->options().ctype() == FieldOptions::CORD) {
+    ctype = FieldOptions::CORD;
+  } else {
+    if (!options_.opensource_runtime) {
+      // Open source doesn't support other ctypes;
+      ctype = field->options().ctype();
+    }
   }
+
   if (!field->is_repeated() && !options_.opensource_runtime &&
       GetOptimizeFor(field->file(), options_) != FileOptions::LITE_RUNTIME &&
       // For now only use arena string for strings with empty defaults.

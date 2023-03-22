@@ -1821,6 +1821,35 @@ const SourceCodeInfo_Location* FileDescriptorTables::GetSourceLocation(
 
 DescriptorPool::ErrorCollector::~ErrorCollector() {}
 
+absl::string_view DescriptorPool::ErrorCollector::ErrorLocationName(
+    ErrorLocation location) {
+  switch (location) {
+    case NAME:
+      return "NAME";
+    case NUMBER:
+      return "NUMBER";
+    case TYPE:
+      return "TYPE";
+    case EXTENDEE:
+      return "EXTENDEE";
+    case DEFAULT_VALUE:
+      return "DEFAULT_VALUE";
+    case OPTION_NAME:
+      return "OPTION_NAME";
+    case OPTION_VALUE:
+      return "OPTION_VALUE";
+    case INPUT_TYPE:
+      return "INPUT_TYPE";
+    case OUTPUT_TYPE:
+      return "OUTPUT_TYPE";
+    case IMPORT:
+      return "IMPORT";
+    case OTHER:
+      return "OTHER";
+  }
+  return "UNKNOWN";
+}
+
 DescriptorPool::DescriptorPool()
     : mutex_(nullptr),
       fallback_database_(nullptr),
@@ -4118,6 +4147,14 @@ class DescriptorBuilder {
   void ValidateExtensionRangeOptions(
       const std::string& full_name, Descriptor::ExtensionRange* extension_range,
       const DescriptorProto_ExtensionRange& proto);
+  void ValidateExtensionMetadata(
+      const std::string& full_name,
+      const Descriptor::ExtensionRange& extension_range,
+      const DescriptorProto_ExtensionRange& proto);
+  void ValidateExtensionDeclaration(
+      const std::string& full_name,
+      const Descriptor::ExtensionRange& extension_range,
+      const DescriptorProto_ExtensionRange& proto);
   void ValidateServiceOptions(ServiceDescriptor* service,
                               const ServiceDescriptorProto& proto);
   void ValidateMethodOptions(MethodDescriptor* method,
@@ -5384,6 +5421,7 @@ struct IncrementWhenDestroyed {
 }  // namespace
 
 
+
 void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                      const Descriptor* parent,
                                      Descriptor* result,
@@ -5481,7 +5519,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                 name));
     }
   }
-
 
   // Check that fields aren't using reserved names or numbers and that they
   // aren't using extension numbers.
@@ -7155,6 +7192,7 @@ void DescriptorBuilder::ValidateEnumValueOptions(
     const EnumValueDescriptorProto& /* proto */) {
   // Nothing to do so far.
 }
+
 
 void DescriptorBuilder::ValidateExtensionRangeOptions(
     const std::string& full_name, Descriptor::ExtensionRange* extension_range,

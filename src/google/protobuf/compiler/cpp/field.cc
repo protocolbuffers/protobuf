@@ -180,7 +180,16 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return MakeSinguarMessageGenerator(field, options, scc);
     case FieldDescriptor::CPPTYPE_STRING:
-      return MakeSinguarStringGenerator(field, options, scc);
+      if (field->type() == FieldDescriptor::TYPE_BYTES &&
+          field->options().ctype() == FieldOptions::CORD) {
+        if (field->real_containing_oneof()) {
+          return MakeOneofCordGenerator(field, options, scc);
+        } else {
+          return MakeSingularCordGenerator(field, options, scc);
+        }
+      } else {
+        return MakeSinguarStringGenerator(field, options, scc);
+      }
     case FieldDescriptor::CPPTYPE_ENUM:
       return MakeSinguarEnumGenerator(field, options, scc);
     default:
