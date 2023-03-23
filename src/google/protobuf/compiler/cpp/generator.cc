@@ -191,8 +191,6 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     } else if (key == "experimental_tail_call_table_mode") {
       if (value == "never") {
         file_options.tctable_mode = Options::kTCTableNever;
-      } else if (value == "guarded") {
-        file_options.tctable_mode = Options::kTCTableGuarded;
       } else if (value == "always") {
         file_options.tctable_mode = Options::kTCTableAlways;
       } else {
