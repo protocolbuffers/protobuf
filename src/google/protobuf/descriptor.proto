@@ -127,6 +127,8 @@ message DescriptorProto {
   // Reserved field names, which may not be used by fields in the same message.
   // A given name may only be reserved once.
   repeated string reserved_name = 10;
+
+  optional string family_name = 999;
 }
 
 message ExtensionRangeOptions {
