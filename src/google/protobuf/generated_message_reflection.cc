@@ -3030,7 +3030,7 @@ static internal::TailCallParseFunc GetFastParseFunction(
   return it->second;
 }
 
-const internal::TcParseTableBase* Reflection::CreateTcParseTableForMessageSet()
+const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
     const {
   // ParseLoop can't parse message set wire format.
   // Create a dummy table that only exists to make TcParser::ParseLoop jump
@@ -3096,13 +3096,10 @@ void Reflection::PopulateTcParseEntries(
     TcParseTableBase::FieldEntry* entries) const {
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
-    if (field->options().weak()) {
-      // Weak fields are handled by the generated fallback function.
-      // (These are handled by legacy Google-internal logic.)
-      *entries = {};
-    } else if (field->type() == field->TYPE_ENUM &&
-               table_info.aux_entries[entry.aux_idx].type ==
-                   internal::TailCallTableInfo::kEnumValidator) {
+    ABSL_CHECK(!field->options().weak());
+    if (field->type() == field->TYPE_ENUM &&
+        table_info.aux_entries[entry.aux_idx].type ==
+            internal::TailCallTableInfo::kEnumValidator) {
       // Mini parse can't handle it. Fallback to reflection.
       *entries = {};
       table_info.aux_entries[entry.aux_idx] = {};
@@ -3178,7 +3175,13 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
 
   if (descriptor_->options().message_set_wire_format()) {
-    return CreateTcParseTableForMessageSet();
+    return CreateTcParseTableReflectionOnly();
+  }
+
+  for (int i = 0; i < descriptor_->field_count(); ++i) {
+    if (descriptor_->field(i)->options().weak()) {
+      return CreateTcParseTableReflectionOnly();
+    }
   }
 
   std::vector<const FieldDescriptor*> fields;
