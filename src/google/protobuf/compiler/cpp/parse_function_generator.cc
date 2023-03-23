@@ -152,20 +152,6 @@ void ParseFunctionGenerator::GenerateMethodDecls(io::Printer* printer) {
     return;
   }
   Formatter format(printer, variables_);
-  if (should_generate_tctable()) {
-    format.Outdent();
-    if (should_generate_guarded_tctable()) {
-      format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
-    }
-    format(
-        " private:\n"
-        "  static const char* Tct_ParseFallback(PROTOBUF_TC_PARAM_DECL);\n"
-        " public:\n");
-    if (should_generate_guarded_tctable()) {
-      format("#endif\n");
-    }
-    format.Indent();
-  }
   format(
       "const char* _InternalParse(const char* ptr, "
       "::$proto_ns$::internal::ParseContext* ctx) final;\n");
@@ -202,18 +188,8 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
     }
     return;
   }
-  if (should_generate_guarded_tctable()) {
-    format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n\n");
-  }
   if (need_parse_function) {
     GenerateTailcallParseFunction(format);
-  }
-  if (should_generate_guarded_tctable()) {
-    if (need_parse_function) {
-      format("\n#else  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n\n");
-      GenerateLoopingParseFunction(format);
-    }
-    format("\n#endif  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
   }
 }
 
@@ -278,11 +254,6 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
     return;
   }
   Formatter format(printer, variables_);
-  if (should_generate_guarded_tctable()) {
-    format.Outdent();
-    format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
-    format.Indent();
-  }
   auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
   format(
       "friend class ::$proto_ns$::internal::TcParser;\n"
@@ -292,11 +263,6 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
       tc_table_info_->aux_entries.size(),
       FieldNameDataSize(tc_table_info_->field_name_data),
       field_num_to_entry_table.size16());
-  if (should_generate_guarded_tctable()) {
-    format.Outdent();
-    format("#endif  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
-    format.Indent();
-  }
 }
 
 void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* printer) {
@@ -304,13 +270,7 @@ void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* printer) {
     return;
   }
   Formatter format(printer, variables_);
-  if (should_generate_guarded_tctable()) {
-    format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
-  }
   GenerateTailCallTable(format);
-  if (should_generate_guarded_tctable()) {
-    format("#endif  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
-  }
 }
 
 void ParseFunctionGenerator::GenerateLoopingParseFunction(Formatter& format) {

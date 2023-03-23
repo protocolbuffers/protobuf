@@ -824,12 +824,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #  endif
 #endif
 
-// Tail call table-driven parsing is enabled by default.
-#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED
-#error PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED was previously declared
-#endif
-#define PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED 1
-
 #ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
 #error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
 #endif
