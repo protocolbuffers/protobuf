@@ -36,6 +36,11 @@ LINK_OPTS = select({
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
     ],
+    "@platforms//os:macos": [
+        "-lpthread",
+        "-lm",
+        "-framework CoreFoundation",
+    ],
     "//conditions:default": [
         "-lpthread",
         "-lm",
