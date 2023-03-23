@@ -43,6 +43,11 @@ jobs:
         with:
           name: python-wheels
           path: wheels/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: requirements
+          # Tests shouldn't have access to the whole upb repo, upload the one file we need
+          path: python/requirements.txt
 
   test_wheels:
     name: Test Wheels
@@ -83,6 +88,11 @@ jobs:
         with:
           name: python-wheels
           path: wheels
+      - name: Download Requirements
+        uses: actions/download-artifact@v3
+        with:
+          name: requirements
+          path: requirements
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
@@ -98,8 +108,8 @@ jobs:
         run: pip install tzdata
         # Only needed on Windows, Linux ships with tzdata.
         if: ${{ contains(matrix.os, 'windows') }}
-      - name: Install numpy
-        run: pip install numpy
+      - name: Install requirements
+        run: pip install -r requirements/requirements.txt
       - name: Install Protobuf Binary Wheel
         run: pip install -vvv --no-index --find-links wheels protobuf
         if: ${{ matrix.type == 'binary' }}
