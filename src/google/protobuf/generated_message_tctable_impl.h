@@ -907,14 +907,6 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
   return ptr;
 }
 
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::Error(
-    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
-  (void)ctx;
-  (void)ptr;
-  SyncHasbits(msg, hasbits, table);
-  return nullptr;
-}
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
