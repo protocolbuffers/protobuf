@@ -2377,8 +2377,12 @@ static void SerializeMapKey(const NodeBase* node, MapTypeCard type_card,
             WireFormatLite::WriteSInt32(
                 1, static_cast<const KeyNode<uint32_t>*>(node)->key(),
                 &coded_output);
-          } else {
+          } else if (type_card.is_signed()) {
             WireFormatLite::WriteInt32(
+                1, static_cast<const KeyNode<uint32_t>*>(node)->key(),
+                &coded_output);
+          } else {
+            WireFormatLite::WriteUInt32(
                 1, static_cast<const KeyNode<uint32_t>*>(node)->key(),
                 &coded_output);
           }
@@ -2388,8 +2392,12 @@ static void SerializeMapKey(const NodeBase* node, MapTypeCard type_card,
             WireFormatLite::WriteSInt64(
                 1, static_cast<const KeyNode<uint64_t>*>(node)->key(),
                 &coded_output);
-          } else {
+          } else if (type_card.is_signed()) {
             WireFormatLite::WriteInt64(
+                1, static_cast<const KeyNode<uint64_t>*>(node)->key(),
+                &coded_output);
+          } else {
+            WireFormatLite::WriteUInt64(
                 1, static_cast<const KeyNode<uint64_t>*>(node)->key(),
                 &coded_output);
           }

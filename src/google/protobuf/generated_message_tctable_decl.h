@@ -173,18 +173,22 @@ class MapTypeCard {
   enum CppType { kBool, k32, k64, kString, kMessage };
   MapTypeCard() = default;
   constexpr MapTypeCard(WireFormatLite::WireType wiretype, CppType cpp_type,
-                        bool is_zigzag_utf8)
-      : data_(
-            static_cast<uint8_t>((static_cast<uint8_t>(wiretype) << 0) |
-                                 (static_cast<uint8_t>(cpp_type) << 3) |
-                                 (static_cast<uint8_t>(is_zigzag_utf8) << 6))) {
-  }
+                        bool is_zigzag_utf8, bool is_signed)
+      : data_(static_cast<uint8_t>((static_cast<uint8_t>(wiretype) << 0) |
+                                   (static_cast<uint8_t>(cpp_type) << 3) |
+                                   (static_cast<uint8_t>(is_zigzag_utf8) << 6) |
+                                   (static_cast<uint8_t>(is_signed) << 7))) {}
 
   WireFormatLite::WireType wiretype() const {
     return static_cast<WireFormatLite::WireType>((data_ >> 0) & 0x7);
   }
 
   CppType cpp_type() const { return static_cast<CppType>((data_ >> 3) & 0x7); }
+
+  bool is_signed() const {
+    ABSL_DCHECK(cpp_type() == CppType::k32 || cpp_type() == CppType::k64);
+    return static_cast<bool>(data_ >> 7);
+  }
 
   bool is_zigzag() const {
     ABSL_DCHECK(wiretype() == WireFormatLite::WIRETYPE_VARINT);
@@ -207,43 +211,51 @@ static_assert(sizeof(MapTypeCard) == sizeof(uint8_t), "");
 constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
   switch (type) {
     case WireFormatLite::TYPE_FLOAT:
+      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false, true};
     case WireFormatLite::TYPE_FIXED32:
+      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false, false};
     case WireFormatLite::TYPE_SFIXED32:
-      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false};
+      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false, true};
 
     case WireFormatLite::TYPE_DOUBLE:
+      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false, true};
     case WireFormatLite::TYPE_FIXED64:
+      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false, false};
     case WireFormatLite::TYPE_SFIXED64:
-      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false};
+      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false, true};
 
     case WireFormatLite::TYPE_BOOL:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::kBool, false};
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::kBool, false,
+              false};
 
     case WireFormatLite::TYPE_ENUM:
       // Enum validation is handled via `value_is_validated_enum` below.
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false, true};
     case WireFormatLite::TYPE_INT32:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false, true};
     case WireFormatLite::TYPE_UINT32:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false};
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false, false};
 
     case WireFormatLite::TYPE_INT64:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, false, true};
     case WireFormatLite::TYPE_UINT64:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, false};
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, false, false};
 
     case WireFormatLite::TYPE_SINT32:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, true};
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, true, true};
     case WireFormatLite::TYPE_SINT64:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, true};
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, true, true};
 
     case WireFormatLite::TYPE_STRING:
       return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kString,
-              true};
+              true, false};
     case WireFormatLite::TYPE_BYTES:
       return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kString,
-              false};
+              false, false};
 
     case WireFormatLite::TYPE_MESSAGE:
       return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kMessage,
-              false};
+              false, false};
 
     default:
       PROTOBUF_ASSUME(false);
