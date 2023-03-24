@@ -38,6 +38,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <new>
 #include <string>
 #include <type_traits>
