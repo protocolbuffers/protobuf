@@ -978,7 +978,8 @@ bool HasRepeatedFields(const FileDescriptor* file) {
 static bool IsStringPieceField(const FieldDescriptor* field,
                                const Options& options) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         EffectiveStringCType(field, options) == FieldOptions::STRING_PIECE;
+         internal::cpp::EffectiveStringCType(field) ==
+             FieldOptions::STRING_PIECE;
 }
 
 static bool HasStringPieceFields(const Descriptor* descriptor,
@@ -1001,7 +1002,7 @@ bool HasStringPieceFields(const FileDescriptor* file, const Options& options) {
 
 static bool IsCordField(const FieldDescriptor* field, const Options& options) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         EffectiveStringCType(field, options) == FieldOptions::CORD;
+         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
 }
 
 static bool HasCordFields(const Descriptor* descriptor,
@@ -1116,23 +1117,6 @@ bool IsStringOrMessage(const FieldDescriptor* field) {
 
   ABSL_LOG(FATAL) << "Can't get here.";
   return false;
-}
-
-FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
-                                         const Options& options) {
-  ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
-  if (options.opensource_runtime) {
-    // Open-source protobuf release only supports STRING ctype and CORD for
-    // sinuglar bytes.
-    if (field->type() == FieldDescriptor::TYPE_BYTES && !field->is_repeated() &&
-        field->options().ctype() == FieldOptions::CORD) {
-      return FieldOptions::CORD;
-    }
-    return FieldOptions::STRING;
-  } else {
-    // Google-internal supports all ctypes.
-    return field->options().ctype();
-  }
 }
 
 bool IsAnyMessage(const FileDescriptor* descriptor, const Options& options) {

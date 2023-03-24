@@ -1452,6 +1452,9 @@ class OneofTest : public testing::Test {
       case UNITTEST::TestOneof2::kFooLazyMessage:
         EXPECT_TRUE(message.has_foo_lazy_message());
         break;
+      case UNITTEST::TestOneof2::kFooBytesCord:
+        EXPECT_TRUE(message.has_foo_bytes_cord());
+        break;
       case UNITTEST::TestOneof2::FOO_NOT_SET:
         break;
     }
