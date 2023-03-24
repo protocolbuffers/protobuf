@@ -7765,6 +7765,7 @@ TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   EXPECT_TRUE(message_extension_desc->GetSourceLocation(&loc));
   EXPECT_EQ("44:5-44:41", PrintSourceLocation(loc));
 }
+
 TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
   // This one's a doozy. It checks every kind of option, including
   // extension range options.
