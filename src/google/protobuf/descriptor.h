@@ -2647,17 +2647,18 @@ PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
 
 // For a string field, returns the effective ctype.  If the actual ctype is
 // not supported, returns the default of STRING.
-template <typename FD = FieldDescriptor, typename FO = FieldOptions>
-typename FO::CType EffectiveStringCType(const FD* field) {
+template <typename FieldDesc = FieldDescriptor,
+          typename FieldOpts = FieldOptions>
+typename FieldOpts::CType EffectiveStringCType(const FieldDesc* field) {
   ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
   ABSL_DCHECK(!field->is_extension());
   // Open-source protobuf release only supports STRING ctype and CORD for
   // sinuglar bytes.
   if (field->type() == FieldDescriptor::TYPE_BYTES && !field->is_repeated() &&
-      field->options().ctype() == FO::CORD) {
-    return FO::CORD;
+      field->options().ctype() == FieldOpts::CORD) {
+    return FieldOpts::CORD;
   }
-  return FO::STRING;
+  return FieldOpts::STRING;
 }
 
 #ifndef SWIG
