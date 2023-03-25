@@ -264,6 +264,66 @@ TEST(RetentionTest, StripSourceRetentionOptions) {
                                                expected_options));
 }
 
+TEST(RetentionTest, StripSourceRetentionOptionsWithSourceCodeInfo) {
+  // The tests above make assertions against the generated code, but this test
+  // case directly examines the result of the StripSourceRetentionOptions()
+  // function instead.
+  std::string proto_file =
+      absl::Substitute(R"(
+      syntax = "proto2";
+
+      package google.protobuf.internal;
+
+      import "$0";
+
+      option (source_retention_option) = 123;
+      option (options) = {
+        i1: 123
+        i2: 456
+        c { s: "abc" }
+        rc { s: "abc" }
+      };
+      option (repeated_options) = {
+        i1: 111 i2: 222
+      };
+
+      message Options {
+        optional int32 i1 = 1 [retention = RETENTION_SOURCE];
+        optional int32 i2 = 2;
+        message ChildMessage {
+          optional string s = 1 [retention = RETENTION_SOURCE];
+        }
+        optional ChildMessage c = 3;
+        repeated ChildMessage rc = 4;
+      }
+
+      extend google.protobuf.FileOptions {
+        optional int32 source_retention_option = 50000 [retention = RETENTION_SOURCE];
+        optional Options options = 50001;
+        repeated Options repeated_options = 50002;
+      })",
+                       FileDescriptorSet::descriptor()->file()->name());
+  io::ArrayInputStream input_stream(proto_file.data(),
+                                    static_cast<int>(proto_file.size()));
+  io::ErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  FileDescriptorProto file_descriptor;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &file_descriptor));
+  file_descriptor.set_name("retention.proto");
+
+  DescriptorPool pool;
+  FileDescriptorProto descriptor_proto_descriptor;
+  FileDescriptorSet::descriptor()->file()->CopyTo(&descriptor_proto_descriptor);
+  pool.BuildFile(descriptor_proto_descriptor);
+  pool.BuildFile(file_descriptor);
+
+  FileDescriptorProto stripped_file = compiler::StripSourceRetentionOptions(
+      *pool.FindFileByName("retention.proto"),
+      /*include_source_code_info=*/true);
+  EXPECT_EQ(stripped_file.source_code_info().location_size(), 63);
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf
