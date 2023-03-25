@@ -515,6 +515,7 @@ cc_library(
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
+        "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
@@ -771,7 +772,10 @@ cc_proto_library(
 
 cc_proto_library(
     name = "cc_test_protos",
-    visibility = ["//src/google/protobuf:__subpackages__"],
+    visibility = [
+        "//rust/test:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
     deps = [":test_protos"],
 )
 
