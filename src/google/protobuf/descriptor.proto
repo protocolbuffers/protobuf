@@ -133,6 +133,30 @@ message ExtensionRangeOptions {
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
+  message Declaration {
+    // The extension number declared within the extension range.
+    optional int32 number = 1;
+
+    // The fully-qualified name of the extension field. There must be a leading
+    // dot of the full name.
+    optional string full_name = 2;
+
+    // The fully-qualified type name of the extension field. Unlike
+    // Metadata.type, Declaration.type must have a leading dot for messages
+    // and enums.
+    optional string type = 3;
+
+    // If true, indicates that the extension must be defined as repeated.
+    // Otherwise the extension must be defined as optional.
+    optional bool is_repeated = 4;
+  }
+
+  // go/protobuf-stripping-extension-declarations
+  // Like Metadata, but we use a repeated field to hold all extension
+  // declarations. This should avoid the size increases of transforming a large
+  // extension range into small ranges in generated binaries.
+  repeated Declaration declaration = 2 [retention = RETENTION_SOURCE];
+
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
 }
