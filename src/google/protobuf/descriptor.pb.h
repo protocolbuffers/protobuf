@@ -79,6 +79,9 @@ PROTOBUF_EXPORT extern EnumValueOptionsDefaultTypeInternal _EnumValueOptions_def
 class ExtensionRangeOptions;
 struct ExtensionRangeOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
+class ExtensionRangeOptions_Declaration;
+struct ExtensionRangeOptions_DeclarationDefaultTypeInternal;
+PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationDefaultTypeInternal _ExtensionRangeOptions_Declaration_default_instance_;
 class FieldDescriptorProto;
 struct FieldDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
@@ -151,6 +154,8 @@ template <>
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::EnumValueOptions* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::EnumValueOptions>(Arena*);
 template <>
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions>(Arena*);
+template <>
+PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration>(Arena*);
 template <>
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>(Arena*);
 template <>
@@ -1771,6 +1776,221 @@ class PROTOBUF_EXPORT DescriptorProto final :
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };// -------------------------------------------------------------------
 
+class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions.Declaration) */ {
+ public:
+  inline ExtensionRangeOptions_Declaration() : ExtensionRangeOptions_Declaration(nullptr) {}
+  ~ExtensionRangeOptions_Declaration() override;
+  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from);
+  ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
+    : ExtensionRangeOptions_Declaration() {
+    *this = ::std::move(from);
+  }
+
+  inline ExtensionRangeOptions_Declaration& operator=(const ExtensionRangeOptions_Declaration& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ExtensionRangeOptions_Declaration& operator=(ExtensionRangeOptions_Declaration&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const ExtensionRangeOptions_Declaration& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const ExtensionRangeOptions_Declaration* internal_default_instance() {
+    return reinterpret_cast<const ExtensionRangeOptions_Declaration*>(
+               &_ExtensionRangeOptions_Declaration_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  friend void swap(ExtensionRangeOptions_Declaration& a, ExtensionRangeOptions_Declaration& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ExtensionRangeOptions_Declaration* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ExtensionRangeOptions_Declaration* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  ExtensionRangeOptions_Declaration* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<ExtensionRangeOptions_Declaration>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const ExtensionRangeOptions_Declaration& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const ExtensionRangeOptions_Declaration& from) {
+    ExtensionRangeOptions_Declaration::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  ::size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ExtensionRangeOptions_Declaration* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::absl::string_view FullMessageName() {
+    return "google.protobuf.ExtensionRangeOptions.Declaration";
+  }
+  protected:
+  explicit ExtensionRangeOptions_Declaration(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFullNameFieldNumber = 2,
+    kTypeFieldNumber = 3,
+    kNumberFieldNumber = 1,
+    kIsRepeatedFieldNumber = 4,
+  };
+  // optional string full_name = 2;
+  bool has_full_name() const;
+  void clear_full_name() ;
+  const std::string& full_name() const;
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_full_name(Arg_&& arg, Args_... args);
+  std::string* mutable_full_name();
+  PROTOBUF_NODISCARD std::string* release_full_name();
+  void set_allocated_full_name(std::string* ptr);
+
+  private:
+  const std::string& _internal_full_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(
+      const std::string& value);
+  std::string* _internal_mutable_full_name();
+
+  public:
+  // optional string type = 3;
+  bool has_type() const;
+  void clear_type() ;
+  const std::string& type() const;
+
+
+
+
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_type(Arg_&& arg, Args_... args);
+  std::string* mutable_type();
+  PROTOBUF_NODISCARD std::string* release_type();
+  void set_allocated_type(std::string* ptr);
+
+  private:
+  const std::string& _internal_type() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type(
+      const std::string& value);
+  std::string* _internal_mutable_type();
+
+  public:
+  // optional int32 number = 1;
+  bool has_number() const;
+  void clear_number() ;
+  ::int32_t number() const;
+  void set_number(::int32_t value);
+
+  private:
+  ::int32_t _internal_number() const;
+  void _internal_set_number(::int32_t value);
+
+  public:
+  // optional bool is_repeated = 4;
+  bool has_is_repeated() const;
+  void clear_is_repeated() ;
+  bool is_repeated() const;
+  void set_is_repeated(bool value);
+
+  private:
+  bool _internal_is_repeated() const;
+  void _internal_set_is_repeated(bool value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions.Declaration)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr full_name_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr type_;
+    ::int32_t number_;
+    bool is_repeated_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
+};// -------------------------------------------------------------------
+
 class PROTOBUF_EXPORT ExtensionRangeOptions final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions) */ {
  public:
@@ -1826,7 +2046,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
                &_ExtensionRangeOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   friend void swap(ExtensionRangeOptions& a, ExtensionRangeOptions& b) {
     a.Swap(&b);
@@ -1895,11 +2115,32 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
 
   // nested types ----------------------------------------------------
 
+  typedef ExtensionRangeOptions_Declaration Declaration;
+
   // accessors -------------------------------------------------------
 
   enum : int {
+    kDeclarationFieldNumber = 2,
     kUninterpretedOptionFieldNumber = 999,
   };
+  // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
+  int declaration_size() const;
+  private:
+  int _internal_declaration_size() const;
+
+  public:
+  void clear_declaration() ;
+  ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* mutable_declaration(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration >*
+      mutable_declaration();
+  private:
+  const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration& _internal_declaration(int index) const;
+  ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* _internal_add_declaration();
+  public:
+  const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration& declaration(int index) const;
+  ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* add_declaration();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration >&
+      declaration() const;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
   private:
@@ -2079,6 +2320,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::internal::ExtensionSet _extensions_;
 
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration > declaration_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption > uninterpreted_option_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -2141,7 +2383,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
                &_FieldDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   friend void swap(FieldDescriptorProto& a, FieldDescriptorProto& b) {
     a.Swap(&b);
@@ -2537,7 +2779,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
                &_OneofDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   friend void swap(OneofDescriptorProto& a, OneofDescriptorProto& b) {
     a.Swap(&b);
@@ -2719,7 +2961,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
                &_EnumDescriptorProto_EnumReservedRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   friend void swap(EnumDescriptorProto_EnumReservedRange& a, EnumDescriptorProto_EnumReservedRange& b) {
     a.Swap(&b);
@@ -2888,7 +3130,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
                &_EnumDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   friend void swap(EnumDescriptorProto& a, EnumDescriptorProto& b) {
     a.Swap(&b);
@@ -3142,7 +3384,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
                &_EnumValueDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   friend void swap(EnumValueDescriptorProto& a, EnumValueDescriptorProto& b) {
     a.Swap(&b);
@@ -3337,7 +3579,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
                &_ServiceDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   friend void swap(ServiceDescriptorProto& a, ServiceDescriptorProto& b) {
     a.Swap(&b);
@@ -3539,7 +3781,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
                &_MethodDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   friend void swap(MethodDescriptorProto& a, MethodDescriptorProto& b) {
     a.Swap(&b);
@@ -3793,7 +4035,7 @@ class PROTOBUF_EXPORT FileOptions final :
                &_FileOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   friend void swap(FileOptions& a, FileOptions& b) {
     a.Swap(&b);
@@ -4490,7 +4732,7 @@ class PROTOBUF_EXPORT MessageOptions final :
                &_MessageOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    15;
 
   friend void swap(MessageOptions& a, MessageOptions& b) {
     a.Swap(&b);
@@ -4871,7 +5113,7 @@ class PROTOBUF_EXPORT FieldOptions final :
                &_FieldOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    16;
 
   friend void swap(FieldOptions& a, FieldOptions& b) {
     a.Swap(&b);
@@ -5430,7 +5672,7 @@ class PROTOBUF_EXPORT OneofOptions final :
                &_OneofOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    17;
 
   friend void swap(OneofOptions& a, OneofOptions& b) {
     a.Swap(&b);
@@ -5745,7 +5987,7 @@ class PROTOBUF_EXPORT EnumOptions final :
                &_EnumOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    18;
 
   friend void swap(EnumOptions& a, EnumOptions& b) {
     a.Swap(&b);
@@ -6100,7 +6342,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
                &_EnumValueOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    19;
 
   friend void swap(EnumValueOptions& a, EnumValueOptions& b) {
     a.Swap(&b);
@@ -6429,7 +6671,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
                &_ServiceOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    20;
 
   friend void swap(ServiceOptions& a, ServiceOptions& b) {
     a.Swap(&b);
@@ -6758,7 +7000,7 @@ class PROTOBUF_EXPORT MethodOptions final :
                &_MethodOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    21;
 
   friend void swap(MethodOptions& a, MethodOptions& b) {
     a.Swap(&b);
@@ -7121,7 +7363,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
                &_UninterpretedOption_NamePart_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    22;
 
   friend void swap(UninterpretedOption_NamePart& a, UninterpretedOption_NamePart& b) {
     a.Swap(&b);
@@ -7303,7 +7545,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
                &_UninterpretedOption_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    23;
 
   friend void swap(UninterpretedOption& a, UninterpretedOption& b) {
     a.Swap(&b);
@@ -7576,7 +7818,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
                &_SourceCodeInfo_Location_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    24;
 
   friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) {
     a.Swap(&b);
@@ -7841,7 +8083,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
                &_SourceCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    25;
 
   friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) {
     a.Swap(&b);
@@ -8005,7 +8247,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
                &_GeneratedCodeInfo_Annotation_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    25;
+    26;
 
   friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) {
     a.Swap(&b);
@@ -8254,7 +8496,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
                &_GeneratedCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    26;
+    27;
 
   friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) {
     a.Swap(&b);
@@ -9894,6 +10136,190 @@ inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* DescriptorProto::
 
 // -------------------------------------------------------------------
 
+// ExtensionRangeOptions_Declaration
+
+// optional int32 number = 1;
+inline bool ExtensionRangeOptions_Declaration::has_number() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline void ExtensionRangeOptions_Declaration::clear_number() {
+  _impl_.number_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000004u;
+}
+inline ::int32_t ExtensionRangeOptions_Declaration::number() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.number)
+  return _internal_number();
+}
+inline void ExtensionRangeOptions_Declaration::set_number(::int32_t value) {
+  _internal_set_number(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.number)
+}
+inline ::int32_t ExtensionRangeOptions_Declaration::_internal_number() const {
+  return _impl_.number_;
+}
+inline void ExtensionRangeOptions_Declaration::_internal_set_number(::int32_t value) {
+  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_.number_ = value;
+}
+
+// optional string full_name = 2;
+inline bool ExtensionRangeOptions_Declaration::has_full_name() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline void ExtensionRangeOptions_Declaration::clear_full_name() {
+  _impl_.full_name_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& ExtensionRangeOptions_Declaration::full_name() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
+  return _internal_full_name();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_full_name(Arg_&& arg,
+                                                     Args_... args) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.full_name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
+}
+inline std::string* ExtensionRangeOptions_Declaration::mutable_full_name() {
+  std::string* _s = _internal_mutable_full_name();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
+  return _s;
+}
+inline const std::string& ExtensionRangeOptions_Declaration::_internal_full_name() const {
+  return _impl_.full_name_.Get();
+}
+inline void ExtensionRangeOptions_Declaration::_internal_set_full_name(const std::string& value) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+
+
+  _impl_.full_name_.Set(value, GetArenaForAllocation());
+}
+inline std::string* ExtensionRangeOptions_Declaration::_internal_mutable_full_name() {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  return _impl_.full_name_.Mutable( GetArenaForAllocation());
+}
+inline std::string* ExtensionRangeOptions_Declaration::release_full_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
+  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* released = _impl_.full_name_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.full_name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
+}
+inline void ExtensionRangeOptions_Declaration::set_allocated_full_name(std::string* value) {
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+  _impl_.full_name_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.full_name_.IsDefault()) {
+          _impl_.full_name_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
+}
+
+// optional string type = 3;
+inline bool ExtensionRangeOptions_Declaration::has_type() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline void ExtensionRangeOptions_Declaration::clear_type() {
+  _impl_.type_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& ExtensionRangeOptions_Declaration::type() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.type)
+  return _internal_type();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_type(Arg_&& arg,
+                                                     Args_... args) {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_.type_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.type)
+}
+inline std::string* ExtensionRangeOptions_Declaration::mutable_type() {
+  std::string* _s = _internal_mutable_type();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.Declaration.type)
+  return _s;
+}
+inline const std::string& ExtensionRangeOptions_Declaration::_internal_type() const {
+  return _impl_.type_.Get();
+}
+inline void ExtensionRangeOptions_Declaration::_internal_set_type(const std::string& value) {
+  _impl_._has_bits_[0] |= 0x00000002u;
+
+
+  _impl_.type_.Set(value, GetArenaForAllocation());
+}
+inline std::string* ExtensionRangeOptions_Declaration::_internal_mutable_type() {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _impl_.type_.Mutable( GetArenaForAllocation());
+}
+inline std::string* ExtensionRangeOptions_Declaration::release_type() {
+  // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.Declaration.type)
+  if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  auto* released = _impl_.type_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.type_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
+}
+inline void ExtensionRangeOptions_Declaration::set_allocated_type(std::string* value) {
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  _impl_.type_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.type_.IsDefault()) {
+          _impl_.type_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.type)
+}
+
+// optional bool is_repeated = 4;
+inline bool ExtensionRangeOptions_Declaration::has_is_repeated() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline void ExtensionRangeOptions_Declaration::clear_is_repeated() {
+  _impl_.is_repeated_ = false;
+  _impl_._has_bits_[0] &= ~0x00000008u;
+}
+inline bool ExtensionRangeOptions_Declaration::is_repeated() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.is_repeated)
+  return _internal_is_repeated();
+}
+inline void ExtensionRangeOptions_Declaration::set_is_repeated(bool value) {
+  _internal_set_is_repeated(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.is_repeated)
+}
+inline bool ExtensionRangeOptions_Declaration::_internal_is_repeated() const {
+  return _impl_.is_repeated_;
+}
+inline void ExtensionRangeOptions_Declaration::_internal_set_is_repeated(bool value) {
+  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_.is_repeated_ = value;
+}
+
+// -------------------------------------------------------------------
+
 // ExtensionRangeOptions
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9934,6 +10360,46 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID:
 ExtensionRangeOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
   return _impl_.uninterpreted_option_;
+}
+
+// repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
+inline int ExtensionRangeOptions::_internal_declaration_size() const {
+  return _impl_.declaration_.size();
+}
+inline int ExtensionRangeOptions::declaration_size() const {
+  return _internal_declaration_size();
+}
+inline void ExtensionRangeOptions::clear_declaration() {
+  _impl_.declaration_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* ExtensionRangeOptions::mutable_declaration(int index) {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.declaration)
+  return _impl_.declaration_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration >*
+ExtensionRangeOptions::mutable_declaration() {
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.declaration)
+  return &_impl_.declaration_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration& ExtensionRangeOptions::_internal_declaration(int index) const {
+  return _impl_.declaration_.Get(index);
+}
+inline const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration& ExtensionRangeOptions::declaration(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.declaration)
+  return _internal_declaration(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* ExtensionRangeOptions::_internal_add_declaration() {
+  return _impl_.declaration_.Add();
+}
+inline ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* ExtensionRangeOptions::add_declaration() {
+  ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* _add = _internal_add_declaration();
+  // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.declaration)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration >&
+ExtensionRangeOptions::declaration() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.ExtensionRangeOptions.declaration)
+  return _impl_.declaration_;
 }
 
 // -------------------------------------------------------------------

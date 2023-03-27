@@ -3974,6 +3974,12 @@ class DescriptorBuilder {
   void SuggestFieldNumbers(FileDescriptor* file,
                            const FileDescriptorProto& proto);
 
+  // Checks that the extension field matches what is declared.
+  void CheckExtensionDeclaration(const FieldDescriptor& field,
+                                 const FieldDescriptorProto& proto,
+                                 absl::string_view declared_full_name,
+                                 absl::string_view declared_type_name,
+                                 bool is_repeated);
 
   // Must be run only after cross-linking.
   void InterpretOptions();
@@ -4148,6 +4154,11 @@ class DescriptorBuilder {
                                 const EnumValueDescriptorProto& proto);
   void ValidateExtensionRangeOptions(const DescriptorProto& proto,
                                      const Descriptor& message);
+  void ValidateExtensionDeclaration(
+      const std::string& full_name,
+      const RepeatedPtrField<ExtensionRangeOptions_Declaration>& declarations,
+      const DescriptorProto_ExtensionRange& proto,
+      absl::flat_hash_set<std::string>& full_name_set);
   void ValidateServiceOptions(ServiceDescriptor* service,
                               const ServiceDescriptorProto& proto);
   void ValidateMethodOptions(MethodDescriptor* method,
@@ -5413,6 +5424,13 @@ struct IncrementWhenDestroyed {
 
 }  // namespace
 
+namespace {
+static constexpr auto kNonMessageTypes = {
+    "double",   "float",    "int64",  "uint64", "int32",  "fixed32",
+    "fixed64",  "bool",     "string", "bytes",  "uint32", "enum",
+    "sfixed32", "sfixed64", "sint32", "sint64"};
+}  // namespace
+
 
 void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                      const Descriptor* parent,
@@ -6497,6 +6515,36 @@ void DescriptorBuilder::CrossLinkExtensionRange(
 }
 
 
+void DescriptorBuilder::CheckExtensionDeclaration(
+    const FieldDescriptor& field, const FieldDescriptorProto& proto,
+    absl::string_view declared_full_name, absl::string_view declared_type_name,
+    bool is_repeated) {
+  if (declared_type_name.empty() && declared_full_name.empty()) {
+    return;
+  }
+
+
+  if (!declared_full_name.empty()) {
+    std::string actual_full_name = absl::StrCat(".", field.full_name());
+    if (declared_full_name != actual_full_name) {
+      AddError(field.full_name(), proto,
+               DescriptorPool::ErrorCollector::EXTENDEE,
+               absl::Substitute(
+                   "\"$0\" extension field $1 is expected to have field name "
+                   "\"$2\", not \"$3\".",
+                   field.containing_type()->full_name(), field.number(),
+                   declared_full_name, actual_full_name));
+    }
+  }
+
+  if (is_repeated != field.is_repeated()) {
+    AddError(
+        field.full_name(), proto, DescriptorPool::ErrorCollector::EXTENDEE,
+        absl::Substitute("\"$0\" extension field $1 is expected to be $2.",
+                         field.containing_type()->full_name(), field.number(),
+                         is_repeated ? "repeated" : "optional"));
+  }
+}
 
 void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                                        const FieldDescriptorProto& proto) {
@@ -7130,6 +7178,26 @@ void DescriptorBuilder::ValidateFieldOptions(
              "option json_name is not allowed on extension fields.");
   }
 
+
+  // If this is a declared extension, validate that the actual name and type
+  // match the declaration.
+  if (field->is_extension()) {
+    const Descriptor::ExtensionRange* extension_range =
+        field->containing_type()->FindExtensionRangeContainingNumber(
+            field->number());
+
+    if (extension_range->options_ == nullptr) {
+      return;
+    }
+
+    for (const auto& declaration : extension_range->options_->declaration()) {
+      if (declaration.number() != field->number()) continue;
+      CheckExtensionDeclaration(*field, proto, declaration.full_name(),
+                                declaration.type(), declaration.is_repeated());
+      return;
+    }
+
+  }
 }
 
 void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
@@ -7167,6 +7235,67 @@ void DescriptorBuilder::ValidateEnumValueOptions(
   // Nothing to do so far.
 }
 
+namespace {
+// Validates that a fully-qualified symbol for extension declaration must
+// have a leading dot and valid identifiers.
+absl::optional<std::string> ValidateSymbolsForDeclaration(
+    absl::flat_hash_set<std::string> symbols) {
+  for (absl::string_view symbol : symbols) {
+    if (!absl::StartsWith(symbol, ".")) {
+      return absl::StrCat("\"", symbol,
+                          "\" must have a leading dot to indicate the "
+                          "fully-qualified scope.");
+    }
+    if (!ValidateQualifiedName(symbol)) {
+      return absl::StrCat("\"", symbol, "\" contains invalid identifiers.");
+    }
+  }
+  return absl::nullopt;
+}
+}  // namespace
+
+
+void DescriptorBuilder::ValidateExtensionDeclaration(
+    const std::string& full_name,
+    const RepeatedPtrField<ExtensionRangeOptions_Declaration>& declarations,
+    const DescriptorProto_ExtensionRange& proto,
+    absl::flat_hash_set<std::string>& full_name_set) {
+  absl::flat_hash_set<std::string> symbols;
+  for (const auto& declaration : declarations) {
+    if (declaration.number() < proto.start() ||
+        declaration.number() >= proto.end()) {
+      AddError(full_name, proto, DescriptorPool::ErrorCollector::NUMBER,
+               absl::Substitute("Extension declaration number $0 is not in the "
+                                "extension range.",
+                                declaration.number()));
+    }
+
+    if (!declaration.has_full_name() || !declaration.has_type()) {
+      AddError(
+          full_name, proto, DescriptorPool::ErrorCollector::EXTENDEE,
+          absl::StrCat("Extension declaration #", declaration.number(),
+                       " should have both \"full_name\" and \"type\" set."));
+    } else {
+      if (!full_name_set.insert(declaration.full_name()).second) {
+        AddError(declaration.full_name(), proto,
+                 DescriptorPool::ErrorCollector::NAME,
+                 absl::Substitute(
+                     "Extension field name \"$0\" is declared multiple times.",
+                     declaration.full_name()));
+        return;
+      }
+      symbols.insert(declaration.full_name());
+      if (std::find(std::begin(kNonMessageTypes), std::end(kNonMessageTypes),
+                    declaration.type()) == std::end(kNonMessageTypes)) {
+        symbols.insert(declaration.type());
+      }
+    }
+    absl::optional<std::string> err = ValidateSymbolsForDeclaration(symbols);
+    if (err.has_value()) {
+      AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME, *err);
+    }
+  }
+}
 
 void DescriptorBuilder::ValidateExtensionRangeOptions(
     const DescriptorProto& proto, const Descriptor& message) {
@@ -7174,6 +7303,8 @@ void DescriptorBuilder::ValidateExtensionRangeOptions(
       static_cast<int64_t>(message.options().message_set_wire_format()
                                ? std::numeric_limits<int32_t>::max()
                                : FieldDescriptor::kMaxNumber);
+  // Contains the full names of all declarations.
+  absl::flat_hash_set<std::string> declaration_full_name_set;
   for (int i = 0; i < message.extension_range_count(); i++) {
     const auto& range = *message.extension_range(i);
     if (range.end > max_extension_range + 1) {
@@ -7181,6 +7312,14 @@ void DescriptorBuilder::ValidateExtensionRangeOptions(
                DescriptorPool::ErrorCollector::NUMBER,
                absl::Substitute("Extension numbers cannot be greater than $0.",
                                 max_extension_range));
+    }
+    const auto& range_options = *range.options_;
+
+
+    if (!range_options.declaration().empty()) {
+      ValidateExtensionDeclaration(
+          message.full_name(), range_options.declaration(),
+          proto.extension_range(i), declaration_full_name_set);
     }
   }
 }
