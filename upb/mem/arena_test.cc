@@ -12,6 +12,9 @@
 #include "absl/synchronization/notification.h"
 #include "upb/upb.hpp"
 
+// Must be last.
+#include "upb/port/def.inc"
+
 namespace {
 
 static void decrement_int(void* ptr) {

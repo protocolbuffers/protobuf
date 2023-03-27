@@ -830,6 +830,7 @@ cc_test(
     name = "arena_test",
     srcs = ["upb/mem/arena_test.cc"],
     deps = [
+        ":port",
         ":upb",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/random:distributions",
