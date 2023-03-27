@@ -70,6 +70,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/compiler/cpp/test_bad_identifiers.pb.h"
 #include "google/protobuf/compiler/importer.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -129,9 +130,10 @@ TEST(GENERATED_DESCRIPTOR_TEST_NAME, IdenticalDescriptors) {
 
   // Test that descriptors are generated correctly by converting them to
   // FileDescriptorProtos and comparing.
-  FileDescriptorProto generated_descriptor_proto, parsed_descriptor_proto;
+  FileDescriptorProto generated_descriptor_proto;
   generated_descriptor->CopyTo(&generated_descriptor_proto);
-  parsed_descriptor->CopyTo(&parsed_descriptor_proto);
+  FileDescriptorProto parsed_descriptor_proto =
+    compiler::StripSourceRetentionOptions(*parsed_descriptor);
 
   EXPECT_EQ(parsed_descriptor_proto.DebugString(),
             generated_descriptor_proto.DebugString());

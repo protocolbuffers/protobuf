@@ -311,6 +311,7 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler:retention",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
