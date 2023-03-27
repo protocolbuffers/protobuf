@@ -58,6 +58,7 @@
 #include "google/protobuf/unittest_import_public.pb.h"
 #include "google/protobuf/wire_format.h"
 
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -3913,6 +3914,7 @@ TEST_F(SourceInfoTest, DocCommentsOneof) {
 }
 
 // ===================================================================
+
 
 
 }  // anonymous namespace
