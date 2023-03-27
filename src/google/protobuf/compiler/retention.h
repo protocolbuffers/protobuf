@@ -42,9 +42,11 @@ namespace protobuf {
 namespace compiler {
 
 // Returns a FileDescriptorProto for this file, with all RETENTION_SOURCE
-// options stripped out.
-PROTOC_EXPORT FileDescriptorProto
-StripSourceRetentionOptions(const FileDescriptor& file);
+// options stripped out. If include_source_code_info is true, this function
+// will also populate the source code info but strip out the parts of it
+// corresponding to source-retention options.
+PROTOC_EXPORT FileDescriptorProto StripSourceRetentionOptions(
+    const FileDescriptor& file, bool include_source_code_info = false);
 
 // The following functions take a descriptor and strip all source-retention
 // options from just the local entity (e.g. message, enum, field). Most code

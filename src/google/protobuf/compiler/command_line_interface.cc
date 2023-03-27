@@ -2635,12 +2635,10 @@ void CommandLineInterface::GetTransitiveDependencies(
 
   // Add this file.
   FileDescriptorProto* new_descriptor = output->Add();
-  *new_descriptor = StripSourceRetentionOptions(*file);
+  *new_descriptor =
+      StripSourceRetentionOptions(*file, include_source_code_info);
   if (include_json_name) {
     file->CopyJsonNameTo(new_descriptor);
-  }
-  if (include_source_code_info) {
-    file->CopySourceCodeInfoTo(new_descriptor);
   }
 }
 

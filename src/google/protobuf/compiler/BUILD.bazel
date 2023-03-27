@@ -328,6 +328,8 @@ cc_library(
     visibility = ["//src/google/protobuf:__subpackages__"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/types:span",
+        "@com_google_absl//absl/container:flat_hash_set",
     ],
 )
 
