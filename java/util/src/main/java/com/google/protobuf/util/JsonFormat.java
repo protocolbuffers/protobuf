@@ -465,7 +465,7 @@ public class JsonFormat {
      * @throws InvalidProtocolBufferException if the input is not valid JSON
      *         proto3 format or there are unknown fields in the input.
      */
-    public Message.Builder merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
+    public <T extends Message.Builder> T merge(String json, T builder) throws InvalidProtocolBufferException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
@@ -480,7 +480,7 @@ public class JsonFormat {
      *         format or there are unknown fields in the input
      * @throws IOException if reading from the input throws
      */
-    public Message.Builder merge(Reader json, Message.Builder builder) throws IOException {
+    public <T extends Message.Builder> T merge(Reader json, T builder) throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
