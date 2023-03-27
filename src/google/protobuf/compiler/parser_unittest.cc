@@ -50,6 +50,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
@@ -2421,11 +2422,29 @@ void StripFieldTypeName(FileDescriptorProto* file_proto) {
   }
 }
 
+void StripEmptyOptions(DescriptorProto& proto) {
+  for (auto& ext : *proto.mutable_extension_range()) {
+    if (ext.has_options() && ext.options().DebugString().empty()) {
+      ext.clear_options();
+    }
+  }
+}
+
+void StripEmptyOptions(FileDescriptorProto& file_proto) {
+  if (file_proto.message_type_size() == 0) {
+    return;
+  }
+  for (auto& msg : *file_proto.mutable_message_type()) {
+    StripEmptyOptions(msg);
+  }
+}
+
 TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   const FileDescriptor* original_file =
       protobuf_unittest::TestAllTypes::descriptor()->file();
   FileDescriptorProto expected;
   original_file->CopyTo(&expected);
+  StripEmptyOptions(expected);
 
   // Get the DebugString of the unittest.proto FileDecriptor, which includes
   // all other descriptor types
