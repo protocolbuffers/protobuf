@@ -199,6 +199,19 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
     EXPECT_FALSE(
         message.ParseFromBoundedZeroCopyStream(&stream, data.size() + 1));
   }
+
+  // Test bytes cord
+  {
+    UNITTEST::TestCord cord_message;
+    cord_message.set_optional_bytes_cord("bytes_cord");
+    EXPECT_TRUE(cord_message.SerializeToString(&data));
+    EXPECT_TRUE(cord_message.SerializeAsString() == data);
+  }
+  {
+    UNITTEST::TestCord cord_message;
+    EXPECT_TRUE(cord_message.ParseFromString(data));
+    EXPECT_EQ("bytes_cord", cord_message.optional_bytes_cord());
+  }
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {

@@ -712,6 +712,7 @@ class PROTOBUF_EXPORT WireFormatLite {
   static constexpr size_t kBoolSize = 1;
 
   static inline size_t StringSize(const std::string& value);
+  static inline size_t StringSize(const absl::Cord& value);
   static inline size_t BytesSize(const std::string& value);
   static inline size_t BytesSize(const absl::Cord& value);
 
@@ -1804,6 +1805,10 @@ inline size_t WireFormatLite::BytesSize(const std::string& value) {
 }
 
 inline size_t WireFormatLite::BytesSize(const absl::Cord& value) {
+  return LengthDelimitedSize(value.size());
+}
+
+inline size_t WireFormatLite::StringSize(const absl::Cord& value) {
   return LengthDelimitedSize(value.size());
 }
 
