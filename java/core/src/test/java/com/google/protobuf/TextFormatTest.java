@@ -44,6 +44,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.TextFormat.InvalidEscapeSequenceException;
 import com.google.protobuf.TextFormat.Parser.SingularOverwritePolicy;
+import com.google.protobuf.TextFormat.Parser.UnknownField;
 import com.google.protobuf.testing.proto.TestProto3Optional;
 import com.google.protobuf.testing.proto.TestProto3Optional.NestedEnum;
 import any_test.AnyTestProto.TestAny;
@@ -788,10 +789,13 @@ public class TextFormatTest {
     }
   }
 
-  private TestAllTypes assertParseSuccessWithUnknownFields(String text)
-      throws TextFormat.ParseException {
+  @CanIgnoreReturnValue
+  private TestAllTypes assertParseSuccessWithUnknownFields(
+      String text, UnknownField... expectedUnknownFields) throws TextFormat.ParseException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     PARSER_ALLOWING_UNKNOWN_FIELDS.merge(text, TestUtil.getFullExtensionRegistry(), builder);
+    assertThat(PARSER_ALLOWING_UNKNOWN_FIELDS.getUnknownFields())
+        .containsExactlyElementsIn(expectedUnknownFields);
     return builder.build();
   }
 
@@ -805,10 +809,13 @@ public class TextFormatTest {
     }
   }
 
-  private TestAllTypes assertParseSuccessWithUnknownExtensions(String text)
-      throws TextFormat.ParseException {
+  @CanIgnoreReturnValue
+  private TestAllTypes assertParseSuccessWithUnknownExtensions(
+      String text, UnknownField... expectedUnknownFields) throws TextFormat.ParseException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     PARSER_ALLOWING_UNKNOWN_EXTENSIONS.merge(text, builder);
+    assertThat(PARSER_ALLOWING_UNKNOWN_EXTENSIONS.getUnknownFields())
+        .containsExactlyElementsIn(expectedUnknownFields);
     return builder.build();
   }
 
@@ -841,8 +848,11 @@ public class TextFormatTest {
             + "integer: 82301481290849012385230157",
         "optional_int32: 82301481290849012385230157");
     assertParseError(
-        "1:16: Expected \"true\" or \"false\". Found \"maybe\".", "optional_bool: maybe");
-    assertParseError("1:16: Expected \"true\" or \"false\". Found \"2\".", "optional_bool: 2");
+        "1:16: Couldn't parse boolean: Expected \"true\" or \"false\". Found \"maybe\".",
+        "optional_bool: maybe");
+    assertParseError(
+        "1:16: Couldn't parse boolean: Expected \"true\" or \"false\". Found \"2\".",
+        "optional_bool: 2");
     assertParseError("1:18: Expected string.", "optional_string: 123");
     assertParseError("1:18: String missing ending quote.", "optional_string: \"ueoauaoe");
     assertParseError(
@@ -1404,9 +1414,14 @@ public class TextFormatTest {
     Logger logger = Logger.getLogger(TextFormat.class.getName());
     logger.addHandler(logHandler);
     // Test unknown extension can pass.
-    assertParseSuccessWithUnknownExtensions("[unknown_extension]: 123");
     assertParseSuccessWithUnknownExtensions(
-        "[unknown_extension]: 123\n" + "[unknown_ext]: inf\n" + "[unknown]: 1.234");
+        "[unknown_extension]: 123",
+        UnknownField.extension("unknown_extension", UnknownField.Value.literal("123")));
+    assertParseSuccessWithUnknownExtensions(
+        "[unknown_extension]: 123\n" + "[unknown_ext]: inf\n" + "[unknown]: 1.234",
+        UnknownField.extension("unknown_extension", UnknownField.Value.literal("123")),
+        UnknownField.extension("unknown_ext", UnknownField.Value.literal("inf")),
+        UnknownField.extension("unknown", UnknownField.Value.literal("1.234")));
     // Test warning messages.
     assertThat(logHandler.getStoredLogRecords().get(0).getMessage())
         .isEqualTo(
@@ -1456,7 +1471,22 @@ public class TextFormatTest {
             + "      data: 123 "
             + "    } "
             + " } "
-            + "}");
+            + "}",
+        UnknownField.extension(
+            "unknown_extension",
+            UnknownField.Value.message(
+                Arrays.asList(
+                    UnknownField.regular(
+                        "any_value",
+                        UnknownField.Value.message(
+                            Arrays.asList(
+                                UnknownField.extension(
+                                    "type.googleapis.com/protobuf_unittest.OneString",
+                                    UnknownField.Value.message(
+                                        Arrays.asList(
+                                            UnknownField.regular(
+                                                "data",
+                                                UnknownField.Value.literal("123"))))))))))));
   }
 
   // See additional coverage in testOneofOverwriteForbidden and testMapOverwriteForbidden.

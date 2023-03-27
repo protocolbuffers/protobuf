@@ -43,6 +43,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -937,12 +940,6 @@ public final class TextFormat {
                 + "\'([^\'\n\\\\]|\\\\.)*+(\'|\\\\?$)", // a single-quoted string
             Pattern.MULTILINE);
 
-    private static final Pattern DOUBLE_INFINITY =
-        Pattern.compile("-?inf(inity)?", Pattern.CASE_INSENSITIVE);
-    private static final Pattern FLOAT_INFINITY =
-        Pattern.compile("-?inf(inity)?f?", Pattern.CASE_INSENSITIVE);
-    private static final Pattern FLOAT_NAN = Pattern.compile("nanf?", Pattern.CASE_INSENSITIVE);
-
     /**
      * {@link containsSilentMarkerAfterCurrentToken} indicates if there is a silent marker after the
      * current token. This value is moved to {@link containsSilentMarkerAfterPrevToken} every time
@@ -1193,19 +1190,8 @@ public final class TextFormat {
      * ParseException}.
      */
     public double consumeDouble() throws ParseException {
-      // We need to parse infinity and nan separately because
-      // Double.parseDouble() does not accept "inf", "infinity", or "nan".
-      if (DOUBLE_INFINITY.matcher(currentToken).matches()) {
-        final boolean negative = currentToken.startsWith("-");
-        nextToken();
-        return negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-      }
-      if (currentToken.equalsIgnoreCase("nan")) {
-        nextToken();
-        return Double.NaN;
-      }
       try {
-        final double result = Double.parseDouble(currentToken);
+        final double result = parseDouble(currentToken);
         nextToken();
         return result;
       } catch (NumberFormatException e) {
@@ -1231,19 +1217,8 @@ public final class TextFormat {
      * ParseException}.
      */
     public float consumeFloat() throws ParseException {
-      // We need to parse infinity and nan separately because
-      // Float.parseFloat() does not accept "inf", "infinity", or "nan".
-      if (FLOAT_INFINITY.matcher(currentToken).matches()) {
-        final boolean negative = currentToken.startsWith("-");
-        nextToken();
-        return negative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
-      }
-      if (FLOAT_NAN.matcher(currentToken).matches()) {
-        nextToken();
-        return Float.NaN;
-      }
       try {
-        final float result = Float.parseFloat(currentToken);
+        final float result = parseFloat(currentToken);
         nextToken();
         return result;
       } catch (NumberFormatException e) {
@@ -1269,20 +1244,12 @@ public final class TextFormat {
      * ParseException}.
      */
     public boolean consumeBoolean() throws ParseException {
-      if (currentToken.equals("true")
-          || currentToken.equals("True")
-          || currentToken.equals("t")
-          || currentToken.equals("1")) {
+      try {
+        final boolean result = parseBoolean(currentToken);
         nextToken();
-        return true;
-      } else if (currentToken.equals("false")
-          || currentToken.equals("False")
-          || currentToken.equals("f")
-          || currentToken.equals("0")) {
-        nextToken();
-        return false;
-      } else {
-        throw parseException("Expected \"true\" or \"false\". Found \"" + currentToken + "\".");
+        return result;
+      } catch (BooleanFormatException e) {
+        throw booleanParseException(e);
       }
     }
 
@@ -1309,12 +1276,11 @@ public final class TextFormat {
     }
 
     /** If the next token is a string, consume it and return true. Otherwise, return false. */
-    boolean tryConsumeByteString() {
+    Optional<ByteString> tryConsumeByteString() {
       try {
-        consumeByteString();
-        return true;
+        return Optional.of(consumeByteString());
       } catch (ParseException e) {
-        return false;
+        return Optional.empty();
       }
     }
 
@@ -1375,6 +1341,14 @@ public final class TextFormat {
      */
     private ParseException floatParseException(final NumberFormatException e) {
       return parseException("Couldn't parse number: " + e.getMessage());
+    }
+
+    /**
+     * Constructs an appropriate {@link ParseException} for the given {@code
+     * IllegalArgumentException} when trying to parse a boolean.
+     */
+    private ParseException booleanParseException(final BooleanFormatException e) {
+      return parseException("Couldn't parse boolean: " + e.getMessage());
     }
   }
 
@@ -1537,6 +1511,16 @@ public final class TextFormat {
    * control the parser behavior.
    */
   public static class Parser {
+    private final AtomicReference<List<UnknownField>> savedUnknownFields =
+        new AtomicReference<>(Collections.emptyList());
+
+    /**
+     * Returns the unknown fields detected in the prior merge. If merge has not been called, an
+     * empty collection of unmerged fields is returned.
+     */
+    public List<UnknownField> getUnknownFields() {
+      return savedUnknownFields.get();
+    }
 
     /**
      * A valid silent marker appears between a field name and its value. If there is a ":" in
@@ -1717,24 +1701,276 @@ public final class TextFormat {
       return text;
     }
 
-    static final class UnknownField {
-      static enum Type {
-        FIELD,
-        EXTENSION;
+    /** An unknown field found in text proto format. */
+    public static final class UnknownField {
+      private final String name;
+      private final boolean extension;
+      private final Value value;
+      private final String message;
+
+      static UnknownField regular(String name, Value value) {
+        return new UnknownField(name, false, value, "");
       }
 
-      final String message;
-      final Type type;
+      static UnknownField extension(String name, Value value) {
+        return new UnknownField(name, true, value, "");
+      }
 
-      UnknownField(String message, Type type) {
+      // Note that the message field is deliberately not part of the public API and ignored when
+      // testing equality of two unknown fields. It is private information used for logging only.
+      private UnknownField(String name, boolean extension, Value value, String message) {
+        if (name == null) {
+          throw new NullPointerException("name cannot be null");
+        }
+        if (value == null) {
+          throw new NullPointerException("value cannot be null");
+        }
+        if (message == null) {
+          throw new NullPointerException("message cannot be null");
+        }
+        this.name = name;
+        this.extension = extension;
+        this.value = value;
         this.message = message;
-        this.type = type;
+      }
+
+      public String name() {
+        return name;
+      }
+
+      public boolean isExtension() {
+        return extension;
+      }
+
+      public Value value() {
+        return value;
+      }
+
+      @Override
+      public int hashCode() {
+        return Objects.hash(name, extension, value);
+      }
+
+      @Override
+      public boolean equals(Object o) {
+        if (!(o instanceof UnknownField)) {
+          return false;
+        }
+        UnknownField other = (UnknownField) o;
+        return name.equals(other.name) && extension == other.extension && value.equals(other.value);
+      }
+
+      @Override
+      public String toString() {
+        StringBuilder builder = new StringBuilder();
+        if (extension) {
+          builder.append('[');
+        }
+        builder.append(name);
+        if (extension) {
+          builder.append(']');
+        }
+        return builder.append(": ").append(value).toString();
+      }
+
+      /** Unknown field value. */
+      public static final class Value {
+        /** Kind of the unknown field value. */
+        public static enum Kind {
+          LITERAL,
+          STRING,
+          REPEATED,
+          MESSAGE,
+        }
+
+        static Value literal(String literal) {
+          return new Value(literal, Kind.LITERAL);
+        }
+
+        static Value string(ByteString string) {
+          return new Value(string, Kind.STRING);
+        }
+
+        static Value repeated(List<Value> values) {
+          return new Value(values, Kind.REPEATED);
+        }
+
+        static Value message(List<UnknownField> fields) {
+          return new Value(fields, Kind.MESSAGE);
+        }
+
+        private final Object value;
+        private final Kind kind;
+
+        private Value(Object value, Kind kind) {
+          if (value == null) {
+            throw new NullPointerException("value cannot be null");
+          }
+          if (kind == null) {
+            throw new NullPointerException("kind cannot be null");
+          }
+          this.value = value;
+          this.kind = kind;
+        }
+
+        /** Returns the kind of the unknown field value. */
+        public Kind kind() {
+          return kind;
+        }
+
+        /**
+         * Returns the value as a string if it is a LITERAL.
+         *
+         * @throws IllegalStateException - if the kind is not LITERAL.
+         */
+        public String getLiteralAsIdentifier() {
+          checkKind(Kind.LITERAL);
+          return (String) value;
+        }
+
+        /**
+         * Returns the value as an int32 if it is a LITERAL.
+         *
+         * @throws IllegalStateException - if the kind is not LITERAL.
+         * @throws NumberFormatException - if the value is not a parseable integer.
+         */
+        public int getLiteralAsInt32() {
+          return parseInt32(getLiteralAsIdentifier());
+        }
+
+        /**
+         * Returns the value as an uint32 if it is a LITERAL.
+         *
+         * @throws IllegalStateException - if the kind is not LITERAL.
+         * @throws NumberFormatException - if the value is not a parseable integer.
+         */
+        public int getLiteralAsUInt32() {
+          return parseUInt32(getLiteralAsIdentifier());
+        }
+
+        /**
+         * Returns the value as an int64 if it is a LITERAL.
+         *
+         * @throws IllegalStateException - if the kind is not LITERAL.
+         * @throws NumberFormatException - if the value is not a parseable integer.
+         */
+        public long getLiteralAsInt64() {
+          return parseInt64(getLiteralAsIdentifier());
+        }
+
+        /**
+         * Returns the value as an uint64 if it is a LITERAL.
+         *
+         * @throws IllegalStateException - if the kind is not LITERAL.
+         * @throws NumberFormatException - if the value is not a parseable integer.
+         */
+        public long getLiteralAsUInt64() {
+          return parseUInt64(getLiteralAsIdentifier());
+        }
+
+        /**
+         * Returns the value as a float if it is a LITERAL.
+         *
+         * @throws IllegalStateException - if the kind is not LITERAL.
+         * @throws NumberFormatException - if the value is not a parseable float.
+         */
+        public float getLiteralAsFloat() {
+          return parseFloat(getLiteralAsIdentifier());
+        }
+
+        /**
+         * Returns the value as a double if it is a LITERAL.
+         *
+         * @throws IllegalStateException - if the kind is not LITERAL.
+         * @throws NumberFormatException - if the value is not a parseable double.
+         */
+        public double getLiteralAsDouble() {
+          return parseFloat(getLiteralAsIdentifier());
+        }
+
+        /**
+         * Returns the value as a boolean if it is a LITERAL.
+         *
+         * @throws IllegalStateException - if the kind is not LITERAL.
+         * @throws BooleanFormatException - if the value is not a parseable boolean.
+         */
+        public boolean getLiteralAsBoolean() {
+          return parseBoolean(getLiteralAsIdentifier());
+        }
+
+        /**
+         * Returns the value as a byte string if it is a STRING.
+         *
+         * @throws IllegalStateException - if the kind is not STRING.
+         */
+        public ByteString getStringAsBytes() {
+          checkKind(Kind.STRING);
+          return (ByteString) value;
+        }
+
+        /**
+         * Returns the value as a UTF-8 string if it is a STRING.
+         *
+         * @throws IllegalStateException - if the kind is not STRING.
+         */
+        public String getStringAsUtf8() {
+          return getStringAsBytes().toStringUtf8();
+        }
+
+        /**
+         * Returns the value as a list of values if it is a REPEATED.
+         *
+         * @throws IllegalStateException - if the kind is not REPEATED.
+         */
+        @SuppressWarnings("unchecked")
+        public List<Value> getRepeatedValues() {
+          checkKind(Kind.REPEATED);
+          return (List<Value>) value;
+        }
+
+        /**
+         * Returns the value as a list of unknown fields if it is a MESSAGE.
+         *
+         * @throws IllegalStateException - if the kind is not MESSAGE.
+         */
+        @SuppressWarnings("unchecked")
+        public List<UnknownField> getMessageFields() {
+          checkKind(Kind.MESSAGE);
+          return (List<UnknownField>) value;
+        }
+
+        @Override
+        public int hashCode() {
+          return Objects.hash(kind, value);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+          if (!(o instanceof Value)) {
+            return false;
+          }
+          Value other = (Value) o;
+          return kind.equals(other.kind) && value.equals(other.value);
+        }
+
+        @Override
+        public String toString() {
+          return value + " (" + kind + ")";
+        }
+
+        private void checkKind(Kind expected) {
+          if (kind != expected) {
+            throw new IllegalStateException("value is " + kind + " not " + expected);
+          }
+        }
       }
     }
 
     // Check both unknown fields and unknown extensions and log warning messages
     // or throw exceptions according to the flag.
     private void checkUnknownFields(final List<UnknownField> unknownFields) throws ParseException {
+      savedUnknownFields.set(new ArrayList<>(unknownFields));
+
       if (unknownFields.isEmpty()) {
         return;
       }
@@ -1753,7 +1989,7 @@ public final class TextFormat {
       if (allowUnknownExtensions) {
         boolean allUnknownExtensions = true;
         for (UnknownField field : unknownFields) {
-          if (field.type == UnknownField.Type.FIELD) {
+          if (!field.isExtension()) {
             allUnknownExtensions = false;
             break;
           }
@@ -1813,6 +2049,8 @@ public final class TextFormat {
       int startColumn = tokenizer.getColumn();
       final Descriptor type = target.getDescriptorForType();
       ExtensionRegistry.ExtensionInfo extension = null;
+      String unknownFieldMessage = null;
+      boolean unknownExtension = false;
 
       if ("google.protobuf.Any".equals(type.getFullName()) && tokenizer.tryConsume("[")) {
         mergeAnyFieldValue(
@@ -1832,7 +2070,7 @@ public final class TextFormat {
         extension = target.findExtensionByName(extensionRegistry, name);
 
         if (extension == null) {
-          String message =
+          unknownFieldMessage =
               (tokenizer.getPreviousLine() + 1)
                   + ":"
                   + (tokenizer.getPreviousColumn() + 1)
@@ -1841,7 +2079,7 @@ public final class TextFormat {
                   + ".["
                   + name
                   + "]";
-          unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
+          unknownExtension = true;
         } else {
           if (extension.descriptor.getContainingType() != type) {
             throw tokenizer.parseExceptionPreviousToken(
@@ -1880,7 +2118,7 @@ public final class TextFormat {
         }
 
         if (field == null) {
-          String message =
+          unknownFieldMessage =
               (tokenizer.getPreviousLine() + 1)
                   + ":"
                   + (tokenizer.getPreviousColumn() + 1)
@@ -1888,14 +2126,17 @@ public final class TextFormat {
                   + type.getFullName()
                   + "."
                   + name;
-          unknownFields.add(new UnknownField(message, UnknownField.Type.FIELD));
         }
       }
 
       // Skips unknown fields.
+      if ((field == null) != (unknownFieldMessage != null)) {
+        throw new AssertionError("field is null iff unknownFieldMessage is present");
+      }
       if (field == null) {
         detectSilentMarker(tokenizer, type, name);
-        guessFieldTypeAndSkip(tokenizer, type);
+        UnknownField.Value value = guessFieldTypeAndSkip(tokenizer, type);
+        unknownFields.add(new UnknownField(name, unknownExtension, value, unknownFieldMessage));
         return;
       }
 
@@ -2252,22 +2493,28 @@ public final class TextFormat {
     }
 
     /** Skips the next field including the field's name and value. */
-    private void skipField(Tokenizer tokenizer, Descriptor type) throws ParseException {
+    private UnknownField skipField(Tokenizer tokenizer, Descriptor type) throws ParseException {
+      boolean extension = tokenizer.currentToken.charAt(0) == '[';
       String name = consumeFullTypeName(tokenizer);
       detectSilentMarker(tokenizer, type, name);
-      guessFieldTypeAndSkip(tokenizer, type);
+      UnknownField.Value value = guessFieldTypeAndSkip(tokenizer, type);
 
       // For historical reasons, fields may optionally be separated by commas or
       // semicolons.
       if (!tokenizer.tryConsume(";")) {
         tokenizer.tryConsume(",");
       }
+
+      // Use an empty string message for nested unknown fields, since it isn't readily available and
+      // only top-level unknown field messages will be logged anyway.
+      return new UnknownField(name, extension, value, "");
     }
 
     /**
      * Skips the whole body of a message including the beginning delimiter and the ending delimiter.
      */
-    private void skipFieldMessage(Tokenizer tokenizer, Descriptor type) throws ParseException {
+    private UnknownField.Value skipFieldMessage(Tokenizer tokenizer, Descriptor type)
+        throws ParseException {
       final String delimiter;
       if (tokenizer.tryConsume("<")) {
         delimiter = ">";
@@ -2275,22 +2522,29 @@ public final class TextFormat {
         tokenizer.consume("{");
         delimiter = "}";
       }
+      List<UnknownField> unknownFields = new ArrayList<>();
       while (!tokenizer.lookingAt(">") && !tokenizer.lookingAt("}")) {
-        skipField(tokenizer, type);
+        unknownFields.add(skipField(tokenizer, type));
       }
       tokenizer.consume(delimiter);
+      return UnknownField.Value.message(unknownFields);
     }
 
     /** Skips a field value. */
-    private void skipFieldValue(Tokenizer tokenizer) throws ParseException {
-      if (!tokenizer.tryConsumeByteString()
-          && !tokenizer.tryConsumeIdentifier() // includes enum & boolean
-          && !tokenizer.tryConsumeInt64() // includes int32
-          && !tokenizer.tryConsumeUInt64() // includes uint32
-          && !tokenizer.tryConsumeDouble()
-          && !tokenizer.tryConsumeFloat()) {
-        throw tokenizer.parseException("Invalid field value: " + tokenizer.currentToken);
+    private UnknownField.Value skipFieldValue(Tokenizer tokenizer) throws ParseException {
+      Optional<ByteString> optByteString = tokenizer.tryConsumeByteString();
+      if (optByteString.isPresent()) {
+        return UnknownField.Value.string(optByteString.get());
       }
+      String currentToken = tokenizer.currentToken;
+      if (tokenizer.tryConsumeIdentifier() // includes enum & boolean
+          || tokenizer.tryConsumeInt64() // includes int32
+          || tokenizer.tryConsumeUInt64() // includes uint32
+          || tokenizer.tryConsumeDouble()
+          || tokenizer.tryConsumeFloat()) {
+        return UnknownField.Value.literal(currentToken);
+      }
+      throw tokenizer.parseException("Invalid field value: " + currentToken);
     }
 
     /**
@@ -2302,16 +2556,20 @@ public final class TextFormat {
      * be a message or the input is ill-formed. For short-formed repeated fields (i.e. with "[]"),
      * if it is repeated scalar, there must be a ":" between the field name and the starting "[" .
      */
-    private void guessFieldTypeAndSkip(Tokenizer tokenizer, Descriptor type) throws ParseException {
+    @CanIgnoreReturnValue
+    private UnknownField.Value guessFieldTypeAndSkip(Tokenizer tokenizer, Descriptor type)
+        throws ParseException {
       boolean semicolonConsumed = tokenizer.tryConsume(":");
       if (tokenizer.lookingAt("[")) {
         // Short repeated field form. If a semicolon was consumed, it could be repeated scalar or
         // repeated message. If not, it must be repeated message.
-        skipFieldShortFormedRepeated(tokenizer, semicolonConsumed, type);
+        List<UnknownField.Value> vals =
+            skipFieldShortFormedRepeated(tokenizer, semicolonConsumed, type);
+        return UnknownField.Value.repeated(vals);
       } else if (semicolonConsumed && !tokenizer.lookingAt("{") && !tokenizer.lookingAt("<")) {
-        skipFieldValue(tokenizer);
+        return skipFieldValue(tokenizer);
       } else {
-        skipFieldMessage(tokenizer, type);
+        return skipFieldMessage(tokenizer, type);
       }
     }
 
@@ -2320,20 +2578,21 @@ public final class TextFormat {
      *
      * <p>Reports an error if scalar type is not allowed but showing up inside "[]".
      */
-    private void skipFieldShortFormedRepeated(
+    private List<UnknownField.Value> skipFieldShortFormedRepeated(
         Tokenizer tokenizer, boolean scalarAllowed, Descriptor type) throws ParseException {
       if (!tokenizer.tryConsume("[") || tokenizer.tryConsume("]")) {
         // Try skipping "[]".
-        return;
+        return Collections.emptyList();
       }
 
+      List<UnknownField.Value> values = new ArrayList<>();
       while (true) {
         if (tokenizer.lookingAt("{") || tokenizer.lookingAt("<")) {
           // Try skipping message field inside "[]"
-          skipFieldMessage(tokenizer, type);
+          values.add(skipFieldMessage(tokenizer, type));
         } else if (scalarAllowed) {
           // Try skipping scalar field inside "[]".
-          skipFieldValue(tokenizer);
+          values.add(skipFieldValue(tokenizer));
         } else {
           throw tokenizer.parseException(
               "Invalid repeated scalar field: missing \":\" before \"[\".");
@@ -2343,6 +2602,7 @@ public final class TextFormat {
         }
         tokenizer.consume(",");
       }
+      return Collections.unmodifiableList(values);
     }
   }
 
@@ -2725,5 +2985,61 @@ public final class TextFormat {
     }
 
     return result;
+  }
+
+  private static final Pattern DOUBLE_INFINITY =
+      Pattern.compile("-?inf(inity)?", Pattern.CASE_INSENSITIVE);
+
+  private static double parseDouble(final String text) {
+    // We need to parse infinity and nan separately because
+    // Double.parseDouble() does not accept "inf", "infinity", or "nan".
+    if (DOUBLE_INFINITY.matcher(text).matches()) {
+      final boolean negative = text.startsWith("-");
+      return negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+    }
+    if (text.equalsIgnoreCase("nan")) {
+      return Double.NaN;
+    }
+    return Double.parseDouble(text);
+  }
+
+  private static final Pattern FLOAT_INFINITY =
+      Pattern.compile("-?inf(inity)?f?", Pattern.CASE_INSENSITIVE);
+  private static final Pattern FLOAT_NAN = Pattern.compile("nanf?", Pattern.CASE_INSENSITIVE);
+
+  private static float parseFloat(String text) {
+    // We need to parse infinity and nan separately because
+    // Float.parseFloat() does not accept "inf", "infinity", or "nan".
+    if (FLOAT_INFINITY.matcher(text).matches()) {
+      final boolean negative = text.startsWith("-");
+      return negative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+    }
+    if (FLOAT_NAN.matcher(text).matches()) {
+      return Float.NaN;
+    }
+    return Float.parseFloat(text);
+  }
+
+  private static boolean parseBoolean(String text) {
+    if (text.equals("true") || text.equals("True") || text.equals("t") || text.equals("1")) {
+      return true;
+    } else if (text.equals("false")
+        || text.equals("False")
+        || text.equals("f")
+        || text.equals("0")) {
+      return false;
+    } else {
+      throw new BooleanFormatException("Expected \"true\" or \"false\". Found \"" + text + "\".");
+    }
+  }
+
+  /**
+   * Thrown to indicate the parser has attempted to convert a string to a boolean, but the string
+   * does not have an acceptable boolean format.
+   */
+  public static final class BooleanFormatException extends RuntimeException {
+    private BooleanFormatException(String message) {
+      super(message);
+    }
   }
 }
