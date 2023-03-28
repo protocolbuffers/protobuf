@@ -3154,9 +3154,23 @@ void Descriptor::DebugString(int depth, std::string* contents,
   }
 
   for (int i = 0; i < extension_range_count(); i++) {
-    absl::SubstituteAndAppend(contents, "$0  extensions $1 to $2;\n", prefix,
-                              extension_range(i)->start,
-                              extension_range(i)->end - 1);
+    absl::SubstituteAndAppend(contents, "$0  extensions $1", prefix,
+                              extension_range(i)->start);
+    if (extension_range(i)->end > extension_range(i)->start + 1) {
+      absl::SubstituteAndAppend(contents, " to $0",
+                                extension_range(i)->end - 1);
+    }
+    if (extension_range(i)->options_ != nullptr) {
+      if (extension_range(i)->options_->declaration_size() > 0) {
+        absl::StrAppend(contents, " [");
+        for (auto& decl : extension_range(i)->options_->declaration()) {
+          absl::SubstituteAndAppend(contents, " declaration = { $0 }",
+                                    decl.ShortDebugString());
+        }
+        absl::StrAppend(contents, " ] ");
+      }
+    }
+    absl::StrAppend(contents, ";\n");
   }
 
   // Group extensions by what they extend, so they can be printed out together.
