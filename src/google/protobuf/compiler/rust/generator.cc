@@ -40,6 +40,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/names.h"
+#include "google/protobuf/compiler/rust/upb_kernel.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -98,63 +99,6 @@ std::string GetFileExtensionForKernel(Kernel kernel) {
   }
   ABSL_LOG(FATAL) << "Unknown kernel type: ";
   return "";
-}
-
-// The prefix used by the UPB compiler to generate unique function names.
-// TODO(b/275708201): Determine a principled way to generate names of UPB
-// accessors.
-std::string GetUpbMessagePrefix(const Descriptor* msg_descriptor) {
-  std::string upb_msg_prefix = msg_descriptor->full_name();
-  absl::StrReplaceAll({{".", "_"}}, &upb_msg_prefix);
-  return upb_msg_prefix;
-}
-
-void GenerateMessageFunctionsForUpb(const Descriptor* msg_descriptor,
-                                    google::protobuf::io::Printer& p) {
-  p.Emit({{"Msg", msg_descriptor->name()},
-          {"pkg_Msg", GetUpbMessagePrefix(msg_descriptor)}},
-         R"rs(
-    impl $Msg$ {
-      pub fn new() -> Self {
-        let arena = unsafe { ::__pb::Arena::new() };
-        let msg = unsafe { $pkg_Msg$_new(arena) };
-        $Msg$ { msg, arena }
-      }
-
-      pub fn serialize(&self) -> ::__pb::SerializedData {
-        let arena = unsafe { ::__pb::__runtime::upb_Arena_New() };
-        let mut len = 0;
-        let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
-        unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
-      }
-    }
-
-    extern "C" {
-      fn $pkg_Msg$_new(arena: *mut ::__pb::Arena) -> ::__std::ptr::NonNull<u8>;
-      fn $pkg_Msg$_serialize(
-        msg: ::__std::ptr::NonNull<u8>,
-        arena: *mut ::__pb::Arena,
-        len: &mut usize) -> ::__std::ptr::NonNull<u8>;
-    }
-  )rs");
-}
-
-void GenerateForUpb(const FileDescriptor* file, google::protobuf::io::Printer& p) {
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    auto msg_descriptor = file->message_type(i);
-
-    p.Emit({{"Msg", msg_descriptor->name()},
-            {"ImplMessageFunctions",
-             [&] { GenerateMessageFunctionsForUpb(msg_descriptor, p); }}},
-           R"rs(
-      pub struct $Msg$ {
-        msg: ::__std::ptr::NonNull<u8>,
-        arena: *mut ::__pb::Arena,
-      }
-
-      $ImplMessageFunctions$;
-    )rs");
-  }
 }
 
 std::string GetUnderscoreDelimitedFullName(const Descriptor* msg) {
@@ -283,7 +227,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
   switch (*kernel) {
     case Kernel::kUpb:
-      GenerateForUpb(file, p);
+      rust::UpbKernel k;
+      k.Generate(file, p);
       break;
     case Kernel::kCpp:
       GenerateForCpp(file, p);
