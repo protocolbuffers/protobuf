@@ -66,9 +66,7 @@ UPB_INLINE uintptr_t _upb_NonAtomic_ExchangeU(uintptr_t* addr, uintptr_t val) {
   return ret;
 }
 
-// `addr` should logically be `void**`, but `void*` allows for more convenient
-// implicit conversions.
-UPB_INLINE void* _upb_NonAtomic_ExchangeP(void* addr, void* val) {
+UPB_INLINE void* _upb_NonAtomic_ExchangeP(upb_Arena** addr, upb_Arena* val) {
   void* ret;
   memcpy(&ret, addr, sizeof(val));
   memcpy(addr, &val, sizeof(val));
@@ -78,7 +76,7 @@ UPB_INLINE void* _upb_NonAtomic_ExchangeP(void* addr, void* val) {
 #define upb_Atomic_Exchange(addr, val, order) \
   _Generic((val),                             \
       uintptr_t: _upb_NonAtomic_ExchangeU,    \
-      void*: _upb_NonAtomic_ExchangeP)(addr, val)
+      upb_Arena *: _upb_NonAtomic_ExchangeP)(addr, val)
 
 UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongU(uintptr_t* addr,
                                                       uintptr_t* expected,
@@ -92,11 +90,9 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongU(uintptr_t* addr,
   }
 }
 
-// `addr` and `expected` should logically be `void**`, but `void*` allows for
-// more convenient implicit conversions.
-UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
-                                                      void* expected,
-                                                      void* desired) {
+UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(upb_Arena** addr,
+                                                      upb_Arena** expected,
+                                                      upb_Arena* desired) {
   if (memcmp(addr, expected, sizeof(desired)) == 0) {
     memcpy(addr, &desired, sizeof(desired));
     return true;
@@ -106,11 +102,12 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
   }
 }
 
-#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
-                                         success_order, failure_order) \
-  _Generic((desired),                                                  \
-      uintptr_t: _upb_NonAtomic_CompareExchangeStrongU,                \
-      void*: _upb_NonAtomic_CompareExchangeStrongP)(addr, expected, desired)
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,         \
+                                         success_order, failure_order)    \
+  _Generic((desired),                                                     \
+      uintptr_t: _upb_NonAtomic_CompareExchangeStrongU,                   \
+      upb_Arena *: _upb_NonAtomic_CompareExchangeStrongP)(addr, expected, \
+                                                          desired)
 
 #endif
 

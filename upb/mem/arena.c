@@ -45,7 +45,8 @@ static uintptr_t upb_cleanup_metadata(uint32_t* cleanup,
 }
 
 struct _upb_MemBlock {
-  struct _upb_MemBlock* next;
+  // Atomic only for the benefit of SpaceAllocated().
+  UPB_ATOMIC(_upb_MemBlock*) next;
   uint32_t size;
   uint32_t cleanups;
   // Data follows.
@@ -98,11 +99,13 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
   arena = _upb_Arena_FindRoot(arena);
   size_t memsize = 0;
 
-  _upb_MemBlock* block = arena->freelist;
-
-  while (block) {
-    memsize += sizeof(_upb_MemBlock) + block->size;
-    block = block->next;
+  while (arena != NULL) {
+    _upb_MemBlock* block = arena->blocks;
+    while (block != NULL) {
+      memsize += sizeof(_upb_MemBlock) + block->size;
+      block = upb_Atomic_Load(&block->next, memory_order_relaxed);
+    }
+    arena = upb_Atomic_Load(&arena->next, memory_order_relaxed);
   }
 
   return memsize;
@@ -119,17 +122,14 @@ uint32_t upb_Arena_DebugRefCount(upb_Arena* a) {
   return _upb_Arena_RefCountFromTagged(poc);
 }
 
-static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
-                               size_t size) {
+static void upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t size) {
   _upb_MemBlock* block = ptr;
 
-  /* The block is for arena |a|, but should appear in the freelist of |root|. */
-  block->next = root->freelist;
+  // Insert into linked list.
+  upb_Atomic_Init(&block->next, a->blocks);
   block->size = (uint32_t)size;
   block->cleanups = 0;
-  root->freelist = block;
-  a->last_size = block->size;
-  if (!root->freelist_tail) root->freelist_tail = block;
+  upb_Atomic_Store(&a->blocks, block, memory_order_relaxed);
 
   a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
   a->head.end = UPB_PTR_AT(block, size, char);
@@ -139,18 +139,20 @@ static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
   UPB_POISON_MEMORY_REGION(a->head.ptr, a->head.end - a->head.ptr);
 }
 
-static bool upb_Arena_Allocblock(upb_Arena* a, size_t size) {
-  upb_Arena* root = _upb_Arena_FindRoot(a);
-  size_t block_size = UPB_MAX(size, a->last_size * 2) + memblock_reserve;
-  _upb_MemBlock* block = upb_malloc(root->block_alloc, block_size);
+static bool upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
+  if (!a->block_alloc) return false;
+  _upb_MemBlock* last_block = upb_Atomic_Load(&a->blocks, memory_order_relaxed);
+  size_t last_size = last_block != NULL ? last_block->size : 128;
+  size_t block_size = UPB_MAX(size, last_size * 2) + memblock_reserve;
+  _upb_MemBlock* block = upb_malloc(a->block_alloc, block_size);
 
   if (!block) return false;
-  upb_Arena_addblock(a, root, block, block_size);
+  upb_Arena_AddBlock(a, block, block_size);
   return true;
 }
 
 void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size) {
-  if (!upb_Arena_Allocblock(a, size)) return NULL; /* Out of memory. */
+  if (!upb_Arena_AllocBlock(a, size)) return NULL; /* Out of memory. */
   UPB_ASSERT(_upb_ArenaHas(a) >= size);
   return upb_Arena_Malloc(a, size);
 }
@@ -172,11 +174,12 @@ static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
 
   a->block_alloc = alloc;
   upb_Atomic_Init(&a->parent_or_count, _upb_Arena_TaggedFromRefcount(1));
-  a->freelist = NULL;
-  a->freelist_tail = NULL;
+  upb_Atomic_Init(&a->next, NULL);
+  upb_Atomic_Init(&a->tail, a);
+  upb_Atomic_Init(&a->blocks, NULL);
   a->cleanup_metadata = upb_cleanup_metadata(NULL, false);
 
-  upb_Arena_addblock(a, a, mem, n);
+  upb_Arena_AddBlock(a, mem, n);
 
   return a;
 }
@@ -202,37 +205,44 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
 
   a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
 
-  a->block_alloc = alloc;
   upb_Atomic_Init(&a->parent_or_count, _upb_Arena_TaggedFromRefcount(1));
-  a->last_size = UPB_MAX(128, n);
+  upb_Atomic_Init(&a->next, NULL);
+  upb_Atomic_Init(&a->tail, a);
+  upb_Atomic_Init(&a->blocks, NULL);
+  a->block_alloc = alloc;
   a->head.ptr = mem;
   a->head.end = UPB_PTR_AT(mem, n - sizeof(*a), char);
-  a->freelist = NULL;
-  a->freelist_tail = NULL;
   a->cleanup_metadata = upb_cleanup_metadata(NULL, true);
 
   return a;
 }
 
 static void arena_dofree(upb_Arena* a) {
-  _upb_MemBlock* block = a->freelist;
   UPB_ASSERT(_upb_Arena_RefCountFromTagged(a->parent_or_count) == 1);
 
-  while (block) {
-    /* Load first since we are deleting block. */
-    _upb_MemBlock* next = block->next;
+  while (a != NULL) {
+    // Load first since arena itself is likely from one of its blocks.
+    upb_Arena* next_arena =
+        (upb_Arena*)upb_Atomic_Load(&a->next, memory_order_acquire);
+    _upb_MemBlock* block = upb_Atomic_Load(&a->blocks, memory_order_relaxed);
+    while (block != NULL) {
+      /* Load first since we are deleting block. */
+      _upb_MemBlock* next_block =
+          upb_Atomic_Load(&block->next, memory_order_relaxed);
 
-    if (block->cleanups > 0) {
-      cleanup_ent* end = UPB_PTR_AT(block, block->size, void);
-      cleanup_ent* ptr = end - block->cleanups;
+      if (block->cleanups > 0) {
+        cleanup_ent* end = UPB_PTR_AT(block, block->size, void);
+        cleanup_ent* ptr = end - block->cleanups;
 
-      for (; ptr < end; ptr++) {
-        ptr->cleanup(ptr->ud);
+        for (; ptr < end; ptr++) {
+          ptr->cleanup(ptr->ud);
+        }
       }
-    }
 
-    upb_free(a->block_alloc, block);
-    block = next;
+      upb_free(a->block_alloc, block);
+      block = next_block;
+    }
+    a = next_arena;
   }
 }
 
@@ -270,7 +280,7 @@ bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func) {
   uint32_t* cleanups = upb_cleanup_pointer(a->cleanup_metadata);
 
   if (!cleanups || _upb_ArenaHas(a) < sizeof(cleanup_ent)) {
-    if (!upb_Arena_Allocblock(a, 128)) return false; /* Out of memory. */
+    if (!upb_Arena_AllocBlock(a, 128)) return false; /* Out of memory. */
     UPB_ASSERT(_upb_ArenaHas(a) >= sizeof(cleanup_ent));
     cleanups = upb_cleanup_pointer(a->cleanup_metadata);
   }
@@ -339,14 +349,6 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
     r2_poc = tmp_poc;
   }
 
-  // r1 takes over r2's freelist, this must happen before we update
-  // refcounts since the refcount carriers the memory dependencies.
-  if (r2->freelist_tail) {
-    UPB_ASSERT(r2->freelist_tail->next == NULL);
-    r2->freelist_tail->next = r1->freelist;
-    r1->freelist = r2->freelist;
-  }
-
   // The moment we install `r1` as the parent for `r2` all racing frees may
   // immediately begin decrementing `r1`'s refcount.  So we must install all the
   // refcounts that we know about first to prevent a premature unref to zero.
@@ -366,5 +368,26 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
     upb_Atomic_Sub(&r1->parent_or_count, ((uintptr_t)delta_refcount) << 1,
                    memory_order_release);
   }
+
+  // Now append r2's linked list of arenas to r1's.
+  upb_Arena* r2_tail = upb_Atomic_Load(&r2->tail, memory_order_relaxed);
+  upb_Arena* r1_tail = upb_Atomic_Load(&r1->tail, memory_order_relaxed);
+  upb_Arena* r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
+  while (r1_next != NULL) {
+    // r1->tail was stale.  This can happen, but tail should always converge on
+    // the true tail.
+    r1_tail = r1_next;
+    r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
+  }
+
+  upb_Arena* old_next =
+      upb_Atomic_Exchange(&r1_tail->next, r2, memory_order_relaxed);
+
+  // Once fuse/fuse races are allowed, it will need to be a CAS instead that
+  // handles this mismatch gracefully.
+  UPB_ASSERT(old_next == NULL);
+
+  upb_Atomic_Store(&r1->tail, r2_tail, memory_order_relaxed);
+
   return true;
 }

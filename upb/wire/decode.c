@@ -1282,9 +1282,11 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
     UPB_ASSERT(decoder->status != kUpb_DecodeStatus_Ok);
   }
 
-  arena->head.ptr = decoder->arena.head.ptr;
-  arena->head.end = decoder->arena.head.end;
+  _upb_MemBlock* blocks =
+      upb_Atomic_Load(&decoder->arena.blocks, memory_order_relaxed);
+  arena->head = decoder->arena.head;
   arena->cleanup_metadata = decoder->arena.cleanup_metadata;
+  upb_Atomic_Store(&arena->blocks, blocks, memory_order_relaxed);
   return decoder->status;
 }
 
@@ -1292,26 +1294,32 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
                             const upb_MiniTable* l,
                             const upb_ExtensionRegistry* extreg, int options,
                             upb_Arena* arena) {
-  upb_Decoder state;
+  upb_Decoder decoder;
   unsigned depth = (unsigned)options >> 16;
 
-  upb_EpsCopyInputStream_Init(&state.input, &buf, size,
+  upb_EpsCopyInputStream_Init(&decoder.input, &buf, size,
                               options & kUpb_DecodeOption_AliasString);
 
-  state.extreg = extreg;
-  state.unknown = NULL;
-  state.depth = depth ? depth : 64;
-  state.end_group = DECODE_NOGROUP;
-  state.options = (uint16_t)options;
-  state.missing_required = false;
-  state.arena.head = arena->head;
-  state.arena.last_size = arena->last_size;
-  state.arena.cleanup_metadata = arena->cleanup_metadata;
-  upb_Atomic_Init(&state.arena.parent_or_count,
-                  _upb_Arena_TaggedFromPointer(arena));
-  state.status = kUpb_DecodeStatus_Ok;
+  decoder.extreg = extreg;
+  decoder.unknown = NULL;
+  decoder.depth = depth ? depth : 64;
+  decoder.end_group = DECODE_NOGROUP;
+  decoder.options = (uint16_t)options;
+  decoder.missing_required = false;
+  decoder.status = kUpb_DecodeStatus_Ok;
 
-  return upb_Decoder_Decode(&state, buf, msg, l, arena);
+  // Violating the encapsulation of the arena for performance reasons.
+  // This is a temporary arena that we swap into and swap out of when we are
+  // done.  The temporary arena only needs to be able to handle allocation,
+  // not fuse or free, so it does not need many of the members to be initialized
+  // (particularly parent_or_count).
+  _upb_MemBlock* blocks = upb_Atomic_Load(&arena->blocks, memory_order_relaxed);
+  decoder.arena.head = arena->head;
+  decoder.arena.block_alloc = arena->block_alloc;
+  decoder.arena.cleanup_metadata = arena->cleanup_metadata;
+  upb_Atomic_Init(&decoder.arena.blocks, blocks);
+
+  return upb_Decoder_Decode(&decoder, buf, msg, l, arena);
 }
 
 #undef OP_FIXPCK_LG2

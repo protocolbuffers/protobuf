@@ -45,7 +45,6 @@ struct upb_Arena {
   /* Allocator to allocate arena blocks.  We are responsible for freeing these
    * when we are destroyed. */
   upb_alloc* block_alloc;
-  uint32_t last_size;
 
   /* When multiple arenas are fused together, each arena points to a parent
    * arena (root points to itself). The root tracks how many live arenas
@@ -55,10 +54,19 @@ struct upb_Arena {
    *   0: pointer to parent
    *   1: count, left shifted by one
    */
-  UPB_ATOMIC uintptr_t parent_or_count;
+  UPB_ATOMIC(uintptr_t) parent_or_count;
 
-  /* Linked list of blocks to free/cleanup. */
-  _upb_MemBlock *freelist, *freelist_tail;
+  // All nodes that are fused together are in a singly-linked list.
+  UPB_ATOMIC(upb_Arena*) next;  // NULL at end of list.
+
+  // The last element of the linked list.  This is present only as an
+  // optimization, so that we do not have to iterate over all members for every
+  // fuse.  Only significant for an arena root.  In other cases it is ignored.
+  UPB_ATOMIC(upb_Arena*) tail;  // == self when no other list members.
+
+  // Linked list of blocks to free/cleanup.  Atomic only for the benefit of
+  // upb_Arena_SpaceAllocated().
+  UPB_ATOMIC(_upb_MemBlock*) blocks;
 };
 
 UPB_INLINE bool _upb_Arena_IsTaggedRefcount(uintptr_t parent_or_count) {

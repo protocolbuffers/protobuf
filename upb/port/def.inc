@@ -192,9 +192,9 @@
 
 #ifdef __GNUC__
 #define UPB_USE_C11_ATOMICS
-#define UPB_ATOMIC _Atomic
+#define UPB_ATOMIC(T) _Atomic(T)
 #else
-#define UPB_ATOMIC
+#define UPB_ATOMIC(T) T
 #endif
 
 /* UPB_PTRADD(ptr, ofs): add pointer while avoiding "NULL + 0" UB */
