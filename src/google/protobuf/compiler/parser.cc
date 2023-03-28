@@ -1643,6 +1643,7 @@ bool Parser::ParseExtensions(DescriptorProto* message,
   DO(Consume("extensions"));
 
   int old_range_size = message->extension_range_size();
+  bool extension_range_group = false;
 
   do {
     // Note that kExtensionRangeFieldNumber was already pushed by the parent.
@@ -1655,7 +1656,6 @@ bool Parser::ParseExtensions(DescriptorProto* message,
 
     int start, end;
     io::Tokenizer::Token start_token;
-
     {
       LocationRecorder start_location(
           location, DescriptorProto::ExtensionRange::kStartFieldNumber);
@@ -1688,9 +1688,18 @@ bool Parser::ParseExtensions(DescriptorProto* message,
 
     range->set_start(start);
     range->set_end(end);
+    if (LookingAt(",")) {
+      extension_range_group = true;
+    }
   } while (TryConsume(","));
 
   if (LookingAt("[")) {
+    if (extension_range_group) {
+      RecordError(
+          "Extension range group cannot be annotated with options. Please "
+          "split the group into individual extension ranges.");
+      return false;
+    }
     int range_number_index = extensions_location.CurrentPathSize();
     SourceCodeInfo info;
 
