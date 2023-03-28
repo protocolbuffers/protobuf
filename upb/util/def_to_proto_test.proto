@@ -108,7 +108,13 @@ message PretendMessageSet {
 
   // Since this is message_set_wire_format, "max" here means INT32_MAX.
   // (For normal messages "max" would mean 2**29 - 1).
-  extensions 4 to max;
+  extensions 4 to 529999999;
+  extensions 530000000 to max
+  [declaration = {
+    number: 2147483646
+    full_name: ".pkg.MessageSetItem.message_set_extension"
+    type: ".pkg.MessageSetItem"
+  }];
 }
 
 message MessageSetItem {
