@@ -88,6 +88,61 @@ std::string get_crate_name(const FileDescriptor* dependency) {
                                        });
 }
 
+void GenerateForUpb(const FileDescriptor* file, google::protobuf::io::Printer& p) {
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    std::string full_name = file->message_type(i)->full_name();
+    absl::StrReplaceAll({{".", "_"}}, &full_name);
+
+    // TODO(b/275365731): Implement field accessors et. al.
+    p.Emit({{"Msg", file->message_type(i)->name()}, {"pkg_Msg", full_name}},
+           R"rs(
+          pub struct $Msg$ {
+            msg: ::__std::ptr::NonNull<u8>,
+            arena: *mut ::__pb::Arena,
+          }
+
+          impl $Msg$ {
+            pub fn new() -> Self {
+              let arena = unsafe { ::__pb::Arena::new() };
+              let msg = unsafe { $pkg_Msg$_new(arena) };
+              $Msg$ { msg, arena }
+            }
+            pub fn serialize(&self) -> ::__pb::SerializedData {
+              let arena = unsafe { ::__pb::__runtime::upb_Arena_New() };
+              let mut len = 0;
+              let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
+              unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
+            }
+          }
+
+          extern "C" {
+            fn $pkg_Msg$_new(arena: *mut ::__pb::Arena) -> ::__std::ptr::NonNull<u8>;
+            fn $pkg_Msg$_serialize(
+              msg: ::__std::ptr::NonNull<u8>,
+              arena: *mut ::__pb::Arena,
+               len: &mut usize) -> ::__std::ptr::NonNull<u8>;
+          }
+    )rs");
+  }
+}
+
+void GenerateForCpp(const FileDescriptor* file, google::protobuf::io::Printer& p) {
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    // TODO(b/272728844): Implement real logic
+    p.Emit({{"Msg", file->message_type(i)->name()}},
+           R"rs(
+          pub struct $Msg$ {
+            msg: ::__std::ptr::NonNull<u8>,
+          }
+
+          impl $Msg$ {
+            pub fn new() -> Self { Self { msg: ::__std::ptr::NonNull::dangling() }}
+            pub fn serialize(&self) -> Vec<u8> { vec![] }
+          }
+        )rs");
+  }
+}
+
 bool RustGenerator::Generate(const FileDescriptor* file,
                              const std::string& parameter,
                              GeneratorContext* generator_context,
@@ -138,61 +193,14 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     }
   }
 
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    // TODO(b/272728844): Implement real logic
-    std::string full_name = file->message_type(i)->full_name();
-    absl::StrReplaceAll({{".", "_"}}, &full_name);
-    switch (*kernel) {
-      case Kernel::kUpb: {
-        p.Emit({{"Msg", file->message_type(i)->name()}, {"pkg_Msg", full_name}},
-               R"rs(
-          pub struct $Msg$ {
-            msg: ::__std::ptr::NonNull<u8>,
-            arena: *mut ::__pb::Arena,
-          }
-
-          impl $Msg$ {
-            pub fn new() -> Self {
-              let arena = unsafe { ::__pb::Arena::new() };
-              let msg = unsafe { $pkg_Msg$_new(arena) };
-              $Msg$ { msg, arena }
-            }
-            pub fn serialize(&self) -> ::__pb::SerializedData {
-              let arena = unsafe { ::__pb::__runtime::upb_Arena_New() };
-              let mut len = 0;
-              let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
-              unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
-            }
-          }
-
-          extern "C" {
-            fn $pkg_Msg$_new(arena: *mut ::__pb::Arena) -> ::__std::ptr::NonNull<u8>;
-            fn $pkg_Msg$_serialize(
-              msg: ::__std::ptr::NonNull<u8>,
-              arena: *mut ::__pb::Arena,
-               len: &mut usize) -> ::__std::ptr::NonNull<u8>;
-          }
-    )rs");
-        break;
-      }
-      case Kernel::kCpp: {
-        // TODO(b/272728844): Implement real logic
-        p.Emit({{"Msg", file->message_type(i)->name()}},
-               R"rs(
-          pub struct $Msg$ {
-            msg: ::__std::ptr::NonNull<u8>,
-          }
-
-          impl $Msg$ {
-            pub fn new() -> Self { Self { msg: ::__std::ptr::NonNull::dangling() }}
-            pub fn serialize(&self) -> Vec<u8> { vec![] }
-          }
-        )rs");
-        break;
-      }
-    }
+  switch (*kernel) {
+    case Kernel::kUpb:
+      GenerateForUpb(file, p);
+      break;
+    case Kernel::kCpp:
+      GenerateForCpp(file, p);
+      break;
   }
-
   return true;
 }
 
