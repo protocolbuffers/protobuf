@@ -60,10 +60,11 @@ static const size_t memblock_reserve =
     UPB_ALIGN_UP(sizeof(_upb_MemBlock), UPB_MALLOC_ALIGN);
 
 static upb_Arena* _upb_Arena_FindRoot(upb_Arena* a) {
-  uintptr_t poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+  uintptr_t poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
   while (_upb_Arena_IsTaggedPointer(poc)) {
     upb_Arena* next = _upb_Arena_PointerFromTagged(poc);
-    uintptr_t next_poc = upb_Atomic_LoadAcquire(&next->parent_or_count);
+    uintptr_t next_poc =
+        upb_Atomic_Load(&next->parent_or_count, memory_order_acquire);
 
     if (_upb_Arena_IsTaggedPointer(next_poc)) {
       // To keep complexity down, we lazily collapse levels of the tree.  This
@@ -85,7 +86,7 @@ static upb_Arena* _upb_Arena_FindRoot(upb_Arena* a) {
       // further away over time, but the path towards that root will continue to
       // be valid and the creation of the path carries all the memory orderings
       // required.
-      upb_Atomic_StoreRelaxed(&a->parent_or_count, next_poc);
+      upb_Atomic_Store(&a->parent_or_count, next_poc, memory_order_relaxed);
     }
     a = next;
     poc = next_poc;
@@ -110,10 +111,10 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a) {
   // These loads could probably be relaxed, but given that this is debug-only,
   // it's not worth introducing a new variant for it.
-  uintptr_t poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+  uintptr_t poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
   while (_upb_Arena_IsTaggedPointer(poc)) {
     a = _upb_Arena_PointerFromTagged(poc);
-    poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+    poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
   }
   return _upb_Arena_RefCountFromTagged(poc);
 }
@@ -236,11 +237,11 @@ static void arena_dofree(upb_Arena* a) {
 }
 
 void upb_Arena_Free(upb_Arena* a) {
-  uintptr_t poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+  uintptr_t poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
 retry:
   while (_upb_Arena_IsTaggedPointer(poc)) {
     a = _upb_Arena_PointerFromTagged(poc);
-    poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+    poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
   }
 
   // compare_exchange or fetch_sub are RMW operations, which are more
@@ -251,10 +252,10 @@ retry:
     return;
   }
 
-  if (upb_Atomic_CompareExchangeStrongAcqRel(
+  if (upb_Atomic_CompareExchangeStrong(
           &a->parent_or_count, &poc,
-          _upb_Arena_TaggedFromRefcount(_upb_Arena_RefCountFromTagged(poc) -
-                                        1))) {
+          _upb_Arena_TaggedFromRefcount(_upb_Arena_RefCountFromTagged(poc) - 1),
+          memory_order_release, memory_order_acquire)) {
     // We were >1 and we decremented it successfully, so we are done.
     return;
   }
@@ -319,8 +320,10 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   // Only allow fuse with a common allocator
   if (r1->block_alloc != r2->block_alloc) return false;
 
-  uintptr_t r1_poc = upb_Atomic_LoadAcquire(&r1->parent_or_count);
-  uintptr_t r2_poc = upb_Atomic_LoadAcquire(&r2->parent_or_count);
+  uintptr_t r1_poc =
+      upb_Atomic_Load(&r1->parent_or_count, memory_order_acquire);
+  uintptr_t r2_poc =
+      upb_Atomic_Load(&r2->parent_or_count, memory_order_acquire);
   UPB_ASSERT(_upb_Arena_IsTaggedRefcount(r1_poc));
   UPB_ASSERT(_upb_Arena_IsTaggedRefcount(r2_poc));
 
@@ -348,18 +351,20 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   // immediately begin decrementing `r1`'s refcount.  So we must install all the
   // refcounts that we know about first to prevent a premature unref to zero.
   uint32_t r2_refcount = _upb_Arena_RefCountFromTagged(r2_poc);
-  upb_Atomic_AddRelease(&r1->parent_or_count, ((uintptr_t)r2_refcount) << 1);
+  upb_Atomic_Add(&r1->parent_or_count, ((uintptr_t)r2_refcount) << 1,
+                 memory_order_release);
 
   // When installing `r1` as the parent for `r2` racing frees may have changed
   // the refcount for `r2` so we need to capture the old value to fix up `r1`'s
   // refcount based on the delta from what we saw the first time.
-  r2_poc = upb_Atomic_ExchangeAcqRel(&r2->parent_or_count,
-                                     _upb_Arena_TaggedFromPointer(r1));
+  r2_poc = upb_Atomic_Exchange(&r2->parent_or_count,
+                               _upb_Arena_TaggedFromPointer(r1),
+                               memory_order_acq_rel);
   UPB_ASSERT(_upb_Arena_IsTaggedRefcount(r2_poc));
   uint32_t delta_refcount = r2_refcount - _upb_Arena_RefCountFromTagged(r2_poc);
   if (delta_refcount != 0) {
-    upb_Atomic_SubRelease(&r1->parent_or_count, ((uintptr_t)delta_refcount)
-                                                    << 1);
+    upb_Atomic_Sub(&r1->parent_or_count, ((uintptr_t)delta_refcount) << 1,
+                   memory_order_release);
   }
   return true;
 }

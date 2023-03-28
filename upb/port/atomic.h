@@ -35,66 +35,54 @@
 #include <stdatomic.h>
 #include <stdbool.h>
 
-UPB_INLINE void upb_Atomic_Init(_Atomic uintptr_t* addr, uintptr_t val) {
-  atomic_init(addr, val);
-}
-
-UPB_INLINE uintptr_t upb_Atomic_LoadAcquire(_Atomic uintptr_t* addr) {
-  return atomic_load_explicit(addr, memory_order_acquire);
-}
-
-UPB_INLINE void upb_Atomic_StoreRelaxed(_Atomic uintptr_t* addr,
-                                        uintptr_t val) {
-  atomic_store_explicit(addr, val, memory_order_relaxed);
-}
-
-UPB_INLINE void upb_Atomic_AddRelease(_Atomic uintptr_t* addr, uintptr_t val) {
-  atomic_fetch_add_explicit(addr, val, memory_order_release);
-}
-
-UPB_INLINE void upb_Atomic_SubRelease(_Atomic uintptr_t* addr, uintptr_t val) {
+#define upb_Atomic_Init(addr, val) atomic_init(addr, val)
+#define upb_Atomic_Load(addr, order) atomic_load_explicit(addr, order)
+#define upb_Atomic_Store(addr, val, order) \
+  atomic_store_explicit(addr, val, order)
+#define upb_Atomic_Add(addr, val, order) \
+  atomic_fetch_add_explicit(addr, val, order)
+#define upb_Atomic_Sub(addr, val, order) \
   atomic_fetch_sub_explicit(addr, val, memory_order_release);
-}
-
-UPB_INLINE uintptr_t upb_Atomic_ExchangeAcqRel(_Atomic uintptr_t* addr,
-                                               uintptr_t val) {
-  return atomic_exchange_explicit(addr, val, memory_order_acq_rel);
-}
-
-UPB_INLINE bool upb_Atomic_CompareExchangeStrongAcqRel(_Atomic uintptr_t* addr,
-                                                       uintptr_t* expected,
-                                                       uintptr_t desired) {
-  return atomic_compare_exchange_strong_explicit(
-      addr, expected, desired, memory_order_release, memory_order_acquire);
-}
+#define upb_Atomic_Exchange(addr, val, order) \
+  atomic_exchange_explicit(addr, val, order)
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  atomic_compare_exchange_strong_explicit(addr, expected, desired,     \
+                                          success_order, failure_order)
 
 #else  // !UPB_USE_C11_ATOMICS
 
-UPB_INLINE void upb_Atomic_Init(uintptr_t* addr, uintptr_t val) { *addr = val; }
+#include <string.h>
 
-UPB_INLINE uintptr_t upb_Atomic_LoadAcquire(uintptr_t* addr) { return *addr; }
+#define upb_Atomic_Init(addr, val) (*addr = val)
+#define upb_Atomic_Load(addr, order) (*addr)
+#define upb_Atomic_Store(addr, val, order) (*(addr) = val)
+#define upb_Atomic_Add(addr, val, order) (*(addr) += val)
+#define upb_Atomic_Sub(addr, val, order) (*(addr) -= val)
 
-UPB_INLINE void upb_Atomic_StoreRelaxed(uintptr_t* addr, uintptr_t val) {
-  *addr = val;
-}
-
-UPB_INLINE void upb_Atomic_AddRelease(uintptr_t* addr, uintptr_t val) {
-  *addr += val;
-}
-
-UPB_INLINE void upb_Atomic_SubRelease(uintptr_t* addr, uintptr_t val) {
-  *addr -= val;
-}
-
-UPB_INLINE uintptr_t upb_Atomic_ExchangeAcqRel(uintptr_t* addr, uintptr_t val) {
+UPB_INLINE uintptr_t _upb_NonAtomic_ExchangeU(uintptr_t* addr, uintptr_t val) {
   uintptr_t ret = *addr;
   *addr = val;
   return ret;
 }
 
-UPB_INLINE bool upb_Atomic_CompareExchangeStrongAcqRel(uintptr_t* addr,
-                                                       uintptr_t* expected,
-                                                       uintptr_t desired) {
+// `addr` should logically be `void**`, but `void*` allows for more convenient
+// implicit conversions.
+UPB_INLINE void* _upb_NonAtomic_ExchangeP(void* addr, void* val) {
+  void* ret;
+  memcpy(&ret, addr, sizeof(val));
+  memcpy(addr, &val, sizeof(val));
+  return ret;
+}
+
+#define upb_Atomic_Exchange(addr, val, order) \
+  _Generic((val),                             \
+      uintptr_t: _upb_NonAtomic_ExchangeU,    \
+      void*: _upb_NonAtomic_ExchangeP)(addr, val)
+
+UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongU(uintptr_t* addr,
+                                                      uintptr_t* expected,
+                                                      uintptr_t desired) {
   if (*addr == *expected) {
     *addr = desired;
     return true;
@@ -103,6 +91,25 @@ UPB_INLINE bool upb_Atomic_CompareExchangeStrongAcqRel(uintptr_t* addr,
     return false;
   }
 }
+
+// `addr` and `expected` should logically be `void**`, but `void*` allows for
+// more convenient implicit conversions.
+UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
+                                                      void* expected,
+                                                      void* desired) {
+  if (memcmp(addr, expected, sizeof(desired)) == 0) {
+    memcpy(addr, &desired, sizeof(desired));
+    return true;
+  } else {
+    memcpy(expected, addr, sizeof(desired));
+    return false;
+  }
+}
+
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired, order) \
+  _Generic((desired),                                                    \
+      uintptr_t: _upb_NonAtomic_CompareExchangeStrongU,                  \
+      void*: _upb_NonAtomic_CompareExchangeStrongP)(addr, expected, desired)
 
 #endif
 
