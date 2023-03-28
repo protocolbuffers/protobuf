@@ -7203,7 +7203,7 @@ void DescriptorBuilder::ValidateFieldOptions(
 
   // If this is a declared extension, validate that the actual name and type
   // match the declaration.
-  if (field->is_extension()) {
+  if (field->is_extension() && !pool_->IsExtendingDescriptor(*field)) {
     const Descriptor::ExtensionRange* extension_range =
         field->containing_type()->FindExtensionRangeContainingNumber(
             field->number());
@@ -7221,14 +7221,14 @@ void DescriptorBuilder::ValidateFieldOptions(
     }
 
     if (!extension_range->options_->declaration().empty()) {
-      AddError(field->full_name(), proto,
-               DescriptorPool::ErrorCollector::EXTENDEE,
-               absl::Substitute(
-                   "Missing extension declaration for field $0 with number $1. "
-                   "An extension range must declare for all extension fields "
-                   "once if there's any declaration in the range. Otherwise, "
-                   "consider splitting up the range.",
-                   field->full_name(), field->number()));
+        AddError(
+            field->full_name(), proto, DescriptorPool::ErrorCollector::EXTENDEE,
+            absl::Substitute(
+                "Missing extension declaration for field $0 with number $1. "
+                "An extension range must declare for all extension fields "
+                "once if there's any declaration in the range. Otherwise, "
+                "consider splitting up the range.",
+                field->full_name(), field->number()));
       return;
     }
   }
