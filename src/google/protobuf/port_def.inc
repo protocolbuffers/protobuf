@@ -994,6 +994,9 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Turn on -Wdeprecated-enum-enum-conversion. This deprecation comes in C++20
 // via http://wg21.link/p1120r0.
 #pragma clang diagnostic error "-Wdeprecated-enum-enum-conversion"
+// This error has been generally flaky, but we need to disable it specifically
+// to fix https://github.com/protocolbuffers/protobuf/issues/12313
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -1014,6 +1017,9 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 //   int index = ...
 //   int value = vec[index];
 #pragma GCC diagnostic ignored "-Wsign-conversion"
+// This error has been generally flaky, but we need to disable it specifically
+// to fix https://github.com/protocolbuffers/protobuf/issues/12313
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif  // __GNUC__
 
 // Silence some MSVC warnings in all our code.
