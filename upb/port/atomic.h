@@ -106,9 +106,10 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
   }
 }
 
-#define upb_Atomic_CompareExchangeStrong(addr, expected, desired, order) \
-  _Generic((desired),                                                    \
-      uintptr_t: _upb_NonAtomic_CompareExchangeStrongU,                  \
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  _Generic((desired),                                                  \
+      uintptr_t: _upb_NonAtomic_CompareExchangeStrongU,                \
       void*: _upb_NonAtomic_CompareExchangeStrongP)(addr, expected, desired)
 
 #endif
