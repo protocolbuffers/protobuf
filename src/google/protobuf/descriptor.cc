@@ -7200,6 +7200,7 @@ void DescriptorBuilder::ValidateFieldOptions(
         field->containing_type()->FindExtensionRangeContainingNumber(
             field->number());
 
+
     if (extension_range->options_ == nullptr) {
       return;
     }
