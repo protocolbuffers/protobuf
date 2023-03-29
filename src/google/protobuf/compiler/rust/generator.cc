@@ -95,6 +95,8 @@ std::string GetFileExtensionForKernel(Kernel kernel) {
     case Kernel::kCpp:
       return ".c.pb.rs";
   }
+  ABSL_LOG(FATAL) << "Unknown kernel type: ";
+  return "";
 }
 
 void GenerateForUpb(const FileDescriptor* file, google::protobuf::io::Printer& p) {
