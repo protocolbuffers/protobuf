@@ -65,67 +65,6 @@ TEST(Cpp, Iteration) {
   EXPECT_EQ(oneof_count, md.oneof_count());
 }
 
-TEST(Cpp, Arena) {
-  int n = 100000;
-
-  struct Decrementer {
-    Decrementer(int* _p) : p(_p) {}
-    ~Decrementer() { (*p)--; }
-    int* p;
-  };
-
-  {
-    upb::Arena arena;
-    for (int i = 0; i < n; i++) {
-      arena.Own(new Decrementer(&n));
-
-      // Intersperse allocation and ensure we can write to it.
-      int* val = static_cast<int*>(upb_Arena_Malloc(arena.ptr(), sizeof(int)));
-      *val = i;
-    }
-
-    // Test a large allocation.
-    upb_Arena_Malloc(arena.ptr(), 1000000);
-  }
-  EXPECT_EQ(0, n);
-
-  {
-    // Test fuse.
-    upb::Arena arena1;
-    upb::Arena arena2;
-
-    arena1.Fuse(arena2);
-
-    upb_Arena_Malloc(arena1.ptr(), 10000);
-    upb_Arena_Malloc(arena2.ptr(), 10000);
-  }
-}
-
-TEST(Cpp, InlinedArena) {
-  int n = 100000;
-
-  struct Decrementer {
-    Decrementer(int* _p) : p(_p) {}
-    ~Decrementer() { (*p)--; }
-    int* p;
-  };
-
-  {
-    upb::InlinedArena<1024> arena;
-    for (int i = 0; i < n; i++) {
-      arena.Own(new Decrementer(&n));
-
-      // Intersperse allocation and ensure we can write to it.
-      int* val = static_cast<int*>(upb_Arena_Malloc(arena.ptr(), sizeof(int)));
-      *val = i;
-    }
-
-    // Test a large allocation.
-    upb_Arena_Malloc(arena.ptr(), 1000000);
-  }
-  EXPECT_EQ(0, n);
-}
-
 TEST(Cpp, InlinedArena2) {
   upb::InlinedArena<64> arena;
   upb_Arena_Malloc(arena.ptr(), sizeof(int));

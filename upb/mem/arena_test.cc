@@ -17,38 +17,14 @@
 
 namespace {
 
-static void decrement_int(void* ptr) {
-  int* iptr = static_cast<int*>(ptr);
-  (*iptr)--;
-}
-
 TEST(ArenaTest, ArenaFuse) {
-  int i1 = 5;
-  int i2 = 5;
-  int i3 = 5;
-  int i4 = 5;
-
   upb_Arena* arena1 = upb_Arena_New();
   upb_Arena* arena2 = upb_Arena_New();
 
-  upb_Arena_AddCleanup(arena1, &i1, decrement_int);
-  upb_Arena_AddCleanup(arena2, &i2, decrement_int);
-
   EXPECT_TRUE(upb_Arena_Fuse(arena1, arena2));
 
-  upb_Arena_AddCleanup(arena1, &i3, decrement_int);
-  upb_Arena_AddCleanup(arena2, &i4, decrement_int);
-
   upb_Arena_Free(arena1);
-  EXPECT_EQ(5, i1);
-  EXPECT_EQ(5, i2);
-  EXPECT_EQ(5, i3);
-  EXPECT_EQ(5, i4);
   upb_Arena_Free(arena2);
-  EXPECT_EQ(4, i1);
-  EXPECT_EQ(4, i2);
-  EXPECT_EQ(4, i3);
-  EXPECT_EQ(4, i4);
 }
 
 /* Do nothing allocator for testing */
@@ -56,19 +32,18 @@ extern "C" void* TestAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize,
                                size_t size) {
   return upb_alloc_global.func(alloc, ptr, oldsize, size);
 }
-ABSL_CONST_INIT upb_alloc test_alloc = {&TestAllocFunc};
 
 TEST(ArenaTest, FuseWithInitialBlock) {
   char buf1[1024];
   char buf2[1024];
   upb_Arena* arenas[] = {upb_Arena_Init(buf1, 1024, &upb_alloc_global),
                          upb_Arena_Init(buf2, 1024, &upb_alloc_global),
-                         upb_Arena_Init(NULL, 0, &test_alloc),
                          upb_Arena_Init(NULL, 0, &upb_alloc_global)};
   int size = sizeof(arenas) / sizeof(arenas[0]);
   for (int i = 0; i < size; ++i) {
     for (int j = 0; j < size; ++j) {
       if (i == j) {
+        // Fuse to self is always allowed.
         EXPECT_TRUE(upb_Arena_Fuse(arenas[i], arenas[j]));
       } else {
         EXPECT_FALSE(upb_Arena_Fuse(arenas[i], arenas[j]));

@@ -31,14 +31,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-static uint32_t* upb_cleanup_pointer(uintptr_t cleanup_metadata) {
-  return (uint32_t*)(cleanup_metadata & ~0x1);
-}
-
-static bool upb_cleanup_has_initial_block(uintptr_t cleanup_metadata) {
-  return cleanup_metadata & 0x1;
-}
-
 static uintptr_t upb_cleanup_metadata(uint32_t* cleanup,
                                       bool has_initial_block) {
   return (uintptr_t)cleanup | has_initial_block;
@@ -48,14 +40,8 @@ struct _upb_MemBlock {
   // Atomic only for the benefit of SpaceAllocated().
   UPB_ATOMIC(_upb_MemBlock*) next;
   uint32_t size;
-  uint32_t cleanups;
   // Data follows.
 };
-
-typedef struct cleanup_ent {
-  upb_CleanupFunc* cleanup;
-  void* ud;
-} cleanup_ent;
 
 static const size_t memblock_reserve =
     UPB_ALIGN_UP(sizeof(_upb_MemBlock), UPB_MALLOC_ALIGN);
@@ -128,13 +114,10 @@ static void upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t size) {
   // Insert into linked list.
   upb_Atomic_Init(&block->next, a->blocks);
   block->size = (uint32_t)size;
-  block->cleanups = 0;
   upb_Atomic_Store(&a->blocks, block, memory_order_relaxed);
 
   a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
   a->head.end = UPB_PTR_AT(block, size, char);
-  a->cleanup_metadata = upb_cleanup_metadata(
-      &block->cleanups, upb_cleanup_has_initial_block(a->cleanup_metadata));
 
   UPB_POISON_MEMORY_REGION(a->head.ptr, a->head.end - a->head.ptr);
 }
@@ -144,7 +127,7 @@ static bool upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
   _upb_MemBlock* last_block = upb_Atomic_Load(&a->blocks, memory_order_relaxed);
   size_t last_size = last_block != NULL ? last_block->size : 128;
   size_t block_size = UPB_MAX(size, last_size * 2) + memblock_reserve;
-  _upb_MemBlock* block = upb_malloc(a->block_alloc, block_size);
+  _upb_MemBlock* block = upb_malloc(upb_Arena_BlockAlloc(a), block_size);
 
   if (!block) return false;
   upb_Arena_AddBlock(a, block, block_size);
@@ -159,12 +142,13 @@ void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size) {
 
 /* Public Arena API ***********************************************************/
 
-static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
+static upb_Arena* upb_Arena_InitSlow(upb_alloc* alloc) {
   const size_t first_block_overhead = sizeof(upb_Arena) + memblock_reserve;
   upb_Arena* a;
 
   /* We need to malloc the initial block. */
-  n = first_block_overhead + 256;
+  char* mem;
+  size_t n = first_block_overhead + 256;
   if (!alloc || !(mem = upb_malloc(alloc, n))) {
     return NULL;
   }
@@ -172,12 +156,11 @@ static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
   a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
   n -= sizeof(*a);
 
-  a->block_alloc = alloc;
+  a->block_alloc = upb_Arena_MakeBlockAlloc(alloc, 0);
   upb_Atomic_Init(&a->parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   upb_Atomic_Init(&a->next, NULL);
   upb_Atomic_Init(&a->tail, a);
   upb_Atomic_Init(&a->blocks, NULL);
-  a->cleanup_metadata = upb_cleanup_metadata(NULL, false);
 
   upb_Arena_AddBlock(a, mem, n);
 
@@ -200,7 +183,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_Arena));
 
   if (UPB_UNLIKELY(n < sizeof(upb_Arena))) {
-    return arena_initslow(mem, n, alloc);
+    return upb_Arena_InitSlow(alloc);
   }
 
   a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
@@ -209,10 +192,9 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   upb_Atomic_Init(&a->next, NULL);
   upb_Atomic_Init(&a->tail, a);
   upb_Atomic_Init(&a->blocks, NULL);
-  a->block_alloc = alloc;
+  a->block_alloc = upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.ptr = mem;
   a->head.end = UPB_PTR_AT(mem, n - sizeof(*a), char);
-  a->cleanup_metadata = upb_cleanup_metadata(NULL, true);
 
   return a;
 }
@@ -224,22 +206,13 @@ static void arena_dofree(upb_Arena* a) {
     // Load first since arena itself is likely from one of its blocks.
     upb_Arena* next_arena =
         (upb_Arena*)upb_Atomic_Load(&a->next, memory_order_acquire);
+    upb_alloc* block_alloc = upb_Arena_BlockAlloc(a);
     _upb_MemBlock* block = upb_Atomic_Load(&a->blocks, memory_order_relaxed);
     while (block != NULL) {
-      /* Load first since we are deleting block. */
+      // Load first since we are deleting block.
       _upb_MemBlock* next_block =
           upb_Atomic_Load(&block->next, memory_order_relaxed);
-
-      if (block->cleanups > 0) {
-        cleanup_ent* end = UPB_PTR_AT(block, block->size, void);
-        cleanup_ent* ptr = end - block->cleanups;
-
-        for (; ptr < end; ptr++) {
-          ptr->cleanup(ptr->ud);
-        }
-      }
-
-      upb_free(a->block_alloc, block);
+      upb_free(block_alloc, block);
       block = next_block;
     }
     a = next_arena;
@@ -275,27 +248,6 @@ retry:
   goto retry;
 }
 
-bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func) {
-  cleanup_ent* ent;
-  uint32_t* cleanups = upb_cleanup_pointer(a->cleanup_metadata);
-
-  if (!cleanups || _upb_ArenaHas(a) < sizeof(cleanup_ent)) {
-    if (!upb_Arena_AllocBlock(a, 128)) return false; /* Out of memory. */
-    UPB_ASSERT(_upb_ArenaHas(a) >= sizeof(cleanup_ent));
-    cleanups = upb_cleanup_pointer(a->cleanup_metadata);
-  }
-
-  a->head.end -= sizeof(cleanup_ent);
-  ent = (cleanup_ent*)a->head.end;
-  (*cleanups)++;
-  UPB_UNPOISON_MEMORY_REGION(ent, sizeof(cleanup_ent));
-
-  ent->cleanup = func;
-  ent->ud = ud;
-
-  return true;
-}
-
 bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   // SAFE IN THE PRESENCE OF FUSE/FREE RACES BUT NOT IN THE
   // PRESENCE OF FUSE/FUSE RACES!!!
@@ -318,17 +270,16 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   // that only refcounts can change once we have found the root.  Because the
   // threads doing the fuse must hold references, we can guarantee that no
   // refcounts will reach zero concurrently.
+
   upb_Arena* r1 = _upb_Arena_FindRoot(a1);
   upb_Arena* r2 = _upb_Arena_FindRoot(a2);
 
   if (r1 == r2) return true;  // Already fused.
 
   // Do not fuse initial blocks since we cannot lifetime extend them.
-  if (upb_cleanup_has_initial_block(r1->cleanup_metadata)) return false;
-  if (upb_cleanup_has_initial_block(r2->cleanup_metadata)) return false;
-
-  // Only allow fuse with a common allocator
-  if (r1->block_alloc != r2->block_alloc) return false;
+  // Any other fuse scenario is allowed.
+  if (upb_Arena_HasInitialBlock(r1)) return false;
+  if (upb_Arena_HasInitialBlock(r2)) return false;
 
   uintptr_t r1_poc =
       upb_Atomic_Load(&r1->parent_or_count, memory_order_acquire);

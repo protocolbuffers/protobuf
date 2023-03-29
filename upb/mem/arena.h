@@ -49,8 +49,6 @@
 
 typedef struct upb_Arena upb_Arena;
 
-typedef void upb_CleanupFunc(void* context);
-
 typedef struct {
   char *ptr, *end;
 } _upb_ArenaHead;
@@ -65,8 +63,6 @@ extern "C" {
 UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
-UPB_API bool upb_Arena_AddCleanup(upb_Arena* a, void* ud,
-                                  upb_CleanupFunc* func);
 UPB_API bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
 
 void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size);

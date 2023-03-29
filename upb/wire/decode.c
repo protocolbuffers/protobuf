@@ -1285,7 +1285,6 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
   _upb_MemBlock* blocks =
       upb_Atomic_Load(&decoder->arena.blocks, memory_order_relaxed);
   arena->head = decoder->arena.head;
-  arena->cleanup_metadata = decoder->arena.cleanup_metadata;
   upb_Atomic_Store(&arena->blocks, blocks, memory_order_relaxed);
   return decoder->status;
 }
@@ -1316,7 +1315,6 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
   _upb_MemBlock* blocks = upb_Atomic_Load(&arena->blocks, memory_order_relaxed);
   decoder.arena.head = arena->head;
   decoder.arena.block_alloc = arena->block_alloc;
-  decoder.arena.cleanup_metadata = arena->cleanup_metadata;
   upb_Atomic_Init(&decoder.arena.blocks, blocks);
 
   return upb_Decoder_Decode(&decoder, buf, msg, l, arena);

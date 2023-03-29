@@ -37,23 +37,18 @@ typedef struct _upb_MemBlock _upb_MemBlock;
 
 struct upb_Arena {
   _upb_ArenaHead head;
-  /* Stores cleanup metadata for this arena.
-   * - a pointer to the current cleanup counter.
-   * - a boolean indicating if there is an unowned initial block.  */
-  uintptr_t cleanup_metadata;
 
-  /* Allocator to allocate arena blocks.  We are responsible for freeing these
-   * when we are destroyed. */
-  upb_alloc* block_alloc;
+  // upb_alloc* together with a low bit which signals if there is an initial
+  // block.
+  uintptr_t block_alloc;
 
-  /* When multiple arenas are fused together, each arena points to a parent
-   * arena (root points to itself). The root tracks how many live arenas
-   * reference it.
-   *
-   * The low bit is tagged:
-   *   0: pointer to parent
-   *   1: count, left shifted by one
-   */
+  // When multiple arenas are fused together, each arena points to a parent
+  // arena (root points to itself). The root tracks how many live arenas
+  // reference it.
+
+  // The low bit is tagged:
+  //   0: pointer to parent
+  //   1: count, left shifted by one
   UPB_ATOMIC(uintptr_t) parent_or_count;
 
   // All nodes that are fused together are in a singly-linked list.
@@ -97,6 +92,21 @@ UPB_INLINE uintptr_t _upb_Arena_TaggedFromPointer(upb_Arena* a) {
   uintptr_t parent_or_count = (uintptr_t)a;
   UPB_ASSERT(_upb_Arena_IsTaggedPointer(parent_or_count));
   return parent_or_count;
+}
+
+UPB_INLINE upb_alloc* upb_Arena_BlockAlloc(upb_Arena* arena) {
+  return (upb_alloc*)(arena->block_alloc & ~0x1);
+}
+
+UPB_INLINE uintptr_t upb_Arena_MakeBlockAlloc(upb_alloc* alloc,
+                                              bool has_initial) {
+  uintptr_t alloc_uint = (uintptr_t)alloc;
+  UPB_ASSERT((alloc_uint & 1) == 0);
+  return alloc_uint | (has_initial ? 1 : 0);
+}
+
+UPB_INLINE bool upb_Arena_HasInitialBlock(upb_Arena* arena) {
+  return arena->block_alloc & 0x1;
 }
 
 #include "upb/port/undef.inc"
