@@ -47,6 +47,16 @@ namespace compiler {
 // corresponding to source-retention options.
 PROTOC_EXPORT FileDescriptorProto StripSourceRetentionOptions(
     const FileDescriptor& file, bool include_source_code_info = false);
+PROTOC_EXPORT DescriptorProto
+StripSourceRetentionOptions(const Descriptor& message);
+PROTOC_EXPORT DescriptorProto::ExtensionRange StripSourceRetentionOptions(
+    const Descriptor& message, const Descriptor::ExtensionRange& range);
+PROTOC_EXPORT EnumDescriptorProto
+StripSourceRetentionOptions(const EnumDescriptor& enm);
+PROTOC_EXPORT FieldDescriptorProto
+StripSourceRetentionOptions(const FieldDescriptor& field);
+PROTOC_EXPORT OneofDescriptorProto
+StripSourceRetentionOptions(const OneofDescriptor& oneof);
 
 // The following functions take a descriptor and strip all source-retention
 // options from just the local entity (e.g. message, enum, field). Most code
@@ -63,6 +73,8 @@ PROTOC_EXPORT FileOptions
 StripLocalSourceRetentionOptions(const FileDescriptor& descriptor);
 PROTOC_EXPORT MessageOptions
 StripLocalSourceRetentionOptions(const Descriptor& descriptor);
+PROTOC_EXPORT ExtensionRangeOptions StripLocalSourceRetentionOptions(
+    const Descriptor& descriptor, const Descriptor::ExtensionRange& range);
 PROTOC_EXPORT MethodOptions
 StripLocalSourceRetentionOptions(const MethodDescriptor& descriptor);
 PROTOC_EXPORT OneofOptions

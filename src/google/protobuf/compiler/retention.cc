@@ -210,6 +210,43 @@ FileDescriptorProto StripSourceRetentionOptions(const FileDescriptor& file,
   return file_proto;
 }
 
+DescriptorProto StripSourceRetentionOptions(const Descriptor& message) {
+  DescriptorProto message_proto;
+  message.CopyTo(&message_proto);
+  ConvertToDynamicMessageAndStripOptions(message_proto,
+                                         *message.file()->pool());
+  return message_proto;
+}
+
+DescriptorProto::ExtensionRange StripSourceRetentionOptions(
+    const Descriptor& message, const Descriptor::ExtensionRange& range) {
+  DescriptorProto::ExtensionRange range_proto;
+  range.CopyTo(&range_proto);
+  ConvertToDynamicMessageAndStripOptions(range_proto, *message.file()->pool());
+  return range_proto;
+}
+
+EnumDescriptorProto StripSourceRetentionOptions(const EnumDescriptor& enm) {
+  EnumDescriptorProto enm_proto;
+  enm.CopyTo(&enm_proto);
+  ConvertToDynamicMessageAndStripOptions(enm_proto, *enm.file()->pool());
+  return enm_proto;
+}
+
+FieldDescriptorProto StripSourceRetentionOptions(const FieldDescriptor& field) {
+  FieldDescriptorProto field_proto;
+  field.CopyTo(&field_proto);
+  ConvertToDynamicMessageAndStripOptions(field_proto, *field.file()->pool());
+  return field_proto;
+}
+
+OneofDescriptorProto StripSourceRetentionOptions(const OneofDescriptor& oneof) {
+  OneofDescriptorProto oneof_proto;
+  oneof.CopyTo(&oneof_proto);
+  ConvertToDynamicMessageAndStripOptions(oneof_proto, *oneof.file()->pool());
+  return oneof_proto;
+}
+
 EnumOptions StripLocalSourceRetentionOptions(const EnumDescriptor& descriptor) {
   return StripLocalOptions(descriptor);
 }
@@ -230,6 +267,14 @@ FileOptions StripLocalSourceRetentionOptions(const FileDescriptor& descriptor) {
 
 MessageOptions StripLocalSourceRetentionOptions(const Descriptor& descriptor) {
   return StripLocalOptions(descriptor);
+}
+
+ExtensionRangeOptions StripLocalSourceRetentionOptions(
+    const Descriptor& descriptor, const Descriptor::ExtensionRange& range) {
+  if (range.options_ == nullptr) return ExtensionRangeOptions{};
+  ExtensionRangeOptions options = *range.options_;
+  ConvertToDynamicMessageAndStripOptions(options, GetPool(descriptor));
+  return options;
 }
 
 MethodOptions StripLocalSourceRetentionOptions(
