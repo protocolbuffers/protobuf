@@ -2231,7 +2231,7 @@ TEST_F(ParserValidationErrorTest, EnumValueAliasError) {
       "}\n",
       "2:8: \"BAZ\" uses the same enum value as \"BAR\". If this is "
       "intended, set 'option allow_alias = true;' to the enum "
-      "definition.\n");
+      "definition. The next available enum value is 2.\n");
 }
 
 TEST_F(ParserValidationErrorTest, ExplicitlyMapEntryError) {
