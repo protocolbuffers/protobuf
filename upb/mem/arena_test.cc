@@ -139,8 +139,7 @@ TEST(ArenaTest, FuzzFuseFreeRace) {
   for (auto& t : threads) t.join();
 }
 
-// Disabled because this operation is currently unsupported.
-TEST(ArenaTest, DISABLED_FuzzFuseFuseRace) {
+TEST(ArenaTest, FuzzFuseFuseRace) {
   Environment env;
 
   absl::Notification done;
@@ -149,7 +148,7 @@ TEST(ArenaTest, DISABLED_FuzzFuseFuseRace) {
     threads.emplace_back([&]() {
       absl::BitGen gen;
       while (!done.HasBeenNotified()) {
-        env.RandomPoke(gen);
+        env.RandomFuse(gen);
       }
     });
   }
@@ -157,7 +156,7 @@ TEST(ArenaTest, DISABLED_FuzzFuseFuseRace) {
   absl::BitGen gen;
   auto end = absl::Now() + absl::Seconds(2);
   while (absl::Now() < end) {
-    env.RandomPoke(gen);
+    env.RandomFuse(gen);
   }
   done.Notify();
   for (auto& t : threads) t.join();

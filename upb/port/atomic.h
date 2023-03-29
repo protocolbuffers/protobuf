@@ -49,6 +49,10 @@
                                          success_order, failure_order) \
   atomic_compare_exchange_strong_explicit(addr, expected, desired,     \
                                           success_order, failure_order)
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  atomic_compare_exchange_weak_explicit(addr, expected, desired,               \
+                                        success_order, failure_order)
 
 #else  // !UPB_USE_C11_ATOMICS
 
@@ -107,6 +111,12 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(upb_Arena** addr,
   _Generic((desired),                                                     \
       uintptr_t: _upb_NonAtomic_CompareExchangeStrongU,                   \
       upb_Arena *: _upb_NonAtomic_CompareExchangeStrongP)(addr, expected, \
+                                                          desired)
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  _Generic((desired),                                                          \
+      uintptr_t: _upb_NonAtomic_CompareExchangeStrongU,                        \
+      upb_Arena *: _upb_NonAtomic_CompareExchangeStrongP)(addr, expected,      \
                                                           desired)
 
 #endif

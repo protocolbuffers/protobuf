@@ -72,13 +72,13 @@ UPB_INLINE bool _upb_Arena_IsTaggedPointer(uintptr_t parent_or_count) {
   return (parent_or_count & 1) == 0;
 }
 
-UPB_INLINE uint32_t _upb_Arena_RefCountFromTagged(uintptr_t parent_or_count) {
+UPB_INLINE uintptr_t _upb_Arena_RefCountFromTagged(uintptr_t parent_or_count) {
   UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
   return parent_or_count >> 1;
 }
 
-UPB_INLINE uintptr_t _upb_Arena_TaggedFromRefcount(uint32_t refcount) {
-  uintptr_t parent_or_count = (((uintptr_t)refcount) << 1) | 1;
+UPB_INLINE uintptr_t _upb_Arena_TaggedFromRefcount(uintptr_t refcount) {
+  uintptr_t parent_or_count = (refcount << 1) | 1;
   UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
   return parent_or_count;
 }
