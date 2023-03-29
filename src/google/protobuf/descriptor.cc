@@ -7220,6 +7220,17 @@ void DescriptorBuilder::ValidateFieldOptions(
       return;
     }
 
+    if (!extension_range->options_->declaration().empty()) {
+      AddError(field->full_name(), proto,
+               DescriptorPool::ErrorCollector::EXTENDEE,
+               absl::Substitute(
+                   "Missing extension declaration for field $0 with number $1. "
+                   "An extension range must declare for all extension fields "
+                   "once if there's any declaration in the range. Otherwise, "
+                   "consider splitting up the range.",
+                   field->full_name(), field->number()));
+      return;
+    }
   }
 }
 
