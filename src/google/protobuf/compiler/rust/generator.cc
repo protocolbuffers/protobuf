@@ -88,6 +88,15 @@ std::string GetCrateName(const FileDescriptor* dependency) {
                                        });
 }
 
+std::string GetFileExtensionForKernel(Kernel kernel) {
+  switch (kernel) {
+    case Kernel::kUpb:
+      return ".u.pb.rs";
+    case Kernel::kCpp:
+      return ".c.pb.rs";
+  }
+}
+
 void GenerateForUpb(const FileDescriptor* file, google::protobuf::io::Printer& p) {
   for (int i = 0; i < file->message_type_count(); ++i) {
     // The prefix used by the UPB compiler to generate unique function
@@ -171,8 +180,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   }
 
   auto basename = StripProto(file->name());
-  auto outfile = absl::WrapUnique(
-      generator_context->Open(absl::StrCat(basename, ".pb.rs")));
+  auto outfile = absl::WrapUnique(generator_context->Open(
+      absl::StrCat(basename, GetFileExtensionForKernel(*kernel))));
 
   google::protobuf::io::Printer p(outfile.get());
   p.Emit(R"rs(

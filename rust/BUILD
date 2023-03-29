@@ -37,11 +37,16 @@ rust_test(
 
 # TODO(b/270125787): Move to the right location once rust_proto_library is no longer experimental.
 proto_lang_toolchain(
-    name = "proto_lang_toolchain",
-    command_line = "--rust_out=experimental-codegen=enabled,kernel=" + select({
-        ":use_upb_kernel": "upb",
-        "//conditions:default": "cpp",
-    }) + ":$(OUT)",
+    name = "proto_rust_upb_toolchain",
+    command_line = "--rust_out=experimental-codegen=enabled,kernel=upb:$(OUT)",
+    progress_message = "Generating Rust proto_library %{label}",
+    runtime = ":protobuf",
+    visibility = ["//visibility:public"],
+)
+
+proto_lang_toolchain(
+    name = "proto_rust_cpp_toolchain",
+    command_line = "--rust_out=experimental-codegen=enabled,kernel=cpp:$(OUT)",
     progress_message = "Generating Rust proto_library %{label}",
     runtime = ":protobuf",
     visibility = ["//visibility:public"],
