@@ -31,7 +31,7 @@ load(
 proto_library(
     name = "ads_proto",
     srcs = glob([
-        "google/ads/googleads/v11/**/*.proto",
+        "google/ads/googleads/v13/**/*.proto",
         "google/api/**/*.proto",
         "google/rpc/**/*.proto",
         "google/longrunning/**/*.proto",
