@@ -38,10 +38,10 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.UnknownFieldSet;
 import com.google.protobuf.util.JsonFormat;
@@ -73,7 +73,8 @@ public class RubyMessage extends RubyObject {
     this.builder = DynamicMessage.newBuilder(descriptor);
     this.fields = new HashMap<FieldDescriptor, IRubyObject>();
     this.oneofCases = new HashMap<OneofDescriptor, FieldDescriptor>();
-    this.proto3 = descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3;
+    this.proto3 =
+        LegacyFileDescriptor.getSyntax(descriptor.getFile()) == LegacyFileDescriptor.Syntax.PROTO3;
   }
 
   /*
