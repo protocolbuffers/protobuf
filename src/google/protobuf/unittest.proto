@@ -231,7 +231,12 @@ enum TestReservedEnumFields {
 }
 
 message TestAllExtensions {
-  extensions 1 to max;
+  extensions 1 to 524999999;
+  extensions 525000000 [declaration = {
+    number: 525000000,
+    full_name: ".protobuf_unittest.crumple_zone_declared_field1",
+    type: "int32"}];
+  extensions 525000001 to max;
 }
 
 extend TestAllExtensions {
