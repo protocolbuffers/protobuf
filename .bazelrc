@@ -3,6 +3,7 @@ build --features=-debug_prefix_map_pwd_is_dot
 
 # Pin to C++17
 build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build:cpp17_msvc --cxxopt=/std:c++17 --host_cxxopt=/std:c++17
 
 # Use our custom-configured c++ toolchain.
 

@@ -84,14 +84,14 @@ void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
   if (ext->extension_scope()) {
     output(
         R"cc(
-          constexpr ::protos::internal::ExtensionIdentifier<$0, $3> $4::$2(&$1);
+          const ::protos::internal::ExtensionIdentifier<$0, $3> $4::$2(&$1);
         )cc",
         ContainingTypeName(ext), mini_table_name, ext->name(),
         CppTypeParameterName(ext), ClassName(ext->extension_scope()));
   } else {
     output(
         R"cc(
-          constexpr ::protos::internal::ExtensionIdentifier<$0, $3> $2(&$1);
+          const ::protos::internal::ExtensionIdentifier<$0, $3> $2(&$1);
         )cc",
         ContainingTypeName(ext), mini_table_name, ext->name(),
         CppTypeParameterName(ext));

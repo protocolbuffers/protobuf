@@ -572,7 +572,7 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
 UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const upb_Message* msg, const upb_MiniTableField* field) {
   _upb_MiniTableField_CheckIsArray(field);
-  const upb_Array* ret;
+  upb_Array* ret;
   const upb_Array* default_val = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
   return ret;
@@ -626,7 +626,7 @@ UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
 UPB_API_INLINE const upb_Map* upb_Message_GetMap(
     const upb_Message* msg, const upb_MiniTableField* field) {
   _upb_MiniTableField_CheckIsMap(field);
-  const upb_Map* ret;
+  upb_Map* ret;
   const upb_Map* default_val = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
   return ret;

@@ -102,5 +102,9 @@ sh_test(
         "//:cmake_files",
         "@utf8_range//:utf8_range_srcs",
     ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

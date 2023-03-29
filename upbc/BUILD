@@ -290,7 +290,7 @@ cc_binary(
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     target_compatible_with = select({
-        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "@platforms//os:windows": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     visibility = ["//visibility:public"],

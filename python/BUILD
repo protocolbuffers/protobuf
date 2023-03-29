@@ -192,7 +192,7 @@ pkg_files(
 # end:github_only
 # begin:google_only
 # _message_target_compatible_with = {
-#     "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+#     "@platforms//os:windows": ["@platforms//:incompatible"],
 #     "//conditions:default": [],
 # }
 # end:google_only

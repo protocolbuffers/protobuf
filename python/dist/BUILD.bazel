@@ -220,6 +220,10 @@ pkg_tar(
     extension = "tar.gz",
     package_dir = "protobuf",
     package_file_name = "protobuf.tar.gz",
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 genrule(
@@ -234,6 +238,10 @@ genrule(
         cd ..
         mv protobuf/dist/*.tar.gz $@
     """,
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 py_wheel(

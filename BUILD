@@ -677,7 +677,7 @@ cc_test(
     ],
     # TODO(b/259158612): fix this test on Windows.
     target_compatible_with = select({
-        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "@platforms//os:windows": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     deps = [

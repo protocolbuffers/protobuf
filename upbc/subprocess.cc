@@ -34,7 +34,7 @@
 #include <cstring>
 #include <iostream>
 
-#ifndef _WIN32
+#ifndef _MSVC_LANG
 #include <errno.h>
 #include <signal.h>
 #include <sys/select.h>

@@ -75,7 +75,7 @@ cc_binary(
     copts = UPB_DEFAULT_COPTS,
     data = ["conformance_upb_failures.txt"],
     target_compatible_with = select({
-        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "@platforms//os:windows": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     deps = [
@@ -109,7 +109,7 @@ sh_test(
         "@com_google_protobuf//conformance:conformance_test_runner",
     ],
     target_compatible_with = select({
-        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "@platforms//os:windows": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     deps = ["@bazel_tools//tools/bash/runfiles"],
@@ -124,7 +124,7 @@ cc_binary(
     ],
     data = ["conformance_upb_failures.txt"],
     target_compatible_with = select({
-        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "@platforms//os:windows": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     deps = [
