@@ -13,6 +13,8 @@ load("@upb//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library
 
 proto_common = proto_common_do_not_use
 
+visibility(["//rust/..."])
+
 RustProtoInfo = provider(
     doc = "Rust protobuf provider info",
     fields = {
