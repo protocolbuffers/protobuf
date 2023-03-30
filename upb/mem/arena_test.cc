@@ -75,7 +75,7 @@ class Environment {
       if (o == nullptr) o = upb_Arena_New();
     }
 
-    upb_Arena_Fuse(old[0], old[1]);
+    ABSL_CHECK(upb_Arena_Fuse(old[0], old[1]));
     for (auto& o : old) {
       o = SwapRandomly(gen, o);
       if (o != nullptr) upb_Arena_Free(o);

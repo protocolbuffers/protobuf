@@ -251,9 +251,30 @@ retry:
   goto retry;
 }
 
-#define kUpb_RefDelta_CannotFuse -1
+static void _upb_Arena_DoFuseArenaLists(upb_Arena* r1, upb_Arena* r2) {
+  // Find the region for `r2`'s linked list.
+  upb_Arena* r1_tail = upb_Atomic_Load(&r1->tail, memory_order_relaxed);
+  while (true) {
+    upb_Arena* r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
+    while (r1_next != NULL) {
+      // r1->tail was stale.  This can happen, but tail should always converge
+      // on the true tail.
+      r1_tail = r1_next;
+      r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
+    }
+    if (upb_Atomic_CompareExchangeStrong(&r1_tail->next, &r1_next, r2,
+                                         memory_order_relaxed,
+                                         memory_order_relaxed)) {
+      break;
+    }
+  }
 
-upb_Arena* upb_Arena_DoFuse(upb_Arena* a1, upb_Arena* a2, intptr_t* ref_delta) {
+  upb_Arena* r2_tail = upb_Atomic_Load(&r2->tail, memory_order_relaxed);
+  upb_Atomic_Store(&r1->tail, r2_tail, memory_order_relaxed);
+}
+
+static upb_Arena* _upb_Arena_DoFuse(upb_Arena* a1, upb_Arena* a2,
+                                    uintptr_t* ref_delta) {
   // `parent_or_count` has two disctint modes
   // -  parent pointer mode
   // -  refcount mode
@@ -265,14 +286,6 @@ upb_Arena* upb_Arena_DoFuse(upb_Arena* a1, upb_Arena* a2, intptr_t* ref_delta) {
   _upb_ArenaRoot r2 = _upb_Arena_FindRoot(a2);
 
   if (r1.root == r2.root) return r1.root;  // Already fused.
-
-  // Do not fuse initial blocks since we cannot lifetime extend them.
-  // Any other fuse scenario is allowed.
-  if (upb_Arena_HasInitialBlock(r1.root) ||
-      upb_Arena_HasInitialBlock(r2.root)) {
-    *ref_delta = kUpb_RefDelta_CannotFuse;
-    return NULL;
-  }
 
   // Avoid cycles by always fusing into the root with the lower address.
   if ((uintptr_t)r1.root > (uintptr_t)r2.root) {
@@ -304,45 +317,27 @@ upb_Arena* upb_Arena_DoFuse(upb_Arena* a1, upb_Arena* a2, intptr_t* ref_delta) {
 
   // Perform the actual fuse by removing the refs from `r2` and swapping in the
   // parent pointer.
-  if (upb_Atomic_CompareExchangeWeak(
+  if (!upb_Atomic_CompareExchangeStrong(
           &r2.root->parent_or_count, &r2.tagged_count,
           _upb_Arena_TaggedFromPointer(r1.root), memory_order_release,
           memory_order_acquire)) {
-  } else {
     // We'll need to remove the excess refs we added to r1 previously.
-    *ref_delta -= r2_untagged_count;
+    *ref_delta += r2_untagged_count;
     return NULL;
   }
 
   // Now that the fuse has been performed (and can no longer fail) we need to
-  // append `r2` to `r1`'s linked list.  Find the region for `r2`'s linked list.
-  upb_Arena* r1_tail = upb_Atomic_Load(&r1.root->tail, memory_order_relaxed);
-  while (true) {
-    upb_Arena* r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
-    while (r1_next != NULL) {
-      // r1->tail was stale.  This can happen, but tail should always converge
-      // on the true tail.
-      r1_tail = r1_next;
-      r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
-    }
-    if (upb_Atomic_CompareExchangeStrong(&r1_tail->next, &r1_next, r2.root,
-                                         memory_order_relaxed,
-                                         memory_order_relaxed)) {
-      break;
-    }
-  }
-
-  upb_Arena* r2_tail = upb_Atomic_Load(&r2.root->tail, memory_order_relaxed);
-  upb_Atomic_Store(&r1.root->tail, r2_tail, memory_order_relaxed);
+  // append `r2` to `r1`'s linked list.
+  _upb_Arena_DoFuseArenaLists(r1.root, r2.root);
   return r1.root;
 }
 
-bool upb_Arena_FixupRefs(upb_Arena* new_root, intptr_t ref_delta) {
+static bool _upb_Arena_FixupRefs(upb_Arena* new_root, uintptr_t ref_delta) {
   if (ref_delta == 0) return true;  // No fixup required.
   uintptr_t poc =
       upb_Atomic_Load(&new_root->parent_or_count, memory_order_relaxed);
   if (_upb_Arena_IsTaggedPointer(poc)) return false;
-  uintptr_t with_refs = poc + ref_delta;
+  uintptr_t with_refs = poc - ref_delta;
   UPB_ASSERT(!_upb_Arena_IsTaggedPointer(with_refs));
   return upb_Atomic_CompareExchangeStrong(&new_root->parent_or_count, &poc,
                                           with_refs, memory_order_relaxed,
@@ -350,15 +345,20 @@ bool upb_Arena_FixupRefs(upb_Arena* new_root, intptr_t ref_delta) {
 }
 
 bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
-  // The number of refs we ultimately need to transfer to the new root.
-  intptr_t ref_delta = 0;
+  if (a1 == a2) return true;  // trivial fuse
 
+  // Do not fuse initial blocks since we cannot lifetime extend them.
+  // Any other fuse scenario is allowed.
+  if (upb_Arena_HasInitialBlock(a1) || upb_Arena_HasInitialBlock(a2)) {
+    return false;
+  }
+
+  // The number of refs we ultimately need to transfer to the new root.
+  uintptr_t ref_delta = 0;
   while (true) {
-    upb_Arena* new_root = upb_Arena_DoFuse(a1, a2, &ref_delta);
-    if (new_root != NULL) {
-      if (upb_Arena_FixupRefs(new_root, ref_delta)) return true;
-    } else {
-      if (ref_delta == kUpb_RefDelta_CannotFuse) return false;
+    upb_Arena* new_root = _upb_Arena_DoFuse(a1, a2, &ref_delta);
+    if (new_root != NULL && _upb_Arena_FixupRefs(new_root, ref_delta)) {
+      return true;
     }
   }
 }
