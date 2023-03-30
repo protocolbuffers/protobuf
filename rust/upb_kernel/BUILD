@@ -15,6 +15,8 @@ rust_test(
     tags = [
         "not_build:arm",
         "notsan",
+        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
+        "nomsan",
     ],
 )
 
