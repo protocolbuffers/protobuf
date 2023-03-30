@@ -2651,11 +2651,10 @@ template <typename FieldDesc = FieldDescriptor,
           typename FieldOpts = FieldOptions>
 typename FieldOpts::CType EffectiveStringCType(const FieldDesc* field) {
   ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
-  ABSL_DCHECK(!field->is_extension());
   // Open-source protobuf release only supports STRING ctype and CORD for
   // sinuglar bytes.
   if (field->type() == FieldDescriptor::TYPE_BYTES && !field->is_repeated() &&
-      field->options().ctype() == FieldOpts::CORD) {
+      field->options().ctype() == FieldOpts::CORD && !field->is_extension()) {
     return FieldOpts::CORD;
   }
   return FieldOpts::STRING;
