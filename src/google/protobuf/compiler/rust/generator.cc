@@ -99,44 +99,59 @@ std::string GetFileExtensionForKernel(Kernel kernel) {
   return "";
 }
 
+// The prefix used by the UPB compiler to generate unique function names.
+// TODO(b/275708201): Determine a principled way to generate names of UPB
+// accessors.
+std::string GetUpbMessagePrefix(const Descriptor* msg_descriptor) {
+  std::string upb_msg_prefix = msg_descriptor->full_name();
+  absl::StrReplaceAll({{".", "_"}}, &upb_msg_prefix);
+  return upb_msg_prefix;
+}
+
+void GenerateMessageFunctionsForUpb(const Descriptor* msg_descriptor,
+                                    google::protobuf::io::Printer& p) {
+  p.Emit({{"Msg", msg_descriptor->name()},
+          {"pkg_Msg", GetUpbMessagePrefix(msg_descriptor)}},
+         R"rs(
+    impl $Msg$ {
+      pub fn new() -> Self {
+        let arena = unsafe { ::__pb::Arena::new() };
+        let msg = unsafe { $pkg_Msg$_new(arena) };
+        $Msg$ { msg, arena }
+      }
+
+      pub fn serialize(&self) -> ::__pb::SerializedData {
+        let arena = unsafe { ::__pb::__runtime::upb_Arena_New() };
+        let mut len = 0;
+        let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
+        unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
+      }
+    }
+
+    extern "C" {
+      fn $pkg_Msg$_new(arena: *mut ::__pb::Arena) -> ::__std::ptr::NonNull<u8>;
+      fn $pkg_Msg$_serialize(
+        msg: ::__std::ptr::NonNull<u8>,
+        arena: *mut ::__pb::Arena,
+        len: &mut usize) -> ::__std::ptr::NonNull<u8>;
+    }
+  )rs");
+}
+
 void GenerateForUpb(const FileDescriptor* file, google::protobuf::io::Printer& p) {
   for (int i = 0; i < file->message_type_count(); ++i) {
-    // The prefix used by the UPB compiler to generate unique function
-    // names.
-    std::string upb_msg_prefix = file->message_type(i)->full_name();
-    absl::StrReplaceAll({{".", "_"}}, &upb_msg_prefix);
+    auto msg_descriptor = file->message_type(i);
 
-    // TODO(b/275365731): Implement field accessors et. al.
-    p.Emit(
-        {{"Msg", file->message_type(i)->name()}, {"pkg_Msg", upb_msg_prefix}},
-        R"rs(
+    p.Emit({{"Msg", msg_descriptor->name()},
+            {"ImplMessageFunctions",
+             [&] { GenerateMessageFunctionsForUpb(msg_descriptor, p); }}},
+           R"rs(
       pub struct $Msg$ {
         msg: ::__std::ptr::NonNull<u8>,
         arena: *mut ::__pb::Arena,
       }
 
-      impl $Msg$ {
-        pub fn new() -> Self {
-          let arena = unsafe { ::__pb::Arena::new() };
-          let msg = unsafe { $pkg_Msg$_new(arena) };
-          $Msg$ { msg, arena }
-        }
-
-        pub fn serialize(&self) -> ::__pb::SerializedData {
-          let arena = unsafe { ::__pb::__runtime::upb_Arena_New() };
-            let mut len = 0;
-            let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
-            unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
-          }
-        }
-
-        extern "C" {
-          fn $pkg_Msg$_new(arena: *mut ::__pb::Arena) -> ::__std::ptr::NonNull<u8>;
-          fn $pkg_Msg$_serialize(
-            msg: ::__std::ptr::NonNull<u8>,
-            arena: *mut ::__pb::Arena,
-            len: &mut usize) -> ::__std::ptr::NonNull<u8>;
-        }
+      $ImplMessageFunctions$;
     )rs");
   }
 }
