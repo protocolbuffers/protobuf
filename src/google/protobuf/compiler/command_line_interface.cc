@@ -298,6 +298,55 @@ std::string PluginName(absl::string_view plugin_prefix,
                       directive.substr(2, directive.size() - 6));
 }
 
+
+// Get all transitive dependencies of the given file (including the file
+// itself), adding them to the given list of FileDescriptorProtos.  The
+// protos will be ordered such that every file is listed before any file that
+// depends on it, so that you can call DescriptorPool::BuildFile() on them
+// in order.  Any files in *already_seen will not be added, and each file
+// added will be inserted into *already_seen.  If include_source_code_info is
+// true then include the source code information in the FileDescriptorProtos.
+// If include_json_name is true, populate the json_name field of
+// FieldDescriptorProto for all fields.
+struct TransitiveDependencyOptions {
+  bool include_json_name = false;
+  bool include_source_code_info = false;
+  bool retain_options = false;
+};
+
+void GetTransitiveDependencies(
+    const FileDescriptor* file,
+    absl::flat_hash_set<const FileDescriptor*>* already_seen,
+    RepeatedPtrField<FileDescriptorProto>* output,
+    const TransitiveDependencyOptions& options =
+        TransitiveDependencyOptions()) {
+  if (!already_seen->insert(file).second) {
+    // Already saw this file.  Skip.
+    return;
+  }
+
+  // Add all dependencies.
+  for (int i = 0; i < file->dependency_count(); i++) {
+    GetTransitiveDependencies(file->dependency(i), already_seen, output,
+                              options);
+  }
+
+  // Add this file.
+  FileDescriptorProto* new_descriptor = output->Add();
+  if (options.retain_options) {
+    file->CopyTo(new_descriptor);
+    if (options.include_source_code_info) {
+      file->CopySourceCodeInfoTo(new_descriptor);
+    }
+  } else {
+    *new_descriptor =
+        StripSourceRetentionOptions(*file, options.include_source_code_info);
+  }
+  if (options.include_json_name) {
+    file->CopyJsonNameTo(new_descriptor);
+  }
+}
+
 }  // namespace
 
 // A MultiFileErrorCollector that prints errors to stderr.
@@ -1454,6 +1503,7 @@ void CommandLineInterface::Clear() {
   print_mode_ = PRINT_NONE;
   imports_in_descriptor_set_ = false;
   source_info_in_descriptor_set_ = false;
+  retain_options_in_descriptor_set_ = false;
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
   deterministic_output_ = false;
@@ -1709,6 +1759,11 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
                  "--descriptor_set_out."
               << std::endl;
   }
+  if (retain_options_in_descriptor_set_ && descriptor_set_out_name_.empty()) {
+    std::cerr << "--retain_options only makes sense when combined with "
+                 "--descriptor_set_out."
+              << std::endl;
+  }
 
   return PARSE_ARGUMENT_DONE_AND_CONTINUE;
 }
@@ -1759,7 +1814,8 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
 
   if (*name == "-h" || *name == "--help" || *name == "--disallow_services" ||
       *name == "--include_imports" || *name == "--include_source_info" ||
-      *name == "--version" || *name == "--decode_raw" ||
+      *name == "--retain_options" || *name == "--version" ||
+      *name == "--decode_raw" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
       *name == "--deterministic_output" || *name == "--fatal_warnings") {
@@ -1953,6 +2009,13 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
     source_info_in_descriptor_set_ = true;
+
+  } else if (name == "--retain_options") {
+    if (retain_options_in_descriptor_set_) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    retain_options_in_descriptor_set_ = true;
 
   } else if (name == "-h" || name == "--help") {
     PrintHelpText();
@@ -2190,6 +2253,11 @@ Parse PROTO_FILES and generate output based on the options given:
                               include information about the original
                               location of each decl in the source file as
                               well as surrounding comments.
+  --retain_options            When using --descriptor_set_out, do not strip
+                              any options from the FileDescriptorProto.
+                              This results in potentially larger descriptors
+                              that include information about options that were
+                              only meant to be useful during compilation.
   --dependency_out=FILE       Write a dependency output file in the format
                               expected by make. This writes the transitive
                               set of input file paths to FILE
@@ -2328,7 +2396,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
 
   absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (int i = 0; i < parsed_files.size(); i++) {
-    GetTransitiveDependencies(parsed_files[i], false, false, &already_seen,
+    GetTransitiveDependencies(parsed_files[i], &already_seen,
                               file_set.mutable_file());
   }
 
@@ -2410,10 +2478,11 @@ bool CommandLineInterface::GeneratePluginOutput(
   absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (int i = 0; i < parsed_files.size(); i++) {
     request.add_file_to_generate(parsed_files[i]->name());
-    GetTransitiveDependencies(parsed_files[i],
-                              true,  // Include json_name for plugins.
-                              true,  // Include source code info.
-                              &already_seen, request.mutable_proto_file());
+    GetTransitiveDependencies(parsed_files[i], &already_seen,
+                              request.mutable_proto_file(),
+                              {/*.include_json_name =*/true,
+                               /*.include_source_code_info =*/true,
+                               /*.retain_options =*/true});
   }
 
   google::protobuf::compiler::Version* version =
@@ -2575,11 +2644,13 @@ bool CommandLineInterface::WriteDescriptorSet(
       }
     }
   }
+  TransitiveDependencyOptions options;
+  options.include_json_name = true;
+  options.include_source_code_info = source_info_in_descriptor_set_;
+  options.retain_options = retain_options_in_descriptor_set_;
   for (int i = 0; i < parsed_files.size(); i++) {
-    GetTransitiveDependencies(parsed_files[i],
-                              true,  // Include json_name
-                              source_info_in_descriptor_set_, &already_seen,
-                              file_set.mutable_file());
+    GetTransitiveDependencies(parsed_files[i], &already_seen,
+                              file_set.mutable_file(), options);
   }
 
   int fd;
@@ -2615,31 +2686,6 @@ bool CommandLineInterface::WriteDescriptorSet(
   }
 
   return true;
-}
-
-void CommandLineInterface::GetTransitiveDependencies(
-    const FileDescriptor* file, bool include_json_name,
-    bool include_source_code_info,
-    absl::flat_hash_set<const FileDescriptor*>* already_seen,
-    RepeatedPtrField<FileDescriptorProto>* output) {
-  if (!already_seen->insert(file).second) {
-    // Already saw this file.  Skip.
-    return;
-  }
-
-  // Add all dependencies.
-  for (int i = 0; i < file->dependency_count(); i++) {
-    GetTransitiveDependencies(file->dependency(i), include_json_name,
-                              include_source_code_info, already_seen, output);
-  }
-
-  // Add this file.
-  FileDescriptorProto* new_descriptor = output->Add();
-  *new_descriptor =
-      StripSourceRetentionOptions(*file, include_source_code_info);
-  if (include_json_name) {
-    file->CopyJsonNameTo(new_descriptor);
-  }
 }
 
 const CommandLineInterface::GeneratorInfo*
