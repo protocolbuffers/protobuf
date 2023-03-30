@@ -1,5 +1,6 @@
 # Internal Starlark definitions for Protobuf.
 
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@rules_cc//cc:defs.bzl", starlark_cc_proto_library = "cc_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
@@ -81,6 +82,32 @@ config_setting(
     values = {
         "cpu": "win64",
     },
+)
+
+selects.config_setting_group(
+    name = "config_win",
+    match_any = [
+        ":config_win32",
+        ":config_win64",
+    ]
+)
+
+config_setting(
+    name = "config_osx_aarch64",
+    values = {"cpu": "osx-aarch_64"},
+)
+
+config_setting(
+    name = "config_osx_x86_64",
+    values = {"cpu": "osx-x86_64"},
+)
+
+selects.config_setting_group(
+    name = "config_osx",
+    match_any = [
+        ":config_osx_aarch64",
+        ":config_osx_x86_64",
+    ]
 )
 
 # Internal testing:

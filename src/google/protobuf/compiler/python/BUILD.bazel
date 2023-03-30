@@ -26,8 +26,10 @@ cc_library(
         "@com_github_grpc_grpc//tools/distrib/python/grpcio_tools:__subpackages__",
     ],
     deps = [
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:retention",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
     ],
@@ -61,9 +63,12 @@ pkg_files(
 
 filegroup(
     name = "test_srcs",
-    srcs = glob([
-        "*_test.cc",
-        "*unittest.cc",
-    ]),
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

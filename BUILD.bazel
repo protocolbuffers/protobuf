@@ -4,7 +4,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 
 licenses(["notice"])
@@ -168,7 +168,22 @@ alias(
 cc_binary(
     name = "protoc",
     copts = COPTS,
-    linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib"],
+)
+
+cc_binary(
+    name = "protoc_static",
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    features = select({
+      # This isn't possible on mac because there is no static library for lcrt0.o
+      "@platforms//os:osx": [],
+      "//build_defs:config_osx": [],
+      # When cross-compiling we need to statically link all C++ libraries.
+      "//conditions:default": ["fully_static_link"],
+    }),
     visibility = ["//visibility:public"],
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
@@ -194,10 +209,6 @@ alias(
 
 cc_library(
     name = "protobuf",
-    hdrs = glob([
-        "src/**/*.h",
-        "src/**/*.inc",
-    ]),
     copts = COPTS,
     include_prefix = "google/protobuf/io",
     linkopts = LINK_OPTS,
@@ -550,13 +561,11 @@ pkg_files(
         allow_empty = True,
     ) + [
         "BUILD.bazel",
-        "CHANGES.txt",
         "CMakeLists.txt",
         "CONTRIBUTORS.txt",
         "LICENSE",
         "README.md",
         "WORKSPACE",
-        "cmake/CMakeLists.txt",
         "cmake/README.md",
         "generate_descriptor_proto.sh",
         "maven_install.json",

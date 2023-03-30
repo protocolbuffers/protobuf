@@ -50,7 +50,7 @@ inline std::string TranslatePathToOpensource(absl::string_view google3_path) {
   constexpr absl::string_view net_proto2 = "net/proto2/";
   constexpr absl::string_view third_party_protobuf = "third_party/protobuf/";
   if (!absl::ConsumePrefix(&google3_path, net_proto2)) {
-    GOOGLE_ABSL_CHECK(absl::ConsumePrefix(&google3_path, third_party_protobuf))
+    ABSL_CHECK(absl::ConsumePrefix(&google3_path, third_party_protobuf))
         << google3_path;
   }
 
@@ -60,18 +60,17 @@ inline std::string TranslatePathToOpensource(absl::string_view google3_path) {
   return absl::StrCat("google/protobuf/", google3_path);
 }
 
-inline std::string MaybeTranslatePath(const std::string& google3_path) {
-  std::string path = google3_path;
-  path = TranslatePathToOpensource(path);
-  return path;
+inline std::string MaybeTranslatePath(absl::string_view google3_path) {
+  return TranslatePathToOpensource(google3_path);
+  return std::string(google3_path);
 }
 
 inline std::string TestSourceDir() {
   return google::protobuf::TestSourceDir();
 }
 
-inline std::string GetTestDataPath(const std::string& google3_path) {
-  return TestSourceDir() + "/" + MaybeTranslatePath(google3_path);
+inline std::string GetTestDataPath(absl::string_view google3_path) {
+  return absl::StrCat(TestSourceDir(), "/", MaybeTranslatePath(google3_path));
 }
 
 // Checks the equality of "message" and serialized proto of type "ProtoType".
@@ -93,7 +92,7 @@ class BoundedArrayInputStream : public io::ZeroCopyInputStream {
   ~BoundedArrayInputStream() override {}
 
   bool Next(const void** data, int* size) override {
-    GOOGLE_ABSL_CHECK_LT(stream_.ByteCount(), bound_);
+    ABSL_CHECK_LT(stream_.ByteCount(), bound_);
     return stream_.Next(data, size);
   }
   void BackUp(int count) override { stream_.BackUp(count); }

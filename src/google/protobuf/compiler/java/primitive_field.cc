@@ -37,8 +37,8 @@
 #include <cstdint>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -64,9 +64,9 @@ void SetPrimitiveVariables(
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
 
-  (*variables)["type"] = PrimitiveTypeName(javaType);
-  (*variables)["boxed_type"] = BoxedPrimitiveTypeName(javaType);
-  (*variables)["kt_type"] = KotlinTypeName(javaType);
+  (*variables)["type"] = std::string(PrimitiveTypeName(javaType));
+  (*variables)["boxed_type"] = std::string(BoxedPrimitiveTypeName(javaType));
+  (*variables)["kt_type"] = std::string(KotlinTypeName(javaType));
   variables->insert({"field_type", (*variables)["type"]});
 
   std::string name = (*variables)["name"];
@@ -112,10 +112,10 @@ void SetPrimitiveVariables(
   (*variables)["default_init"] =
       IsDefaultValueJavaDefault(descriptor)
           ? ""
-          : ("= " + ImmutableDefaultValue(descriptor, name_resolver,
-                                          context->options()));
-  (*variables)["capitalized_type"] = GetCapitalizedType(
-      descriptor, /* immutable = */ true, context->options());
+          : absl::StrCat("= ", ImmutableDefaultValue(descriptor, name_resolver,
+                                                     context->options()));
+  (*variables)["capitalized_type"] = std::string(GetCapitalizedType(
+      descriptor, /* immutable = */ true, context->options()));
   (*variables)["tag"] =
       absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = absl::StrCat(
@@ -146,7 +146,7 @@ void SetPrimitiveVariables(
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(messageBitIndex) + ";";
+        absl::StrCat(GenerateSetBitToLocal(messageBitIndex), ";");
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
@@ -182,9 +182,9 @@ void SetPrimitiveVariables(
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_builder"] =
-      GenerateSetBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      GenerateClearBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
 }
 
 }  // namespace
@@ -221,7 +221,7 @@ int ImmutablePrimitiveFieldGenerator::GetNumBitsForBuilder() const { return 1; }
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
                    "$deprecation$boolean has$capitalized_name$();\n");
@@ -234,7 +234,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $field_type$ $name$_ = $default$;\n");
   PrintExtraFieldInfo(variables_, printer);
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -258,7 +258,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $field_type$ $name$_ $default_init$;\n");
 
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -332,7 +332,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateKotlinDslMembers(
                  "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
                  "}\n");
 
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                  /* builder */ false, /* kdoc */ true);
     printer->Print(
@@ -363,7 +363,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutablePrimitiveFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     printer->Print(variables_,
                    "if (other.has$capitalized_name$()) {\n"
                    "  set$capitalized_name$(other.get$capitalized_name$());\n"
@@ -449,7 +449,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateEqualsCode(
     case JAVATYPE_ENUM:
     case JAVATYPE_MESSAGE:
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+      ABSL_LOG(FATAL) << "Can't get here.";
       break;
   }
 }
@@ -500,13 +500,13 @@ void ImmutablePrimitiveFieldGenerator::GenerateHashCode(
     case JAVATYPE_ENUM:
     case JAVATYPE_MESSAGE:
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+      ABSL_LOG(FATAL) << "Can't get here.";
       break;
   }
 }
 
 std::string ImmutablePrimitiveFieldGenerator::GetBoxedType() const {
-  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
+  return std::string(BoxedPrimitiveTypeName(GetJavaType(descriptor_)));
 }
 
 // ===================================================================
@@ -527,7 +527,7 @@ ImmutablePrimitiveOneofFieldGenerator::
 void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(descriptor_->has_presence());
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -550,7 +550,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(descriptor_->has_presence());
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -1069,7 +1069,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateHashCode(
 }
 
 std::string RepeatedImmutablePrimitiveFieldGenerator::GetBoxedType() const {
-  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
+  return std::string(BoxedPrimitiveTypeName(GetJavaType(descriptor_)));
 }
 
 }  // namespace java

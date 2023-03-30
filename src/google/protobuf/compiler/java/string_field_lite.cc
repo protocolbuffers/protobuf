@@ -39,7 +39,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -69,9 +69,9 @@ void SetPrimitiveVariables(
 
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
-  (*variables)["default_init"] =
-      "= " +
-      ImmutableDefaultValue(descriptor, name_resolver, context->options());
+  (*variables)["default_init"] = absl::StrCat(
+      "= ",
+      ImmutableDefaultValue(descriptor, name_resolver, context->options()));
   (*variables)["capitalized_type"] = "java.lang.String";
   (*variables)["tag"] =
       absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
@@ -109,9 +109,9 @@ void SetPrimitiveVariables(
 
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
-        GenerateSetBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
     (*variables)["clear_has_field_bit_message"] =
-        GenerateClearBit(messageBitIndex) + ";";
+        absl::StrCat(GenerateClearBit(messageBitIndex), ";");
 
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
@@ -122,10 +122,6 @@ void SetPrimitiveVariables(
                        absl::StrCat("!", (*variables)["name"], "_.isEmpty()")});
   }
 
-  (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builderBitIndex);
-  (*variables)["set_has_field_bit_to_local"] =
-      GenerateSetBitToLocal(messageBitIndex);
   // Annotations often use { and } variables to denote text ranges.
   (*variables)["{"] = "";
   (*variables)["}"] = "";
@@ -179,7 +175,7 @@ int ImmutableStringFieldLiteGenerator::GetNumBitsForMessage() const {
 //     shouldn't be necessary or used on devices.
 void ImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
                    "$deprecation$boolean ${$has$capitalized_name$$}$();\n");
@@ -207,7 +203,7 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
         "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
         "  isRequired=$required$,\n"
         "  isEnforceUtf8=$enforce_utf8$)\n");
-    if (HasHazzer(descriptor_)) {
+    if (HasHasbit(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
                      "  presenceBitsId=$bit_field_id$,\n"
@@ -217,7 +213,7 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_, "private java.lang.String $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
 
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -279,7 +275,7 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
 
 void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -361,7 +357,7 @@ void ImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
                  "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
                  "}\n");
 
-  if (HasHazzer(descriptor_)) {
+  if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                  /* builder */ false, /* kdoc */ true);
     printer->Print(
@@ -408,7 +404,7 @@ ImmutableStringOneofFieldLiteGenerator::
 void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(descriptor_->has_presence());
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -486,7 +482,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateFieldInfo(
 
 void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  GOOGLE_ABSL_DCHECK(HasHazzer(descriptor_));
+  ABSL_DCHECK(descriptor_->has_presence());
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
   printer->Print(variables_,
                  "@java.lang.Override\n"

@@ -73,7 +73,7 @@ namespace {
 std::string MapValueImmutableClassdName(const Descriptor* descriptor,
                                         ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->map_value();
-  GOOGLE_ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
 }
 }  // namespace
@@ -85,7 +85,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor)
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
       const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
-      GOOGLE_ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
+      ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -99,7 +99,7 @@ ImmutableMessageGenerator::ImmutableMessageGenerator(
       context_(context),
       name_resolver_(context->GetNameResolver()),
       field_generators_(descriptor, context_) {
-  GOOGLE_ABSL_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
+  ABSL_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A non-lite message generator is used to "
          "generate lite messages.";
 }
@@ -727,12 +727,14 @@ void ImmutableMessageGenerator::GenerateParseFromMethods(io::Printer* printer) {
       "  return com.google.protobuf.GeneratedMessage$ver$\n"
       "      .parseWithIOException(PARSER, input, extensionRegistry);\n"
       "}\n"
+      "$parsedelimitedreturnannotation$\n"
       "public static $classname$ parseDelimitedFrom(java.io.InputStream "
       "input)\n"
       "    throws java.io.IOException {\n"
       "  return com.google.protobuf.GeneratedMessage$ver$\n"
       "      .parseDelimitedWithIOException(PARSER, input);\n"
       "}\n"
+      "$parsedelimitedreturnannotation$\n"
       "public static $classname$ parseDelimitedFrom(\n"
       "    java.io.InputStream input,\n"
       "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
@@ -756,7 +758,10 @@ void ImmutableMessageGenerator::GenerateParseFromMethods(io::Printer* printer) {
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "ver",
-      GeneratedCodeVersionSuffix());
+      GeneratedCodeVersionSuffix(), "parsedelimitedreturnannotation",
+      context_->options().opensource_runtime
+          ? ""
+          : "@com.google.protobuf.Internal.ProtoMethodMayReturnNull");
 }
 
 // ===================================================================
@@ -971,18 +976,6 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 
 // ===================================================================
 
-namespace {
-bool CheckHasBitsForEqualsAndHashCode(const FieldDescriptor* field) {
-  if (field->is_repeated()) {
-    return false;
-  }
-  if (HasHasbit(field)) {
-    return true;
-  }
-  return GetJavaType(field) == JAVATYPE_MESSAGE && !IsRealOneof(field);
-}
-}  // namespace
-
 void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     io::Printer* printer) {
   printer->Print(
@@ -1011,8 +1004,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     const FieldDescriptor* field = descriptor_->field(i);
     if (!IsRealOneof(field)) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
-      bool check_has_bits = CheckHasBitsForEqualsAndHashCode(field);
-      if (check_has_bits) {
+      if (field->has_presence()) {
         printer->Print(
             "if (has$name$() != other.has$name$()) return false;\n"
             "if (has$name$()) {\n",
@@ -1020,7 +1012,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
         printer->Indent();
       }
       field_generators_.get(field).GenerateEqualsCode(printer);
-      if (check_has_bits) {
+      if (field->has_presence()) {
         printer->Outdent();
         printer->Print("}\n");
       }
@@ -1095,13 +1087,12 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     const FieldDescriptor* field = descriptor_->field(i);
     if (!IsRealOneof(field)) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
-      bool check_has_bits = CheckHasBitsForEqualsAndHashCode(field);
-      if (check_has_bits) {
+      if (field->has_presence()) {
         printer->Print("if (has$name$()) {\n", "name", info->capitalized_name);
         printer->Indent();
       }
       field_generators_.get(field).GenerateHashCode(printer);
-      if (check_has_bits) {
+      if (field->has_presence()) {
         printer->Outdent();
         printer->Print("}\n");
       }
@@ -1305,9 +1296,6 @@ void ImmutableMessageGenerator::GenerateKotlinMembers(
                  "camelcase_name",
                  name_resolver_->GetKotlinFactoryName(descriptor_));
 
-  if (!context_->options().opensource_runtime) {
-    printer->Print("@com.google.errorprone.annotations.CheckReturnValue\n");
-  }
 
   printer->Print(
       "public inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> "
@@ -1340,9 +1328,6 @@ void ImmutableMessageGenerator::GenerateTopLevelKotlinMembers(
     io::Printer* printer) const {
   printer->Print("@kotlin.jvm.JvmSynthetic\n");
 
-  if (context_->options().opensource_runtime) {
-    printer->Print("@com.google.errorprone.annotations.CheckReturnValue\n");
-  }
 
   printer->Print(
       "public inline fun $message$.copy(block: $message_kt$.Dsl.() -> "

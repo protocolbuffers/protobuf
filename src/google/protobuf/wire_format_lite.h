@@ -46,7 +46,7 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/port.h"
 #include "absl/base/casts.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
@@ -327,6 +327,9 @@ class PROTOBUF_EXPORT WireFormatLite {
   // Analogous to ReadString().
   static bool ReadBytes(io::CodedInputStream* input, std::string* value);
   static bool ReadBytes(io::CodedInputStream* input, std::string** p);
+
+  static inline bool ReadBytes(io::CodedInputStream* input, absl::Cord* value);
+  static inline bool ReadBytes(io::CodedInputStream* input, absl::Cord** p);
 
   enum Operation {
     PARSE = 0,
@@ -710,6 +713,7 @@ class PROTOBUF_EXPORT WireFormatLite {
 
   static inline size_t StringSize(const std::string& value);
   static inline size_t BytesSize(const std::string& value);
+  static inline size_t BytesSize(const absl::Cord& value);
 
   template <typename MessageType>
   static inline size_t GroupSize(const MessageType& value);
@@ -1084,7 +1088,7 @@ template <typename CType, enum WireFormatLite::FieldType DeclaredType>
 inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     int tag_size, uint32_t tag, io::CodedInputStream* input,
     RepeatedField<CType>* values) {
-  GOOGLE_ABSL_DCHECK_EQ(UInt32Size(tag), static_cast<size_t>(tag_size));
+  ABSL_DCHECK_EQ(UInt32Size(tag), static_cast<size_t>(tag_size));
   CType value;
   if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
   values->Add(value);
@@ -1255,6 +1259,17 @@ template <typename CType, enum WireFormatLite::FieldType DeclaredType>
 bool WireFormatLite::ReadPackedPrimitiveNoInline(io::CodedInputStream* input,
                                                  RepeatedField<CType>* values) {
   return ReadPackedPrimitive<CType, DeclaredType>(input, values);
+}
+
+inline bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
+                                      absl::Cord* value) {
+  int length;
+  return input->ReadVarintSizeAsInt(&length) && input->ReadCord(value, length);
+}
+
+inline bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
+                                      absl::Cord** p) {
+  return ReadBytes(input, *p);
 }
 
 
@@ -1445,7 +1460,7 @@ inline uint8_t* WireFormatLite::WritePrimitiveNoTagToArray(
     const RepeatedField<T>& value, uint8_t* (*Writer)(T, uint8_t*),
     uint8_t* target) {
   const int n = value.size();
-  GOOGLE_ABSL_DCHECK_GT(n, 0);
+  ABSL_DCHECK_GT(n, 0);
 
   const T* ii = value.data();
   int i = 0;
@@ -1464,7 +1479,7 @@ inline uint8_t* WireFormatLite::WriteFixedNoTagToArray(
   (void)Writer;
 
   const int n = value.size();
-  GOOGLE_ABSL_DCHECK_GT(n, 0);
+  ABSL_DCHECK_GT(n, 0);
 
   const T* ii = value.data();
   const int bytes = n * static_cast<int>(sizeof(ii[0]));
@@ -1785,6 +1800,10 @@ inline size_t WireFormatLite::StringSize(const std::string& value) {
   return LengthDelimitedSize(value.size());
 }
 inline size_t WireFormatLite::BytesSize(const std::string& value) {
+  return LengthDelimitedSize(value.size());
+}
+
+inline size_t WireFormatLite::BytesSize(const absl::Cord& value) {
   return LengthDelimitedSize(value.size());
 }
 

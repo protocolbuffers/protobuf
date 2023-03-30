@@ -34,7 +34,9 @@
 
 #include "google/protobuf/extension_set.h"
 
+#include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
@@ -43,7 +45,6 @@
 #include "absl/hash/hash.h"
 #include "google/protobuf/extension_set_inl.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -59,7 +60,7 @@ namespace internal {
 namespace {
 
 inline WireFormatLite::FieldType real_type(FieldType type) {
-  GOOGLE_ABSL_DCHECK(type > 0 && type <= WireFormatLite::MAX_FIELD_TYPE);
+  ABSL_DCHECK(type > 0 && type <= WireFormatLite::MAX_FIELD_TYPE);
   return static_cast<WireFormatLite::FieldType>(type);
 }
 
@@ -92,7 +93,7 @@ void Register(const ExtensionInfo& info) {
   static auto local_static_registry = OnShutdownDelete(new ExtensionRegistry);
   global_registry = local_static_registry;
   if (!local_static_registry->insert(info).second) {
-    GOOGLE_ABSL_LOG(FATAL) << "Multiple extension registrations for type \""
+    ABSL_LOG(FATAL) << "Multiple extension registrations for type \""
                     << info.message->GetTypeName() << "\", field number "
                     << info.number << ".";
   }
@@ -130,9 +131,9 @@ void ExtensionSet::RegisterExtension(const MessageLite* extendee, int number,
                                      FieldType type, bool is_repeated,
                                      bool is_packed,
                                      LazyEagerVerifyFnType verify_func) {
-  GOOGLE_ABSL_CHECK_NE(type, WireFormatLite::TYPE_ENUM);
-  GOOGLE_ABSL_CHECK_NE(type, WireFormatLite::TYPE_MESSAGE);
-  GOOGLE_ABSL_CHECK_NE(type, WireFormatLite::TYPE_GROUP);
+  ABSL_CHECK_NE(type, WireFormatLite::TYPE_ENUM);
+  ABSL_CHECK_NE(type, WireFormatLite::TYPE_MESSAGE);
+  ABSL_CHECK_NE(type, WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func);
   Register(info);
@@ -155,7 +156,7 @@ void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
                                          int number, FieldType type,
                                          bool is_repeated, bool is_packed,
                                          EnumValidityFunc* is_valid) {
-  GOOGLE_ABSL_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
+  ABSL_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed, nullptr);
   info.enum_validity_check.func = CallNoArgValidityFunc;
   // See comment in CallNoArgValidityFunc() about why we use a c-style cast.
@@ -168,7 +169,7 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
                                             bool is_repeated, bool is_packed,
                                             const MessageLite* prototype,
                                             LazyEagerVerifyFnType verify_func) {
-  GOOGLE_ABSL_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
+  ABSL_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func);
@@ -219,7 +220,7 @@ void ExtensionSet::DeleteFlatMap(const ExtensionSet::KeyValue* flat,
 bool ExtensionSet::Has(int number) const {
   const Extension* ext = FindOrNull(number);
   if (ext == nullptr) return false;
-  GOOGLE_ABSL_DCHECK(!ext->is_repeated);
+  ABSL_DCHECK(!ext->is_repeated);
   return !ext->is_cleared;
 }
 
@@ -245,12 +246,12 @@ int ExtensionSet::ExtensionSize(int number) const {
 FieldType ExtensionSet::ExtensionType(int number) const {
   const Extension* ext = FindOrNull(number);
   if (ext == nullptr) {
-    GOOGLE_ABSL_LOG(DFATAL)
+    ABSL_DLOG(FATAL)
         << "Don't lookup extension types if they aren't present (1). ";
     return 0;
   }
   if (ext->is_cleared) {
-    GOOGLE_ABSL_LOG(DFATAL)
+    ABSL_DLOG(FATAL)
         << "Don't lookup extension types if they aren't present (2). ";
   }
   return ext->type;
@@ -271,10 +272,10 @@ enum { REPEATED_FIELD, OPTIONAL_FIELD };
 
 }  // namespace
 
-#define GOOGLE_ABSL_DCHECK_TYPE(EXTENSION, LABEL, CPPTYPE)                         \
-  GOOGLE_ABSL_DCHECK_EQ((EXTENSION).is_repeated ? REPEATED_FIELD : OPTIONAL_FIELD, \
+#define ABSL_DCHECK_TYPE(EXTENSION, LABEL, CPPTYPE)                         \
+  ABSL_DCHECK_EQ((EXTENSION).is_repeated ? REPEATED_FIELD : OPTIONAL_FIELD, \
                  LABEL);                                                    \
-  GOOGLE_ABSL_DCHECK_EQ(cpp_type((EXTENSION).type), WireFormatLite::CPPTYPE_##CPPTYPE)
+  ABSL_DCHECK_EQ(cpp_type((EXTENSION).type), WireFormatLite::CPPTYPE_##CPPTYPE)
 
 // -------------------------------------------------------------------
 // Primitives
@@ -287,7 +288,7 @@ enum { REPEATED_FIELD, OPTIONAL_FIELD };
     if (extension == nullptr || extension->is_cleared) {                      \
       return default_value;                                                   \
     } else {                                                                  \
-      GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, UPPERCASE);                \
+      ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, UPPERCASE);                \
       return extension->LOWERCASE##_value;                                    \
     }                                                                         \
   }                                                                           \
@@ -298,7 +299,7 @@ enum { REPEATED_FIELD, OPTIONAL_FIELD };
     if (extension == nullptr || extension->is_cleared) {                      \
       return default_value;                                                   \
     } else {                                                                  \
-      GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, UPPERCASE);                \
+      ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, UPPERCASE);                \
       return extension->LOWERCASE##_value;                                    \
     }                                                                         \
   }                                                                           \
@@ -309,11 +310,11 @@ enum { REPEATED_FIELD, OPTIONAL_FIELD };
     Extension* extension;                                                     \
     if (MaybeNewExtension(number, descriptor, &extension)) {                  \
       extension->type = type;                                                 \
-      GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type),                               \
+      ABSL_DCHECK_EQ(cpp_type(extension->type),                               \
                      WireFormatLite::CPPTYPE_##UPPERCASE);                    \
       extension->is_repeated = false;                                         \
     } else {                                                                  \
-      GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, UPPERCASE);                \
+      ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, UPPERCASE);                \
     }                                                                         \
     extension->is_cleared = false;                                            \
     extension->LOWERCASE##_value = value;                                     \
@@ -322,27 +323,27 @@ enum { REPEATED_FIELD, OPTIONAL_FIELD };
   LOWERCASE ExtensionSet::GetRepeated##CAMELCASE(int number, int index)       \
       const {                                                                 \
     const Extension* extension = FindOrNull(number);                          \
-    GOOGLE_ABSL_CHECK(extension != nullptr)                                          \
+    ABSL_CHECK(extension != nullptr)                                          \
         << "Index out-of-bounds (field is empty).";                           \
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                  \
+    ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                  \
     return extension->repeated_##LOWERCASE##_value->Get(index);               \
   }                                                                           \
                                                                               \
   const LOWERCASE& ExtensionSet::GetRefRepeated##CAMELCASE(int number,        \
                                                            int index) const { \
     const Extension* extension = FindOrNull(number);                          \
-    GOOGLE_ABSL_CHECK(extension != nullptr)                                          \
+    ABSL_CHECK(extension != nullptr)                                          \
         << "Index out-of-bounds (field is empty).";                           \
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                  \
+    ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                  \
     return extension->repeated_##LOWERCASE##_value->Get(index);               \
   }                                                                           \
                                                                               \
   void ExtensionSet::SetRepeated##CAMELCASE(int number, int index,            \
                                             LOWERCASE value) {                \
     Extension* extension = FindOrNull(number);                                \
-    GOOGLE_ABSL_CHECK(extension != nullptr)                                          \
+    ABSL_CHECK(extension != nullptr)                                          \
         << "Index out-of-bounds (field is empty).";                           \
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                  \
+    ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                  \
     extension->repeated_##LOWERCASE##_value->Set(index, value);               \
   }                                                                           \
                                                                               \
@@ -352,15 +353,15 @@ enum { REPEATED_FIELD, OPTIONAL_FIELD };
     Extension* extension;                                                     \
     if (MaybeNewExtension(number, descriptor, &extension)) {                  \
       extension->type = type;                                                 \
-      GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type),                               \
+      ABSL_DCHECK_EQ(cpp_type(extension->type),                               \
                      WireFormatLite::CPPTYPE_##UPPERCASE);                    \
       extension->is_repeated = true;                                          \
       extension->is_packed = packed;                                          \
       extension->repeated_##LOWERCASE##_value =                               \
           Arena::CreateMessage<RepeatedField<LOWERCASE>>(arena_);             \
     } else {                                                                  \
-      GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                \
-      GOOGLE_ABSL_DCHECK_EQ(extension->is_packed, packed);                           \
+      ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                \
+      ABSL_DCHECK_EQ(extension->is_packed, packed);                           \
     }                                                                         \
     extension->repeated_##LOWERCASE##_value->Add(value);                      \
   }
@@ -449,10 +450,10 @@ void* ExtensionSet::MutableRawRepeatedField(int number, FieldType field_type,
 }
 
 // Compatible version using old call signature. Does not create extensions when
-// the don't already exist; instead, just GOOGLE_ABSL_CHECK-fails.
+// the don't already exist; instead, just ABSL_CHECK-fails.
 void* ExtensionSet::MutableRawRepeatedField(int number) {
   Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Extension not found.";
+  ABSL_CHECK(extension != nullptr) << "Extension not found.";
   // We assume that all the RepeatedField<>* pointers have the same
   // size and alignment within the anonymous union in Extension.
   return extension->repeated_int32_t_value;
@@ -467,7 +468,7 @@ int ExtensionSet::GetEnum(int number, int default_value) const {
     // Not present.  Return the default value.
     return default_value;
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, ENUM);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, ENUM);
     return extension->enum_value;
   }
 }
@@ -479,7 +480,7 @@ const int& ExtensionSet::GetRefEnum(int number,
     // Not present.  Return the default value.
     return default_value;
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, ENUM);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, ENUM);
     return extension->enum_value;
   }
 }
@@ -489,10 +490,10 @@ void ExtensionSet::SetEnum(int number, FieldType type, int value,
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
-    GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_ENUM);
+    ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_ENUM);
     extension->is_repeated = false;
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, ENUM);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, ENUM);
   }
   extension->is_cleared = false;
   extension->enum_value = value;
@@ -500,22 +501,22 @@ void ExtensionSet::SetEnum(int number, FieldType type, int value,
 
 int ExtensionSet::GetRepeatedEnum(int number, int index) const {
   const Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
   return extension->repeated_enum_value->Get(index);
 }
 
 const int& ExtensionSet::GetRefRepeatedEnum(int number, int index) const {
   const Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
   return extension->repeated_enum_value->Get(index);
 }
 
 void ExtensionSet::SetRepeatedEnum(int number, int index, int value) {
   Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
   extension->repeated_enum_value->Set(index, value);
 }
 
@@ -524,14 +525,14 @@ void ExtensionSet::AddEnum(int number, FieldType type, bool packed, int value,
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
-    GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_ENUM);
+    ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_ENUM);
     extension->is_repeated = true;
     extension->is_packed = packed;
     extension->repeated_enum_value =
         Arena::CreateMessage<RepeatedField<int>>(arena_);
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
-    GOOGLE_ABSL_DCHECK_EQ(extension->is_packed, packed);
+    ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
+    ABSL_DCHECK_EQ(extension->is_packed, packed);
   }
   extension->repeated_enum_value->Add(value);
 }
@@ -546,7 +547,7 @@ const std::string& ExtensionSet::GetString(
     // Not present.  Return the default value.
     return default_value;
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, STRING);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, STRING);
     return *extension->string_value;
   }
 }
@@ -556,11 +557,11 @@ std::string* ExtensionSet::MutableString(int number, FieldType type,
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
-    GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
+    ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
     extension->is_repeated = false;
     extension->string_value = Arena::Create<std::string>(arena_);
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, STRING);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, STRING);
   }
   extension->is_cleared = false;
   return extension->string_value;
@@ -569,15 +570,15 @@ std::string* ExtensionSet::MutableString(int number, FieldType type,
 const std::string& ExtensionSet::GetRepeatedString(int number,
                                                    int index) const {
   const Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, STRING);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, STRING);
   return extension->repeated_string_value->Get(index);
 }
 
 std::string* ExtensionSet::MutableRepeatedString(int number, int index) {
   Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, STRING);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, STRING);
   return extension->repeated_string_value->Mutable(index);
 }
 
@@ -586,13 +587,13 @@ std::string* ExtensionSet::AddString(int number, FieldType type,
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
-    GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
+    ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
     extension->is_repeated = true;
     extension->is_packed = false;
     extension->repeated_string_value =
         Arena::CreateMessage<RepeatedPtrField<std::string>>(arena_);
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, STRING);
+    ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, STRING);
   }
   return extension->repeated_string_value->Add();
 }
@@ -607,7 +608,7 @@ const MessageLite& ExtensionSet::GetMessage(
     // Not present.  Return the default value.
     return default_value;
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
       return extension->lazymessage_value->GetMessage(default_value, arena_);
     } else {
@@ -627,14 +628,14 @@ MessageLite* ExtensionSet::MutableMessage(int number, FieldType type,
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
-    GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
+    ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
     extension->is_repeated = false;
     extension->is_lazy = false;
     extension->message_value = prototype.New(arena_);
     extension->is_cleared = false;
     return extension->message_value;
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     extension->is_cleared = false;
     if (extension->is_lazy) {
       return extension->lazymessage_value->MutableMessage(prototype, arena_);
@@ -656,13 +657,13 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
     ClearExtension(number);
     return;
   }
-  GOOGLE_ABSL_DCHECK(message->GetOwningArena() == nullptr ||
+  ABSL_DCHECK(message->GetOwningArena() == nullptr ||
               message->GetOwningArena() == arena_);
   Arena* message_arena = message->GetOwningArena();
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
-    GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
+    ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
     extension->is_repeated = false;
     extension->is_lazy = false;
     if (message_arena == arena_) {
@@ -675,7 +676,7 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
       extension->message_value->CheckTypeAndMergeFrom(*message);
     }
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
       extension->lazymessage_value->SetAllocatedMessage(message, arena_);
     } else {
@@ -706,12 +707,12 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
-    GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
+    ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
     extension->is_repeated = false;
     extension->is_lazy = false;
     extension->message_value = message;
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
       extension->lazymessage_value->UnsafeArenaSetAllocatedMessage(message,
                                                                    arena_);
@@ -732,7 +733,7 @@ MessageLite* ExtensionSet::ReleaseMessage(int number,
     // Not present.  Return nullptr.
     return nullptr;
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
       ret = extension->lazymessage_value->ReleaseMessage(prototype, arena_);
@@ -761,7 +762,7 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     // Not present.  Return nullptr.
     return nullptr;
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
       ret = extension->lazymessage_value->UnsafeArenaReleaseMessage(prototype,
@@ -784,15 +785,15 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
 const MessageLite& ExtensionSet::GetRepeatedMessage(int number,
                                                     int index) const {
   const Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   return extension->repeated_message_value->Get(index);
 }
 
 MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
   Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   return extension->repeated_message_value->Mutable(index);
 }
 
@@ -802,12 +803,12 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
-    GOOGLE_ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
+    ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
         Arena::CreateMessage<RepeatedPtrField<MessageLite>>(arena_);
   } else {
-    GOOGLE_ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
+    ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   }
 
   // RepeatedPtrField<MessageLite> does not know how to Add() since it cannot
@@ -827,12 +828,12 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
 //                                       const Descriptor* message_type,
 //                                       MessageFactory* factory)
 
-#undef GOOGLE_ABSL_DCHECK_TYPE
+#undef ABSL_DCHECK_TYPE
 
 void ExtensionSet::RemoveLast(int number) {
   Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK(extension->is_repeated);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK(extension->is_repeated);
 
   switch (cpp_type(extension->type)) {
     case WireFormatLite::CPPTYPE_INT32:
@@ -870,24 +871,24 @@ void ExtensionSet::RemoveLast(int number) {
 
 MessageLite* ExtensionSet::ReleaseLast(int number) {
   Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK(extension->is_repeated);
-  GOOGLE_ABSL_DCHECK(cpp_type(extension->type) == WireFormatLite::CPPTYPE_MESSAGE);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK(extension->is_repeated);
+  ABSL_DCHECK(cpp_type(extension->type) == WireFormatLite::CPPTYPE_MESSAGE);
   return extension->repeated_message_value->ReleaseLast();
 }
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseLast(int number) {
   Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK(extension->is_repeated);
-  GOOGLE_ABSL_DCHECK(cpp_type(extension->type) == WireFormatLite::CPPTYPE_MESSAGE);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK(extension->is_repeated);
+  ABSL_DCHECK(cpp_type(extension->type) == WireFormatLite::CPPTYPE_MESSAGE);
   return extension->repeated_message_value->UnsafeArenaReleaseLast();
 }
 
 void ExtensionSet::SwapElements(int number, int index1, int index2) {
   Extension* extension = FindOrNull(number);
-  GOOGLE_ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-  GOOGLE_ABSL_DCHECK(extension->is_repeated);
+  ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  ABSL_DCHECK(extension->is_repeated);
 
   switch (cpp_type(extension->type)) {
     case WireFormatLite::CPPTYPE_INT32:
@@ -994,9 +995,9 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
       extension->is_packed = other_extension.is_packed;
       extension->is_repeated = true;
     } else {
-      GOOGLE_ABSL_DCHECK_EQ(extension->type, other_extension.type);
-      GOOGLE_ABSL_DCHECK_EQ(extension->is_packed, other_extension.is_packed);
-      GOOGLE_ABSL_DCHECK(extension->is_repeated);
+      ABSL_DCHECK_EQ(extension->type, other_extension.type);
+      ABSL_DCHECK_EQ(extension->is_packed, other_extension.is_packed);
+      ABSL_DCHECK(extension->is_repeated);
     }
 
     switch (cpp_type(other_extension.type)) {
@@ -1090,9 +1091,9 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
                   *other_extension.message_value);
             }
           } else {
-            GOOGLE_ABSL_DCHECK_EQ(extension->type, other_extension.type);
-            GOOGLE_ABSL_DCHECK_EQ(extension->is_packed, other_extension.is_packed);
-            GOOGLE_ABSL_DCHECK(!extension->is_repeated);
+            ABSL_DCHECK_EQ(extension->type, other_extension.type);
+            ABSL_DCHECK_EQ(extension->is_packed, other_extension.is_packed);
+            ABSL_DCHECK(!extension->is_repeated);
             if (other_extension.is_lazy) {
               if (extension->is_lazy) {
                 extension->lazymessage_value->MergeFrom(
@@ -1200,7 +1201,7 @@ void ExtensionSet::UnsafeShallowSwapExtension(ExtensionSet* other, int number) {
 
   if (this_ext == other_ext) return;
 
-  GOOGLE_ABSL_DCHECK_EQ(GetArena(), other->GetArena());
+  ABSL_DCHECK_EQ(GetArena(), other->GetArena());
 
   if (this_ext != nullptr && other_ext != nullptr) {
     std::swap(*this_ext, *other_ext);
@@ -1213,17 +1214,21 @@ void ExtensionSet::UnsafeShallowSwapExtension(ExtensionSet* other, int number) {
   }
 }
 
-bool ExtensionSet::IsInitialized() const {
+bool ExtensionSet::IsInitialized(const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
     for (const auto& kv : *map_.large) {
-      if (!kv.second.IsInitialized()) return false;
+      if (!kv.second.IsInitialized(this, extendee, kv.first, arena_)) {
+        return false;
+      }
     }
     return true;
   }
   for (const KeyValue* it = flat_begin(); it != flat_end(); ++it) {
-    if (!it->second.IsInitialized()) return false;
+    if (!it->second.IsInitialized(this, extendee, it->first, arena_)) {
+      return false;
+    }
   }
   return true;
 }
@@ -1396,7 +1401,7 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
         case WireFormatLite::TYPE_BYTES:
         case WireFormatLite::TYPE_GROUP:
         case WireFormatLite::TYPE_MESSAGE:
-          GOOGLE_ABSL_LOG(FATAL) << "Non-primitive types can't be packed.";
+          ABSL_LOG(FATAL) << "Non-primitive types can't be packed.";
           break;
       }
 
@@ -1497,7 +1502,7 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
 }
 
 int ExtensionSet::Extension::GetSize() const {
-  GOOGLE_ABSL_DCHECK(is_repeated);
+  ABSL_DCHECK(is_repeated);
   switch (cpp_type(type)) {
 #define HANDLE_TYPE(UPPERCASE, LOWERCASE)   \
   case WireFormatLite::CPPTYPE_##UPPERCASE: \
@@ -1516,7 +1521,7 @@ int ExtensionSet::Extension::GetSize() const {
 #undef HANDLE_TYPE
   }
 
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return 0;
 }
 
@@ -1563,25 +1568,29 @@ void ExtensionSet::Extension::Free() {
 // Defined in extension_set_heavy.cc.
 // int ExtensionSet::Extension::SpaceUsedExcludingSelf() const
 
-bool ExtensionSet::Extension::IsInitialized() const {
-  if (cpp_type(type) == WireFormatLite::CPPTYPE_MESSAGE) {
-    if (is_repeated) {
-      for (int i = 0; i < repeated_message_value->size(); i++) {
-        if (!repeated_message_value->Get(i).IsInitialized()) {
-          return false;
-        }
-      }
-    } else {
-      if (!is_cleared) {
-        if (is_lazy) {
-          if (!lazymessage_value->IsInitialized()) return false;
-        } else {
-          if (!message_value->IsInitialized()) return false;
-        }
+bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
+                                            const MessageLite* extendee,
+                                            int number, Arena* arena) const {
+  if (cpp_type(type) != WireFormatLite::CPPTYPE_MESSAGE) return true;
+
+  if (is_repeated) {
+    for (int i = 0; i < repeated_message_value->size(); i++) {
+      if (!repeated_message_value->Get(i).IsInitialized()) {
+        return false;
       }
     }
+    return true;
   }
-  return true;
+
+  if (is_cleared) return true;
+
+  if (!is_lazy) return message_value->IsInitialized();
+
+  const MessageLite* prototype =
+      ext_set->GetPrototypeForLazyMessage(extendee, number);
+  ABSL_DCHECK_NE(prototype, nullptr)
+      << "extendee: " << extendee->GetTypeName() << "; number: " << number;
+  return lazymessage_value->IsInitialized(prototype, arena);
 }
 
 // Dummy key method to avoid weak vtable.
@@ -1665,7 +1674,7 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
       hint = new_map.large->insert(hint, {it->first, it->second});
     }
     flat_size_ = static_cast<uint16_t>(-1);
-    GOOGLE_ABSL_DCHECK(is_large());
+    ABSL_DCHECK(is_large());
   } else {
     new_map.flat = Arena::CreateArray<KeyValue>(arena_, new_flat_capacity);
     std::copy(begin, end, new_map.flat);
@@ -1755,7 +1764,7 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
         case WireFormatLite::TYPE_BYTES:
         case WireFormatLite::TYPE_GROUP:
         case WireFormatLite::TYPE_MESSAGE:
-          GOOGLE_ABSL_LOG(FATAL) << "Non-primitive types can't be packed.";
+          ABSL_LOG(FATAL) << "Non-primitive types can't be packed.";
           break;
       }
     } else {
@@ -1883,7 +1892,7 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   if (type != WireFormatLite::TYPE_MESSAGE || is_repeated) {
     // Not a valid MessageSet extension, but serialize it the normal way.
-    GOOGLE_ABSL_LOG(WARNING) << "Invalid message set extension.";
+    ABSL_LOG(WARNING) << "Invalid message set extension.";
     return InternalSerializeFieldWithCachedSizesToArray(extendee, extension_set,
                                                         number, target, stream);
   }

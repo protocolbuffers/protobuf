@@ -10,11 +10,12 @@ go:     add_person_go     list_people_go
 gotest: add_person_gotest list_people_gotest
 java:   add_person_java   list_people_java
 python: add_person_python list_people_python
+ruby:   add_person_ruby   list_people_ruby
 
 clean:
-	rm -f add_person_cpp list_people_cpp add_person_java list_people_java add_person_python list_people_python
+	rm -f add_person_cpp list_people_cpp add_person_java list_people_java add_person_python list_people_python add_person_ruby list_people_ruby
 	rm -f javac_middleman AddPerson*.class ListPeople*.class com/example/tutorial/protos/*.class
-	rm -f protoc_middleman addressbook.pb.cc addressbook.pb.h addressbook_pb2.py com/example/tutorial/protos/*.java
+	rm -f protoc_middleman protoc_middleman_ruby addressbook.pb.cc addressbook.pb.h addressbook_pb2.py addressbook_pb.rb com/example/tutorial/protos/*.java
 	rm -f *.pyc
 	rm -f go/tutorialpb/*.pb.go add_person_go list_people_go
 	rm -f protoc_middleman_dart dart_tutorial/*.pb*.dart
@@ -38,6 +39,10 @@ protoc_middleman_dart: addressbook.proto
 	protoc -I ../src/:. --dart_out=dart_tutorial addressbook.proto ../src/google/protobuf/timestamp.proto
 	pub get
 	@touch protoc_middleman_dart
+
+protoc_middleman_ruby: addressbook.proto
+	protoc $$PROTO_PATH --ruby_out=. addressbook.proto
+	@touch protoc_middleman_ruby
 
 add_person_cpp: add_person.cc protoc_middleman
 	pkg-config --cflags protobuf  # fails if protobuf is not installed
@@ -90,3 +95,15 @@ list_people_python: list_people.py protoc_middleman
 	@echo '#! /bin/sh' > list_people_python
 	@echo './list_people.py "$$@"' >> list_people_python
 	@chmod +x list_people_python
+
+add_person_ruby: add_person.rb protoc_middleman_ruby
+	@echo "Writing shortcut script add_person_ruby..."
+	@echo '#! /bin/sh' > add_person_ruby
+	@echo './add_person.rb "$$@"' >> add_person_ruby
+	@chmod +x add_person_ruby
+
+list_people_ruby: list_people.rb protoc_middleman_ruby
+	@echo "Writing shortcut script list_people_ruby..."
+	@echo '#! /bin/sh' > list_people_ruby
+	@echo './list_people.rb "$$@"' >> list_people_ruby
+	@chmod +x list_people_ruby

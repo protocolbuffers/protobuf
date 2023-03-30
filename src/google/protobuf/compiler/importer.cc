@@ -105,9 +105,10 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
   bool had_errors() { return had_errors_; }
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) override {
+  void RecordError(int line, int column, absl::string_view message) override {
     if (multi_file_error_collector_ != nullptr) {
-      multi_file_error_collector_->AddError(filename_, line, column, message);
+      multi_file_error_collector_->RecordError(filename_, line, column,
+                                               message);
     }
     had_errors_ = true;
   }
@@ -147,8 +148,8 @@ bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
       return true;
     }
     if (error_collector_ != nullptr) {
-      error_collector_->AddError(filename, -1, 0,
-                                 source_tree_->GetLastErrorMessage());
+      error_collector_->RecordError(filename, -1, 0,
+                                    source_tree_->GetLastErrorMessage());
     }
     return false;
   }
@@ -190,10 +191,10 @@ SourceTreeDescriptorDatabase::ValidationErrorCollector::
 SourceTreeDescriptorDatabase::ValidationErrorCollector::
     ~ValidationErrorCollector() {}
 
-void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
-    const std::string& filename, const std::string& element_name,
+void SourceTreeDescriptorDatabase::ValidationErrorCollector::RecordError(
+    absl::string_view filename, absl::string_view element_name,
     const Message* descriptor, ErrorLocation location,
-    const std::string& message) {
+    absl::string_view message) {
   if (owner_->error_collector_ == nullptr) return;
 
   int line, column;
@@ -203,13 +204,13 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
   } else {
     owner_->source_locations_.Find(descriptor, location, &line, &column);
   }
-  owner_->error_collector_->AddError(filename, line, column, message);
+  owner_->error_collector_->RecordError(filename, line, column, message);
 }
 
-void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
-    const std::string& filename, const std::string& element_name,
+void SourceTreeDescriptorDatabase::ValidationErrorCollector::RecordWarning(
+    absl::string_view filename, absl::string_view element_name,
     const Message* descriptor, ErrorLocation location,
-    const std::string& message) {
+    absl::string_view message) {
   if (owner_->error_collector_ == nullptr) return;
 
   int line, column;
@@ -219,7 +220,7 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
   } else {
     owner_->source_locations_.Find(descriptor, location, &line, &column);
   }
-  owner_->error_collector_->AddWarning(filename, line, column, message);
+  owner_->error_collector_->RecordWarning(filename, line, column, message);
 }
 
 // ===================================================================

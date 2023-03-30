@@ -26,46 +26,47 @@ namespace Google.Protobuf.WellKnownTypes {
           string.Concat(
             "Chpnb29nbGUvcHJvdG9idWYvdHlwZS5wcm90bxIPZ29vZ2xlLnByb3RvYnVm",
             "Ghlnb29nbGUvcHJvdG9idWYvYW55LnByb3RvGiRnb29nbGUvcHJvdG9idWYv",
-            "c291cmNlX2NvbnRleHQucHJvdG8i1wEKBFR5cGUSDAoEbmFtZRgBIAEoCRIm",
+            "c291cmNlX2NvbnRleHQucHJvdG8i6AEKBFR5cGUSDAoEbmFtZRgBIAEoCRIm",
             "CgZmaWVsZHMYAiADKAsyFi5nb29nbGUucHJvdG9idWYuRmllbGQSDgoGb25l",
             "b2ZzGAMgAygJEigKB29wdGlvbnMYBCADKAsyFy5nb29nbGUucHJvdG9idWYu",
             "T3B0aW9uEjYKDnNvdXJjZV9jb250ZXh0GAUgASgLMh4uZ29vZ2xlLnByb3Rv",
             "YnVmLlNvdXJjZUNvbnRleHQSJwoGc3ludGF4GAYgASgOMhcuZ29vZ2xlLnBy",
-            "b3RvYnVmLlN5bnRheCLVBQoFRmllbGQSKQoEa2luZBgBIAEoDjIbLmdvb2ds",
-            "ZS5wcm90b2J1Zi5GaWVsZC5LaW5kEjcKC2NhcmRpbmFsaXR5GAIgASgOMiIu",
-            "Z29vZ2xlLnByb3RvYnVmLkZpZWxkLkNhcmRpbmFsaXR5Eg4KBm51bWJlchgD",
-            "IAEoBRIMCgRuYW1lGAQgASgJEhAKCHR5cGVfdXJsGAYgASgJEhMKC29uZW9m",
-            "X2luZGV4GAcgASgFEg4KBnBhY2tlZBgIIAEoCBIoCgdvcHRpb25zGAkgAygL",
-            "MhcuZ29vZ2xlLnByb3RvYnVmLk9wdGlvbhIRCglqc29uX25hbWUYCiABKAkS",
-            "FQoNZGVmYXVsdF92YWx1ZRgLIAEoCSLIAgoES2luZBIQCgxUWVBFX1VOS05P",
-            "V04QABIPCgtUWVBFX0RPVUJMRRABEg4KClRZUEVfRkxPQVQQAhIOCgpUWVBF",
-            "X0lOVDY0EAMSDwoLVFlQRV9VSU5UNjQQBBIOCgpUWVBFX0lOVDMyEAUSEAoM",
-            "VFlQRV9GSVhFRDY0EAYSEAoMVFlQRV9GSVhFRDMyEAcSDQoJVFlQRV9CT09M",
-            "EAgSDwoLVFlQRV9TVFJJTkcQCRIOCgpUWVBFX0dST1VQEAoSEAoMVFlQRV9N",
-            "RVNTQUdFEAsSDgoKVFlQRV9CWVRFUxAMEg8KC1RZUEVfVUlOVDMyEA0SDQoJ",
-            "VFlQRV9FTlVNEA4SEQoNVFlQRV9TRklYRUQzMhAPEhEKDVRZUEVfU0ZJWEVE",
-            "NjQQEBIPCgtUWVBFX1NJTlQzMhAREg8KC1RZUEVfU0lOVDY0EBIidAoLQ2Fy",
-            "ZGluYWxpdHkSFwoTQ0FSRElOQUxJVFlfVU5LTk9XThAAEhgKFENBUkRJTkFM",
-            "SVRZX09QVElPTkFMEAESGAoUQ0FSRElOQUxJVFlfUkVRVUlSRUQQAhIYChRD",
-            "QVJESU5BTElUWV9SRVBFQVRFRBADIs4BCgRFbnVtEgwKBG5hbWUYASABKAkS",
-            "LQoJZW51bXZhbHVlGAIgAygLMhouZ29vZ2xlLnByb3RvYnVmLkVudW1WYWx1",
-            "ZRIoCgdvcHRpb25zGAMgAygLMhcuZ29vZ2xlLnByb3RvYnVmLk9wdGlvbhI2",
-            "Cg5zb3VyY2VfY29udGV4dBgEIAEoCzIeLmdvb2dsZS5wcm90b2J1Zi5Tb3Vy",
-            "Y2VDb250ZXh0EicKBnN5bnRheBgFIAEoDjIXLmdvb2dsZS5wcm90b2J1Zi5T",
-            "eW50YXgiUwoJRW51bVZhbHVlEgwKBG5hbWUYASABKAkSDgoGbnVtYmVyGAIg",
-            "ASgFEigKB29wdGlvbnMYAyADKAsyFy5nb29nbGUucHJvdG9idWYuT3B0aW9u",
-            "IjsKBk9wdGlvbhIMCgRuYW1lGAEgASgJEiMKBXZhbHVlGAIgASgLMhQuZ29v",
-            "Z2xlLnByb3RvYnVmLkFueSouCgZTeW50YXgSEQoNU1lOVEFYX1BST1RPMhAA",
-            "EhEKDVNZTlRBWF9QUk9UTzMQAUJ7ChNjb20uZ29vZ2xlLnByb3RvYnVmQglU",
-            "eXBlUHJvdG9QAVotZ29vZ2xlLmdvbGFuZy5vcmcvcHJvdG9idWYvdHlwZXMv",
-            "a25vd24vdHlwZXBi+AEBogIDR1BCqgIeR29vZ2xlLlByb3RvYnVmLldlbGxL",
-            "bm93blR5cGVzYgZwcm90bzM="));
+            "b3RvYnVmLlN5bnRheBIPCgdlZGl0aW9uGAcgASgJItUFCgVGaWVsZBIpCgRr",
+            "aW5kGAEgASgOMhsuZ29vZ2xlLnByb3RvYnVmLkZpZWxkLktpbmQSNwoLY2Fy",
+            "ZGluYWxpdHkYAiABKA4yIi5nb29nbGUucHJvdG9idWYuRmllbGQuQ2FyZGlu",
+            "YWxpdHkSDgoGbnVtYmVyGAMgASgFEgwKBG5hbWUYBCABKAkSEAoIdHlwZV91",
+            "cmwYBiABKAkSEwoLb25lb2ZfaW5kZXgYByABKAUSDgoGcGFja2VkGAggASgI",
+            "EigKB29wdGlvbnMYCSADKAsyFy5nb29nbGUucHJvdG9idWYuT3B0aW9uEhEK",
+            "CWpzb25fbmFtZRgKIAEoCRIVCg1kZWZhdWx0X3ZhbHVlGAsgASgJIsgCCgRL",
+            "aW5kEhAKDFRZUEVfVU5LTk9XThAAEg8KC1RZUEVfRE9VQkxFEAESDgoKVFlQ",
+            "RV9GTE9BVBACEg4KClRZUEVfSU5UNjQQAxIPCgtUWVBFX1VJTlQ2NBAEEg4K",
+            "ClRZUEVfSU5UMzIQBRIQCgxUWVBFX0ZJWEVENjQQBhIQCgxUWVBFX0ZJWEVE",
+            "MzIQBxINCglUWVBFX0JPT0wQCBIPCgtUWVBFX1NUUklORxAJEg4KClRZUEVf",
+            "R1JPVVAQChIQCgxUWVBFX01FU1NBR0UQCxIOCgpUWVBFX0JZVEVTEAwSDwoL",
+            "VFlQRV9VSU5UMzIQDRINCglUWVBFX0VOVU0QDhIRCg1UWVBFX1NGSVhFRDMy",
+            "EA8SEQoNVFlQRV9TRklYRUQ2NBAQEg8KC1RZUEVfU0lOVDMyEBESDwoLVFlQ",
+            "RV9TSU5UNjQQEiJ0CgtDYXJkaW5hbGl0eRIXChNDQVJESU5BTElUWV9VTktO",
+            "T1dOEAASGAoUQ0FSRElOQUxJVFlfT1BUSU9OQUwQARIYChRDQVJESU5BTElU",
+            "WV9SRVFVSVJFRBACEhgKFENBUkRJTkFMSVRZX1JFUEVBVEVEEAMi3wEKBEVu",
+            "dW0SDAoEbmFtZRgBIAEoCRItCgllbnVtdmFsdWUYAiADKAsyGi5nb29nbGUu",
+            "cHJvdG9idWYuRW51bVZhbHVlEigKB29wdGlvbnMYAyADKAsyFy5nb29nbGUu",
+            "cHJvdG9idWYuT3B0aW9uEjYKDnNvdXJjZV9jb250ZXh0GAQgASgLMh4uZ29v",
+            "Z2xlLnByb3RvYnVmLlNvdXJjZUNvbnRleHQSJwoGc3ludGF4GAUgASgOMhcu",
+            "Z29vZ2xlLnByb3RvYnVmLlN5bnRheBIPCgdlZGl0aW9uGAYgASgJIlMKCUVu",
+            "dW1WYWx1ZRIMCgRuYW1lGAEgASgJEg4KBm51bWJlchgCIAEoBRIoCgdvcHRp",
+            "b25zGAMgAygLMhcuZ29vZ2xlLnByb3RvYnVmLk9wdGlvbiI7CgZPcHRpb24S",
+            "DAoEbmFtZRgBIAEoCRIjCgV2YWx1ZRgCIAEoCzIULmdvb2dsZS5wcm90b2J1",
+            "Zi5BbnkqQwoGU3ludGF4EhEKDVNZTlRBWF9QUk9UTzIQABIRCg1TWU5UQVhf",
+            "UFJPVE8zEAESEwoPU1lOVEFYX0VESVRJT05TEAJCewoTY29tLmdvb2dsZS5w",
+            "cm90b2J1ZkIJVHlwZVByb3RvUAFaLWdvb2dsZS5nb2xhbmcub3JnL3Byb3Rv",
+            "YnVmL3R5cGVzL2tub3duL3R5cGVwYvgBAaICA0dQQqoCHkdvb2dsZS5Qcm90",
+            "b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.Syntax), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Type), global::Google.Protobuf.WellKnownTypes.Type.Parser, new[]{ "Name", "Fields", "Oneofs", "Options", "SourceContext", "Syntax" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Type), global::Google.Protobuf.WellKnownTypes.Type.Parser, new[]{ "Name", "Fields", "Oneofs", "Options", "SourceContext", "Syntax", "Edition" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Field), global::Google.Protobuf.WellKnownTypes.Field.Parser, new[]{ "Kind", "Cardinality", "Number", "Name", "TypeUrl", "OneofIndex", "Packed", "Options", "JsonName", "DefaultValue" }, null, new[]{ typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Kind), typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Enum), global::Google.Protobuf.WellKnownTypes.Enum.Parser, new[]{ "Name", "Enumvalue", "Options", "SourceContext", "Syntax" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Enum), global::Google.Protobuf.WellKnownTypes.Enum.Parser, new[]{ "Name", "Enumvalue", "Options", "SourceContext", "Syntax", "Edition" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.EnumValue), global::Google.Protobuf.WellKnownTypes.EnumValue.Parser, new[]{ "Name", "Number", "Options" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Option), global::Google.Protobuf.WellKnownTypes.Option.Parser, new[]{ "Name", "Value" }, null, null, null, null)
           }));
@@ -86,6 +87,10 @@ namespace Google.Protobuf.WellKnownTypes {
     /// Syntax `proto3`.
     /// </summary>
     [pbr::OriginalName("SYNTAX_PROTO3")] Proto3 = 1,
+    /// <summary>
+    /// Syntax `editions`.
+    /// </summary>
+    [pbr::OriginalName("SYNTAX_EDITIONS")] Editions = 2,
   }
 
   #endregion
@@ -134,6 +139,7 @@ namespace Google.Protobuf.WellKnownTypes {
       options_ = other.options_.Clone();
       sourceContext_ = other.sourceContext_ != null ? other.sourceContext_.Clone() : null;
       syntax_ = other.syntax_;
+      edition_ = other.edition_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -230,6 +236,21 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    /// <summary>Field number for the "edition" field.</summary>
+    public const int EditionFieldNumber = 7;
+    private string edition_ = "";
+    /// <summary>
+    /// The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Edition {
+      get { return edition_; }
+      set {
+        edition_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -251,6 +272,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if(!options_.Equals(other.options_)) return false;
       if (!object.Equals(SourceContext, other.SourceContext)) return false;
       if (Syntax != other.Syntax) return false;
+      if (Edition != other.Edition) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -264,6 +286,7 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
       if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) hash ^= Syntax.GetHashCode();
+      if (Edition.Length != 0) hash ^= Edition.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -297,6 +320,10 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(48);
         output.WriteEnum((int) Syntax);
       }
+      if (Edition.Length != 0) {
+        output.WriteRawTag(58);
+        output.WriteString(Edition);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -322,6 +349,10 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(48);
         output.WriteEnum((int) Syntax);
       }
+      if (Edition.Length != 0) {
+        output.WriteRawTag(58);
+        output.WriteString(Edition);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -343,6 +374,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
+      }
+      if (Edition.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Edition);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -370,6 +404,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         Syntax = other.Syntax;
+      }
+      if (other.Edition.Length != 0) {
+        Edition = other.Edition;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -413,6 +450,10 @@ namespace Google.Protobuf.WellKnownTypes {
             Syntax = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
             break;
           }
+          case 58: {
+            Edition = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -453,6 +494,10 @@ namespace Google.Protobuf.WellKnownTypes {
           }
           case 48: {
             Syntax = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
+            break;
+          }
+          case 58: {
+            Edition = input.ReadString();
             break;
           }
         }
@@ -1162,6 +1207,7 @@ namespace Google.Protobuf.WellKnownTypes {
       options_ = other.options_.Clone();
       sourceContext_ = other.sourceContext_ != null ? other.sourceContext_.Clone() : null;
       syntax_ = other.syntax_;
+      edition_ = other.edition_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1244,6 +1290,21 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    /// <summary>Field number for the "edition" field.</summary>
+    public const int EditionFieldNumber = 6;
+    private string edition_ = "";
+    /// <summary>
+    /// The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Edition {
+      get { return edition_; }
+      set {
+        edition_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -1264,6 +1325,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if(!options_.Equals(other.options_)) return false;
       if (!object.Equals(SourceContext, other.SourceContext)) return false;
       if (Syntax != other.Syntax) return false;
+      if (Edition != other.Edition) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1276,6 +1338,7 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
       if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) hash ^= Syntax.GetHashCode();
+      if (Edition.Length != 0) hash ^= Edition.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1308,6 +1371,10 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(40);
         output.WriteEnum((int) Syntax);
       }
+      if (Edition.Length != 0) {
+        output.WriteRawTag(50);
+        output.WriteString(Edition);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1332,6 +1399,10 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(40);
         output.WriteEnum((int) Syntax);
       }
+      if (Edition.Length != 0) {
+        output.WriteRawTag(50);
+        output.WriteString(Edition);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1352,6 +1423,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
+      }
+      if (Edition.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Edition);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1378,6 +1452,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         Syntax = other.Syntax;
+      }
+      if (other.Edition.Length != 0) {
+        Edition = other.Edition;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1417,6 +1494,10 @@ namespace Google.Protobuf.WellKnownTypes {
             Syntax = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
             break;
           }
+          case 50: {
+            Edition = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -1453,6 +1534,10 @@ namespace Google.Protobuf.WellKnownTypes {
           }
           case 40: {
             Syntax = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
+            break;
+          }
+          case 50: {
+            Edition = input.ReadString();
             break;
           }
         }

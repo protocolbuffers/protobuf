@@ -147,8 +147,10 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
 
 void RepeatedEnumFieldGenerator::FinishInitialization() {
   RepeatedFieldGenerator::FinishInitialization();
-  variables_["array_comment"] = "// |" + variables_["name"] + "| contains |" +
-                                variables_["storage_type"] + "|\n";
+  std::string name = variables_["name"];
+  std::string storage_type = variables_["storage_type"];
+  variables_["array_comment"] =
+      absl::StrCat("// |", name, "| contains |", storage_type, "|\n");
 }
 
 // NOTE: RepeatedEnumFieldGenerator::DetermineForwardDeclarations isn't needed

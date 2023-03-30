@@ -34,7 +34,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -79,7 +79,7 @@ const char* MapEntryTypeName(const FieldDescriptor* descriptor, bool isKey) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
@@ -99,7 +99,8 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
 
   // Build custom field flags.
   std::vector<std::string> field_flags;
-  field_flags.push_back("GPBFieldMapKey" + GetCapitalizedType(key_descriptor));
+  field_flags.push_back(
+      absl::StrCat("GPBFieldMapKey", GetCapitalizedType(key_descriptor)));
   // Pull over the current text format custom name values that was calculated.
   if (absl::StrContains(variables_["fieldflags"],
                         "GPBFieldTextFormatNameCustom")) {
@@ -129,18 +130,17 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
       value_is_object_type) {
     variables_["array_storage_type"] = "NSMutableDictionary";
     variables_["array_property_type"] =
-        "NSMutableDictionary<NSString*, " +
-        value_field_generator_->variable("storage_type") + "*>";
+        absl::StrCat("NSMutableDictionary<NSString*, ",
+                     value_field_generator_->variable("storage_type"), "*>");
   } else {
-    std::string class_name("GPB");
-    class_name += MapEntryTypeName(key_descriptor, true);
-    class_name += MapEntryTypeName(value_descriptor, false);
-    class_name += "Dictionary";
+    std::string class_name =
+        absl::StrCat("GPB", MapEntryTypeName(key_descriptor, true),
+                     MapEntryTypeName(value_descriptor, false), "Dictionary");
     variables_["array_storage_type"] = class_name;
     if (value_is_object_type) {
       variables_["array_property_type"] =
-          class_name + "<" + value_field_generator_->variable("storage_type") +
-          "*>";
+          absl::StrCat(class_name, "<",
+                       value_field_generator_->variable("storage_type"), "*>");
     }
   }
 
@@ -157,9 +157,10 @@ void MapFieldGenerator::FinishInitialization() {
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_ENUM) {
+    std::string name = variables_["name"];
     variables_["array_comment"] =
-        "// |" + variables_["name"] + "| values are |" +
-        value_field_generator_->variable("storage_type") + "|\n";
+        absl::StrCat("// |", name, "| values are |",
+                     value_field_generator_->variable("storage_type"), "|\n");
   }
 }
 

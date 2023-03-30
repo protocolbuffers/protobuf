@@ -94,6 +94,7 @@ cc_library(
     deps = [
         ":line_consumer",
         ":names",
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/container:btree",
@@ -133,6 +134,13 @@ cc_test(
     ],
 )
 
+# Exposed only for the version check to ensure the ObjC Runtime and Generator
+# are in sync.
+exports_files(
+    ["file.cc"],
+    visibility = ["//objectivec:__pkg__"],
+)
+
 ################################################################################
 # Distribution packaging
 ################################################################################
@@ -149,6 +157,6 @@ filegroup(
     srcs = glob([
         "*_test.cc",
         "*unittest.cc",
-    ]),
+    ], allow_empty = True),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

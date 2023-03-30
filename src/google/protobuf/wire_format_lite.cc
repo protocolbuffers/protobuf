@@ -39,8 +39,8 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -63,6 +63,14 @@ const int WireFormatLite::kMessageSetTypeIdTag;
 const int WireFormatLite::kMessageSetMessageTag;
 
 #endif
+
+constexpr size_t WireFormatLite::kFixed32Size;
+constexpr size_t WireFormatLite::kFixed64Size;
+constexpr size_t WireFormatLite::kSFixed32Size;
+constexpr size_t WireFormatLite::kSFixed64Size;
+constexpr size_t WireFormatLite::kFloatSize;
+constexpr size_t WireFormatLite::kDoubleSize;
+constexpr size_t WireFormatLite::kBoolSize;
 
 // IBM xlC requires prefixing constants with WireFormatLite::
 const size_t WireFormatLite::kMessageSetItemTagsSize =
@@ -483,7 +491,7 @@ void WireFormatLite::WriteString(int field_number, const std::string& value,
                                  io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
+  ABSL_CHECK_LE(value.size(), kInt32MaxSize);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -492,14 +500,14 @@ void WireFormatLite::WriteStringMaybeAliased(int field_number,
                                              io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
+  ABSL_CHECK_LE(value.size(), kInt32MaxSize);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
 void WireFormatLite::WriteBytes(int field_number, const std::string& value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
+  ABSL_CHECK_LE(value.size(), kInt32MaxSize);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -507,7 +515,7 @@ void WireFormatLite::WriteBytesMaybeAliased(int field_number,
                                             const std::string& value,
                                             io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
+  ABSL_CHECK_LE(value.size(), kInt32MaxSize);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
@@ -615,7 +623,7 @@ void PrintUTF8ErrorLog(absl::string_view message_name,
                    " a protocol buffer. Use the 'bytes' type if you intend to "
                    "send raw bytes. ",
                    stacktrace);
-  GOOGLE_ABSL_LOG(ERROR) << error_message;
+  ABSL_LOG(ERROR) << error_message;
 }
 
 bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,

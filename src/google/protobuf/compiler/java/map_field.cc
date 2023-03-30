@@ -47,20 +47,6 @@ namespace java {
 
 namespace {
 
-const FieldDescriptor* KeyField(const FieldDescriptor* descriptor) {
-  GOOGLE_ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
-  const Descriptor* message = descriptor->message_type();
-  GOOGLE_ABSL_CHECK(message->options().map_entry());
-  return message->map_key();
-}
-
-const FieldDescriptor* ValueField(const FieldDescriptor* descriptor) {
-  GOOGLE_ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
-  const Descriptor* message = descriptor->message_type();
-  GOOGLE_ABSL_CHECK(message->options().map_entry());
-  return message->map_value();
-}
-
 std::string TypeName(const FieldDescriptor* field,
                      ClassNameResolver* name_resolver, bool boxed) {
   if (GetJavaType(field) == JAVATYPE_MESSAGE) {
@@ -68,8 +54,8 @@ std::string TypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
-                 : PrimitiveTypeName(GetJavaType(field));
+    return std::string(boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
+                             : PrimitiveTypeName(GetJavaType(field)));
   }
 }
 
@@ -80,13 +66,13 @@ std::string KotlinTypeName(const FieldDescriptor* field,
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
     return name_resolver->GetImmutableClassName(field->enum_type());
   } else {
-    return KotlinTypeName(GetJavaType(field));
+    return std::string(KotlinTypeName(GetJavaType(field)));
   }
 }
 
 std::string WireType(const FieldDescriptor* field) {
-  return "com.google.protobuf.WireFormat.FieldType." +
-         std::string(FieldTypeName(field->type()));
+  return absl::StrCat("com.google.protobuf.WireFormat.FieldType.",
+                      FieldTypeName(field->type()));
 }
 
 void SetMessageVariables(
@@ -98,8 +84,8 @@ void SetMessageVariables(
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->message_type());
-  const FieldDescriptor* key = KeyField(descriptor);
-  const FieldDescriptor* value = ValueField(descriptor);
+  const FieldDescriptor* key = MapKeyField(descriptor);
+  const FieldDescriptor* value = MapValueField(descriptor);
   const JavaType keyJavaType = GetJavaType(key);
   const JavaType valueJavaType = GetJavaType(value);
 
@@ -147,7 +133,7 @@ void SetMessageVariables(
         {"value_enum_type_pass_through_nullness",
          absl::StrCat(pass_through_nullness, (*variables)["value_enum_type"])});
 
-    if (SupportUnknownEnumValue(descriptor->file())) {
+    if (SupportUnknownEnumValue(value)) {
       // Map unknown values to a special UNRECOGNIZED value if supported.
       variables->insert(
           {"unrecognized_value",
@@ -190,18 +176,18 @@ void SetMessageVariables(
       {"default_entry", absl::StrCat((*variables)["capitalized_name"],
                                      "DefaultEntryHolder.defaultEntry")});
   variables->insert({"map_field_parameter", (*variables)["default_entry"]});
-  (*variables)["descriptor"] =
-      name_resolver->GetImmutableClassName(descriptor->file()) + ".internal_" +
-      UniqueFileScopeIdentifier(descriptor->message_type()) + "_descriptor, ";
+  (*variables)["descriptor"] = absl::StrCat(
+      name_resolver->GetImmutableClassName(descriptor->file()), ".internal_",
+      UniqueFileScopeIdentifier(descriptor->message_type()), "_descriptor, ");
   (*variables)["ver"] = GeneratedCodeVersionSuffix();
 
   (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_builder"] =
-      GenerateSetBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      GenerateClearBit(builderBitIndex) + ";";
+      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
 }
 
 }  // namespace
@@ -244,7 +230,9 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
                  "$deprecation$boolean ${$contains$capitalized_name$$}$(\n"
                  "    $key_type$ key);\n");
   printer->Annotate("{", "}", descriptor_);
-  if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
+
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
     if (context_->options().opensource_runtime) {
       printer->Print(variables_,
                      "/**\n"
@@ -275,7 +263,7 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
         "$deprecation$$value_enum_type$ ${$get$capitalized_name$OrThrow$}$(\n"
         "    $key_type$ key);\n");
     printer->Annotate("{", "}", descriptor_);
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(value)) {
       printer->Print(
           variables_,
           "/**\n"
@@ -362,7 +350,7 @@ void ImmutableMapFieldGenerator::GenerateMembers(io::Printer* printer) const {
                  "  }\n"
                  "  return $name$_;\n"
                  "}\n");
-  if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
+  if (GetJavaType(MapValueField(descriptor_)) == JAVATYPE_ENUM) {
     printer->Print(
         variables_,
         "private static final\n"
@@ -434,7 +422,8 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
     if (context_->options().opensource_runtime) {
       printer->Print(
           variables_,
@@ -478,7 +467,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
         "}\n");
     printer->Annotate("{", "}", descriptor_);
 
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(value)) {
       if (context_->options().opensource_runtime) {
         printer->Print(
             variables_,
@@ -585,7 +574,8 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
     if (context_->options().opensource_runtime) {
       printer->Print(
           variables_,
@@ -645,7 +635,7 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
         "}\n");
     printer->Annotate("{", "}", descriptor_);
 
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(value)) {
       printer->Print(
           variables_,
           "/**\n"
@@ -870,8 +860,8 @@ void ImmutableMapFieldGenerator::GenerateBuildingCode(
 
 void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  if (!SupportUnknownEnumValue(descriptor_->file()) &&
-      GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (!SupportUnknownEnumValue(value) && GetJavaType(value) == JAVATYPE_ENUM) {
     printer->Print(
         variables_,
         "com.google.protobuf.ByteString bytes = input.readBytes();\n"

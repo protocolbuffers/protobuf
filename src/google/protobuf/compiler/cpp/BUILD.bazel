@@ -17,6 +17,7 @@ cc_library(
         ":names_internal",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -36,6 +37,7 @@ cc_library(
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -45,6 +47,7 @@ cc_library(
         "enum.cc",
         "extension.cc",
         "field.cc",
+        "field_generators/cord_field.cc",
         "field_generators/enum_field.cc",
         "field_generators/map_field.cc",
         "field_generators/message_field.cc",
@@ -83,6 +86,7 @@ cc_library(
         ":names",
         ":names_internal",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:retention",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_map",

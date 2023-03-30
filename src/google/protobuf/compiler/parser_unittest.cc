@@ -46,16 +46,21 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_import_public.pb.h"
 #include "google/protobuf/wire_format.h"
+
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -72,11 +77,11 @@ class MockErrorCollector : public io::ErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddWarning(int line, int column, const std::string& message) override {
+  void RecordWarning(int line, int column, absl::string_view message) override {
     absl::SubstituteAndAppend(&warning_, "$0:$1: $2\n", line, column, message);
   }
 
-  void AddError(int line, int column, const std::string& message) override {
+  void RecordError(int line, int column, absl::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
@@ -90,16 +95,16 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
   ~MockValidationErrorCollector() override = default;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, const std::string& element_name,
-                const Message* descriptor, ErrorLocation location,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
     int line, column;
     if (location == DescriptorPool::ErrorCollector::IMPORT) {
       source_locations_.FindImport(descriptor, element_name, &line, &column);
     } else {
       source_locations_.Find(descriptor, location, &line, &column);
     }
-    wrapped_collector_->AddError(line, column, message);
+    wrapped_collector_->RecordError(line, column, message);
   }
 
  private:
@@ -128,7 +133,7 @@ class ParserTest : public testing::Test {
     SetupParser(input);
     FileDescriptorProto actual, expected;
 
-    parser_->Parse(input_.get(), &actual);
+    EXPECT_TRUE(parser_->Parse(input_.get(), &actual));
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
     ASSERT_EQ("", error_collector_.text_);
 
@@ -167,7 +172,7 @@ class ParserTest : public testing::Test {
   void ExpectHasEarlyExitErrors(const char* text, const char* expected_errors) {
     SetupParser(text);
     FileDescriptorProto file;
-    parser_->Parse(input_.get(), &file);
+    EXPECT_FALSE(parser_->Parse(input_.get(), &file));
     EXPECT_EQ(expected_errors, error_collector_.text_);
   }
 
@@ -278,7 +283,6 @@ TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
                   "Number should not come right after an underscore. Found: "
                   "song_name_1.") != std::string::npos);
 }
-
 
 // ===================================================================
 
@@ -2419,11 +2423,29 @@ void StripFieldTypeName(FileDescriptorProto* file_proto) {
   }
 }
 
+void StripEmptyOptions(DescriptorProto& proto) {
+  for (auto& ext : *proto.mutable_extension_range()) {
+    if (ext.has_options() && ext.options().DebugString().empty()) {
+      ext.clear_options();
+    }
+  }
+}
+
+void StripEmptyOptions(FileDescriptorProto& file_proto) {
+  if (file_proto.message_type_size() == 0) {
+    return;
+  }
+  for (auto& msg : *file_proto.mutable_message_type()) {
+    StripEmptyOptions(msg);
+  }
+}
+
 TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   const FileDescriptor* original_file =
       protobuf_unittest::TestAllTypes::descriptor()->file();
   FileDescriptorProto expected;
   original_file->CopyTo(&expected);
+  StripEmptyOptions(expected);
 
   // Get the DebugString of the unittest.proto FileDecriptor, which includes
   // all other descriptor types
@@ -2971,14 +2993,14 @@ class SourceInfoTest : public ParserTest {
     while (*text != '\0') {
       if (*text == '$') {
         ++text;
-        GOOGLE_ABSL_CHECK_NE('\0', *text);
+        ABSL_CHECK_NE('\0', *text);
         if (*text == '$') {
           text_without_markers_ += '$';
           ++column;
         } else {
           markers_[*text] = std::make_pair(line, column);
           ++text;
-          GOOGLE_ABSL_CHECK_EQ('$', *text);
+          ABSL_CHECK_EQ('$', *text);
         }
       } else if (*text == '\n') {
         ++line;
@@ -3893,8 +3915,12 @@ TEST_F(SourceInfoTest, DocCommentsOneof) {
 
 // ===================================================================
 
+
+
 }  // anonymous namespace
 
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

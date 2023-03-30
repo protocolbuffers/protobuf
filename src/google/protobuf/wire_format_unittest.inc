@@ -1,3 +1,4 @@
+// -*- c++ -*-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -36,7 +37,8 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/scoped_mock_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/descriptor.h"
@@ -1230,7 +1232,7 @@ class WireFormatInvalidInputTest : public testing::Test {
     const FieldDescriptor* field =
         UNITTEST::TestAllTypes::descriptor()->FindFieldByName(
             "optional_nested_message");
-    GOOGLE_ABSL_CHECK(field != nullptr);
+    ABSL_CHECK(field != nullptr);
 
     std::string result;
 
@@ -1252,7 +1254,7 @@ class WireFormatInvalidInputTest : public testing::Test {
                                bool include_end_tag) {
     const FieldDescriptor* field =
         UNITTEST::TestAllTypes::descriptor()->FindFieldByName("optionalgroup");
-    GOOGLE_ABSL_CHECK(field != nullptr);
+    ABSL_CHECK(field != nullptr);
 
     std::string result;
 
@@ -1420,21 +1422,20 @@ TEST_F(Utf8ValidationTest, WriteInvalidUTF8String) {
   UNITTEST::OneString input;
   std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
-    WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
-    errors = log.GetMessages(ERROR);
-  }
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  EXPECT_THAT(errors,
-              testing::ElementsAre(
-                  "String field '" + std::string(UNITTEST_PACKAGE_NAME) +
-                  ".OneString.data' "
-                  "contains invalid UTF-8 data when "
-                  "serializing a protocol buffer. Use the "
-                  "'bytes' type if you intend to send raw bytes. "));
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::StrCat(
+                          "String field '", UNITTEST_PACKAGE_NAME,
+                          ".OneString.data' "
+                          "contains invalid UTF-8 data when "
+                          "serializing a protocol buffer. Use the "
+                          "'bytes' type if you intend to send raw bytes. ")));
 #else
-  ASSERT_EQ(0, errors.size());
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_)).Times(0);
 #endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+    log.StartCapturingLogs();
+    WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
+  }
 }
 
 
@@ -1445,35 +1446,32 @@ TEST_F(Utf8ValidationTest, ReadInvalidUTF8String) {
   UNITTEST::OneString output;
   std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
-    ReadMessage(wire_buffer, &output);
-    errors = log.GetMessages(ERROR);
-  }
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  EXPECT_THAT(errors,
-              testing::ElementsAre(
-                  "String field '" + std::string(UNITTEST_PACKAGE_NAME) +
-                  ".OneString.data' "
-                  "contains invalid UTF-8 data when "
-                  "parsing a protocol buffer. Use the "
-                  "'bytes' type if you intend to send raw bytes. "));
-
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::StrCat(
+                          "String field '", UNITTEST_PACKAGE_NAME,
+                          ".OneString.data' "
+                          "contains invalid UTF-8 data when "
+                          "parsing a protocol buffer. Use the "
+                          "'bytes' type if you intend to send raw bytes. ")));
 #else
-  ASSERT_EQ(0, errors.size());
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_)).Times(0);
 #endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+    log.StartCapturingLogs();
+    ReadMessage(wire_buffer, &output);
+  }
 }
 
 
 TEST_F(Utf8ValidationTest, WriteValidUTF8String) {
   std::string wire_buffer;
   UNITTEST::OneString input;
-  std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_)).Times(0);
+    log.StartCapturingLogs();
     WriteMessage(kValidUTF8String, &input, &wire_buffer);
-    errors = log.GetMessages(ERROR);
   }
-  ASSERT_EQ(0, errors.size());
 }
 
 TEST_F(Utf8ValidationTest, ReadValidUTF8String) {
@@ -1481,13 +1479,12 @@ TEST_F(Utf8ValidationTest, ReadValidUTF8String) {
   UNITTEST::OneString input;
   WriteMessage(kValidUTF8String, &input, &wire_buffer);
   UNITTEST::OneString output;
-  std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_)).Times(0);
+    log.StartCapturingLogs();
     ReadMessage(wire_buffer, &output);
-    errors = log.GetMessages(ERROR);
   }
-  ASSERT_EQ(0, errors.size());
   EXPECT_EQ(input.data(), output.data());
 }
 
@@ -1495,13 +1492,12 @@ TEST_F(Utf8ValidationTest, ReadValidUTF8String) {
 TEST_F(Utf8ValidationTest, WriteArbitraryBytes) {
   std::string wire_buffer;
   UNITTEST::OneBytes input;
-  std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_)).Times(0);
+    log.StartCapturingLogs();
     WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
-    errors = log.GetMessages(ERROR);
   }
-  ASSERT_EQ(0, errors.size());
 }
 
 TEST_F(Utf8ValidationTest, ReadArbitraryBytes) {
@@ -1509,13 +1505,12 @@ TEST_F(Utf8ValidationTest, ReadArbitraryBytes) {
   UNITTEST::OneBytes input;
   WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
   UNITTEST::OneBytes output;
-  std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_)).Times(0);
+    log.StartCapturingLogs();
     ReadMessage(wire_buffer, &output);
-    errors = log.GetMessages(ERROR);
   }
-  ASSERT_EQ(0, errors.size());
   EXPECT_EQ(input.data(), output.data());
 }
 
@@ -1527,17 +1522,16 @@ TEST_F(Utf8ValidationTest, ParseRepeatedString) {
   std::string wire_buffer = input.SerializeAsString();
 
   UNITTEST::MoreString output;
-  std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
-    ReadMessage(wire_buffer, &output);
-    errors = log.GetMessages(ERROR);
-  }
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  ASSERT_EQ(2, errors.size());
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_)).Times(2);
 #else
-  ASSERT_EQ(0, errors.size());
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_)).Times(0);
 #endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+    log.StartCapturingLogs();
+    ReadMessage(wire_buffer, &output);
+  }
   EXPECT_EQ(wire_buffer, output.SerializeAsString());
 }
 
@@ -1546,23 +1540,20 @@ TEST_F(Utf8ValidationTest, ParseRepeatedString) {
 TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
   std::string data(kInvalidUTF8String);
 
-  std::vector<std::string> errors;
   {
-    ScopedMemoryLog log;
-    WireFormat::VerifyUTF8String(data.data(), data.size(),
-                                 WireFormat::SERIALIZE);
-    errors = log.GetMessages(ERROR);
-  }
+    absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  ASSERT_EQ(1, errors.size());
-  EXPECT_TRUE(
-      absl::StartsWith(errors[0],
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::StartsWith(
                        "String field contains invalid UTF-8 data when "
                        "serializing a protocol buffer. Use the "
-                       "'bytes' type if you intend to send raw bytes."));
+                       "'bytes' type if you intend to send raw bytes.")));
 #else
-  ASSERT_EQ(0, errors.size());
-#endif
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_)).Times(0);
+#endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+    log.StartCapturingLogs();
+    WireFormat::VerifyUTF8String(data.data(), data.size(),
+                                 WireFormat::SERIALIZE);
+  }
 }
 
 

@@ -33,7 +33,7 @@
 package com.google.protobuf.jruby;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -234,7 +234,8 @@ public class RubyFieldDescriptor extends RubyObject {
   protected void setDescriptor(
       ThreadContext context, FieldDescriptor descriptor, RubyDescriptorPool pool) {
     if (descriptor.isRequired()
-        && descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3) {
+        && LegacyFileDescriptor.getSyntax(descriptor.getFile())
+            == LegacyFileDescriptor.Syntax.PROTO3) {
       throw Utils.createTypeError(
           context,
           descriptor.getName()

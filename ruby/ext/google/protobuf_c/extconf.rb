@@ -12,17 +12,16 @@ else
   $CFLAGS += " -std=gnu99 -O3 -DNDEBUG"
 end
 
-
 if RUBY_PLATFORM =~ /linux/
   # Instruct the linker to point memcpy calls at our __wrap_memcpy wrapper.
   $LDFLAGS += " -Wl,-wrap,memcpy"
 end
 
 $VPATH << "$(srcdir)/third_party/utf8_range"
-$INCFLAGS << "$(srcdir)/third_party/utf8_range"
+$INCFLAGS += " -I$(srcdir)/third_party/utf8_range"
 
 $srcs = ["protobuf.c", "convert.c", "defs.c", "message.c",
          "repeated_field.c", "map.c", "ruby-upb.c", "wrap_memcpy.c",
          "naive.c", "range2-neon.c", "range2-sse.c"]
 
-create_makefile(ext_name, Dir.pwd+"/../../../../ext/google/protobuf_c")
+create_makefile(ext_name)

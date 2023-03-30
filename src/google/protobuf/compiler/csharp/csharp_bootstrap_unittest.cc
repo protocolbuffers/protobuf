@@ -66,8 +66,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
+  void RecordError(absl::string_view filename, int line, int column,
+                   absl::string_view message) {
     absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
@@ -83,8 +83,9 @@ class MockGeneratorContext : public GeneratorContext {
     std::string expected_contents = *it->second;
 
     std::string actual_contents;
-    GOOGLE_ABSL_CHECK_OK(File::GetContentsAsText(
-        TestSourceDir() + "/" + physical_filename, &actual_contents, true))
+    ABSL_CHECK_OK(File::GetContentsAsText(
+        absl::StrCat(TestSourceDir(), "/", physical_filename), &actual_contents,
+        true))
         << "Unable to get " << physical_filename;
     EXPECT_TRUE(actual_contents == expected_contents)
       << physical_filename << " needs to be regenerated.  Please run "
@@ -130,7 +131,7 @@ TEST(CsharpBootstrapTest, GeneratedCsharpDescriptorMatches) {
   // only distribution).
   std::string descriptor_file_name =
       "../csharp/src/Google.Protobuf/Reflection/Descriptor.cs";
-  if (!File::Exists(TestSourceDir() + "/" + descriptor_file_name)) {
+  if (!File::Exists(absl::StrCat(TestSourceDir(), "/", descriptor_file_name))) {
     return;
   }
 

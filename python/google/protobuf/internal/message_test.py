@@ -53,6 +53,7 @@ cmp = lambda x, y: (x > y) - (x < y)
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
 from google.protobuf.internal import encoder
 from google.protobuf.internal import more_extensions_pb2
+from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
@@ -495,6 +496,10 @@ class MessageTest(unittest.TestCase):
 
     msg.repeated_nested_message.MergeFrom(other_msg.repeated_nested_message)
     self.assertEqual([1, 2, 3, 4], [m.bb for m in msg.repeated_nested_message])
+
+  def testInternalMergeWithMissingRequiredField(self, message_module):
+    req = more_messages_pb2.RequiredField()
+    more_messages_pb2.RequiredWrapper(request=req)
 
   def testAddWrongRepeatedNestedField(self, message_module):
     msg = message_module.TestAllTypes()

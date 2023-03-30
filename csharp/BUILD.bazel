@@ -65,9 +65,11 @@ inline_sh_test(
     srcs = [
         ":srcs",
         "src/Google.Protobuf.sln",
+        "//conformance:conformance_csharp_proto",
         "//csharp/src/Google.Protobuf.Conformance:srcs",
     ],
     cmd = """
+        cp $(rootpath //conformance:conformance_csharp_proto) `dirname $(location src/Google.Protobuf.sln)`/Google.Protobuf.Conformance/
         pushd `dirname $(location src/Google.Protobuf.sln)`/..
         dotnet restore src/Google.Protobuf.sln
         dotnet build -c Release src/Google.Protobuf.sln

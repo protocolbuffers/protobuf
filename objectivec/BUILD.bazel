@@ -1,20 +1,66 @@
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//conformance:defs.bzl", "conformance_test")
+load(":defs.bzl", "objc_proto_camel_case_name")
+
+# The WKTs have to be checked in to support the CocoaPods and Xcode builds. This
+# generule and test ensure the source are current.
+#
+# Within the ":objectivec" target, the outputs of the genrule are then used to
+# ensure they are always "current". This implementation is basically the same
+# has how the WKTs are handled in src/google/protobuf/BUILD.bazel for the C++
+# version. They share the potential downsides around layer checks and that
+# someone could #include the header with the `wkt/` prefix on the name.
+
+_WELL_KNOWN_TYPES = [
+    "any",
+    "api",
+    "duration",
+    "empty",
+    "field_mask",
+    "source_context",
+    "struct",
+    "timestamp",
+    "type",
+    "wrappers",
+]
+
+_OBJC_WKT_NAMES = [objc_proto_camel_case_name(x) for x in _WELL_KNOWN_TYPES]
+
+_OBJC_EXTS = [
+    ".pbobjc.h",
+    ".pbobjc.m",
+]
+
+genrule(
+    name = "gen_wkt_sources",
+    srcs = ["//src/google/protobuf:well_known_type_protos"],
+    outs = ["wkt/GPB" + wkt + ext for wkt in _OBJC_WKT_NAMES for ext in _OBJC_EXTS],
+    cmd = " && ".join([
+        "$(execpath //:protoc) --objc_out=$(RULEDIR)/wkt --proto_path=src $(SRCS)",
+    ] + [
+        "mv $(RULEDIR)/wkt/google/protobuf/" + wkt + ext + " $(RULEDIR)/wkt/GPB" + wkt + ext
+        for wkt in _OBJC_WKT_NAMES
+        for ext in _OBJC_EXTS
+    ]),
+    exec_tools = ["//:protoc"],
+)
+
+staleness_test(
+    name = "well_known_types_staleness_test",
+    outs = ["GPB" + wkt + ext for wkt in _OBJC_WKT_NAMES for ext in _OBJC_EXTS],
+    generated_pattern = "wkt/%s",
+    tags = ["manual"],
+)
+
+################################################################################
+# Objective-C Runtime Library
+################################################################################
 
 objc_library(
     name = "objectivec",
     hdrs = [
-        "GPBAny.pbobjc.h",
-        "GPBApi.pbobjc.h",
-        "GPBDuration.pbobjc.h",
-        "GPBEmpty.pbobjc.h",
-        "GPBFieldMask.pbobjc.h",
-        "GPBSourceContext.pbobjc.h",
-        "GPBStruct.pbobjc.h",
-        "GPBTimestamp.pbobjc.h",
-        "GPBType.pbobjc.h",
-        "GPBWrappers.pbobjc.h",
         "GPBArray.h",
         "GPBBootstrap.h",
         "GPBCodedInputStream.h",
@@ -55,39 +101,37 @@ objc_library(
         "GPBUnknownFieldSet_PackagePrivate.h",
         "GPBUnknownField_PackagePrivate.h",
         "GPBUtilities_PackagePrivate.h",
-    ],
+    ] + ["wkt/GPB" + wkt + ".pbobjc.h" for wkt in _OBJC_WKT_NAMES],
     copts = [
         "-Wno-vla",
     ],
     includes = [
         ".",
+        "wkt",
     ],
     non_arc_srcs = [
-        "GPBAny.pbobjc.m",
-        "GPBApi.pbobjc.m",
         "GPBArray.m",
         "GPBCodedInputStream.m",
         "GPBCodedOutputStream.m",
         "GPBDescriptor.m",
         "GPBDictionary.m",
-        "GPBDuration.pbobjc.m",
-        "GPBEmpty.pbobjc.m",
         "GPBExtensionInternals.m",
         "GPBExtensionRegistry.m",
-        "GPBFieldMask.pbobjc.m",
         "GPBMessage.m",
         "GPBRootObject.m",
-        "GPBSourceContext.pbobjc.m",
-        "GPBStruct.pbobjc.m",
-        "GPBTimestamp.pbobjc.m",
-        "GPBType.pbobjc.m",
         "GPBUnknownField.m",
         "GPBUnknownFieldSet.m",
         "GPBUtilities.m",
         "GPBWellKnownTypes.m",
         "GPBWireFormat.m",
-        "GPBWrappers.pbobjc.m",
-    ],
+    ] + ["wkt/GPB" + wkt + ".pbobjc.m" for wkt in _OBJC_WKT_NAMES],
+    target_compatible_with = select({
+        "@platforms//os:macos": [],
+        "@platforms//os:ios": [],
+        "@platforms//os:tvos": [],
+        "@platforms//os:watchos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     visibility = ["//visibility:public"],
 )
 
@@ -98,7 +142,48 @@ objc_library(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_objc.txt",
+    target_compatible_with = ["@platforms//os:macos"],
     testee = "//conformance:conformance_objc",
+)
+
+# -------------------------------------------------------------------
+# Current Version Check between Generator and Runtime Sources
+sh_test(
+    name = "check_version_stamps",
+    size = "small",
+    srcs = ["DevTools/check_version_stamps.sh"],
+    data = [
+        "GPBBootstrap.h",
+        "//src/google/protobuf/compiler/objectivec:file.cc",
+    ],
+)
+
+# -------------------------------------------------------------------
+# Validation of pddm expansion.
+
+py_binary(
+    name = "pddm",
+    srcs = ["DevTools/pddm.py"],
+)
+
+py_test(
+    name = "pddm_tests",
+    size = "small",
+    srcs = [
+        "DevTools/pddm.py",
+        "DevTools/pddm_tests.py",
+    ],
+)
+
+sh_test(
+    name = "sources_pddm_expansion_test",
+    size = "small",
+    srcs = ["DevTools/sources_pddm_expansion_test.sh"],
+    data = [":pddm"] + glob([
+        "**/*.h",
+        "**/*.m",
+        "**/*.pddm",
+    ]),
 )
 
 ################################################################################
@@ -119,7 +204,6 @@ pkg_files(
         "ProtocolBuffers_iOS.xcodeproj/**/*",
         "ProtocolBuffers_OSX.xcodeproj/**/*",
         "ProtocolBuffers_tvOS.xcodeproj/**/*",
-        "Tests/CocoaPods/**/*",
         "Tests/*.pddm",
         "Tests/*.txt",
         "Tests/*.plist",

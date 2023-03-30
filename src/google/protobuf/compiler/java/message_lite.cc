@@ -54,6 +54,7 @@
 #include "google/protobuf/compiler/java/message_builder_lite.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -76,13 +77,13 @@ ImmutableMessageLiteGenerator::ImmutableMessageLiteGenerator(
       context_(context),
       name_resolver_(context->GetNameResolver()),
       field_generators_(descriptor, context_) {
-  GOOGLE_ABSL_CHECK(!HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
+  ABSL_CHECK(!HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A lite message generator is used to "
          "generate non-lite messages.";
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
       const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
-      GOOGLE_ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
+      ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -507,7 +508,8 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   std::vector<uint16_t> chars;
 
   int flags = 0;
-  if (IsProto2(descriptor_->file())) {
+  if (FileDescriptorLegacy(descriptor_->file()).syntax() ==
+      FileDescriptorLegacy::Syntax::SYNTAX_PROTO2) {
     flags |= 0x1;
   }
   if (descriptor_->options().message_set_wire_format()) {
@@ -654,11 +656,13 @@ void ImmutableMessageLiteGenerator::GenerateParseFromMethods(
       "  return com.google.protobuf.GeneratedMessageLite.parseFrom(\n"
       "      DEFAULT_INSTANCE, input, extensionRegistry);\n"
       "}\n"
+      "$parsedelimitedreturnannotation$\n"
       "public static $classname$ parseDelimitedFrom(java.io.InputStream "
       "input)\n"
       "    throws java.io.IOException {\n"
       "  return parseDelimitedFrom(DEFAULT_INSTANCE, input);\n"
       "}\n"
+      "$parsedelimitedreturnannotation$\n"
       "public static $classname$ parseDelimitedFrom(\n"
       "    java.io.InputStream input,\n"
       "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
@@ -680,7 +684,11 @@ void ImmutableMessageLiteGenerator::GenerateParseFromMethods(
       "      DEFAULT_INSTANCE, input, extensionRegistry);\n"
       "}\n"
       "\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+      "classname", name_resolver_->GetImmutableClassName(descriptor_),
+      "parsedelimitedreturnannotation",
+      context_->options().opensource_runtime
+          ? ""
+          : "@com.google.protobuf.Internal.ProtoMethodMayReturnNull");
 }
 
 // ===================================================================
@@ -816,9 +824,6 @@ void ImmutableMessageLiteGenerator::GenerateKotlinMembers(
                  "camelcase_name",
                  name_resolver_->GetKotlinFactoryName(descriptor_));
 
-  if (!context_->options().opensource_runtime) {
-    printer->Print("@com.google.errorprone.annotations.CheckReturnValue\n");
-  }
   printer->Print(
       "public inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> "
       "kotlin.Unit): $message$ =\n"
@@ -846,9 +851,6 @@ void ImmutableMessageLiteGenerator::GenerateKotlinMembers(
 
 void ImmutableMessageLiteGenerator::GenerateTopLevelKotlinMembers(
     io::Printer* printer) const {
-  if (!context_->options().opensource_runtime) {
-    printer->Print("@com.google.errorprone.annotations.CheckReturnValue\n");
-  }
   printer->Print(
       "public inline fun $message$.copy(block: $message_kt$.Dsl.() -> "
       "kotlin.Unit): $message$ =\n"

@@ -59,10 +59,6 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
-std::unique_ptr<FieldGeneratorBase> MakeOneofPrimitiveGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc);
-
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
@@ -71,19 +67,11 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
-std::unique_ptr<FieldGeneratorBase> MakeOneofEnumGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc);
-
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc);
-
-std::unique_ptr<FieldGeneratorBase> MakeOneofStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
@@ -102,6 +90,15 @@ std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
 std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
+
+std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc);
+
+std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc);
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

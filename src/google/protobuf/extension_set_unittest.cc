@@ -57,7 +57,6 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -1072,7 +1071,7 @@ TEST(ExtensionSetTest, RepeatedFields) {
                .MutableRepeatedExtension(unittest::repeated_string_extension)
                ->end();
        string_iter != string_end; ++string_iter) {
-    *string_iter += "test";
+    string_iter->append("test");
   }
   RepeatedPtrField<std::string>::const_iterator string_const_iter;
   RepeatedPtrField<std::string>::const_iterator string_const_end;
@@ -1186,7 +1185,7 @@ TEST(ExtensionSetTest, AbsentExtension) {
                 .bb());
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 
 TEST(ExtensionSetTest, InvalidEnumDeath) {
   unittest::TestAllExtensions message;
@@ -1196,7 +1195,7 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
       "IsValid");
 }
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 TEST(ExtensionSetTest, DynamicExtensions) {
   // Test adding a dynamic extension to a compiled-in message object.
@@ -1229,7 +1228,8 @@ TEST(ExtensionSetTest, DynamicExtensions) {
 
     // If the field refers to one of the types nested in TestDynamicExtensions,
     // make it refer to the type in our dynamic proto instead.
-    std::string prefix = "." + template_descriptor->full_name() + ".";
+    std::string prefix =
+        absl::StrCat(".", template_descriptor->full_name(), ".");
     if (extension->has_type_name()) {
       std::string* type_name = extension->mutable_type_name();
       if (absl::StartsWith(*type_name, prefix)) {
@@ -1356,6 +1356,54 @@ TEST(ExtensionSetTest, DynamicExtensions) {
         dynamic_factory.GetPrototype(dynamic_message_extension->message_type());
     EXPECT_EQ(prototype, &sub_message);
   }
+}
+
+TEST(ExtensionSetTest, Proto3PackedDynamicExtensions) {
+  // Regression test for b/271121265. This test case verifies that
+  // packed-by-default repeated custom options in proto3 are correctly
+  // serialized in packed form when dynamic extensions are used.
+
+  // Create a custom option in proto3 and load this into an overlay
+  // DescriptorPool with a DynamicMessageFactory.
+  google::protobuf::FileDescriptorProto file_descriptor_proto;
+  file_descriptor_proto.set_syntax("proto3");
+  file_descriptor_proto.set_name(
+      "third_party/protobuf/unittest_proto3_packed_extension.proto");
+  file_descriptor_proto.set_package("proto3_unittest");
+  file_descriptor_proto.add_dependency(
+      DescriptorProto::descriptor()->file()->name());
+  FieldDescriptorProto* extension = file_descriptor_proto.add_extension();
+  extension->set_name("repeated_int32_option");
+  extension->set_extendee(MessageOptions().GetTypeName());
+  extension->set_number(50009);
+  extension->set_label(FieldDescriptorProto::LABEL_REPEATED);
+  extension->set_type(FieldDescriptorProto::TYPE_INT32);
+  extension->set_json_name("repeatedInt32Option");
+  google::protobuf::DescriptorPool pool(DescriptorPool::generated_pool());
+  ASSERT_NE(pool.BuildFile(file_descriptor_proto), nullptr);
+  DynamicMessageFactory factory;
+  factory.SetDelegateToGeneratedFactory(true);
+
+  // Create a serialized MessageOptions proto equivalent to:
+  // [proto3_unittest.repeated_int32_option]: 1
+  UnknownFieldSet unknown_fields;
+  unknown_fields.AddVarint(50009, 1);
+  std::string serialized_options;
+  ASSERT_TRUE(unknown_fields.SerializeToString(&serialized_options));
+
+  // Parse the MessageOptions using our custom extension registry.
+  io::ArrayInputStream input_stream(serialized_options.data(),
+                                    serialized_options.size());
+  io::CodedInputStream coded_stream(&input_stream);
+  coded_stream.SetExtensionRegistry(&pool, &factory);
+  MessageOptions message_options;
+  ASSERT_TRUE(message_options.ParseFromCodedStream(&coded_stream));
+
+  // Finally, serialize the proto again and verify that the repeated option has
+  // been correctly serialized in packed form.
+  std::string reserialized_options;
+  ASSERT_TRUE(message_options.SerializeToString(&reserialized_options));
+  EXPECT_EQ(reserialized_options, "\xca\xb5\x18\x01\x01");
 }
 
 TEST(ExtensionSetTest, BoolExtension) {

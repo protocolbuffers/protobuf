@@ -151,7 +151,7 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
-      if (reflection->SupportsUnknownEnumValues()) {
+      if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->SetRepeatedEnumValue(message, field_descriptor, index,
                                          value);
       } else {
@@ -376,7 +376,7 @@ PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(item, value, nullptr);
-      if (reflection->SupportsUnknownEnumValues()) {
+      if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->AddEnumValue(message, field_descriptor, value);
       } else {
         const EnumDescriptor* enum_descriptor = field_descriptor->enum_type();

@@ -45,6 +45,7 @@
 
 #include "google/protobuf/port.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -141,7 +142,7 @@ class PROTOBUF_EXPORT TextFormat {
     // Print text to the output stream.
     virtual void Print(const char* text, size_t size) = 0;
 
-    void PrintString(const std::string& str) { Print(str.data(), str.size()); }
+    void PrintString(absl::string_view str) { Print(str.data(), str.size()); }
 
     template <size_t n>
     void PrintLiteral(const char (&text)[n]) {
@@ -450,8 +451,6 @@ class PROTOBUF_EXPORT TextFormat {
     // strings (see text_format.cc for implementation).
     class FastFieldValuePrinterUtf8Escaping;
 
-    static const char* const kDoNotParse;
-
     // Internal Print method, used for writing to the OutputStream via
     // the TextGenerator class.
     void Print(const Message& message, BaseTextGenerator* generator) const;
@@ -537,6 +536,8 @@ class PROTOBUF_EXPORT TextFormat {
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
   static bool ParseFromString(absl::string_view input, Message* output);
+  // Like Parse(), but reads directly from a Cord.
+  static bool ParseFromCord(const absl::Cord& input, Message* output);
 
   // Like Parse(), but the data is merged into the given message, as if
   // using Message::MergeFrom().
@@ -628,6 +629,8 @@ class PROTOBUF_EXPORT TextFormat {
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::ParseFromString().
     bool ParseFromString(absl::string_view input, Message* output);
+    // Like TextFormat::ParseFromCord().
+    bool ParseFromCord(const absl::Cord& input, Message* output);
     // Like TextFormat::Merge().
     bool Merge(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::MergeFromString().
@@ -691,6 +694,13 @@ class PROTOBUF_EXPORT TextFormat {
     // the maximum allowed nesting of proto messages.
     void SetRecursionLimit(int limit) { recursion_limit_ = limit; }
 
+    // If called, the parser will report an error if a parsed field had no
+    // effect on the resulting proto (for example, fields with no presence that
+    // were set to their default value).
+    void ErrorOnNoOpFields(bool return_error) {
+      error_on_no_op_fields_ = return_error;
+    }
+
    private:
     // Forward declaration of an internal class used to parse text
     // representations (see text_format.cc for implementation).
@@ -713,6 +723,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool allow_relaxed_whitespace_;
     bool allow_singular_overwrites_;
     int recursion_limit_;
+    bool error_on_no_op_fields_ = false;
   };
 
 
@@ -726,6 +737,11 @@ class PROTOBUF_EXPORT TextFormat {
                                     ParseLocationRange location);
   static inline ParseInfoTree* CreateNested(ParseInfoTree* info_tree,
                                             const FieldDescriptor* field);
+  // To reduce stack frame bloat we use an out-of-line function to print
+  // strings. This avoid local std::string temporaries.
+  template <typename... T>
+  static void OutOfLinePrintString(BaseTextGenerator* generator,
+                                   const T&... values);
 };
 
 

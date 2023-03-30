@@ -42,7 +42,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/printer.h"
@@ -53,10 +53,11 @@
 namespace google {
 namespace protobuf {
 namespace io {
-class PrinterTest : public testing::Test {
+namespace {
+class PrinterDeathTest : public testing::Test {
  protected:
   ZeroCopyOutputStream* output() {
-    GOOGLE_ABSL_CHECK(stream_.has_value());
+    ABSL_CHECK(stream_.has_value());
     return &*stream_;
   }
   absl::string_view written() {
@@ -95,8 +96,8 @@ class FakeAnnotationCollector : public AnnotationCollector {
   }
 };
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
-TEST_F(PrinterTest, Death) {
+#if GTEST_HAS_DEATH_TEST
+TEST_F(PrinterDeathTest, Death) {
   Printer printer(output(), '$');
 
   EXPECT_DEBUG_DEATH(printer.Print("$nosuchvar$"), "");
@@ -104,7 +105,7 @@ TEST_F(PrinterTest, Death) {
   EXPECT_DEBUG_DEATH(printer.Outdent(), "");
 }
 
-TEST_F(PrinterTest, AnnotateMultipleUsesDeath) {
+TEST_F(PrinterDeathTest, AnnotateMultipleUsesDeath) {
   FakeAnnotationCollector collector;
   Printer printer(output(), '$', &collector);
   printer.Print("012$foo$4$foo$\n", "foo", "3");
@@ -113,7 +114,7 @@ TEST_F(PrinterTest, AnnotateMultipleUsesDeath) {
   EXPECT_DEBUG_DEATH(printer.Annotate("foo", "foo", &descriptor), "");
 }
 
-TEST_F(PrinterTest, AnnotateNegativeLengthDeath) {
+TEST_F(PrinterDeathTest, AnnotateNegativeLengthDeath) {
   FakeAnnotationCollector collector;
   Printer printer(output(), '$', &collector);
   printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
@@ -122,7 +123,7 @@ TEST_F(PrinterTest, AnnotateNegativeLengthDeath) {
   EXPECT_DEBUG_DEATH(printer.Annotate("bar", "foo", &descriptor), "");
 }
 
-TEST_F(PrinterTest, AnnotateUndefinedDeath) {
+TEST_F(PrinterDeathTest, AnnotateUndefinedDeath) {
   FakeAnnotationCollector collector;
   Printer printer(output(), '$', &collector);
   printer.Print("012$foo$4$foo$\n", "foo", "3");
@@ -131,42 +132,43 @@ TEST_F(PrinterTest, AnnotateUndefinedDeath) {
   EXPECT_DEBUG_DEATH(printer.Annotate("bar", "bar", &descriptor), "");
 }
 
-TEST_F(PrinterTest, FormatInternalUnusedArgs) {
+TEST_F(PrinterDeathTest, FormatInternalUnusedArgs) {
   FakeAnnotationCollector collector;
   Printer printer(output(), '$', &collector);
 
   EXPECT_DEATH(printer.FormatInternal({"arg1", "arg2"}, {}, "$1$"), "");
 }
 
-TEST_F(PrinterTest, FormatInternalOutOfOrderArgs) {
+TEST_F(PrinterDeathTest, FormatInternalOutOfOrderArgs) {
   FakeAnnotationCollector collector;
   Printer printer(output(), '$', &collector);
 
   EXPECT_DEATH(printer.FormatInternal({"arg1", "arg2"}, {}, "$2$ $1$"), "");
 }
 
-TEST_F(PrinterTest, FormatInternalZeroArg) {
+TEST_F(PrinterDeathTest, FormatInternalZeroArg) {
   FakeAnnotationCollector collector;
   Printer printer(output(), '$', &collector);
 
   EXPECT_DEATH(printer.FormatInternal({"arg1", "arg2"}, {}, "$0$"), "");
 }
 
-TEST_F(PrinterTest, FormatInternalOutOfBounds) {
+TEST_F(PrinterDeathTest, FormatInternalOutOfBounds) {
   FakeAnnotationCollector collector;
   Printer printer(output(), '$', &collector);
 
   EXPECT_DEATH(printer.FormatInternal({"arg1", "arg2"}, {}, "$1$ $2$ $3$"), "");
 }
 
-TEST_F(PrinterTest, FormatInternalUnknownVar) {
+TEST_F(PrinterDeathTest, FormatInternalUnknownVar) {
   FakeAnnotationCollector collector;
   Printer printer(output(), '$', &collector);
 
   EXPECT_DEATH(printer.FormatInternal({}, {}, "$huh$"), "");
   EXPECT_DEATH(printer.FormatInternal({}, {}, "$ $"), "");
 }
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
+}  // namespace
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google

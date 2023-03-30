@@ -35,18 +35,22 @@
 
 #include <algorithm>
 #include <atomic>
+#include <string>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/base/attributes.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_config.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/string_block.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -65,11 +69,11 @@ struct ArenaBlock {
 
   ArenaBlock(ArenaBlock* next, size_t size)
       : next(next), cleanup_nodes(nullptr), size(size) {
-    GOOGLE_ABSL_DCHECK_GT(size, sizeof(ArenaBlock));
+    ABSL_DCHECK_GT(size, sizeof(ArenaBlock));
   }
 
   char* Pointer(size_t n) {
-    GOOGLE_ABSL_DCHECK_LE(n, size);
+    ABSL_DCHECK_LE(n, size);
     return reinterpret_cast<char*>(this) + n;
   }
   char* Limit() { return Pointer(size & static_cast<size_t>(-8)); }
@@ -104,12 +108,15 @@ struct FirstSerialArena {
 // used.
 class PROTOBUF_EXPORT SerialArena {
  public:
-  struct Memory {
-    void* ptr;
-    size_t size;
-  };
-
   void CleanupList();
+  size_t FreeStringBlocks() {
+    // On the active block delete all strings skipping the unused instances.
+    size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
+    if (string_block_ != nullptr) {
+      return FreeStringBlocks(string_block_, unused_bytes);
+    }
+    return 0;
+  }
   uint64_t SpaceAllocated() const {
     return space_allocated_.load(std::memory_order_relaxed);
   }
@@ -145,8 +152,8 @@ class PROTOBUF_EXPORT SerialArena {
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n) {
-    GOOGLE_ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
+    ABSL_DCHECK_GE(limit_, ptr());
 
     if (alloc_client == AllocationClient::kArray) {
       if (void* res = TryAllocateFromCachedBlock(n)) {
@@ -237,8 +244,8 @@ class PROTOBUF_EXPORT SerialArena {
  public:
   // Allocate space if the current region provides enough space.
   bool MaybeAllocateAligned(size_t n, void** out) {
-    GOOGLE_ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
+    ABSL_DCHECK_GE(limit_, ptr());
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) return false;
     *out = AllocateFromExisting(n);
     return true;
@@ -249,7 +256,7 @@ class PROTOBUF_EXPORT SerialArena {
   // and the memory returned is uninitialized.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void* MaybeAllocateWithCleanup() {
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(limit_, ptr());
     static_assert(!std::is_trivially_destructible<T>::value,
                   "This function is only for non-trivial types.");
 
@@ -284,14 +291,19 @@ class PROTOBUF_EXPORT SerialArena {
     AddCleanupFromExisting(elem, destructor);
   }
 
+  ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlock();
+
  private:
+  bool MaybeAllocateString(void*& p);
+  ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlockFallback();
+
   void* AllocateFromExistingWithCleanupFallback(size_t n, size_t align,
                                                 void (*destructor)(void*)) {
     n = AlignUpTo(n, align);
     PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
     void* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
     set_ptr(ptr() + n);
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(limit_, ptr());
     AddCleanupFromExisting(ret, destructor);
     return ret;
   }
@@ -303,7 +315,7 @@ class PROTOBUF_EXPORT SerialArena {
 
     PROTOBUF_UNPOISON_MEMORY_REGION(limit_ - n, n);
     limit_ -= n;
-    GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(limit_, ptr());
     cleanup::CreateNode(tag, limit_, elem, destructor);
   }
 
@@ -314,10 +326,25 @@ class PROTOBUF_EXPORT SerialArena {
   // future allocations.
   // The `parent` arena must outlive the serial arena, which is guaranteed
   // because the parent manages the lifetime of the serial arenas.
-  static SerialArena* New(SerialArena::Memory mem, ThreadSafeArena& parent);
+  static SerialArena* New(SizedPtr mem, ThreadSafeArena& parent);
   // Free SerialArena returning the memory passed in to New
   template <typename Deallocator>
-  Memory Free(Deallocator deallocator);
+  SizedPtr Free(Deallocator deallocator);
+
+  static size_t FreeStringBlocks(StringBlock* string_block, size_t unused);
+
+  // Adds 'used` to space_used_ in relaxed atomic order.
+  void AddSpaceUsed(size_t space_used) {
+    space_used_.store(space_used_.load(std::memory_order_relaxed) + space_used,
+                      std::memory_order_relaxed);
+  }
+
+  // Adds 'allocated` to space_allocated_ in relaxed atomic order.
+  void AddSpaceAllocated(size_t space_allocated) {
+    space_allocated_.store(
+        space_allocated_.load(std::memory_order_relaxed) + space_allocated,
+        std::memory_order_relaxed);
+  }
 
   // Members are declared here to track sizeof(SerialArena) and hotness
   // centrally. They are (roughly) laid out in descending order of hotness.
@@ -328,6 +355,14 @@ class PROTOBUF_EXPORT SerialArena {
   std::atomic<char*> ptr_{nullptr};
   // Limiting address up to which memory can be allocated from the head block.
   char* limit_ = nullptr;
+
+  // The active string block.
+  StringBlock* string_block_ = nullptr;
+
+  // The number of unused bytes in string_block_.
+  // We allocate from `effective_size()` down to 0 inside `string_block_`.
+  // `unused  == 0` means that `string_block_` is exhausted. (or null).
+  std::atomic<size_t> string_block_unused_{0};
 
   std::atomic<ArenaBlock*> head_{nullptr};  // Head of linked list of blocks.
   std::atomic<size_t> space_used_{0};       // Necessary for metrics.
@@ -376,6 +411,32 @@ class PROTOBUF_EXPORT SerialArena {
   static constexpr size_t kBlockHeaderSize =
       ArenaAlignDefault::Ceil(sizeof(ArenaBlock));
 };
+
+inline PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
+  // Check how many unused instances are in the current block.
+  size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
+  if (PROTOBUF_PREDICT_TRUE(unused_bytes != 0)) {
+    unused_bytes -= sizeof(std::string);
+    string_block_unused_.store(unused_bytes, std::memory_order_relaxed);
+    p = string_block_->AtOffset(unused_bytes);
+    return true;
+  }
+  return false;
+}
+
+template <>
+inline PROTOBUF_ALWAYS_INLINE void*
+SerialArena::MaybeAllocateWithCleanup<std::string>() {
+  void* p;
+  return MaybeAllocateString(p) ? p : nullptr;
+}
+
+ABSL_ATTRIBUTE_RETURNS_NONNULL inline PROTOBUF_ALWAYS_INLINE void*
+SerialArena::AllocateFromStringBlock() {
+  void* p;
+  if (ABSL_PREDICT_TRUE(MaybeAllocateString(p))) return p;
+  return AllocateFromStringBlockFallback();
+}
 
 }  // namespace internal
 }  // namespace protobuf

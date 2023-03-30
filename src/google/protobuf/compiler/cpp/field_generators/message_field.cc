@@ -34,9 +34,10 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -49,13 +50,13 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-std::string ReinterpretCast(const std::string& type,
-                            const std::string& expression,
+std::string ReinterpretCast(absl::string_view type,
+                            absl::string_view expression,
                             bool implicit_weak_field) {
   if (implicit_weak_field) {
-    return "reinterpret_cast< " + type + " >(" + expression + ")";
+    return absl::StrCat("reinterpret_cast< ", type, " >(", expression, ")");
   } else {
-    return expression;
+    return std::string(expression);
   }
 }
 
@@ -63,16 +64,17 @@ void SetMessageVariables(
     const FieldDescriptor* descriptor, const Options& options,
     bool implicit_weak,
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
-  SetCommonFieldVariables(descriptor, variables, options);
+  bool split = ShouldSplit(descriptor, options);
+  std::string field_name = FieldMemberName(descriptor, split);
+
   (*variables)["type"] = FieldMessageTypeName(descriptor, options);
   variables->insert(
       {"casted_member", ReinterpretCast(absl::StrCat((*variables)["type"], "*"),
-                                        (*variables)["field"], implicit_weak)});
+                                        field_name, implicit_weak)});
   variables->insert(
       {"casted_member_const",
        ReinterpretCast(absl::StrCat("const ", (*variables)["type"], "&"),
-                       absl::StrCat("*", (*variables)["field"]),
-                       implicit_weak)});
+                       absl::StrCat("*", field_name), implicit_weak)});
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_default_instance_ptr"] = ReinterpretCast(
@@ -199,41 +201,21 @@ void MessageFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
 void MessageFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (IsFieldStripped(descriptor_, options_)) {
-    format(
-        "$deprecated_attr$const $type$& ${1$$name$$}$() const { "
-        "__builtin_trap(); }\n"
-        "PROTOBUF_NODISCARD $deprecated_attr$$type$* "
-        "${1$$release_name$$}$() { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$$type$* ${1$mutable_$name$$}$() { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$void ${1$set_allocated_$name$$}$"
-        "($type$* $name$) { __builtin_trap(); }\n"
-        "$deprecated_attr$void "
-        "${1$unsafe_arena_set_allocated_$name$$}$(\n"
-        "    $type$* $name$) { __builtin_trap(); }\n"
-        "$deprecated_attr$$type$* ${1$unsafe_arena_release_$name$$}$() { "
-        "__builtin_trap(); }\n",
-        descriptor_);
-    return;
-  }
   format(
       "$deprecated_attr$const $type$& ${1$$name$$}$() const;\n"
       "PROTOBUF_NODISCARD $deprecated_attr$$type$* "
-      "${1$$release_name$$}$();\n"
-      "$deprecated_attr$$type$* ${1$mutable_$name$$}$();\n"
-      "$deprecated_attr$void ${1$set_allocated_$name$$}$"
-      "($type$* $name$);\n",
+      "${1$$release_name$$}$();\n",
       descriptor_);
-  if (!IsFieldStripped(descriptor_, options_)) {
-    format(
-        "private:\n"
-        "const $type$& ${1$_internal_$name$$}$() const;\n"
-        "$type$* ${1$_internal_mutable_$name$$}$();\n"
-        "public:\n",
-        descriptor_);
-  }
+  format("$deprecated_attr$$type$* ${1$mutable_$name$$}$();\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
+  format(
+      "$deprecated_attr$void ${1$set_allocated_$name$$}$"
+      "($type$* $name$);\n"
+      "private:\n"
+      "const $type$& ${1$_internal_$name$$}$() const;\n"
+      "$type$* ${1$_internal_mutable_$name$$}$();\n"
+      "public:\n",
+      descriptor_);
   format(
       "$deprecated_attr$void "
       "${1$unsafe_arena_set_allocated_$name$$}$(\n"
@@ -461,8 +443,6 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
 }
 
 void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (!internal::cpp::HasHasbit(descriptor_)) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
@@ -479,8 +459,6 @@ void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 
 void MessageFieldGenerator::GenerateMessageClearingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (!internal::cpp::HasHasbit(descriptor_)) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
@@ -498,8 +476,6 @@ void MessageFieldGenerator::GenerateMessageClearingCode(
 }
 
 void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
     format(
@@ -513,15 +489,11 @@ void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format("swap($field$, other->$field$);\n");
 }
 
 void MessageFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (options_.opensource_runtime) {
     // TODO(gerbens) Remove this when we don't need to destruct default
@@ -542,8 +514,6 @@ using internal::cpp::HasHasbit;
 
 void MessageFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (HasHasbit(descriptor_)) {
     format(
@@ -560,8 +530,6 @@ void MessageFieldGenerator::GenerateCopyConstructorCode(
 
 void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     format(
@@ -578,8 +546,6 @@ void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 }
 
 void MessageFieldGenerator::GenerateByteSize(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format(
       "total_size += $tag_size$ +\n"
@@ -588,8 +554,6 @@ void MessageFieldGenerator::GenerateByteSize(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::GenerateIsInitialized(io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   if (!has_required_fields_) return;
 
   Formatter format(printer, variables_);
@@ -634,7 +598,6 @@ MessageOneofFieldGenerator::MessageOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options,
     MessageSCCAnalyzer* scc_analyzer)
     : MessageFieldGenerator(descriptor, options, scc_analyzer) {
-  SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
 void MessageOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
@@ -768,8 +731,6 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void MessageOneofFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format(
       "if (GetArenaForAllocation() == nullptr) {\n"
@@ -836,37 +797,23 @@ void RepeatedMessageFieldGenerator::GeneratePrivateMembers(
 void RepeatedMessageFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (IsFieldStripped(descriptor_, options_)) {
-    format(
-        "$deprecated_attr$$type$* ${1$mutable_$name$$}$(int index) { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$::$proto_ns$::RepeatedPtrField< $type$ >*\n"
-        "    ${1$mutable_$name$$}$() { __builtin_trap(); }\n"
-        "$deprecated_attr$const $type$& ${1$$name$$}$(int index) const { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$$type$* ${1$add_$name$$}$() { "
-        "__builtin_trap(); }\n"
-        "$deprecated_attr$const ::$proto_ns$::RepeatedPtrField< $type$ >&\n"
-        "    ${1$$name$$}$() const { __builtin_trap(); }\n",
-        descriptor_);
-    return;
-  }
+  format("$deprecated_attr$$type$* ${1$mutable_$name$$}$(int index);\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
   format(
-      "$deprecated_attr$$type$* ${1$mutable_$name$$}$(int index);\n"
       "$deprecated_attr$::$proto_ns$::RepeatedPtrField< $type$ >*\n"
       "    ${1$mutable_$name$$}$();\n",
-      descriptor_);
-  if (!IsFieldStripped(descriptor_, options_)) {
-    format(
-        "private:\n"
-        "const $type$& ${1$_internal_$name$$}$(int index) const;\n"
-        "$type$* ${1$_internal_add_$name$$}$();\n"
-        "public:\n",
-        descriptor_);
-  }
+      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::ALIAS));
   format(
-      "$deprecated_attr$const $type$& ${1$$name$$}$(int index) const;\n"
-      "$deprecated_attr$$type$* ${1$add_$name$$}$();\n"
+      "private:\n"
+      "const $type$& ${1$_internal_$name$$}$(int index) const;\n"
+      "$type$* ${1$_internal_add_$name$$}$();\n"
+      "public:\n",
+      descriptor_);
+  format("$deprecated_attr$const $type$& ${1$$name$$}$(int index) const;\n",
+         descriptor_);
+  format("$deprecated_attr$$type$* ${1$add_$name$$}$();\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
+  format(
       "$deprecated_attr$const ::$proto_ns$::RepeatedPtrField< $type$ >&\n"
       "    ${1$$name$$}$() const;\n",
       descriptor_);
@@ -937,24 +884,18 @@ void RepeatedMessageFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void RepeatedMessageFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format("$field$.Clear();\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format("_this->$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSwappingCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format("$field$.InternalSwap(&other->$field$);\n");
 }
@@ -966,8 +907,6 @@ void RepeatedMessageFieldGenerator::GenerateConstructorCode(
 
 void RepeatedMessageFieldGenerator::GenerateDestructorCode(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
     format("$field$.~WeakRepeatedPtrField();\n");
@@ -978,8 +917,6 @@ void RepeatedMessageFieldGenerator::GenerateDestructorCode(
 
 void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
     format(
@@ -1023,8 +960,6 @@ void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 
 void RepeatedMessageFieldGenerator::GenerateByteSize(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   Formatter format(printer, variables_);
   format(
       "total_size += $tag_size$UL * this->_internal_$name$_size();\n"
@@ -1036,8 +971,6 @@ void RepeatedMessageFieldGenerator::GenerateByteSize(
 
 void RepeatedMessageFieldGenerator::GenerateIsInitialized(
     io::Printer* printer) const {
-  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
-
   if (!has_required_fields_) return;
 
   Formatter format(printer, variables_);

@@ -43,7 +43,7 @@
 
 #include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/io/printer.h"
@@ -103,7 +103,7 @@ class FieldGeneratorBase {
   virtual void GenerateDestructorCode(io::Printer* p) const {}
 
   virtual void GenerateArenaDestructorCode(io::Printer* p) const {
-    GOOGLE_ABSL_CHECK(NeedsArenaDestructor() == ArenaDtorNeeds::kNone)
+    ABSL_CHECK(NeedsArenaDestructor() == ArenaDtorNeeds::kNone)
         << descriptor_->cpp_type_name();
   }
 
@@ -291,6 +291,7 @@ class FieldGenerator {
   // The code that this method generates will be executed inside a
   // shared-for-the-whole-message-class method registered with OwnDestructor().
   void GenerateArenaDestructorCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateArenaDestructorCode(p);
   }
 
@@ -399,7 +400,7 @@ class FieldGeneratorTable {
              absl::Span<const int32_t> inlined_string_indices);
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
-    GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
+    ABSL_CHECK_EQ(field->containing_type(), descriptor_);
     return fields_[field->index()];
   }
 
@@ -408,28 +409,11 @@ class FieldGeneratorTable {
   std::vector<FieldGenerator> fields_;
 };
 
-// Helper function: set variables in the map that are the same for all
-// field code generators.
-// ['name', 'index', 'number', 'classname', 'declared_type', 'tag_size',
-// 'deprecation'].
+// Returns variables common to all fields.
 //
-// Each function comes in a legacy "write variables to an existing variable
-// map" and a new version that returns a new map object for use with WithVars().
-
-absl::flat_hash_map<absl::string_view, std::string> FieldVars(
-    const FieldDescriptor* field, const Options& opts);
-
-absl::flat_hash_map<absl::string_view, std::string> OneofFieldVars(
-    const FieldDescriptor* descriptor);
-
-void SetCommonFieldVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables,
-    const Options& options);
-
-void SetCommonOneofFieldVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables);
+// TODO(b/245791219): Make this function .cc-private.
+std::vector<io::Printer::Sub> FieldVars(const FieldDescriptor* field,
+                                        const Options& opts);
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

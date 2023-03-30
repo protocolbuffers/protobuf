@@ -1,8 +1,8 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_java//java:defs.bzl", "java_library", "java_lite_proto_library", "java_proto_library")
-load("@rules_jvm_external//:defs.bzl", "java_export")
+load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library", "protobuf_versioned_java_library")
 load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
@@ -49,6 +49,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/Internal.java",
     "src/main/java/com/google/protobuf/InvalidProtocolBufferException.java",
     "src/main/java/com/google/protobuf/IterableByteBufferInputStream.java",
+    "src/main/java/com/google/protobuf/Java8Compatibility.java",
     "src/main/java/com/google/protobuf/JavaType.java",
     "src/main/java/com/google/protobuf/LazyField.java",
     "src/main/java/com/google/protobuf/LazyFieldLite.java",
@@ -120,18 +121,23 @@ internal_gen_well_known_protos_java(
 )
 
 # Should be used as `//java/lite`.
-java_library(
+protobuf_versioned_java_library(
     name = "lite",
     srcs = LITE_SRCS + [
         ":gen_well_known_protos_javalite",
     ],
+    bundle_description = "Lite version of Protocol Buffers library. This " +
+                         "version is optimized for code size, but does not " +
+                         "guarantee API/ABI stability.",
+    bundle_name = "Protocol Buffers [Lite]",
+    bundle_symbolic_name = "com.google.protobuf",
     visibility = [
         "//java/lite:__pkg__",
     ],
 )
 
 # Bazel users, don't depend on this target, use //java/lite.
-java_export(
+protobuf_java_export(
     name = "lite_mvn",
     maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/lite:pom_template.xml",
@@ -142,7 +148,7 @@ java_export(
     runtime_deps = [":lite"],
 )
 
-java_library(
+protobuf_java_library(
     name = "lite_runtime_only",
     srcs = LITE_SRCS,
 )
@@ -165,7 +171,7 @@ internal_gen_well_known_protos_java(
     ],
 )
 
-java_library(
+protobuf_versioned_java_library(
     name = "core",
     srcs = glob(
         [
@@ -175,6 +181,11 @@ java_library(
     ) + [
         ":gen_well_known_protos_java",
     ],
+    bundle_description = "Core Protocol Buffers library. Protocol Buffers " +
+                         "are a way of encoding structured data in an " +
+                         "efficient yet extensible format.",
+    bundle_name = "Protocol Buffers [Core]",
+    bundle_symbolic_name = "com.google.protobuf",
     visibility = ["//visibility:public"],
     exports = [
         ":lite_runtime_only",
@@ -185,7 +196,7 @@ java_library(
 )
 
 # Bazel users, don't depend on this target, use :core.
-java_export(
+protobuf_java_export(
     name = "core_mvn",
     maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "pom_template.xml",
@@ -268,7 +279,7 @@ java_proto_library(
     deps = [":java_test_protos"],
 )
 
-java_library(
+protobuf_java_library(
     name = "test_util",
     srcs = [
         "src/test/java/com/google/protobuf/TestUtil.java",
@@ -389,7 +400,7 @@ genrule(
     cmd = "awk -f $(location //java/lite:lite.awk) $(location src/test/java/com/google/protobuf/TestUtil.java) > $@",
 )
 
-java_library(
+protobuf_java_library(
     name = "test_util_lite",
     srcs = [
         "src/test/java/com/google/protobuf/TestUtilLite.java",

@@ -34,6 +34,7 @@
 #ifndef GOOGLE_PROTOBUF_TESTING_FILE_H__
 #define GOOGLE_PROTOBUF_TESTING_FILE_H__
 
+#include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/stubs/common.h"
 
@@ -54,26 +55,27 @@ class File {
 
   // Read an entire file to a string.  Return true if successful, false
   // otherwise.
-  static bool ReadFileToString(const std::string& name, std::string* output,
-                               bool text_mode = false);
+  static absl::Status ReadFileToString(const std::string& name,
+                                       std::string* output,
+                                       bool text_mode = false);
 
   // Same as above, but crash on failure.
   static void ReadFileToStringOrDie(const std::string& name,
                                     std::string* output);
 
   // Create a file and write a string to it.
-  static bool WriteStringToFile(absl::string_view contents,
-                                const std::string& name);
+  static absl::Status WriteStringToFile(absl::string_view contents,
+                                        const std::string& name);
 
   // Same as above, but crash on failure.
   static void WriteStringToFileOrDie(absl::string_view contents,
                                      const std::string& name);
 
   // Create a directory.
-  static bool CreateDir(const std::string& name, int mode);
+  static absl::Status CreateDir(const std::string& name, int mode);
 
   // Create a directory and all parent directories if necessary.
-  static bool RecursivelyCreateDir(const std::string& path, int mode);
+  static absl::Status RecursivelyCreateDir(const std::string& path, int mode);
 
   // If "name" is a file, we delete it.  If it is a directory, we
   // call DeleteRecursively() for each file or directory (other than
@@ -86,18 +88,20 @@ class File {
   // Change working directory to given directory.
   static bool ChangeWorkingDirectory(const std::string& new_working_directory);
 
-  static bool GetContents(const std::string& name, std::string* output,
-                          bool /*is_default*/) {
+  static absl::Status GetContents(const std::string& name, std::string* output,
+                                  bool /*is_default*/) {
     return ReadFileToString(name, output);
   }
 
-  static bool GetContentsAsText(const std::string& name, std::string* output,
-                                bool /*is_default*/) {
+  static absl::Status GetContentsAsText(const std::string& name,
+                                        std::string* output,
+                                        bool /*is_default*/) {
     return ReadFileToString(name, output, true);
   }
 
-  static bool SetContents(const std::string& name, absl::string_view contents,
-                          bool /*is_default*/) {
+  static absl::Status SetContents(const std::string& name,
+                                  absl::string_view contents,
+                                  bool /*is_default*/) {
     return WriteStringToFile(contents, name);
   }
 };

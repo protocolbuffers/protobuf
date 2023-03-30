@@ -56,6 +56,7 @@ internal_copy_files(
     srcs = [
         "//:well_known_type_protos",
         "//src/google/protobuf:descriptor_proto_srcs",
+        "//src/google/protobuf/compiler:plugin.proto",
     ],
     strip_prefix = "src",
 )
@@ -113,6 +114,7 @@ cc_binary(
     deps = [
         ":proto_api",
         "//:protobuf",
+        "//src/google/protobuf:descriptor_legacy",
     ] + select({
         "//conditions:default": [],
         ":use_fast_cpp_protos": ["//external:python_headers"],
@@ -321,9 +323,7 @@ internal_py_test(
 internal_py_test(
     name = "message_test",
     srcs = ["google/protobuf/internal/message_test.py"],
-    data = glob(["testdata/golden_pickle_*"]) + [
-        "//src/google/protobuf:testdata",
-    ],
+    data = ["//src/google/protobuf:testdata"],
 )
 
 internal_py_test(

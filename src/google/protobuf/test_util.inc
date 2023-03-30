@@ -1,3 +1,4 @@
+// -*- c++ -*-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -38,7 +39,7 @@
 // out of this file.
 
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 
@@ -1113,7 +1114,7 @@ inline void TestUtil::SetOneofFields(UNITTEST::TestAllExtensions* message) {
 
 inline void TestUtil::SetAllFieldsAndExtensions(
     UNITTEST::TestFieldOrderings* message) {
-  GOOGLE_ABSL_CHECK(message);
+  ABSL_CHECK(message);
   message->set_my_int(1);
   message->set_my_string("foo");
   message->set_my_float(1.0);
@@ -2395,6 +2396,7 @@ inline void TestUtil::ExpectOneofClear(const UNITTEST::TestOneof2& message) {
   EXPECT_FALSE(message.has_foo_message());
   EXPECT_FALSE(message.has_foogroup());
   EXPECT_FALSE(message.has_foo_lazy_message());
+  EXPECT_FALSE(message.has_foo_bytes_cord());
 
   EXPECT_FALSE(message.has_bar_int());
   EXPECT_FALSE(message.has_bar_string());
@@ -2418,6 +2420,7 @@ inline void TestUtil::ExpectAtMostOneFieldSetInOneof(
   if (message.has_foo_message()) count++;
   if (message.has_foogroup()) count++;
   if (message.has_foo_lazy_message()) count++;
+  if (message.has_foo_bytes_cord()) count++;
   EXPECT_LE(count, 1);
   count = 0;
   if (message.has_bar_int()) count++;

@@ -1,0 +1,36 @@
+name: Bazel Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+
+  ubuntu:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - { NAME: "Debug", CC: clang, os: ubuntu-20.04, flags: "-c dbg" }
+          - { NAME: "Optmized", CC: clang, os: ubuntu-20.04, flags: "-c opt" }
+          - { NAME: "GCC Optimized", CC: gcc, os: ubuntu-20.04, flags: "-c opt" }
+          - { NAME: "ASAN", CC: clang, os: ubuntu-20.04, flags: "--config=asan -c dbg" }
+          - { NAME: "UBSAN", CC: clang, os: ubuntu-20.04, flags: "--config=ubsan -c dbg", install: "libunwind-dev" }
+          - { NAME: "macOS", CC: clang, os: macos-11, flags: "" }
+
+    name: Bazel ${{ matrix.NAME }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y ${{ matrix.install }}
+        if: matrix.install != ''
+      - name: Run tests
+        run: cd ${{ github.workspace }} && CC=${{ matrix.CC }} bazel test --test_output=errors ... ${{ matrix.flags }}

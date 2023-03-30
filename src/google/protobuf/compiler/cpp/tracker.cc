@@ -253,7 +253,7 @@ Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts) {
 
 Getters StringOneofGetters(const FieldDescriptor* field,
                            const OneofDescriptor* oneof, const Options& opts) {
-  GOOGLE_ABSL_CHECK(oneof != nullptr);
+  ABSL_CHECK(oneof != nullptr);
 
   std::string member = FieldMemberName(field, ShouldSplit(field, opts));
   bool is_std_string = field->options().ctype() == FieldOptions::STRING;

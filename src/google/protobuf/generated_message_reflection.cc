@@ -43,13 +43,14 @@
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -178,7 +179,7 @@ using internal::GetPointerAtOffset;
 void ReportReflectionUsageError(const Descriptor* descriptor,
                                 const FieldDescriptor* field,
                                 const char* method, const char* description) {
-  GOOGLE_ABSL_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
+  ABSL_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
                      "  Method      : google::protobuf::Reflection::"
                   << method
                   << "\n"
@@ -200,7 +201,7 @@ const char* cpptype_names_[FieldDescriptor::MAX_CPPTYPE + 1] = {
 static void ReportReflectionUsageTypeError(
     const Descriptor* descriptor, const FieldDescriptor* field,
     const char* method, FieldDescriptor::CppType expected_type) {
-  GOOGLE_ABSL_LOG(FATAL)
+  ABSL_LOG(FATAL)
       << "Protocol Buffer reflection usage error:\n"
          "  Method      : google::protobuf::Reflection::"
       << method
@@ -222,7 +223,7 @@ static void ReportReflectionUsageTypeError(
 static void ReportReflectionUsageEnumTypeError(
     const Descriptor* descriptor, const FieldDescriptor* field,
     const char* method, const EnumValueDescriptor* value) {
-  GOOGLE_ABSL_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
+  ABSL_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
                      "  Method      : google::protobuf::Reflection::"
                   << method
                   << "\n"
@@ -238,12 +239,6 @@ static void ReportReflectionUsageEnumTypeError(
                   << "\n"
                      "    Actual    : "
                   << value->full_name();
-}
-
-inline void CheckInvalidAccess(const internal::ReflectionSchema& schema,
-                               const FieldDescriptor* field) {
-  GOOGLE_ABSL_CHECK(!schema.IsFieldStripped(field))
-      << "invalid access to a stripped field " << field->full_name();
 }
 
 #define USAGE_CHECK(CONDITION, METHOD, ERROR_DESCRIPTION) \
@@ -408,8 +403,20 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
           break;
 
         case FieldDescriptor::CPPTYPE_STRING: {
-          switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other string reps.
+          switch (internal::cpp::EffectiveStringCType(field)) {
+            case FieldOptions::CORD:
+              if (schema_.InRealOneof(field)) {
+                total_size += GetField<absl::Cord*>(message, field)
+                                  ->EstimatedMemoryUsage();
+
+              } else {
+                // sizeof(absl::Cord) is included to self.
+                total_size += GetField<absl::Cord>(message, field)
+                                  .EstimatedMemoryUsage() -
+                              sizeof(absl::Cord);
+              }
+              break;
+            default:
             case FieldOptions::STRING:
               if (IsInlined(field)) {
                 const std::string* ptr =
@@ -506,7 +513,10 @@ struct OneofFieldMover {
           to->SetString(from->GetString());
           break;
         }
-        switch (field->options().ctype()) {
+        switch (internal::cpp::EffectiveStringCType(field)) {
+          case FieldOptions::CORD:
+            to->SetCord(from->GetCord());
+            break;
           default:
           case FieldOptions::STRING: {
             to->SetArenaStringPtr(from->GetArenaStringPtr());
@@ -515,7 +525,7 @@ struct OneofFieldMover {
         }
         break;
       default:
-        GOOGLE_ABSL_LOG(FATAL) << "unimplemented type: " << field->cpp_type();
+        ABSL_LOG(FATAL) << "unimplemented type: " << field->cpp_type();
     }
     if (unsafe_shallow_swap) {
       // Not clearing oneof case after move may cause unwanted "ClearOneof"
@@ -599,7 +609,7 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
   auto* lhs_string = r->MutableRaw<InlinedStringField>(lhs, field);
   auto* rhs_string = r->MutableRaw<InlinedStringField>(rhs, field);
   uint32_t index = r->schema_.InlinedStringIndex(field);
-  GOOGLE_ABSL_DCHECK_GT(index, 0);
+  ABSL_DCHECK_GT(index, 0);
   uint32_t* lhs_array = r->MutableInlinedStringDonatedArray(lhs);
   uint32_t* rhs_array = r->MutableInlinedStringDonatedArray(rhs);
   uint32_t* lhs_state = &lhs_array[index / 32];
@@ -640,7 +650,12 @@ template <bool unsafe_shallow_swap>
 void SwapFieldHelper::SwapStringField(const Reflection* r, Message* lhs,
                                       Message* rhs,
                                       const FieldDescriptor* field) {
-  switch (field->options().ctype()) {
+  switch (internal::cpp::EffectiveStringCType(field)) {
+    case FieldOptions::CORD:
+      // Always shallow swap for Cord.
+      std::swap(*r->MutableRaw<absl::Cord>(lhs, field),
+                *r->MutableRaw<absl::Cord>(rhs, field));
+      break;
     default:
     case FieldOptions::STRING: {
       if (r->IsInlined(field)) {
@@ -770,7 +785,7 @@ void SwapFieldHelper::SwapNonMessageNonStringField(
     SWAP_VALUES(ENUM, int);
 #undef SWAP_VALUES
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
+      ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
   }
 }
 
@@ -806,7 +821,7 @@ void Reflection::SwapField(Message* message1, Message* message2,
         break;
 
       default:
-        GOOGLE_ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
+        ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
     }
   } else {
     switch (field->cpp_type()) {
@@ -869,7 +884,7 @@ void Reflection::UnsafeShallowSwapField(Message* message1, Message* message2,
       break;
 
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
+      ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
   }
 }
 
@@ -896,6 +911,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
     LOCAL_VAR_ACCESSOR(int, enum, Enum);
     LOCAL_VAR_ACCESSOR(Message*, message, Message);
     LOCAL_VAR_ACCESSOR(ArenaStringPtr, arena_string_ptr, ArenaStringPtr);
+    LOCAL_VAR_ACCESSOR(absl::Cord*, cord, Cord);
     const std::string& GetString() const { return string_val; }
     void SetString(const std::string& v) { string_val = v; }
     Message* UnsafeGetMessage() const { return GetMessage(); }
@@ -913,6 +929,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
       int type_enum;
       Message* type_message;
       internal::ArenaStringPtr type_arena_string_ptr;
+      absl::Cord* type_cord;
     } oneof_val;
 
     // std::string cannot be in union.
@@ -936,6 +953,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
     MESSAGE_FIELD_ACCESSOR(bool, bool, Bool);
     MESSAGE_FIELD_ACCESSOR(int, enum, Enum);
     MESSAGE_FIELD_ACCESSOR(ArenaStringPtr, arena_string_ptr, ArenaStringPtr);
+    MESSAGE_FIELD_ACCESSOR(absl::Cord*, cord, Cord);
     std::string GetString() const {
       return reflection->GetString(*message, field);
     }
@@ -963,7 +981,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
     const FieldDescriptor* field;
   };
 
-  GOOGLE_ABSL_DCHECK(!oneof_descriptor->is_synthetic());
+  ABSL_DCHECK(!OneofDescriptorLegacy(oneof_descriptor).is_synthetic());
   uint32_t oneof_case_lhs = GetOneofCase(*lhs, oneof_descriptor);
   uint32_t oneof_case_rhs = GetOneofCase(*rhs, oneof_descriptor);
 
@@ -1004,7 +1022,7 @@ void Reflection::Swap(Message* message1, Message* message2) const {
   if (message1 == message2) return;
 
   // TODO(kenton):  Other Reflection methods should probably check this too.
-  GOOGLE_ABSL_CHECK_EQ(message1->GetReflection(), this)
+  ABSL_CHECK_EQ(message1->GetReflection(), this)
       << "First argument to Swap() (of type \""
       << message1->GetDescriptor()->full_name()
       << "\") is not compatible with this reflection object (which is for type "
@@ -1012,7 +1030,7 @@ void Reflection::Swap(Message* message1, Message* message2) const {
       << descriptor_->full_name()
       << "\").  Note that the exact same class is required; not just the same "
          "descriptor.";
-  GOOGLE_ABSL_CHECK_EQ(message2->GetReflection(), this)
+  ABSL_CHECK_EQ(message2->GetReflection(), this)
       << "Second argument to Swap() (of type \""
       << message2->GetDescriptor()->full_name()
       << "\") is not compatible with this reflection object (which is for type "
@@ -1059,7 +1077,7 @@ void Reflection::SwapFieldsImpl(
   if (message1 == message2) return;
 
   // TODO(kenton):  Other Reflection methods should probably check this too.
-  GOOGLE_ABSL_CHECK_EQ(message1->GetReflection(), this)
+  ABSL_CHECK_EQ(message1->GetReflection(), this)
       << "First argument to SwapFields() (of type \""
       << message1->GetDescriptor()->full_name()
       << "\") is not compatible with this reflection object (which is for type "
@@ -1067,7 +1085,7 @@ void Reflection::SwapFieldsImpl(
       << descriptor_->full_name()
       << "\").  Note that the exact same class is required; not just the same "
          "descriptor.";
-  GOOGLE_ABSL_CHECK_EQ(message2->GetReflection(), this)
+  ABSL_CHECK_EQ(message2->GetReflection(), this)
       << "Second argument to SwapFields() (of type \""
       << message2->GetDescriptor()->full_name()
       << "\") is not compatible with this reflection object (which is for type "
@@ -1081,7 +1099,6 @@ void Reflection::SwapFieldsImpl(
   const Message* prototype =
       message_factory_->GetPrototype(message1->GetDescriptor());
   for (const auto* field : fields) {
-    CheckInvalidAccess(schema_, field);
     if (field->is_extension()) {
       if (unsafe_shallow_swap) {
         MutableExtensionSet(message1)->UnsafeShallowSwapExtension(
@@ -1113,7 +1130,7 @@ void Reflection::SwapFieldsImpl(
           SwapBit(message1, message2, field);
           if (field->options().ctype() == FieldOptions::STRING &&
               IsInlined(field)) {
-            GOOGLE_ABSL_DCHECK(!unsafe_shallow_swap ||
+            ABSL_DCHECK(!unsafe_shallow_swap ||
                         message1->GetArenaForAllocation() ==
                             message2->GetArenaForAllocation());
             SwapInlinedStringDonated(message1, message2, field);
@@ -1133,7 +1150,7 @@ void Reflection::SwapFields(
 void Reflection::UnsafeShallowSwapFields(
     Message* message1, Message* message2,
     const std::vector<const FieldDescriptor*>& fields) const {
-  GOOGLE_ABSL_DCHECK_EQ(message1->GetArenaForAllocation(),
+  ABSL_DCHECK_EQ(message1->GetArenaForAllocation(),
                  message2->GetArenaForAllocation());
 
   SwapFieldsImpl<true>(message1, message2, fields);
@@ -1142,7 +1159,7 @@ void Reflection::UnsafeShallowSwapFields(
 void Reflection::UnsafeArenaSwapFields(
     Message* lhs, Message* rhs,
     const std::vector<const FieldDescriptor*>& fields) const {
-  GOOGLE_ABSL_DCHECK_EQ(lhs->GetArenaForAllocation(), rhs->GetArenaForAllocation());
+  ABSL_DCHECK_EQ(lhs->GetArenaForAllocation(), rhs->GetArenaForAllocation());
   UnsafeShallowSwapFields(lhs, rhs, fields);
 }
 
@@ -1152,7 +1169,6 @@ bool Reflection::HasField(const Message& message,
                           const FieldDescriptor* field) const {
   USAGE_CHECK_MESSAGE_TYPE(HasField);
   USAGE_CHECK_SINGULAR(HasField);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     return GetExtensionSet(message).Has(field->number());
@@ -1166,7 +1182,7 @@ bool Reflection::HasField(const Message& message,
 }
 
 void Reflection::UnsafeArenaSwap(Message* lhs, Message* rhs) const {
-  GOOGLE_ABSL_DCHECK_EQ(lhs->GetOwningArena(), rhs->GetOwningArena());
+  ABSL_DCHECK_EQ(lhs->GetOwningArena(), rhs->GetOwningArena());
   InternalSwap(lhs, rhs);
 }
 
@@ -1178,7 +1194,6 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
   for (int i = 0; i <= last_non_weak_field_index_; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (schema_.InRealOneof(field)) continue;
-    if (schema_.IsFieldStripped(field)) continue;
     if (schema_.IsSplit(field)) {
       continue;
     }
@@ -1190,7 +1205,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
   const int oneof_decl_count = descriptor_->oneof_decl_count();
   for (int i = 0; i < oneof_decl_count; i++) {
     const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
-    if (!oneof->is_synthetic()) {
+    if (!OneofDescriptorLegacy(oneof).is_synthetic()) {
       SwapOneofField<true>(lhs, rhs, oneof);
     }
   }
@@ -1236,7 +1251,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
                                  ? 0
                                  // One extra bit for the arena dtor tracking.
                                  : (inlined_string_count + 1 + 31) / 32;
-    GOOGLE_ABSL_CHECK_EQ((lhs_donated_array[0] & 0x1u) == 0,
+    ABSL_CHECK_EQ((lhs_donated_array[0] & 0x1u) == 0,
                   (rhs_donated_array[0] & 0x1u) == 0);
     for (int i = 0; i < donated_array_size; i++) {
       std::swap(lhs_donated_array[i], rhs_donated_array[i]);
@@ -1252,7 +1267,6 @@ int Reflection::FieldSize(const Message& message,
                           const FieldDescriptor* field) const {
   USAGE_CHECK_MESSAGE_TYPE(FieldSize);
   USAGE_CHECK_REPEATED(FieldSize);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     return GetExtensionSet(message).ExtensionSize(field->number());
@@ -1289,7 +1303,7 @@ int Reflection::FieldSize(const Message& message,
         }
     }
 
-    GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+    ABSL_LOG(FATAL) << "Can't get here.";
     return 0;
   }
 }
@@ -1297,7 +1311,6 @@ int Reflection::FieldSize(const Message& message,
 void Reflection::ClearField(Message* message,
                             const FieldDescriptor* field) const {
   USAGE_CHECK_MESSAGE_TYPE(ClearField);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     MutableExtensionSet(message)->ClearExtension(field->number());
@@ -1331,8 +1344,16 @@ void Reflection::ClearField(Message* message,
           break;
 
         case FieldDescriptor::CPPTYPE_STRING: {
-          switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other string reps.
+          switch (internal::cpp::EffectiveStringCType(field)) {
+            case FieldOptions::CORD:
+              if (field->has_default_value()) {
+                *MutableRaw<absl::Cord>(message, field) =
+                    field->default_value_string();
+              } else {
+                MutableRaw<absl::Cord>(message, field)->Clear();
+              }
+              break;
+            default:
             case FieldOptions::STRING:
               if (IsInlined(field)) {
                 // Currently, string with default value can't be inlined. So we
@@ -1408,7 +1429,6 @@ void Reflection::RemoveLast(Message* message,
                             const FieldDescriptor* field) const {
   USAGE_CHECK_MESSAGE_TYPE(RemoveLast);
   USAGE_CHECK_REPEATED(RemoveLast);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     MutableExtensionSet(message)->RemoveLast(field->number());
@@ -1456,7 +1476,6 @@ void Reflection::RemoveLast(Message* message,
 Message* Reflection::ReleaseLast(Message* message,
                                  const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(ReleaseLast, REPEATED, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   Message* released;
   if (field->is_extension()) {
@@ -1482,7 +1501,6 @@ Message* Reflection::ReleaseLast(Message* message,
 Message* Reflection::UnsafeArenaReleaseLast(
     Message* message, const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(UnsafeArenaReleaseLast, REPEATED, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     return static_cast<Message*>(
@@ -1503,7 +1521,6 @@ void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
                               int index1, int index2) const {
   USAGE_CHECK_MESSAGE_TYPE(Swap);
   USAGE_CHECK_REPEATED(Swap);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     MutableExtensionSet(message)->SwapElements(field->number(), index1, index2);
@@ -1550,13 +1567,9 @@ struct FieldNumberSorter {
 };
 
 bool IsIndexInHasBitSet(const uint32_t* has_bit_set, uint32_t has_bit_index) {
-  GOOGLE_ABSL_DCHECK_NE(has_bit_index, ~0u);
+  ABSL_DCHECK_NE(has_bit_index, ~0u);
   return ((has_bit_set[has_bit_index / 32] >> (has_bit_index % 32)) &
           static_cast<uint32_t>(1)) != 0;
-}
-
-bool CreateUnknownEnumValues(const FileDescriptor* file) {
-  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
 void CheckInOrder(const FieldDescriptor* field, uint32_t* last) {
@@ -1570,14 +1583,13 @@ void CheckInOrder(const FieldDescriptor* field, uint32_t* last) {
 namespace internal {
 bool CreateUnknownEnumValues(const FieldDescriptor* field) {
   bool open_enum = false;
-  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 || open_enum;
+  return !field->legacy_enum_field_treated_as_closed() || open_enum;
 }
 }  // namespace internal
 using internal::CreateUnknownEnumValues;
 
-void Reflection::ListFieldsMayFailOnStripped(
-    const Message& message, bool should_fail,
-    std::vector<const FieldDescriptor*>* output) const {
+void Reflection::ListFields(const Message& message,
+                            std::vector<const FieldDescriptor*>* output) const {
   output->clear();
 
   // Optimization:  The default instance never has any fields set.
@@ -1601,9 +1613,6 @@ void Reflection::ListFieldsMayFailOnStripped(
   };
   for (int i = 0; i <= last_non_weak_field_index; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (!should_fail && schema_.IsFieldStripped(field)) {
-      continue;
-    }
     if (field->is_repeated()) {
       if (FieldSize(message, field) > 0) {
         append_to_output(field);
@@ -1620,7 +1629,6 @@ void Reflection::ListFieldsMayFailOnStripped(
           append_to_output(field);
         }
       } else if (has_bits && has_bits_indices[i] != static_cast<uint32_t>(-1)) {
-        CheckInvalidAccess(schema_, field);
         // Equivalent to: HasBit(message, field)
         if (IsIndexInHasBitSet(has_bits, has_bits_indices[i])) {
           append_to_output(field);
@@ -1642,29 +1650,19 @@ void Reflection::ListFieldsMayFailOnStripped(
     // Descriptors of ExtensionSet are appended in their increasing order.
     GetExtensionSet(message).AppendToList(descriptor_, descriptor_pool_,
                                           output);
-    GOOGLE_ABSL_DCHECK(std::is_sorted(output->begin() + last_size, output->end(),
+    ABSL_DCHECK(std::is_sorted(output->begin() + last_size, output->end(),
                                FieldNumberSorter()));
     if (output->size() != last_size) {
       CheckInOrder((*output)[last_size], &last);
     }
   }
   if (last != UINT32_MAX) {
-    GOOGLE_ABSL_DCHECK(
+    ABSL_DCHECK(
         std::is_sorted(output->begin(), output->end(), FieldNumberSorter()));
   } else {
     // ListFields() must sort output by field number.
     std::sort(output->begin(), output->end(), FieldNumberSorter());
   }
-}
-
-void Reflection::ListFields(const Message& message,
-                            std::vector<const FieldDescriptor*>* output) const {
-  ListFieldsMayFailOnStripped(message, true, output);
-}
-
-void Reflection::ListFieldsOmitStripped(
-    const Message& message, std::vector<const FieldDescriptor*>* output) const {
-  ListFieldsMayFailOnStripped(message, false, output);
 }
 
 // -------------------------------------------------------------------
@@ -1751,8 +1749,14 @@ std::string Reflection::GetString(const Message& message,
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
       return field->default_value_string();
     }
-    switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+    switch (internal::cpp::EffectiveStringCType(field)) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          return std::string(*GetField<absl::Cord*>(message, field));
+        } else {
+          return std::string(GetField<absl::Cord>(message, field));
+        }
+      default:
       case FieldOptions::STRING:
         if (IsInlined(field)) {
           return GetField<InlinedStringField>(message, field).GetNoArena();
@@ -1776,8 +1780,16 @@ const std::string& Reflection::GetStringReference(const Message& message,
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
       return field->default_value_string();
     }
-    switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+    switch (internal::cpp::EffectiveStringCType(field)) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          absl::CopyCordToString(*GetField<absl::Cord*>(message, field),
+                                 scratch);
+        } else {
+          absl::CopyCordToString(GetField<absl::Cord>(message, field), scratch);
+        }
+        return *scratch;
+      default:
       case FieldOptions::STRING:
         if (IsInlined(field)) {
           return GetField<InlinedStringField>(message, field).GetNoArena();
@@ -1789,6 +1801,40 @@ const std::string& Reflection::GetStringReference(const Message& message,
   }
 }
 
+absl::Cord Reflection::GetCord(const Message& message,
+                               const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(GetCord, SINGULAR, STRING);
+  if (field->is_extension()) {
+    return absl::Cord(GetExtensionSet(message).GetString(
+        field->number(), field->default_value_string()));
+  } else {
+    if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+      return absl::Cord(field->default_value_string());
+    }
+    switch (internal::cpp::EffectiveStringCType(field)) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          return *GetField<absl::Cord*>(message, field);
+        } else {
+          return GetField<absl::Cord>(message, field);
+        }
+      default:
+      case FieldOptions::STRING:
+        if (IsInlined(field)) {
+          return absl::Cord(
+              GetField<InlinedStringField>(message, field).GetNoArena());
+        } else {
+          const auto& str = GetField<ArenaStringPtr>(message, field);
+          return absl::Cord(str.IsDefault() ? field->default_value_string()
+                                            : str.Get());
+        }
+    }
+
+    ABSL_LOG(FATAL) << "Can't get here.";
+    return absl::Cord();  // Make compiler happy.
+  }
+}
+
 
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
@@ -1797,12 +1843,24 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
     return MutableExtensionSet(message)->SetString(
         field->number(), field->type(), std::move(value), field);
   } else {
-    switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+    switch (internal::cpp::EffectiveStringCType(field)) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          if (!HasOneofField(*message, field)) {
+            ClearOneof(message, field->containing_oneof());
+            *MutableField<absl::Cord*>(message, field) =
+                Arena::Create<absl::Cord>(message->GetArenaForAllocation());
+          }
+          *(*MutableField<absl::Cord*>(message, field)) = value;
+          break;
+        }
+        *MutableField<absl::Cord>(message, field) = value;
+        break;
+      default:
       case FieldOptions::STRING: {
         if (IsInlined(field)) {
           const uint32_t index = schema_.InlinedStringIndex(field);
-          GOOGLE_ABSL_DCHECK_GT(index, 0);
+          ABSL_DCHECK_GT(index, 0);
           uint32_t* states =
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
@@ -1829,6 +1887,56 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
   }
 }
 
+void Reflection::SetString(Message* message, const FieldDescriptor* field,
+                           const absl::Cord& value) const {
+  USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
+  if (field->is_extension()) {
+    return absl::CopyCordToString(value,
+                                  MutableExtensionSet(message)->MutableString(
+                                      field->number(), field->type(), field));
+  } else {
+    switch (internal::cpp::EffectiveStringCType(field)) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          if (!HasOneofField(*message, field)) {
+            ClearOneof(message, field->containing_oneof());
+            *MutableField<absl::Cord*>(message, field) =
+                Arena::Create<absl::Cord>(message->GetArenaForAllocation());
+          }
+          *(*MutableField<absl::Cord*>(message, field)) = value;
+        } else {
+          *MutableField<absl::Cord>(message, field) = value;
+        }
+        break;
+      default:
+      case FieldOptions::STRING: {
+        // Oneof string fields are never set as a default instance.
+        // We just need to pass some arbitrary default string to make it work.
+        // This allows us to not have the real default accessible from
+        // reflection.
+        if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
+          ClearOneof(message, field->containing_oneof());
+          MutableField<ArenaStringPtr>(message, field)->InitDefault();
+        }
+        if (IsInlined(field)) {
+          auto* str = MutableField<InlinedStringField>(message, field);
+          const uint32_t index = schema_.InlinedStringIndex(field);
+          ABSL_DCHECK_GT(index, 0);
+          uint32_t* states =
+              &MutableInlinedStringDonatedArray(message)[index / 32];
+          uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
+          str->Set(std::string(value), message->GetArenaForAllocation(),
+                   IsInlinedStringDonated(*message, field), states, mask,
+                   message);
+        } else {
+          auto* str = MutableField<ArenaStringPtr>(message, field);
+          str->Set(std::string(value), message->GetArenaForAllocation());
+        }
+        break;
+      }
+    }
+  }
+}
 
 std::string Reflection::GetRepeatedString(const Message& message,
                                           const FieldDescriptor* field,
@@ -2089,7 +2197,6 @@ const Message& Reflection::GetMessage(const Message& message,
                                       const FieldDescriptor* field,
                                       MessageFactory* factory) const {
   USAGE_CHECK_ALL(GetMessage, SINGULAR, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   if (factory == nullptr) factory = message_factory_;
 
@@ -2112,7 +2219,6 @@ Message* Reflection::MutableMessage(Message* message,
                                     const FieldDescriptor* field,
                                     MessageFactory* factory) const {
   USAGE_CHECK_ALL(MutableMessage, SINGULAR, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   if (factory == nullptr) factory = message_factory_;
 
@@ -2148,7 +2254,6 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     Message* message, Message* sub_message,
     const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
 
   if (field->is_extension()) {
@@ -2181,10 +2286,9 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
 
 void Reflection::SetAllocatedMessage(Message* message, Message* sub_message,
                                      const FieldDescriptor* field) const {
-  GOOGLE_ABSL_DCHECK(
+  ABSL_DCHECK(
       sub_message == nullptr || sub_message->GetOwningArena() == nullptr ||
       sub_message->GetOwningArena() == message->GetArenaForAllocation());
-  CheckInvalidAccess(schema_, field);
 
   // If message and sub-message are in different memory ownership domains
   // (different arenas, or one is on heap and one is not), then we may need to
@@ -2215,7 +2319,6 @@ Message* Reflection::UnsafeArenaReleaseMessage(Message* message,
                                                const FieldDescriptor* field,
                                                MessageFactory* factory) const {
   USAGE_CHECK_ALL(ReleaseMessage, SINGULAR, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   if (factory == nullptr) factory = message_factory_;
 
@@ -2244,8 +2347,6 @@ Message* Reflection::UnsafeArenaReleaseMessage(Message* message,
 Message* Reflection::ReleaseMessage(Message* message,
                                     const FieldDescriptor* field,
                                     MessageFactory* factory) const {
-  CheckInvalidAccess(schema_, field);
-
   Message* released = UnsafeArenaReleaseMessage(message, field, factory);
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   released = MaybeForceCopy(message->GetArenaForAllocation(), released);
@@ -2262,7 +2363,6 @@ const Message& Reflection::GetRepeatedMessage(const Message& message,
                                               const FieldDescriptor* field,
                                               int index) const {
   USAGE_CHECK_ALL(GetRepeatedMessage, REPEATED, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     return static_cast<const Message&>(
@@ -2283,7 +2383,6 @@ Message* Reflection::MutableRepeatedMessage(Message* message,
                                             const FieldDescriptor* field,
                                             int index) const {
   USAGE_CHECK_ALL(MutableRepeatedMessage, REPEATED, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     return static_cast<Message*>(
@@ -2304,7 +2403,6 @@ Message* Reflection::MutableRepeatedMessage(Message* message,
 Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
                                 MessageFactory* factory) const {
   USAGE_CHECK_ALL(AddMessage, REPEATED, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   if (factory == nullptr) factory = message_factory_;
 
@@ -2347,7 +2445,6 @@ void Reflection::AddAllocatedMessage(Message* message,
                                      const FieldDescriptor* field,
                                      Message* new_entry) const {
   USAGE_CHECK_ALL(AddAllocatedMessage, REPEATED, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddAllocatedMessage(field, new_entry);
@@ -2367,7 +2464,6 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
                                                 const FieldDescriptor* field,
                                                 Message* new_entry) const {
   USAGE_CHECK_ALL(UnsafeArenaAddAllocatedMessage, REPEATED, MESSAGE);
-  CheckInvalidAccess(schema_, field);
 
   if (field->is_extension()) {
     MutableExtensionSet(message)->UnsafeArenaAddAllocatedMessage(field,
@@ -2391,7 +2487,6 @@ void* Reflection::MutableRawRepeatedField(Message* message,
                                           const Descriptor* desc) const {
   (void)ctype;  // Parameter is used by Google-internal code.
   USAGE_CHECK_REPEATED("MutableRawRepeatedField");
-  CheckInvalidAccess(schema_, field);
 
   if (field->cpp_type() != cpptype &&
       (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
@@ -2399,7 +2494,7 @@ void* Reflection::MutableRawRepeatedField(Message* message,
     ReportReflectionUsageTypeError(descriptor_, field,
                                    "MutableRawRepeatedField", cpptype);
   if (desc != nullptr)
-    GOOGLE_ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
+    ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
         field->number(), field->type(), field->is_packed(), field);
@@ -2423,9 +2518,9 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
     ReportReflectionUsageTypeError(descriptor_, field, "GetRawRepeatedField",
                                    cpptype);
   if (ctype >= 0)
-    GOOGLE_ABSL_CHECK_EQ(field->options().ctype(), ctype) << "subtype mismatch";
+    ABSL_CHECK_EQ(field->options().ctype(), ctype) << "subtype mismatch";
   if (desc != nullptr)
-    GOOGLE_ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
+    ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     // Should use extension_set::GetRawRepeatedField. However, the required
     // parameter "default repeated value" is not very easy to get here.
@@ -2445,7 +2540,7 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
 
 const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
-  if (oneof_descriptor->is_synthetic()) {
+  if (OneofDescriptorLegacy(oneof_descriptor).is_synthetic()) {
     const FieldDescriptor* field = oneof_descriptor->field(0);
     return HasField(message, field) ? field : nullptr;
   }
@@ -2528,7 +2623,8 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
 }
 
 bool Reflection::SupportsUnknownEnumValues() const {
-  return CreateUnknownEnumValues(descriptor_->file());
+  return FileDescriptorLegacy(descriptor_->file()).syntax() ==
+         FileDescriptorLegacy::Syntax::SYNTAX_PROTO3;
 }
 
 // ===================================================================
@@ -2549,7 +2645,7 @@ const Type& Reflection::GetRawNonOneof(const Message& message,
 }
 
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
-  GOOGLE_ABSL_DCHECK_NE(message, schema_.default_instance_);
+  ABSL_DCHECK_NE(message, schema_.default_instance_);
   void** split = MutableSplitField(message);
   const void* default_split = GetSplitField(schema_.default_instance_);
   if (*split == default_split) {
@@ -2585,18 +2681,25 @@ Type* Reflection::MutableRaw(Message* message,
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {
-  GOOGLE_ABSL_DCHECK(schema_.HasHasbits());
+  ABSL_DCHECK(schema_.HasHasbits());
   return &GetConstRefAtOffset<uint32_t>(message, schema_.HasBitsOffset());
 }
 
 uint32_t* Reflection::MutableHasBits(Message* message) const {
-  GOOGLE_ABSL_DCHECK(schema_.HasHasbits());
+  ABSL_DCHECK(schema_.HasHasbits());
   return GetPointerAtOffset<uint32_t>(message, schema_.HasBitsOffset());
+}
+
+uint32_t Reflection::GetOneofCase(
+    const Message& message, const OneofDescriptor* oneof_descriptor) const {
+  ABSL_DCHECK(!OneofDescriptorLegacy(oneof_descriptor).is_synthetic());
+  return internal::GetConstRefAtOffset<uint32_t>(
+      message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
 
 uint32_t* Reflection::MutableOneofCase(
     Message* message, const OneofDescriptor* oneof_descriptor) const {
-  GOOGLE_ABSL_DCHECK(!oneof_descriptor->is_synthetic());
+  ABSL_DCHECK(!OneofDescriptorLegacy(oneof_descriptor).is_synthetic());
   return GetPointerAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
@@ -2624,13 +2727,13 @@ InternalMetadata* Reflection::MutableInternalMetadata(Message* message) const {
 
 const uint32_t* Reflection::GetInlinedStringDonatedArray(
     const Message& message) const {
-  GOOGLE_ABSL_DCHECK(schema_.HasInlinedString());
+  ABSL_DCHECK(schema_.HasInlinedString());
   return &GetConstRefAtOffset<uint32_t>(message,
                                         schema_.InlinedStringDonatedOffset());
 }
 
 uint32_t* Reflection::MutableInlinedStringDonatedArray(Message* message) const {
-  GOOGLE_ABSL_DCHECK(schema_.HasInlinedString());
+  ABSL_DCHECK(schema_.HasInlinedString());
   return GetPointerAtOffset<uint32_t>(message,
                                       schema_.InlinedStringDonatedOffset());
 }
@@ -2639,7 +2742,7 @@ uint32_t* Reflection::MutableInlinedStringDonatedArray(Message* message) const {
 bool Reflection::IsInlinedStringDonated(const Message& message,
                                         const FieldDescriptor* field) const {
   uint32_t index = schema_.InlinedStringIndex(field);
-  GOOGLE_ABSL_DCHECK_GT(index, 0);
+  ABSL_DCHECK_GT(index, 0);
   return IsIndexInHasBitSet(GetInlinedStringDonatedArray(message), index);
 }
 
@@ -2668,11 +2771,11 @@ void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
   // If one is undonated, both must have already registered ArenaDtor.
   uint32_t* lhs_array = MutableInlinedStringDonatedArray(lhs);
   uint32_t* rhs_array = MutableInlinedStringDonatedArray(rhs);
-  GOOGLE_ABSL_CHECK_EQ(lhs_array[0] & 0x1u, 0u);
-  GOOGLE_ABSL_CHECK_EQ(rhs_array[0] & 0x1u, 0u);
+  ABSL_CHECK_EQ(lhs_array[0] & 0x1u, 0u);
+  ABSL_CHECK_EQ(rhs_array[0] & 0x1u, 0u);
   // Swap donation status bit.
   uint32_t index = schema_.InlinedStringIndex(field);
-  GOOGLE_ABSL_DCHECK_GT(index, 0);
+  ABSL_DCHECK_GT(index, 0);
   if (rhs_donated) {
     SetInlinedStringDonated(index, lhs_array);
     ClearInlinedStringDonated(index, rhs_array);
@@ -2685,13 +2788,10 @@ void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
 // Simple accessors for manipulating has_bits_.
 bool Reflection::HasBit(const Message& message,
                         const FieldDescriptor* field) const {
-  GOOGLE_ABSL_DCHECK(!field->options().weak());
+  ABSL_DCHECK(!field->options().weak());
   if (schema_.HasBitIndex(field) != static_cast<uint32_t>(-1)) {
     return IsIndexInHasBitSet(GetHasBits(message), schema_.HasBitIndex(field));
   }
-
-  // Intentionally check here because HasBitIndex(field) != -1 means valid.
-  CheckInvalidAccess(schema_, field);
 
   // proto3: no has-bits. All fields present except messages, which are
   // present only if their message-field pointer is non-null.
@@ -2711,8 +2811,11 @@ bool Reflection::HasBit(const Message& message,
     // (which uses HasField()) needs to be consistent with this.
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
-          default: {
+        switch (internal::cpp::EffectiveStringCType(field)) {
+          case FieldOptions::CORD:
+            return !GetField<const absl::Cord>(message, field).empty();
+          default:
+          case FieldOptions::STRING: {
             if (IsInlined(field)) {
               return !GetField<InlinedStringField>(message, field)
                           .GetNoArena()
@@ -2747,13 +2850,13 @@ bool Reflection::HasBit(const Message& message,
         // handled above; avoid warning
         break;
     }
-    GOOGLE_ABSL_LOG(FATAL) << "Reached impossible case in HasBit().";
+    ABSL_LOG(FATAL) << "Reached impossible case in HasBit().";
     return false;
   }
 }
 
 void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
-  GOOGLE_ABSL_DCHECK(!field->options().weak());
+  ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(-1)) return;
   MutableHasBits(message)[index / 32] |=
@@ -2762,7 +2865,7 @@ void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
 
 void Reflection::ClearBit(Message* message,
                           const FieldDescriptor* field) const {
-  GOOGLE_ABSL_DCHECK(!field->options().weak());
+  ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(-1)) return;
   MutableHasBits(message)[index / 32] &=
@@ -2771,7 +2874,7 @@ void Reflection::ClearBit(Message* message,
 
 void Reflection::SwapBit(Message* message1, Message* message2,
                          const FieldDescriptor* field) const {
-  GOOGLE_ABSL_DCHECK(!field->options().weak());
+  ABSL_DCHECK(!field->options().weak());
   if (!schema_.HasHasbits()) {
     return;
   }
@@ -2790,7 +2893,7 @@ void Reflection::SwapBit(Message* message1, Message* message2,
 
 bool Reflection::HasOneof(const Message& message,
                           const OneofDescriptor* oneof_descriptor) const {
-  if (oneof_descriptor->is_synthetic()) {
+  if (OneofDescriptorLegacy(oneof_descriptor).is_synthetic()) {
     return HasField(message, oneof_descriptor->field(0));
   }
   return (GetOneofCase(message, oneof_descriptor) > 0);
@@ -2810,7 +2913,7 @@ void Reflection::ClearOneofField(Message* message,
 
 void Reflection::ClearOneof(Message* message,
                             const OneofDescriptor* oneof_descriptor) const {
-  if (oneof_descriptor->is_synthetic()) {
+  if (OneofDescriptorLegacy(oneof_descriptor).is_synthetic()) {
     ClearField(message, oneof_descriptor->field(0));
     return;
   }
@@ -2823,8 +2926,11 @@ void Reflection::ClearOneof(Message* message,
     if (message->GetArenaForAllocation() == nullptr) {
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_STRING: {
-          switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other string reps.
+          switch (internal::cpp::EffectiveStringCType(field)) {
+            case FieldOptions::CORD:
+              delete *MutableRaw<absl::Cord*>(message, field);
+              break;
+            default:
             case FieldOptions::STRING: {
               // Oneof string fields are never set as a default instance.
               // We just need to pass some arbitrary default string to make it
@@ -2965,15 +3071,15 @@ void* Reflection::RepeatedFieldData(Message* message,
                                     const FieldDescriptor* field,
                                     FieldDescriptor::CppType cpp_type,
                                     const Descriptor* message_type) const {
-  GOOGLE_ABSL_CHECK(field->is_repeated());
-  GOOGLE_ABSL_CHECK(field->cpp_type() == cpp_type ||
+  ABSL_CHECK(field->is_repeated());
+  ABSL_CHECK(field->cpp_type() == cpp_type ||
              (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM &&
               cpp_type == FieldDescriptor::CPPTYPE_INT32))
       << "The type parameter T in RepeatedFieldRef<T> API doesn't match "
       << "the actual field type (for enums T should be the generated enum "
       << "type or int32_t).";
   if (message_type != nullptr) {
-    GOOGLE_ABSL_CHECK_EQ(message_type, field->message_type());
+    ABSL_CHECK_EQ(message_type, field->message_type());
   }
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
@@ -3003,124 +3109,16 @@ static uint32_t AlignTo(uint32_t v) {
 }
 
 static internal::TailCallParseFunc GetFastParseFunction(
-    absl::string_view name) {
-  // This list must be synchronized with TcParser.
-  // Missing entries are replaced with MiniParse in opt mode to avoid runtime
-  // failures. It check-fails in debug mode.
+    const internal::TailCallTableInfo::FastFieldInfo& field_info) {
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) \
+  {"::_pbi::TcParser::" #value, internal::TcParser::value},
   static const auto* const map =
       new absl::flat_hash_map<absl::string_view, internal::TailCallParseFunc>{
-          {"::_pbi::TcParser::FastF32S1", internal::TcParser::FastF32S1},
-          {"::_pbi::TcParser::FastF32S2", internal::TcParser::FastF32S2},
-          {"::_pbi::TcParser::FastF32R1", internal::TcParser::FastF32R1},
-          {"::_pbi::TcParser::FastF32R2", internal::TcParser::FastF32R2},
-          {"::_pbi::TcParser::FastF32P1", internal::TcParser::FastF32P1},
-          {"::_pbi::TcParser::FastF32P2", internal::TcParser::FastF32P2},
-          {"::_pbi::TcParser::FastF64S1", internal::TcParser::FastF64S1},
-          {"::_pbi::TcParser::FastF64S2", internal::TcParser::FastF64S2},
-          {"::_pbi::TcParser::FastF64R1", internal::TcParser::FastF64R1},
-          {"::_pbi::TcParser::FastF64R2", internal::TcParser::FastF64R2},
-          {"::_pbi::TcParser::FastF64P1", internal::TcParser::FastF64P1},
-          {"::_pbi::TcParser::FastF64P2", internal::TcParser::FastF64P2},
-          {"::_pbi::TcParser::FastV8S1", internal::TcParser::FastV8S1},
-          {"::_pbi::TcParser::FastV8S2", internal::TcParser::FastV8S2},
-          {"::_pbi::TcParser::FastV8R1", internal::TcParser::FastV8R1},
-          {"::_pbi::TcParser::FastV8R2", internal::TcParser::FastV8R2},
-          {"::_pbi::TcParser::FastV8P1", internal::TcParser::FastV8P1},
-          {"::_pbi::TcParser::FastV8P2", internal::TcParser::FastV8P2},
-          {"::_pbi::TcParser::FastV32S1", internal::TcParser::FastV32S1},
-          {"::_pbi::TcParser::FastV32S2", internal::TcParser::FastV32S2},
-          {"::_pbi::TcParser::FastV32R1", internal::TcParser::FastV32R1},
-          {"::_pbi::TcParser::FastV32R2", internal::TcParser::FastV32R2},
-          {"::_pbi::TcParser::FastV32P1", internal::TcParser::FastV32P1},
-          {"::_pbi::TcParser::FastV32P2", internal::TcParser::FastV32P2},
-          {"::_pbi::TcParser::FastV64S1", internal::TcParser::FastV64S1},
-          {"::_pbi::TcParser::FastV64S2", internal::TcParser::FastV64S2},
-          {"::_pbi::TcParser::FastV64R1", internal::TcParser::FastV64R1},
-          {"::_pbi::TcParser::FastV64R2", internal::TcParser::FastV64R2},
-          {"::_pbi::TcParser::FastV64P1", internal::TcParser::FastV64P1},
-          {"::_pbi::TcParser::FastV64P2", internal::TcParser::FastV64P2},
-          {"::_pbi::TcParser::FastZ32S1", internal::TcParser::FastZ32S1},
-          {"::_pbi::TcParser::FastZ32S2", internal::TcParser::FastZ32S2},
-          {"::_pbi::TcParser::FastZ32R1", internal::TcParser::FastZ32R1},
-          {"::_pbi::TcParser::FastZ32R2", internal::TcParser::FastZ32R2},
-          {"::_pbi::TcParser::FastZ32P1", internal::TcParser::FastZ32P1},
-          {"::_pbi::TcParser::FastZ32P2", internal::TcParser::FastZ32P2},
-          {"::_pbi::TcParser::FastZ64S1", internal::TcParser::FastZ64S1},
-          {"::_pbi::TcParser::FastZ64S2", internal::TcParser::FastZ64S2},
-          {"::_pbi::TcParser::FastZ64R1", internal::TcParser::FastZ64R1},
-          {"::_pbi::TcParser::FastZ64R2", internal::TcParser::FastZ64R2},
-          {"::_pbi::TcParser::FastZ64P1", internal::TcParser::FastZ64P1},
-          {"::_pbi::TcParser::FastZ64P2", internal::TcParser::FastZ64P2},
-          {"::_pbi::TcParser::FastErS1", internal::TcParser::FastErS1},
-          {"::_pbi::TcParser::FastErS2", internal::TcParser::FastErS2},
-          {"::_pbi::TcParser::FastErR1", internal::TcParser::FastErR1},
-          {"::_pbi::TcParser::FastErR2", internal::TcParser::FastErR2},
-          {"::_pbi::TcParser::FastErP1", internal::TcParser::FastErP1},
-          {"::_pbi::TcParser::FastErP2", internal::TcParser::FastErP2},
-          {"::_pbi::TcParser::FastEr0S1", internal::TcParser::FastEr0S1},
-          {"::_pbi::TcParser::FastEr0S2", internal::TcParser::FastEr0S2},
-          {"::_pbi::TcParser::FastEr0R1", internal::TcParser::FastEr0R1},
-          {"::_pbi::TcParser::FastEr0R2", internal::TcParser::FastEr0R2},
-          {"::_pbi::TcParser::FastEr0P1", internal::TcParser::FastEr0P1},
-          {"::_pbi::TcParser::FastEr0P2", internal::TcParser::FastEr0P2},
-          {"::_pbi::TcParser::FastEr1S1", internal::TcParser::FastEr1S1},
-          {"::_pbi::TcParser::FastEr1S2", internal::TcParser::FastEr1S2},
-          {"::_pbi::TcParser::FastEr1R1", internal::TcParser::FastEr1R1},
-          {"::_pbi::TcParser::FastEr1R2", internal::TcParser::FastEr1R2},
-          {"::_pbi::TcParser::FastEr1P1", internal::TcParser::FastEr1P1},
-          {"::_pbi::TcParser::FastEr1P2", internal::TcParser::FastEr1P2},
-          {"::_pbi::TcParser::FastEvS1", internal::TcParser::FastEvS1},
-          {"::_pbi::TcParser::FastEvS2", internal::TcParser::FastEvS2},
-          {"::_pbi::TcParser::FastEvR1", internal::TcParser::FastEvR1},
-          {"::_pbi::TcParser::FastEvR2", internal::TcParser::FastEvR2},
-          {"::_pbi::TcParser::FastEvP1", internal::TcParser::FastEvP1},
-          {"::_pbi::TcParser::FastEvP2", internal::TcParser::FastEvP2},
-          {"::_pbi::TcParser::FastBS1", internal::TcParser::FastBS1},
-          {"::_pbi::TcParser::FastBS2", internal::TcParser::FastBS2},
-          {"::_pbi::TcParser::FastBR1", internal::TcParser::FastBR1},
-          {"::_pbi::TcParser::FastBR2", internal::TcParser::FastBR2},
-          {"::_pbi::TcParser::FastSS1", internal::TcParser::FastSS1},
-          {"::_pbi::TcParser::FastSS2", internal::TcParser::FastSS2},
-          {"::_pbi::TcParser::FastSR1", internal::TcParser::FastSR1},
-          {"::_pbi::TcParser::FastSR2", internal::TcParser::FastSR2},
-          {"::_pbi::TcParser::FastUS1", internal::TcParser::FastUS1},
-          {"::_pbi::TcParser::FastUS2", internal::TcParser::FastUS2},
-          {"::_pbi::TcParser::FastUR1", internal::TcParser::FastUR1},
-          {"::_pbi::TcParser::FastUR2", internal::TcParser::FastUR2},
-          {"::_pbi::TcParser::FastBiS1", internal::TcParser::FastBiS1},
-          {"::_pbi::TcParser::FastBiS2", internal::TcParser::FastBiS2},
-          {"::_pbi::TcParser::FastSiS1", internal::TcParser::FastSiS1},
-          {"::_pbi::TcParser::FastSiS2", internal::TcParser::FastSiS2},
-          {"::_pbi::TcParser::FastUiS1", internal::TcParser::FastUiS1},
-          {"::_pbi::TcParser::FastUiS2", internal::TcParser::FastUiS2},
-          {"::_pbi::TcParser::FastBcS1", internal::TcParser::FastBcS1},
-          {"::_pbi::TcParser::FastBcS2", internal::TcParser::FastBcS2},
-          {"::_pbi::TcParser::FastScS1", internal::TcParser::FastScS1},
-          {"::_pbi::TcParser::FastScS2", internal::TcParser::FastScS2},
-          {"::_pbi::TcParser::FastUcS1", internal::TcParser::FastUcS1},
-          {"::_pbi::TcParser::FastUcS2", internal::TcParser::FastUcS2},
-          {"::_pbi::TcParser::FastMdS1", internal::TcParser::FastMdS1},
-          {"::_pbi::TcParser::FastMdS2", internal::TcParser::FastMdS2},
-          {"::_pbi::TcParser::FastGdS1", internal::TcParser::FastGdS1},
-          {"::_pbi::TcParser::FastGdS2", internal::TcParser::FastGdS2},
-          {"::_pbi::TcParser::FastMtS1", internal::TcParser::FastMtS1},
-          {"::_pbi::TcParser::FastMtS2", internal::TcParser::FastMtS2},
-          {"::_pbi::TcParser::FastGtS1", internal::TcParser::FastGtS1},
-          {"::_pbi::TcParser::FastGtS2", internal::TcParser::FastGtS2},
-          {"::_pbi::TcParser::FastMdR1", internal::TcParser::FastMdR1},
-          {"::_pbi::TcParser::FastMdR2", internal::TcParser::FastMdR2},
-          {"::_pbi::TcParser::FastGdR1", internal::TcParser::FastGdR1},
-          {"::_pbi::TcParser::FastGdR2", internal::TcParser::FastGdR2},
-          {"::_pbi::TcParser::FastMtR1", internal::TcParser::FastMtR1},
-          {"::_pbi::TcParser::FastMtR2", internal::TcParser::FastMtR2},
-          {"::_pbi::TcParser::FastGtR1", internal::TcParser::FastGtR1},
-          {"::_pbi::TcParser::FastGtR2", internal::TcParser::FastGtR2},
-          {"::_pbi::TcParser::FastEndG1", internal::TcParser::FastEndG1},
-          {"::_pbi::TcParser::FastEndG2", internal::TcParser::FastEndG2},
-      };
-  auto it = map->find(name);
+          PROTOBUF_TC_PARSE_FUNCTION_LIST};
+#undef PROTOBUF_TC_PARSE_FUNCTION_X
+  auto it = map->find(field_info.func_name);
   if (it == map->end()) {
-    GOOGLE_ABSL_LOG(DFATAL) << "Failed to find function: " << name;
+    ABSL_DLOG(FATAL) << "Failed to find function: " << field_info.func_name;
     // Let's not crash in opt, just in case.
     // MiniParse is always a valid parser.
     return &internal::TcParser::MiniParse;
@@ -3128,7 +3126,7 @@ static internal::TailCallParseFunc GetFastParseFunction(
   return it->second;
 }
 
-const internal::TcParseTableBase* Reflection::CreateTcParseTableForMessageSet()
+const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
     const {
   // ParseLoop can't parse message set wire format.
   // Create a dummy table that only exists to make TcParser::ParseLoop jump
@@ -3138,10 +3136,10 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTableForMessageSet()
   // We use `operator new` here because the destruction will be done with
   // `operator delete` unconditionally.
   void* p = ::operator new(sizeof(Table));
-  auto* full_table = ::new (p) Table{
-      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr},
-      {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
-  GOOGLE_ABSL_DCHECK_EQ(static_cast<void*>(&full_table->header),
+  auto* full_table = ::new (p)
+      Table{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr},
+            {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
+  ABSL_DCHECK_EQ(static_cast<void*>(&full_table->header),
                  static_cast<void*>(full_table));
   return &full_table->header;
 }
@@ -3156,7 +3154,7 @@ void Reflection::PopulateTcParseFastEntries(
         *fast_entries++ = {internal::TcParser::MiniParse, {}};
       } else {
         // No field, but still a special entry.
-        *fast_entries++ = {GetFastParseFunction(fast_field.func_name),
+        *fast_entries++ = {GetFastParseFunction(fast_field),
                            {fast_field.coded_tag, fast_field.nonfield_info}};
       }
     } else if (fast_field.func_name.find("TcParser::FastEv") !=
@@ -3167,7 +3165,7 @@ void Reflection::PopulateTcParseFastEntries(
       *fast_entries++ = {internal::TcParser::MiniParse, {}};
     } else {
       *fast_entries++ = {
-          GetFastParseFunction(fast_field.func_name),
+          GetFastParseFunction(fast_field),
           {fast_field.coded_tag, fast_field.hasbit_idx, fast_field.aux_idx,
            static_cast<uint16_t>(schema_.GetFieldOffset(fast_field.field))}};
     }
@@ -3194,13 +3192,10 @@ void Reflection::PopulateTcParseEntries(
     TcParseTableBase::FieldEntry* entries) const {
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
-    if (field->options().weak()) {
-      // Weak fields are handled by the generated fallback function.
-      // (These are handled by legacy Google-internal logic.)
-      *entries = {};
-    } else if (field->type() == field->TYPE_ENUM &&
-               table_info.aux_entries[entry.aux_idx].type ==
-                   internal::TailCallTableInfo::kEnumValidator) {
+    ABSL_CHECK(!field->options().weak());
+    if (field->type() == field->TYPE_ENUM &&
+        table_info.aux_entries[entry.aux_idx].type ==
+            internal::TailCallTableInfo::kEnumValidator) {
       // Mini parse can't handle it. Fallback to reflection.
       *entries = {};
       table_info.aux_entries[entry.aux_idx] = {};
@@ -3243,7 +3238,16 @@ void Reflection::PopulateTcParseFieldAux(
         break;
       case internal::TailCallTableInfo::kSubTable:
       case internal::TailCallTableInfo::kSubMessageWeak:
-        GOOGLE_ABSL_LOG(FATAL) << "Not supported";
+      case internal::TailCallTableInfo::kCreateInArena:
+      case internal::TailCallTableInfo::kMessageVerifyFunc:
+        ABSL_LOG(FATAL) << "Not supported";
+        break;
+      case internal::TailCallTableInfo::kMapAuxInfo:
+        // Default constructed info, which causes MpMap to call the fallback.
+        // DynamicMessage uses DynamicMapField, which uses variant keys and
+        // values. TcParser does not support them yet, so mark the field as
+        // unsupported to fallback to reflection.
+        field_aux++->map_info = internal::MapAuxInfo{};
         break;
       case internal::TailCallTableInfo::kSubMessage:
         field_aux++->message_default_p =
@@ -3254,7 +3258,7 @@ void Reflection::PopulateTcParseFieldAux(
                                    aux_entry.enum_range.size};
         break;
       case internal::TailCallTableInfo::kEnumValidator:
-        GOOGLE_ABSL_LOG(FATAL) << "Not supported.";
+        ABSL_LOG(FATAL) << "Not supported.";
         break;
       case internal::TailCallTableInfo::kNumericOffset:
         field_aux++->offset = aux_entry.offset;
@@ -3267,7 +3271,13 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
 
   if (descriptor_->options().message_set_wire_format()) {
-    return CreateTcParseTableForMessageSet();
+    return CreateTcParseTableReflectionOnly();
+  }
+
+  for (int i = 0; i < descriptor_->field_count(); ++i) {
+    if (descriptor_->field(i)->options().weak()) {
+      return CreateTcParseTableReflectionOnly();
+    }
   }
 
   std::vector<const FieldDescriptor*> fields;
@@ -3277,8 +3287,6 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   std::vector<int> inlined_string_indices = has_bit_indices;
   for (int i = 0; i < descriptor_->field_count(); ++i) {
     auto* field = descriptor_->field(i);
-    if (schema_.IsFieldStripped(field)) continue;
-
     fields.push_back(field);
     has_bit_indices[static_cast<size_t>(field->index())] =
         static_cast<int>(schema_.HasBitIndex(field));
@@ -3299,18 +3307,28 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
     explicit ReflectionOptionProvider(const Reflection& ref) : ref_(ref) {}
     internal::TailCallTableInfo::PerFieldOptions GetForField(
         const FieldDescriptor* field) const final {
-      return {ref_.IsLazyField(field),  //
-              ref_.IsInlined(field),    //
+      const auto verify_flag = [&] {
+        if (ref_.IsEagerlyVerifiedLazyField(field))
+          return internal::field_layout::kTvEager;
+        if (ref_.IsLazilyVerifiedLazyField(field))
+          return internal::field_layout::kTvLazy;
+        return internal::field_layout::TransformValidation{};
+      };
+      return {
+          verify_flag(),          //
+          ref_.IsInlined(field),  //
 
-              // Only LITE can be implicitly weak.
-              /* is_implicitly_weak */ false,
+          // Only LITE can be implicitly weak.
+          /* is_implicitly_weak */ false,
 
-              // We could change this to use direct table.
-              // Might be easier to do when all messages support TDP.
-              /* use_direct_tcparser_table */ false,
+          // We could change this to use direct table.
+          // Might be easier to do when all messages support TDP.
+          /* use_direct_tcparser_table */ false,
 
-              /* is_lite */ false,  //
-              ref_.schema_.IsSplit(field)};
+          /* is_lite */ false,          //
+          ref_.schema_.IsSplit(field),  //
+          /* uses_codegen */ false      //
+      };
     }
 
    private:
@@ -3321,7 +3339,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       inlined_string_indices);
 
   const size_t fast_entries_count = table_info.fast_path_fields.size();
-  GOOGLE_ABSL_CHECK_EQ(fast_entries_count, 1 << table_info.table_size_log2);
+  ABSL_CHECK_EQ(fast_entries_count, 1 << table_info.table_size_log2);
   const uint16_t lookup_table_offset = AlignTo<uint16_t>(
       sizeof(TcParseTableBase) +
       fast_entries_count * sizeof(TcParseTableBase::FastFieldEntry));
@@ -3340,14 +3358,19 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   void* p = ::operator new(byte_size);
   auto* res = ::new (p) TcParseTableBase{
       static_cast<uint16_t>(schema_.HasHasbits() ? schema_.HasBitsOffset() : 0),
-      // extensions handled through reflection.
-      0, 0, 0,
+      schema_.HasExtensionSet()
+          ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
+          : uint16_t{0},
       static_cast<uint32_t>(fields.empty() ? 0 : fields.back()->number()),
-      static_cast<uint8_t>((fast_entries_count - 1) << 3), lookup_table_offset,
-      table_info.num_to_entry_table.skipmap32, field_entry_offset,
+      static_cast<uint8_t>((fast_entries_count - 1) << 3),
+      lookup_table_offset,
+      table_info.num_to_entry_table.skipmap32,
+      field_entry_offset,
       static_cast<uint16_t>(fields.size()),
-      static_cast<uint16_t>(table_info.aux_entries.size()), aux_offset,
-      schema_.default_instance_, &internal::TcParser::ReflectionFallback};
+      static_cast<uint16_t>(table_info.aux_entries.size()),
+      aux_offset,
+      schema_.default_instance_,
+      &internal::TcParser::ReflectionFallback};
 
   // Now copy the rest of the payloads
   PopulateTcParseFastEntries(table_info, res->fast_entry(0));
@@ -3364,7 +3387,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
            table_info.field_name_data.size());
   }
   // Validation to make sure we used all the bytes correctly.
-  GOOGLE_ABSL_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
+  ABSL_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
                     reinterpret_cast<char*>(res),
                 byte_size);
 
@@ -3520,7 +3543,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   const FileDescriptor* file =
       DescriptorPool::internal_generated_pool()->FindFileByName(
           table->filename);
-  GOOGLE_ABSL_CHECK(file != nullptr);
+  ABSL_CHECK(file != nullptr);
 
   MessageFactory* factory = MessageFactory::generated_factory();
 
@@ -3624,7 +3647,7 @@ void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
 bool IsDescendant(Message& root, const Message& message) {
   const Reflection* reflection = root.GetReflection();
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFieldsOmitStripped(root, &fields);
+  reflection->ListFields(root, &fields);
 
   for (const auto* field : fields) {
     // Skip non-message fields.

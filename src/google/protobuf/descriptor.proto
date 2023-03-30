@@ -133,6 +133,30 @@ message ExtensionRangeOptions {
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
+  message Declaration {
+    // The extension number declared within the extension range.
+    optional int32 number = 1;
+
+    // The fully-qualified name of the extension field. There must be a leading
+    // dot of the full name.
+    optional string full_name = 2;
+
+    // The fully-qualified type name of the extension field. Unlike
+    // Metadata.type, Declaration.type must have a leading dot for messages
+    // and enums.
+    optional string type = 3;
+
+    // If true, indicates that the extension must be defined as repeated.
+    // Otherwise the extension must be defined as optional.
+    optional bool is_repeated = 4;
+  }
+
+  // go/protobuf-stripping-extension-declarations
+  // Like Metadata, but we use a repeated field to hold all extension
+  // declarations. This should avoid the size increases of transforming a large
+  // extension range into small ranges in generated binaries.
+  repeated Declaration declaration = 2 [retention = RETENTION_SOURCE];
+
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
 }
@@ -630,6 +654,37 @@ message FieldOptions {
   // Indicate that the field value should not be printed out when using debug
   // formats, e.g. when the field contains sensitive credentials.
   optional bool debug_redact = 16 [default = false];
+
+  // If set to RETENTION_SOURCE, the option will be omitted from the binary.
+  // Note: as of January 2023, support for this is in progress and does not yet
+  // have an effect (b/264593489).
+  enum OptionRetention {
+    RETENTION_UNKNOWN = 0;
+    RETENTION_RUNTIME = 1;
+    RETENTION_SOURCE = 2;
+  }
+
+  optional OptionRetention retention = 17;
+
+  // This indicates the types of entities that the field may apply to when used
+  // as an option. If it is unset, then the field may be freely used as an
+  // option on any kind of entity. Note: as of January 2023, support for this is
+  // in progress and does not yet have an effect (b/264593489).
+  enum OptionTargetType {
+    TARGET_TYPE_UNKNOWN = 0;
+    TARGET_TYPE_FILE = 1;
+    TARGET_TYPE_EXTENSION_RANGE = 2;
+    TARGET_TYPE_MESSAGE = 3;
+    TARGET_TYPE_FIELD = 4;
+    TARGET_TYPE_ONEOF = 5;
+    TARGET_TYPE_ENUM = 6;
+    TARGET_TYPE_ENUM_ENTRY = 7;
+    TARGET_TYPE_SERVICE = 8;
+    TARGET_TYPE_METHOD = 9;
+  }
+
+  optional OptionTargetType target = 18 [deprecated = true];
+  repeated OptionTargetType targets = 19;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

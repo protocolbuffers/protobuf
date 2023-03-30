@@ -67,6 +67,8 @@ class MapFieldLite {
 
  public:
   typedef Map<Key, T> MapType;
+  static constexpr WireFormatLite::FieldType kKeyFieldType = key_wire_type;
+  static constexpr WireFormatLite::FieldType kValueFieldType = value_wire_type;
 
   constexpr MapFieldLite() : map_() {}
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
@@ -193,7 +195,7 @@ struct MapEntryToMapField<
 #ifndef NDEBUG
 inline PROTOBUF_NOINLINE void MapFieldLiteNotDestructed(void* map_field_lite) {
   bool proper_destruct = false;
-  GOOGLE_ABSL_CHECK(proper_destruct) << map_field_lite;
+  ABSL_CHECK(proper_destruct) << map_field_lite;
 }
 #endif
 

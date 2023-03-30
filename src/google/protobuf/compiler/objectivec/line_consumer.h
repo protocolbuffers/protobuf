@@ -55,12 +55,12 @@ class PROTOC_EXPORT LineConsumer {
   virtual bool ConsumeLine(absl::string_view line, std::string* out_error) = 0;
 };
 
-bool PROTOC_EXPORT ParseSimpleFile(const std::string& path,
+bool PROTOC_EXPORT ParseSimpleFile(absl::string_view path,
                                    LineConsumer* line_consumer,
                                    std::string* out_error);
 
 bool PROTOC_EXPORT ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
-                                     const std::string& stream_name,
+                                     absl::string_view stream_name,
                                      LineConsumer* line_consumer,
                                      std::string* out_error);
 

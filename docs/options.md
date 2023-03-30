@@ -187,7 +187,7 @@ with info about your project (name and website) so we can add an entry for you.
 1.  ygot
 
     *   Website: https://github.com/openconfig/ygot
-    *   Extensions: 1040
+    *   Extensions: 1040, 1179, 1180
 
 1.  go-grpcmw
 
@@ -456,3 +456,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/Neakxs/protocel
     *   Extension: 1177-1178
+
+1.  Cybozu
+
+    *   Website: https://github.com/cybozu/protobuf
+    *   Extension: 1179

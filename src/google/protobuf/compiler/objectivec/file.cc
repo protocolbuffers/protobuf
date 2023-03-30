@@ -39,8 +39,6 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/descriptor.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -51,6 +49,8 @@
 #include "google/protobuf/compiler/objectivec/import_writer.h"
 #include "google/protobuf/compiler/objectivec/message.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -64,7 +64,7 @@ namespace objectivec {
 namespace {
 
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.
-const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30005;
+const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30007;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
@@ -113,7 +113,7 @@ struct FileDescriptorsOrderedByName {
 };
 
 void MakeDescriptors(
-    const Descriptor* descriptor, const std::string& root_classname,
+    const Descriptor* descriptor, const std::string& file_description_name,
     std::vector<std::unique_ptr<EnumGenerator>>* enum_generators,
     std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
     std::vector<std::unique_ptr<MessageGenerator>>* message_generators) {
@@ -123,10 +123,10 @@ void MakeDescriptors(
   }
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
     message_generators->emplace_back(std::make_unique<MessageGenerator>(
-        root_classname, descriptor->nested_type(i)));
+        file_description_name, descriptor->nested_type(i)));
     message_generators->back()->AddExtensionGenerators(extension_generators);
-    MakeDescriptors(descriptor->nested_type(i), root_classname, enum_generators,
-                    extension_generators, message_generators);
+    MakeDescriptors(descriptor->nested_type(i), file_description_name,
+                    enum_generators, extension_generators, message_generators);
   }
 }
 
@@ -185,7 +185,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
 
   absl::flat_hash_set<const FileDescriptor*> min_deps;
   std::copy_if(min_deps_collector.begin(), min_deps_collector.end(),
-               std::inserter(min_deps, min_deps.end()),
+               std::inserter(min_deps, min_deps.begin()),
                [&](const FileDescriptor* value) {
                  return to_prune.find(value) == to_prune.end();
                });
@@ -221,6 +221,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
       generation_options_(generation_options),
       common_state_(&common_state),
       root_class_name_(FileClassName(file)),
+      file_description_name_(FileClassName(file) + "_FileDescription"),
       is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
     enum_generators_.emplace_back(
@@ -232,10 +233,11 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
   }
   for (int i = 0; i < file_->message_type_count(); i++) {
     message_generators_.emplace_back(std::make_unique<MessageGenerator>(
-        root_class_name_, file_->message_type(i)));
+        file_description_name_, file_->message_type(i)));
     message_generators_.back()->AddExtensionGenerators(&extension_generators_);
-    MakeDescriptors(file_->message_type(i), root_class_name_, &enum_generators_,
-                    &extension_generators_, &message_generators_);
+    MakeDescriptors(file_->message_type(i), file_description_name_,
+                    &enum_generators_, &extension_generators_,
+                    &message_generators_);
   }
 }
 
@@ -312,15 +314,15 @@ void FileGenerator::GenerateHeader(io::Printer* p) const {
 void FileGenerator::GenerateSource(io::Printer* p) const {
   std::vector<const FileDescriptor*> deps_with_extensions =
       common_state_->CollectMinimalFileDepsContainingExtensions(file_);
+  GeneratedFileOptions file_options;
 
   // If any indirect dependency provided extensions, it needs to be directly
   // imported so it can get merged into the root's extensions registry.
   // See the Note by CollectMinimalFileDepsContainingExtensions before
   // changing this.
-  std::vector<const FileDescriptor*> extra_files;
   for (auto& dep : deps_with_extensions) {
     if (!IsDirectDependency(dep, file_)) {
-      extra_files.push_back(dep);
+      file_options.extra_files_to_import.push_back(dep);
     }
   }
 
@@ -332,59 +334,63 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
     generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
   }
 
-  std::vector<std::string> ignored_warnings;
   // The generated code for oneof's uses direct ivar access, suppress the
   // warning in case developer turn that on in the context they compile the
   // generated code.
   for (const auto& generator : message_generators_) {
     if (generator->IncludesOneOfDefinition()) {
-      ignored_warnings.push_back("direct-ivar-access");
+      file_options.ignored_warnings.push_back("direct-ivar-access");
       break;
     }
   }
   if (!fwd_decls.empty()) {
-    ignored_warnings.push_back("dollar-in-identifier-extension");
+    file_options.ignored_warnings.push_back("dollar-in-identifier-extension");
   }
 
-  GenerateFile(
-      p, GeneratedFileType::kSource, ignored_warnings, extra_files, [&] {
-        if (!fwd_decls.empty()) {
-          p->Print(
-              // clang-format off
-              "#pragma mark - Objective C Class declarations\n"
-              "// Forward declarations of Objective C classes that we can use as\n"
-              "// static values in struct initializers.\n"
-              "// We don't use [Foo class] because it is not a static value.\n"
-              "$fwd_decls$\n"
-              "\n",
-              // clang-format on
-              "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
-        }
+  // Enum implementation uses atomic in the generated code, so add
+  // the system import as needed.
+  if (!enum_generators_.empty()) {
+    file_options.extra_system_headers.push_back("stdatomic.h");
+  }
 
-        PrintRootImplementation(p, deps_with_extensions);
-        PrintFileDescriptorImplementation(p);
+  GenerateFile(p, GeneratedFileType::kSource, file_options, [&] {
+    if (!fwd_decls.empty()) {
+      p->Print(
+          // clang-format off
+          "#pragma mark - Objective-C Class declarations\n"
+          "// Forward declarations of Objective-C classes that we can use as\n"
+          "// static values in struct initializers.\n"
+          "// We don't use [Foo class] because it is not a static value.\n"
+          "$fwd_decls$\n"
+          "\n",
+          // clang-format on
+          "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+    }
 
-        for (const auto& generator : enum_generators_) {
-          generator->GenerateSource(p);
-        }
-        for (const auto& generator : message_generators_) {
-          generator->GenerateSource(p);
-        }
-      });
+    PrintRootImplementation(p, deps_with_extensions);
+    PrintFileDescription(p);
+
+    for (const auto& generator : enum_generators_) {
+      generator->GenerateSource(p);
+    }
+    for (const auto& generator : message_generators_) {
+      generator->GenerateSource(p);
+    }
+  });
 }
 
 void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
   std::vector<const FileDescriptor*> deps_with_extensions =
       common_state_->CollectMinimalFileDepsContainingExtensions(file_);
+  GeneratedFileOptions file_options;
 
   // If any indirect dependency provided extensions, it needs to be directly
   // imported so it can get merged into the root's extensions registry.
   // See the Note by CollectMinimalFileDepsContainingExtensions before
   // changing this.
-  std::vector<const FileDescriptor*> extra_files;
   for (auto& dep : deps_with_extensions) {
     if (!IsDirectDependency(dep, file_)) {
-      extra_files.push_back(dep);
+      file_options.extra_files_to_import.push_back(dep);
     }
   }
 
@@ -393,60 +399,16 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
     generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
   }
 
-  std::vector<std::string> ignored_warnings;
   if (!fwd_decls.empty()) {
-    ignored_warnings.push_back("dollar-in-identifier-extension");
+    file_options.ignored_warnings.push_back("dollar-in-identifier-extension");
   }
 
-  GenerateFile(
-      p, GeneratedFileType::kSource, ignored_warnings, extra_files, [&] {
-        if (!fwd_decls.empty()) {
-          p->Print(
-              // clang-format off
-              "#pragma mark - Objective C Class declarations\n"
-              "// Forward declarations of Objective C classes that we can use as\n"
-              "// static values in struct initializers.\n"
-              "// We don't use [Foo class] because it is not a static value.\n"
-              "$fwd_decls$\n"
-              "\n",
-              // clang-format on
-              "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
-        }
-
-        PrintRootImplementation(p, deps_with_extensions);
-        PrintFileDescriptorImplementation(p);
-      });
-}
-
-void FileGenerator::GenerateSourceForEnum(int idx, io::Printer* p) const {
-  GenerateFile(p, GeneratedFileType::kSource,
-               [&] { enum_generators_[idx]->GenerateSource(p); });
-}
-
-void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
-  const auto& generator = message_generators_[idx];
-
-  absl::btree_set<std::string> fwd_decls;
-  generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
-
-  std::vector<std::string> ignored_warnings;
-  // The generated code for oneof's uses direct ivar access, suppress the
-  // warning in case developer turn that on in the context they compile the
-  // generated code.
-  if (generator->IncludesOneOfDefinition()) {
-    ignored_warnings.push_back("direct-ivar-access");
-  }
-
-  GenerateFile(p, GeneratedFileType::kSource, ignored_warnings, {}, [&] {
-    p->Print(
-        "extern GPBFileDescriptor *$root_class_name$_FileDescriptor(void);\n\n",
-        "root_class_name", root_class_name_);
-
+  GenerateFile(p, GeneratedFileType::kSource, file_options, [&] {
     if (!fwd_decls.empty()) {
       p->Print(
           // clang-format off
-              "#pragma mark - Objective C Class declarations\n"
-              "// Forward declarations of Objective C classes that we can use as\n"
+              "#pragma mark - Objective-C Class declarations\n"
+              "// Forward declarations of Objective-C classes that we can use as\n"
               "// static values in struct initializers.\n"
               "// We don't use [Foo class] because it is not a static value.\n"
               "$fwd_decls$\n"
@@ -455,15 +417,58 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
           "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
     }
 
+    PrintRootImplementation(p, deps_with_extensions);
+  });
+}
+
+void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
+  // Enum implementation uses atomic in the generated code.
+  GeneratedFileOptions file_options;
+  file_options.extra_system_headers.push_back("stdatomic.h");
+
+  GenerateFile(p, GeneratedFileType::kSource, file_options, [&] {
+    for (const auto& generator : enum_generators_) {
+      generator->GenerateSource(p);
+    }
+  });
+}
+
+void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
+  const auto& generator = message_generators_[idx];
+
+  absl::btree_set<std::string> fwd_decls;
+  generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+
+  GeneratedFileOptions file_options;
+  // The generated code for oneof's uses direct ivar access, suppress the
+  // warning in case developer turn that on in the context they compile the
+  // generated code.
+  if (generator->IncludesOneOfDefinition()) {
+    file_options.ignored_warnings.push_back("direct-ivar-access");
+  }
+
+  GenerateFile(p, GeneratedFileType::kSource, file_options, [&] {
+    if (!fwd_decls.empty()) {
+      p->Print(
+          // clang-format off
+          "#pragma mark - Objective-C Class declarations\n"
+          "// Forward declarations of Objective-C classes that we can use as\n"
+          "// static values in struct initializers.\n"
+          "// We don't use [Foo class] because it is not a static value.\n"
+          "$fwd_decls$\n"
+          "\n",
+          // clang-format on
+          "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+    }
+
+    PrintFileDescription(p);
     generator->GenerateSource(p);
   });
 }
 
-void FileGenerator::GenerateFile(
-    io::Printer* p, GeneratedFileType file_type,
-    const std::vector<std::string>& ignored_warnings,
-    const std::vector<const FileDescriptor*>& extra_files_to_import,
-    std::function<void()> body) const {
+void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
+                                 const GeneratedFileOptions& file_options,
+                                 std::function<void()> body) const {
   ImportWriter import_writer(
       generation_options_.generate_for_named_framework,
       generation_options_.named_framework_to_proto_path_mappings_path,
@@ -514,7 +519,7 @@ void FileGenerator::GenerateFile(
       break;
   }
 
-  for (const auto& dep : extra_files_to_import) {
+  for (const auto& dep : file_options.extra_files_to_import) {
     import_writer.AddFile(dep, header_extension);
   }
 
@@ -530,31 +535,30 @@ void FileGenerator::GenerateFile(
 
   p->Print("\n");
 
-  if (file_type == GeneratedFileType::kHeader) {
-    // Add some verification that the generated code matches the source the
-    // code is being compiled with.
-    // NOTE: This captures the raw numeric values at the time the generator was
-    // compiled, since that will be the versions for the ObjC runtime at that
-    // time.  The constants in the generated code will then get their values at
-    // at compile time (so checking against the headers being used to compile).
-    p->Print(
-        // clang-format off
-        "#if GOOGLE_PROTOBUF_OBJC_VERSION < $google_protobuf_objc_version$\n"
-        "#error This file was generated by a newer version of protoc which is incompatible with your Protocol Buffer library sources.\n"
-        "#endif\n"
-        "#if $google_protobuf_objc_version$ < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION\n"
-        "#error This file was generated by an older version of protoc which is incompatible with your Protocol Buffer library sources.\n"
-        "#endif\n"
-        "\n",
-        // clang-format on
-        "google_protobuf_objc_version",
-        absl::StrCat(GOOGLE_PROTOBUF_OBJC_VERSION));
-  }
+  // Add some verification that the generated code matches the source the
+  // code is being compiled with.
+  // NOTE: This captures the raw numeric values at the time the generator was
+  // compiled, since that will be the versions for the ObjC runtime at that
+  // time.  The constants in the generated code will then get their values at
+  // compile time (so checking against the headers being used to compile).
+  p->Print(
+      // clang-format off
+      "#if GOOGLE_PROTOBUF_OBJC_VERSION < $google_protobuf_objc_version$\n"
+      "#error This file was generated by a newer version of protoc which is incompatible with your Protocol Buffer library sources.\n"
+      "#endif\n"
+      "#if $google_protobuf_objc_version$ < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION\n"
+      "#error This file was generated by an older version of protoc which is incompatible with your Protocol Buffer library sources.\n"
+      "#endif\n"
+      "\n",
+      // clang-format on
+      "google_protobuf_objc_version",
+      absl::StrCat(GOOGLE_PROTOBUF_OBJC_VERSION));
 
-  // Enum implementation uses atomic in the generated code, so add
-  // the system import as needed.
-  if (file_type == GeneratedFileType::kSource && !enum_generators_.empty()) {
-    p->Print("#import <stdatomic.h>\n\n");
+  if (!file_options.extra_system_headers.empty()) {
+    for (const auto& system_header : file_options.extra_system_headers) {
+      p->Print("#import <$header$>\n", "header", system_header);
+    }
+    p->Print("\n");
   }
 
   import_writer.PrintFileImports(p);
@@ -566,7 +570,7 @@ void FileGenerator::GenerateFile(
       "#pragma clang diagnostic push\n"
       "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n");
   // clang-format on
-  for (const auto& warning : ignored_warnings) {
+  for (const auto& warning : file_options.ignored_warnings) {
     p->Print("#pragma clang diagnostic ignored \"-W$warning$\"\n", "warning",
              warning);
   }
@@ -686,7 +690,7 @@ void FileGenerator::PrintRootExtensionRegistryImplementation(
   // clang-format on
 }
 
-void FileGenerator::PrintFileDescriptorImplementation(io::Printer* p) const {
+void FileGenerator::PrintFileDescription(io::Printer* p) const {
   // File descriptor only needed if there are messages to use it.
   if (message_generators_.empty()) {
     return;
@@ -694,50 +698,35 @@ void FileGenerator::PrintFileDescriptorImplementation(io::Printer* p) const {
 
   const std::string objc_prefix(FileClassPrefix(file_));
   absl::flat_hash_map<absl::string_view, std::string> vars;
-  vars["root_class_name"] = root_class_name_;
-  vars["package"] = file_->package();
-  switch (file_->syntax()) {
-    case FileDescriptor::SYNTAX_UNKNOWN:
+  vars["file_description_name"] = file_description_name_;
+  vars["package_value"] = file_->package().empty()
+                              ? "NULL"
+                              : absl::StrCat("\"", file_->package(), "\"");
+  switch (FileDescriptorLegacy(file_).syntax()) {
+    case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
       vars["syntax"] = "GPBFileSyntaxUnknown";
       break;
-    case FileDescriptor::SYNTAX_PROTO2:
+    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
       vars["syntax"] = "GPBFileSyntaxProto2";
       break;
-    case FileDescriptor::SYNTAX_PROTO3:
+    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
       vars["syntax"] = "GPBFileSyntaxProto3";
       break;
   }
-  if (objc_prefix.empty()) {
-    vars["prefix_arg"] = "";
+  if (objc_prefix.empty() && !file_->options().has_objc_class_prefix()) {
+    vars["prefix_value"] = "NULL";
   } else {
-    vars["prefix_arg"] = absl::StrCat(
-        "                                                 objcPrefix:@\"",
-        objc_prefix, "\"\n");
-  }
-
-  if (generation_options_.experimental_multi_source_generation) {
-    vars["file_desc_scope"] = "";
-  } else {
-    vars["file_desc_scope"] = "static ";
+    vars["prefix_value"] = absl::StrCat("\"", objc_prefix, "\"");
   }
 
   // clang-format off
   p->Print(
       vars,
-      "#pragma mark - $root_class_name$_FileDescriptor\n"
-      "\n"
-      "$file_desc_scope$GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
-      "  // This is called by +initialize so there is no need to worry\n"
-      "  // about thread safety of the singleton.\n"
-      "  static GPBFileDescriptor *descriptor = NULL;\n"
-      "  if (!descriptor) {\n"
-      "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n"
-      "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
-      "$prefix_arg$"
-      "                                                     syntax:$syntax$];\n"
-      "  }\n"
-      "  return descriptor;\n"
-      "}\n"
+      "static GPBFileDescription $file_description_name$ = {\n"
+      "  .package = $package_value$,\n"
+      "  .prefix = $prefix_value$,\n"
+      "  .syntax = $syntax$\n"
+      "};\n"
       "\n");
   // clang-format on
 }

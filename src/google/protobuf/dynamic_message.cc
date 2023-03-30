@@ -69,18 +69,19 @@
 #include <memory>
 #include <new>
 
+#include "google/protobuf/arenastring.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
-#include "google/protobuf/unknown_field_set.h"
-#include "google/protobuf/arenastring.h"
-#include "google/protobuf/extension_set.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
 
 
@@ -107,7 +108,7 @@ bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
 
 inline bool InRealOneof(const FieldDescriptor* field) {
   return field->containing_oneof() &&
-         !field->containing_oneof()->is_synthetic();
+         !OneofDescriptorLegacy(field->containing_oneof()).is_synthetic();
 }
 
 // Compute the byte size of the in-memory representation of the field.
@@ -178,7 +179,7 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
     }
   }
 
-  GOOGLE_ABSL_LOG(DFATAL) << "Can't get here.";
+  ABSL_DLOG(FATAL) << "Can't get here.";
   return 0;
 }
 
@@ -369,7 +370,8 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   // Initialize oneof cases.
   int oneof_count = 0;
   for (int i = 0; i < descriptor->oneof_decl_count(); ++i) {
-    if (descriptor->oneof_decl(i)->is_synthetic()) continue;
+    if (OneofDescriptorLegacy(descriptor->oneof_decl(i)).is_synthetic())
+      continue;
     new (MutableOneofCaseRaw(oneof_count++)) uint32_t{0};
   }
 
@@ -587,7 +589,7 @@ DynamicMessage::~DynamicMessage() {
 
 void DynamicMessage::CrossLinkPrototypes() {
   // This should only be called on the prototype message.
-  GOOGLE_ABSL_CHECK(is_prototype());
+  ABSL_CHECK(is_prototype());
 
   DynamicMessageFactory* factory = type_info_->factory;
   const Descriptor* descriptor = type_info_->type;
@@ -684,7 +686,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   //   or not that field is set.
   int real_oneof_count = 0;
   for (int i = 0; i < type->oneof_decl_count(); i++) {
-    if (!type->oneof_decl(i)->is_synthetic()) {
+    if (!OneofDescriptorLegacy(type->oneof_decl(i)).is_synthetic()) {
       real_oneof_count++;
     }
   }
@@ -758,7 +760,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   // The oneofs.
   for (int i = 0; i < type->oneof_decl_count(); i++) {
-    if (!type->oneof_decl(i)->is_synthetic()) {
+    if (!OneofDescriptorLegacy(type->oneof_decl(i)).is_synthetic()) {
       size = AlignTo(size, kSafeAlignment);
       offsets[type->field_count() + i] = size;
       size += kMaxOneofUnionSize;
@@ -776,7 +778,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   // Compute the size of default oneof instance and offsets of default
   // oneof fields.
   for (int i = 0; i < type->oneof_decl_count(); i++) {
-    if (type->oneof_decl(i)->is_synthetic()) continue;
+    if (OneofDescriptorLegacy(type->oneof_decl(i)).is_synthetic()) continue;
     for (int j = 0; j < type->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = type->oneof_decl(i)->field(j);
       // oneof fields are not accessed through offsets, but we still have the

@@ -118,9 +118,11 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
+#include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/functional/function_ref.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -129,7 +131,6 @@
 #include "google/protobuf/map.h"  // TODO(b/211442718): cleanup
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -275,7 +276,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // exact same class).
   virtual void MergeFrom(const Message& from);
 
-  // Verifies that IsInitialized() returns true.  GOOGLE_ABSL_CHECK-fails otherwise,
+  // Verifies that IsInitialized() returns true.  ABSL_CHECK-fails otherwise,
   // with a nice error message.
   void CheckInitialized() const;
 
@@ -629,6 +630,13 @@ class PROTOBUF_EXPORT Reflection final {
                                         const FieldDescriptor* field,
                                         std::string* scratch) const;
 
+  // Returns a Cord containing the value of the string field.  If the
+  // underlying field is stored as a cord (e.g. it has the [ctype=CORD]
+  // option), this involves no copies (just reference counting).  If the
+  // underlying representation is not a Cord, a copy will have to be made.
+  absl::Cord GetCord(const Message& message,
+                     const FieldDescriptor* field) const;
+
 
   // Singular field mutators -----------------------------------------
   // These mutate the value of a non-repeated field.
@@ -649,6 +657,11 @@ class PROTOBUF_EXPORT Reflection final {
                bool value) const;
   void SetString(Message* message, const FieldDescriptor* field,
                  std::string value) const;
+  // Set a string field to a Cord value.  If the underlying field is
+  // represented using a Cord already, this involves no copies  (just
+  // reference counting).  Otherwise, a copy must be made.
+  void SetString(Message* message, const FieldDescriptor* field,
+                 const absl::Cord& value) const;
   void SetEnum(Message* message, const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
   // Set an enum field's value with an integer rather than EnumValueDescriptor.
@@ -937,7 +950,7 @@ class PROTOBUF_EXPORT Reflection final {
   // take arbitrary integer values, and the legacy GetEnum() getter will
   // dynamically create an EnumValueDescriptor for any integer value without
   // one. If |false|, setting an unknown enum value via the integer-based
-  // setters results in undefined behavior (in practice, GOOGLE_ABSL_DCHECK-fails).
+  // setters results in undefined behavior (in practice, ABSL_DCHECK-fails).
   //
   // Generic code that uses reflection to handle messages with enum fields
   // should check this flag before using the integer-based setter, and either
@@ -960,6 +973,7 @@ class PROTOBUF_EXPORT Reflection final {
   //       reflection->SetEnumValue(message, field, new_value);
   //     }
   //   }
+  ABSL_DEPRECATED("Use EnumDescriptor::is_closed instead.")
   bool SupportsUnknownEnumValues() const;
 
   // Returns the MessageFactory associated with this message.  This can be
@@ -1024,22 +1038,6 @@ class PROTOBUF_EXPORT Reflection final {
   const internal::RepeatedFieldAccessor* RepeatedFieldAccessor(
       const FieldDescriptor* field) const;
 
-  // Lists all fields of the message which are currently set, except for unknown
-  // fields and stripped fields. See ListFields for details.
-  void ListFieldsOmitStripped(
-      const Message& message,
-      std::vector<const FieldDescriptor*>* output) const;
-
-  bool IsMessageStripped(const Descriptor* descriptor) const {
-    return schema_.IsMessageStripped(descriptor);
-  }
-
-  friend class TextFormat;
-
-  void ListFieldsMayFailOnStripped(
-      const Message& message, bool should_fail,
-      std::vector<const FieldDescriptor*>* output) const;
-
   // Returns true if the message field is backed by a LazyField.
   //
   // A message field may be backed by a LazyField without the user annotation
@@ -1093,7 +1091,7 @@ class PROTOBUF_EXPORT Reflection final {
   }
 
   const TcParseTableBase* CreateTcParseTable() const;
-  const TcParseTableBase* CreateTcParseTableForMessageSet() const;
+  const TcParseTableBase* CreateTcParseTableReflectionOnly() const;
   void PopulateTcParseFastEntries(
       const internal::TailCallTableInfo& table_info,
       TcParseTableBase::FastFieldEntry* fast_entries) const;
@@ -1204,8 +1202,8 @@ class PROTOBUF_EXPORT Reflection final {
 
   inline const uint32_t* GetHasBits(const Message& message) const;
   inline uint32_t* MutableHasBits(Message* message) const;
-  inline uint32_t GetOneofCase(const Message& message,
-                               const OneofDescriptor* oneof_descriptor) const;
+  uint32_t GetOneofCase(const Message& message,
+                        const OneofDescriptor* oneof_descriptor) const;
   inline uint32_t* MutableOneofCase(
       Message* message, const OneofDescriptor* oneof_descriptor) const;
   inline bool HasExtensionSet(const Message& /* message */) const {
@@ -1540,13 +1538,6 @@ const Type& Reflection::DefaultRaw(const FieldDescriptor* field) const {
   return *reinterpret_cast<const Type*>(schema_.GetFieldDefault(field));
 }
 
-uint32_t Reflection::GetOneofCase(
-    const Message& message, const OneofDescriptor* oneof_descriptor) const {
-  GOOGLE_ABSL_DCHECK(!oneof_descriptor->is_synthetic());
-  return internal::GetConstRefAtOffset<uint32_t>(
-      message, schema_.GetOneofCaseOffset(oneof_descriptor));
-}
-
 bool Reflection::HasOneofField(const Message& message,
                                const FieldDescriptor* field) const {
   return (GetOneofCase(message, field->containing_oneof()) ==
@@ -1554,20 +1545,20 @@ bool Reflection::HasOneofField(const Message& message,
 }
 
 const void* Reflection::GetSplitField(const Message* message) const {
-  GOOGLE_ABSL_DCHECK(schema_.IsSplit());
+  ABSL_DCHECK(schema_.IsSplit());
   return *internal::GetConstPointerAtOffset<void*>(message,
                                                    schema_.SplitOffset());
 }
 
 void** Reflection::MutableSplitField(Message* message) const {
-  GOOGLE_ABSL_DCHECK(schema_.IsSplit());
+  ABSL_DCHECK(schema_.IsSplit());
   return internal::GetPointerAtOffset<void*>(message, schema_.SplitOffset());
 }
 
 template <typename Type>
 const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
-  GOOGLE_ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
+  ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
       << "Field = " << field->full_name();
   if (schema_.IsSplit(field)) {
     return *internal::GetConstPointerAtOffset<Type>(

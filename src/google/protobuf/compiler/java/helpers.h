@@ -43,6 +43,7 @@
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 
 // Must be last.
@@ -69,7 +70,7 @@ bool IsForbiddenKotlin(absl::string_view field_name);
 // annotation_file should be generated from the filename of the source file
 // being annotated (which in turn must be a Java identifier plus ".java").
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter = '$',
-                              const std::string& annotation_file = "",
+                              absl::string_view annotation_file = "",
                               Options options = {});
 
 // If a GeneratedMessageLite contains non-lite enums, then its verifier
@@ -77,11 +78,12 @@ void PrintGeneratedAnnotation(io::Printer* printer, char delimiter = '$',
 void PrintEnumVerifierLogic(
     io::Printer* printer, const FieldDescriptor* descriptor,
     const absl::flat_hash_map<absl::string_view, std::string>& variables,
-    const char* var_name, const char* terminating_string, bool enforce_lite);
+    absl::string_view var_name, absl::string_view terminating_string,
+    bool enforce_lite);
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
-std::string ToCamelCase(const std::string& input, bool lower_first);
+std::string ToCamelCase(absl::string_view input, bool lower_first);
 
 // Similar to UnderscoresToCamelCase, but guarantees that the result is a
 // complete Java identifier by adding a _ if needed.
@@ -184,8 +186,8 @@ inline bool IsOwnFile(const ServiceDescriptor* descriptor, bool immutable) {
 // (e.g.) be "OrBuilder" for some generated interfaces.
 template <typename Descriptor>
 std::string AnnotationFileName(const Descriptor* descriptor,
-                               const std::string& suffix) {
-  return descriptor->name() + suffix + ".java.pb.meta";
+                               absl::string_view suffix) {
+  return absl::StrCat(descriptor->name(), suffix, ".java.pb.meta");
 }
 
 // Get the unqualified name that should be used for a field's field
@@ -211,21 +213,21 @@ enum JavaType {
 
 JavaType GetJavaType(const FieldDescriptor* field);
 
-const char* PrimitiveTypeName(JavaType type);
+absl::string_view PrimitiveTypeName(JavaType type);
 
 // Get the fully-qualified class name for a boxed primitive type, e.g.
 // "java.lang.Integer" for JAVATYPE_INT.  Returns NULL for enum and message
 // types.
-const char* BoxedPrimitiveTypeName(JavaType type);
+absl::string_view BoxedPrimitiveTypeName(JavaType type);
 
 // Kotlin source does not distinguish between primitives and non-primitives,
 // but does use Kotlin-specific qualified types for them.
-const char* KotlinTypeName(JavaType type);
+absl::string_view KotlinTypeName(JavaType type);
 
 // Get the name of the java enum constant representing this type. E.g.,
 // "INT32" for FieldDescriptor::TYPE_INT32. The enum constant's full
 // name is "com.google.protobuf.WireFormat.FieldType.INT32".
-const char* FieldTypeName(const FieldDescriptor::Type field_type);
+absl::string_view FieldTypeName(const FieldDescriptor::Type field_type);
 
 class ClassNameResolver;
 std::string DefaultValue(const FieldDescriptor* field, bool immutable,
@@ -313,8 +315,8 @@ bool IsReferenceType(JavaType type);
 
 // Returns the capitalized name for calling relative functions in
 // CodedInputStream
-const char* GetCapitalizedType(const FieldDescriptor* field, bool immutable,
-                               Options options);
+absl::string_view GetCapitalizedType(const FieldDescriptor* field,
+                                     bool immutable, Options options);
 
 // For encodings with fixed sizes, returns that size in bytes.  Otherwise
 // returns -1.
@@ -353,45 +355,28 @@ inline bool HasPackedFields(const Descriptor* descriptor) {
 // them has a required field. Return true if a required field is found.
 bool HasRequiredFields(const Descriptor* descriptor);
 
-inline bool IsProto2(const FileDescriptor* descriptor) {
-  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
-}
-
-inline bool IsRealOneof(const FieldDescriptor* descriptor) {
-  return descriptor->containing_oneof() &&
-         !descriptor->containing_oneof()->is_synthetic();
-}
-
-inline bool HasHazzer(const FieldDescriptor* descriptor) {
-  return !descriptor->is_repeated() &&
-         (descriptor->message_type() || descriptor->has_optional_keyword() ||
-          IsProto2(descriptor->file()) || IsRealOneof(descriptor));
-}
+bool IsRealOneof(const FieldDescriptor* descriptor);
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
-  // Note that currently message fields inside oneofs have hasbits. This is
-  // surprising, as the oneof case should avoid any need for a hasbit. But if
-  // you change this method to remove hasbits for oneofs, a few tests fail.
-  // TODO(b/124347790): remove hasbits for oneofs
-  return !descriptor->is_repeated() &&
-         (descriptor->has_optional_keyword() || IsProto2(descriptor->file()));
+  // TODO(b/241441075) Replace this with internal::cpp::HasHasbit once Elysium
+  // unblocks this change.
+  return (FieldDescriptorLegacy(descriptor).has_optional_keyword() ||
+          descriptor->is_required()) &&
+         !descriptor->options().weak();
 }
 
 // Whether generate classes expose public PARSER instances.
 inline bool ExposePublicParser(const FileDescriptor* descriptor) {
   // TODO(liujisi): Mark the PARSER private in 3.1.x releases.
-  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
+  return FileDescriptorLegacy(descriptor).syntax() ==
+         FileDescriptorLegacy::Syntax::SYNTAX_PROTO2;
 }
 
 // Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
 // but in the message and can be queried using additional getters that return
 // ints.
-inline bool SupportUnknownEnumValue(const FileDescriptor* descriptor) {
-  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
-
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+  return !field->legacy_enum_field_treated_as_closed();
 }
 
 // Check whether a message has repeated fields.
@@ -414,7 +399,7 @@ inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
 }
 
 inline bool CheckUtf8(const FieldDescriptor* descriptor) {
-  return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
+  return descriptor->requires_utf8_validation() ||
          descriptor->file()->options().java_string_check_utf8();
 }
 
@@ -447,6 +432,11 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field);
 // and the first field number that are not in the table part
 std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
     const FieldDescriptor** fields, int count);
+
+const FieldDescriptor* MapKeyField(const FieldDescriptor* descriptor);
+
+const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor);
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

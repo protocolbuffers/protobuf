@@ -11,7 +11,7 @@ load(
 )
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 proto_library(
     name = "plugin_proto",
@@ -20,6 +20,7 @@ proto_library(
         "//:__pkg__",
         "//pkg:__pkg__",
     ],
+    strip_import_prefix = "/src",
     deps = ["//:descriptor_proto"],
 )
 
@@ -38,6 +39,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -61,6 +64,8 @@ cc_library(
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
     ],
@@ -84,8 +89,13 @@ cc_library(
     deps = [
         ":code_generator",
         ":importer",
+        ":retention",
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler/allowlists",
         "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
     ],
@@ -109,13 +119,15 @@ cc_library(
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
+        "//src/google/protobuf/compiler/rust",
+        "@com_google_absl//absl/log:initialize",
     ],
 )
 
 cc_binary(
     name = "protoc_nowkt",
     copts = COPTS,
-    linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
+    linkopts = LINK_OPTS,
     visibility = [
         "//src/google/protobuf:__pkg__",
     ],
@@ -192,9 +204,18 @@ filegroup(
     ],
 )
 
+filegroup(
+    name = "plugin_proto_src",
+    srcs = ["plugin.proto"],
+    visibility = ["@upb//:__subpackages__"],
+)
+
 exports_files(
     srcs = ["plugin.proto"],
-    visibility = ["//:__pkg__"],
+    visibility = [
+        "//:__pkg__",
+        "//python:__pkg__",
+    ],
 )
 
 cc_library(
@@ -241,6 +262,7 @@ cc_test(
     data = [
         ":test_plugin",
         "//:test_proto_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//src/google/protobuf:testdata",
     ],
     deps = [
@@ -289,11 +311,39 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler:retention",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "retention",
+    srcs = ["retention.cc"],
+    hdrs = ["retention.h"],
+    include_prefix = "google/protobuf/compiler",
+    visibility = ["//src/google/protobuf:__subpackages__"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/types:span",
+        "@com_google_absl//absl/container:flat_hash_set",
+    ],
+)
+
+
+cc_test(
+    name = "retention_unittest",
+    srcs = ["retention_unittest.cc"],
+    deps = [
+        ":importer",
+        ":retention",
+        "//src/google/protobuf/io",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_absl//absl/log:die_if_null",
     ],
 )
 
@@ -349,10 +399,13 @@ pkg_files(
 
 filegroup(
     name = "test_srcs",
-    srcs = glob([
-        "*_test.cc",
-        "*unittest.cc",
-    ]) + [
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ) + [
         "//src/google/protobuf/compiler/cpp:test_srcs",
         "//src/google/protobuf/compiler/csharp:test_srcs",
         "//src/google/protobuf/compiler/java:test_srcs",

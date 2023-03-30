@@ -38,11 +38,7 @@ import java.util.RandomAccess;
 final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements RandomAccess {
 
   private static final ProtobufArrayList<Object> EMPTY_LIST =
-      new ProtobufArrayList<Object>(new Object[0], 0);
-
-  static {
-    EMPTY_LIST.makeImmutable();
-  }
+      new ProtobufArrayList<Object>(new Object[0], 0, false);
 
   @SuppressWarnings("unchecked") // Guaranteed safe by runtime.
   public static <E> ProtobufArrayList<E> emptyList() {
@@ -54,10 +50,11 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
 
   @SuppressWarnings("unchecked")
   ProtobufArrayList() {
-    this((E[]) new Object[DEFAULT_CAPACITY], 0);
+    this((E[]) new Object[DEFAULT_CAPACITY], 0, true);
   }
 
-  private ProtobufArrayList(E[] array, int size) {
+  private ProtobufArrayList(E[] array, int size, boolean isMutable) {
+    super(isMutable);
     this.array = array;
     this.size = size;
   }
@@ -70,7 +67,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
 
     E[] newArray = Arrays.copyOf(array, capacity);
 
-    return new ProtobufArrayList<E>(newArray, size);
+    return new ProtobufArrayList<E>(newArray, size, true);
   }
 
   @Override
