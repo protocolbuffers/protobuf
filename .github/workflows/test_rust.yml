@@ -26,4 +26,4 @@ jobs:
           bazel: |
             test //rust:protobuf_test //rust/cpp_kernel:cpp_test \
               //rust/test/rust_proto_library_unit_test:rust_upb_aspect_test \
-              //rust/upb_kernel:upb_test
+              //rust/upb_kernel:upb_test //src/google/protobuf/compiler/rust/...
