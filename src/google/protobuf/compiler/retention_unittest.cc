@@ -46,8 +46,10 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/text_format.h"
 
+
 namespace google {
 namespace protobuf {
+namespace compiler {
 namespace {
 
 MATCHER_P(EqualsProto, msg, "") {
@@ -95,7 +97,7 @@ class RetentionStripTest : public testing::Test {
                                       static_cast<int>(proto_file.size()));
     FakeErrorCollector error_collector;
     io::Tokenizer tokenizer(&input_stream, &error_collector);
-    compiler::Parser parser;
+    Parser parser;
     parser.RecordErrorsTo(&error_collector);
     FileDescriptorProto file_descriptor;
     ABSL_CHECK(parser.Parse(&tokenizer, &file_descriptor));
@@ -169,12 +171,11 @@ TEST_F(RetentionStripTest, StripSourceRetentionFileOptions) {
         }
         [google.protobuf.internal.repeated_options] { i2: 222 })pb");
 
-  FileDescriptorProto stripped_file =
-      compiler::StripSourceRetentionOptions(*file);
+  FileDescriptorProto stripped_file = StripSourceRetentionOptions(*file);
 
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*file).options(),
+  EXPECT_THAT(StripSourceRetentionOptions(*file).options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripLocalSourceRetentionOptions(*file),
+  EXPECT_THAT(StripLocalSourceRetentionOptions(*file),
               EqualsProto(expected_options));
 }
 
@@ -220,12 +221,11 @@ TEST_F(RetentionStripTest, StripSourceRetentionMessageOptions) {
   const Descriptor* message =
       ABSL_DIE_IF_NULL(file->FindMessageTypeByName("TestMessage"));
 
-  EXPECT_THAT(
-      compiler::StripSourceRetentionOptions(*file).message_type(0).options(),
-      EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*message).options(),
+  EXPECT_THAT(StripSourceRetentionOptions(*file).message_type(0).options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripLocalSourceRetentionOptions(*message),
+  EXPECT_THAT(StripSourceRetentionOptions(*message).options(),
+              EqualsProto(expected_options));
+  EXPECT_THAT(StripLocalSourceRetentionOptions(*message),
               EqualsProto(expected_options));
 }
 
@@ -272,12 +272,11 @@ TEST_F(RetentionStripTest, StripSourceRetentionEnumOptions) {
   const EnumDescriptor* enm =
       ABSL_DIE_IF_NULL(file->FindEnumTypeByName("TestEnum"));
 
-  EXPECT_THAT(
-      compiler::StripSourceRetentionOptions(*file).enum_type(0).options(),
-      EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*enm).options(),
+  EXPECT_THAT(StripSourceRetentionOptions(*file).enum_type(0).options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripLocalSourceRetentionOptions(*enm),
+  EXPECT_THAT(StripSourceRetentionOptions(*enm).options(),
+              EqualsProto(expected_options));
+  EXPECT_THAT(StripLocalSourceRetentionOptions(*enm),
               EqualsProto(expected_options));
 }
 
@@ -322,14 +321,12 @@ TEST_F(RetentionStripTest, StripSourceRetentionEnumValueOptions) {
       ABSL_DIE_IF_NULL(file->FindEnumTypeByName("TestEnum"));
   const EnumValueDescriptor* value = ABSL_DIE_IF_NULL(enm->value(0));
 
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*file)
-                  .enum_type(0)
-                  .value(0)
-                  .options(),
+  EXPECT_THAT(
+      StripSourceRetentionOptions(*file).enum_type(0).value(0).options(),
+      EqualsProto(expected_options));
+  EXPECT_THAT(StripSourceRetentionOptions(*enm).value(0).options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*enm).value(0).options(),
-              EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripLocalSourceRetentionOptions(*value),
+  EXPECT_THAT(StripLocalSourceRetentionOptions(*value),
               EqualsProto(expected_options));
 }
 
@@ -375,17 +372,14 @@ TEST_F(RetentionStripTest, StripSourceRetentionFieldOptions) {
   const FieldDescriptor* field =
       ABSL_DIE_IF_NULL(message->FindFieldByName("test_field"));
 
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*file)
-                  .message_type(0)
-                  .field(0)
-                  .options(),
-              EqualsProto(expected_options));
   EXPECT_THAT(
-      compiler::StripSourceRetentionOptions(*message).field(0).options(),
+      StripSourceRetentionOptions(*file).message_type(0).field(0).options(),
       EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*field).options(),
+  EXPECT_THAT(StripSourceRetentionOptions(*message).field(0).options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripLocalSourceRetentionOptions(*field),
+  EXPECT_THAT(StripSourceRetentionOptions(*field).options(),
+              EqualsProto(expected_options));
+  EXPECT_THAT(StripLocalSourceRetentionOptions(*field),
               EqualsProto(expected_options));
 }
 
@@ -433,12 +427,11 @@ TEST_F(RetentionStripTest, StripSourceRetentionExtensionOptions) {
   const FieldDescriptor* field =
       ABSL_DIE_IF_NULL(file->FindExtensionByName("test_field"));
 
-  EXPECT_THAT(
-      compiler::StripSourceRetentionOptions(*file).extension(0).options(),
-      EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*field).options(),
+  EXPECT_THAT(StripSourceRetentionOptions(*file).extension(0).options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripLocalSourceRetentionOptions(*field),
+  EXPECT_THAT(StripSourceRetentionOptions(*field).options(),
+              EqualsProto(expected_options));
+  EXPECT_THAT(StripLocalSourceRetentionOptions(*field),
               EqualsProto(expected_options));
 }
 
@@ -490,17 +483,16 @@ TEST_F(RetentionStripTest, StripSourceRetentionOneofOptions) {
   const OneofDescriptor* oneof =
       ABSL_DIE_IF_NULL(message->FindOneofByName("test_oneof"));
 
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*file)
+  EXPECT_THAT(StripSourceRetentionOptions(*file)
                   .message_type(0)
                   .oneof_decl(0)
                   .options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(
-      compiler::StripSourceRetentionOptions(*message).oneof_decl(0).options(),
-      EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*oneof).options(),
+  EXPECT_THAT(StripSourceRetentionOptions(*message).oneof_decl(0).options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripLocalSourceRetentionOptions(*oneof),
+  EXPECT_THAT(StripSourceRetentionOptions(*oneof).options(),
+              EqualsProto(expected_options));
+  EXPECT_THAT(StripLocalSourceRetentionOptions(*oneof),
               EqualsProto(expected_options));
 }
 
@@ -547,21 +539,22 @@ TEST_F(RetentionStripTest, StripSourceRetentionExtensionRangeOptions) {
   const Descriptor::ExtensionRange* range =
       ABSL_DIE_IF_NULL(message->FindExtensionRangeContainingNumber(2));
 
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*file)
+  EXPECT_THAT(StripSourceRetentionOptions(*file)
                   .message_type(0)
                   .extension_range(0)
                   .options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*message)
-                  .extension_range(0)
-                  .options(),
+  EXPECT_THAT(
+      StripSourceRetentionOptions(*message).extension_range(0).options(),
+      EqualsProto(expected_options));
+  EXPECT_THAT(StripSourceRetentionOptions(*message, *range).options(),
               EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripSourceRetentionOptions(*message, *range).options(),
-              EqualsProto(expected_options));
-  EXPECT_THAT(compiler::StripLocalSourceRetentionOptions(*message, *range),
+  EXPECT_THAT(StripLocalSourceRetentionOptions(*message, *range),
               EqualsProto(expected_options));
 }
 
+
 }  // namespace
+}  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
