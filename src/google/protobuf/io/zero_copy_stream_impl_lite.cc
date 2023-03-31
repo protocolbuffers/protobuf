@@ -164,8 +164,16 @@ bool StringOutputStream::Next(void** data, int* size) {
       std::max(new_size,
                kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
 
+  // String resizing may be aligned, so increase the string size to match
+  // capacity after the resize.
+  const size_t extra = target_->capacity() - target_->size();
+  if (extra > 0) {
+    target_->append(extra, 0);
+  }
+
   *data = mutable_string_data(target_) + old_size;
-  *size = target_->size() - old_size;
+  *size = std::min(target_->size() - old_size,
+                   static_cast<size_t>(std::numeric_limits<int>::max()));
   return true;
 }
 
