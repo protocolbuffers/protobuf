@@ -40,3 +40,15 @@ pub extern crate upb as __runtime;
 
 pub use __runtime::Arena;
 pub use __runtime::SerializedData;
+
+use std::fmt;
+
+/// Represents error during deserialization.
+#[derive(Debug, Clone)]
+pub struct ParseError;
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Couldn't deserialize given bytes into a proto")
+    }
+}

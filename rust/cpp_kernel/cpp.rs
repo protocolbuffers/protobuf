@@ -73,6 +73,12 @@ pub struct SerializedData {
 // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/cpp_api.
 // h) copybara:strip_end
 
+impl SerializedData {
+    pub unsafe fn from_raw_parts(data: NonNull<u8>, len: usize) -> Self {
+        Self { data, len }
+    }
+}
+
 impl Deref for SerializedData {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
