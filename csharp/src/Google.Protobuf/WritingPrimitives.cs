@@ -50,7 +50,7 @@ namespace Google.Protobuf
     [SecuritySafeCritical]
     internal static class WritingPrimitives
     {
-#if NET5_0
+#if NET5_0_OR_GREATER
         internal static Encoding Utf8Encoding => Encoding.UTF8; // allows JIT to devirtualize
 #else
         internal static readonly Encoding Utf8Encoding = Encoding.UTF8; // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a difference.)
