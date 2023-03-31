@@ -1,26 +1,40 @@
-load("//rust:defs.bzl", "rust_proto_library")
-load("@rules_rust//rust:defs.bzl", "rust_test")
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load(
+    "//rust:defs.bzl",
+    "rust_cc_proto_library",
+    "rust_proto_library",
+    "rust_upb_proto_library",
+)
+
+UNITTEST_PROTO_TARGET = (
+    "//src/google/protobuf:test_protos"
+)
 
 rust_proto_library(
     name = "unittest_rust_proto",
     testonly = True,
-    deps = [
-        "//src/google/protobuf:test_protos",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [UNITTEST_PROTO_TARGET],
 )
 
-rust_test(
-    name = "unittest_proto_test",
-    srcs = ["unittest_proto_test.rs"],
-    # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-    tags = [
-        "not_build:arm",
-        # TODO(b/225892643): Enable once we use Blaze-bootstrapped Rust toolchain.
-        "notsan",
-        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
-        "nomsan",
+rust_upb_proto_library(
+    name = "unittest_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
     ],
-    deps = [":unittest_rust_proto"],
+    deps = [UNITTEST_PROTO_TARGET],
+)
+
+rust_cc_proto_library(
+    name = "unittest_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/cpp:__subpackages__",
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":unittest_cc_proto"],
 )
 
 proto_library(
@@ -30,34 +44,60 @@ proto_library(
 
 proto_library(
     name = "child_proto",
+    testonly = True,
     srcs = ["child.proto"],
     exports = [":parent_proto"],
     deps = [":parent_proto"],
 )
 
-rust_proto_library(
-    name = "parent_rust_proto",
+rust_upb_proto_library(
+    name = "parent_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
+    ],
     deps = [":parent_proto"],
 )
 
-rust_proto_library(
-    name = "child_rust_proto",
+rust_upb_proto_library(
+    name = "child_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
+    ],
     deps = [":child_proto"],
 )
 
-rust_test(
-    name = "child_parent_test",
-    srcs = ["child_parent_test.rs"],
-    # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-    tags = [
-        "not_build:arm",
-        # TODO(b/225892643): Enable once we use Blaze-bootstrapped Rust toolchain.
-        "notsan",
-        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
-        "nomsan",
+cc_proto_library(
+    name = "parent_cc_proto",
+    testonly = True,
+    deps = [":parent_proto"],
+)
+
+cc_proto_library(
+    name = "child_cc_proto",
+    testonly = True,
+    deps = [":child_proto"],
+)
+
+rust_cc_proto_library(
+    name = "parent_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/cpp:__subpackages__",
+        "//rust/test/shared:__subpackages__",
     ],
-    deps = [
-        ":child_rust_proto",
-        ":parent_rust_proto",
+    deps = [":parent_cc_proto"],
+)
+
+rust_cc_proto_library(
+    name = "child_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/cpp:__subpackages__",
+        "//rust/test/shared:__subpackages__",
     ],
+    deps = [":child_cc_proto"],
 )

@@ -29,62 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //! Rust Protobuf Runtime
+//!
+//! This file forwards to the kernel specific implementation. Rust Protobuf
+//! gencode actually depends directly on kernel specific crates. The only reason
+//! this crate exists is to be able to use `protobuf` as a crate name for both
+//! cpp and upb kernels from user code.
 
 #[cfg(cpp_kernel)]
-pub extern crate cpp as __runtime;
+pub use protobuf_cpp::__runtime;
+#[cfg(cpp_kernel)]
+pub use protobuf_cpp::*;
+
 #[cfg(upb_kernel)]
-pub extern crate upb as __runtime;
-
-pub use __runtime::Arena;
-
-use std::ops::Deref;
-use std::ptr::NonNull;
-use std::slice;
-
-/// Represents serialized Protobuf wire format data. It's typically produced by
-/// `<Message>.serialize()`.
-pub struct SerializedData {
-    data: NonNull<u8>,
-    len: usize,
-    arena: *mut Arena,
-}
-
-impl SerializedData {
-    pub unsafe fn from_raw_parts(arena: *mut Arena, data: NonNull<u8>, len: usize) -> Self {
-        SerializedData { arena, data, len }
-    }
-}
-
-impl Deref for SerializedData {
-    type Target = [u8];
-    fn deref(&self) -> &Self::Target {
-        unsafe { slice::from_raw_parts(self.data.as_ptr() as *const _, self.len) }
-    }
-}
-
-impl Drop for SerializedData {
-    fn drop(&mut self) {
-        unsafe { Arena::free(self.arena) };
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_serialized_data_roundtrip() {
-        let arena = unsafe { Arena::new() };
-        let original_data = b"Hello world";
-        let len = original_data.len();
-
-        let serialized_data = unsafe {
-            SerializedData::from_raw_parts(
-                arena,
-                NonNull::new(original_data as *const _ as *mut _).unwrap(),
-                len,
-            )
-        };
-        assert_eq!(&*serialized_data, b"Hello world");
-    }
-}
+pub use protobuf_upb::__runtime;
+#[cfg(upb_kernel)]
+pub use protobuf_upb::*;

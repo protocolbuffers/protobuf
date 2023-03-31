@@ -11,29 +11,56 @@ package(
 
 rust_library(
     name = "protobuf",
-    srcs = ["lib.rs"],
+    srcs = ["protobuf.rs"],
     rustc_flags = select({
         ":use_upb_kernel": ["--cfg=upb_kernel"],
         "//conditions:default": ["--cfg=cpp_kernel"],
     }),
     deps = select({
-        ":use_upb_kernel": ["//rust/upb_kernel:upb"],
-        "//conditions:default": ["//rust/cpp_kernel:cpp"],
+        ":use_upb_kernel": [":protobuf_upb"],
+        "//conditions:default": [":protobuf_cpp"],
     }),
 )
 
+rust_library(
+    name = "protobuf_upb",
+    srcs = ["shared.rs"],
+    rustc_flags = ["--cfg=upb_kernel"],
+    deps = ["//rust/upb_kernel:upb"],
+)
+
 rust_test(
-    name = "protobuf_test",
-    crate = ":protobuf",
-    rustc_flags = select({
-        ":use_upb_kernel": ["--cfg=upb_kernel"],
-        "//conditions:default": ["--cfg=cpp_kernel"],
-    }),
+    name = "protobuf_upb_test",
+    crate = ":protobuf_upb",
+    rustc_flags = ["--cfg=upb_kernel"],
     tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+        # TODO(b/243126140): Enable tsan once we support sanitizers with Rust.
+        "notsan",
         # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
         "nomsan",
+    ],
+)
+
+rust_library(
+    name = "protobuf_cpp",
+    srcs = ["shared.rs"],
+    rustc_flags = ["--cfg=cpp_kernel"],
+    deps = ["//rust/cpp_kernel:cpp"],
+)
+
+rust_test(
+    name = "protobuf_cpp_test",
+    crate = ":protobuf_cpp",
+    rustc_flags = ["--cfg=cpp_kernel"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
         "not_build:arm",
+        # TODO(b/243126140): Enable tsan once we support sanitizers with Rust.
         "notsan",
+        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
+        "nomsan",
     ],
 )
 
@@ -42,7 +69,7 @@ proto_lang_toolchain(
     name = "proto_rust_upb_toolchain",
     command_line = "--rust_out=experimental-codegen=enabled,kernel=upb:$(OUT)",
     progress_message = "Generating Rust proto_library %{label}",
-    runtime = ":protobuf",
+    runtime = ":protobuf_upb",
     visibility = ["//visibility:public"],
 )
 
@@ -50,7 +77,7 @@ proto_lang_toolchain(
     name = "proto_rust_cpp_toolchain",
     command_line = "--rust_out=experimental-codegen=enabled,kernel=cpp:$(OUT)",
     progress_message = "Generating Rust proto_library %{label}",
-    runtime = ":protobuf",
+    runtime = ":protobuf_cpp",
     visibility = ["//visibility:public"],
 )
 
