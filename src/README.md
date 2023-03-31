@@ -19,6 +19,7 @@ To build protobuf from source, the following tools are needed:
   * bazel
   * git
   * g++
+  * Abseil
 
 On Ubuntu/Debian, for example, you can install them with:
 
@@ -27,17 +28,13 @@ On Ubuntu/Debian, for example, you can install them with:
 On other platforms, please use the corresponding package managing tool to
 install them before proceeding.  See https://bazel.build/install for further
 instructions on installing Bazel, or to build from source using CMake, see
-[cmake/README.md](../cmake/README.md).
+[cmake/README.md](../cmake/README.md). See https://github.com/abseil/abseil-cpp
+for instructions on installing Abseil.
 
 To get the source, download the release .tar.gz or .zip package in the
 release page:
 
     https://github.com/protocolbuffers/protobuf/releases/latest
-
-For example: if you only need C++, download `protobuf-cpp-[VERSION].tar.gz`; if
-you need C++ and Java, download `protobuf-java-[VERSION].tar.gz` (every package
-contains C++ source already); if you need C++ and multiple other languages,
-download `protobuf-all-[VERSION].tar.gz`.
 
 You can also get the source by "git clone" our git repository. Make sure you
 have also cloned the submodules and generated the configure script (skip this
