@@ -3167,14 +3167,9 @@ void Descriptor::DebugString(int depth, std::string* contents,
     if (extension_range(i)->options_ != nullptr) {
       if (extension_range(i)->options_->declaration_size() > 0) {
         absl::StrAppend(contents, " [");
-        for (int j = 0; j < extension_range(i)->options_->declaration_size();
-             ++j) {
-          if (j > 0) {
-            absl::StrAppend(contents, ",");
-          }
-          absl::SubstituteAndAppend(
-              contents, " declaration = { $0 }",
-              extension_range(i)->options_->declaration(j).ShortDebugString());
+        for (auto& decl : extension_range(i)->options_->declaration()) {
+          absl::SubstituteAndAppend(contents, " declaration = { $0 }",
+                                    decl.ShortDebugString());
         }
         absl::StrAppend(contents, " ] ");
       }
