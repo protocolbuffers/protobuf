@@ -73,7 +73,7 @@ inline_sh_test(
         pushd `dirname $(location src/Google.Protobuf.sln)`/..
         dotnet restore src/Google.Protobuf.sln
         dotnet build -c Release src/Google.Protobuf.sln
-        dotnet test -c Release -f netcoreapp3.1 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
+        dotnet test -c Release -f net6.0 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
         popd
     """,
 )

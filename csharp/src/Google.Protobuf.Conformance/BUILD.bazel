@@ -61,7 +61,7 @@ genrule(
         SRCDIR=$$(dirname $(location :Program.cs))
         cp $(location //conformance:conformance_csharp_proto) $$SRCDIR
         DOTNET_CLI_HOME=/tmp ./$(location :build_conformance_test)
-        cp -r $$SRCDIR/bin/Release/netcoreapp3.1/* $(RULEDIR)
+        cp -r $$SRCDIR/bin/Release/net6.0/* $(RULEDIR)
     """,
 )
 
