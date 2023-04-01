@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package google.protobuf;
 
+import "google/protobuf/any.proto";
+
 option go_package = "google.golang.org/protobuf/types/known/emptypb";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "EmptyProto";
@@ -48,4 +50,11 @@ option cc_enable_arenas = true;
 //       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
 //     }
 //
-message Empty {}
+// Sometimes it's desirable to provide a value with your proto which is usually
+// empty. In this case, simply fill in the optional `value` field with any proto
+// you like.
+message Empty {
+  // Anything you want. The application reading this value should ensure that it
+  // is of an expected type, once deserialized.
+  Any value = 1;
+}
