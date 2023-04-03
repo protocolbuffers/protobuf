@@ -992,6 +992,16 @@ class EncodeDecodeTest extends TestBase
                             $m->serializeToJsonString());
     }
 
+    public function testEncodeDecodeTimestampConsistency()
+    {
+        $m = new Google\Protobuf\Timestamp();
+        $m->setSeconds(946684800);
+        $m->setNanos(123000000);
+        $m->mergeFromJsonString($m->serializeToJsonString());
+        $this->assertEquals(946684800, $m->getSeconds());
+        $this->assertEquals(123000000, $m->getNanos());
+    }
+
     public function testDecodeTopLevelValue()
     {
         $m = new Value();
