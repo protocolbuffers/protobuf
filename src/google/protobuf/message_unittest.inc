@@ -199,6 +199,19 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
     EXPECT_FALSE(
         message.ParseFromBoundedZeroCopyStream(&stream, data.size() + 1));
   }
+
+  // Test bytes cord
+  {
+    UNITTEST::TestCord cord_message;
+    cord_message.set_optional_bytes_cord("bytes_cord");
+    EXPECT_TRUE(cord_message.SerializeToString(&data));
+    EXPECT_TRUE(cord_message.SerializeAsString() == data);
+  }
+  {
+    UNITTEST::TestCord cord_message;
+    EXPECT_TRUE(cord_message.ParseFromString(data));
+    EXPECT_EQ("bytes_cord", cord_message.optional_bytes_cord());
+  }
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
@@ -596,6 +609,33 @@ TEST(MESSAGE_TEST_NAME, AllAddMethodsOnRepeatedStringField) {
   msg.clear_repeated_string();
 }
 
+// Helper functions to touch any nested lazy field
+void TouchLazy(UNITTEST::NestedTestAllTypes* msg);
+void TouchLazy(UNITTEST::TestAllTypes* msg);
+void TouchLazy(UNITTEST::TestAllTypes::NestedMessage* msg) {}
+
+void TouchLazy(UNITTEST::TestAllTypes* msg) {
+  if (msg->has_optional_lazy_message()) {
+    TouchLazy(msg->mutable_optional_lazy_message());
+  }
+  if (msg->has_optional_unverified_lazy_message()) {
+    TouchLazy(msg->mutable_optional_unverified_lazy_message());
+  }
+  for (auto& child : *msg->mutable_repeated_lazy_message()) {
+    TouchLazy(&child);
+  }
+}
+
+void TouchLazy(UNITTEST::NestedTestAllTypes* msg) {
+  if (msg->has_child()) TouchLazy(msg->mutable_child());
+  if (msg->has_payload()) TouchLazy(msg->mutable_payload());
+  for (auto& child : *msg->mutable_repeated_child()) {
+    TouchLazy(&child);
+  }
+  if (msg->has_lazy_child()) TouchLazy(msg->mutable_lazy_child());
+  if (msg->has_eager_child()) TouchLazy(msg->mutable_eager_child());
+}
+
 TEST(MESSAGE_TEST_NAME, SuccessAfterParsingFailure) {
   UNITTEST::NestedTestAllTypes o, p, q;
   constexpr int kDepth = 5;
@@ -610,7 +650,10 @@ TEST(MESSAGE_TEST_NAME, SuccessAfterParsingFailure) {
   serialized[serialized.size() - 1] = 0xFF;
   EXPECT_FALSE(p.ParseFromString(serialized));
 
-  // Subsequent serialization should be parsed correctly.
+  // If the affected byte is inside a lazy message, we have no guarantee that it
+  // serializes into error free data because serialization needs to preserve
+  // const correctness on lazy fields: `touch` all lazy fields.
+  TouchLazy(&p);
   EXPECT_TRUE(q.ParseFromString(p.SerializeAsString()));
 }
 

@@ -30,6 +30,8 @@ rust_test(
         "//conditions:default": ["--cfg=cpp_kernel"],
     }),
     tags = [
+        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
+        "nomsan",
         "not_build:arm",
         "notsan",
     ],
