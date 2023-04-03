@@ -128,12 +128,7 @@ public class ExtensionRegistryLite {
     }
     ExtensionRegistryLite result = emptyRegistry;
     if (result == null) {
-      synchronized (ExtensionRegistryLite.class) {
-        result = emptyRegistry;
-        if (result == null) {
-          result = emptyRegistry = ExtensionRegistryFactory.createEmpty();
-        }
-      }
+      result = emptyRegistry = ExtensionRegistryFactory.createEmpty();
     }
     return result;
   }
