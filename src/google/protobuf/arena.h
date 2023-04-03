@@ -246,7 +246,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T, typename... Args>
   PROTOBUF_ALWAYS_INLINE static T* CreateMessage(Arena* arena, Args&&... args) {
     static_assert(
-        InternalHelper<T>::is_arena_constructable::value,
+        is_arena_constructable<T>::value,
         "CreateMessage can only construct types that are ArenaConstructable");
     // We must delegate to CreateMaybeMessage() and NOT CreateMessageInternal()
     // because protobuf generated classes specialize CreateMaybeMessage() and we
@@ -539,7 +539,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   PROTOBUF_NDEBUG_INLINE static T* CreateMessageInternal(Arena* arena,
                                                          Args&&... args) {
     static_assert(
-        InternalHelper<T>::is_arena_constructable::value,
+        is_arena_constructable<T>::value,
         "CreateMessage can only construct types that are ArenaConstructable");
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return new T(nullptr, static_cast<Args&&>(args)...);
@@ -554,7 +554,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   PROTOBUF_NDEBUG_INLINE static T* CreateMessageInternal(Arena* arena) {
     static_assert(
-        InternalHelper<T>::is_arena_constructable::value,
+        is_arena_constructable<T>::value,
         "CreateMessage can only construct types that are ArenaConstructable");
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       // Generated arena constructor T(Arena*) is protected. Call via
@@ -613,13 +613,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // which needs to declare Map as friend of generated message.
   template <typename T, typename... Args>
   static void CreateInArenaStorage(T* ptr, Arena* arena, Args&&... args) {
-    CreateInArenaStorageInternal(ptr, arena,
-                                 typename is_arena_constructable<T>::type(),
+    CreateInArenaStorageInternal(ptr, arena, is_arena_constructable<T>(),
                                  std::forward<Args>(args)...);
     if (PROTOBUF_PREDICT_TRUE(arena != nullptr)) {
-      RegisterDestructorInternal(
-          ptr, arena,
-          typename InternalHelper<T>::is_destructor_skippable::type());
+      RegisterDestructorInternal(ptr, arena, is_destructor_skippable<T>());
     }
   }
 
