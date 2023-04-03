@@ -30,6 +30,7 @@
 
 #include "google/protobuf/compiler/rust/upb_kernel.h"
 
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
