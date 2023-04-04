@@ -53,3 +53,15 @@ fn test_optional_bool_accessors() {
     msg.optional_bool_set(None);
     assert_eq!(msg.optional_bool(), None);
 }
+
+#[test]
+fn test_optional_bytes_accessors() {
+    let mut msg = unittest_proto::TestAllTypes::new();
+    assert_eq!(msg.optional_bytes(), None);
+
+    msg.optional_bytes_set(Some(b"accessors_test"));
+    assert_eq!(msg.optional_bytes().unwrap(), b"accessors_test");
+
+    msg.optional_bytes_set(None);
+    assert_eq!(msg.optional_bytes(), None);
+}
