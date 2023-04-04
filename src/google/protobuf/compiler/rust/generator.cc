@@ -173,6 +173,17 @@ void GenerateForCpp(const FileDescriptor* file, google::protobuf::io::Printer& p
   }
 }
 
+std::string GetKernelRustName(Kernel kernel) {
+  switch (kernel) {
+    case Kernel::kUpb:
+      return "upb";
+    case Kernel::kCpp:
+      return "cpp";
+  }
+  ABSL_LOG(FATAL) << "Unknown kernel type: ";
+  return "";
+}
+
 bool RustGenerator::Generate(const FileDescriptor* file,
                              const std::string& parameter,
                              GeneratorContext* generator_context,
@@ -201,8 +212,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       absl::StrCat(basename, GetFileExtensionForKernel(*kernel))));
 
   google::protobuf::io::Printer p(outfile.get());
-  p.Emit(R"rs(
-    extern crate protobuf as __pb;
+  p.Emit({{"kernel", GetKernelRustName(*kernel)}}, R"rs(
+    extern crate protobuf_$kernel$ as __pb;
     extern crate std as __std;
 
   )rs");

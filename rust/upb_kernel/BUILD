@@ -5,7 +5,10 @@ load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 rust_library(
     name = "upb",
     srcs = ["upb.rs"],
-    visibility = ["//src/google/protobuf:__subpackages__"],
+    visibility = [
+        "//src/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
+    ],
     deps = [":upb_c_api"],
 )
 
