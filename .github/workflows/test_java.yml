@@ -55,14 +55,16 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Build protoc
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        id: build-protoc
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
         with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: java_linux_linkage
-          bash: |
-            $BAZEL build //:protoc $BAZEL_FLAGS
-            # The java build setup expects protoc in the root directory.
-            cp bazel-bin/protoc .
+          architecture: linux-x86_64
+      - name: Move protoc into place and clean up
+        run: |
+          mv ${{ steps.build-protoc.outputs.protoc }} protoc
+          sudo rm -rf _build
       - name: Install snapshot version locally
         run: |
           cd java
