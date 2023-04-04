@@ -148,7 +148,7 @@ message ExtensionRangeOptions {
 
     // If true, indicates that the extension must be defined as repeated.
     // Otherwise the extension must be defined as optional.
-    optional bool is_repeated = 4;
+    optional bool repeated = 4;
   }
 
   // go/protobuf-stripping-extension-declarations

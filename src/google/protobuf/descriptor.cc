@@ -7221,7 +7221,7 @@ void DescriptorBuilder::ValidateFieldOptions(
     for (const auto& declaration : extension_range->options_->declaration()) {
       if (declaration.number() != field->number()) continue;
       CheckExtensionDeclaration(*field, proto, declaration.full_name(),
-                                declaration.type(), declaration.is_repeated());
+                                declaration.type(), declaration.repeated());
       return;
     }
 

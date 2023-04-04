@@ -1906,7 +1906,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     kFullNameFieldNumber = 2,
     kTypeFieldNumber = 3,
     kNumberFieldNumber = 1,
-    kIsRepeatedFieldNumber = 4,
+    kRepeatedFieldNumber = 4,
   };
   // optional string full_name = 2;
   bool has_full_name() const;
@@ -1961,15 +1961,15 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   void _internal_set_number(::int32_t value);
 
   public:
-  // optional bool is_repeated = 4;
-  bool has_is_repeated() const;
-  void clear_is_repeated() ;
-  bool is_repeated() const;
-  void set_is_repeated(bool value);
+  // optional bool repeated = 4;
+  bool has_repeated() const;
+  void clear_repeated() ;
+  bool repeated() const;
+  void set_repeated(bool value);
 
   private:
-  bool _internal_is_repeated() const;
-  void _internal_set_is_repeated(bool value);
+  bool _internal_repeated() const;
+  void _internal_set_repeated(bool value);
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions.Declaration)
@@ -1985,7 +1985,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr full_name_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr type_;
     ::int32_t number_;
-    bool is_repeated_;
+    bool repeated_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -10293,29 +10293,29 @@ inline void ExtensionRangeOptions_Declaration::set_allocated_type(std::string* v
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.type)
 }
 
-// optional bool is_repeated = 4;
-inline bool ExtensionRangeOptions_Declaration::has_is_repeated() const {
+// optional bool repeated = 4;
+inline bool ExtensionRangeOptions_Declaration::has_repeated() const {
   bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
-inline void ExtensionRangeOptions_Declaration::clear_is_repeated() {
-  _impl_.is_repeated_ = false;
+inline void ExtensionRangeOptions_Declaration::clear_repeated() {
+  _impl_.repeated_ = false;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
-inline bool ExtensionRangeOptions_Declaration::is_repeated() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.is_repeated)
-  return _internal_is_repeated();
+inline bool ExtensionRangeOptions_Declaration::repeated() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.repeated)
+  return _internal_repeated();
 }
-inline void ExtensionRangeOptions_Declaration::set_is_repeated(bool value) {
-  _internal_set_is_repeated(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.is_repeated)
+inline void ExtensionRangeOptions_Declaration::set_repeated(bool value) {
+  _internal_set_repeated(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.repeated)
 }
-inline bool ExtensionRangeOptions_Declaration::_internal_is_repeated() const {
-  return _impl_.is_repeated_;
+inline bool ExtensionRangeOptions_Declaration::_internal_repeated() const {
+  return _impl_.repeated_;
 }
-inline void ExtensionRangeOptions_Declaration::_internal_set_is_repeated(bool value) {
+inline void ExtensionRangeOptions_Declaration::_internal_set_repeated(bool value) {
   _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.is_repeated_ = value;
+  _impl_.repeated_ = value;
 }
 
 // -------------------------------------------------------------------
