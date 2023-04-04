@@ -1275,7 +1275,9 @@ constexpr RepeatedPtrField<Element>::RepeatedPtrField()
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena)
     : RepeatedPtrFieldBase(arena) {
-  StaticValidityCheck();
+  // We can't have StaticValidityCheck here because that requires Element to be
+  // a complete type, and in split repeated fields cases, we call
+  // CreateMaybeMessage<RepeatedPtrField<T>> for incomplete Ts.
 }
 
 template <typename Element>

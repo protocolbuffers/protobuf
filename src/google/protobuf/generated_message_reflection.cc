@@ -2683,12 +2683,15 @@ bool Reflection::SupportsUnknownEnumValues() const {
 template <class Type>
 const Type& Reflection::GetRawNonOneof(const Message& message,
                                        const FieldDescriptor* field) const {
-  if (schema_.IsSplit(field)) {
-    return *GetConstPointerAtOffset<Type>(
-        GetSplitField(&message), schema_.GetFieldOffsetNonOneof(field));
+  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
+  if (!schema_.IsSplit(field)) {
+    return GetConstRefAtOffset<Type>(message, field_offset);
   }
-  return GetConstRefAtOffset<Type>(message,
-                                   schema_.GetFieldOffsetNonOneof(field));
+  const void* split = GetSplitField(&message);
+  if (SplitFieldHasExtraIndirection(field)) {
+    return **GetConstPointerAtOffset<Type*>(split, field_offset);
+  }
+  return *GetConstPointerAtOffset<Type>(split, field_offset);
 }
 
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
@@ -2705,26 +2708,56 @@ void Reflection::PrepareSplitMessageForWrite(Message* message) const {
 }
 
 template <class Type>
+static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
+                            Arena* arena) {
+  if (ptr == internal::DefaultRawPtr()) {
+    // Note: we can't rely on Type to distinguish between these cases (Type can
+    // be e.g. char).
+    if (field->cpp_type() < FieldDescriptor::CPPTYPE_STRING ||
+        (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD)) {
+      ptr = reinterpret_cast<Type*>(
+          Arena::CreateMessage<RepeatedField<int32_t>>(arena));
+    } else {
+      ptr = reinterpret_cast<Type*>(
+          Arena::CreateMessage<RepeatedPtrFieldBase>(arena));
+    }
+  }
+  return ptr;
+}
+
+template <class Type>
 Type* Reflection::MutableRawNonOneof(Message* message,
                                      const FieldDescriptor* field) const {
-  if (schema_.IsSplit(field)) {
-    PrepareSplitMessageForWrite(message);
-    return GetPointerAtOffset<Type>(*MutableSplitField(message),
-                                    schema_.GetFieldOffsetNonOneof(field));
+  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
+  if (!schema_.IsSplit(field)) {
+    return GetPointerAtOffset<Type>(message, field_offset);
   }
-  return GetPointerAtOffset<Type>(message,
-                                  schema_.GetFieldOffsetNonOneof(field));
+  PrepareSplitMessageForWrite(message);
+  void** split = MutableSplitField(message);
+  if (SplitFieldHasExtraIndirection(field)) {
+    return AllocIfDefault(field,
+                          *GetPointerAtOffset<Type*>(*split, field_offset),
+                          message->GetArenaForAllocation());
+  }
+  return GetPointerAtOffset<Type>(*split, field_offset);
 }
 
 template <typename Type>
 Type* Reflection::MutableRaw(Message* message,
                              const FieldDescriptor* field) const {
-  if (schema_.IsSplit(field)) {
-    PrepareSplitMessageForWrite(message);
-    return GetPointerAtOffset<Type>(*MutableSplitField(message),
-                                    schema_.GetFieldOffset(field));
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
+  if (!schema_.IsSplit(field)) {
+    return GetPointerAtOffset<Type>(message, field_offset);
   }
-  return GetPointerAtOffset<Type>(message, schema_.GetFieldOffset(field));
+  PrepareSplitMessageForWrite(message);
+  void** split = MutableSplitField(message);
+  if (SplitFieldHasExtraIndirection(field)) {
+    return AllocIfDefault(field,
+                          *GetPointerAtOffset<Type*>(*split, field_offset),
+                          message->GetArenaForAllocation());
+  }
+  return GetPointerAtOffset<Type>(*split, field_offset);
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {
@@ -3783,6 +3816,10 @@ bool IsDescendant(Message& root, const Message& message) {
   }
 
   return false;
+}
+
+bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
+  return field->is_repeated();
 }
 
 }  // namespace internal

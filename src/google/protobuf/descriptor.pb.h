@@ -10147,8 +10147,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutabl
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_public_dependency();
 }
-
-inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_public_dependency() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_public_dependency()
+    const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.public_dependency_;
 }
@@ -10189,8 +10189,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutabl
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_weak_dependency();
 }
-
-inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_weak_dependency() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_weak_dependency()
+    const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.weak_dependency_;
 }
@@ -17593,8 +17593,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mu
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_path();
 }
-
-inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_path() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_path()
+    const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.path_;
 }
@@ -17635,8 +17635,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mu
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_span();
 }
-
-inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_span() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_span()
+    const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.span_;
 }
@@ -17965,8 +17965,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotatio
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_path();
 }
-
-inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::_internal_path() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::_internal_path()
+    const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.path_;
 }
