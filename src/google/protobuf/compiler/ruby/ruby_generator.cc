@@ -270,7 +270,7 @@ bool GenerateBinaryDescriptor(const FileDescriptor* file, io::Printer* printer,
       "same file name.  This will "
       "become an error in the next major version. "
       "Original error: #{e}\"\n"
-      "end\n",
+      "end\n\n",
       "legacy_descriptor", absl::CHexEscape(SerializedDescriptor(file, true)));
   return true;
 }
