@@ -901,6 +901,13 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #undef PACKAGE
 #endif
 
+// a few common headers define this
+#ifdef PACKED
+#define PROTOBUF_DID_UNDEF_PACKED
+#pragma push_macro("PACKED")
+#undef PACKED
+#endif
+
 // linux is a legacy MACRO defined in most popular C++ standards.
 #ifdef linux
 #pragma push_macro("linux")

@@ -696,6 +696,7 @@ message FieldOptions {
 }
 
 message OneofOptions {
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
