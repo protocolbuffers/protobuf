@@ -107,27 +107,16 @@ WELL_KNOWN_TYPES = [
     "wrappers",
 ]
 
-# When we generate code for the well-known types, we put the resulting files in
-# wkt/google/protobuf and add ./wkt to the include paths below. This is a
-# somewhat strange setup but is necessary to satisfy these two constraints:
-# - We need to keep the checked-in sources for now, since Cocoapods relies on
-#   them.
-# - The Bazel build should always use the generated sources so that developers
-#   don't have to worry about manually updating the checked-in sources.
-genrule(
-    name = "gen_wkt_cc_sources",
-    srcs = [wkt + ".proto" for wkt in WELL_KNOWN_TYPES],
-    outs =
-        ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
-        ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
-    cmd = """
-        $(execpath //src/google/protobuf/compiler:protoc_nowkt) \
-            --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$(RULEDIR)/wkt \
-            --proto_path=$$(dirname $$(dirname $$(dirname $(location any.proto)))) \
-            $(SRCS)
-    """,
-    exec_tools = ["//src/google/protobuf/compiler:protoc_nowkt"],
+proto_library(
+    name = "wkt_proto",
     visibility = ["//visibility:private"],
+    deps = [wkt + "_proto" for wkt in WELL_KNOWN_TYPES],
+)
+
+cc_proto_library(
+    name = "wkt_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["wkt_proto"],
 )
 
 staleness_test(
@@ -137,17 +126,6 @@ staleness_test(
         [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
     generated_pattern = "wkt/google/protobuf/%s",
     tags = ["manual"],
-)
-
-cc_library(
-    name = "wkt_cc_proto",
-    srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
-    hdrs = ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
-    copts = COPTS,
-    includes = ["wkt"],
-    linkopts = LINK_OPTS,
-    visibility = ["//pkg:__pkg__"],
-    deps = [":protobuf_nowkt"],
 )
 
 # Built-in runtime types
@@ -466,6 +444,7 @@ cc_library(
     include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
     visibility = [
+        "//:__pkg__",
         "//pkg:__pkg__",
         "//src/google/protobuf:__subpackages__",
     ],
@@ -993,9 +972,11 @@ cc_test(
         ":cc_test_protos",
         ":protobuf",
         ":test_util",
+        ":test_util2",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/util:differencer",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -1115,6 +1096,9 @@ cc_test(
         ":cc_test_protos",
         ":protobuf",
         ":test_util",
+        ":test_util2",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:time_util",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest",
@@ -1136,6 +1120,7 @@ cc_test(
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/util:differencer",
         "@com_google_absl//absl/log:scoped_mock_log",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -1356,6 +1341,7 @@ cc_test(
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/util:differencer",
         "@com_google_absl//absl/log:scoped_mock_log",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -1368,6 +1354,7 @@ cc_test(
     deps = [
         ":cc_test_protos",
         ":protobuf",
+        "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/compiler:retention",
         "@com_google_googletest//:gtest_main",
     ],
