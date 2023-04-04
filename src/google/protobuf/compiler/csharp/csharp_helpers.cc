@@ -56,7 +56,7 @@
 #include "google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h"
 #include "google/protobuf/compiler/csharp/csharp_wrapper_field.h"
 #include "google/protobuf/compiler/csharp/names.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"

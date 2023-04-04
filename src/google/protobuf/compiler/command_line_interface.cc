@@ -78,7 +78,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/subprocess.h"
-#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/compiler/plugin_bootstrap.pb.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"

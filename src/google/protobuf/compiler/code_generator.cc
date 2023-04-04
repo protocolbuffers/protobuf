@@ -36,7 +36,7 @@
 
 #include <utility>
 
-#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/compiler/plugin_bootstrap.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"

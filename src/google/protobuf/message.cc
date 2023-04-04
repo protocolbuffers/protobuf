@@ -46,7 +46,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/generated_message_util.h"

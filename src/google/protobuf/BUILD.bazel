@@ -420,7 +420,7 @@ cc_library(
     srcs = [
         "any.cc",
         "descriptor.cc",
-        "descriptor.pb.cc",
+        "descriptor_bootstrap.pb.cc",
         "descriptor_database.cc",
         "dynamic_message.cc",
         "extension_set_heavy.cc",
@@ -439,7 +439,7 @@ cc_library(
     ],
     hdrs = [
         "descriptor.h",
-        "descriptor.pb.h",
+        "descriptor_bootstrap.pb.h",
         "descriptor_database.h",
         "descriptor_legacy.h",
         "dynamic_message.h",
@@ -502,9 +502,15 @@ cc_library(
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
+        ":descriptor_cc_proto",
         ":protobuf_nowkt",
         ":wkt_cc_proto",
     ],
+)
+
+cc_proto_library(
+    name = "descriptor_cc_proto",
+    deps = [":descriptor_proto"],
 )
 
 # This provides just the header files for use in projects that need to build

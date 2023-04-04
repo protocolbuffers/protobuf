@@ -68,7 +68,7 @@
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/compiler/cpp/tracker.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 

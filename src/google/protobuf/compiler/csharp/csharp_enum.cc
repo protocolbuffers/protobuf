@@ -41,7 +41,7 @@
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {

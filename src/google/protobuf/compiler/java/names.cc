@@ -41,7 +41,7 @@
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"

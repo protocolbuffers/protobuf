@@ -51,7 +51,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"

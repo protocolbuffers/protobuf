@@ -170,7 +170,7 @@ cc_binary(
     copts = COPTS,
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf/compiler:protoc_lib"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib_nowkt"],
 )
 
 cc_binary(
@@ -322,7 +322,7 @@ proto_lang_toolchain(
         "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
-    runtime = ":protobuf",
+    runtime = "//src/google/protobuf:protobuf_nowkt",
     visibility = ["//visibility:public"],
 )
 

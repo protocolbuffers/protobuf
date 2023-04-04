@@ -39,7 +39,7 @@
 
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/extension_set_inl.h"
 #include "google/protobuf/io/coded_stream.h"

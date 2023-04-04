@@ -47,7 +47,7 @@
 #include "google/protobuf/compiler/objectivec/oneof.h"
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {

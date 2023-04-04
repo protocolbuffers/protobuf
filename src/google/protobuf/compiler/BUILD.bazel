@@ -50,12 +50,12 @@ cc_library(
     srcs = [
         "code_generator.cc",
         "plugin.cc",
-        "plugin.pb.cc",
+        "plugin_bootstrap.pb.cc",
     ],
     hdrs = [
         "code_generator.h",
         "plugin.h",
-        "plugin.pb.h",
+        "plugin_bootstrap.pb.h",
         "scc.h",
     ],
     copts = COPTS,
@@ -122,6 +122,7 @@ cc_library(
         "//src/google/protobuf/compiler/rust",
         "@com_google_absl//absl/log:initialize",
     ],
+    visibility = ["//:__pkg__"],
 )
 
 cc_binary(

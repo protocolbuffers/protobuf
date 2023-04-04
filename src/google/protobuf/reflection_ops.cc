@@ -40,7 +40,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/unknown_field_set.h"

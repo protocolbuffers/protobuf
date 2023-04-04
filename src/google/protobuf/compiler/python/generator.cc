@@ -66,7 +66,7 @@
 #include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
@@ -256,7 +256,7 @@ bool Generator::Generate(const FileDescriptor* file,
 
   if (!opensource_runtime_ && GeneratingDescriptorProto()) {
     std::string bootstrap_filename =
-        "net/proto2/python/internal/descriptor_pb2.py";
+        "net/proto2/python/internal/descriptor_bootstrap_pb2.py";
     if (options.bootstrap) {
       filename = bootstrap_filename;
     } else {
@@ -264,14 +264,14 @@ bool Generator::Generate(const FileDescriptor* file,
       io::Printer printer(output.get(), '$');
       printer.Print(
           "from google3.net.google.protobuf.python.internal import "
-          "descriptor_pb2\n"
+          "descriptor_bootstrap_pb2\n"
           "\n");
 
       // For static checkers, we need to explicitly assign to the symbols we
       // publicly export.
       for (int i = 0; i < file_->message_type_count(); i++) {
         const Descriptor* message = file_->message_type(i);
-        printer.Print("$name$ = descriptor_pb2.$name$\n", "name",
+        printer.Print("$name$ = descriptor_bootstrap_pb2.$name$\n", "name",
                       message->name());
       }
 
@@ -282,7 +282,7 @@ bool Generator::Generate(const FileDescriptor* file,
       // checks.
       printer.Print(
           "\n"
-          "globals().update(descriptor_pb2.__dict__)\n"
+          "globals().update(descriptor_bootstrap_pb2.__dict__)\n"
           "\n");
 
       printer.Print(

@@ -41,7 +41,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

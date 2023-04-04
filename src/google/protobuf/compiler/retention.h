@@ -32,7 +32,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_RETENTION_H__
 
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 
 // Must appear last
 #include "google/protobuf/port_def.inc"

@@ -46,7 +46,7 @@
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/compiler/java/shared_code_generator.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 
 
 namespace google {

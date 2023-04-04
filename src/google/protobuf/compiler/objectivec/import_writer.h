@@ -36,7 +36,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 
 namespace google {
 namespace protobuf {

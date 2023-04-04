@@ -56,7 +56,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"

@@ -41,7 +41,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/port_def.inc"

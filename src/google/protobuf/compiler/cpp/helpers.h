@@ -51,7 +51,7 @@
 #include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
 #include "absl/strings/str_cat.h"

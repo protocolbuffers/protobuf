@@ -53,7 +53,7 @@
 #include "google/protobuf/compiler/java/message_builder.h"
 #include "google/protobuf/compiler/java/message_builder_lite.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"

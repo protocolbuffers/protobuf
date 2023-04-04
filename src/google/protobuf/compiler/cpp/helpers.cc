@@ -62,7 +62,7 @@
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
@@ -1412,27 +1412,25 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 
 bool GetBootstrapBasename(const Options& options, absl::string_view basename,
                           std::string* bootstrap_basename) {
-  if (options.opensource_runtime) {
-    return false;
-  }
-
   static const auto* bootstrap_mapping =
-      // TODO(b/242858704) Replace these with string_view once we remove
-      // StringPiece.
-      new absl::flat_hash_map<absl::string_view, std::string>{
+      new absl::flat_hash_map<absl::string_view, absl::string_view>{
           {"net/proto2/proto/descriptor",
-           "third_party/protobuf/descriptor"},
+           "third_party/protobuf/descriptor_bootstrap"},
           {"net/proto2/compiler/proto/plugin",
-           "net/proto2/compiler/proto/plugin"},
+           "net/proto2/compiler/proto/plugin_bootstrap"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
+          {"google/protobuf/descriptor",
+           "google/protobuf/descriptor_bootstrap"},
+          {"google/protobuf/compiler/plugin",
+           "google/protobuf/compiler/plugin_bootstrap"},
       };
   auto iter = bootstrap_mapping->find(basename);
   if (iter == bootstrap_mapping->end()) {
     *bootstrap_basename = std::string(basename);
     return false;
   } else {
-    *bootstrap_basename = iter->second;
+    *bootstrap_basename = std::string(iter->second);
     return true;
   }
 }

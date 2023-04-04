@@ -69,7 +69,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/any.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_bootstrap.pb.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/dynamic_message.h"
