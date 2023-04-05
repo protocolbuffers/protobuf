@@ -115,9 +115,44 @@ proto_library(
 
 cc_proto_library(
     name = "wkt_cc_proto",
-    visibility = ["//visibility:private"],
+    visibility = ["//pkg:__pkg__"],
     deps = ["wkt_proto"],
 )
+
+# When we generate code for the well-known types, we put the resulting files in
+# wkt/google/protobuf and add ./wkt to the include paths below. This is a
+# somewhat strange setup but is necessary to satisfy these two constraints:
+# - We need to keep the checked-in sources for now, since Cocoapods relies on
+#   them.
+# - The Bazel build should always use the generated sources so that developers
+#   don't have to worry about manually updating the checked-in sources.
+genrule(
+    name = "gen_wkt_cc_sources",
+    srcs = [wkt + ".proto" for wkt in WELL_KNOWN_TYPES],
+    outs =
+        ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    cmd = """
+        $(execpath //:protoc) \
+            --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$(RULEDIR)/wkt \
+            --proto_path=$$(dirname $$(dirname $$(dirname $(location any.proto)))) \
+            $(SRCS)
+    """,
+    exec_tools = ["//:protoc"],
+    visibility = ["//visibility:private"],
+)
+
+cc_library(
+    name = "cmake_wkt_cc_proto",
+    srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    hdrs = ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
+    copts = COPTS,
+    includes = ["wkt"],
+    linkopts = LINK_OPTS,
+    visibility = ["//pkg:__pkg__"],
+    deps = [":protobuf_nowkt"],
+)
+
 
 staleness_test(
     name = "well_known_types_staleness_test",
