@@ -1,0 +1,30 @@
+# This package contains tests exercising C++/Rust interop in the cpp kernel.
+
+load("@rules_rust//rust:defs.bzl", "rust_test")
+
+cc_library(
+    name = "test_utils",
+    srcs = ["test_utils.cc"],
+    deps = [
+        "//src/google/protobuf:unittest_cc_proto",
+        "//rust/cpp_kernel:cpp_api",
+    ],
+)
+
+rust_test(
+    name = "interop_test",
+    srcs = ["main.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+        # TODO(b/243126140): Enable tsan once we support sanitizers with Rust.
+        "notsan",
+        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
+        "nomsan",
+    ],
+    deps = [
+        ":test_utils",
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_cc_rust_proto",
+    ],
+)

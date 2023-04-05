@@ -10,6 +10,10 @@ UNITTEST_PROTO_TARGET = (
     "//src/google/protobuf:test_protos"
 )
 
+UNITTEST_CC_PROTO_TARGET = (
+    "//src/google/protobuf:cc_test_protos"
+)
+
 rust_proto_library(
     name = "unittest_rust_proto",
     testonly = True,
@@ -34,7 +38,7 @@ rust_cc_proto_library(
         "//rust/test/cpp:__subpackages__",
         "//rust/test/shared:__subpackages__",
     ],
-    deps = [":unittest_cc_proto"],
+    deps = [UNITTEST_CC_PROTO_TARGET],
 )
 
 proto_library(

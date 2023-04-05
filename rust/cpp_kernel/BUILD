@@ -23,3 +23,13 @@ rust_test(
         "nomsan",
     ],
 )
+
+cc_library(
+    name = "cpp_api",
+    hdrs = ["cpp_api.h"],
+    visibility = [
+        "//src/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
+    ],
+    deps = ["@com_google_absl//absl/algorithm:container"],
+)

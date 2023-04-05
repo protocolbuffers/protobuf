@@ -28,15 +28,44 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Kernel-agnostic logic for the Rust Protobuf Runtime.
-//!
-//! For kernel-specific logic this crate delegates to the respective __runtime
-//! crate.
+// This file contains support code for generated C++ thunks.
 
-#[cfg(cpp_kernel)]
-pub extern crate cpp as __runtime;
-#[cfg(upb_kernel)]
-pub extern crate upb as __runtime;
+#ifndef GOOGLE_PROTOBUF_RUST_CPP_KERNEL_CPP_H__
+#define GOOGLE_PROTOBUF_RUST_CPP_KERNEL_CPP_H__
 
-pub use __runtime::Arena;
-pub use __runtime::Bytes;
+#include <cstddef>
+#include <iostream>
+#include <string>
+
+#include "absl/algorithm/container.h"
+
+namespace google {
+namespace protobuf {
+
+// Represents a sequence of raw bytes.
+//
+// Example use-cases:
+// * Return value of `<Message>.SerializeToString()`.
+// * Parameter of setters for`bytes` fields.
+//
+// This struct is ABI compatible with the equivalend struct on the
+// Rust side. It owns its data.
+//
+extern "C" struct Bytes {
+  /// Owns the memory.
+  const char* data;
+  size_t size;
+};
+
+inline Bytes MakeBytesFromString(std::string byte_string) {
+  size_t size = byte_string.size();
+  char* data = (char*)malloc(sizeof(char) * (size));
+  absl::c_copy(byte_string, data);
+  Bytes result{.data = data, .size = size};
+  return result;
+}
+
+}  // namespace protobuf
+}  // namespace google
+
+#endif  // GOOGLE_PROTOBUF_RUST_CPP_KERNEL_CPP_H__
