@@ -1907,6 +1907,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     kTypeFieldNumber = 3,
     kNumberFieldNumber = 1,
     kIsRepeatedFieldNumber = 4,
+    kReservedFieldNumber = 5,
   };
   // optional string full_name = 2;
   bool has_full_name() const;
@@ -1972,6 +1973,17 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   void _internal_set_is_repeated(bool value);
 
   public:
+  // optional bool reserved = 5;
+  bool has_reserved() const;
+  void clear_reserved() ;
+  bool reserved() const;
+  void set_reserved(bool value);
+
+  private:
+  bool _internal_reserved() const;
+  void _internal_set_reserved(bool value);
+
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions.Declaration)
  private:
   class _Internal;
@@ -1986,6 +1998,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr type_;
     ::int32_t number_;
     bool is_repeated_;
+    bool reserved_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -10316,6 +10329,31 @@ inline bool ExtensionRangeOptions_Declaration::_internal_is_repeated() const {
 inline void ExtensionRangeOptions_Declaration::_internal_set_is_repeated(bool value) {
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.is_repeated_ = value;
+}
+
+// optional bool reserved = 5;
+inline bool ExtensionRangeOptions_Declaration::has_reserved() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  return value;
+}
+inline void ExtensionRangeOptions_Declaration::clear_reserved() {
+  _impl_.reserved_ = false;
+  _impl_._has_bits_[0] &= ~0x00000010u;
+}
+inline bool ExtensionRangeOptions_Declaration::reserved() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.reserved)
+  return _internal_reserved();
+}
+inline void ExtensionRangeOptions_Declaration::set_reserved(bool value) {
+  _internal_set_reserved(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.reserved)
+}
+inline bool ExtensionRangeOptions_Declaration::_internal_reserved() const {
+  return _impl_.reserved_;
+}
+inline void ExtensionRangeOptions_Declaration::_internal_set_reserved(bool value) {
+  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_.reserved_ = value;
 }
 
 // -------------------------------------------------------------------
