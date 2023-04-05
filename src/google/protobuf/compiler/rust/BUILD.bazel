@@ -18,6 +18,7 @@ cc_library(
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/cpp:names",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/types:optional",
     ],

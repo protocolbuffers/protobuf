@@ -10,6 +10,7 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("@rules_rust//rust:defs.bzl", "rust_common")
 load("@upb//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 proto_common = proto_common_do_not_use
 
@@ -27,7 +28,7 @@ def _generate_rust_gencode(
         ctx,
         proto_info,
         proto_lang_toolchain,
-        ext):
+        is_upb):
     """Generates Rust gencode
 
         This function uses proto_common APIs and a ProtoLangToolchain to register an action
@@ -37,25 +38,33 @@ def _generate_rust_gencode(
         proto_info (ProtoInfo): ProtoInfo of the proto_library target for which we are generating
                     gencode
         proto_lang_toolchain (ProtoLangToolchainInfo): proto lang toolchain for Rust
-        ext: the file extension to use for generated files
+        is_upb (Bool): True when generating gencode for UPB, False otherwise.
     Returns:
-        rs_outputs ([File]): generated Rust source files
+        rs_outputs (([File], [File]): tuple(generated Rust files, generated C++ thunks).
     """
     actions = ctx.actions
     rs_outputs = proto_common.declare_generated_files(
         actions = actions,
         proto_info = proto_info,
-        extension = ext,
+        extension = ".{}.pb.rs".format("u" if is_upb else "c"),
     )
+    if is_upb:
+        cc_outputs = []
+    else:
+        cc_outputs = proto_common.declare_generated_files(
+            actions = actions,
+            proto_info = proto_info,
+            extension = ".pb.thunks.cc",
+        )
 
     proto_common.compile(
         actions = ctx.actions,
         proto_info = proto_info,
-        generated_files = rs_outputs,
+        generated_files = rs_outputs + cc_outputs,
         proto_lang_toolchain_info = proto_lang_toolchain,
         plugin_output = ctx.bin_dir.path,
     )
-    return rs_outputs
+    return (rs_outputs, cc_outputs)
 
 def _get_crate_info(providers):
     for provider in providers:
@@ -74,6 +83,53 @@ def _get_cc_info(providers):
         if hasattr(provider, "linking_context"):
             return provider
     fail("Couldn't find a CcInfo in the list of providers")
+
+def _compile_cc(
+        ctx,
+        attr,
+        cc_toolchain,
+        feature_configuration,
+        src,
+        cc_infos):
+    """Compiles a C++ source file.
+
+    Args:
+      ctx: The rule context.
+      attr: The current rule's attributes.
+      cc_toolchain: A cc_toolchain.
+      feature_configuration: A feature configuration.
+      src: The source file to be compiled.
+      cc_infos: List[CcInfo]: A list of CcInfo dependencies.
+
+    Returns:
+      A CcInfo provider.
+    """
+    cc_info = cc_common.merge_cc_infos(direct_cc_infos = cc_infos)
+
+    (compilation_context, compilation_outputs) = cc_common.compile(
+        name = src.basename,
+        actions = ctx.actions,
+        feature_configuration = feature_configuration,
+        cc_toolchain = cc_toolchain,
+        srcs = [src],
+        grep_includes = ctx.file._grep_includes,
+        user_compile_flags = attr.copts if hasattr(attr, "copts") else [],
+        compilation_contexts = [cc_info.compilation_context],
+    )
+
+    (linking_context, _) = cc_common.create_linking_context_from_compilation_outputs(
+        name = src.basename,
+        actions = ctx.actions,
+        feature_configuration = feature_configuration,
+        cc_toolchain = cc_toolchain,
+        compilation_outputs = compilation_outputs,
+        linking_contexts = [cc_info.linking_context],
+    )
+
+    return CcInfo(
+        compilation_context = compilation_context,
+        linking_context = linking_context,
+    )
 
 def _compile_rust(ctx, attr, src, extra_srcs, deps):
     """Compiles a Rust source file.
@@ -167,8 +223,33 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         return [ctx.rule.attr.deps[0][RustProtoInfo]]
 
     proto_lang_toolchain = ctx.attr._proto_lang_toolchain[proto_common.ProtoLangToolchainInfo]
+    cc_toolchain = find_cpp_toolchain(ctx)
 
-    gencode = _generate_rust_gencode(ctx, target[ProtoInfo], proto_lang_toolchain, (".u.pb.rs" if is_upb else ".c.pb.rs"))
+    feature_configuration = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+
+    (gencode, thunks) = _generate_rust_gencode(
+        ctx,
+        target[ProtoInfo],
+        proto_lang_toolchain,
+        is_upb,
+    )
+
+    if is_upb:
+        thunks_cc_info = target[UpbWrappedCcInfo].cc_info_with_thunks
+    else:
+        thunks_cc_info = cc_common.merge_cc_infos(cc_infos = [_compile_cc(
+            feature_configuration = feature_configuration,
+            src = thunk,
+            ctx = ctx,
+            attr = attr,
+            cc_toolchain = cc_toolchain,
+            cc_infos = [target[CcInfo], ctx.attr._cpp_thunks_deps[CcInfo]],
+        ) for thunk in thunks])
 
     runtime = proto_lang_toolchain.runtime
     dep_variant_info_for_runtime = DepVariantInfo(
@@ -177,9 +258,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         cc_info = runtime[CcInfo] if CcInfo in runtime else None,
         build_info = None,
     )
-    dep_variant_info_for_native_gencode = DepVariantInfo(
-        cc_info = target[UpbWrappedCcInfo].cc_info_with_thunks if is_upb else target[CcInfo],
-    )
+    dep_variant_info_for_native_gencode = DepVariantInfo(cc_info = thunks_cc_info)
 
     proto_dep = getattr(ctx.rule.attr, "deps", [])
     dep_variant_info = _compile_rust(
@@ -213,6 +292,14 @@ def _make_proto_library_aspect(is_upb):
             "_collect_cc_coverage": attr.label(
                 default = Label("@rules_rust//util:collect_coverage"),
                 executable = True,
+                cfg = "exec",
+            ),
+            "_cpp_thunks_deps": attr.label(
+                default = Label("//rust/cpp_kernel:cpp_api"),
+            ),
+            "_grep_includes": attr.label(
+                allow_single_file = True,
+                default = Label("@bazel_tools//tools/cpp:grep-includes"),
                 cfg = "exec",
             ),
             "_error_format": attr.label(

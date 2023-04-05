@@ -28,15 +28,46 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Kernel-agnostic logic for the Rust Protobuf Runtime.
-//!
-//! For kernel-specific logic this crate delegates to the respective __runtime
-//! crate.
+use std::ptr::NonNull;
+use unittest_proto;
 
-#[cfg(cpp_kernel)]
-pub extern crate cpp as __runtime;
-#[cfg(upb_kernel)]
-pub extern crate upb as __runtime;
+macro_rules! assert_serializes_equally {
+    ($msg:ident) => {{
+        let mut msg = $msg;
+        let serialized_cpp = unsafe { Serialize(msg.cpp_repr()) };
+        let serialized_rs = msg.serialize();
 
-pub use __runtime::Arena;
-pub use __runtime::Bytes;
+        assert_eq!(*serialized_rs, *serialized_cpp);
+    }};
+}
+
+#[test]
+fn mutate_message_in_cpp() {
+    let mut msg = unittest_proto::TestAllTypes::new();
+    unsafe { MutateInt64Field(msg.cpp_repr()) };
+    assert_serializes_equally!(msg);
+}
+
+#[test]
+fn mutate_message_in_rust() {
+    let mut msg = unittest_proto::TestAllTypes::new();
+    msg.set_optional_int64(43);
+    assert_serializes_equally!(msg);
+}
+
+#[test]
+fn parse_message_in_rust() {
+    let serialized = unsafe { SerializeMutatedInstance() };
+    let mut msg = unittest_proto::TestAllTypes::new();
+    assert_eq!(msg.optional_int64(), 0);
+
+    msg.parse(serialized);
+    assert_eq!(msg.optional_int64(), 42);
+    assert_serializes_equally!(msg);
+}
+
+extern "C" {
+    fn SerializeMutatedInstance() -> protobuf_cpp::Bytes;
+    fn MutateInt64Field(msg: NonNull<u8>);
+    fn Serialize(msg: NonNull<u8>) -> protobuf_cpp::Bytes;
+}

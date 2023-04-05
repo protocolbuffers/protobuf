@@ -28,15 +28,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Kernel-agnostic logic for the Rust Protobuf Runtime.
-//!
-//! For kernel-specific logic this crate delegates to the respective __runtime
-//! crate.
+#include "google/protobuf/rust/cpp_kernel/cpp_api.h"
+#include "google/protobuf/unittest.pb.h"
 
-#[cfg(cpp_kernel)]
-pub extern crate cpp as __runtime;
-#[cfg(upb_kernel)]
-pub extern crate upb as __runtime;
+extern "C" void MutateInt64Field(protobuf_unittest::TestAllTypes* msg) {
+  msg->set_optional_int64(42);
+}
 
-pub use __runtime::Arena;
-pub use __runtime::Bytes;
+extern "C" google::protobuf::Bytes Serialize(protobuf_unittest::TestAllTypes* msg) {
+  return google::protobuf::MakeBytesFromString(msg->SerializeAsString());
+}
+
+extern "C" google::protobuf::Bytes SerializeMutatedInstance() {
+  protobuf_unittest::TestAllTypes* inst = new protobuf_unittest::TestAllTypes();
+  MutateInt64Field(inst);
+  return Serialize(inst);
+}
