@@ -200,7 +200,7 @@ cc_dist_library(
     testonly = 1,
     tags = ["manual"],
     deps = ["//src/google/protobuf:lite_test_util"],
-    dist_deps = [":protobuf_lite"],
+    dist_deps = [":protobuf"],
 )
 
 cc_dist_library(
