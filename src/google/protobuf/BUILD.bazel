@@ -1314,6 +1314,7 @@ cc_test(
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/log:scoped_mock_log",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -1391,6 +1392,7 @@ cc_test(
         ":protobuf",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/util:differencer",
         "@com_google_googletest//:gtest_main",
     ],
 )
