@@ -142,6 +142,18 @@ genrule(
     visibility = ["//visibility:private"],
 )
 
+staleness_test(
+    name = "well_known_types_staleness_test",
+    outs =
+        [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    generated_pattern = "wkt/google/protobuf/%s",
+    tags = ["manual"],
+)
+
+# This is necessary for our generated cmake configs to pick up the checked in
+# WKT files.
+# TODO(b/246826624) Remove this once we generate WKT code from cmake.
 cc_library(
     name = "cmake_wkt_cc_proto",
     srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
@@ -151,16 +163,6 @@ cc_library(
     linkopts = LINK_OPTS,
     visibility = ["//pkg:__pkg__"],
     deps = [":protobuf_nowkt"],
-)
-
-
-staleness_test(
-    name = "well_known_types_staleness_test",
-    outs =
-        [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
-        [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
-    generated_pattern = "wkt/google/protobuf/%s",
-    tags = ["manual"],
 )
 
 # Built-in runtime types
@@ -855,6 +857,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//src/google/protobuf/io",
+        "//src/google/protobuf/util:differencer",
         "@com_google_googletest//:gtest",
     ],
 )
