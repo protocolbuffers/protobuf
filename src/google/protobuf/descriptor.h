@@ -2211,6 +2211,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool lazily_build_dependencies_;
   bool allow_unknown_;
   bool enforce_weak_;
+  bool enforce_special_extension_ranges_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
 
