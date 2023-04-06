@@ -213,15 +213,6 @@ proto_library(
     testonly = 1,
     srcs = ["json_format.proto"],
     strip_import_prefix = "/src",
-    deps = [
-        "//:any_proto",
-        "//:duration_proto",
-        "//:field_mask_proto",
-        "//:struct_proto",
-        "//:test_protos",
-        "//:timestamp_proto",
-        "//:wrappers_proto",
-    ],
 )
 
 cc_proto_library(
