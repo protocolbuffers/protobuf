@@ -163,7 +163,7 @@ cc_dist_library(
     deps = [
         "//src/google/protobuf:arena_align",
         "//src/google/protobuf:protobuf_nowkt",
-        "//src/google/protobuf:wkt_cc_proto",
+        "//src/google/protobuf:cmake_wkt_cc_proto",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/json",
         "//src/google/protobuf/util:delimited_message_util",
@@ -200,7 +200,7 @@ cc_dist_library(
     testonly = 1,
     tags = ["manual"],
     deps = ["//src/google/protobuf:lite_test_util"],
-    dist_deps = [":protobuf_lite"],
+    dist_deps = [":protobuf"],
 )
 
 cc_dist_library(
