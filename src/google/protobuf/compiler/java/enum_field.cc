@@ -57,6 +57,7 @@ namespace compiler {
 namespace java {
 
 namespace {
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 void SetEnumVariables(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
@@ -237,7 +238,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   }
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_,
@@ -260,7 +261,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
@@ -271,7 +272,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "  onChanged();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void ImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
@@ -495,7 +496,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                    "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   }
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_,
@@ -523,7 +524,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                  "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
@@ -537,7 +538,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void ImmutableEnumOneofFieldGenerator::GenerateBuilderClearCode(
@@ -804,7 +805,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -818,7 +819,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -831,7 +832,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
@@ -842,7 +843,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "  onChanged();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   if (SupportUnknownEnumValue(descriptor_)) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
@@ -872,7 +873,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         "  onChanged();\n"
         "  return this;\n"
         "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                           /* builder */ true);
     printer->Print(variables_,
@@ -883,7 +884,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
                                           LIST_MULTI_ADDER, /* builder */ true);
     printer->Print(

@@ -46,6 +46,7 @@ namespace compiler {
 namespace java {
 
 namespace {
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 std::string TypeName(const FieldDescriptor* field,
                      ClassNameResolver* name_resolver, bool boxed) {
@@ -409,7 +410,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
       "      .clear();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
@@ -420,7 +421,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                  "      .remove(key);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
@@ -452,7 +453,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                    "  $set_has_field_bit_builder$\n"
                    "  return this;\n"
                    "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
     WriteFieldDocComment(printer, descriptor_);
     printer->Print(
@@ -465,7 +466,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
         "  $set_has_field_bit_builder$\n"
         "  return this;\n"
         "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
     if (SupportUnknownEnumValue(value)) {
       if (context_->options().opensource_runtime) {
@@ -496,7 +497,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
           "  $set_has_field_bit_builder$\n"
           "  return this;\n"
           "}\n");
-      printer->Annotate("{", "}", descriptor_);
+      printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
       WriteFieldDocComment(printer, descriptor_);
       printer->Print(
@@ -508,7 +509,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
           "  $set_has_field_bit_builder$\n"
           "  return this;\n"
           "}\n");
-      printer->Annotate("{", "}", descriptor_);
+      printer->Annotate("{", "}", descriptor_, Semantic::kSet);
     }
   } else {
     if (context_->options().opensource_runtime) {
@@ -538,7 +539,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                    "  $set_has_field_bit_builder$\n"
                    "  return this;\n"
                    "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
     WriteFieldDocComment(printer, descriptor_);
     printer->Print(
@@ -550,7 +551,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
         "  $set_has_field_bit_builder$\n"
         "  return this;\n"
         "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   }
 }
 
