@@ -43,8 +43,6 @@
   atomic_fetch_add_explicit(addr, val, order)
 #define upb_Atomic_Sub(addr, val, order) \
   atomic_fetch_sub_explicit(addr, val, memory_order_release);
-#define upb_Atomic_Exchange(addr, val, order) \
-  atomic_exchange_explicit(addr, val, order)
 #define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
                                          success_order, failure_order) \
   atomic_compare_exchange_strong_explicit(addr, expected, desired,     \
@@ -64,39 +62,10 @@
 #define upb_Atomic_Add(addr, val, order) (*(addr) += val)
 #define upb_Atomic_Sub(addr, val, order) (*(addr) -= val)
 
-UPB_INLINE uintptr_t _upb_NonAtomic_ExchangeU(uintptr_t* addr, uintptr_t val) {
-  uintptr_t ret = *addr;
-  *addr = val;
-  return ret;
-}
-
-UPB_INLINE void* _upb_NonAtomic_ExchangeP(upb_Arena** addr, upb_Arena* val) {
-  void* ret;
-  memcpy(&ret, addr, sizeof(val));
-  memcpy(addr, &val, sizeof(val));
-  return ret;
-}
-
-#define upb_Atomic_Exchange(addr, val, order) \
-  _Generic((val),                             \
-      uintptr_t: _upb_NonAtomic_ExchangeU,    \
-      upb_Arena *: _upb_NonAtomic_ExchangeP)(addr, val)
-
-UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongU(uintptr_t* addr,
-                                                      uintptr_t* expected,
-                                                      uintptr_t desired) {
-  if (*addr == *expected) {
-    *addr = desired;
-    return true;
-  } else {
-    *expected = *addr;
-    return false;
-  }
-}
-
-UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(upb_Arena** addr,
-                                                      upb_Arena** expected,
-                                                      upb_Arena* desired) {
+// `addr` and `expected` are logically double pointers.
+UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
+                                                      void* expected,
+                                                      void* desired) {
   if (memcmp(addr, expected, sizeof(desired)) == 0) {
     memcpy(addr, &desired, sizeof(desired));
     return true;
@@ -106,18 +75,13 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(upb_Arena** addr,
   }
 }
 
-#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,         \
-                                         success_order, failure_order)    \
-  _Generic((desired),                                                     \
-      uintptr_t: _upb_NonAtomic_CompareExchangeStrongU,                   \
-      upb_Arena *: _upb_NonAtomic_CompareExchangeStrongP)(addr, expected, \
-                                                          desired)
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  _upb_NonAtomic_CompareExchangeStrongP((void*)addr, (void*)expected,  \
+                                        (void*)desired)
 #define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
                                        failure_order)                          \
-  _Generic((desired),                                                          \
-      uintptr_t: _upb_NonAtomic_CompareExchangeStrongU,                        \
-      upb_Arena *: _upb_NonAtomic_CompareExchangeStrongP)(addr, expected,      \
-                                                          desired)
+  upb_Atomic_CompareExchangeStrong(addr, expected, desired, 0, 0)
 
 #endif
 
