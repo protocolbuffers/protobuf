@@ -268,13 +268,12 @@ Struct::~Struct() {
 
 inline void Struct::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.fields_.Destruct();
   _impl_.fields_.~MapField();
 }
 
 void Struct::ArenaDtor(void* object) {
   Struct* _this = reinterpret_cast< Struct* >(object);
-  _this->_impl_.fields_.Destruct();
+  _this->_impl_.fields_.ArenaDestruct();
 }
 void Struct::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
