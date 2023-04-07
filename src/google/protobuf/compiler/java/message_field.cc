@@ -328,17 +328,19 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
   // Message.Builder clearField()
   WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-                 "$deprecation$public Builder clear$capitalized_name$() {\n"
-                 "  $clear_has_field_bit_builder$\n"
-                 "  $name$_ = null;\n"
-                 "  if ($name$Builder_ != null) {\n"
-                 "    $name$Builder_.dispose();\n"
-                 "    $name$Builder_ = null;\n"
-                 "  }\n"
-                 "  $on_changed$\n"
-                 "  return this;\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
+      "  $clear_has_field_bit_builder$\n"
+      "  $name$_ = null;\n"
+      "  if ($name$Builder_ != null) {\n"
+      "    $name$Builder_.dispose();\n"
+      "    $name$Builder_ = null;\n"
+      "  }\n"
+      "  $on_changed$\n"
+      "  return this;\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_);
 
   // Field.Builder getFieldBuilder()
   WriteFieldDocComment(printer, descriptor_);
