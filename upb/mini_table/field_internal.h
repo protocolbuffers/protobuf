@@ -34,6 +34,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+// LINT.IfChange(mini_table_field_layout)
+
 struct upb_MiniTableField {
   uint32_t number;
   uint16_t offset;
@@ -81,6 +83,8 @@ typedef enum {
 } upb_FieldRep;
 
 #define kUpb_FieldRep_Shift 6
+
+// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table_field.ts:mini_table_field_layout)
 
 UPB_INLINE upb_FieldRep
 _upb_MiniTableField_GetRep(const upb_MiniTableField* field) {
@@ -173,6 +177,7 @@ UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
 }
 
 // LINT.ThenChange(GoogleInternalName2)
+// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/presence.ts:presence_logic)
 
 #ifdef __cplusplus
 } /* extern "C" */
