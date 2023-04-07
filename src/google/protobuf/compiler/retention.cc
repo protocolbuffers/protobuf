@@ -102,10 +102,13 @@ void ConvertToDynamicMessageAndStripOptions(
   const Descriptor* descriptor = pool.FindMessageTypeByName(m.GetTypeName());
   std::vector<int> path;
 
-  if (descriptor == nullptr) {
+  if (descriptor == nullptr ||
+      descriptor->file()->pool() == DescriptorPool::generated_pool()) {
     // If the pool does not contain the descriptor, then this proto file does
     // not transitively depend on descriptor.proto, in which case we know there
-    // are no custom options to worry about.
+    // are no custom options to worry about. If we are working with the
+    // generated pool, then we can still access any custom options without
+    // having to resort to DynamicMessage.
     StripMessage(m, path, stripped_paths);
   } else {
     DynamicMessageFactory factory;
