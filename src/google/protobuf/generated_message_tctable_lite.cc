@@ -338,22 +338,22 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(
   static_assert(6 == FieldKind::kFkMessage, "Invalid table order");
   static_assert(7 == FieldKind::kFkMap, "Invalid table order");
 
-  static_assert(8 == (+field_layout::kSplitMask | FieldKind::kFkNone),
-    "Invalid table order");
-  static_assert(9 == (+field_layout::kSplitMask | FieldKind::kFkVarint),
-    "Invalid table order");
-  static_assert(10 == (+field_layout::kSplitMask | FieldKind::kFkPackedVarint),
-    "Invalid table order");
-  static_assert(11 == (+field_layout::kSplitMask | FieldKind::kFkFixed),
-    "Invalid table order");
-  static_assert(12 == (+field_layout::kSplitMask | FieldKind::kFkPackedFixed),
-    "Invalid table order");
-  static_assert(13 == (+field_layout::kSplitMask | FieldKind::kFkString),
-    "Invalid table order");
-  static_assert(14 == (+field_layout::kSplitMask | FieldKind::kFkMessage),
-    "Invalid table order");
-  static_assert(15 == (+field_layout::kSplitMask | FieldKind::kFkMap),
-    "Invalid table order");
+  static_assert(8 == (field_layout::kSplitMask | FieldKind::kFkNone),
+                "Invalid table order");
+  static_assert(9 == (field_layout::kSplitMask | FieldKind::kFkVarint),
+                "Invalid table order");
+  static_assert(10 == (field_layout::kSplitMask | FieldKind::kFkPackedVarint),
+                "Invalid table order");
+  static_assert(11 == (field_layout::kSplitMask | FieldKind::kFkFixed),
+                "Invalid table order");
+  static_assert(12 == (field_layout::kSplitMask | FieldKind::kFkPackedFixed),
+                "Invalid table order");
+  static_assert(13 == (field_layout::kSplitMask | FieldKind::kFkString),
+                "Invalid table order");
+  static_assert(14 == (field_layout::kSplitMask | FieldKind::kFkMessage),
+                "Invalid table order");
+  static_assert(15 == (field_layout::kSplitMask | FieldKind::kFkMap),
+                "Invalid table order");
 
   TailCallParseFunc parse_fn = kMiniParseTable[field_type];
   if (export_called_function) *test_out = {parse_fn, tag, entry};
