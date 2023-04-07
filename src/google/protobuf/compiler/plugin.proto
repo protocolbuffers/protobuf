@@ -169,7 +169,7 @@ message CodeGeneratorResponse {
     optional string insertion_point = 2;
 
     // The file contents.
-    optional string content = 15;
+    optional bytes content = 15;
 
     // Information describing the file content being inserted. If an insertion
     // point is used, this information will be appropriately offset and inserted
