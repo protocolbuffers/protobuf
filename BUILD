@@ -139,6 +139,7 @@ cc_library(
         "upb/string_view.h",
         "upb/upb.h",
         "upb/upb.hpp",
+        "upb/wire/common.h",
         "upb/wire/decode.h",
         "upb/wire/encode.h",
     ],
@@ -880,6 +881,7 @@ cc_library(
         "upb/wire/encode.c",
     ],
     hdrs = [
+        "upb/wire/common.h",
         "upb/wire/common_internal.h",
         "upb/wire/decode.h",
         "upb/wire/decode_fast.h",

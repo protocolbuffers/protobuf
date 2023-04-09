@@ -33,6 +33,8 @@
 
 #include "upb/message/accessors.h"
 
+#include <string>
+
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
@@ -44,6 +46,7 @@
 #include "upb/mini_table/field_internal.h"
 #include "upb/test/test.upb.h"
 #include "upb/upb.h"
+#include "upb/wire/common.h"
 #include "upb/wire/decode.h"
 
 namespace {
@@ -163,7 +166,7 @@ TEST(GeneratedCode, ScalarsProto2) {
       0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(msg));
 
   EXPECT_EQ(0, upb_Message_GetInt32(msg, optional_int32_field, 0));
-  upb_Message_SetInt32(msg, optional_int32_field, kTestInt32, NULL);
+  upb_Message_SetInt32(msg, optional_int32_field, kTestInt32, nullptr);
   EXPECT_EQ(true, upb_Message_HasField(msg, optional_int32_field));
   EXPECT_EQ(kTestInt32, upb_Message_GetInt32(msg, optional_int32_field, 0));
   EXPECT_EQ(
@@ -176,7 +179,7 @@ TEST(GeneratedCode, ScalarsProto2) {
   EXPECT_EQ(
       0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_uint32(msg));
   EXPECT_EQ(0, upb_Message_GetUInt32(msg, optional_uint32_field, 0));
-  upb_Message_SetUInt32(msg, optional_uint32_field, kTestUInt32, NULL);
+  upb_Message_SetUInt32(msg, optional_uint32_field, kTestUInt32, nullptr);
   EXPECT_EQ(kTestUInt32, upb_Message_GetUInt32(msg, optional_uint32_field, 0));
   EXPECT_EQ(
       kTestUInt32,
@@ -197,14 +200,14 @@ TEST(GeneratedCode, ScalarProto3) {
 
   EXPECT_EQ(
       0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(msg));
-  upb_Message_SetInt64(msg, optional_int64_field, -1, NULL);
+  upb_Message_SetInt64(msg, optional_int64_field, -1, nullptr);
   EXPECT_EQ(
       -1, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(msg));
   EXPECT_EQ(-1, upb_Message_GetInt64(msg, optional_int64_field, 0));
 
   EXPECT_EQ(
       0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(msg));
-  upb_Message_SetUInt64(msg, optional_uint64_field, kTestUInt64, NULL);
+  upb_Message_SetUInt64(msg, optional_uint64_field, kTestUInt64, nullptr);
   EXPECT_EQ(
       kTestUInt64,
       protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(msg));
@@ -239,7 +242,7 @@ TEST(GeneratedCode, Strings) {
       protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_string(
           msg));
   upb_Message_SetString(msg, optional_string_field,
-                        upb_StringView_FromString(kTestStr2), NULL);
+                        upb_StringView_FromString(kTestStr2), nullptr);
   EXPECT_EQ(true, upb_Message_HasField(msg, optional_string_field));
   EXPECT_EQ(
       true,
@@ -261,8 +264,8 @@ TEST(GeneratedCode, SubMessage) {
       find_proto2_field(kFieldOptionalNestedMessage);
 
   const upb_Message* test_message =
-      upb_Message_GetMessage(msg, optional_message_field, NULL);
-  EXPECT_EQ(NULL, test_message);
+      upb_Message_GetMessage(msg, optional_message_field, nullptr);
+  EXPECT_EQ(nullptr, test_message);
 
   EXPECT_EQ(false, upb_Message_HasField(msg, optional_message_field));
 
@@ -277,8 +280,8 @@ TEST(GeneratedCode, SubMessage) {
 
   // Read back using mini table API.
   const upb_Message* sub_message =
-      upb_Message_GetMessage(msg, optional_message_field, NULL);
-  EXPECT_EQ(true, sub_message != NULL);
+      upb_Message_GetMessage(msg, optional_message_field, nullptr);
+  EXPECT_EQ(true, sub_message != nullptr);
 
   const upb_MiniTableField* nested_message_a_field =
       upb_MiniTable_FindFieldByNumber(
@@ -288,14 +291,15 @@ TEST(GeneratedCode, SubMessage) {
 
   upb_Message_ClearField(msg, optional_message_field);
   EXPECT_EQ(
-      NULL,
+      nullptr,
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_nested_message(
           msg));
   EXPECT_EQ(false, upb_Message_HasField(msg, optional_message_field));
 
   upb_Message* new_nested_message =
       protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(arena);
-  upb_Message_SetInt32(new_nested_message, nested_message_a_field, 123, NULL);
+  upb_Message_SetInt32(new_nested_message, nested_message_a_field, 123,
+                       nullptr);
   upb_Message_SetMessage(
       msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
       optional_message_field, new_nested_message);
@@ -306,7 +310,7 @@ TEST(GeneratedCode, SubMessage) {
   EXPECT_EQ(
       true,
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_nested_message(
-          msg) != NULL);
+          msg) != nullptr);
   EXPECT_EQ(true, upb_Message_HasField(msg, optional_message_field));
   EXPECT_EQ(123,
             upb_Message_GetInt32(mutable_message, nested_message_a_field, 0));
@@ -328,8 +332,8 @@ TEST(GeneratedCode, RepeatedScalar) {
                                                                       &len);
   // Test Get/Set Array values, validate with C API.
   EXPECT_EQ(0, len);
-  EXPECT_EQ(NULL, arr);
-  EXPECT_EQ(NULL, upb_Message_GetArray(msg, repeated_int32_field));
+  EXPECT_EQ(nullptr, arr);
+  EXPECT_EQ(nullptr, upb_Message_GetArray(msg, repeated_int32_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_resize_repeated_int32(
       msg, 10, arena);
   int32_t* mutable_values =
@@ -361,7 +365,7 @@ TEST(GeneratedCode, RepeatedScalar) {
       protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(msg,
                                                                       &len);
   EXPECT_EQ(0, len);
-  EXPECT_EQ(true, zero_length_array != NULL);
+  EXPECT_EQ(true, zero_length_array != nullptr);
 
   upb_Arena_Free(arena);
 }
@@ -407,11 +411,13 @@ TEST(GeneratedCode, FindUnknown) {
                                                 arena);
 
   upb_FindUnknownRet result = upb_MiniTable_FindUnknown(
-      base_msg, upb_test_ModelExtension1_model_ext_ext.field.number);
+      base_msg, upb_test_ModelExtension1_model_ext_ext.field.number,
+      kUpb_WireFormat_DefaultDepthLimit);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
 
   result = upb_MiniTable_FindUnknown(
-      base_msg, upb_test_ModelExtension2_model_ext_ext.field.number);
+      base_msg, upb_test_ModelExtension2_model_ext_ext.field.number,
+      kUpb_WireFormat_DefaultDepthLimit);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
 
   upb_Arena_Free(arena);
@@ -639,21 +645,22 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
   int32_t val = upb_Message_GetInt32(
       msg, upb_MiniTable_FindFieldByNumber(mini_table, 4), 0);
   EXPECT_EQ(val, 11);
-  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 5);
+  upb_FindUnknownRet unknown =
+      upb_MiniTable_FindUnknown(msg, 5, kUpb_WireFormat_DefaultDepthLimit);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
       mini_table, (upb_MiniTableField*)&mini_table->fields[1],
       &upb_test_ModelWithExtensions_msg_init));
-  const int decode_options =
-      UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
+  const int decode_options = upb_DecodeOptions_MaxDepth(
+      kUpb_WireFormat_DefaultDepthLimit);  // UPB_DECODE_ALIAS disabled.
   upb_UnknownToMessageRet promote_result =
       upb_MiniTable_PromoteUnknownToMessage(
           msg, mini_table, &mini_table->fields[1],
           &upb_test_ModelWithExtensions_msg_init, decode_options, arena);
   EXPECT_EQ(promote_result.status, kUpb_UnknownToMessage_Ok);
   const upb_Message* promoted_message =
-      upb_Message_GetMessage(msg, &mini_table->fields[1], NULL);
+      upb_Message_GetMessage(msg, &mini_table->fields[1], nullptr);
   EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
                 (upb_test_ModelWithExtensions*)promoted_message),
             12);
@@ -687,15 +694,16 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessage) {
   EXPECT_EQ(val, 123);
 
   // Check that we have repeated field data in an unknown.
-  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 6);
+  upb_FindUnknownRet unknown =
+      upb_MiniTable_FindUnknown(msg, 6, kUpb_WireFormat_DefaultDepthLimit);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
       mini_table, (upb_MiniTableField*)&mini_table->fields[2],
       &upb_test_ModelWithExtensions_msg_init));
-  const int decode_options =
-      UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
+  const int decode_options = upb_DecodeOptions_MaxDepth(
+      kUpb_WireFormat_DefaultDepthLimit);  // UPB_DECODE_ALIAS disabled.
   upb_UnknownToMessage_Status promote_result =
       upb_MiniTable_PromoteUnknownToMessageArray(
           msg, &mini_table->fields[2], &upb_test_ModelWithExtensions_msg_init,
@@ -734,23 +742,25 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
   upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTablesForMaps(arena);
   upb_MiniTable* map_entry_mini_table = CreateMapEntryMiniTable(arena);
   upb_Message* msg = _upb_Message_New(mini_table, arena);
-  upb_DecodeStatus decode_status = upb_Decode(serialized, serialized_size, msg,
-                                              mini_table, nullptr, 0, arena);
+  const int decode_options =
+      upb_DecodeOptions_MaxDepth(kUpb_WireFormat_DefaultDepthLimit);
+  upb_DecodeStatus decode_status =
+      upb_Decode(serialized, serialized_size, msg, mini_table, nullptr,
+                 decode_options, arena);
   EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
   int32_t val = upb_Message_GetInt32(
       msg, upb_MiniTable_FindFieldByNumber(mini_table, 1), 0);
   EXPECT_EQ(val, 123);
 
   // Check that we have map data in an unknown.
-  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 3);
+  upb_FindUnknownRet unknown =
+      upb_MiniTable_FindUnknown(msg, 3, kUpb_WireFormat_DefaultDepthLimit);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
       mini_table, (upb_MiniTableField*)&mini_table->fields[1],
       map_entry_mini_table));
-  const int decode_options =
-      UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
   upb_UnknownToMessage_Status promote_result =
       upb_MiniTable_PromoteUnknownToMap(msg, mini_table, &mini_table->fields[1],
                                         decode_options, arena);

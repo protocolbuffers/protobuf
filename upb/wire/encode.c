@@ -35,6 +35,7 @@
 #include "upb/collections/map_sorter_internal.h"
 #include "upb/message/extension_internal.h"
 #include "upb/mini_table/sub_internal.h"
+#include "upb/wire/common.h"
 #include "upb/wire/common_internal.h"
 #include "upb/wire/swap_internal.h"
 #include "upb/wire/types.h"
@@ -622,7 +623,7 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
   e.buf = NULL;
   e.limit = NULL;
   e.ptr = NULL;
-  e.depth = depth ? depth : 64;
+  e.depth = depth ? depth : kUpb_WireFormat_DefaultDepthLimit;
   e.options = options;
   _upb_mapsorter_init(&e.sorter);
 

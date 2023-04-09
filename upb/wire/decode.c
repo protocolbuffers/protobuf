@@ -35,6 +35,7 @@
 #include "upb/mini_table/common.h"
 #include "upb/mini_table/enum_internal.h"
 #include "upb/port/atomic.h"
+#include "upb/wire/common.h"
 #include "upb/wire/common_internal.h"
 #include "upb/wire/decode_internal.h"
 #include "upb/wire/encode.h"
@@ -1301,7 +1302,7 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
 
   decoder.extreg = extreg;
   decoder.unknown = NULL;
-  decoder.depth = depth ? depth : 64;
+  decoder.depth = depth ? depth : kUpb_WireFormat_DefaultDepthLimit;
   decoder.end_group = DECODE_NOGROUP;
   decoder.options = (uint16_t)options;
   decoder.missing_required = false;

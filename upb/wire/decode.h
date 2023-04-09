@@ -66,13 +66,19 @@ enum {
   kUpb_DecodeOption_CheckRequired = 2,
 };
 
-#define UPB_DECODE_MAXDEPTH(depth) ((depth) << 16)
+UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
+  return (uint32_t)depth << 16;
+}
+
+UPB_INLINE uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
+  return options >> 16;
+}
 
 // Enforce an upper bound on recursion depth.
 UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
-  uint32_t max_depth = decode_options >> 16;
+  uint32_t max_depth = upb_DecodeOptions_GetMaxDepth(decode_options);
   if (max_depth > limit) max_depth = limit;
-  return (max_depth << 16) | (decode_options & 0xffff);
+  return upb_DecodeOptions_MaxDepth(max_depth) | (decode_options & 0xffff);
 }
 
 typedef enum {

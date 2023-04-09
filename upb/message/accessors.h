@@ -708,7 +708,8 @@ typedef struct {
 
 // Finds first occurrence of unknown data by tag id in message.
 upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
-                                             uint32_t field_number);
+                                             uint32_t field_number,
+                                             int depth_limit);
 
 typedef enum {
   kUpb_UnknownToMessage_Ok,
