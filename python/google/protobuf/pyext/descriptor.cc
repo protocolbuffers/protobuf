@@ -182,7 +182,6 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     // Not at global module scope
     goto exit;
   }
-#endif
   result = true;
 exit:
   Py_XDECREF(frame_globals);
@@ -190,6 +189,9 @@ exit:
   Py_XDECREF(frame_code);
   Py_XDECREF(frame);
   return result;
+#else
+  return true;
+#endif
 }
 
 // If the calling code is not a _pb2.py file, raise AttributeError.
