@@ -185,7 +185,7 @@ void StripSourceCodeInfo(std::vector<std::vector<int>>& stripped_paths,
   old_locations.resize(locations->size());
   locations->ExtractSubrange(0, locations->size(), old_locations.data());
   locations->Reserve(old_locations.size() - indices_to_delete.size());
-  for (int i = 0; i < old_locations.size(); ++i) {
+  for (std::vector<google::protobuf::SourceCodeInfo_Location*>::size_type i = 0; i < old_locations.size(); ++i) {
     if (indices_to_delete.contains(i)) {
       delete old_locations[i];
     } else {
