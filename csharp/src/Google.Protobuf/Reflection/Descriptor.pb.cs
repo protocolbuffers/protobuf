@@ -2464,7 +2464,7 @@ namespace Google.Protobuf.Reflection {
         private string fullName_;
         /// <summary>
         /// The fully-qualified name of the extension field. There must be a leading
-        /// dot of the full name.
+        /// dot in front of the full name.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
