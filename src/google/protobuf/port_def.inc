@@ -879,13 +879,45 @@
 #undef DEBUG
 #endif // defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)
 
-#if PROTOBUF_GNUC_MIN(3, 0)
+// Protobuf does not support building with a number of warnings that are noisy
+// (and of variable quality across compiler versions) or impossible to implement
+// effectively but which people turn on anyways.
+#ifdef __clang__
+#pragma clang diagnostic push
+// -Wshorten-64-to-32 is a typical pain where we diff pointers.
+//   char* p = strchr(s, '\n');
+//   return p ? p - s : -1;
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+// Turn on -Wdeprecated-enum-enum-conversion. This deprecation comes in C++20
+// via http://wg21.link/p1120r0.
+#pragma clang diagnostic error "-Wdeprecated-enum-enum-conversion"
+// This error has been generally flaky, but we need to disable it specifically
+// to fix https://github.com/protocolbuffers/protobuf/issues/12313
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+// Some of the warnings below only exist in some GCC versions; those version
+// ranges are poorly documented.
+#pragma GCC diagnostic ignored "-Wpragmas"
 // GCC does not allow disabling diagnostics within an expression:
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60875, so we disable this one
 // globally even though it's only used for PROTOBUF_FIELD_OFFSET.
-#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
-#endif
+// Some versions of GCC seem to think that
+//  [this] { Foo(); }
+// leaves `this` unused, even though `Foo();` is a member function of the
+// captured `this`.
+// https://bugzilla.mozilla.org/show_bug.cgi?id=1373625
+#pragma GCC diagnostic ignored "-Wunused-lambda-capture"
+// -Wsign-conversion causes a lot of warnings on mostly code like:
+//   int index = ...
+//   int value = vec[index];
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+// This error has been generally flaky, but we need to disable it specifically
+// to fix https://github.com/protocolbuffers/protobuf/issues/12313
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif  // __GNUC__
 
 // Silence some MSVC warnings in all our code.
 #ifdef _MSC_VER
