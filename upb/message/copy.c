@@ -101,7 +101,7 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
   while (upb_Map_Next(map, &key, &val, &iter)) {
     const upb_MiniTableField* value_field = &map_entry_table->fields[1];
     const upb_MiniTable* value_sub =
-        (value_field->submsg_index != kUpb_NoSub)
+        (value_field->UPB_PRIVATE(submsg_index) != kUpb_NoSub)
             ? upb_MiniTable_GetSubMessageTable(map_entry_table, value_field)
             : NULL;
     upb_CType value_field_type = upb_MiniTableField_CType(value_field);
@@ -122,7 +122,7 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
                                           upb_Message* clone,
                                           upb_Arena* arena) {
   const upb_MiniTable* map_entry_table =
-      mini_table->subs[field->submsg_index].submsg;
+      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(map_entry_table);
 
   const upb_MiniTableField* key_field = &map_entry_table->fields[0];
@@ -166,7 +166,7 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
   _upb_MiniTableField_CheckIsArray(field);
   upb_Array* cloned_array = upb_Array_DeepClone(
       array, upb_MiniTableField_CType(field),
-      field->submsg_index != kUpb_NoSub
+      field->UPB_PRIVATE(submsg_index) != kUpb_NoSub
           ? upb_MiniTable_GetSubMessageTable(mini_table, field)
           : NULL,
       arena);

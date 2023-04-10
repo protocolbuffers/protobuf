@@ -200,6 +200,8 @@
 /* UPB_PTRADD(ptr, ofs): add pointer while avoiding "NULL + 0" UB */
 #define UPB_PTRADD(ptr, ofs) ((ofs) ? (ptr) + (ofs) : (ptr))
 
+#define UPB_PRIVATE(x) x##_dont_copy_me__upb_internal_use_only
+
 /* Configure whether fasttable is switched on or not. *************************/
 
 #ifdef __has_attribute

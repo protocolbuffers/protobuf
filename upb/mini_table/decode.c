@@ -172,9 +172,9 @@ static void upb_MiniTable_SetTypeAndSub(upb_MiniTableField* field,
   }
 
   if (upb_MiniTable_HasSub(field, msg_modifiers)) {
-    field->submsg_index = sub_count ? (*sub_count)++ : 0;
+    field->UPB_PRIVATE(submsg_index) = sub_count ? (*sub_count)++ : 0;
   } else {
-    field->submsg_index = kUpb_NoSub;
+    field->UPB_PRIVATE(submsg_index) = kUpb_NoSub;
   }
 
   if (upb_MtDecoder_FieldIsPackable(field) &&
@@ -1046,7 +1046,8 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
       return false;
   }
 
-  upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];
+  upb_MiniTableSub* table_sub =
+      (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
   table_sub->submsg = sub;
   return true;
 }
@@ -1058,7 +1059,8 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
                  (uintptr_t)(table->fields + table->field_count));
   UPB_ASSERT(sub);
 
-  upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];
+  upb_MiniTableSub* table_sub =
+      (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
   table_sub->subenum = sub;
   return true;
 }

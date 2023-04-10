@@ -49,6 +49,9 @@
 #include "upb/wire/common.h"
 #include "upb/wire/decode.h"
 
+// Must be last
+#include "upb/port/def.inc"
+
 namespace {
 
 // Proto2 test messages field numbers used for reflective access.
@@ -580,10 +583,10 @@ upb_MiniTable* CreateMiniTableWithEmptySubTables(upb_Arena* arena) {
   // Initialize sub table to null. Not using upb_MiniTable_SetSubMessage
   // since it checks ->ext on parameter.
   upb_MiniTableSub* sub = const_cast<upb_MiniTableSub*>(
-      &table->subs[table->fields[1].submsg_index]);
+      &table->subs[table->fields[1].UPB_PRIVATE(submsg_index)]);
   sub->submsg = nullptr;
   sub = const_cast<upb_MiniTableSub*>(
-      &table->subs[table->fields[2].submsg_index]);
+      &table->subs[table->fields[2].UPB_PRIVATE(submsg_index)]);
   sub->submsg = nullptr;
   return table;
 }
@@ -605,10 +608,10 @@ upb_MiniTable* CreateMiniTableWithEmptySubTablesForMaps(upb_Arena* arena) {
   // Initialize sub table to null. Not using upb_MiniTable_SetSubMessage
   // since it checks ->ext on parameter.
   upb_MiniTableSub* sub = const_cast<upb_MiniTableSub*>(
-      &table->subs[table->fields[1].submsg_index]);
+      &table->subs[table->fields[1].UPB_PRIVATE(submsg_index)]);
   sub->submsg = nullptr;
   sub = const_cast<upb_MiniTableSub*>(
-      &table->subs[table->fields[2].submsg_index]);
+      &table->subs[table->fields[2].UPB_PRIVATE(submsg_index)]);
   sub->submsg = nullptr;
   return table;
 }

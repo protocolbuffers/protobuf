@@ -199,7 +199,8 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   upb_Message* message = NULL;
   // Callers should check that message is not set first before calling
   // PromotoUnknownToMessage.
-  UPB_ASSERT(mini_table->subs[field->submsg_index].submsg == sub_mini_table);
+  UPB_ASSERT(upb_MiniTable_GetSubMessageTable(mini_table, field) ==
+             sub_mini_table);
   bool is_oneof = _upb_MiniTableField_InOneOf(field);
   if (!is_oneof || _upb_getoneofcase_field(msg, field) == field->number) {
     UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
@@ -286,7 +287,7 @@ upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
                                                upb_Message* map_entry_message,
                                                upb_Arena* arena) {
   const upb_MiniTable* map_entry_mini_table =
-      mini_table->subs[field->submsg_index].submsg;
+      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table->field_count == 2);
   const upb_MiniTableField* map_entry_key_field =
@@ -311,7 +312,7 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, int decode_options, upb_Arena* arena) {
   const upb_MiniTable* map_entry_mini_table =
-      mini_table->subs[field->submsg_index].submsg;
+      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table->field_count == 2);

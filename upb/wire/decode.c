@@ -220,7 +220,7 @@ static void _upb_Decoder_Munge(int type, wireval* val) {
 static upb_Message* _upb_Decoder_NewSubMessage(
     upb_Decoder* d, const upb_MiniTableSub* subs,
     const upb_MiniTableField* field) {
-  const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(subl);
   upb_Message* msg = _upb_Message_New(subl, &d->arena);
   if (!msg) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
@@ -259,7 +259,7 @@ static const char* _upb_Decoder_DecodeSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field, int size) {
   int saved_delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, size);
-  const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(subl);
   ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, DECODE_NOGROUP);
   upb_EpsCopyInputStream_PopLimit(&d->input, ptr, saved_delta);
@@ -290,7 +290,7 @@ UPB_FORCEINLINE
 static const char* _upb_Decoder_DecodeKnownGroup(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field) {
-  const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(subl);
   return _upb_Decoder_DecodeGroup(d, ptr, submsg, subl, field->number);
 }
@@ -354,7 +354,7 @@ static const char* _upb_Decoder_DecodeEnumArray(upb_Decoder* d, const char* ptr,
                                                 const upb_MiniTableSub* subs,
                                                 const upb_MiniTableField* field,
                                                 wireval* val) {
-  const upb_MiniTableEnum* e = subs[field->submsg_index].subenum;
+  const upb_MiniTableEnum* e = subs[field->UPB_PRIVATE(submsg_index)].subenum;
   if (!_upb_Decoder_CheckEnum(d, ptr, msg, e, field, val)) return ptr;
   void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
   arr->size++;
@@ -425,7 +425,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     upb_Decoder* d, const char* ptr, upb_Message* msg, upb_Array* arr,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field,
     wireval* val) {
-  const upb_MiniTableEnum* e = subs[field->submsg_index].subenum;
+  const upb_MiniTableEnum* e = subs[field->UPB_PRIVATE(submsg_index)].subenum;
   int saved_limit = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
   char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
   while (!_upb_Decoder_IsDone(d, &ptr)) {
@@ -586,7 +586,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   upb_Map* map = *map_p;
   upb_MapEntry ent;
   UPB_ASSERT(upb_MiniTableField_Type(field) == kUpb_FieldType_Message);
-  const upb_MiniTable* entry = subs[field->submsg_index].submsg;
+  const upb_MiniTable* entry = subs[field->UPB_PRIVATE(submsg_index)].submsg;
 
   UPB_ASSERT(entry->field_count == 2);
   UPB_ASSERT(!upb_IsRepeatedOrMap(&entry->fields[0]));
@@ -647,7 +647,8 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   int type = field->descriptortype;
 
   if (UPB_UNLIKELY(op == kUpb_DecodeOp_Enum) &&
-      !_upb_Decoder_CheckEnum(d, ptr, msg, subs[field->submsg_index].subenum,
+      !_upb_Decoder_CheckEnum(d, ptr, msg,
+                              subs[field->UPB_PRIVATE(submsg_index)].subenum,
                               field, val)) {
     return ptr;
   }
@@ -963,7 +964,7 @@ static void _upb_Decoder_CheckUnlinked(const upb_MiniTable* mt,
                                        int* op) {
   // If sub-message is not linked, treat as unknown.
   if (field->mode & kUpb_LabelFlags_IsExtension) return;
-  const upb_MiniTableSub* sub = &mt->subs[field->submsg_index];
+  const upb_MiniTableSub* sub = &mt->subs[field->UPB_PRIVATE(submsg_index)];
   if (!sub->submsg) *op = kUpb_DecodeOp_UnknownField;
 }
 

@@ -1115,7 +1115,7 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
   }
 
   if (field.ctype() == kUpb_CType_Message) {
-    uint64_t idx = mt_f->submsg_index;
+    uint64_t idx = mt_f->UPB_PRIVATE(submsg_index);
     if (idx > 255) return false;
     data |= idx << 16;
 
@@ -1263,9 +1263,9 @@ std::string FieldInitializer(upb::FieldDefPtr field,
         "{$0, $1, $2, $3, $4, $5}", field64->number,
         ArchDependentSize(field32->offset, field64->offset),
         ArchDependentSize(field32->presence, field64->presence),
-        field64->submsg_index == kUpb_NoSub
+        field64->UPB_PRIVATE(submsg_index) == kUpb_NoSub
             ? "kUpb_NoSub"
-            : absl::StrCat(field64->submsg_index).c_str(),
+            : absl::StrCat(field64->UPB_PRIVATE(submsg_index)).c_str(),
         field64->descriptortype, GetModeInit(field32, field64));
   }
 }
@@ -1311,7 +1311,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
 
   for (int i = 0; i < mt_64->field_count; i++) {
     const upb_MiniTableField* f = &mt_64->fields[i];
-    if (f->submsg_index != kUpb_NoSub) {
+    if (f->UPB_PRIVATE(submsg_index) != kUpb_NoSub) {
       subs.push_back(GetSub(message.FindFieldByNumber(f->number)));
     }
   }

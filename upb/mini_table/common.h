@@ -112,14 +112,27 @@ UPB_API_INLINE bool upb_MiniTableField_HasPresence(
   }
 }
 
+// Returns the MiniTable for this message field.  If the field is unlinked,
+// returns NULL.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  return mini_table->subs[field->submsg_index].submsg;
+  UPB_ASSERT(upb_MiniTableField_CType(field) == kUpb_CType_Message);
+  return mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
 }
 
+// Returns the MiniTableEnum for this enum field.  If the field is unlinked,
+// returns NULL.
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  return mini_table->subs[field->submsg_index].subenum;
+  UPB_ASSERT(upb_MiniTableField_CType(field) == kUpb_CType_Enum);
+  return mini_table->subs[field->UPB_PRIVATE(submsg_index)].subenum;
+}
+
+// Returns true if this MiniTable field is linked to a MiniTable for the
+// sub-message.
+UPB_API_INLINE bool upb_MiniTable_MessageFieldIsLinked(
+    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
+  return upb_MiniTable_GetSubMessageTable(mini_table, field) != NULL;
 }
 
 // If this field is in a oneof, returns the first field in the oneof.

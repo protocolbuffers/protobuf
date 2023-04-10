@@ -329,6 +329,7 @@ cc_test(
         ":collections",
         ":message_accessors",
         ":mini_table_internal",
+        ":port",
         ":upb",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
