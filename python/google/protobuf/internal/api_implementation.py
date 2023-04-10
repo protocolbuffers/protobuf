@@ -55,7 +55,6 @@ if _implementation_type is None:
   else:
     _implementation_type = 'python'
 
-
 # This environment variable can be used to switch to a certain implementation
 # of the Python API, overriding the compile-time constants in the
 # _api_implementation module. Right now only 'python', 'cpp' and 'upb' are
