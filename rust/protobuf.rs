@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2023 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#[test]
-fn test_serialization() {
-    let test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
-    assert_eq!(*test_all_types.serialize(), []);
-}
+//! Rust Protobuf Runtime
+//!
+//! This file forwards to the kernel specific implementation. Rust Protobuf
+//! gencode actually depends directly on kernel specific crates. The only reason
+//! this crate exists is to be able to use `protobuf` as a crate name for both
+//! cpp and upb kernels from user code.
+
+#[cfg(cpp_kernel)]
+pub use protobuf_cpp::__runtime;
+#[cfg(cpp_kernel)]
+pub use protobuf_cpp::*;
+
+#[cfg(upb_kernel)]
+pub use protobuf_upb::__runtime;
+#[cfg(upb_kernel)]
+pub use protobuf_upb::*;

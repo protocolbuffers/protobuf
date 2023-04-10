@@ -213,10 +213,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Owner: shaod@, gberg@
 #define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
 
-// Enable cord handling.
-// Owner: mvels@, mkruskal@
-#define PROTOBUF_FUTURE_OPENSOURCE_CORD 1
-
 // Used to remove `RepeatedPtrField::GetArena() const`.
 // Owner: ezb@
 #define PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API 1
@@ -1009,6 +1005,9 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Turn on -Wdeprecated-enum-enum-conversion. This deprecation comes in C++20
 // via http://wg21.link/p1120r0.
 #pragma clang diagnostic error "-Wdeprecated-enum-enum-conversion"
+// This error has been generally flaky, but we need to disable it specifically
+// to fix https://github.com/protocolbuffers/protobuf/issues/12313
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -1029,6 +1028,9 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 //   int index = ...
 //   int value = vec[index];
 #pragma GCC diagnostic ignored "-Wsign-conversion"
+// This error has been generally flaky, but we need to disable it specifically
+// to fix https://github.com/protocolbuffers/protobuf/issues/12313
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #if __GNUC__ == 12 && __GNUC_MINOR__ < 4
 // Wrong warning emitted when assigning a single char c-string to a std::string
 // in c++20 mode and optimization on.

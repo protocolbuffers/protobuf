@@ -38,13 +38,11 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <new>
 #include <string>
 #include <type_traits>
-
-#if PROTOBUF_RTTI
 #include <typeinfo>
-#endif
 
 
 #include "absl/meta/type_traits.h"

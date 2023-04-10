@@ -346,25 +346,21 @@ bool IsProfileDriven(const Options& options);
 
 bool IsStringInlined(const FieldDescriptor* descriptor, const Options& options);
 
-// For a string field, returns the effective ctype.  If the actual ctype is
-// not supported, returns the default of STRING.
-FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
-                                         const Options& options);
-
 inline bool IsCord(const FieldDescriptor* field, const Options& options) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         EffectiveStringCType(field, options) == FieldOptions::CORD;
+         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
 }
 
 inline bool IsString(const FieldDescriptor* field, const Options& options) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         EffectiveStringCType(field, options) == FieldOptions::STRING;
+         internal::cpp::EffectiveStringCType(field) == FieldOptions::STRING;
 }
 
 inline bool IsStringPiece(const FieldDescriptor* field,
                           const Options& options) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         EffectiveStringCType(field, options) == FieldOptions::STRING_PIECE;
+         internal::cpp::EffectiveStringCType(field) ==
+             FieldOptions::STRING_PIECE;
 }
 
 // Does the given FileDescriptor use lazy fields?

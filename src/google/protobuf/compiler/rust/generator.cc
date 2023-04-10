@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2023 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -58,13 +58,13 @@ bool ExperimentalRustGeneratorEnabled(
       });
 }
 
-// Marks which kernel Rust codegen assumes and generates gencode for.
+// Marks which kernel the Rust codegen should generate code for.
 enum class Kernel {
   kUpb,
   kCpp,
 };
 
-absl::optional<Kernel> ParsekernelConfiguration(
+absl::optional<Kernel> ParseKernelConfiguration(
     const std::vector<std::pair<std::string, std::string>>& options) {
   for (const auto& pair : options) {
     if (pair.first == "kernel") {
@@ -79,13 +79,109 @@ absl::optional<Kernel> ParsekernelConfiguration(
   return absl::nullopt;
 }
 
-std::string get_crate_name(const FileDescriptor* dependency) {
+std::string GetCrateName(const FileDescriptor* dependency) {
   absl::string_view path = dependency->name();
   auto basename = path.substr(path.rfind('/') + 1);
   return absl::StrReplaceAll(basename, {
                                            {".", "_"},
                                            {"-", "_"},
                                        });
+}
+
+std::string GetFileExtensionForKernel(Kernel kernel) {
+  switch (kernel) {
+    case Kernel::kUpb:
+      return ".u.pb.rs";
+    case Kernel::kCpp:
+      return ".c.pb.rs";
+  }
+  ABSL_LOG(FATAL) << "Unknown kernel type: ";
+  return "";
+}
+
+// The prefix used by the UPB compiler to generate unique function names.
+// TODO(b/275708201): Determine a principled way to generate names of UPB
+// accessors.
+std::string GetUpbMessagePrefix(const Descriptor* msg_descriptor) {
+  std::string upb_msg_prefix = msg_descriptor->full_name();
+  absl::StrReplaceAll({{".", "_"}}, &upb_msg_prefix);
+  return upb_msg_prefix;
+}
+
+void GenerateMessageFunctionsForUpb(const Descriptor* msg_descriptor,
+                                    google::protobuf::io::Printer& p) {
+  p.Emit({{"Msg", msg_descriptor->name()},
+          {"pkg_Msg", GetUpbMessagePrefix(msg_descriptor)}},
+         R"rs(
+    impl $Msg$ {
+      pub fn new() -> Self {
+        let arena = unsafe { ::__pb::Arena::new() };
+        let msg = unsafe { $pkg_Msg$_new(arena) };
+        $Msg$ { msg, arena }
+      }
+
+      pub fn serialize(&self) -> ::__pb::SerializedData {
+        let arena = unsafe { ::__pb::__runtime::upb_Arena_New() };
+        let mut len = 0;
+        let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
+        unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
+      }
+    }
+
+    extern "C" {
+      fn $pkg_Msg$_new(arena: *mut ::__pb::Arena) -> ::__std::ptr::NonNull<u8>;
+      fn $pkg_Msg$_serialize(
+        msg: ::__std::ptr::NonNull<u8>,
+        arena: *mut ::__pb::Arena,
+        len: &mut usize) -> ::__std::ptr::NonNull<u8>;
+    }
+  )rs");
+}
+
+void GenerateForUpb(const FileDescriptor* file, google::protobuf::io::Printer& p) {
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    auto msg_descriptor = file->message_type(i);
+
+    p.Emit({{"Msg", msg_descriptor->name()},
+            {"ImplMessageFunctions",
+             [&] { GenerateMessageFunctionsForUpb(msg_descriptor, p); }}},
+           R"rs(
+      pub struct $Msg$ {
+        msg: ::__std::ptr::NonNull<u8>,
+        arena: *mut ::__pb::Arena,
+      }
+
+      $ImplMessageFunctions$;
+    )rs");
+  }
+}
+
+void GenerateForCpp(const FileDescriptor* file, google::protobuf::io::Printer& p) {
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    // TODO(b/272728844): Implement real logic
+    p.Emit({{"Msg", file->message_type(i)->name()}},
+           R"rs(
+      pub struct $Msg$ {
+        msg: ::__std::ptr::NonNull<u8>,
+      }
+
+      impl $Msg$ {
+        pub fn new() -> Self { Self { msg: ::__std::ptr::NonNull::dangling() }}
+        pub fn serialize(&self) -> Vec<u8> { vec![] }
+      }
+    )rs");
+  }
+}
+
+std::string GetKernelRustName(Kernel kernel) {
+  switch (kernel) {
+    case Kernel::kUpb:
+      return "upb";
+    case Kernel::kCpp:
+      return "cpp";
+  }
+  ABSL_LOG(FATAL) << "Unknown kernel type: ";
+  return "";
 }
 
 bool RustGenerator::Generate(const FileDescriptor* file,
@@ -103,7 +199,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     return false;
   }
 
-  absl::optional<Kernel> kernel = ParsekernelConfiguration(options);
+  absl::optional<Kernel> kernel = ParseKernelConfiguration(options);
   if (!kernel.has_value()) {
     *error =
         "Mandatory option `kernel` missing, please specify `cpp` or "
@@ -112,12 +208,12 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   }
 
   auto basename = StripProto(file->name());
-  auto outfile = absl::WrapUnique(
-      generator_context->Open(absl::StrCat(basename, ".pb.rs")));
+  auto outfile = absl::WrapUnique(generator_context->Open(
+      absl::StrCat(basename, GetFileExtensionForKernel(*kernel))));
 
   google::protobuf::io::Printer p(outfile.get());
-  p.Emit(R"rs(
-    extern crate protobuf as __pb;
+  p.Emit({{"kernel", GetKernelRustName(*kernel)}}, R"rs(
+    extern crate protobuf_$kernel$ as __pb;
     extern crate std as __std;
 
   )rs");
@@ -127,7 +223,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   // Rust crate names (currently Bazel labels).
   for (int i = 0; i < file->public_dependency_count(); ++i) {
     const FileDescriptor* dep = file->public_dependency(i);
-    std::string crate_name = get_crate_name(dep);
+    std::string crate_name = GetCrateName(dep);
     for (int j = 0; j < dep->message_type_count(); ++j) {
       // TODO(b/272728844): Implement real logic
       p.Emit(
@@ -138,61 +234,14 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     }
   }
 
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    // TODO(b/272728844): Implement real logic
-    std::string full_name = file->message_type(i)->full_name();
-    absl::StrReplaceAll({{".", "_"}}, &full_name);
-    switch (*kernel) {
-      case Kernel::kUpb: {
-        p.Emit({{"Msg", file->message_type(i)->name()}, {"pkg_Msg", full_name}},
-               R"rs(
-          pub struct $Msg$ {
-            msg: ::__std::ptr::NonNull<u8>,
-            arena: *mut ::__pb::Arena,
-          }
-
-          impl $Msg$ {
-            pub fn new() -> Self {
-              let arena = unsafe { ::__pb::Arena::new() };
-              let msg = unsafe { $pkg_Msg$_new(arena) };
-              $Msg$ { msg, arena }
-            }
-            pub fn serialize(&self) -> ::__pb::SerializedData {
-              let arena = unsafe { ::__pb::__runtime::upb_Arena_New() };
-              let mut len = 0;
-              let chars = unsafe { $pkg_Msg$_serialize(self.msg, arena, &mut len) };
-              unsafe {::__pb::SerializedData::from_raw_parts(arena, chars, len)}
-            }
-          }
-
-          extern "C" {
-            fn $pkg_Msg$_new(arena: *mut ::__pb::Arena) -> ::__std::ptr::NonNull<u8>;
-            fn $pkg_Msg$_serialize(
-              msg: ::__std::ptr::NonNull<u8>,
-              arena: *mut ::__pb::Arena,
-               len: &mut usize) -> ::__std::ptr::NonNull<u8>;
-          }
-    )rs");
-        break;
-      }
-      case Kernel::kCpp: {
-        // TODO(b/272728844): Implement real logic
-        p.Emit({{"Msg", file->message_type(i)->name()}},
-               R"rs(
-          pub struct $Msg$ {
-            msg: ::__std::ptr::NonNull<u8>,
-          }
-
-          impl $Msg$ {
-            pub fn new() -> Self { Self { msg: ::__std::ptr::NonNull::dangling() }}
-            pub fn serialize(&self) -> Vec<u8> { vec![] }
-          }
-        )rs");
-        break;
-      }
-    }
+  switch (*kernel) {
+    case Kernel::kUpb:
+      GenerateForUpb(file, p);
+      break;
+    case Kernel::kCpp:
+      GenerateForCpp(file, p);
+      break;
   }
-
   return true;
 }
 

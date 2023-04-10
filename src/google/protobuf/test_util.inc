@@ -2396,6 +2396,7 @@ inline void TestUtil::ExpectOneofClear(const UNITTEST::TestOneof2& message) {
   EXPECT_FALSE(message.has_foo_message());
   EXPECT_FALSE(message.has_foogroup());
   EXPECT_FALSE(message.has_foo_lazy_message());
+  EXPECT_FALSE(message.has_foo_bytes_cord());
 
   EXPECT_FALSE(message.has_bar_int());
   EXPECT_FALSE(message.has_bar_string());
@@ -2419,6 +2420,7 @@ inline void TestUtil::ExpectAtMostOneFieldSetInOneof(
   if (message.has_foo_message()) count++;
   if (message.has_foogroup()) count++;
   if (message.has_foo_lazy_message()) count++;
+  if (message.has_foo_bytes_cord()) count++;
   EXPECT_LE(count, 1);
   count = 0;
   if (message.has_bar_int()) count++;

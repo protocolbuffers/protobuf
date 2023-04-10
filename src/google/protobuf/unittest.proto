@@ -827,7 +827,6 @@ message TestOneof {
       optional int32 a = 5;
       optional string b = 6;
     }
-    bytes foo_bytes_cord = 7 [ctype=CORD];
   }
 }
 
@@ -855,6 +854,7 @@ message TestOneof2 {
       optional string b = 10;
     }
     NestedMessage foo_lazy_message = 11 [lazy=true];
+    bytes foo_bytes_cord = 30 [ctype=CORD];
   }
 
   oneof bar {
@@ -1134,7 +1134,11 @@ message TestHugeFieldNumbers {
     bytes oneof_bytes = 536870014;
   }
 
-  extensions  536860000 to 536869999;
+  extensions 536860000 to 536869999 [declaration = {
+    number: 536860000
+    full_name: ".protobuf_unittest.test_all_types"
+    type: ".protobuf_unittest.TestAllTypes"
+  }];
 }
 
 extend TestHugeFieldNumbers {

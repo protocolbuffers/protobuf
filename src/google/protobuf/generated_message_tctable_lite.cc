@@ -269,6 +269,13 @@ absl::string_view TcParser::FieldName(const TcParseTableBase* table,
                   field_index + 1);
 }
 
+PROTOBUF_NOINLINE const char* TcParser::Error(PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  (void)ctx;
+  (void)ptr;
+  SyncHasbits(msg, hasbits, table);
+  return nullptr;
+}
+
 template <bool export_called_function>
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(
     PROTOBUF_TC_PARAM_DECL) {

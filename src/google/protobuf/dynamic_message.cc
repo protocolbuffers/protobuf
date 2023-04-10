@@ -441,8 +441,8 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                     GetArenaForAllocation());
                 if (GetOwningArena() != nullptr) {
                   // Needs to destroy the mutex member.
-                  GetOwningArena()->OwnDestructor(
-                      static_cast<DynamicMapField*>(field_ptr));
+                  static_cast<DynamicMapField*>(field_ptr)->OwnMutexDestructor(
+                      *GetOwningArena());
                 }
               } else {
                 new (field_ptr) DynamicMapField(
@@ -456,8 +456,8 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                                     GetArenaForAllocation());
                 if (GetOwningArena() != nullptr) {
                   // Needs to destroy the mutex member.
-                  GetOwningArena()->OwnDestructor(
-                      static_cast<DynamicMapField*>(field_ptr));
+                  static_cast<DynamicMapField*>(field_ptr)->OwnMutexDestructor(
+                      *GetOwningArena());
                 }
               } else {
                 new (field_ptr)

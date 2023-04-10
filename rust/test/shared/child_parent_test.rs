@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2023 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,63 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Rust Protobuf Runtime
-
-#[cfg(cpp_kernel)]
-pub extern crate cpp as __runtime;
-#[cfg(upb_kernel)]
-pub extern crate upb as __runtime;
-
-pub use __runtime::Arena;
-
-use std::ops::Deref;
-use std::ptr::NonNull;
-use std::slice;
-
-/// Represents serialized Protobuf wire format data. It's typically produced by
-/// `<Message>.serialize()`.
-pub struct SerializedData {
-    data: NonNull<u8>,
-    len: usize,
-    arena: *mut Arena,
+#[test]
+fn test_canonical_types() {
+    let _child = child_proto::Child::new();
+    let _parent = parent_proto::Parent::new();
+    // Parent from child_proto crate should be the same type as Parent from
+    // parent_proto crate.
+    let _parent_from_child: child_proto::Parent = parent_proto::Parent::new();
 }
 
-impl SerializedData {
-    pub unsafe fn from_raw_parts(arena: *mut Arena, data: NonNull<u8>, len: usize) -> Self {
-        SerializedData { arena, data, len }
-    }
+#[test]
+fn test_parent_serialization() {
+    assert_eq!(*parent_proto::Parent::new().serialize(), []);
 }
 
-impl Deref for SerializedData {
-    type Target = [u8];
-    fn deref(&self) -> &Self::Target {
-        unsafe { slice::from_raw_parts(self.data.as_ptr() as *const _, self.len) }
-    }
-}
-
-impl Drop for SerializedData {
-    fn drop(&mut self) {
-        unsafe { Arena::free(self.arena) };
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_serialized_data_roundtrip() {
-        let arena = unsafe { Arena::new() };
-        let original_data = b"Hello world";
-        let len = original_data.len();
-
-        let serialized_data = unsafe {
-            SerializedData::from_raw_parts(
-                arena,
-                NonNull::new(original_data as *const _ as *mut _).unwrap(),
-                len,
-            )
-        };
-        assert_eq!(&*serialized_data, b"Hello world");
-    }
+#[test]
+fn test_child_serialization() {
+    assert_eq!(*child_proto::Child::new().serialize(), []);
 }

@@ -2211,6 +2211,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool lazily_build_dependencies_;
   bool allow_unknown_;
   bool enforce_weak_;
+  bool enforce_special_extension_ranges_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
 
@@ -2644,6 +2645,21 @@ PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
     const FieldDescriptor* field);
 
 PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
+
+// For a string field, returns the effective ctype.  If the actual ctype is
+// not supported, returns the default of STRING.
+template <typename FieldDesc = FieldDescriptor,
+          typename FieldOpts = FieldOptions>
+typename FieldOpts::CType EffectiveStringCType(const FieldDesc* field) {
+  ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  // Open-source protobuf release only supports STRING ctype and CORD for
+  // sinuglar bytes.
+  if (field->type() == FieldDescriptor::TYPE_BYTES && !field->is_repeated() &&
+      field->options().ctype() == FieldOpts::CORD && !field->is_extension()) {
+    return FieldOpts::CORD;
+  }
+  return FieldOpts::STRING;
+}
 
 #ifndef SWIG
 enum class Utf8CheckMode {

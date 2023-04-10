@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2023 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,20 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #[test]
-fn test_canonical_types() {
-    let _child = child_proto::Child::new();
-    let _parent = parent_proto::Parent::new();
-    // Parent from child_proto crate should be the same type as Parent from
-    // parent_proto crate.
-    let _parent_from_child: child_proto::Parent = parent_proto::Parent::new();
-}
-
-#[test]
-fn test_parent_serialization() {
-    assert_eq!(*parent_proto::Parent::new().serialize(), []);
-}
-
-#[test]
-fn test_child_serialization() {
-    assert_eq!(*child_proto::Child::new().serialize(), []);
+fn test_serialization() {
+    let test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
+    assert_eq!(*test_all_types.serialize(), []);
 }

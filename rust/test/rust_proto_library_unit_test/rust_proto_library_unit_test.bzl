@@ -3,7 +3,7 @@
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
 load("//rust:aspects.bzl", "RustProtoInfo")
-load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", "cc_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 def _find_action_with_mnemonic(actions, mnemonic):
     action = [a for a in actions if a.mnemonic == mnemonic]

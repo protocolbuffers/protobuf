@@ -182,7 +182,8 @@ TEST(RetentionTest, Method) {
           .GetExtension(protobuf_unittest::method_option));
 }
 
-TEST(RetentionTest, StripSourceRetentionOptions) {
+
+TEST(RetentionTest, StripSourceRetentionOptionsWithSourceCodeInfo) {
   // The tests above make assertions against the generated code, but this test
   // case directly examines the result of the StripSourceRetentionOptions()
   // function instead.
@@ -237,31 +238,9 @@ TEST(RetentionTest, StripSourceRetentionOptions) {
   pool.BuildFile(file_descriptor);
 
   FileDescriptorProto stripped_file = compiler::StripSourceRetentionOptions(
-      *pool.FindFileByName("retention.proto"));
-
-  // We use a dynamic message to generate the expected options proto. This lets
-  // us parse the custom options in text format.
-  const Descriptor* file_options_descriptor =
-      pool.FindMessageTypeByName(FileOptions().GetTypeName());
-  DynamicMessageFactory factory;
-  std::unique_ptr<Message> dynamic_message(
-      factory.GetPrototype(file_options_descriptor)->New());
-  ASSERT_TRUE(TextFormat::ParseFromString(
-      R"([google.protobuf.internal.options] {
-           i2: 456
-           c {}
-           rc {}
-         }
-         [google.protobuf.internal.repeated_options] {
-           i2: 222
-         })",
-      dynamic_message.get()));
-  FileOptions expected_options;
-  ASSERT_TRUE(
-      expected_options.ParseFromString(dynamic_message->SerializeAsString()));
-
-  EXPECT_TRUE(util::MessageDifferencer::Equals(stripped_file.options(),
-                                               expected_options));
+      *pool.FindFileByName("retention.proto"),
+      /*include_source_code_info=*/true);
+  EXPECT_EQ(stripped_file.source_code_info().location_size(), 63);
 }
 
 }  // namespace

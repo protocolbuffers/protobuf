@@ -9,9 +9,11 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("@rules_rust//rust:defs.bzl", "rust_common")
-load("//third_party/upb/bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("@upb//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 
 proto_common = proto_common_do_not_use
+
+visibility(["//rust/..."])
 
 RustProtoInfo = provider(
     doc = "Rust protobuf provider info",
@@ -24,7 +26,8 @@ RustProtoInfo = provider(
 def _generate_rust_gencode(
         ctx,
         proto_info,
-        proto_lang_toolchain):
+        proto_lang_toolchain,
+        ext):
     """Generates Rust gencode
 
         This function uses proto_common APIs and a ProtoLangToolchain to register an action
@@ -34,6 +37,7 @@ def _generate_rust_gencode(
         proto_info (ProtoInfo): ProtoInfo of the proto_library target for which we are generating
                     gencode
         proto_lang_toolchain (ProtoLangToolchainInfo): proto lang toolchain for Rust
+        ext: the file extension to use for generated files
     Returns:
         rs_outputs ([File]): generated Rust source files
     """
@@ -41,7 +45,7 @@ def _generate_rust_gencode(
     rs_outputs = proto_common.declare_generated_files(
         actions = actions,
         proto_info = proto_info,
-        extension = ".pb.rs",
+        extension = ext,
     )
 
     proto_common.compile(
@@ -164,7 +168,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
 
     proto_lang_toolchain = ctx.attr._proto_lang_toolchain[proto_common.ProtoLangToolchainInfo]
 
-    gencode = _generate_rust_gencode(ctx, target[ProtoInfo], proto_lang_toolchain)
+    gencode = _generate_rust_gencode(ctx, target[ProtoInfo], proto_lang_toolchain, (".u.pb.rs" if is_upb else ".c.pb.rs"))
 
     runtime = proto_lang_toolchain.runtime
     dep_variant_info_for_runtime = DepVariantInfo(
@@ -234,7 +238,7 @@ def _make_proto_library_aspect(is_upb):
                 cfg = "exec",
             ),
             "_proto_lang_toolchain": attr.label(
-                default = Label("//rust:proto_lang_toolchain"),
+                default = Label(("//rust:proto_rust_upb_toolchain" if is_upb else "//rust:proto_rust_cpp_toolchain")),
             ),
         },
         fragments = ["cpp"],
