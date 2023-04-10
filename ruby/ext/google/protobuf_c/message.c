@@ -869,6 +869,7 @@ static VALUE Message_freeze(VALUE _self) {
 static VALUE Message_index(VALUE _self, VALUE field_name) {
   Message* self = ruby_to_Message(_self);
   const upb_FieldDef* field;
+  const char* name;
 
   if (TYPE(field_name) == T_STRING) {
     name = RSTRING_PTR(field_name);
@@ -876,7 +877,7 @@ static VALUE Message_index(VALUE _self, VALUE field_name) {
     name = RSTRING_PTR(rb_id2str(SYM2ID(field_name)));
   } else {
     rb_raise(rb_eArgError,
-             "Expected string or symbols as hash keys when accessing a field's "
+             "Expected string or symbols as keys when accessing a field's "
              "value by field name.");
   }
   field = upb_MessageDef_FindFieldByName(self->msgdef, RSTRING_PTR(name));

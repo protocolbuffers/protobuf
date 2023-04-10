@@ -695,6 +695,14 @@ module BasicTest
         msg.map_string_int32_as_value = :boom
       end
     end
+
+    def test_field_index # regression test for accessing field by string or symbol
+      msg = TestMessage2.new
+
+      assert_equal msg.foo, 1
+      assert_equal msg["foo"], 1
+      assert_equal msg[:foo], 1
+    end
   end
 
   def test_oneof_fields_respond_to? # regression test for issue 9202
