@@ -655,6 +655,18 @@ struct KeyNode : NodeBase {
   decltype(auto) key() const { return ReadKey<Key>(GetVoidKey()); }
 };
 
+// Multiply two numbers where overflow is expected.
+template <typename N>
+N MultiplyWithOverflow(N a, N b) {
+#if __has_builtin(__builtin_mul_overflow)
+  N res;
+  (void)__builtin_mul_overflow(a, b, &res);
+  return res;
+#else
+  return a * b;
+#endif
+}
+
 // KeyMapBase is a chaining hash map with the additional feature that some
 // buckets can be converted to use an ordered container.  This ensures O(lg n)
 // bounds on find, insert, and erase, while avoiding the overheads of ordered
@@ -1019,7 +1031,7 @@ class KeyMapBase : public UntypedMapBase {
     // the hash value. The constant kPhi (suggested by Knuth) is roughly
     // (sqrt(5) - 1) / 2 * 2^64.
     constexpr uint64_t kPhi = uint64_t{0x9e3779b97f4a7c15};
-    return ((kPhi * h) >> 32) & (num_buckets_ - 1);
+    return (MultiplyWithOverflow(kPhi, h) >> 32) & (num_buckets_ - 1);
   }
 
   void DestroyTree(Tree* tree) {
