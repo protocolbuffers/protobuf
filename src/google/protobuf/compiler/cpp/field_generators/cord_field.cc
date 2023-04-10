@@ -144,8 +144,10 @@ void CordFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
 void CordFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$deprecated_attr$const ::absl::Cord& ${1$$name$$}$() const;\n",
-         descriptor_);
+  format(
+      "$deprecated_attr$const ::absl::Cord& ${1$$name$$}$() const "
+      "ABSL_ATTRIBUTE_LIFETIME_BOUND;\n",
+      descriptor_);
   format(
       "$deprecated_attr$void ${1$set_$name$$}$(const ::absl::Cord& value);\n"
       "$deprecated_attr$void ${1$set_$name$$}$(::absl::string_view value);\n",
@@ -166,7 +168,8 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
       "inline const ::absl::Cord& $classname$::_internal_$name$() const {\n"
       "  return $field$;\n"
       "}\n"
-      "inline const ::absl::Cord& $classname$::$name$() const {\n"
+      "inline const ::absl::Cord& $classname$::$name$() const "
+      "ABSL_ATTRIBUTE_LIFETIME_BOUND {\n"
       "$annotate_get$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return _internal_$name$();\n"
@@ -326,7 +329,8 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  }\n"
       "  return $default_variable$;\n"
       "}\n"
-      "inline const ::absl::Cord& $classname$::$name$() const {\n"
+      "inline const ::absl::Cord& $classname$::$name$() const "
+      "ABSL_ATTRIBUTE_LIFETIME_BOUND {\n"
       "$annotate_get$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return _internal_$name$();\n"

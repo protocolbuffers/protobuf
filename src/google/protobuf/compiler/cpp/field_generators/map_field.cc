@@ -204,8 +204,8 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
   auto v2 = p->WithVars(AnnotatedAccessors(field_, {"mutable_"},
                                            io::AnnotationCollector::kAlias));
   p->Emit(R"cc(
-    $DEPRECATED$ const $Map$& $name$() const;
-    $DEPRECATED$ $Map$* $mutable_name$();
+    $DEPRECATED$ const $Map$& $name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+    $DEPRECATED$ $Map$* $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
     private:
     const $Map$& $_internal_name$() const;
@@ -220,7 +220,7 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline const $Map$& $Msg$::_internal_$name$() const {
       return $field_$.GetMap();
     }
-    inline const $Map$& $Msg$::$name$() const {
+    inline const $Map$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_get$;
       // @@protoc_insertion_point(field_map:$pkg.Msg.field$)
       return _internal_$name$();
@@ -229,7 +229,7 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $PrepareSplitMessageForWrite$;
       return $field_$.MutableMap();
     }
-    inline $Map$* $Msg$::mutable_$name$() {
+    inline $Map$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable_map:$pkg.Msg.field$)
       return _internal_mutable_$name$();
