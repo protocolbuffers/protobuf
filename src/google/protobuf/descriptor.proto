@@ -138,7 +138,7 @@ message ExtensionRangeOptions {
     optional int32 number = 1;
 
     // The fully-qualified name of the extension field. There must be a leading
-    // dot of the full name.
+    // dot in front of the full name.
     optional string full_name = 2;
 
     // The fully-qualified type name of the extension field. Unlike
