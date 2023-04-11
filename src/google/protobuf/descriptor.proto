@@ -149,6 +149,11 @@ message ExtensionRangeOptions {
     // If true, indicates that the extension must be defined as repeated.
     // Otherwise the extension must be defined as optional.
     optional bool is_repeated = 4;
+
+    // If true, indicates that the number is reserved in the extension range,
+    // and any extension field with the number will fail to compile. Set this
+    // when a declared extension field is deleted.
+    optional bool reserved = 5;
   }
 
   // go/protobuf-stripping-extension-declarations

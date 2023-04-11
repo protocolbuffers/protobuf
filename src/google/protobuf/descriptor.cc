@@ -7333,6 +7333,17 @@ void DescriptorBuilder::ValidateFieldOptions(
 
     for (const auto& declaration : extension_range->options_->declaration()) {
       if (declaration.number() != field->number()) continue;
+      if (declaration.reserved()) {
+        AddError(field->full_name(), proto,
+                 DescriptorPool::ErrorCollector::EXTENDEE, [&] {
+                   return absl::Substitute(
+                       "Cannot use number $0 for extension field $1, as it is "
+                       "reserved in the extension declarations for message $2.",
+                       field->number(), field->full_name(),
+                       field->containing_type()->full_name());
+                 });
+        return;
+      }
       CheckExtensionDeclaration(*field, proto, declaration.full_name(),
                                 declaration.type(), declaration.is_repeated());
       return;
@@ -7415,6 +7426,7 @@ void DescriptorBuilder::ValidateExtensionDeclaration(
     const RepeatedPtrField<ExtensionRangeOptions_Declaration>& declarations,
     const DescriptorProto_ExtensionRange& proto,
     absl::flat_hash_set<absl::string_view>& full_name_set) {
+  absl::flat_hash_set<int> extension_number_set;
   for (const auto& declaration : declarations) {
     if (declaration.number() < proto.start() ||
         declaration.number() >= proto.end()) {
@@ -7426,7 +7438,15 @@ void DescriptorBuilder::ValidateExtensionDeclaration(
       });
     }
 
-    if (!declaration.has_full_name() || !declaration.has_type()) {
+    if (!extension_number_set.insert(declaration.number()).second) {
+      AddError(full_name, proto, DescriptorPool::ErrorCollector::NUMBER, [&] {
+        return absl::Substitute(
+            "Extension declaration number $0 is declared multiple times.",
+            declaration.number());
+      });
+    }
+
+    if (declaration.has_full_name() != declaration.has_type()) {
       AddError(full_name, proto, DescriptorPool::ErrorCollector::EXTENDEE, [&] {
         return absl::StrCat(
             "Extension declaration #", declaration.number(),
