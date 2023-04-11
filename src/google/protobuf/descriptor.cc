@@ -6626,10 +6626,6 @@ void DescriptorBuilder::CheckExtensionDeclaration(
     const FieldDescriptor& field, const FieldDescriptorProto& proto,
     absl::string_view declared_full_name, absl::string_view declared_type_name,
     bool is_repeated) {
-  if (declared_type_name.empty() && declared_full_name.empty()) {
-    return;
-  }
-
 
   if (!declared_full_name.empty()) {
     std::string actual_full_name = absl::StrCat(".", field.full_name());
@@ -7459,12 +7455,19 @@ void DescriptorBuilder::ValidateExtensionDeclaration(
       });
     }
 
-    if (declaration.has_full_name() != declaration.has_type()) {
-      AddError(full_name, proto, DescriptorPool::ErrorCollector::EXTENDEE, [&] {
-        return absl::StrCat(
-            "Extension declaration #", declaration.number(),
-            " should have both \"full_name\" and \"type\" set.");
-      });
+    // Both full_name and type should be present. If none of them is set,
+    // add an error unless reserved is set to true. If only one of them is set,
+    // add an error whether or not reserved is set to true.
+    if (!declaration.has_full_name() || !declaration.has_type()) {
+      if (declaration.has_full_name() != declaration.has_type() ||
+          !declaration.reserved()) {
+        AddError(full_name, proto, DescriptorPool::ErrorCollector::EXTENDEE,
+                 [&] {
+                   return absl::StrCat(
+                       "Extension declaration #", declaration.number(),
+                       " should have both \"full_name\" and \"type\" set.");
+                 });
+      }
     } else {
       if (!full_name_set.insert(declaration.full_name()).second) {
         AddError(
