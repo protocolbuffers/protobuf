@@ -30,7 +30,11 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
+use std::alloc::{dealloc, Layout};
 use std::boxed::Box;
+use std::ops::Deref;
+use std::ptr::NonNull;
+use std::slice;
 
 /// TODO(b/272728844): Replace this placeholder code with a real implementation.
 #[repr(C)]
@@ -47,5 +51,59 @@ impl Arena {
     pub unsafe fn free(arena: *mut Self) {
         let arena = Box::from_raw(arena);
         std::mem::drop(arena);
+    }
+}
+
+/// Represents serialized Protobuf wire format data. It's typically produced by
+/// `<Message>.serialize()`.
+///
+/// This struct is ABI compatible with the equivalent struct on the C++ side. It
+/// owns (and drops) its data.
+// copybara:strip_begin
+// LINT.IfChange
+// copybara:strip_end
+#[repr(C)]
+#[derive(Debug)]
+pub struct SerializedData {
+    /// Owns the memory.
+    data: NonNull<u8>,
+    len: usize,
+}
+// copybara:strip_begin
+// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/cpp_api.
+// h) copybara:strip_end
+
+impl Deref for SerializedData {
+    type Target = [u8];
+    fn deref(&self) -> &Self::Target {
+        unsafe { slice::from_raw_parts(self.data.as_ptr(), self.len) }
+    }
+}
+
+impl Drop for SerializedData {
+    fn drop(&mut self) {
+        unsafe {
+            dealloc(self.data.as_ptr(), Layout::array::<u8>(self.len).unwrap());
+        };
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // We need to allocate the byte array so SerializedData can own it and
+    // deallocate it in its drop. This function makes it easier to do so for our
+    // tests.
+    fn allocate_byte_array(content: &'static [u8]) -> (*mut u8, usize) {
+        let content: &mut [u8] = Box::leak(content.into());
+        (content.as_mut_ptr(), content.len())
+    }
+
+    #[test]
+    fn test_serialized_data_roundtrip() {
+        let (ptr, len) = allocate_byte_array(b"Hello world");
+        let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len: len };
+        assert_eq!(&*serialized_data, b"Hello world");
     }
 }

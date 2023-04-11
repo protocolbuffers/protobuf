@@ -28,15 +28,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Kernel-agnostic logic for the Rust Protobuf Runtime.
-//!
-//! For kernel-specific logic this crate delegates to the respective __runtime
-//! crate.
+use std::ptr::NonNull;
 
-#[cfg(cpp_kernel)]
-pub extern crate cpp as __runtime;
-#[cfg(upb_kernel)]
-pub extern crate upb as __runtime;
+#[test]
+fn mutate_message_in_cpp() {
+    let mut msg = unittest_proto::TestAllTypes::new();
+    unsafe { MutateInt32Field(msg.__unstable_cpp_repr_grant_permission_to_break()) };
+    let serialized_msg_from_cpp =
+        unsafe { Serialize(msg.__unstable_cpp_repr_grant_permission_to_break()) };
+    assert_eq!(*msg.serialize(), *serialized_msg_from_cpp);
+}
 
-pub use __runtime::Arena;
-pub use __runtime::SerializedData;
+// Helper functions invoking C++ Protobuf APIs directly in C++. Defined in
+// `//third_party/protobuf/rust/test/cpp/interop:test_utils`.
+extern "C" {
+    fn MutateInt32Field(msg: NonNull<u8>);
+    fn Serialize(msg: NonNull<u8>) -> protobuf_cpp::SerializedData;
+}
