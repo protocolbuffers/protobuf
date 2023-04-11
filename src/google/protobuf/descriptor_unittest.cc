@@ -6087,6 +6087,35 @@ TEST_F(ValidationErrorTest, DisallowEnumAlias) {
       "foo.proto: Bar: NUMBER: "
       "\"ENUM_B\" uses the same enum value as \"ENUM_A\". "
       "If this is intended, set 'option allow_alias = true;' to the enum "
+      "definition. The next available enum value is 1.\n");
+
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Bar"
+          value { name: "ENUM_A" number: 10 }
+          value { name: "ENUM_B" number: 10 }
+          value { name: "ENUM_C" number: 11 }
+          value { name: "ENUM_D" number: 20 }
+        })pb",
+      "foo.proto: Bar: NUMBER: "
+      "\"ENUM_B\" uses the same enum value as \"ENUM_A\". "
+      "If this is intended, set 'option allow_alias = true;' to the enum "
+      "definition. The next available enum value is 12.\n");
+
+  BuildFileWithErrors(
+      absl::Substitute(R"pb(
+                         name: "foo.proto"
+                         enum_type {
+                           name: "Bar"
+                           value { name: "ENUM_A" number: $0 }
+                           value { name: "ENUM_B" number: $0 }
+                         })pb",
+                       std::numeric_limits<int32_t>::max()),
+      "foo.proto: Bar: NUMBER: "
+      "\"ENUM_B\" uses the same enum value as \"ENUM_A\". "
+      "If this is intended, set 'option allow_alias = true;' to the enum "
       "definition.\n");
 }
 

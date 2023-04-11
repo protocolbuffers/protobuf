@@ -7382,12 +7382,25 @@ void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
         if (!enm->options().allow_alias()) {
           // Generate error if duplicated enum values are explicitly disallowed.
           auto make_error = [&] {
-            return absl::StrCat(
+            // Find the next free number.
+            absl::flat_hash_set<int64_t> used;
+            for (int j = 0; j < enm->value_count(); ++j) {
+              used.insert(enm->value(j)->number());
+            }
+            int64_t next_value = static_cast<int64_t>(enum_value->number()) + 1;
+            while (used.contains(next_value)) ++next_value;
+
+            std::string error = absl::StrCat(
                 "\"", enum_value->full_name(),
                 "\" uses the same enum value as \"",
                 insert_result.first->second,
                 "\". If this is intended, set "
                 "'option allow_alias = true;' to the enum definition.");
+            if (next_value < std::numeric_limits<int32_t>::max()) {
+              absl::StrAppend(&error, " The next available enum value is ",
+                              next_value, ".");
+            }
+            return error;
           };
           AddError(enm->full_name(), proto.value(i),
                    DescriptorPool::ErrorCollector::NUMBER, make_error);
