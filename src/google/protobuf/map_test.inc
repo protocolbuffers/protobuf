@@ -2764,12 +2764,11 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
 }
 
 TEST(GeneratedMapFieldTest, Proto2UnknownEnumAllKeyTypesWork) {
-#define PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(Type, Value)                      \
-  {                                                                           \
+#define PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(Type, ...)                        \
+  ABSL_LOG(INFO) << "Testing " << #Type;                                      \
+  for (auto value : {__VA_ARGS__}) {                                          \
     UNITTEST::TestEnumMapPlusExtra from;                                      \
-    auto value = Value;                                                       \
-    ABSL_LOG(INFO) << "Testing " << #Type;                                    \
-    (*from.mutable_unknown_map_field_##Type())[Value] =                       \
+    (*from.mutable_unknown_map_field_##Type())[value] =                       \
         UNITTEST::E_PROTO2_MAP_ENUM_EXTRA;                                    \
     UNITTEST::TestEnumMap to;                                                 \
     ASSERT_TRUE(to.ParseFromString(from.SerializeAsString()));                \
@@ -2783,20 +2782,41 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnumAllKeyTypesWork) {
     EXPECT_TRUE(from.ParseFromString(to.SerializeAsString()));                \
     EXPECT_THAT(from.unknown_map_field_##Type(),                              \
                 ElementsAre(Pair(value, UNITTEST::E_PROTO2_MAP_ENUM_EXTRA))); \
+    EXPECT_EQ(from.SerializeAsString(), to.SerializeAsString());              \
   }
 
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(int64, 17);
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(uint64, 17);
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(int32, 17);
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(uint32, 17);
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(fixed32, 17);
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(fixed64, 17);
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(int64, int64_t{17},
+                                      std::numeric_limits<int64_t>::min(),
+                                      std::numeric_limits<int64_t>::max());
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(uint64, uint64_t{17},
+                                      std::numeric_limits<uint64_t>::min(),
+                                      std::numeric_limits<uint64_t>::max());
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(int32, int32_t{17},
+                                      std::numeric_limits<int32_t>::min(),
+                                      std::numeric_limits<int32_t>::max());
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(uint32, uint32_t{17},
+                                      std::numeric_limits<uint32_t>::min(),
+                                      std::numeric_limits<uint32_t>::max());
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(fixed32, uint32_t{17},
+                                      std::numeric_limits<uint32_t>::min(),
+                                      std::numeric_limits<uint32_t>::max());
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(fixed64, uint64_t{17},
+                                      std::numeric_limits<uint64_t>::min(),
+                                      std::numeric_limits<uint64_t>::max());
   PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(bool, true);
   PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(string, "17");
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sint32, 17);
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sint64, 17);
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sfixed32, 17);
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sfixed64, 17);
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sint32, int32_t{17},
+                                      std::numeric_limits<int32_t>::min(),
+                                      std::numeric_limits<int32_t>::max());
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sint64, int64_t{17},
+                                      std::numeric_limits<int64_t>::min(),
+                                      std::numeric_limits<int64_t>::max());
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sfixed32, int32_t{17},
+                                      std::numeric_limits<int32_t>::min(),
+                                      std::numeric_limits<int32_t>::max());
+  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sfixed64, int64_t{17},
+                                      std::numeric_limits<int64_t>::min(),
+                                      std::numeric_limits<int64_t>::max());
 }
 
 TEST(GeneratedMapFieldTest, StandardWireFormat) {
