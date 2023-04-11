@@ -111,3 +111,67 @@ rust_cc_proto_library(
     ],
     deps = [":child_cc_proto"],
 )
+
+proto_library(
+    name = "dots_in_package_proto",
+    testonly = True,
+    srcs = ["dots_in_package.proto"],
+)
+
+cc_proto_library(
+    name = "dots_in_package_cc_proto",
+    testonly = True,
+    deps = [":dots_in_package_proto"],
+)
+
+rust_cc_proto_library(
+    name = "dots_in_package_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/cpp:__subpackages__",
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":dots_in_package_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "dots_in_package_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
+    ],
+    deps = [":dots_in_package_proto"],
+)
+
+proto_library(
+    name = "no_package_proto",
+    testonly = True,
+    srcs = ["no_package.proto"],
+)
+
+cc_proto_library(
+    name = "no_package_cc_proto",
+    testonly = True,
+    deps = [":no_package_proto"],
+)
+
+rust_cc_proto_library(
+    name = "no_package_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/cpp:__subpackages__",
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":no_package_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "no_package_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
+    ],
+    deps = [":no_package_proto"],
+)

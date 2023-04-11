@@ -30,6 +30,6 @@
 
 syntax = "proto2";
 
-package third_party_protobuf_rust_test;
+package parent_package;
 
 message Parent {}

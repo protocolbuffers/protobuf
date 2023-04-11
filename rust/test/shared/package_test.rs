@@ -28,22 +28,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+/// Tests covering proto packages.
+
 #[test]
-fn test_canonical_types() {
-    let _child = child_proto::child_package::Child::new();
-    let _parent = parent_proto::parent_package::Parent::new();
-    // Parent from child_proto crate should be the same type as Parent from
-    // parent_proto crate.
-    let _parent_from_child: child_proto::child_package::Parent =
-        parent_proto::parent_package::Parent::new();
+fn test_package_specified() {
+    let _foo: unittest_proto::proto2_unittest::TestAllTypes;
 }
 
 #[test]
-fn test_parent_serialization() {
-    assert_eq!(*parent_proto::parent_package::Parent::new().serialize(), []);
+fn test_empty_package() {
+    let _foo: no_package_proto::MsgWithoutPackage;
 }
 
 #[test]
-fn test_child_serialization() {
-    assert_eq!(*child_proto::child_package::Child::new().serialize(), []);
+fn test_dots_in_package() {
+    let _foo: dots_in_package_proto::package::uses::dots::submodule::separator::Msg;
 }

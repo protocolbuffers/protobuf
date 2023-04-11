@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::ptr::NonNull;
+use unittest_proto::proto2_unittest::TestAllTypes;
 
 macro_rules! assert_serializes_equally {
     ($msg:ident) => {{
@@ -43,14 +44,14 @@ macro_rules! assert_serializes_equally {
 
 #[test]
 fn mutate_message_in_cpp() {
-    let mut msg = unittest_proto::TestAllTypes::new();
+    let mut msg = TestAllTypes::new();
     unsafe { MutateInt64Field(msg.__unstable_cpp_repr_grant_permission_to_break()) };
     assert_serializes_equally!(msg);
 }
 
 #[test]
 fn mutate_message_in_rust() {
-    let mut msg = unittest_proto::TestAllTypes::new();
+    let mut msg = TestAllTypes::new();
     msg.optional_int64_set(Some(43));
     assert_serializes_equally!(msg);
 }
@@ -58,7 +59,7 @@ fn mutate_message_in_rust() {
 #[test]
 fn deserialize_message_in_rust() {
     let serialized = unsafe { SerializeMutatedInstance() };
-    let mut msg = unittest_proto::TestAllTypes::new();
+    let mut msg = TestAllTypes::new();
     msg.deserialize(&serialized).unwrap();
     assert_serializes_equally!(msg);
 }
