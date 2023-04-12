@@ -132,11 +132,21 @@ void GenerateForCpp(const FileDescriptor* file, google::protobuf::io::Printer& p
             pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> ::__std::ptr::NonNull<u8> {
               self.msg
             }
+            pub fn deserialize(&mut self, data: &[u8]) -> Result<(), ::__pb::ParseError> {
+              let success = unsafe { __rust_proto_thunk__$pkg_Msg$__deserialize(
+                self.msg,
+                ::__pb::SerializedData::from_raw_parts(
+                  ::__std::ptr::NonNull::new(data.as_ptr() as *mut _).unwrap(),
+                  data.len()))
+              };
+              success.then_some(()).ok_or(::__pb::ParseError)
+            }
           }
 
           extern "C" {
             fn __rust_proto_thunk__$pkg_Msg$__new() -> ::__std::ptr::NonNull<u8>;
             fn __rust_proto_thunk__$pkg_Msg$__serialize(raw_msg: ::__std::ptr::NonNull<u8>) -> ::__pb::SerializedData;
+            fn __rust_proto_thunk__$pkg_Msg$__deserialize(raw_msg: ::__std::ptr::NonNull<u8>, data: ::__pb::SerializedData) -> bool;
           }
         )rs");
   }
@@ -158,6 +168,12 @@ void GenerateThunksForCpp(const FileDescriptor* file, google::protobuf::io::Prin
           google::protobuf::rust_internal::SerializedData
           __rust_proto_thunk__$pkg_Msg$__serialize($namespace$::$Msg$* msg) {
             return google::protobuf::rust_internal::SerializeMsg(msg);
+          }
+
+          bool __rust_proto_thunk__$pkg_Msg$__deserialize(
+              $namespace$::$Msg$* msg,
+              google::protobuf::rust_internal::SerializedData data) {
+            return msg->ParseFromArray(data.data, data.len);
           }
           }
         )cc");

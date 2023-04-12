@@ -33,11 +33,17 @@
 #include "google/protobuf/rust/cpp_kernel/cpp_api.h"
 #include "google/protobuf/unittest.pb.h"
 
-extern "C" void MutateInt32Field(protobuf_unittest::TestAllTypes* msg) {
-  msg->set_optional_int32(42);
+extern "C" void MutateInt64Field(protobuf_unittest::TestAllTypes* msg) {
+  msg->set_optional_int64(42);
 }
 
 extern "C" google::protobuf::rust_internal::SerializedData Serialize(
     const protobuf_unittest::TestAllTypes* msg) {
   return google::protobuf::rust_internal::SerializeMsg(msg);
+}
+
+extern "C" google::protobuf::rust_internal::SerializedData SerializeMutatedInstance() {
+  protobuf_unittest::TestAllTypes* inst = new protobuf_unittest::TestAllTypes();
+  MutateInt64Field(inst);
+  return Serialize(inst);
 }
