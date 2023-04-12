@@ -40,6 +40,7 @@ import org.jcodings.specific.ASCIIEncoding;
 import org.jruby.*;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
+import org.jruby.util.ByteList;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.Helpers;
 import org.jruby.runtime.ThreadContext;
@@ -263,7 +264,7 @@ public class Utils {
           IRubyObject wrapped =
               encodeBytes
                   ? RubyString.newString(
-                      runtime, ((ByteString) value).toStringUtf8(), ASCIIEncoding.INSTANCE)
+                      runtime, new ByteList(((ByteString) value).toByteArray()), ASCIIEncoding.INSTANCE)
                   : RubyString.newString(runtime, ((ByteString) value).toByteArray());
           wrapped.setFrozen(true);
           return wrapped;
