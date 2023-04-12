@@ -31,6 +31,8 @@
 #[test]
 fn test_optional_bool() {
     let mut test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
+    assert_eq!(test_all_types.optional_bool(), None);
+
     test_all_types.optional_bool_set(Some(true));
     assert_eq!(test_all_types.optional_bool(), Some(true));
 
@@ -44,6 +46,8 @@ fn test_optional_bool() {
 #[test]
 fn test_optional_int64() {
     let mut test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
+    assert_eq!(test_all_types.optional_int64(), None);
+
     test_all_types.optional_int64_set(Some(10));
     assert_eq!(test_all_types.optional_int64(), Some(10));
 
@@ -52,4 +56,19 @@ fn test_optional_int64() {
 
     test_all_types.optional_int64_set(None);
     assert_eq!(test_all_types.optional_int64(), None);
+}
+
+#[test]
+fn test_optional_bytes() {
+    let mut test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
+    assert_eq!(test_all_types.optional_bytes(), None);
+
+    test_all_types.optional_bytes_set(Some(b"hello world"));
+    assert_eq!(test_all_types.optional_bytes().unwrap(), b"hello world");
+
+    test_all_types.optional_bytes_set(Some(b"fizz buzz"));
+    assert_eq!(test_all_types.optional_bytes().unwrap(), b"fizz buzz");
+
+    test_all_types.optional_bytes_set(None);
+    assert_eq!(test_all_types.optional_bytes(), None);
 }

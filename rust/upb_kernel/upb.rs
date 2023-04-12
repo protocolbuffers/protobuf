@@ -30,15 +30,22 @@
 
 // Rust Protobuf runtime using the UPB kernel.
 
-/// Represents UPB's upb_Arena.
 use std::ops::Deref;
 use std::ptr::NonNull;
 use std::slice;
 
+/// Represents UPB's upb_Arena.
 #[repr(C)]
 pub struct Arena {
     _data: [u8; 0],
     _marker: core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>,
+}
+
+// Represents UPB's upb_StringView.
+#[repr(C)]
+pub struct StringView {
+    pub data: *const u8,
+    pub size: usize,
 }
 
 impl Arena {
@@ -51,9 +58,16 @@ impl Arena {
     }
 }
 
+impl StringView {
+    pub unsafe fn new(data: *const u8, size: usize) -> Self {
+        upb_StringView_FromDataAndSize(data, size)
+    }
+}
+
 extern "C" {
     pub fn upb_Arena_New() -> *mut Arena;
     pub fn upb_Arena_Free(arena: *mut Arena);
+    pub fn upb_StringView_FromDataAndSize(data: *const u8, size: usize) -> StringView;
 }
 
 /// Represents serialized Protobuf wire format data. It's typically produced by

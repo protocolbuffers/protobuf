@@ -32,3 +32,4 @@
 #define UPB_BUILD_API
 
 #include "upb/mem/arena.h" // IWYU pragma: keep
+#include "third_party/upb/upb/base/string_view.h" // IWYU pragma: keep

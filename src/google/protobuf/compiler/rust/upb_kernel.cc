@@ -30,7 +30,7 @@
 
 #include "google/protobuf/compiler/rust/upb_kernel.h"
 
-#include <optional>
+#include <functional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -66,65 +66,133 @@ bool IsSupported(const FieldDescriptor* field) {
   return field->is_optional() && !field->is_repeated();
 }
 
-absl::string_view RustTypeFromCppType(const FieldDescriptor::Type field_type) {
+absl::string_view RustTypeForField(const FieldDescriptor::Type field_type) {
   switch (field_type) {
     case FieldDescriptor::Type::TYPE_BOOL:
       return "bool";
     case FieldDescriptor::Type::TYPE_INT64:
       return "i64";
+    case FieldDescriptor::Type::TYPE_BYTES:
+      return "&[u8]";
     default: {
       ABSL_LOG(FATAL) << "Unsupported field type: " << field_type;
     }
   }
 }
 
-void GenScalarAccessors(const std::string& upb_msg_prefix,
-                        const std::string& msg_name,
-                        const FieldDescriptor* field, google::protobuf::io::Printer& p) {
+absl::string_view UpbTypeForField(const FieldDescriptor::Type field_type) {
+  switch (field_type) {
+    case FieldDescriptor::Type::TYPE_BOOL:
+      return "bool";
+    case FieldDescriptor::Type::TYPE_INT64:
+      return "i64";
+    case FieldDescriptor::Type::TYPE_BYTES:
+      return "::__pb::StringView";
+    default: {
+      ABSL_LOG(FATAL) << "Unsupported field type: " << field_type;
+    }
+  }
+}
+
+void GenAccessorsForField(const std::string& upb_msg_prefix,
+                          const std::string& msg_name,
+                          const FieldDescriptor* field,
+                          std::function<void()> upb_get_value,
+                          std::function<void()> upb_set_value,
+                          google::protobuf::io::Printer& p) {
   if (!IsSupported(field)) {
     return;
   }
 
   p.Emit({{"Msg", msg_name},
           {"field_name", field->name()},
-          {"data_type", RustTypeFromCppType(field->type())},
+          {"rust_type", RustTypeForField(field->type())},
+          {"upb_type", UpbTypeForField(field->type())},
           {"has_thunk", UpbThunkName(field, upb_msg_prefix, "_has_")},
           {"getter_thunk", UpbThunkName(field, upb_msg_prefix, "_")},
+          {"upb_get_value", upb_get_value},
+          {"upb_set_value", upb_set_value},
           {"setter_thunk", UpbThunkName(field, upb_msg_prefix, "_set_")},
           {"clear_thunk", UpbThunkName(field, upb_msg_prefix, "_clear_")}},
          R"rs(
           impl $Msg$ {
-            pub fn $field_name$(&self) -> Option<$data_type$> {
+            pub fn $field_name$(&self) -> Option<$rust_type$> {
               let field_present = unsafe { $has_thunk$(self.msg) };
               if !field_present {
                 return None;
               }
-              let value = unsafe { $getter_thunk$(self.msg) };
+              let value = $upb_get_value$ ;
               Some(value)
             }
 
-            pub fn $field_name$_set(&mut self, value: Option<$data_type$>) {
+            pub fn $field_name$_set(&mut self, value: Option<$rust_type$>) {
               match value {
-                Some(value) => unsafe { $setter_thunk$(self.msg, value); },
+                Some(value) => { $upb_set_value$ },
                 None => unsafe { $clear_thunk$(self.msg); }
               }
             }
           }
 
           extern "C" {
-            fn $getter_thunk$(msg: ::__std::ptr::NonNull<u8>) -> $data_type$;
+            fn $getter_thunk$(msg: ::__std::ptr::NonNull<u8>) -> $upb_type$;
             fn $has_thunk$(msg: ::__std::ptr::NonNull<u8>) -> bool;
             fn $setter_thunk$(
               msg: ::__std::ptr::NonNull<u8>,
-              value: $data_type$
+              value: $upb_type$
             );
             fn $clear_thunk$(msg: ::__std::ptr::NonNull<u8>);
           }
         )rs");
 }
 
-void GenFieldAccessors(const Descriptor* msg_descriptor,
-                       google::protobuf::io::Printer& p) {
+void GenBytesAccessors(const std::string& upb_msg_prefix,
+                       const std::string& msg_name,
+                       const FieldDescriptor* field, google::protobuf::io::Printer& p) {
+  auto upb_get_value = [&] {
+    p.Emit({{"getter_thunk", UpbThunkName(field, upb_msg_prefix, "_")}},
+           R"rs(
+             unsafe { 
+                let upb_string_view = $getter_thunk$(self.msg);
+                ::__std::slice::from_raw_parts(upb_string_view.data, upb_string_view.size)
+              }
+           )rs");
+  };
+
+  auto upb_set_value = [&] {
+    p.Emit({{"setter_thunk", UpbThunkName(field, upb_msg_prefix, "_set_")}},
+           R"rs(
+            let upb_string_view = unsafe { ::__pb::StringView::new(value.as_ptr(), value.len()) };
+            unsafe { $setter_thunk$(self.msg, upb_string_view); }
+           )rs");
+  };
+
+  GenAccessorsForField(upb_msg_prefix, msg_name, field, upb_get_value,
+                       upb_set_value, p);
+}
+
+void GenScalarAccessors(const std::string& upb_msg_prefix,
+                        const std::string& msg_name,
+                        const FieldDescriptor* field, google::protobuf::io::Printer& p) {
+  auto upb_get_value = [&] {
+    p.Emit({{"getter_thunk", UpbThunkName(field, upb_msg_prefix, "_")}},
+           R"(
+          unsafe { $getter_thunk$(self.msg) }
+        )");
+  };
+
+  auto upb_set_value = [&] {
+    p.Emit({{"setter_thunk", UpbThunkName(field, upb_msg_prefix, "_set_")}},
+           R"(
+            unsafe { $setter_thunk$(self.msg, value); }
+           )");
+  };
+
+  GenAccessorsForField(upb_msg_prefix, msg_name, field, upb_get_value,
+                       upb_set_value, p);
+}
+
+void GenAccessorsForMessage(const Descriptor* msg_descriptor,
+                            google::protobuf::io::Printer& p) {
   auto upb_msg_prefix = UpbMsgPrefix(msg_descriptor);
 
   for (int i = 0; i < msg_descriptor->field_count(); ++i) {
@@ -134,6 +202,9 @@ void GenFieldAccessors(const Descriptor* msg_descriptor,
       case FieldDescriptor::Type::TYPE_INT64:
       case FieldDescriptor::Type::TYPE_BOOL:
         GenScalarAccessors(upb_msg_prefix, msg_descriptor->name(), field, p);
+        break;
+      case FieldDescriptor::Type::TYPE_BYTES:
+        GenBytesAccessors(upb_msg_prefix, msg_descriptor->name(), field, p);
         break;
       default:
         // Not implemented type.
@@ -184,7 +255,7 @@ void UpbKernel::Generate(const FileDescriptor* file,
             },
             {
                 "FieldAccessors",
-                [&] { GenFieldAccessors(msg_descriptor, p); },
+                [&] { GenAccessorsForMessage(msg_descriptor, p); },
             }},
            R"rs(
       pub struct $Msg$ {
