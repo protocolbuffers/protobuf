@@ -34,6 +34,7 @@
 #include <memory>
 #include <sstream>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -236,43 +237,81 @@ void EndPackageModules(int levels, io::Printer* printer) {
   }
 }
 
-std::string SerializedDescriptor(const FileDescriptor* file,
-                                 bool strip_dependencies) {
+std::string SerializedDescriptor(const FileDescriptor* file) {
   FileDescriptorProto file_proto;
   file->CopyTo(&file_proto);
-  if (strip_dependencies) {
-    file_proto.clear_dependency();
-  }
   std::string file_data;
   file_proto.SerializeToString(&file_data);
   return file_data;
 }
 
-bool GenerateBinaryDescriptor(const FileDescriptor* file, io::Printer* printer,
+template <class F>
+void ForEachField(const Descriptor* d, F&& func) {
+  for (int i = 0; i < d->field_count(); i++) {
+    func(d->field(i));
+  }
+  for (int i = 0; i < d->nested_type_count(); i++) {
+    ForEachField(d->nested_type(i), func);
+  }
+}
+
+template <class F>
+void ForEachField(const FileDescriptor* file, F&& func) {
+  for (int i = 0; i < file->message_type_count(); i++) {
+    ForEachField(file->message_type(i), func);
+  }
+  for (int i = 0; i < file->extension_count(); i++) {
+    func(file->extension(i));
+  }
+}
+
+std::string DumpImportList(const FileDescriptor* file) {
+  // For each import, find a symbol that comes from that file.
+  absl::flat_hash_set<const FileDescriptor*> seen{file};
+  std::string ret;
+  ForEachField(file, [&](const FieldDescriptor* field) {
+    if (!field->message_type()) return;
+    const FileDescriptor* f = field->message_type()->file();
+    if (!seen.insert(f).second) return;
+    absl::StrAppend(&ret, "    [\"", field->message_type()->full_name(), "\", \"",
+                    f->name(), "\"],\n");
+  });
+  return ret;
+}
+
+void GenerateBinaryDescriptor(const FileDescriptor* file, io::Printer* printer,
                               std::string* error) {
-  printer->Print(R"(descriptor_data = "$data$")", "data",
-                 absl::CHexEscape(SerializedDescriptor(file, false)));
-  printer->Print(
-      "\nbegin\n"
-      "  Google::Protobuf::DescriptorPool.generated_pool.add_serialized_file("
-      "descriptor_data)\n"
-      "rescue TypeError => e\n"
-      "  legacy_descriptor = \"$legacy_descriptor$\"\n"
-      "  "
-      "Google::Protobuf::DescriptorPool.generated_pool.add_serialized_file("
-      "legacy_descriptor)\n"
-      "  warn \"Warning: Protobuf detected import path issue while loading "
-      "generated file #{__FILE__}.  An import was missing, but this is "
-      "probably "
-      "because it was loaded under a different name.  To fix this, please "
-      "check your proto path "
-      "on your protoc invocations and ensure that each import always has the "
-      "same file name.  This will "
-      "become an error in the next major version. "
-      "Original error: #{e}\"\n"
-      "end\n\n",
-      "legacy_descriptor", absl::CHexEscape(SerializedDescriptor(file, true)));
-  return true;
+  printer->Print(R"(
+descriptor_data = "$descriptor_data$"
+
+pool = Google::Protobuf::DescriptorPool.generated_pool
+
+begin
+  pool.add_serialized_file(descriptor_data)
+rescue TypeError => e
+  # Compatibility code: will be removed in the next major version.
+  require 'google/protobuf/descriptor_pb'
+  parsed = Google::Protobuf::FileDescriptorProto.decode(descriptor_data)
+  parsed.clear_dependency
+  serialized = parsed.class.encode(parsed)
+  file = pool.add_serialized_file(serialized)
+  warn "Warning: Protobuf detected import path issue while loading generated file #{__FILE__}"
+  imports = [
+$imports$  ]
+  imports.each do |type_name, expected_filename|
+    import_file = pool.lookup(type_name).file_descriptor
+    if import_file.name != expected_filename
+      warn "- #{file.name} imports #{expected_filename}, but that import was loaded as #{import_file.name}"
+    end
+  end
+  warn "Each proto file must use a consistent fully-qualified name."
+  warn "This will become an error in the next version."
+end
+
+)",
+                 "descriptor_data",
+                 absl::CHexEscape(SerializedDescriptor(file)), "imports",
+                 DumpImportList(file));
 }
 
 bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
