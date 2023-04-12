@@ -104,8 +104,6 @@ class MapFieldGenerator : public FieldGeneratorBase {
   void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
   void GenerateAggregateInitializer(io::Printer* printer) const override;
   void GenerateDestructorCode(io::Printer* printer) const override;
-  void GenerateArenaDestructorCode(io::Printer* printer) const override;
-  ArenaDtorNeeds NeedsArenaDestructor() const override;
 
  private:
   bool has_required_fields_;
@@ -304,11 +302,7 @@ void MapFieldGenerator::GenerateIsInitialized(io::Printer* printer) const {
 void MapFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format("/*decltype($field$)*/{::_pbi::ConstantInitialized()}");
-  } else {
-    format("/*decltype($field$)*/{}");
-  }
+  format("/*decltype($field$)*/{}");
 }
 
 void MapFieldGenerator::GenerateCopyAggregateInitializer(
@@ -341,22 +335,6 @@ void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   format("$field$.~MapField$lite$();\n");
 }
 
-void MapFieldGenerator::GenerateArenaDestructorCode(
-    io::Printer* printer) const {
-  if (NeedsArenaDestructor() == ArenaDtorNeeds::kNone) {
-    return;
-  }
-
-  Formatter format(printer, variables_);
-  // _this is the object being destructed (we are inside a static method here).
-  format("_this->$field$.ArenaDestruct();\n");
-}
-
-ArenaDtorNeeds MapFieldGenerator::NeedsArenaDestructor() const {
-  return HasDescriptorMethods(descriptor_->file(), options_)
-             ? ArenaDtorNeeds::kRequired
-             : ArenaDtorNeeds::kNone;
-}
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(

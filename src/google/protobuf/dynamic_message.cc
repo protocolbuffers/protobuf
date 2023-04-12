@@ -439,11 +439,6 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                 new (field_ptr) DynamicMapField(
                     type_info_->factory->GetPrototype(field->message_type()),
                     GetArenaForAllocation());
-                if (GetOwningArena() != nullptr) {
-                  // Needs to destroy the mutex member.
-                  static_cast<DynamicMapField*>(field_ptr)->OwnMutexDestructor(
-                      *GetOwningArena());
-                }
               } else {
                 new (field_ptr) DynamicMapField(
                     type_info_->factory->GetPrototype(field->message_type()));
@@ -454,11 +449,6 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                     DynamicMapField(type_info_->factory->GetPrototypeNoLock(
                                         field->message_type()),
                                     GetArenaForAllocation());
-                if (GetOwningArena() != nullptr) {
-                  // Needs to destroy the mutex member.
-                  static_cast<DynamicMapField*>(field_ptr)->OwnMutexDestructor(
-                      *GetOwningArena());
-                }
               } else {
                 new (field_ptr)
                     DynamicMapField(type_info_->factory->GetPrototypeNoLock(
