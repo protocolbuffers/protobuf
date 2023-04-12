@@ -9,3 +9,19 @@
 # To do that use:
 # * `rust_upb_proto_library` instead of `rust_proto_library`.
 # * `//rust:protobuf_upb` instead of `//rust:protobuf``.
+
+load("@rules_rust//rust:defs.bzl", "rust_test")
+
+rust_test(
+    name = "accessors_test",
+    srcs = ["accessors_test.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+        # TODO(b/243126140): Enable tsan once we support sanitizers with Rust.
+        "notsan",
+        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
+        "nomsan",
+    ],
+    deps = ["//rust/test:unittest_upb_rust_proto"],
+)
