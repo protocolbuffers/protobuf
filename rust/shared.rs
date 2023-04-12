@@ -52,3 +52,12 @@ impl fmt::Display for ParseError {
         write!(f, "Couldn't deserialize given bytes into a proto")
     }
 }
+
+/// Represents an ABI-stable version of &[u8]/string_view (a borrowed slice of
+/// bytes) for FFI use only.
+#[repr(C)]
+pub struct PtrAndLen {
+    /// Borrows the memory.
+    pub ptr: *const u8,
+    pub len: usize,
+}
