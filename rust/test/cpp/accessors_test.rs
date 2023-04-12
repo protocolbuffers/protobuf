@@ -28,45 +28,28 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::ptr::NonNull;
+/// Tests covering accessors for singular bool and int64 fields.
 
-macro_rules! assert_serializes_equally {
-    ($msg:ident) => {{
-        let mut msg = $msg;
-        let serialized_cpp =
-            unsafe { Serialize(msg.__unstable_cpp_repr_grant_permission_to_break()) };
-        let serialized_rs = msg.serialize();
+#[test]
+fn test_optional_int64_accessors() {
+    let mut msg = unittest_proto::TestAllTypes::new();
+    assert_eq!(msg.optional_int64(), None);
 
-        assert_eq!(*serialized_rs, *serialized_cpp);
-    }};
+    msg.optional_int64_set(Some(42));
+    assert_eq!(msg.optional_int64(), Some(42));
+
+    msg.optional_int64_set(None);
+    assert_eq!(msg.optional_int64(), None);
 }
 
 #[test]
-fn mutate_message_in_cpp() {
+fn test_optional_bool_accessors() {
     let mut msg = unittest_proto::TestAllTypes::new();
-    unsafe { MutateInt64Field(msg.__unstable_cpp_repr_grant_permission_to_break()) };
-    assert_serializes_equally!(msg);
-}
+    assert_eq!(msg.optional_bool(), None);
 
-#[test]
-fn mutate_message_in_rust() {
-    let mut msg = unittest_proto::TestAllTypes::new();
-    msg.optional_int64_set(Some(43));
-    assert_serializes_equally!(msg);
-}
+    msg.optional_bool_set(Some(true));
+    assert_eq!(msg.optional_bool(), Some(true));
 
-#[test]
-fn deserialize_message_in_rust() {
-    let serialized = unsafe { SerializeMutatedInstance() };
-    let mut msg = unittest_proto::TestAllTypes::new();
-    msg.deserialize(&serialized).unwrap();
-    assert_serializes_equally!(msg);
-}
-
-// Helper functions invoking C++ Protobuf APIs directly in C++. Defined in
-// `//third_party/protobuf/rust/test/cpp/interop:test_utils`.
-extern "C" {
-    fn SerializeMutatedInstance() -> protobuf_cpp::SerializedData;
-    fn MutateInt64Field(msg: NonNull<u8>);
-    fn Serialize(msg: NonNull<u8>) -> protobuf_cpp::SerializedData;
+    msg.optional_bool_set(None);
+    assert_eq!(msg.optional_bool(), None);
 }
