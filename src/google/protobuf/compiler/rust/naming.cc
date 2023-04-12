@@ -34,7 +34,6 @@
 
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -83,10 +82,17 @@ std::string GetUnderscoreDelimitedFullName(Context<Descriptor> msg) {
 
 std::string GetAccessorThunkName(Context<FieldDescriptor> field,
                                  absl::string_view op) {
-  std::string thunk = "__rust_proto_thunk__";
-  absl::StrAppend(&thunk, GetUnderscoreDelimitedFullName(
-                              field.WithDesc(field.desc().containing_type())));
-  absl::SubstituteAndAppend(&thunk, "_$0_$1", op, field.desc().name());
+  absl::string_view prefix = field.is_cpp() ? "__rust_proto_thunk__" : "";
+  std::string thunk =
+      absl::StrCat(prefix, GetUnderscoreDelimitedFullName(
+                               field.WithDesc(field.desc().containing_type())));
+
+  if (field.is_upb() && op.empty()) {
+    absl::SubstituteAndAppend(&thunk, "_$0", field.desc().name());
+  } else {
+    absl::SubstituteAndAppend(&thunk, "_$0_$1", op, field.desc().name());
+  }
+
   return thunk;
 }
 
@@ -123,6 +129,23 @@ std::string RustModule(Context<Descriptor> msg) {
 
 std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg) {
   return absl::StrCat(RustModule(msg), "::", msg.desc().name());
+}
+
+std::string FieldInfoComment(Context<FieldDescriptor> field) {
+  absl::string_view label =
+      field.desc().is_repeated() ? "repeated" : "optional";
+  std::string comment =
+      absl::StrCat(field.desc().name(), ": ", label, " ",
+                   FieldDescriptor::TypeName(field.desc().type()));
+
+  if (auto* m = field.desc().message_type()) {
+    absl::StrAppend(&comment, " ", m->full_name());
+  }
+  if (auto* m = field.desc().enum_type()) {
+    absl::StrAppend(&comment, " ", m->full_name());
+  }
+
+  return comment;
 }
 }  // namespace rust
 }  // namespace compiler

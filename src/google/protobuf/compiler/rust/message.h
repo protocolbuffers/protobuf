@@ -28,43 +28,38 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_MESSAGE_H__
+#define GOOGLE_PROTOBUF_COMPILER_RUST_MESSAGE_H__
 
-#include <string>
+#include <memory>
+#include <vector>
 
-#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/rust/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-std::string GetCrateName(Context<FileDescriptor> dep);
 
-std::string GetRsFile(Context<FileDescriptor> file);
-std::string GetThunkCcFile(Context<FileDescriptor> file);
-std::string GetHeaderFile(Context<FileDescriptor> file);
+class MessageGenerator final {
+ public:
+  explicit MessageGenerator(Context<Descriptor> msg);
 
-std::string GetUnderscoreDelimitedFullName(Context<Descriptor> msg);
+  // Generates code for a particular message in `.pb.rs`.
+  void GenerateRs(Context<Descriptor> msg);
 
-std::string GetAccessorThunkName(Context<FieldDescriptor> field,
-                                 absl::string_view op);
+  // Generates code for a particular message in `.pb.thunk.cc`.
+  void GenerateThunkCc(Context<Descriptor> msg);
 
-bool IsSupportedFieldType(Context<FieldDescriptor> field);
+ private:
+  std::vector<std::unique_ptr<AccessorGenerator>> accessors_;
+};
 
-absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field);
-
-std::string FieldInfoComment(Context<FieldDescriptor> field);
-
-std::string RustModule(Context<Descriptor> msg);
-
-std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg);
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_MESSAGE_H__
