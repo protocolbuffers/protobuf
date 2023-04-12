@@ -40,3 +40,16 @@ fn test_optional_bool() {
     test_all_types.optional_bool_set(None);
     assert_eq!(test_all_types.optional_bool(), None);
 }
+
+#[test]
+fn test_optional_int64() {
+    let mut test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
+    test_all_types.optional_int64_set(Some(10));
+    assert_eq!(test_all_types.optional_int64(), Some(10));
+
+    test_all_types.optional_int64_set(Some(-10));
+    assert_eq!(test_all_types.optional_int64(), Some(-10));
+
+    test_all_types.optional_int64_set(None);
+    assert_eq!(test_all_types.optional_int64(), None);
+}
