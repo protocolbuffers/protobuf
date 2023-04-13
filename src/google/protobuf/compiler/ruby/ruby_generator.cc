@@ -35,7 +35,9 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/escaping.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -54,9 +56,6 @@ std::string NumberToString(numeric_type value);
 std::string GetRequireName(absl::string_view proto_file);
 std::string LabelForField(FieldDescriptor* field);
 std::string TypeName(FieldDescriptor* field);
-bool GenerateMessage(const Descriptor* message, io::Printer* printer,
-                     std::string* error);
-void GenerateEnum(const EnumDescriptor* en, io::Printer* printer);
 void GenerateMessageAssignment(absl::string_view prefix,
                                const Descriptor* message, io::Printer* printer);
 void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
@@ -77,238 +76,6 @@ std::string GetRequireName(absl::string_view proto_file) {
 
 std::string GetOutputFilename(absl::string_view proto_file) {
   return absl::StrCat(GetRequireName(proto_file), ".rb");
-}
-
-std::string LabelForField(const FieldDescriptor* field) {
-  if (FieldDescriptorLegacy(field).has_optional_keyword() &&
-      field->containing_oneof() != nullptr) {
-    return "proto3_optional";
-  }
-  switch (field->label()) {
-    case FieldDescriptor::LABEL_OPTIONAL: return "optional";
-    case FieldDescriptor::LABEL_REQUIRED: return "required";
-    case FieldDescriptor::LABEL_REPEATED: return "repeated";
-    default: assert(false); return "";
-  }
-}
-
-std::string TypeName(const FieldDescriptor* field) {
-  switch (field->type()) {
-    case FieldDescriptor::TYPE_INT32: return "int32";
-    case FieldDescriptor::TYPE_INT64: return "int64";
-    case FieldDescriptor::TYPE_UINT32: return "uint32";
-    case FieldDescriptor::TYPE_UINT64: return "uint64";
-    case FieldDescriptor::TYPE_SINT32: return "sint32";
-    case FieldDescriptor::TYPE_SINT64: return "sint64";
-    case FieldDescriptor::TYPE_FIXED32: return "fixed32";
-    case FieldDescriptor::TYPE_FIXED64: return "fixed64";
-    case FieldDescriptor::TYPE_SFIXED32: return "sfixed32";
-    case FieldDescriptor::TYPE_SFIXED64: return "sfixed64";
-    case FieldDescriptor::TYPE_DOUBLE: return "double";
-    case FieldDescriptor::TYPE_FLOAT: return "float";
-    case FieldDescriptor::TYPE_BOOL: return "bool";
-    case FieldDescriptor::TYPE_ENUM: return "enum";
-    case FieldDescriptor::TYPE_STRING: return "string";
-    case FieldDescriptor::TYPE_BYTES: return "bytes";
-    case FieldDescriptor::TYPE_MESSAGE: return "message";
-    case FieldDescriptor::TYPE_GROUP: return "group";
-    default: assert(false); return "";
-  }
-}
-
-std::string StringifySyntax(FileDescriptorLegacy::Syntax syntax) {
-  switch (syntax) {
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
-      return "proto2";
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
-      return "proto3";
-    case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
-    default:
-      ABSL_LOG(FATAL) << "Unsupported syntax; this generator only supports "
-                         "proto2 and proto3 syntax.";
-      return "";
-  }
-}
-
-std::string DefaultValueForField(const FieldDescriptor* field) {
-  switch(field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32:
-      return NumberToString(field->default_value_int32());
-    case FieldDescriptor::CPPTYPE_INT64:
-      return NumberToString(field->default_value_int64());
-    case FieldDescriptor::CPPTYPE_UINT32:
-      return NumberToString(field->default_value_uint32());
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return NumberToString(field->default_value_uint64());
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return NumberToString(field->default_value_float());
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-      return NumberToString(field->default_value_double());
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return field->default_value_bool() ? "true" : "false";
-    case FieldDescriptor::CPPTYPE_ENUM:
-      return NumberToString(field->default_value_enum()->number());
-    case FieldDescriptor::CPPTYPE_STRING: {
-      std::ostringstream os;
-      std::string default_str = field->default_value_string();
-
-      if (field->type() == FieldDescriptor::TYPE_STRING) {
-        os << "\"" << default_str << "\"";
-      } else if (field->type() == FieldDescriptor::TYPE_BYTES) {
-        os << "\"";
-
-        os.fill('0');
-        for (int i = 0; i < default_str.length(); ++i) {
-          // Write the hex form of each byte.
-          os << "\\x" << std::hex << std::setw(2)
-             << ((uint16_t)((unsigned char)default_str.at(i)));
-        }
-        os << "\".force_encoding(\"ASCII-8BIT\")";
-      }
-
-      return os.str();
-    }
-    default: assert(false); return "";
-  }
-}
-
-void GenerateField(const FieldDescriptor* field, io::Printer* printer) {
-  if (field->is_map()) {
-    const FieldDescriptor* key_field =
-        field->message_type()->FindFieldByNumber(1);
-    const FieldDescriptor* value_field =
-        field->message_type()->FindFieldByNumber(2);
-
-    printer->Print(
-      "map :$name$, :$key_type$, :$value_type$, $number$",
-      "name", field->name(),
-      "key_type", TypeName(key_field),
-      "value_type", TypeName(value_field),
-      "number", NumberToString(field->number()));
-
-    if (value_field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      printer->Print(
-        ", \"$subtype$\"\n",
-        "subtype", value_field->message_type()->full_name());
-    } else if (value_field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-      printer->Print(
-        ", \"$subtype$\"\n",
-        "subtype", value_field->enum_type()->full_name());
-    } else {
-      printer->Print("\n");
-    }
-  } else {
-
-    printer->Print(
-      "$label$ :$name$, ",
-      "label", LabelForField(field),
-      "name", field->name());
-    printer->Print(
-      ":$type$, $number$",
-      "type", TypeName(field),
-      "number", NumberToString(field->number()));
-
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      printer->Print(
-        ", \"$subtype$\"",
-       "subtype", field->message_type()->full_name());
-    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-      printer->Print(
-        ", \"$subtype$\"",
-        "subtype", field->enum_type()->full_name());
-    }
-
-    if (field->has_default_value()) {
-      printer->Print(", default: $default$", "default",
-                     DefaultValueForField(field));
-    }
-
-    if (field->has_json_name()) {
-      printer->Print(", json_name: \"$json_name$\"", "json_name",
-                    field->json_name());
-    }
-
-    printer->Print("\n");
-  }
-}
-
-void GenerateOneof(const OneofDescriptor* oneof, io::Printer* printer) {
-  printer->Print(
-      "oneof :$name$ do\n",
-      "name", oneof->name());
-  printer->Indent();
-
-  for (int i = 0; i < oneof->field_count(); i++) {
-    const FieldDescriptor* field = oneof->field(i);
-    GenerateField(field, printer);
-  }
-
-  printer->Outdent();
-  printer->Print("end\n");
-}
-
-bool GenerateMessage(const Descriptor* message, io::Printer* printer,
-                     std::string* error) {
-  if (message->extension_range_count() > 0 || message->extension_count() > 0) {
-    ABSL_LOG(WARNING)
-        << "Extensions are not yet supported for proto2 .proto files.";
-  }
-
-  // Don't generate MapEntry messages -- we use the Ruby extension's native
-  // support for map fields instead.
-  if (message->options().map_entry()) {
-    return true;
-  }
-
-  printer->Print(
-    "add_message \"$name$\" do\n",
-    "name", message->full_name());
-  printer->Indent();
-
-  for (int i = 0; i < message->field_count(); i++) {
-    const FieldDescriptor* field = message->field(i);
-    if (!field->real_containing_oneof()) {
-      GenerateField(field, printer);
-    }
-  }
-
-  for (int i = 0; i < message->real_oneof_decl_count(); i++) {
-    const OneofDescriptor* oneof = message->oneof_decl(i);
-    GenerateOneof(oneof, printer);
-  }
-
-  printer->Outdent();
-  printer->Print("end\n");
-
-  for (int i = 0; i < message->nested_type_count(); i++) {
-    if (!GenerateMessage(message->nested_type(i), printer, error)) {
-      return false;
-    }
-  }
-  for (int i = 0; i < message->enum_type_count(); i++) {
-    GenerateEnum(message->enum_type(i), printer);
-  }
-
-  return true;
-}
-
-void GenerateEnum(const EnumDescriptor* en, io::Printer* printer) {
-  printer->Print(
-    "add_enum \"$name$\" do\n",
-    "name", en->full_name());
-  printer->Indent();
-
-  for (int i = 0; i < en->value_count(); i++) {
-    const EnumValueDescriptor* value = en->value(i);
-    printer->Print(
-      "value :$name$, $number$\n",
-      "name", value->name(),
-      "number", NumberToString(value->number()));
-  }
-
-  printer->Outdent();
-  printer->Print(
-    "end\n");
 }
 
 // Locale-agnostic utility functions.
@@ -470,47 +237,91 @@ void EndPackageModules(int levels, io::Printer* printer) {
   }
 }
 
-bool GenerateDslDescriptor(const FileDescriptor* file, io::Printer* printer,
-                           std::string* error) {
-  printer->Print("Google::Protobuf::DescriptorPool.generated_pool.build do\n");
-  printer->Indent();
-  printer->Print("add_file(\"$filename$\", :syntax => :$syntax$) do\n",
-                 "filename", file->name(), "syntax",
-                 StringifySyntax(FileDescriptorLegacy(file).syntax()));
-  printer->Indent();
-  for (int i = 0; i < file->message_type_count(); i++) {
-    if (!GenerateMessage(file->message_type(i), printer, error)) {
-      return false;
-    }
-  }
-  for (int i = 0; i < file->enum_type_count(); i++) {
-    GenerateEnum(file->enum_type(i), printer);
-  }
-  printer->Outdent();
-  printer->Print("end\n");
-  printer->Outdent();
-  printer->Print(
-    "end\n\n");
-  return true;
+std::string SerializedDescriptor(const FileDescriptor* file) {
+  FileDescriptorProto file_proto;
+  file->CopyTo(&file_proto);
+  std::string file_data;
+  file_proto.SerializeToString(&file_data);
+  return file_data;
 }
 
-bool GenerateBinaryDescriptor(const FileDescriptor* file, io::Printer* printer,
+template <class F>
+void ForEachField(const Descriptor* d, F&& func) {
+  for (int i = 0; i < d->field_count(); i++) {
+    func(d->field(i));
+  }
+  for (int i = 0; i < d->nested_type_count(); i++) {
+    ForEachField(d->nested_type(i), func);
+  }
+}
+
+template <class F>
+void ForEachField(const FileDescriptor* file, F&& func) {
+  for (int i = 0; i < file->message_type_count(); i++) {
+    ForEachField(file->message_type(i), func);
+  }
+  for (int i = 0; i < file->extension_count(); i++) {
+    func(file->extension(i));
+  }
+}
+
+std::string DumpImportList(const FileDescriptor* file) {
+  // For each import, find a symbol that comes from that file.
+  absl::flat_hash_set<const FileDescriptor*> seen{file};
+  std::string ret;
+  ForEachField(file, [&](const FieldDescriptor* field) {
+    if (!field->message_type()) return;
+    const FileDescriptor* f = field->message_type()->file();
+    if (!seen.insert(f).second) return;
+    absl::StrAppend(&ret, "    [\"", field->message_type()->full_name(),
+                    "\", \"", f->name(), "\"],\n");
+  });
+  return ret;
+}
+
+void GenerateBinaryDescriptor(const FileDescriptor* file, io::Printer* printer,
                               std::string* error) {
-  printer->Print(
-      R"(descriptor_data = File.binread(__FILE__).split("\n__END__\n", 2)[1])");
-  printer->Print(
-      "\nGoogle::Protobuf::DescriptorPool.generated_pool.add_serialized_file("
-      "descriptor_data)\n\n");
-  return true;
+  printer->Print(R"(
+descriptor_data = "$descriptor_data$"
+
+pool = Google::Protobuf::DescriptorPool.generated_pool
+
+begin
+  pool.add_serialized_file(descriptor_data)
+rescue TypeError => e
+  # Compatibility code: will be removed in the next major version.
+  require 'google/protobuf/descriptor_pb'
+  parsed = Google::Protobuf::FileDescriptorProto.decode(descriptor_data)
+  parsed.clear_dependency
+  serialized = parsed.class.encode(parsed)
+  file = pool.add_serialized_file(serialized)
+  warn "Warning: Protobuf detected an import path issue while loading generated file #{__FILE__}"
+  imports = [
+$imports$  ]
+  imports.each do |type_name, expected_filename|
+    import_file = pool.lookup(type_name).file_descriptor
+    if import_file.name != expected_filename
+      warn "- #{file.name} imports #{expected_filename}, but that import was loaded as #{import_file.name}"
+    end
+  end
+  warn "Each proto file must use a consistent fully-qualified name."
+  warn "This will become an error in the next major version."
+end
+
+)",
+                 "descriptor_data",
+                 absl::CHexEscape(SerializedDescriptor(file)), "imports",
+                 DumpImportList(file));
 }
 
 bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
                   std::string* error) {
   printer->Print(
-    "# Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
-    "# source: $filename$\n"
-    "\n",
-    "filename", file->name());
+      "# frozen_string_literal: true\n"
+      "# Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+      "# source: $filename$\n"
+      "\n",
+      "filename", file->name());
 
   printer->Print("require 'google/protobuf'\n\n");
 
@@ -526,13 +337,7 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     ABSL_LOG(WARNING) << "Extensions are not yet supported in Ruby.";
   }
 
-  bool use_raw_descriptor = file->name() == "google/protobuf/descriptor.proto";
-
-  if (use_raw_descriptor) {
-    GenerateBinaryDescriptor(file, printer, error);
-  } else {
-    GenerateDslDescriptor(file, printer, error);
-  }
+  GenerateBinaryDescriptor(file, printer, error);
 
   int levels = GeneratePackageModules(file, printer);
   for (int i = 0; i < file->message_type_count(); i++) {
@@ -543,14 +348,6 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   }
   EndPackageModules(levels, printer);
 
-  if (use_raw_descriptor) {
-    printer->Print("\n__END__\n");
-    FileDescriptorProto file_proto;
-    file->CopyTo(&file_proto);
-    std::string file_data;
-    file_proto.SerializeToString(&file_data);
-    printer->Print("$raw_descriptor$", "raw_descriptor", file_data);
-  }
   return true;
 }
 
