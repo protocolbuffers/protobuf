@@ -166,7 +166,7 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::_internal_mutable_$name$() {\n"
-      "$maybe_prepare_split_message$"
+      "$PrepareSplitMessageForWrite$"
       "  return $field$.MutableMap();\n"
       "}\n"
       "inline ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
