@@ -34,8 +34,6 @@
 #define GOOGLE_PROTOBUF_RUST_CPP_KERNEL_CPP_H__
 
 #include <cstddef>
-#include <iostream>
-#include <string>
 
 #include "google/protobuf/message.h"
 
@@ -72,6 +70,16 @@ inline SerializedData SerializeMsg(const google::protobuf::Message* msg) {
   }
   return SerializedData(static_cast<char*>(bytes), len);
 }
+
+// Represents an ABI-stable version of &[u8]/string_view (borrowed slice of
+// bytes) for FFI use only.
+struct PtrAndLen {
+  /// Borrows the memory.
+  const char* ptr;
+  size_t len;
+
+  PtrAndLen(const char* ptr, size_t len) : ptr(ptr), len(len) {}
+};
 
 }  // namespace rust_internal
 }  // namespace protobuf

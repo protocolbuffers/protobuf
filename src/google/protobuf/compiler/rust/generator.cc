@@ -45,6 +45,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/rust/upb_kernel.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -100,7 +101,7 @@ std::string GetFileExtensionForKernel(Kernel kernel) {
     case Kernel::kCpp:
       return ".c.pb.rs";
   }
-  ABSL_LOG(FATAL) << "Unknown kernel type: ";
+  ABSL_LOG(FATAL) << "Unknown kernel type: " << static_cast<int>(kernel);
   return "";
 }
 
@@ -119,21 +120,47 @@ std::string GetAccessorThunkName(
 
 bool IsSupportedFieldType(const FieldDescriptor* field) {
   return !field->is_repeated() &&
-         (field->cpp_type() == FieldDescriptor::CPPTYPE_BOOL ||
-          field->cpp_type() == FieldDescriptor::CPPTYPE_INT64);
+         // We do not support [ctype=FOO] (used to set the field type in C++ to
+         // cord or string_piece) in V0 API.
+         !field->options().has_ctype() &&
+         (field->type() == FieldDescriptor::TYPE_BOOL ||
+          field->type() == FieldDescriptor::TYPE_INT64 ||
+          field->type() == FieldDescriptor::TYPE_BYTES);
 }
 
-std::string PrimitiveRsTypeName(const FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT64:
-      return "i64";
-    case FieldDescriptor::CPPTYPE_BOOL:
+absl::string_view PrimitiveRsTypeName(const FieldDescriptor* field) {
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_BOOL:
       return "bool";
+    case FieldDescriptor::TYPE_INT64:
+      return "i64";
+    case FieldDescriptor::TYPE_BYTES:
+      return "&[u8]";
     default:
       break;
   }
   ABSL_LOG(FATAL) << "Unsupported field type: " << field->type_name();
   return "";
+}
+
+void EmitGetterExpr(const FieldDescriptor* field, google::protobuf::io::Printer& p,
+                    absl::string_view underscore_delimited_full_name) {
+  std::string thunk_name =
+      GetAccessorThunkName(field, "get", underscore_delimited_full_name);
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_BYTES:
+      p.Emit({{"getter_thunk_name", thunk_name}},
+             R"rs(
+              let val = unsafe { $getter_thunk_name$(self.msg) };
+              Some(unsafe { ::__std::slice::from_raw_parts(val.ptr, val.len) })
+            )rs");
+      return;
+    default:
+      p.Emit({{"getter_thunk_name", thunk_name}},
+             R"rs(
+              Some(unsafe { $getter_thunk_name$(self.msg) })
+            )rs");
+  }
 }
 
 void GenerateAccessorFns(const Descriptor* msg, google::protobuf::io::Printer& p,
@@ -151,10 +178,23 @@ void GenerateAccessorFns(const Descriptor* msg, google::protobuf::io::Printer& p
              GetAccessorThunkName(field, "has",
                                   underscore_delimited_full_name)},
             {"getter_thunk_name",
-             GetAccessorThunkName(field, "", underscore_delimited_full_name)},
+             GetAccessorThunkName(field, "get",
+                                  underscore_delimited_full_name)},
+            {"getter_expr",
+             [&] { EmitGetterExpr(field, p, underscore_delimited_full_name); }},
             {"setter_thunk_name",
              GetAccessorThunkName(field, "set",
                                   underscore_delimited_full_name)},
+            {"setter_args",
+             [&] {
+               switch (field->type()) {
+                 case FieldDescriptor::TYPE_BYTES:
+                   p.Emit("val.as_ptr(), val.len()");
+                   return;
+                 default:
+                   p.Emit("val");
+               }
+             }},
             {"clearer_thunk_name",
              GetAccessorThunkName(field, "clear",
                                   underscore_delimited_full_name)},
@@ -164,11 +204,11 @@ void GenerateAccessorFns(const Descriptor* msg, google::protobuf::io::Printer& p
                if !unsafe { $hazzer_thunk_name$(self.msg) } {
                 return None;
                }
-               Some(unsafe { $getter_thunk_name$(self.msg) })
+               $getter_expr$
              }
              pub fn $field_name$_set(&mut self, val: Option<$FieldType$>) {
                match val {
-                 Some(val) => unsafe { $setter_thunk_name$(self.msg, val) },
+                 Some(val) => unsafe { $setter_thunk_name$(self.msg, $setter_args$) },
                  None => unsafe { $clearer_thunk_name$(self.msg) },
                }
              }
@@ -184,25 +224,47 @@ void GenerateAccessorThunkRsDeclarations(
     if (!IsSupportedFieldType(field)) {
       continue;
     }
+    absl::string_view type_name = PrimitiveRsTypeName(field);
     p.Emit(
         {
-            {"FieldType", PrimitiveRsTypeName(field)},
+            {"FieldType", type_name},
+            {"GetterReturnType",
+             [&] {
+               switch (field->type()) {
+                 case FieldDescriptor::TYPE_BYTES:
+                   p.Emit("::__pb::PtrAndLen");
+                   return;
+                 default:
+                   p.Emit(type_name);
+               }
+             }},
             {"hazzer_thunk_name",
              GetAccessorThunkName(field, "has",
                                   underscore_delimited_full_name)},
             {"getter_thunk_name",
-             GetAccessorThunkName(field, "", underscore_delimited_full_name)},
+             GetAccessorThunkName(field, "get",
+                                  underscore_delimited_full_name)},
             {"setter_thunk_name",
              GetAccessorThunkName(field, "set",
                                   underscore_delimited_full_name)},
+            {"setter_params",
+             [&] {
+               switch (field->type()) {
+                 case FieldDescriptor::TYPE_BYTES:
+                   p.Emit("val: *const u8, len: usize");
+                   return;
+                 default:
+                   p.Emit({{"type_name", type_name}}, "val: $type_name$");
+               }
+             }},
             {"clearer_thunk_name",
              GetAccessorThunkName(field, "clear",
                                   underscore_delimited_full_name)},
         },
         R"rs(
             fn $hazzer_thunk_name$(raw_msg: ::__std::ptr::NonNull<u8>) -> bool;
-            fn $getter_thunk_name$(raw_msg: ::__std::ptr::NonNull<u8>) -> $FieldType$;
-            fn $setter_thunk_name$(raw_msg: ::__std::ptr::NonNull<u8>, val: $FieldType$);
+            fn $getter_thunk_name$(raw_msg: ::__std::ptr::NonNull<u8>) -> $GetterReturnType$;;
+            fn $setter_thunk_name$(raw_msg: ::__std::ptr::NonNull<u8>, $setter_params$);
             fn $clearer_thunk_name$(raw_msg: ::__std::ptr::NonNull<u8>);
            )rs");
   }
@@ -216,16 +278,60 @@ void GenerateAccessorThunksCcDefinitions(
     if (!IsSupportedFieldType(field)) {
       continue;
     }
+    const char* type_name = cpp::PrimitiveTypeName(field->cpp_type());
     p.Emit(
         {{"field_name", field->name()},
-         {"FieldType", cpp::PrimitiveTypeName(field->cpp_type())},
+         {"FieldType", type_name},
+         {"GetterReturnType",
+          [&] {
+            switch (field->type()) {
+              case FieldDescriptor::TYPE_BYTES:
+                p.Emit("::google::protobuf::rust_internal::PtrAndLen");
+                return;
+              default:
+                p.Emit(type_name);
+            }
+          }},
          {"namespace", cpp::Namespace(msg)},
          {"hazzer_thunk_name",
           GetAccessorThunkName(field, "has", underscore_delimited_full_name)},
          {"getter_thunk_name",
-          GetAccessorThunkName(field, "", underscore_delimited_full_name)},
+          GetAccessorThunkName(field, "get", underscore_delimited_full_name)},
+         {"getter_body",
+          [&] {
+            switch (field->type()) {
+              case FieldDescriptor::TYPE_BYTES:
+                p.Emit({{"field_name", field->name()}}, R"cc(
+                  absl::string_view val = msg->$field_name$();
+                  return google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
+                )cc");
+                return;
+              default:
+                p.Emit(R"cc(return msg->$field_name$();)cc");
+            }
+          }},
          {"setter_thunk_name",
           GetAccessorThunkName(field, "set", underscore_delimited_full_name)},
+         {"setter_params",
+          [&] {
+            switch (field->type()) {
+              case FieldDescriptor::TYPE_BYTES:
+                p.Emit("const char* ptr, size_t size");
+                return;
+              default:
+                p.Emit({{"type_name", type_name}}, "$type_name$ val");
+            }
+          }},
+         {"setter_args",
+          [&] {
+            switch (field->type()) {
+              case FieldDescriptor::TYPE_BYTES:
+                p.Emit("absl::string_view(ptr, size)");
+                return;
+              default:
+                p.Emit("val");
+            }
+          }},
          {"clearer_thunk_name",
           GetAccessorThunkName(field, "clear",
                                underscore_delimited_full_name)}},
@@ -234,11 +340,11 @@ void GenerateAccessorThunksCcDefinitions(
           bool $hazzer_thunk_name$($namespace$::$Msg$* msg) {
             return msg->has_$field_name$();
           }
-          $FieldType$ $getter_thunk_name$($namespace$::$Msg$* msg) {
-            return msg->$field_name$();
+          $GetterReturnType$ $getter_thunk_name$($namespace$::$Msg$* msg) {
+            $getter_body$
           }
-          void $setter_thunk_name$($namespace$::$Msg$* msg, $FieldType$ val) {
-            msg->set_$field_name$(val);
+          void $setter_thunk_name$($namespace$::$Msg$* msg, $setter_params$) {
+            msg->set_$field_name$($setter_args$);
           }
           void $clearer_thunk_name$($namespace$::$Msg$* msg) {
             msg->clear_$field_name$();
@@ -353,7 +459,7 @@ std::string GetKernelRustName(Kernel kernel) {
     case Kernel::kCpp:
       return "cpp";
   }
-  ABSL_LOG(FATAL) << "Unknown kernel type: ";
+  ABSL_LOG(FATAL) << "Unknown kernel type: " << static_cast<int>(kernel);
   return "";
 }
 
