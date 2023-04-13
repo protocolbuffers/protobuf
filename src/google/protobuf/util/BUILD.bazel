@@ -205,7 +205,7 @@ filegroup(
     ],
     visibility = [
         "//pkg:__pkg__",
-        "//python:__pkg__",
+        "//python:__subpackages__",
     ],
 )
 

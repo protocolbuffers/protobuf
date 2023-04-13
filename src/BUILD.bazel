@@ -14,6 +14,7 @@ pkg_files(
     visibility = ["//src:__pkg__"],
 )
 
+# This target is never used, we should delete in the future
 pkg_filegroup(
     name = "all_dist_files",
     srcs = [
@@ -25,7 +26,6 @@ pkg_filegroup(
         "//src/google/protobuf/compiler/java:dist_files",
         "//src/google/protobuf/compiler/objectivec:dist_files",
         "//src/google/protobuf/compiler/php:dist_files",
-        "//src/google/protobuf/compiler/python:dist_files",
         "//src/google/protobuf/compiler/ruby:dist_files",
         "//src/google/protobuf/io:dist_files",
         "//src/google/protobuf/stubs:dist_files",
@@ -49,8 +49,8 @@ genrule(
     srcs = ["//pkg:gen_src_file_lists"],
     outs = ["cmake_copy/file_lists.cmake"],
     cmd = "cp $< $@",
-    visibility = ["//visibility:private"],
     tags = ["manual"],
+    visibility = ["//visibility:private"],
 )
 
 staleness_test(

@@ -147,8 +147,8 @@ filegroup(
 internal_ruby_proto_library(
     name = "well_known_ruby_protos",
     srcs = [":well_known_protos"],
-    includes = ["src"],
     default_runtime = "",
+    includes = ["src"],
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",
@@ -176,14 +176,14 @@ cc_binary(
 cc_binary(
     name = "protoc_static",
     copts = COPTS,
-    linkopts = LINK_OPTS,
     features = select({
-      # This isn't possible on mac because there is no static library for lcrt0.o
-      "@platforms//os:osx": [],
-      "//build_defs:config_osx": [],
-      # When cross-compiling we need to statically link all C++ libraries.
-      "//conditions:default": ["fully_static_link"],
+        # This isn't possible on mac because there is no static library for lcrt0.o
+        "@platforms//os:osx": [],
+        "//build_defs:config_osx": [],
+        # When cross-compiling we need to statically link all C++ libraries.
+        "//conditions:default": ["fully_static_link"],
     }),
+    linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
@@ -293,7 +293,7 @@ alias(
 
 alias(
     name = "python_test_srcs",
-    actual = "//python:python_test_srcs",
+    actual = "//python/google/protobuf/internal:python_test_srcs",
     visibility = ["@upb//:__subpackages__"],
 )
 
@@ -531,11 +531,11 @@ internal_ruby_proto_library(
         # The above must come first.
         "src",
     ],
-    deps = [":well_known_ruby_protos"],
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",
     ],
+    deps = [":well_known_ruby_protos"],
 )
 
 filegroup(

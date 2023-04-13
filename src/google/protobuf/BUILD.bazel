@@ -731,7 +731,7 @@ exports_files(
     ],
     visibility = [
         "//:__pkg__",
-        "//python:__pkg__",
+        "//python:__subpackages__",
     ],
 )
 

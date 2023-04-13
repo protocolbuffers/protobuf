@@ -1,0 +1,296 @@
+# Copyright 2022 Google Inc.
+#
+# Implementation and tests for Python generated message support.
+
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_python//python:defs.bzl", "py_library")
+load("@pip_deps//:requirements.bzl", "requirement")
+load("//:protobuf.bzl", "internal_py_proto_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//python:internal.bzl", "internal_copy_files", "internal_py_test")
+
+PROTOBUF_PYTHON_INTERNAL_SRCS = [
+    "__init__.py",
+    "api_implementation.py",
+    "builder.py",
+    "containers.py",
+    "decoder.py",
+    "encoder.py",
+    "extension_dict.py",
+    "field_mask.py",
+    "message_listener.py",
+    "python_message.py",
+    "type_checkers.py",
+    "well_known_types.py",
+    "wire_format.py",
+]
+
+pkg_files(
+    name = "python_internal_source_files",
+    srcs = PROTOBUF_PYTHON_INTERNAL_SRCS,
+    strip_prefix = "",
+    visibility = [
+        "//python:__subpackages__",
+        "@upb//:__subpackages__",
+    ],
+)
+
+py_library(
+    name = "python_internal_srcs",
+    srcs = PROTOBUF_PYTHON_INTERNAL_SRCS,
+    imports = ["python"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//python:__subpackages__",
+        "@upb//:__subpackages__",
+    ],
+)
+
+py_library(
+    name = "python_test_srcs",
+    srcs = glob([
+        "*_test.py",
+    ]) + [
+        "import_test_package/__init__.py",
+        "test_util.py",
+    ],
+    imports = ["python"],
+    srcs_version = "PY3",
+    visibility = [
+        "//:__pkg__",
+        "@upb//:__subpackages__",
+    ],
+)
+
+cc_binary(
+    name = "_api_implementation.so",
+    srcs = ["api_implementation.cc"],
+    copts = COPTS + [
+        "-DPYTHON_PROTO2_CPP_IMPL_V2",
+    ],
+    linkshared = 1,
+    linkstatic = 1,
+    tags = [
+        # Exclude this target from wildcard expansion (//...) because it may
+        # not even be buildable. It will be built if it is needed according
+        # to :use_fast_cpp_protos.
+        # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
+        "manual",
+    ],
+    deps = select({
+        "//conditions:default": [],
+        "//python:use_fast_cpp_protos": ["//external:python_headers"],
+    }),
+)
+
+################################################################################
+# Tests
+################################################################################
+
+internal_copy_files(
+    name = "copied_test_proto_files",
+    testonly = 1,
+    srcs = [
+        "//:test_proto_srcs",
+        "//src/google/protobuf/util:test_proto_srcs",
+    ],
+    strip_prefix = "src",
+)
+
+internal_copy_files(
+    name = "copied_test_messages_proto2_files",
+    testonly = 1,
+    srcs = [
+        "//src/google/protobuf:test_messages_proto2.proto",
+    ],
+    strip_prefix = "src",
+)
+
+internal_copy_files(
+    name = "copied_test_messages_proto3_files",
+    testonly = 1,
+    srcs = [
+        "//src/google/protobuf:test_messages_proto3.proto",
+    ],
+    strip_prefix = "src",
+)
+
+internal_py_proto_library(
+    name = "python_common_test_protos",
+    testonly = 1,
+    srcs = [":copied_test_proto_files"],
+    include = ".",
+    default_runtime = "",
+    protoc = "//:protoc",
+    srcs_version = "PY2AND3",
+    visibility = ["//:__pkg__"],
+    deps = ["//python:well_known_types_py_pb2"],
+)
+
+internal_py_proto_library(
+    name = "python_specific_test_protos",
+    testonly = 1,
+    srcs = glob([
+        "*.proto",
+        "import_test_package/*.proto",
+    ]),
+    include = ".",
+    default_runtime = "//:protobuf_python",
+    protoc = "//:protoc",
+    srcs_version = "PY2AND3",
+    visibility = ["//:__pkg__"],
+    deps = [":python_common_test_protos"],
+)
+
+internal_py_proto_library(
+    name = "test_messages_proto2_py_proto",
+    testonly = 1,
+    srcs = [":copied_test_messages_proto2_files"],
+    include = ".",
+    default_runtime = "//:protobuf_python",
+    protoc = "//:protoc",
+    visibility = [
+        "//conformance:__pkg__",
+        "//python:__subpackages__",
+    ],
+)
+
+internal_py_proto_library(
+    name = "test_messages_proto3_py_proto",
+    testonly = 1,
+    srcs = [":copied_test_messages_proto3_files"],
+    include = ".",
+    default_runtime = "//:protobuf_python",
+    protoc = "//:protoc",
+    visibility = [
+        "//conformance:__pkg__",
+        "//python:__subpackages__",
+    ],
+    deps = ["//python:well_known_types_py_pb2"],
+)
+
+py_library(
+    name = "python_test_lib",
+    testonly = 1,
+    srcs = [
+        "import_test_package/__init__.py",
+        "test_util.py",
+    ],
+    imports = ["python"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":python_common_test_protos",
+        ":python_specific_test_protos",
+        "//:protobuf_python",
+    ],
+)
+
+internal_py_test(
+    name = "descriptor_database_test",
+    srcs = ["descriptor_database_test.py"],
+)
+
+internal_py_test(
+    name = "descriptor_pool_test",
+    srcs = ["descriptor_pool_test.py"],
+)
+
+internal_py_test(
+    name = "descriptor_test",
+    srcs = ["descriptor_test.py"],
+)
+
+internal_py_test(
+    name = "field_mask_test",
+    srcs = ["field_mask_test.py"],
+)
+
+internal_py_test(
+    name = "generator_test",
+    srcs = ["generator_test.py"],
+)
+
+internal_py_test(
+    name = "import_test",
+    srcs = ["import_test.py"],
+)
+
+internal_py_test(
+    name = "json_format_test",
+    srcs = ["json_format_test.py"],
+)
+
+internal_py_test(
+    name = "keywords_test",
+    srcs = ["keywords_test.py"],
+)
+
+internal_py_test(
+    name = "message_factory_test",
+    srcs = ["message_factory_test.py"],
+)
+
+internal_py_test(
+    name = "message_test",
+    srcs = ["message_test.py"],
+    data = ["//src/google/protobuf:testdata"],
+)
+
+internal_py_test(
+    name = "numpy_test",
+    srcs = ["numpy_test.py"],
+    deps = [
+        requirement("numpy"),
+    ],
+)
+
+internal_py_test(
+    name = "proto_builder_test",
+    srcs = ["proto_builder_test.py"],
+)
+
+internal_py_test(
+    name = "python_version",
+    srcs = ["python_version.py"],
+)
+
+internal_py_test(
+    name = "reflection_test",
+    srcs = ["reflection_test.py"],
+)
+
+internal_py_test(
+    name = "service_reflection_test",
+    srcs = ["service_reflection_test.py"],
+)
+
+internal_py_test(
+    name = "symbol_database_test",
+    srcs = ["symbol_database_test.py"],
+)
+
+internal_py_test(
+    name = "text_encoding_test",
+    srcs = ["text_encoding_test.py"],
+)
+
+internal_py_test(
+    name = "text_format_test",
+    srcs = ["text_format_test.py"],
+    data = ["//src/google/protobuf:testdata"],
+)
+
+internal_py_test(
+    name = "unknown_fields_test",
+    srcs = ["unknown_fields_test.py"],
+)
+
+internal_py_test(
+    name = "well_known_types_test",
+    srcs = ["well_known_types_test.py"],
+)
+
+internal_py_test(
+    name = "wire_format_test",
+    srcs = ["wire_format_test.py"],
+)

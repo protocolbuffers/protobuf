@@ -17,10 +17,10 @@ jobs:
         version: [ "3.7", "3.8", "3.9", "3.10" ]
         include:
           - type: Pure
-            targets: //python/... @upb//python/... //python:python_version
+            targets: //python/... @upb//python/...
             flags: --define=use_fast_cpp_protos=false
           - type: C++
-            targets: //python/... //python:python_version
+            targets: //python/...
             flags: --define=use_fast_cpp_protos=true
           - type: C++
             version: aarch64
