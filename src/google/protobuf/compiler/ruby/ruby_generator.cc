@@ -295,7 +295,7 @@ rescue TypeError => e
   parsed.clear_dependency
   serialized = parsed.class.encode(parsed)
   file = pool.add_serialized_file(serialized)
-  warn "Warning: Protobuf detected import path issue while loading generated file #{__FILE__}"
+  warn "Warning: Protobuf detected an import path issue while loading generated file #{__FILE__}"
   imports = [
 $imports$  ]
   imports.each do |type_name, expected_filename|
@@ -305,7 +305,7 @@ $imports$  ]
     end
   end
   warn "Each proto file must use a consistent fully-qualified name."
-  warn "This will become an error in the next version."
+  warn "This will become an error in the next major version."
 end
 
 )",
