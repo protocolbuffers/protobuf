@@ -195,7 +195,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_$name$();
     }
     inline void $Msg$::set_$name$($Enum$ value) {
-      $maybe_prepare_split_message$ _internal_set_$name$(value);
+      $PrepareSplitMessageForWrite$ _internal_set_$name$(value);
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }

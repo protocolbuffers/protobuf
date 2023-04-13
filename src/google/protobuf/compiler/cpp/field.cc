@@ -88,8 +88,6 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
 
       // Old-style names.
       {"field", FieldMemberName(field, split)},
-      {"maybe_prepare_split_message",
-       split ? "PrepareSplitMessageForWrite();" : ""},
       {"declared_type", DeclaredTypeMethodName(field->type())},
       {"classname", ClassName(FieldScope(field), false)},
       {"ns", Namespace(field, opts)},
