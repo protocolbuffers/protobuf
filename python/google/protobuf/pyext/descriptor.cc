@@ -126,7 +126,9 @@ PyObject* PyString_FromCppString(const std::string& str) {
 // TODO(amauryfa): Change the proto2 compiler to remove the assignments, and
 // remove this hack.
 bool _CalledFromGeneratedFile(int stacklevel) {
-#ifndef PYPY_VERSION
+#ifdef PYPY_VERSION
+  return true;
+#else
   // This check is not critical and is somewhat difficult to implement correctly
   // in PyPy.
   PyFrameObject* frame = PyEval_GetFrame();
@@ -182,7 +184,6 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     // Not at global module scope
     goto exit;
   }
-#endif
   result = true;
 exit:
   Py_XDECREF(frame_globals);
@@ -190,6 +191,7 @@ exit:
   Py_XDECREF(frame_code);
   Py_XDECREF(frame);
   return result;
+#endif
 }
 
 // If the calling code is not a _pb2.py file, raise AttributeError.
