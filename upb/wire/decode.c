@@ -29,6 +29,7 @@
 
 #include <string.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/collections/array_internal.h"
 #include "upb/collections/map_internal.h"
 #include "upb/mem/arena_internal.h"
@@ -966,7 +967,21 @@ static void _upb_Decoder_CheckUnlinked(const upb_MiniTable* mt,
   // If sub-message is not linked, treat as unknown.
   if (field->mode & kUpb_LabelFlags_IsExtension) return;
   const upb_MiniTableSub* sub = &mt->subs[field->UPB_PRIVATE(submsg_index)];
-  if (!sub->submsg) *op = kUpb_DecodeOp_UnknownField;
+  if (sub->submsg) return;
+#ifndef NDEBUG
+  const upb_MiniTableField* oneof = upb_MiniTable_GetOneof(mt, field);
+  if (oneof) {
+    // All other members of the oneof must be message fields that are also
+    // unlinked.
+    do {
+      assert(upb_MiniTableField_CType(oneof) == kUpb_CType_Message);
+      const upb_MiniTableSub* oneof_sub =
+          &mt->subs[oneof->UPB_PRIVATE(submsg_index)];
+      assert(!oneof_sub);
+    } while (upb_MiniTable_NextOneofField(mt, &oneof));
+  }
+#endif  // NDEBUG
+  *op = kUpb_DecodeOp_UnknownField;
 }
 
 int _upb_Decoder_GetDelimitedOp(const upb_MiniTable* mt,
