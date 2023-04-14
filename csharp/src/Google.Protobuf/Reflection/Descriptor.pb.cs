@@ -7587,8 +7587,10 @@ namespace Google.Protobuf.Reflection {
     /// <summary>
     /// The ctype option instructs the C++ code generator to use a different
     /// representation of the field than it normally would.  See the specific
-    /// options below.  This option is not yet implemented in the open source
-    /// release -- sorry, we'll try to include it in a future version!
+    /// options below.  This option is only implemented to support use of
+    /// [ctype=CORD] and [ctype=STRING] (the default) on non-repeated fields of
+    /// type "bytes" in the open source release -- sorry, we'll try to include
+    /// other types in a future version!
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -8382,6 +8384,14 @@ namespace Google.Protobuf.Reflection {
         /// Default mode.
         /// </summary>
         [pbr::OriginalName("STRING")] String = 0,
+        /// <summary>
+        /// The option [ctype=CORD] may be applied to a non-repeated field of type
+        /// "bytes". It indicates that in C++, the data should be stored in a Cord
+        /// instead of a string.  For very large strings, this may reduce memory
+        /// fragmentation. It may also allow better performance when parsing from a
+        /// Cord, or when parsing with aliasing enabled, as the parsed Cord may then
+        /// alias the original buffer.
+        /// </summary>
         [pbr::OriginalName("CORD")] Cord = 1,
         [pbr::OriginalName("STRING_PIECE")] StringPiece = 2,
       }
