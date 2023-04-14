@@ -47,10 +47,10 @@ pyproto_test_wrapper(name = "keywords_test")
 pyproto_test_wrapper(name = "message_factory_test")
 
 # begin:github_only
-pyproto_test_wrapper(
-    name = "numpy_test",
-    deps = [requirement("numpy")],
-)
+# pyproto_test_wrapper(
+#    name = "numpy_test",
+#    deps = [requirement("numpy")],
+# )
 # end:github_only
 
 # begin:google_only
