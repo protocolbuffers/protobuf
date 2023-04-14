@@ -243,6 +243,44 @@ TEST(RetentionTest, StripSourceRetentionOptionsWithSourceCodeInfo) {
   EXPECT_EQ(stripped_file.source_code_info().location_size(), 63);
 }
 
+TEST(RetentionTest, InvalidDescriptor) {
+  // This test creates an invalid descriptor and makes sure we can strip its
+  // options without crashing.
+  std::string proto_file =
+      absl::Substitute(R"(
+      syntax = "proto3";
+
+      package google.protobuf.internal;
+
+      import "$0";
+
+      // String option with invalid UTF-8
+      option (s) = "\xff";
+
+      extend google.protobuf.FileOptions {
+        optional string s = 50000;
+      })",
+                       FileDescriptorSet::descriptor()->file()->name());
+  io::ArrayInputStream input_stream(proto_file.data(),
+                                    static_cast<int>(proto_file.size()));
+  io::ErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  FileDescriptorProto file_descriptor_proto;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &file_descriptor_proto));
+  file_descriptor_proto.set_name("retention.proto");
+
+  DescriptorPool pool;
+  FileDescriptorProto descriptor_proto_descriptor;
+  FileDescriptorSet::descriptor()->file()->CopyTo(&descriptor_proto_descriptor);
+  ASSERT_NE(pool.BuildFile(descriptor_proto_descriptor), nullptr);
+  const FileDescriptor* file_descriptor = pool.BuildFile(file_descriptor_proto);
+  ASSERT_NE(file_descriptor, nullptr);
+
+  FileDescriptorProto stripped_file =
+      compiler::StripSourceRetentionOptions(*file_descriptor);
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

@@ -102,8 +102,7 @@ void ConvertToDynamicMessageAndStripOptions(
   const Descriptor* descriptor = pool.FindMessageTypeByName(m.GetTypeName());
   std::vector<int> path;
 
-  if (descriptor == nullptr ||
-      descriptor->file()->pool() == DescriptorPool::generated_pool()) {
+  if (descriptor == nullptr || &pool == DescriptorPool::generated_pool()) {
     // If the pool does not contain the descriptor, then this proto file does
     // not transitively depend on descriptor.proto, in which case we know there
     // are no custom options to worry about. If we are working with the
@@ -115,11 +114,27 @@ void ConvertToDynamicMessageAndStripOptions(
     std::unique_ptr<Message> dynamic_message(
         factory.GetPrototype(descriptor)->New());
     std::string serialized;
-    ABSL_CHECK(m.SerializeToString(&serialized));
-    ABSL_CHECK(dynamic_message->ParseFromString(serialized));
+    if (!m.SerializePartialToString(&serialized)) {
+      ABSL_LOG_EVERY_N_SEC(ERROR, 1)
+          << "Failed to strip source-retention options";
+      return;
+    }
+    if (!dynamic_message->ParsePartialFromString(serialized)) {
+      ABSL_LOG_EVERY_N_SEC(ERROR, 1)
+          << "Failed to strip source-retention options";
+      return;
+    }
     StripMessage(*dynamic_message, path, stripped_paths);
-    ABSL_CHECK(dynamic_message->SerializeToString(&serialized));
-    ABSL_CHECK(m.ParseFromString(serialized));
+    if (!dynamic_message->SerializePartialToString(&serialized)) {
+      ABSL_LOG_EVERY_N_SEC(ERROR, 1)
+          << "Failed to strip source-retention options";
+      return;
+    }
+    if (!m.ParsePartialFromString(serialized)) {
+      ABSL_LOG_EVERY_N_SEC(ERROR, 1)
+          << "Failed to strip source-retention options";
+      return;
+    }
   }
 }
 
