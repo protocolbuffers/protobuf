@@ -30,7 +30,7 @@
 
 syntax = "proto2";
 
-package third_party_protobuf_rust_test;
+package child_package;
 
 import public "rust/test/parent.proto";
 

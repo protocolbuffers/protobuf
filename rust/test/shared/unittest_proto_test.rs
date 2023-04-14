@@ -28,8 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use unittest_proto::proto2_unittest::TestAllTypes;
+
 #[test]
 fn test_serialization() {
-    let test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
+    let test_all_types = TestAllTypes::new();
     assert_eq!(*test_all_types.serialize(), []);
 }

@@ -37,7 +37,9 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/types/optional.h"
@@ -103,6 +105,40 @@ std::string GetFileExtensionForKernel(Kernel kernel) {
   }
   ABSL_LOG(FATAL) << "Unknown kernel type: " << static_cast<int>(kernel);
   return "";
+}
+
+std::string RustModule(absl::string_view package) {
+  if (package.empty()) return "";
+  return absl::StrCat("", absl::StrReplaceAll(package, {{".", "::"}}));
+}
+
+std::string GetCrateRelativeQualifiedPath(const Descriptor* msg) {
+  std::string mod = RustModule(msg->file()->package());
+  return absl::StrJoin({mod, msg->name()}, "::");
+}
+
+void EmitOpeningOfPackageModules(absl::string_view package,
+                                 google::protobuf::io::Printer& p) {
+  if (package.empty()) return;
+  for (absl::string_view segment : absl::StrSplit(package, '.')) {
+    p.Emit({{"segment", segment}},
+           R"rs(
+           pub mod $segment$ {
+           )rs");
+  }
+}
+
+void EmitClosingOfPackageModules(absl::string_view package,
+                                 google::protobuf::io::Printer& p) {
+  if (package.empty()) return;
+  std::vector<absl::string_view> segments = absl::StrSplit(package, '.');
+  absl::c_reverse(segments);
+  for (absl::string_view segment : segments) {
+    p.Emit({{"segment", segment}},
+           R"rs(
+           } // mod $segment$
+           )rs");
+  }
 }
 
 std::string GetUnderscoreDelimitedFullName(const Descriptor* msg) {
@@ -496,6 +532,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     extern crate std as __std;
 
   )rs");
+  EmitOpeningOfPackageModules(file->package(), p);
 
   // TODO(b/270124215): Delete the following "placeholder impl" of `import
   // public`. Also make sure to figure out how to map FileDescriptor#name to
@@ -506,9 +543,10 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     for (int j = 0; j < dep->message_type_count(); ++j) {
       // TODO(b/272728844): Implement real logic
       p.Emit(
-          {{"crate", crate_name}, {"type_name", dep->message_type(j)->name()}},
+          {{"crate", crate_name},
+           {"pkg::Msg", GetCrateRelativeQualifiedPath(dep->message_type(j))}},
           R"rs(
-                pub use $crate$::$type_name$;
+                pub use $crate$::$pkg::Msg$;
               )rs");
     }
   }
@@ -532,6 +570,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       GenerateThunksForCpp(file, thunks);
       break;
   }
+  EmitClosingOfPackageModules(file->package(), p);
   return true;
 }
 

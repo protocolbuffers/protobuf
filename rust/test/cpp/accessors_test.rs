@@ -29,10 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /// Tests covering accessors for singular bool and int64 fields.
+use unittest_proto::proto2_unittest::TestAllTypes;
 
 #[test]
 fn test_optional_int64_accessors() {
-    let mut msg = unittest_proto::TestAllTypes::new();
+    let mut msg = TestAllTypes::new();
     assert_eq!(msg.optional_int64(), None);
 
     msg.optional_int64_set(Some(42));
@@ -44,7 +45,7 @@ fn test_optional_int64_accessors() {
 
 #[test]
 fn test_optional_bool_accessors() {
-    let mut msg = unittest_proto::TestAllTypes::new();
+    let mut msg = TestAllTypes::new();
     assert_eq!(msg.optional_bool(), None);
 
     msg.optional_bool_set(Some(true));
@@ -56,7 +57,7 @@ fn test_optional_bool_accessors() {
 
 #[test]
 fn test_optional_bytes_accessors() {
-    let mut msg = unittest_proto::TestAllTypes::new();
+    let mut msg = TestAllTypes::new();
     assert_eq!(msg.optional_bytes(), None);
 
     msg.optional_bytes_set(Some(b"accessors_test"));

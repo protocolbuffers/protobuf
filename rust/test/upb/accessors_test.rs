@@ -28,9 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use unittest_proto::proto2_unittest::TestAllTypes;
+
 #[test]
 fn test_optional_bool() {
-    let mut test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
+    let mut test_all_types: TestAllTypes = TestAllTypes::new();
     test_all_types.optional_bool_set(Some(true));
     assert_eq!(test_all_types.optional_bool(), Some(true));
 
@@ -43,7 +45,7 @@ fn test_optional_bool() {
 
 #[test]
 fn test_optional_int64() {
-    let mut test_all_types: unittest_proto::TestAllTypes = unittest_proto::TestAllTypes::new();
+    let mut test_all_types: TestAllTypes = TestAllTypes::new();
     test_all_types.optional_int64_set(Some(10));
     assert_eq!(test_all_types.optional_int64(), Some(10));
 

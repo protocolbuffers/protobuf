@@ -77,3 +77,39 @@ rust_test(
         "//rust/test:parent_cc_rust_proto",
     ],
 )
+
+rust_test(
+    name = "package_cpp_test",
+    srcs = ["package_test.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+        # TODO(b/243126140): Enable tsan once we support sanitizers with Rust.
+        "notsan",
+        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
+        "nomsan",
+    ],
+    deps = [
+        "//rust/test:dots_in_package_cc_rust_proto",
+        "//rust/test:no_package_cc_rust_proto",
+        "//rust/test:unittest_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "package_upb_test",
+    srcs = ["package_test.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+        # TODO(b/243126140): Enable tsan once we support sanitizers with Rust.
+        "notsan",
+        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
+        "nomsan",
+    ],
+    deps = [
+        "//rust/test:dots_in_package_upb_rust_proto",
+        "//rust/test:no_package_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
+    ],
+)
