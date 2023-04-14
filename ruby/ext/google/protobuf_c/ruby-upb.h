@@ -169,13 +169,15 @@
 
 #ifdef __GNUC__
 #define UPB_USE_C11_ATOMICS
-#define UPB_ATOMIC _Atomic
+#define UPB_ATOMIC(T) _Atomic(T)
 #else
-#define UPB_ATOMIC
+#define UPB_ATOMIC(T) T
 #endif
 
 /* UPB_PTRADD(ptr, ofs): add pointer while avoiding "NULL + 0" UB */
 #define UPB_PTRADD(ptr, ofs) ((ofs) ? (ptr) + (ofs) : (ptr))
+
+#define UPB_PRIVATE(x) x##_dont_copy_me__upb_internal_use_only
 
 /* Configure whether fasttable is switched on or not. *************************/
 
@@ -615,11 +617,13 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 
 typedef struct upb_Arena upb_Arena;
 
-typedef void upb_CleanupFunc(void* context);
+// LINT.IfChange(arena_head)
 
 typedef struct {
   char *ptr, *end;
 } _upb_ArenaHead;
+
+// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/arena.ts:arena_head)
 
 #ifdef __cplusplus
 extern "C" {
@@ -631,8 +635,6 @@ extern "C" {
 UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
-UPB_API bool upb_Arena_AddCleanup(upb_Arena* a, void* ud,
-                                  upb_CleanupFunc* func);
 UPB_API bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
 
 void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size);
@@ -1508,11 +1510,17 @@ size_t upb_Message_ExtensionCount(const upb_Message* msg);
 
 // Must be last.
 
+// LINT.IfChange(mini_table_field_layout)
+
 struct upb_MiniTableField {
   uint32_t number;
   uint16_t offset;
   int16_t presence;       // If >0, hasbit_index.  If <0, ~oneof_index
-  uint16_t submsg_index;  // kUpb_NoSub if descriptortype != MESSAGE/GROUP/ENUM
+
+  // Indexes into `upb_MiniTable.subs`
+  // Will be set to `kUpb_NoSub` if `descriptortype` != MESSAGE/GROUP/ENUM
+  uint16_t UPB_PRIVATE(submsg_index);
+
   uint8_t descriptortype;
 
   // upb_FieldMode | upb_LabelFlags | (upb_FieldRep << kUpb_FieldRep_Shift)
@@ -1555,6 +1563,8 @@ typedef enum {
 } upb_FieldRep;
 
 #define kUpb_FieldRep_Shift 6
+
+// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table_field.ts:mini_table_field_layout)
 
 UPB_INLINE upb_FieldRep
 _upb_MiniTableField_GetRep(const upb_MiniTableField* field) {
@@ -1647,6 +1657,7 @@ UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
 }
 
 // LINT.ThenChange(GoogleInternalName2)
+// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/presence.ts:presence_logic)
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -1752,6 +1763,8 @@ typedef enum {
   kUpb_ExtMode_IsMapEntry = 4,
 } upb_ExtMode;
 
+// LINT.IfChange(mini_table_layout)
+
 // upb_MiniTable represents the memory layout of a given upb_MessageDef.
 // The members are public so generated code can initialize them,
 // but users MUST NOT directly read or write any of its members.
@@ -1774,6 +1787,8 @@ struct upb_MiniTable {
   // of flexible array members is a GNU extension, not in C99 unfortunately.
   _upb_FastTable_Entry fasttable[];
 };
+
+// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table.ts:presence_logic)
 
 // Map entries aren't actually stored for map fields, they are only used during
 // parsing. For parsing, it helps a lot if all map entry messages have the same
@@ -2294,14 +2309,27 @@ UPB_API_INLINE bool upb_MiniTableField_HasPresence(
   }
 }
 
+// Returns the MiniTable for this message field.  If the field is unlinked,
+// returns NULL.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  return mini_table->subs[field->submsg_index].submsg;
+  UPB_ASSERT(upb_MiniTableField_CType(field) == kUpb_CType_Message);
+  return mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
 }
 
+// Returns the MiniTableEnum for this enum field.  If the field is unlinked,
+// returns NULL.
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  return mini_table->subs[field->submsg_index].subenum;
+  UPB_ASSERT(upb_MiniTableField_CType(field) == kUpb_CType_Enum);
+  return mini_table->subs[field->UPB_PRIVATE(submsg_index)].subenum;
+}
+
+// Returns true if this MiniTable field is linked to a MiniTable for the
+// sub-message.
+UPB_API_INLINE bool upb_MiniTable_MessageFieldIsLinked(
+    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
+  return upb_MiniTable_GetSubMessageTable(mini_table, field) != NULL;
 }
 
 // If this field is in a oneof, returns the first field in the oneof.
@@ -2379,6 +2407,8 @@ UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
   }
 }
 
+// LINT.IfChange(message_raw_fields)
+
 UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
                                               const upb_MiniTableField* field) {
   char zero[16] = {0};
@@ -2416,6 +2446,8 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
   }
   UPB_UNREACHABLE();
 }
+
+// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/message.ts:message_raw_fields)
 
 UPB_INLINE size_t
 _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
@@ -2840,7 +2872,7 @@ UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
   UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) ==
              UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
-  UPB_ASSERT(mini_table->subs[field->submsg_index].submsg);
+  UPB_ASSERT(mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg);
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
 }
 
@@ -2852,7 +2884,7 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
   upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
   if (!sub_message) {
     const upb_MiniTable* sub_mini_table =
-        mini_table->subs[field->submsg_index].submsg;
+        mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
@@ -2864,7 +2896,7 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
 UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const upb_Message* msg, const upb_MiniTableField* field) {
   _upb_MiniTableField_CheckIsArray(field);
-  const upb_Array* ret;
+  upb_Array* ret;
   const upb_Array* default_val = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
   return ret;
@@ -2918,7 +2950,7 @@ UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
 UPB_API_INLINE const upb_Map* upb_Message_GetMap(
     const upb_Message* msg, const upb_MiniTableField* field) {
   _upb_MiniTableField_CheckIsMap(field);
-  const upb_Map* ret;
+  upb_Map* ret;
   const upb_Map* default_val = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
   return ret;
@@ -2996,7 +3028,8 @@ typedef struct {
 
 // Finds first occurrence of unknown data by tag id in message.
 upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
-                                             uint32_t field_number);
+                                             uint32_t field_number,
+                                             int depth_limit);
 
 typedef enum {
   kUpb_UnknownToMessage_Ok,
@@ -3088,13 +3121,19 @@ enum {
   kUpb_DecodeOption_CheckRequired = 2,
 };
 
-#define UPB_DECODE_MAXDEPTH(depth) ((depth) << 16)
+UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
+  return (uint32_t)depth << 16;
+}
+
+UPB_INLINE uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
+  return options >> 16;
+}
 
 // Enforce an upper bound on recursion depth.
 UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
-  uint32_t max_depth = decode_options >> 16;
+  uint32_t max_depth = upb_DecodeOptions_GetMaxDepth(decode_options);
   if (max_depth > limit) max_depth = limit;
-  return (max_depth << 16) | (decode_options & 0xffff);
+  return upb_DecodeOptions_MaxDepth(max_depth) | (decode_options & 0xffff);
 }
 
 typedef enum {
@@ -9639,28 +9678,31 @@ typedef struct _upb_MemBlock _upb_MemBlock;
 
 struct upb_Arena {
   _upb_ArenaHead head;
-  /* Stores cleanup metadata for this arena.
-   * - a pointer to the current cleanup counter.
-   * - a boolean indicating if there is an unowned initial block.  */
-  uintptr_t cleanup_metadata;
 
-  /* Allocator to allocate arena blocks.  We are responsible for freeing these
-   * when we are destroyed. */
-  upb_alloc* block_alloc;
-  uint32_t last_size;
+  // upb_alloc* together with a low bit which signals if there is an initial
+  // block.
+  uintptr_t block_alloc;
 
-  /* When multiple arenas are fused together, each arena points to a parent
-   * arena (root points to itself). The root tracks how many live arenas
-   * reference it.
-   *
-   * The low bit is tagged:
-   *   0: pointer to parent
-   *   1: count, left shifted by one
-   */
-  UPB_ATOMIC uintptr_t parent_or_count;
+  // When multiple arenas are fused together, each arena points to a parent
+  // arena (root points to itself). The root tracks how many live arenas
+  // reference it.
 
-  /* Linked list of blocks to free/cleanup. */
-  _upb_MemBlock *freelist, *freelist_tail;
+  // The low bit is tagged:
+  //   0: pointer to parent
+  //   1: count, left shifted by one
+  UPB_ATOMIC(uintptr_t) parent_or_count;
+
+  // All nodes that are fused together are in a singly-linked list.
+  UPB_ATOMIC(upb_Arena*) next;  // NULL at end of list.
+
+  // The last element of the linked list.  This is present only as an
+  // optimization, so that we do not have to iterate over all members for every
+  // fuse.  Only significant for an arena root.  In other cases it is ignored.
+  UPB_ATOMIC(upb_Arena*) tail;  // == self when no other list members.
+
+  // Linked list of blocks to free/cleanup.  Atomic only for the benefit of
+  // upb_Arena_SpaceAllocated().
+  UPB_ATOMIC(_upb_MemBlock*) blocks;
 };
 
 UPB_INLINE bool _upb_Arena_IsTaggedRefcount(uintptr_t parent_or_count) {
@@ -9671,13 +9713,13 @@ UPB_INLINE bool _upb_Arena_IsTaggedPointer(uintptr_t parent_or_count) {
   return (parent_or_count & 1) == 0;
 }
 
-UPB_INLINE uint32_t _upb_Arena_RefCountFromTagged(uintptr_t parent_or_count) {
+UPB_INLINE uintptr_t _upb_Arena_RefCountFromTagged(uintptr_t parent_or_count) {
   UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
   return parent_or_count >> 1;
 }
 
-UPB_INLINE uintptr_t _upb_Arena_TaggedFromRefcount(uint32_t refcount) {
-  uintptr_t parent_or_count = (((uintptr_t)refcount) << 1) | 1;
+UPB_INLINE uintptr_t _upb_Arena_TaggedFromRefcount(uintptr_t refcount) {
+  uintptr_t parent_or_count = (refcount << 1) | 1;
   UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
   return parent_or_count;
 }
@@ -9693,6 +9735,21 @@ UPB_INLINE uintptr_t _upb_Arena_TaggedFromPointer(upb_Arena* a) {
   return parent_or_count;
 }
 
+UPB_INLINE upb_alloc* upb_Arena_BlockAlloc(upb_Arena* arena) {
+  return (upb_alloc*)(arena->block_alloc & ~0x1);
+}
+
+UPB_INLINE uintptr_t upb_Arena_MakeBlockAlloc(upb_alloc* alloc,
+                                              bool has_initial) {
+  uintptr_t alloc_uint = (uintptr_t)alloc;
+  UPB_ASSERT((alloc_uint & 1) == 0);
+  return alloc_uint | (has_initial ? 1 : 0);
+}
+
+UPB_INLINE bool upb_Arena_HasInitialBlock(upb_Arena* arena) {
+  return arena->block_alloc & 0x1;
+}
+
 
 #endif /* UPB_MEM_ARENA_INTERNAL_H_ */
 
@@ -9705,79 +9762,75 @@ UPB_INLINE uintptr_t _upb_Arena_TaggedFromPointer(upb_Arena* a) {
 #include <stdatomic.h>
 #include <stdbool.h>
 
-UPB_INLINE void upb_Atomic_Init(_Atomic uintptr_t* addr, uintptr_t val) {
-  atomic_init(addr, val);
-}
-
-UPB_INLINE uintptr_t upb_Atomic_LoadAcquire(_Atomic uintptr_t* addr) {
-  return atomic_load_explicit(addr, memory_order_acquire);
-}
-
-UPB_INLINE void upb_Atomic_StoreRelaxed(_Atomic uintptr_t* addr,
-                                        uintptr_t val) {
-  atomic_store_explicit(addr, val, memory_order_relaxed);
-}
-
-UPB_INLINE void upb_Atomic_AddRelease(_Atomic uintptr_t* addr, uintptr_t val) {
-  atomic_fetch_add_explicit(addr, val, memory_order_release);
-}
-
-UPB_INLINE void upb_Atomic_SubRelease(_Atomic uintptr_t* addr, uintptr_t val) {
+#define upb_Atomic_Init(addr, val) atomic_init(addr, val)
+#define upb_Atomic_Load(addr, order) atomic_load_explicit(addr, order)
+#define upb_Atomic_Store(addr, val, order) \
+  atomic_store_explicit(addr, val, order)
+#define upb_Atomic_Add(addr, val, order) \
+  atomic_fetch_add_explicit(addr, val, order)
+#define upb_Atomic_Sub(addr, val, order) \
   atomic_fetch_sub_explicit(addr, val, memory_order_release);
-}
-
-UPB_INLINE uintptr_t upb_Atomic_ExchangeAcqRel(_Atomic uintptr_t* addr,
-                                               uintptr_t val) {
-  return atomic_exchange_explicit(addr, val, memory_order_acq_rel);
-}
-
-UPB_INLINE bool upb_Atomic_CompareExchangeStrongAcqRel(_Atomic uintptr_t* addr,
-                                                       uintptr_t* expected,
-                                                       uintptr_t desired) {
-  return atomic_compare_exchange_strong_explicit(
-      addr, expected, desired, memory_order_release, memory_order_acquire);
-}
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  atomic_compare_exchange_strong_explicit(addr, expected, desired,     \
+                                          success_order, failure_order)
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  atomic_compare_exchange_weak_explicit(addr, expected, desired,               \
+                                        success_order, failure_order)
 
 #else  // !UPB_USE_C11_ATOMICS
 
-UPB_INLINE void upb_Atomic_Init(uintptr_t* addr, uintptr_t val) { *addr = val; }
+#include <string.h>
 
-UPB_INLINE uintptr_t upb_Atomic_LoadAcquire(uintptr_t* addr) { return *addr; }
+#define upb_Atomic_Init(addr, val) (*addr = val)
+#define upb_Atomic_Load(addr, order) (*addr)
+#define upb_Atomic_Store(addr, val, order) (*(addr) = val)
+#define upb_Atomic_Add(addr, val, order) (*(addr) += val)
+#define upb_Atomic_Sub(addr, val, order) (*(addr) -= val)
 
-UPB_INLINE void upb_Atomic_StoreRelaxed(uintptr_t* addr, uintptr_t val) {
-  *addr = val;
-}
-
-UPB_INLINE void upb_Atomic_AddRelease(uintptr_t* addr, uintptr_t val) {
-  *addr += val;
-}
-
-UPB_INLINE void upb_Atomic_SubRelease(uintptr_t* addr, uintptr_t val) {
-  *addr -= val;
-}
-
-UPB_INLINE uintptr_t upb_Atomic_ExchangeAcqRel(uintptr_t* addr, uintptr_t val) {
-  uintptr_t ret = *addr;
-  *addr = val;
-  return ret;
-}
-
-UPB_INLINE bool upb_Atomic_CompareExchangeStrongAcqRel(uintptr_t* addr,
-                                                       uintptr_t* expected,
-                                                       uintptr_t desired) {
-  if (*addr == *expected) {
-    *addr = desired;
+// `addr` and `expected` are logically double pointers.
+UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
+                                                      void* expected,
+                                                      void* desired) {
+  if (memcmp(addr, expected, sizeof(desired)) == 0) {
+    memcpy(addr, &desired, sizeof(desired));
     return true;
   } else {
-    *expected = *addr;
+    memcpy(expected, addr, sizeof(desired));
     return false;
   }
 }
+
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  _upb_NonAtomic_CompareExchangeStrongP((void*)addr, (void*)expected,  \
+                                        (void*)desired)
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  upb_Atomic_CompareExchangeStrong(addr, expected, desired, 0, 0)
 
 #endif
 
 
 #endif  // UPB_PORT_ATOMIC_H_
+
+#ifndef UPB_WIRE_COMMON_H_
+#define UPB_WIRE_COMMON_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define kUpb_WireFormat_DefaultDepthLimit 100
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif  // UPB_WIRE_COMMON_H_
 
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
@@ -10182,7 +10235,8 @@ UPB_API upb_MiniTableExtension* _upb_MiniTableExtension_Build(
 UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_Build(
     const char* data, size_t len, const upb_MiniTable* extendee,
     upb_Arena* arena, upb_Status* status) {
-  upb_MiniTableSub sub = {.submsg = NULL};
+  upb_MiniTableSub sub;
+  sub.submsg = NULL;
   return _upb_MiniTableExtension_Build(
       data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
 }
@@ -10190,7 +10244,8 @@ UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_Build(
 UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildMessage(
     const char* data, size_t len, const upb_MiniTable* extendee,
     upb_MiniTable* submsg, upb_Arena* arena, upb_Status* status) {
-  upb_MiniTableSub sub = {.submsg = submsg};
+  upb_MiniTableSub sub;
+  sub.submsg = submsg;
   return _upb_MiniTableExtension_Build(
       data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
 }
@@ -10198,7 +10253,8 @@ UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildMessage(
 UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildEnum(
     const char* data, size_t len, const upb_MiniTable* extendee,
     upb_MiniTableEnum* subenum, upb_Arena* arena, upb_Status* status) {
-  upb_MiniTableSub sub = {.subenum = subenum};
+  upb_MiniTableSub sub;
+  sub.subenum = subenum;
   return _upb_MiniTableExtension_Build(
       data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
 }
@@ -11099,3 +11155,4 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 #undef UPB_IS_GOOGLE3
 #undef UPB_ATOMIC
 #undef UPB_USE_C11_ATOMICS
+#undef UPB_PRIVATE

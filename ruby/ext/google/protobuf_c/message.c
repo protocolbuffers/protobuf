@@ -980,7 +980,7 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
         rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
 
     if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
-      options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));
+      options |= upb_DecodeOptions_MaxDepth(FIX2INT(depth));
     }
   }
 
@@ -1098,7 +1098,7 @@ static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
         rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
 
     if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
-      options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));
+      options |= upb_DecodeOptions_MaxDepth(FIX2INT(depth));
     }
   }
 
