@@ -45,7 +45,7 @@ struct upb_MiniTableField {
   // Will be set to `kUpb_NoSub` if `descriptortype` != MESSAGE/GROUP/ENUM
   uint16_t UPB_PRIVATE(submsg_index);
 
-  uint8_t descriptortype;
+  uint8_t UPB_PRIVATE(descriptortype);
 
   // upb_FieldMode | upb_LabelFlags | (upb_FieldRep << kUpb_FieldRep_Shift)
   uint8_t mode;
@@ -123,8 +123,8 @@ UPB_INLINE bool upb_IsRepeatedOrMap(const upb_MiniTableField* field) {
 }
 
 UPB_INLINE bool upb_IsSubMessage(const upb_MiniTableField* field) {
-  return field->descriptortype == kUpb_FieldType_Message ||
-         field->descriptortype == kUpb_FieldType_Group;
+  return field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Message ||
+         field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
 }
 
 // LINT.IfChange(presence_logic)

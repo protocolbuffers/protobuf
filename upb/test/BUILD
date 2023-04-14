@@ -136,6 +136,7 @@ cc_library(
     deps = [
         "//:upb",
         "//:mini_table_internal",
+        "//:port",
     ],
 )
 

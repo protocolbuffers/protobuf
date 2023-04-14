@@ -152,7 +152,7 @@ _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
       2,               // kUpb_FieldType_SInt32 = 17,
       3,               // kUpb_FieldType_SInt64 = 18,
   };
-  return table[field->descriptortype];
+  return table[field->UPB_PRIVATE(descriptortype)];
 }
 
 // Here we define universal getter/setter functions for message fields.
@@ -172,7 +172,7 @@ _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
 //   UPB_INLINE bool upb_Message_SetBool(upb_Message* msg,
 //                                       const upb_MiniTableField* field,
 //                                       bool value, upb_Arena* a) {
-//     UPB_ASSUME(field->descriptortype == kUpb_FieldType_Bool);
+//     UPB_ASSUME(field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bool);
 //     UPB_ASSUME(!upb_IsRepeatedOrMap(field));
 //     UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_1Byte);
 //     _upb_Message_SetField(msg, field, &value, a);
@@ -347,9 +347,9 @@ UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
 UPB_API_INLINE bool upb_Message_GetBool(const upb_Message* msg,
                                         const upb_MiniTableField* field,
                                         bool default_val) {
-  UPB_ASSUME(field->descriptortype == kUpb_FieldType_Bool);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Bool);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_1Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   bool ret;
   _upb_Message_GetField(msg, field, &default_val, &ret);
   return ret;
@@ -358,21 +358,19 @@ UPB_API_INLINE bool upb_Message_GetBool(const upb_Message* msg,
 UPB_API_INLINE bool upb_Message_SetBool(upb_Message* msg,
                                         const upb_MiniTableField* field,
                                         bool value, upb_Arena* a) {
-  UPB_ASSUME(field->descriptortype == kUpb_FieldType_Bool);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Bool);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_1Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
 UPB_API_INLINE int32_t upb_Message_GetInt32(const upb_Message* msg,
                                             const upb_MiniTableField* field,
                                             int32_t default_val) {
-  UPB_ASSUME(field->descriptortype == kUpb_FieldType_Int32 ||
-             field->descriptortype == kUpb_FieldType_SInt32 ||
-             field->descriptortype == kUpb_FieldType_SFixed32 ||
-             field->descriptortype == kUpb_FieldType_Enum);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Int32 ||
+             upb_MiniTableField_CType(field) == kUpb_CType_Enum);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_4Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   int32_t ret;
   _upb_Message_GetField(msg, field, &default_val, &ret);
   return ret;
@@ -381,21 +379,18 @@ UPB_API_INLINE int32_t upb_Message_GetInt32(const upb_Message* msg,
 UPB_API_INLINE bool upb_Message_SetInt32(upb_Message* msg,
                                          const upb_MiniTableField* field,
                                          int32_t value, upb_Arena* a) {
-  UPB_ASSUME(field->descriptortype == kUpb_FieldType_Int32 ||
-             field->descriptortype == kUpb_FieldType_SInt32 ||
-             field->descriptortype == kUpb_FieldType_SFixed32);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Int32);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_4Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
 UPB_API_INLINE uint32_t upb_Message_GetUInt32(const upb_Message* msg,
                                               const upb_MiniTableField* field,
                                               uint32_t default_val) {
-  UPB_ASSUME(field->descriptortype == kUpb_FieldType_UInt32 ||
-             field->descriptortype == kUpb_FieldType_Fixed32);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_UInt32);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_4Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   uint32_t ret;
   _upb_Message_GetField(msg, field, &default_val, &ret);
   return ret;
@@ -404,19 +399,18 @@ UPB_API_INLINE uint32_t upb_Message_GetUInt32(const upb_Message* msg,
 UPB_API_INLINE bool upb_Message_SetUInt32(upb_Message* msg,
                                           const upb_MiniTableField* field,
                                           uint32_t value, upb_Arena* a) {
-  UPB_ASSUME(field->descriptortype == kUpb_FieldType_UInt32 ||
-             field->descriptortype == kUpb_FieldType_Fixed32);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_UInt32);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_4Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
 UPB_API_INLINE void upb_Message_SetEnumProto2(
     upb_Message* msg, const upb_MiniTable* msg_mini_table,
     const upb_MiniTableField* field, int32_t value) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Enum);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSERT(upb_MiniTableField_IsClosedEnum(field));
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_4Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   UPB_ASSERT(upb_MiniTableEnum_CheckValue(
       upb_MiniTable_GetSubEnumTable(msg_mini_table, field), value));
   _upb_Message_SetNonExtensionField(msg, field, &value);
@@ -425,11 +419,9 @@ UPB_API_INLINE void upb_Message_SetEnumProto2(
 UPB_API_INLINE int64_t upb_Message_GetInt64(const upb_Message* msg,
                                             const upb_MiniTableField* field,
                                             uint64_t default_val) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Int64 ||
-             field->descriptortype == kUpb_FieldType_SInt64 ||
-             field->descriptortype == kUpb_FieldType_SFixed64);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Int64);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_8Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   int64_t ret;
   _upb_Message_GetField(msg, field, &default_val, &ret);
   return ret;
@@ -438,21 +430,18 @@ UPB_API_INLINE int64_t upb_Message_GetInt64(const upb_Message* msg,
 UPB_API_INLINE bool upb_Message_SetInt64(upb_Message* msg,
                                          const upb_MiniTableField* field,
                                          int64_t value, upb_Arena* a) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Int64 ||
-             field->descriptortype == kUpb_FieldType_SInt64 ||
-             field->descriptortype == kUpb_FieldType_SFixed64);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Int64);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_8Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
 UPB_API_INLINE uint64_t upb_Message_GetUInt64(const upb_Message* msg,
                                               const upb_MiniTableField* field,
                                               uint64_t default_val) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_UInt64 ||
-             field->descriptortype == kUpb_FieldType_Fixed64);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_UInt64);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_8Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   uint64_t ret;
   _upb_Message_GetField(msg, field, &default_val, &ret);
   return ret;
@@ -461,19 +450,18 @@ UPB_API_INLINE uint64_t upb_Message_GetUInt64(const upb_Message* msg,
 UPB_API_INLINE bool upb_Message_SetUInt64(upb_Message* msg,
                                           const upb_MiniTableField* field,
                                           uint64_t value, upb_Arena* a) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_UInt64 ||
-             field->descriptortype == kUpb_FieldType_Fixed64);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_UInt64);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_8Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
 UPB_API_INLINE float upb_Message_GetFloat(const upb_Message* msg,
                                           const upb_MiniTableField* field,
                                           float default_val) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Float);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Float);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_4Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   float ret;
   _upb_Message_GetField(msg, field, &default_val, &ret);
   return ret;
@@ -482,18 +470,18 @@ UPB_API_INLINE float upb_Message_GetFloat(const upb_Message* msg,
 UPB_API_INLINE bool upb_Message_SetFloat(upb_Message* msg,
                                          const upb_MiniTableField* field,
                                          float value, upb_Arena* a) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Float);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Float);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_4Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
 UPB_API_INLINE double upb_Message_GetDouble(const upb_Message* msg,
                                             const upb_MiniTableField* field,
                                             double default_val) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Double);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Double);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_8Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   double ret;
   _upb_Message_GetField(msg, field, &default_val, &ret);
   return ret;
@@ -502,19 +490,19 @@ UPB_API_INLINE double upb_Message_GetDouble(const upb_Message* msg,
 UPB_API_INLINE bool upb_Message_SetDouble(upb_Message* msg,
                                           const upb_MiniTableField* field,
                                           double value, upb_Arena* a) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Double);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Double);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_8Byte);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
 UPB_API_INLINE upb_StringView
 upb_Message_GetString(const upb_Message* msg, const upb_MiniTableField* field,
                       upb_StringView def_val) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Bytes ||
-             field->descriptortype == kUpb_FieldType_String);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_String ||
+             upb_MiniTableField_CType(field) == kUpb_CType_Bytes);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_StringView);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   upb_StringView ret;
   _upb_Message_GetField(msg, field, &def_val, &ret);
   return ret;
@@ -523,21 +511,20 @@ upb_Message_GetString(const upb_Message* msg, const upb_MiniTableField* field,
 UPB_API_INLINE bool upb_Message_SetString(upb_Message* msg,
                                           const upb_MiniTableField* field,
                                           upb_StringView value, upb_Arena* a) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Bytes ||
-             field->descriptortype == kUpb_FieldType_String);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_String ||
+             upb_MiniTableField_CType(field) == kUpb_CType_Bytes);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_StringView);
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
 UPB_API_INLINE const upb_Message* upb_Message_GetMessage(
     const upb_Message* msg, const upb_MiniTableField* field,
     upb_Message* default_val) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
-             field->descriptortype == kUpb_FieldType_Group);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) ==
              UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   upb_Message* ret;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
   return ret;
@@ -547,11 +534,10 @@ UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
                                            const upb_MiniTable* mini_table,
                                            const upb_MiniTableField* field,
                                            upb_Message* sub_message) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
-             field->descriptortype == kUpb_FieldType_Group);
-  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) ==
              UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   UPB_ASSERT(mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg);
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
 }
@@ -559,8 +545,7 @@ UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
 UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, upb_Arena* arena) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
-             field->descriptortype == kUpb_FieldType_Group);
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
   if (!sub_message) {
     const upb_MiniTable* sub_mini_table =
@@ -622,11 +607,6 @@ UPB_API_INLINE void* upb_Message_ResizeArray(upb_Message* msg,
   return _upb_array_ptr(arr);
 }
 
-UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
-    const upb_MiniTableField* field) {
-  return field->descriptortype == kUpb_FieldType_Enum;
-}
-
 UPB_API_INLINE const upb_Map* upb_Message_GetMap(
     const upb_Message* msg, const upb_MiniTableField* field) {
   _upb_MiniTableField_CheckIsMap(field);
@@ -639,8 +619,7 @@ UPB_API_INLINE const upb_Map* upb_Message_GetMap(
 UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
     upb_Message* msg, const upb_MiniTable* map_entry_mini_table,
     const upb_MiniTableField* field, upb_Arena* arena) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
-             field->descriptortype == kUpb_FieldType_Group);
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   const upb_MiniTableField* map_entry_key_field =
       &map_entry_mini_table->fields[0];
   const upb_MiniTableField* map_entry_value_field =

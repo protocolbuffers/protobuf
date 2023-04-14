@@ -138,14 +138,14 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
 
 static bool upb_MiniTable_HasSub(upb_MiniTableField* field,
                                  uint64_t msg_modifiers) {
-  switch (field->descriptortype) {
+  switch (field->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Message:
     case kUpb_FieldType_Group:
     case kUpb_FieldType_Enum:
       return true;
     case kUpb_FieldType_String:
       if (!(msg_modifiers & kUpb_MessageModifier_ValidateUtf8)) {
-        field->descriptortype = kUpb_FieldType_Bytes;
+        field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Bytes;
         field->mode |= kUpb_LabelFlags_IsAlternate;
       }
       return false;
@@ -156,18 +156,18 @@ static bool upb_MiniTable_HasSub(upb_MiniTableField* field,
 
 static bool upb_MtDecoder_FieldIsPackable(upb_MiniTableField* field) {
   return (field->mode & kUpb_FieldMode_Array) &&
-         upb_FieldType_IsPackable(field->descriptortype);
+         upb_FieldType_IsPackable(field->UPB_PRIVATE(descriptortype));
 }
 
 static void upb_MiniTable_SetTypeAndSub(upb_MiniTableField* field,
                                         upb_FieldType type, uint32_t* sub_count,
                                         uint64_t msg_modifiers,
                                         bool is_proto3_enum) {
-  field->descriptortype = type;
+  field->UPB_PRIVATE(descriptortype) = type;
 
   if (is_proto3_enum) {
-    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Enum);
-    field->descriptortype = kUpb_FieldType_Int32;
+    UPB_ASSERT(field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Enum);
+    field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
     field->mode |= kUpb_LabelFlags_IsAlternate;
   }
 
@@ -691,7 +691,7 @@ static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
 
   if ((1 << upb_MiniTableField_Type(f)) & not_ok_types) {
     upb_MtDecoder_ErrorFormat(d, "map %s cannot have type %d", name,
-                              (int)f->descriptortype);
+                              (int)f->UPB_PRIVATE(descriptortype));
   }
 }
 
@@ -1028,7 +1028,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
 
   const bool sub_is_map = sub->ext & kUpb_ExtMode_IsMapEntry;
 
-  switch (field->descriptortype) {
+  switch (field->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Message:
       if (sub_is_map) {
         const bool table_is_map = table->ext & kUpb_ExtMode_IsMapEntry;

@@ -64,7 +64,7 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
 UPB_API upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
 
 UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f) {
-  switch (f->descriptortype) {
+  switch (f->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Double:
       return kUpb_CType_Double;
     case kUpb_FieldType_Float:
@@ -101,6 +101,11 @@ UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f) {
 UPB_API_INLINE bool upb_MiniTableField_IsExtension(
     const upb_MiniTableField* field) {
   return field->mode & kUpb_LabelFlags_IsExtension;
+}
+
+UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
+    const upb_MiniTableField* field) {
+  return field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Enum;
 }
 
 UPB_API_INLINE bool upb_MiniTableField_HasPresence(

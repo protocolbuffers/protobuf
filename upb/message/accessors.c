@@ -76,7 +76,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena,
     const upb_Message_Extension** extension) {
-  UPB_ASSERT(ext_table->field.descriptortype == kUpb_FieldType_Message);
+  UPB_ASSERT(upb_MiniTableField_CType(&ext_table->field) == kUpb_CType_Message);
   *extension = _upb_Message_Getext(msg, ext_table);
   if (*extension) {
     return kUpb_GetExtension_Ok;
@@ -125,7 +125,7 @@ upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
     int encode_options, upb_Arena* arena, const char** extension_data,
     size_t* len) {
   const upb_Message_Extension* msg_ext = _upb_Message_Getext(msg, ext_table);
-  UPB_ASSERT(ext_table->field.descriptortype == kUpb_FieldType_Message);
+  UPB_ASSERT(upb_MiniTableField_CType(&ext_table->field) == kUpb_CType_Message);
   if (msg_ext) {
     upb_EncodeStatus status =
         upb_Encode(msg_ext->data.ptr, msg_ext->ext->sub.submsg, encode_options,

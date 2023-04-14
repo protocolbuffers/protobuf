@@ -227,7 +227,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
     break;                                  \
   }
 
-  switch (f->descriptortype) {
+  switch (f->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Double:
       CASE(double, double, kUpb_WireType_64Bit, val);
     case kUpb_FieldType_Float:
@@ -322,7 +322,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
 
 #define TAG(wire_type) (packed ? 0 : (f->number << 3 | wire_type))
 
-  switch (f->descriptortype) {
+  switch (f->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Double:
       encode_fixedarray(e, arr, sizeof(double), TAG(kUpb_WireType_64Bit));
       break;
@@ -427,7 +427,8 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
-    _upb_mapsorter_pushmap(&e->sorter, layout->fields[0].descriptortype, map,
+    _upb_mapsorter_pushmap(&e->sorter,
+                           layout->fields[0].UPB_PRIVATE(descriptortype), map,
                            &sorted);
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {

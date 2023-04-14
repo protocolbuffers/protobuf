@@ -200,9 +200,8 @@ upb_Message* upb_Message_DeepClone(const upb_Message* message,
   for (size_t i = 0; i < mini_table->field_count; ++i) {
     const upb_MiniTableField* field = &mini_table->fields[i];
     if (!upb_IsRepeatedOrMap(field)) {
-      switch (field->descriptortype) {
-        case kUpb_FieldType_Group:
-        case kUpb_FieldType_Message: {
+      switch (upb_MiniTableField_CType(field)) {
+        case kUpb_CType_Message: {
           const upb_Message* sub_message =
               upb_Message_GetMessage(message, field, NULL);
           if (sub_message != NULL) {
@@ -217,8 +216,8 @@ upb_Message* upb_Message_DeepClone(const upb_Message* message,
                                    cloned_sub_message);
           }
         } break;
-        case kUpb_FieldType_String:
-        case kUpb_FieldType_Bytes: {
+        case kUpb_CType_String:
+        case kUpb_CType_Bytes: {
           upb_StringView str =
               upb_Message_GetString(message, field, empty_string);
           if (str.size != 0) {

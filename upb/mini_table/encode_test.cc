@@ -130,7 +130,7 @@ TEST_P(MiniTableTest, Skips) {
   for (size_t i = 0; i < field_numbers.size(); i++) {
     const upb_MiniTableField* f = &table->fields[i];
     EXPECT_EQ(field_numbers[i], f->number);
-    EXPECT_EQ(kUpb_FieldType_Float, f->descriptortype);
+    EXPECT_EQ(kUpb_FieldType_Float, upb_MiniTableField_Type(f));
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);

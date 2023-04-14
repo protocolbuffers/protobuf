@@ -1021,13 +1021,16 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
       upb_MiniTable_FindFieldByNumber(mt, field.number());
   std::string type = "";
   std::string cardinality = "";
-  switch (mt_f->descriptortype) {
+  switch (upb_MiniTableField_Type(mt_f)) {
     case kUpb_FieldType_Bool:
       type = "b1";
       break;
     case kUpb_FieldType_Enum:
-      // We don't have the means to test proto2 enum fields for valid values.
-      return false;
+      if (upb_MiniTableField_IsClosedEnum(mt_f)) {
+        // We don't have the means to test proto2 enum fields for valid values.
+        return false;
+      }
+      [[fallthrough]];
     case kUpb_FieldType_Int32:
     case kUpb_FieldType_UInt32:
       type = "v4";
@@ -1266,7 +1269,7 @@ std::string FieldInitializer(upb::FieldDefPtr field,
         field64->UPB_PRIVATE(submsg_index) == kUpb_NoSub
             ? "kUpb_NoSub"
             : absl::StrCat(field64->UPB_PRIVATE(submsg_index)).c_str(),
-        field64->descriptortype, GetModeInit(field32, field64));
+        field64->UPB_PRIVATE(descriptortype), GetModeInit(field32, field64));
   }
 }
 
