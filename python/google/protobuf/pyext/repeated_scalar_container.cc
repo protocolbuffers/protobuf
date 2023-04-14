@@ -728,29 +728,33 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject RepeatedScalarContainer_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".RepeatedScalarContainer",              // tp_name
-    sizeof(RepeatedScalarContainer),         // tp_basicsize
-    0,                                       //  tp_itemsize
-    repeated_scalar_container::Dealloc,      //  tp_dealloc
+    ".RepeatedScalarContainer",          // tp_name
+    sizeof(RepeatedScalarContainer),     // tp_basicsize
+    0,                                   //  tp_itemsize
+    repeated_scalar_container::Dealloc,  //  tp_dealloc
 #if PY_VERSION_HEX >= 0x03080000
-    0,                                       //  tp_vectorcall_offset
+    0,  //  tp_vectorcall_offset
 #else
-    nullptr,                                 //  tp_print
+    nullptr,             //  tp_print
 #endif
-    nullptr,                                 //  tp_getattr
-    nullptr,                                 //  tp_setattr
-    nullptr,                                 //  tp_compare
-    repeated_scalar_container::ToStr,        //  tp_repr
-    nullptr,                                 //  tp_as_number
-    &repeated_scalar_container::SqMethods,   //  tp_as_sequence
-    &repeated_scalar_container::MpMethods,   //  tp_as_mapping
-    PyObject_HashNotImplemented,             //  tp_hash
-    nullptr,                                 //  tp_call
-    nullptr,                                 //  tp_str
-    nullptr,                                 //  tp_getattro
-    nullptr,                                 //  tp_setattro
-    nullptr,                                 //  tp_as_buffer
-    Py_TPFLAGS_DEFAULT,                      //  tp_flags
+    nullptr,                                //  tp_getattr
+    nullptr,                                //  tp_setattr
+    nullptr,                                //  tp_compare
+    repeated_scalar_container::ToStr,       //  tp_repr
+    nullptr,                                //  tp_as_number
+    &repeated_scalar_container::SqMethods,  //  tp_as_sequence
+    &repeated_scalar_container::MpMethods,  //  tp_as_mapping
+    PyObject_HashNotImplemented,            //  tp_hash
+    nullptr,                                //  tp_call
+    nullptr,                                //  tp_str
+    nullptr,                                //  tp_getattro
+    nullptr,                                //  tp_setattro
+    nullptr,                                //  tp_as_buffer
+#if PY_VERSION_HEX >= 0x030A0000
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_SEQUENCE,  //  tp_flags
+#else
+    Py_TPFLAGS_DEFAULT,  //  tp_flags
+#endif
     "A Repeated scalar container",           //  tp_doc
     nullptr,                                 //  tp_traverse
     nullptr,                                 //  tp_clear
