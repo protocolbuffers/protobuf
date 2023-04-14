@@ -4164,8 +4164,15 @@ TEST(ArenaTest, StringMapNoLeak) {
     data.append("a");
   }
   (*message->mutable_map_string_string())[data] = data;
-  // We rely on heap checkers to detect memory leak for us.
-  ASSERT_FALSE(message == nullptr);
+  // Now we recreate the map via parsing
+  message->ParseFromString(message->SerializeAsString());
+  // And we cause value strings to grow to make sure they are handled correctly.
+  std::string& value = (*message->mutable_map_string_string())[data];
+  ASSERT_EQ(value, data);
+  // Consume all the capacity.
+  while (value.size() < value.capacity()) value.append("a");
+  // And then grow the value.
+  value.append("a");
 }
 
 TEST(ArenaTest, IsInitialized) {

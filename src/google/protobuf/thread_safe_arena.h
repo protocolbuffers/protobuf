@@ -126,6 +126,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   void* AllocateFromStringBlock();
 
+  std::vector<void*> PeekCleanupListForTesting();
+
  private:
   friend class ArenaBenchmark;
   friend class TcParser;
@@ -203,6 +205,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Finds SerialArena or creates one if not found. When creating a new one,
   // create a big enough block to accommodate n bytes.
   SerialArena* GetSerialArenaFallback(size_t n);
+
+  SerialArena* GetSerialArena();
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAlignedFallback(size_t n);

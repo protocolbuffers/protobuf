@@ -39,6 +39,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
@@ -292,6 +293,8 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
   ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlock();
+
+  std::vector<void*> PeekCleanupListForTesting();
 
  private:
   bool MaybeAllocateString(void*& p);

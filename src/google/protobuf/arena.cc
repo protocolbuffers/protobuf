@@ -37,6 +37,7 @@
 #include <limits>
 #include <string>
 #include <typeinfo>
+#include <vector>
 
 #include "absl/base/attributes.h"
 #include "absl/synchronization/mutex.h"
@@ -154,6 +155,29 @@ SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
 
   set_ptr(b->Pointer(kBlockHeaderSize));
   limit_ = b->Limit();
+}
+
+std::vector<void*> SerialArena::PeekCleanupListForTesting() {
+  std::vector<void*> res;
+
+  ArenaBlock* b = head();
+  if (b->IsSentry()) return res;
+
+  const auto peek_list = [&](const char* pos, const char* end) {
+    while (pos != end) {
+      pos += cleanup::PeekNode(pos, res);
+    }
+  };
+
+  peek_list(limit_, b->Limit());
+  for (b = b->next; b; b = b->next) {
+    peek_list(reinterpret_cast<char*>(b->cleanup_nodes), b->Limit());
+  }
+  return res;
+}
+
+std::vector<void*> ThreadSafeArena::PeekCleanupListForTesting() {
+  return GetSerialArena()->PeekCleanupListForTesting();
 }
 
 void SerialArena::Init(ArenaBlock* b, size_t offset) {
@@ -754,11 +778,15 @@ void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
 }
 
 void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
+  GetSerialArena()->AddCleanup(elem, cleanup);
+}
+
+SerialArena* ThreadSafeArena::GetSerialArena() {
   SerialArena* arena;
   if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
     arena = GetSerialArenaFallback(kMaxCleanupNodeSize);
   }
-  arena->AddCleanup(elem, cleanup);
+  return arena;
 }
 
 PROTOBUF_NOINLINE
@@ -770,11 +798,7 @@ void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
 
 PROTOBUF_NOINLINE
 void* ThreadSafeArena::AllocateFromStringBlock() {
-  SerialArena* arena;
-  if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
-    arena = GetSerialArenaFallback(0);
-  }
-  return arena->AllocateFromStringBlock();
+  return GetSerialArena()->AllocateFromStringBlock();
 }
 
 template <typename Functor>
@@ -906,6 +930,10 @@ void* Arena::AllocateForArray(size_t n) {
 void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
                                         void (*destructor)(void*)) {
   return impl_.AllocateAlignedWithCleanup(n, align, destructor);
+}
+
+std::vector<void*> Arena::PeekCleanupListForTesting() {
+  return impl_.PeekCleanupListForTesting();
 }
 
 }  // namespace protobuf

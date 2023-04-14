@@ -79,6 +79,9 @@ struct ArenaTestPeer {
   static void ReturnArrayMemory(Arena* arena, void* p, size_t size) {
     arena->ReturnArrayMemory(p, size);
   }
+  static auto PeekCleanupListForTesting(Arena* arena) {
+    return arena->PeekCleanupListForTesting();
+  }
 };
 
 class NoHeapChecker {

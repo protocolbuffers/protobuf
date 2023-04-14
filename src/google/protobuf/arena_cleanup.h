@@ -34,6 +34,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
@@ -155,6 +156,25 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t DestroyNode(const void* pos) {
   }
   static_cast<const DynamicNode*>(pos)->destructor(
       reinterpret_cast<void*>(elem - static_cast<uintptr_t>(Tag::kDynamic)));
+  return sizeof(DynamicNode);
+}
+
+// Append in `out` the pointer to the to-be-cleaned object in `pos`.
+// Return the length of the cleanup node to allow the caller to advance the
+// position, like `DestroyNode` does.
+inline size_t PeekNode(const void* pos, std::vector<void*>& out) {
+  uintptr_t elem;
+  memcpy(&elem, pos, sizeof(elem));
+  out.push_back(reinterpret_cast<void*>(elem & ~3));
+  if (EnableSpecializedTags()) {
+    switch (static_cast<Tag>(elem & 3)) {
+      case Tag::kString:
+      case Tag::kCord:
+        return sizeof(TaggedNode);
+      default:
+        break;
+    }
+  }
   return sizeof(DynamicNode);
 }
 

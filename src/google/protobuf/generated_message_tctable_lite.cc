@@ -2447,7 +2447,8 @@ void TcParser::WriteMapEntryAsUnknown(MessageLite* msg,
 
 PROTOBUF_ALWAYS_INLINE inline void TcParser::InitializeMapNodeEntry(
     void* obj, MapTypeCard type_card, UntypedMapBase& map,
-    const TcParseTableBase::FieldAux* aux) {
+    const TcParseTableBase::FieldAux* aux, bool is_key) {
+  (void)is_key;
   switch (type_card.cpp_type()) {
     case MapTypeCard::kBool:
       memset(obj, 0, sizeof(bool));
@@ -2497,7 +2498,7 @@ const char* ReadFixed(void* obj, const char* ptr) {
 const char* TcParser::ParseOneMapEntry(
     NodeBase* node, const char* ptr, ParseContext* ctx,
     const TcParseTableBase::FieldAux* aux, const TcParseTableBase* table,
-    const TcParseTableBase::FieldEntry& entry) {
+    const TcParseTableBase::FieldEntry& entry, Arena* arena) {
   using WFL = WireFormatLite;
 
   const auto map_info = aux[0].map_info;
@@ -2631,13 +2632,13 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   while (true) {
     NodeBase* node = map.AllocNode(map_info.node_size_info);
 
-    InitializeMapNodeEntry(node->GetVoidKey(), map_info.key_type_card, map,
-                           aux);
+    InitializeMapNodeEntry(node->GetVoidKey(), map_info.key_type_card, map, aux,
+                           true);
     InitializeMapNodeEntry(node->GetVoidValue(map_info.node_size_info),
-                           map_info.value_type_card, map, aux);
+                           map_info.value_type_card, map, aux, false);
 
     ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
-      return ParseOneMapEntry(node, ptr, ctx, aux, table, entry);
+      return ParseOneMapEntry(node, ptr, ctx, aux, table, entry, map.arena());
     });
 
     if (PROTOBUF_PREDICT_TRUE(ptr != nullptr)) {
