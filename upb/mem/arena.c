@@ -251,26 +251,29 @@ retry:
   goto retry;
 }
 
-static void _upb_Arena_DoFuseArenaLists(upb_Arena* r1, upb_Arena* r2) {
-  // Find the region for `r2`'s linked list.
-  upb_Arena* r1_tail = upb_Atomic_Load(&r1->tail, memory_order_relaxed);
-  while (true) {
-    upb_Arena* r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
-    while (r1_next != NULL) {
-      // r1->tail was stale.  This can happen, but tail should always converge
-      // on the true tail.
-      r1_tail = r1_next;
-      r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
+static void _upb_Arena_DoFuseArenaLists(upb_Arena* const parent,
+                                        upb_Arena* child) {
+  upb_Arena* parent_tail = upb_Atomic_Load(&parent->tail, memory_order_relaxed);
+  do {
+    // Our tail might be stale, but it will always converge to the true tail.
+    upb_Arena* parent_tail_next =
+        upb_Atomic_Load(&parent_tail->next, memory_order_relaxed);
+    while (parent_tail_next != NULL) {
+      parent_tail = parent_tail_next;
+      parent_tail_next =
+          upb_Atomic_Load(&parent_tail->next, memory_order_relaxed);
     }
-    if (upb_Atomic_CompareExchangeStrong(&r1_tail->next, &r1_next, r2,
-                                         memory_order_relaxed,
-                                         memory_order_relaxed)) {
-      break;
-    }
-  }
 
-  upb_Arena* r2_tail = upb_Atomic_Load(&r2->tail, memory_order_relaxed);
-  upb_Atomic_Store(&r1->tail, r2_tail, memory_order_relaxed);
+    upb_Arena* displaced =
+        upb_Atomic_Exchange(&parent_tail->next, child, memory_order_relaxed);
+    parent_tail = upb_Atomic_Load(&child->tail, memory_order_relaxed);
+
+    // If we displaced something that got installed racily, we can simply
+    // reinstall it on our new tail.
+    child = displaced;
+  } while (child != NULL);
+
+  upb_Atomic_Store(&parent->tail, parent_tail, memory_order_relaxed);
 }
 
 static upb_Arena* _upb_Arena_DoFuse(upb_Arena* a1, upb_Arena* a2,
