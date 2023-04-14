@@ -1,7 +1,3 @@
-# This file has been replaced by google/protobuf/internal/numpy_test
-# It is just here to allow protobuf tests to pass before we commit to UPB
-# Will be deleted soon, follow along at b/278093274
-#
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/

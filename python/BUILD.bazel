@@ -8,7 +8,6 @@
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
-load("@pip_deps//:requirements.bzl", "requirement")
 load("//:protobuf.bzl", "internal_py_proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
@@ -273,6 +272,7 @@ py_library(
         ":python_common_test_protos",
         ":python_specific_test_protos",
     ],
+    visibility = ["//python:__subpackages__"],
 )
 
 internal_py_test(
@@ -324,14 +324,6 @@ internal_py_test(
     name = "message_test",
     srcs = ["google/protobuf/internal/message_test.py"],
     data = ["//src/google/protobuf:testdata"],
-)
-
-internal_py_test(
-    name = "numpy_test",
-    srcs = ["google/protobuf/internal/numpy_test.py"],
-    deps = [
-        requirement("numpy"),
-    ],
 )
 
 internal_py_test(
