@@ -28,43 +28,41 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
+#define GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
 
-#include <cstdint>
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
-
-// Must be included last.
-#include "google/protobuf/port_def.inc"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
+std::string GetCrateName(Context<FileDescriptor> dep);
 
-class PROTOC_EXPORT RustGenerator final
-    : public google::protobuf::compiler::CodeGenerator {
- public:
-  RustGenerator() = default;
-  RustGenerator(const RustGenerator&) = delete;
-  RustGenerator& operator=(const RustGenerator&) = delete;
-  ~RustGenerator() override = default;
+std::string GetRsFile(Context<FileDescriptor> file);
+std::string GetThunkCcFile(Context<FileDescriptor> file);
+std::string GetHeaderFile(Context<FileDescriptor> file);
 
-  bool Generate(const FileDescriptor* file, const std::string& parameter,
-                GeneratorContext* generator_context,
-                std::string* error) const override;
+std::string GetUnderscoreDelimitedFullName(Context<Descriptor> msg);
 
-  uint64_t GetSupportedFeatures() const override {
-    return FEATURE_PROTO3_OPTIONAL;
-  }
-};
+std::string GetAccessorThunkName(Context<FieldDescriptor> field,
+                                 absl::string_view op);
 
+bool IsSupportedFieldType(Context<FieldDescriptor> field);
+
+absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field);
+
+std::string RustModule(Context<Descriptor> msg);
+
+std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg);
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#include "google/protobuf/port_undef.inc"
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
