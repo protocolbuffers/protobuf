@@ -50,6 +50,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/version.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

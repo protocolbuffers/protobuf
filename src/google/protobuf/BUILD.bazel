@@ -450,6 +450,7 @@ cc_library(
         "service.cc",
         "text_format.cc",
         "unknown_field_set.cc",
+        "version.cc",
         "wire_format.cc",
     ],
     hdrs = [
@@ -475,6 +476,7 @@ cc_library(
         "service.h",
         "text_format.h",
         "unknown_field_set.h",
+        "version.h",
         "wire_format.h",
     ],
     copts = COPTS,

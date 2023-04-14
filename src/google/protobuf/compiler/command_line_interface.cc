@@ -2025,7 +2025,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     if (!version_info_.empty()) {
       std::cout << version_info_ << std::endl;
     }
-    std::cout << "libprotoc " << internal::ProtocVersionString(PROTOBUF_VERSION)
+    std::cout << "libprotoc " << ProtocVersionString(PROTOBUF_VERSION)
               << PROTOBUF_VERSION_SUFFIX << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
