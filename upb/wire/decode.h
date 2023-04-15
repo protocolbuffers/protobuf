@@ -83,10 +83,11 @@ UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
 
 typedef enum {
   kUpb_DecodeStatus_Ok = 0,
-  kUpb_DecodeStatus_Malformed = 1,         // Wire format was corrupt
-  kUpb_DecodeStatus_OutOfMemory = 2,       // Arena alloc failed
-  kUpb_DecodeStatus_BadUtf8 = 3,           // String field had bad UTF-8
-  kUpb_DecodeStatus_MaxDepthExceeded = 4,  // Exceeded UPB_DECODE_MAXDEPTH
+  kUpb_DecodeStatus_Malformed = 1,    // Wire format was corrupt
+  kUpb_DecodeStatus_OutOfMemory = 2,  // Arena alloc failed
+  kUpb_DecodeStatus_BadUtf8 = 3,      // String field had bad UTF-8
+  kUpb_DecodeStatus_MaxDepthExceeded =
+      4,  // Exceeded upb_DecodeOptions_MaxDepth
 
   // kUpb_DecodeOption_CheckRequired failed (see above), but the parse otherwise
   // succeeded.
