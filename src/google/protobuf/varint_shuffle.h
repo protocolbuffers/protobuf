@@ -151,15 +151,8 @@ inline PROTOBUF_ALWAYS_INLINE const char* ShiftMixParseVarint(const char* p,
   // over-serialized varint. This case should not happen, but if does (say, due
   // to a nonconforming serializer), deassert the continuation bit that came
   // from ptr[8].
-  if (kIs64BitVarint && (last() & 1) == 0) {
-    static constexpr int bits = 64 - 1;
-#if defined(__GCC_ASM_FLAG_OUTPUTS__) && defined(__x86_64__)
-    // Use a small instruction since this is an uncommon code path.
-    asm("btc %[bits], %[res3]" : [res3] "+r"(res3) : [bits] "i"(bits));
-#else
-    res3 ^= int64_t{1} << bits;
-#endif
-  }
+  if (kIs64BitVarint)
+    res3 ^= int64_t{~last() & 1} << 63;
 
 done2:
   res2 &= res3;
