@@ -168,13 +168,15 @@
 
 #ifdef __GNUC__
 #define UPB_USE_C11_ATOMICS
-#define UPB_ATOMIC _Atomic
+#define UPB_ATOMIC(T) _Atomic(T)
 #else
-#define UPB_ATOMIC
+#define UPB_ATOMIC(T) T
 #endif
 
 /* UPB_PTRADD(ptr, ofs): add pointer while avoiding "NULL + 0" UB */
 #define UPB_PTRADD(ptr, ofs) ((ofs) ? (ptr) + (ofs) : (ptr))
+
+#define UPB_PRIVATE(x) x##_dont_copy_me__upb_internal_use_only
 
 /* Configure whether fasttable is switched on or not. *************************/
 
@@ -5128,39 +5130,28 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 // Must be last.
 
-static uint32_t* upb_cleanup_pointer(uintptr_t cleanup_metadata) {
-  return (uint32_t*)(cleanup_metadata & ~0x1);
-}
-
-static bool upb_cleanup_has_initial_block(uintptr_t cleanup_metadata) {
-  return cleanup_metadata & 0x1;
-}
-
-static uintptr_t upb_cleanup_metadata(uint32_t* cleanup,
-                                      bool has_initial_block) {
-  return (uintptr_t)cleanup | has_initial_block;
-}
-
 struct _upb_MemBlock {
-  struct _upb_MemBlock* next;
+  // Atomic only for the benefit of SpaceAllocated().
+  UPB_ATOMIC(_upb_MemBlock*) next;
   uint32_t size;
-  uint32_t cleanups;
   // Data follows.
 };
-
-typedef struct cleanup_ent {
-  upb_CleanupFunc* cleanup;
-  void* ud;
-} cleanup_ent;
 
 static const size_t memblock_reserve =
     UPB_ALIGN_UP(sizeof(_upb_MemBlock), UPB_MALLOC_ALIGN);
 
-static upb_Arena* _upb_Arena_FindRoot(upb_Arena* a) {
-  uintptr_t poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+typedef struct _upb_ArenaRoot {
+  upb_Arena* root;
+  uintptr_t tagged_count;
+} _upb_ArenaRoot;
+
+static _upb_ArenaRoot _upb_Arena_FindRoot(upb_Arena* a) {
+  uintptr_t poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
   while (_upb_Arena_IsTaggedPointer(poc)) {
     upb_Arena* next = _upb_Arena_PointerFromTagged(poc);
-    uintptr_t next_poc = upb_Atomic_LoadAcquire(&next->parent_or_count);
+    UPB_ASSERT(a != next);
+    uintptr_t next_poc =
+        upb_Atomic_Load(&next->parent_or_count, memory_order_acquire);
 
     if (_upb_Arena_IsTaggedPointer(next_poc)) {
       // To keep complexity down, we lazily collapse levels of the tree.  This
@@ -5182,23 +5173,27 @@ static upb_Arena* _upb_Arena_FindRoot(upb_Arena* a) {
       // further away over time, but the path towards that root will continue to
       // be valid and the creation of the path carries all the memory orderings
       // required.
-      upb_Atomic_StoreRelaxed(&a->parent_or_count, next_poc);
+      UPB_ASSERT(a != _upb_Arena_PointerFromTagged(next_poc));
+      upb_Atomic_Store(&a->parent_or_count, next_poc, memory_order_relaxed);
     }
     a = next;
     poc = next_poc;
   }
-  return a;
+  return (_upb_ArenaRoot){.root = a, .tagged_count = poc};
 }
 
 size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
-  arena = _upb_Arena_FindRoot(arena);
+  arena = _upb_Arena_FindRoot(arena).root;
   size_t memsize = 0;
 
-  _upb_MemBlock* block = arena->freelist;
-
-  while (block) {
-    memsize += sizeof(_upb_MemBlock) + block->size;
-    block = block->next;
+  while (arena != NULL) {
+    _upb_MemBlock* block =
+        upb_Atomic_Load(&arena->blocks, memory_order_relaxed);
+    while (block != NULL) {
+      memsize += sizeof(_upb_MemBlock) + block->size;
+      block = upb_Atomic_Load(&block->next, memory_order_relaxed);
+    }
+    arena = upb_Atomic_Load(&arena->next, memory_order_relaxed);
   }
 
   return memsize;
@@ -5207,58 +5202,55 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a) {
   // These loads could probably be relaxed, but given that this is debug-only,
   // it's not worth introducing a new variant for it.
-  uintptr_t poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+  uintptr_t poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
   while (_upb_Arena_IsTaggedPointer(poc)) {
     a = _upb_Arena_PointerFromTagged(poc);
-    poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+    poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
   }
   return _upb_Arena_RefCountFromTagged(poc);
 }
 
-static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
-                               size_t size) {
+static void upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t size) {
   _upb_MemBlock* block = ptr;
 
-  /* The block is for arena |a|, but should appear in the freelist of |root|. */
-  block->next = root->freelist;
+  // Insert into linked list.
   block->size = (uint32_t)size;
-  block->cleanups = 0;
-  root->freelist = block;
-  a->last_size = block->size;
-  if (!root->freelist_tail) root->freelist_tail = block;
+  upb_Atomic_Init(&block->next, a->blocks);
+  upb_Atomic_Store(&a->blocks, block, memory_order_release);
 
   a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
   a->head.end = UPB_PTR_AT(block, size, char);
-  a->cleanup_metadata = upb_cleanup_metadata(
-      &block->cleanups, upb_cleanup_has_initial_block(a->cleanup_metadata));
 
   UPB_POISON_MEMORY_REGION(a->head.ptr, a->head.end - a->head.ptr);
 }
 
-static bool upb_Arena_Allocblock(upb_Arena* a, size_t size) {
-  upb_Arena* root = _upb_Arena_FindRoot(a);
-  size_t block_size = UPB_MAX(size, a->last_size * 2) + memblock_reserve;
-  _upb_MemBlock* block = upb_malloc(root->block_alloc, block_size);
+static bool upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
+  if (!a->block_alloc) return false;
+  _upb_MemBlock* last_block = upb_Atomic_Load(&a->blocks, memory_order_acquire);
+  size_t last_size = last_block != NULL ? last_block->size : 128;
+  size_t block_size = UPB_MAX(size, last_size * 2) + memblock_reserve;
+  _upb_MemBlock* block = upb_malloc(upb_Arena_BlockAlloc(a), block_size);
 
   if (!block) return false;
-  upb_Arena_addblock(a, root, block, block_size);
+  upb_Arena_AddBlock(a, block, block_size);
   return true;
 }
 
 void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size) {
-  if (!upb_Arena_Allocblock(a, size)) return NULL; /* Out of memory. */
+  if (!upb_Arena_AllocBlock(a, size)) return NULL; /* Out of memory. */
   UPB_ASSERT(_upb_ArenaHas(a) >= size);
   return upb_Arena_Malloc(a, size);
 }
 
 /* Public Arena API ***********************************************************/
 
-static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
+static upb_Arena* upb_Arena_InitSlow(upb_alloc* alloc) {
   const size_t first_block_overhead = sizeof(upb_Arena) + memblock_reserve;
   upb_Arena* a;
 
   /* We need to malloc the initial block. */
-  n = first_block_overhead + 256;
+  char* mem;
+  size_t n = first_block_overhead + 256;
   if (!alloc || !(mem = upb_malloc(alloc, n))) {
     return NULL;
   }
@@ -5266,13 +5258,13 @@ static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
   a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
   n -= sizeof(*a);
 
-  a->block_alloc = alloc;
+  a->block_alloc = upb_Arena_MakeBlockAlloc(alloc, 0);
   upb_Atomic_Init(&a->parent_or_count, _upb_Arena_TaggedFromRefcount(1));
-  a->freelist = NULL;
-  a->freelist_tail = NULL;
-  a->cleanup_metadata = upb_cleanup_metadata(NULL, false);
+  upb_Atomic_Init(&a->next, NULL);
+  upb_Atomic_Init(&a->tail, a);
+  upb_Atomic_Init(&a->blocks, NULL);
 
-  upb_Arena_addblock(a, a, mem, n);
+  upb_Arena_AddBlock(a, mem, n);
 
   return a;
 }
@@ -5293,51 +5285,48 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_Arena));
 
   if (UPB_UNLIKELY(n < sizeof(upb_Arena))) {
-    return arena_initslow(mem, n, alloc);
+    return upb_Arena_InitSlow(alloc);
   }
 
   a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
 
-  a->block_alloc = alloc;
   upb_Atomic_Init(&a->parent_or_count, _upb_Arena_TaggedFromRefcount(1));
-  a->last_size = UPB_MAX(128, n);
+  upb_Atomic_Init(&a->next, NULL);
+  upb_Atomic_Init(&a->tail, a);
+  upb_Atomic_Init(&a->blocks, NULL);
+  a->block_alloc = upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.ptr = mem;
   a->head.end = UPB_PTR_AT(mem, n - sizeof(*a), char);
-  a->freelist = NULL;
-  a->freelist_tail = NULL;
-  a->cleanup_metadata = upb_cleanup_metadata(NULL, true);
 
   return a;
 }
 
 static void arena_dofree(upb_Arena* a) {
-  _upb_MemBlock* block = a->freelist;
   UPB_ASSERT(_upb_Arena_RefCountFromTagged(a->parent_or_count) == 1);
 
-  while (block) {
-    /* Load first since we are deleting block. */
-    _upb_MemBlock* next = block->next;
-
-    if (block->cleanups > 0) {
-      cleanup_ent* end = UPB_PTR_AT(block, block->size, void);
-      cleanup_ent* ptr = end - block->cleanups;
-
-      for (; ptr < end; ptr++) {
-        ptr->cleanup(ptr->ud);
-      }
+  while (a != NULL) {
+    // Load first since arena itself is likely from one of its blocks.
+    upb_Arena* next_arena =
+        (upb_Arena*)upb_Atomic_Load(&a->next, memory_order_acquire);
+    upb_alloc* block_alloc = upb_Arena_BlockAlloc(a);
+    _upb_MemBlock* block = upb_Atomic_Load(&a->blocks, memory_order_acquire);
+    while (block != NULL) {
+      // Load first since we are deleting block.
+      _upb_MemBlock* next_block =
+          upb_Atomic_Load(&block->next, memory_order_acquire);
+      upb_free(block_alloc, block);
+      block = next_block;
     }
-
-    upb_free(a->block_alloc, block);
-    block = next;
+    a = next_arena;
   }
 }
 
 void upb_Arena_Free(upb_Arena* a) {
-  uintptr_t poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+  uintptr_t poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
 retry:
   while (_upb_Arena_IsTaggedPointer(poc)) {
     a = _upb_Arena_PointerFromTagged(poc);
-    poc = upb_Atomic_LoadAcquire(&a->parent_or_count);
+    poc = upb_Atomic_Load(&a->parent_or_count, memory_order_acquire);
   }
 
   // compare_exchange or fetch_sub are RMW operations, which are more
@@ -5348,10 +5337,10 @@ retry:
     return;
   }
 
-  if (upb_Atomic_CompareExchangeStrongAcqRel(
+  if (upb_Atomic_CompareExchangeWeak(
           &a->parent_or_count, &poc,
-          _upb_Arena_TaggedFromRefcount(_upb_Arena_RefCountFromTagged(poc) -
-                                        1))) {
+          _upb_Arena_TaggedFromRefcount(_upb_Arena_RefCountFromTagged(poc) - 1),
+          memory_order_release, memory_order_acquire)) {
     // We were >1 and we decremented it successfully, so we are done.
     return;
   }
@@ -5361,31 +5350,30 @@ retry:
   goto retry;
 }
 
-bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func) {
-  cleanup_ent* ent;
-  uint32_t* cleanups = upb_cleanup_pointer(a->cleanup_metadata);
-
-  if (!cleanups || _upb_ArenaHas(a) < sizeof(cleanup_ent)) {
-    if (!upb_Arena_Allocblock(a, 128)) return false; /* Out of memory. */
-    UPB_ASSERT(_upb_ArenaHas(a) >= sizeof(cleanup_ent));
-    cleanups = upb_cleanup_pointer(a->cleanup_metadata);
+static void _upb_Arena_DoFuseArenaLists(upb_Arena* r1, upb_Arena* r2) {
+  // Find the region for `r2`'s linked list.
+  upb_Arena* r1_tail = upb_Atomic_Load(&r1->tail, memory_order_relaxed);
+  while (true) {
+    upb_Arena* r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
+    while (r1_next != NULL) {
+      // r1->tail was stale.  This can happen, but tail should always converge
+      // on the true tail.
+      r1_tail = r1_next;
+      r1_next = upb_Atomic_Load(&r1_tail->next, memory_order_relaxed);
+    }
+    if (upb_Atomic_CompareExchangeStrong(&r1_tail->next, &r1_next, r2,
+                                         memory_order_relaxed,
+                                         memory_order_relaxed)) {
+      break;
+    }
   }
 
-  a->head.end -= sizeof(cleanup_ent);
-  ent = (cleanup_ent*)a->head.end;
-  (*cleanups)++;
-  UPB_UNPOISON_MEMORY_REGION(ent, sizeof(cleanup_ent));
-
-  ent->cleanup = func;
-  ent->ud = ud;
-
-  return true;
+  upb_Arena* r2_tail = upb_Atomic_Load(&r2->tail, memory_order_relaxed);
+  upb_Atomic_Store(&r1->tail, r2_tail, memory_order_relaxed);
 }
 
-bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
-  // SAFE IN THE PRESENCE OF FUSE/FREE RACES BUT NOT IN THE
-  // PRESENCE OF FUSE/FUSE RACES!!!
-  //
+static upb_Arena* _upb_Arena_DoFuse(upb_Arena* a1, upb_Arena* a2,
+                                    uintptr_t* ref_delta) {
   // `parent_or_count` has two disctint modes
   // -  parent pointer mode
   // -  refcount mode
@@ -5393,72 +5381,85 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   // In parent pointer mode, it may change what pointer it refers to in the
   // tree, but it will always approach a root.  Any operation that walks the
   // tree to the root may collapse levels of the tree concurrently.
-  //
-  // In refcount mode, any free operation may lower the refcount.
-  //
-  // Only a fuse operation may increase the refcount.
-  // Only a fuse operation may switch `parent_or_count` from parent mode to
-  // refcount mode.
-  //
-  // Given that we do not allow fuse/fuse races, we may rely on the invariant
-  // that only refcounts can change once we have found the root.  Because the
-  // threads doing the fuse must hold references, we can guarantee that no
-  // refcounts will reach zero concurrently.
-  upb_Arena* r1 = _upb_Arena_FindRoot(a1);
-  upb_Arena* r2 = _upb_Arena_FindRoot(a2);
+  _upb_ArenaRoot r1 = _upb_Arena_FindRoot(a1);
+  _upb_ArenaRoot r2 = _upb_Arena_FindRoot(a2);
 
-  if (r1 == r2) return true;  // Already fused.
+  if (r1.root == r2.root) return r1.root;  // Already fused.
 
-  // Do not fuse initial blocks since we cannot lifetime extend them.
-  if (upb_cleanup_has_initial_block(r1->cleanup_metadata)) return false;
-  if (upb_cleanup_has_initial_block(r2->cleanup_metadata)) return false;
-
-  // Only allow fuse with a common allocator
-  if (r1->block_alloc != r2->block_alloc) return false;
-
-  uintptr_t r1_poc = upb_Atomic_LoadAcquire(&r1->parent_or_count);
-  uintptr_t r2_poc = upb_Atomic_LoadAcquire(&r2->parent_or_count);
-  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(r1_poc));
-  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(r2_poc));
-
-  // Keep the tree shallow by joining the smaller tree to the larger.
-  if (_upb_Arena_RefCountFromTagged(r1_poc) <
-      _upb_Arena_RefCountFromTagged(r2_poc)) {
-    upb_Arena* tmp = r1;
+  // Avoid cycles by always fusing into the root with the lower address.
+  if ((uintptr_t)r1.root > (uintptr_t)r2.root) {
+    _upb_ArenaRoot tmp = r1;
     r1 = r2;
     r2 = tmp;
-
-    uintptr_t tmp_poc = r1_poc;
-    r1_poc = r2_poc;
-    r2_poc = tmp_poc;
-  }
-
-  // r1 takes over r2's freelist, this must happen before we update
-  // refcounts since the refcount carriers the memory dependencies.
-  if (r2->freelist_tail) {
-    UPB_ASSERT(r2->freelist_tail->next == NULL);
-    r2->freelist_tail->next = r1->freelist;
-    r1->freelist = r2->freelist;
   }
 
   // The moment we install `r1` as the parent for `r2` all racing frees may
-  // immediately begin decrementing `r1`'s refcount.  So we must install all the
-  // refcounts that we know about first to prevent a premature unref to zero.
-  uint32_t r2_refcount = _upb_Arena_RefCountFromTagged(r2_poc);
-  upb_Atomic_AddRelease(&r1->parent_or_count, ((uintptr_t)r2_refcount) << 1);
-
-  // When installing `r1` as the parent for `r2` racing frees may have changed
-  // the refcount for `r2` so we need to capture the old value to fix up `r1`'s
-  // refcount based on the delta from what we saw the first time.
-  r2_poc = upb_Atomic_ExchangeAcqRel(&r2->parent_or_count,
-                                     _upb_Arena_TaggedFromPointer(r1));
-  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(r2_poc));
-  uint32_t delta_refcount = r2_refcount - _upb_Arena_RefCountFromTagged(r2_poc);
-  if (delta_refcount != 0) {
-    upb_Atomic_SubRelease(&r1->parent_or_count, ((uintptr_t)delta_refcount)
-                                                    << 1);
+  // immediately begin decrementing `r1`'s refcount (including pending
+  // increments to that refcount and their frees!).  We need to add `r2`'s refs
+  // now, so that `r1` can withstand any unrefs that come from r2.
+  //
+  // Note that while it is possible for `r2`'s refcount to increase
+  // asynchronously, we will not actually do the reparenting operation below
+  // unless `r2`'s refcount is unchanged from when we read it.
+  //
+  // Note that we may have done this previously, either to this node or a
+  // different node, during a previous and failed DoFuse() attempt. But we will
+  // not lose track of these refs because we always add them to our overall
+  // delta.
+  uintptr_t r2_untagged_count = r2.tagged_count & ~1;
+  uintptr_t with_r2_refs = r1.tagged_count + r2_untagged_count;
+  if (!upb_Atomic_CompareExchangeStrong(
+          &r1.root->parent_or_count, &r1.tagged_count, with_r2_refs,
+          memory_order_release, memory_order_acquire)) {
+    return NULL;
   }
-  return true;
+
+  // Perform the actual fuse by removing the refs from `r2` and swapping in the
+  // parent pointer.
+  if (!upb_Atomic_CompareExchangeStrong(
+          &r2.root->parent_or_count, &r2.tagged_count,
+          _upb_Arena_TaggedFromPointer(r1.root), memory_order_release,
+          memory_order_acquire)) {
+    // We'll need to remove the excess refs we added to r1 previously.
+    *ref_delta += r2_untagged_count;
+    return NULL;
+  }
+
+  // Now that the fuse has been performed (and can no longer fail) we need to
+  // append `r2` to `r1`'s linked list.
+  _upb_Arena_DoFuseArenaLists(r1.root, r2.root);
+  return r1.root;
+}
+
+static bool _upb_Arena_FixupRefs(upb_Arena* new_root, uintptr_t ref_delta) {
+  if (ref_delta == 0) return true;  // No fixup required.
+  uintptr_t poc =
+      upb_Atomic_Load(&new_root->parent_or_count, memory_order_relaxed);
+  if (_upb_Arena_IsTaggedPointer(poc)) return false;
+  uintptr_t with_refs = poc - ref_delta;
+  UPB_ASSERT(!_upb_Arena_IsTaggedPointer(with_refs));
+  return upb_Atomic_CompareExchangeStrong(&new_root->parent_or_count, &poc,
+                                          with_refs, memory_order_relaxed,
+                                          memory_order_relaxed);
+}
+
+bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
+  if (a1 == a2) return true;  // trivial fuse
+
+  // Do not fuse initial blocks since we cannot lifetime extend them.
+  // Any other fuse scenario is allowed.
+  if (upb_Arena_HasInitialBlock(a1) || upb_Arena_HasInitialBlock(a2)) {
+    return false;
+  }
+
+  // The number of refs we ultimately need to transfer to the new root.
+  uintptr_t ref_delta = 0;
+  while (true) {
+    upb_Arena* new_root = _upb_Arena_DoFuse(a1, a2, &ref_delta);
+    if (new_root != NULL && _upb_Arena_FixupRefs(new_root, ref_delta)) {
+      return true;
+    }
+  }
 }
 
 
@@ -5508,7 +5509,8 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
 
   // Check unknown fields, if available promote.
   int field_number = ext_table->field.number;
-  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(msg, field_number);
+  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(
+      msg, field_number, kUpb_WireFormat_DefaultDepthLimit);
   if (result.status != kUpb_FindUnknown_Ok) {
     return kUpb_GetExtension_NotPresent;
   }
@@ -5559,7 +5561,8 @@ upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
     return kUpb_GetExtensionAsBytes_Ok;
   }
   int field_number = ext_table->field.number;
-  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(msg, field_number);
+  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(
+      msg, field_number, upb_DecodeOptions_GetMaxDepth(encode_options));
   if (result.status != kUpb_FindUnknown_Ok) {
     return kUpb_GetExtensionAsBytes_NotPresent;
   }
@@ -5578,8 +5581,8 @@ static upb_FindUnknownRet upb_FindUnknownRet_ParseError(void) {
 }
 
 upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
-                                             uint32_t field_number) {
-  const int depth_limit = 100;  // TODO: this should be a parameter
+                                             uint32_t field_number,
+                                             int depth_limit) {
   size_t size;
   upb_FindUnknownRet ret;
 
@@ -5621,7 +5624,8 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   upb_Message* message = NULL;
   // Callers should check that message is not set first before calling
   // PromotoUnknownToMessage.
-  UPB_ASSERT(mini_table->subs[field->submsg_index].submsg == sub_mini_table);
+  UPB_ASSERT(upb_MiniTable_GetSubMessageTable(mini_table, field) ==
+             sub_mini_table);
   bool is_oneof = _upb_MiniTableField_InOneOf(field);
   if (!is_oneof || _upb_getoneofcase_field(msg, field) == field->number) {
     UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
@@ -5629,7 +5633,8 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;
   do {
-    unknown = upb_MiniTable_FindUnknown(msg, field->number);
+    unknown = upb_MiniTable_FindUnknown(
+        msg, field->number, upb_DecodeOptions_GetMaxDepth(decode_options));
     switch (unknown.status) {
       case kUpb_FindUnknown_Ok: {
         const char* unknown_data = unknown.ptr;
@@ -5675,7 +5680,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
   do {
-    unknown = upb_MiniTable_FindUnknown(msg, field->number);
+    unknown = upb_MiniTable_FindUnknown(
+        msg, field->number, upb_DecodeOptions_GetMaxDepth(decode_options));
     if (unknown.status == kUpb_FindUnknown_Ok) {
       upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
           unknown.ptr, unknown.len, mini_table,
@@ -5706,7 +5712,7 @@ upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
                                                upb_Message* map_entry_message,
                                                upb_Arena* arena) {
   const upb_MiniTable* map_entry_mini_table =
-      mini_table->subs[field->submsg_index].submsg;
+      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table->field_count == 2);
   const upb_MiniTableField* map_entry_key_field =
@@ -5731,7 +5737,7 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, int decode_options, upb_Arena* arena) {
   const upb_MiniTable* map_entry_mini_table =
-      mini_table->subs[field->submsg_index].submsg;
+      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table->field_count == 2);
@@ -5739,7 +5745,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
   while (1) {
-    unknown = upb_MiniTable_FindUnknown(msg, field->number);
+    unknown = upb_MiniTable_FindUnknown(
+        msg, field->number, upb_DecodeOptions_GetMaxDepth(decode_options));
     if (unknown.status != kUpb_FindUnknown_Ok) break;
     upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
         unknown.ptr, unknown.len, map_entry_mini_table,
@@ -6147,9 +6154,9 @@ static void upb_MiniTable_SetTypeAndSub(upb_MiniTableField* field,
   }
 
   if (upb_MiniTable_HasSub(field, msg_modifiers)) {
-    field->submsg_index = sub_count ? (*sub_count)++ : 0;
+    field->UPB_PRIVATE(submsg_index) = sub_count ? (*sub_count)++ : 0;
   } else {
-    field->submsg_index = kUpb_NoSub;
+    field->UPB_PRIVATE(submsg_index) = kUpb_NoSub;
   }
 
   if (upb_MtDecoder_FieldIsPackable(field) &&
@@ -7021,7 +7028,8 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
       return false;
   }
 
-  upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];
+  upb_MiniTableSub* table_sub =
+      (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
   table_sub->submsg = sub;
   return true;
 }
@@ -7033,7 +7041,8 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
                  (uintptr_t)(table->fields + table->field_count));
   UPB_ASSERT(sub);
 
-  upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];
+  upb_MiniTableSub* table_sub =
+      (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
   table_sub->subenum = sub;
   return true;
 }
@@ -11436,7 +11445,7 @@ static void _upb_Decoder_Munge(int type, wireval* val) {
 static upb_Message* _upb_Decoder_NewSubMessage(
     upb_Decoder* d, const upb_MiniTableSub* subs,
     const upb_MiniTableField* field) {
-  const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(subl);
   upb_Message* msg = _upb_Message_New(subl, &d->arena);
   if (!msg) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
@@ -11475,7 +11484,7 @@ static const char* _upb_Decoder_DecodeSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field, int size) {
   int saved_delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, size);
-  const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(subl);
   ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, DECODE_NOGROUP);
   upb_EpsCopyInputStream_PopLimit(&d->input, ptr, saved_delta);
@@ -11506,7 +11515,7 @@ UPB_FORCEINLINE
 static const char* _upb_Decoder_DecodeKnownGroup(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field) {
-  const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(subl);
   return _upb_Decoder_DecodeGroup(d, ptr, submsg, subl, field->number);
 }
@@ -11570,7 +11579,7 @@ static const char* _upb_Decoder_DecodeEnumArray(upb_Decoder* d, const char* ptr,
                                                 const upb_MiniTableSub* subs,
                                                 const upb_MiniTableField* field,
                                                 wireval* val) {
-  const upb_MiniTableEnum* e = subs[field->submsg_index].subenum;
+  const upb_MiniTableEnum* e = subs[field->UPB_PRIVATE(submsg_index)].subenum;
   if (!_upb_Decoder_CheckEnum(d, ptr, msg, e, field, val)) return ptr;
   void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
   arr->size++;
@@ -11641,7 +11650,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     upb_Decoder* d, const char* ptr, upb_Message* msg, upb_Array* arr,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field,
     wireval* val) {
-  const upb_MiniTableEnum* e = subs[field->submsg_index].subenum;
+  const upb_MiniTableEnum* e = subs[field->UPB_PRIVATE(submsg_index)].subenum;
   int saved_limit = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
   char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
   while (!_upb_Decoder_IsDone(d, &ptr)) {
@@ -11802,7 +11811,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   upb_Map* map = *map_p;
   upb_MapEntry ent;
   UPB_ASSERT(upb_MiniTableField_Type(field) == kUpb_FieldType_Message);
-  const upb_MiniTable* entry = subs[field->submsg_index].submsg;
+  const upb_MiniTable* entry = subs[field->UPB_PRIVATE(submsg_index)].submsg;
 
   UPB_ASSERT(entry->field_count == 2);
   UPB_ASSERT(!upb_IsRepeatedOrMap(&entry->fields[0]));
@@ -11863,7 +11872,8 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   int type = field->descriptortype;
 
   if (UPB_UNLIKELY(op == kUpb_DecodeOp_Enum) &&
-      !_upb_Decoder_CheckEnum(d, ptr, msg, subs[field->submsg_index].subenum,
+      !_upb_Decoder_CheckEnum(d, ptr, msg,
+                              subs[field->UPB_PRIVATE(submsg_index)].subenum,
                               field, val)) {
     return ptr;
   }
@@ -12179,7 +12189,7 @@ static void _upb_Decoder_CheckUnlinked(const upb_MiniTable* mt,
                                        int* op) {
   // If sub-message is not linked, treat as unknown.
   if (field->mode & kUpb_LabelFlags_IsExtension) return;
-  const upb_MiniTableSub* sub = &mt->subs[field->submsg_index];
+  const upb_MiniTableSub* sub = &mt->subs[field->UPB_PRIVATE(submsg_index)];
   if (!sub->submsg) *op = kUpb_DecodeOp_UnknownField;
 }
 
@@ -12499,9 +12509,10 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
     UPB_ASSERT(decoder->status != kUpb_DecodeStatus_Ok);
   }
 
-  arena->head.ptr = decoder->arena.head.ptr;
-  arena->head.end = decoder->arena.head.end;
-  arena->cleanup_metadata = decoder->arena.cleanup_metadata;
+  _upb_MemBlock* blocks =
+      upb_Atomic_Load(&decoder->arena.blocks, memory_order_relaxed);
+  arena->head = decoder->arena.head;
+  upb_Atomic_Store(&arena->blocks, blocks, memory_order_relaxed);
   return decoder->status;
 }
 
@@ -12509,26 +12520,31 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
                             const upb_MiniTable* l,
                             const upb_ExtensionRegistry* extreg, int options,
                             upb_Arena* arena) {
-  upb_Decoder state;
+  upb_Decoder decoder;
   unsigned depth = (unsigned)options >> 16;
 
-  upb_EpsCopyInputStream_Init(&state.input, &buf, size,
+  upb_EpsCopyInputStream_Init(&decoder.input, &buf, size,
                               options & kUpb_DecodeOption_AliasString);
 
-  state.extreg = extreg;
-  state.unknown = NULL;
-  state.depth = depth ? depth : 64;
-  state.end_group = DECODE_NOGROUP;
-  state.options = (uint16_t)options;
-  state.missing_required = false;
-  state.arena.head = arena->head;
-  state.arena.last_size = arena->last_size;
-  state.arena.cleanup_metadata = arena->cleanup_metadata;
-  upb_Atomic_Init(&state.arena.parent_or_count,
-                  _upb_Arena_TaggedFromPointer(arena));
-  state.status = kUpb_DecodeStatus_Ok;
+  decoder.extreg = extreg;
+  decoder.unknown = NULL;
+  decoder.depth = depth ? depth : kUpb_WireFormat_DefaultDepthLimit;
+  decoder.end_group = DECODE_NOGROUP;
+  decoder.options = (uint16_t)options;
+  decoder.missing_required = false;
+  decoder.status = kUpb_DecodeStatus_Ok;
 
-  return upb_Decoder_Decode(&state, buf, msg, l, arena);
+  // Violating the encapsulation of the arena for performance reasons.
+  // This is a temporary arena that we swap into and swap out of when we are
+  // done.  The temporary arena only needs to be able to handle allocation,
+  // not fuse or free, so it does not need many of the members to be initialized
+  // (particularly parent_or_count).
+  _upb_MemBlock* blocks = upb_Atomic_Load(&arena->blocks, memory_order_relaxed);
+  decoder.arena.head = arena->head;
+  decoder.arena.block_alloc = arena->block_alloc;
+  upb_Atomic_Init(&decoder.arena.blocks, blocks);
+
+  return upb_Decoder_Decode(&decoder, buf, msg, l, arena);
 }
 
 #undef OP_FIXPCK_LG2
@@ -13746,7 +13762,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
     case kUpb_FieldType_Group: {
       size_t size;
       void* submsg = *(void**)field_mem;
-      const upb_MiniTable* subm = subs[f->submsg_index].submsg;
+      const upb_MiniTable* subm = subs[f->UPB_PRIVATE(submsg_index)].submsg;
       if (submsg == NULL) {
         return;
       }
@@ -13760,7 +13776,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
     case kUpb_FieldType_Message: {
       size_t size;
       void* submsg = *(void**)field_mem;
-      const upb_MiniTable* subm = subs[f->submsg_index].submsg;
+      const upb_MiniTable* subm = subs[f->UPB_PRIVATE(submsg_index)].submsg;
       if (submsg == NULL) {
         return;
       }
@@ -13849,7 +13865,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_Group: {
       const void* const* start = _upb_array_constptr(arr);
       const void* const* ptr = start + arr->size;
-      const upb_MiniTable* subm = subs[f->submsg_index].submsg;
+      const upb_MiniTable* subm = subs[f->UPB_PRIVATE(submsg_index)].submsg;
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
@@ -13864,7 +13880,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_Message: {
       const void* const* start = _upb_array_constptr(arr);
       const void* const* ptr = start + arr->size;
-      const upb_MiniTable* subm = subs[f->submsg_index].submsg;
+      const upb_MiniTable* subm = subs[f->UPB_PRIVATE(submsg_index)].submsg;
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
@@ -13903,7 +13919,7 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
                        const upb_MiniTableSub* subs,
                        const upb_MiniTableField* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->offset, const upb_Map*);
-  const upb_MiniTable* layout = subs[f->submsg_index].submsg;
+  const upb_MiniTable* layout = subs[f->UPB_PRIVATE(submsg_index)].submsg;
   UPB_ASSERT(layout->field_count == 2);
 
   if (map == NULL) return;
@@ -14106,7 +14122,7 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
   e.buf = NULL;
   e.limit = NULL;
   e.ptr = NULL;
-  e.depth = depth ? depth : 64;
+  e.depth = depth ? depth : kUpb_WireFormat_DefaultDepthLimit;
   e.options = options;
   _upb_mapsorter_init(&e.sorter);
 
@@ -14195,3 +14211,4 @@ const char* _upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
 #undef UPB_IS_GOOGLE3
 #undef UPB_ATOMIC
 #undef UPB_USE_C11_ATOMICS
+#undef UPB_PRIVATE
