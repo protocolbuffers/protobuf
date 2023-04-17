@@ -56,7 +56,10 @@ void MessageStructFields(Context<Descriptor> msg) {
     case Kernel::kUpb:
       msg.Emit(R"rs(
         msg: $NonNull$<u8>,
-        arena: *mut $pb$::Arena,
+        //~ rustc incorrectly thinks this field is never read, even though
+        //~ it has a destructor!
+        #[allow(dead_code)]
+        arena: $pbi$::Arena,
       )rs");
       return;
   }
@@ -74,9 +77,11 @@ void MessageNew(Context<Descriptor> msg) {
 
     case Kernel::kUpb:
       msg.Emit({{"new_thunk", Thunk(msg, "new")}}, R"rs(
-        let arena = unsafe { $pb$::Arena::new() };
-        let msg = unsafe { $new_thunk$(arena) };
-        $Msg$ { msg, arena }
+        let arena = unsafe { $pbi$::Arena::new() };
+        Self {
+          msg: unsafe { $new_thunk$(arena.raw()) },
+          arena,
+        }
       )rs");
       return;
   }
@@ -94,10 +99,10 @@ void MessageSerialize(Context<Descriptor> msg) {
 
     case Kernel::kUpb:
       msg.Emit({{"serialize_thunk", Thunk(msg, "serialize")}}, R"rs(
-        let arena = unsafe { $pb$::__runtime::upb_Arena_New() };
+        let arena = $pbi$::Arena::new();
         let mut len = 0;
         unsafe {
-          let data = $serialize_thunk$(self.msg, arena, &mut len);
+          let data = $serialize_thunk$(self.msg, arena.raw(), &mut len);
           $pb$::SerializedData::from_raw_parts(arena, data, len)
         }
       )rs");
@@ -152,7 +157,7 @@ void MessageExterns(Context<Descriptor> msg) {
           fn $new_thunk$() -> $NonNull$<u8>;
           fn $delete_thunk$(raw_msg: $NonNull$<u8>);
           fn $serialize_thunk$(raw_msg: $NonNull$<u8>) -> $pb$::SerializedData;
-          fn $deserialize_thunk$( raw_msg: $NonNull$<u8>, data: $pb$::SerializedData) -> bool;
+          fn $deserialize_thunk$(raw_msg: $NonNull$<u8>, data: $pb$::SerializedData) -> bool;
         )rs");
       return;
 
@@ -163,13 +168,9 @@ void MessageExterns(Context<Descriptor> msg) {
               {"serialize_thunk", Thunk(msg, "serialize")},
           },
           R"rs(
-          fn $new_thunk$(arena: *mut $pb$::Arena) -> $NonNull$<u8>;
-          fn $serialize_thunk$(
-            msg: $NonNull$<u8>,
-            arena: *mut $pb$::Arena,
-            len: &mut usize,
-          ) -> $NonNull$<u8>;
-        )rs");
+          fn $new_thunk$(arena: $pbi$::RawArena) -> $NonNull$<u8>;
+          fn $serialize_thunk$(msg: $NonNull$<u8>, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
+      )rs");
       return;
   }
 
@@ -347,12 +348,12 @@ void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
            }},
       },
       R"cc(
-        // $abi$ is a workaround for a syntax highlight bug in VSCode. However,
-        // that confuses clang-format (it refuses to keep the newline after
-        // `$abi${`). Disabling clang-format for the block.
+        //~ $abi$ is a workaround for a syntax highlight bug in VSCode. However,
+        //~ that confuses clang-format (it refuses to keep the newline after
+        //~ `$abi${`). Disabling clang-format for the block.
         // clang-format off
         extern $abi$ {
-        void * $new_thunk$(){return new $QualifiedMsg$(); }
+        void* $new_thunk$(){return new $QualifiedMsg$(); }
         void $delete_thunk$(void* ptr) { delete static_cast<$QualifiedMsg$*>(ptr); }
         google::protobuf::rust_internal::SerializedData $serialize_thunk$($QualifiedMsg$* msg) {
           return google::protobuf::rust_internal::SerializeMsg(msg);

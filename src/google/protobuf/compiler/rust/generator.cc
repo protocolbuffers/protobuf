@@ -97,6 +97,7 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
   auto v = file.printer().WithVars({
       {"std", "::__std"},
       {"pb", "::__pb"},
+      {"pbi", "::__pb::__runtime"},
       {"NonNull", "::__std::ptr::NonNull"},
   });
 

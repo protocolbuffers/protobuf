@@ -28,46 +28,122 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Rust Protobuf runtime using the UPB kernel.
+//! UPB FFI wrapper code for use by Rust Protobuf.
 
-/// Represents UPB's upb_Arena.
+use std::alloc;
+use std::alloc::Layout;
+use std::cell::UnsafeCell;
+use std::fmt;
+use std::marker::PhantomData;
+use std::mem::MaybeUninit;
 use std::ops::Deref;
 use std::ptr::NonNull;
 use std::slice;
 
+/// See `upb/port/def.inc`.
+const UPB_MALLOC_ALIGN: usize = 8;
+
+/// A UPB-managed pointer to a raw arena.
+pub type RawArena = NonNull<RawArenaData>;
+
+/// The data behind a [`RawArena`]. Do not use this type.
 #[repr(C)]
-pub struct Arena {
+pub struct RawArenaData {
     _data: [u8; 0],
-    _marker: core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>,
 }
 
-impl Arena {
-    pub unsafe fn new() -> *mut Self {
-        upb_Arena_New()
-    }
-
-    pub unsafe fn free(arena: *mut Self) {
-        upb_Arena_Free(arena)
-    }
+/// A wrapper over a `upb_Arena`.
+///
+/// This is not a safe wrapper per se, because the allocation functions still
+/// have sharp edges (see their safety docs for more info).
+///
+/// This is an owning type and will automatically free the arena when
+/// dropped.
+///
+/// Note that this type is neither `Sync` nor `Send`.
+pub struct Arena {
+    raw: RawArena,
+    _not_sync: PhantomData<UnsafeCell<()>>,
 }
 
 extern "C" {
-    pub fn upb_Arena_New() -> *mut Arena;
-    pub fn upb_Arena_Free(arena: *mut Arena);
+    fn upb_Arena_New() -> RawArena;
+    fn upb_Arena_Free(arena: RawArena);
+    fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
+    fn upb_Arena_Realloc(arena: RawArena, ptr: *mut u8, old: usize, new: usize) -> *mut u8;
 }
 
-/// Represents serialized Protobuf wire format data. It's typically produced by
-/// `<Message>.serialize()`.
-#[derive(Debug)]
+impl Arena {
+    /// Allocates a fresh arena.
+    #[inline]
+    pub fn new() -> Self {
+        Self { raw: unsafe { upb_Arena_New() }, _not_sync: PhantomData }
+    }
+
+    /// Returns the raw, UPB-managed pointer to the arena.
+    #[inline]
+    pub fn raw(&self) -> RawArena {
+        self.raw
+    }
+
+    /// Allocates some memory on the arena.
+    ///
+    /// # Safety
+    ///
+    /// `layout`'s alignment must be less than `UPB_MALLOC_ALIGN`.
+    #[inline]
+    pub unsafe fn alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
+        debug_assert!(layout.align() <= UPB_MALLOC_ALIGN);
+        let ptr = upb_Arena_Malloc(self.raw, layout.size());
+        if ptr.is_null() {
+            alloc::handle_alloc_error(layout);
+        }
+
+        slice::from_raw_parts_mut(ptr.cast(), layout.size())
+    }
+
+    /// Resizes some memory on the arena.
+    ///
+    /// # Safety
+    ///
+    /// After calling this function, `ptr` is essentially zapped. `old` must
+    /// be the layout `ptr` was allocated with via [`Arena::alloc()`]. `new`'s
+    /// alignment must be less than `UPB_MALLOC_ALIGN`.
+    #[inline]
+    pub unsafe fn resize(&self, ptr: *mut u8, old: Layout, new: Layout) -> &[MaybeUninit<u8>] {
+        debug_assert!(new.align() <= UPB_MALLOC_ALIGN);
+        let ptr = upb_Arena_Realloc(self.raw, ptr, old.size(), new.size());
+        if ptr.is_null() {
+            alloc::handle_alloc_error(new);
+        }
+
+        slice::from_raw_parts_mut(ptr.cast(), new.size())
+    }
+}
+
+impl Drop for Arena {
+    #[inline]
+    fn drop(&mut self) {
+        unsafe {
+            upb_Arena_Free(self.raw);
+        }
+    }
+}
+
+/// Represents serialized Protobuf wire format data.
+///
+/// It's typically produced by `<Message>::serialize()`.
 pub struct SerializedData {
     data: NonNull<u8>,
     len: usize,
-    arena: *mut Arena,
+
+    // The arena that owns `data`.
+    _arena: Arena,
 }
 
 impl SerializedData {
-    pub unsafe fn from_raw_parts(arena: *mut Arena, data: NonNull<u8>, len: usize) -> Self {
-        SerializedData { arena, data, len }
+    pub unsafe fn from_raw_parts(arena: Arena, data: NonNull<u8>, len: usize) -> Self {
+        SerializedData { _arena: arena, data, len }
     }
 }
 
@@ -78,9 +154,9 @@ impl Deref for SerializedData {
     }
 }
 
-impl Drop for SerializedData {
-    fn drop(&mut self) {
-        unsafe { Arena::free(self.arena) };
+impl fmt::Debug for SerializedData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(self.deref(), f)
     }
 }
 
@@ -90,13 +166,13 @@ mod tests {
 
     #[test]
     fn test_arena_new_and_free() {
-        let arena = unsafe { Arena::new() };
-        unsafe { Arena::free(arena) };
+        let arena = Arena::new();
+        drop(arena);
     }
 
     #[test]
     fn test_serialized_data_roundtrip() {
-        let arena = unsafe { Arena::new() };
+        let arena = Arena::new();
         let original_data = b"Hello world";
         let len = original_data.len();
 
