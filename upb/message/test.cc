@@ -507,12 +507,17 @@ TEST(MessageTest, MapField) {
 // static void DecodeEncodeArbitrarySchemaAndPayload(
 //     const upb::fuzz::MiniTableFuzzInput& input, std::string_view proto_payload,
 //     int decode_options, int encode_options) {
+//   // The value of 80 used here is empirical and intended to roughly represent
+//   // the tiny 64K stack size used by the test framework. We still see the
+//   // occasional stack overflow at 90, so far 80 has worked 100% of the time.
+//   decode_options = upb_Decode_LimitDepth(decode_options, 80);
+//   encode_options = upb_Encode_LimitDepth(encode_options, 80);
+//
 //   upb::Arena arena;
 //   upb_ExtensionRegistry* exts;
 //   const upb_MiniTable* mini_table =
 //       upb::fuzz::BuildMiniTable(input, &exts, arena.ptr());
 //   if (!mini_table) return;
-//   decode_options = upb_Decode_LimitDepth(decode_options, 80);
 //   upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
 //   upb_Decode(proto_payload.data(), proto_payload.size(), msg, mini_table, exts,
 //              decode_options, arena.ptr());
