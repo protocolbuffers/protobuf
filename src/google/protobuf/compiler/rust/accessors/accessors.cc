@@ -28,12 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
+#include "google/protobuf/compiler/rust/accessors/accessors.h"
 
-#include <string>
+#include <memory>
 
-#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -42,29 +40,28 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-std::string GetCrateName(Context<FileDescriptor> dep);
+std::unique_ptr<AccessorGenerator> AccessorGenerator::For(
+    Context<FieldDescriptor> field) {
+  // We do not support [ctype=FOO] (used to set the field type in C++ to
+  // cord or string_piece) in V0 API.
+  if (field.desc().options().has_ctype()) {
+    return nullptr;
+  }
 
-std::string GetRsFile(Context<FileDescriptor> file);
-std::string GetThunkCcFile(Context<FileDescriptor> file);
-std::string GetHeaderFile(Context<FileDescriptor> file);
+  switch (field.desc().type()) {
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_BOOL:
+      if (field.desc().is_repeated()) return nullptr;
+      return ForSingularScalar(field);
+    case FieldDescriptor::TYPE_BYTES:
+      if (field.desc().is_repeated() || field.is_upb()) return nullptr;
+      return ForSingularBytes(field);
 
-std::string GetUnderscoreDelimitedFullName(Context<Descriptor> msg);
-
-std::string GetAccessorThunkName(Context<FieldDescriptor> field,
-                                 absl::string_view op);
-
-bool IsSupportedFieldType(Context<FieldDescriptor> field);
-
-absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field);
-
-std::string FieldInfoComment(Context<FieldDescriptor> field);
-
-std::string RustModule(Context<Descriptor> msg);
-
-std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg);
+    default:
+      return nullptr;
+  }
+}
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__

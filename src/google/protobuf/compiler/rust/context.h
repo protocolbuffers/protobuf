@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 
+#include "absl/log/absl_log.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -45,6 +46,18 @@ enum class Kernel {
   kUpb,
   kCpp,
 };
+
+inline absl::string_view KernelRsName(Kernel kernel) {
+  switch (kernel) {
+    case Kernel::kUpb:
+      return "upb";
+    case Kernel::kCpp:
+      return "cpp";
+    default:
+      ABSL_LOG(FATAL) << "Unknown kernel type: " << static_cast<int>(kernel);
+      return "";
+  }
+}
 
 // Global options for a codegen invocation.
 struct Options {
