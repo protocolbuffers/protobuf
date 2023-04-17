@@ -17,10 +17,6 @@ rust_test(
     tags = [
         # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
         "not_build:arm",
-        # TODO(b/243126140): Enable tsan once we support sanitizers with Rust.
-        "notsan",
-        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
-        "nomsan",
     ],
     deps = [
         ":test_utils",
