@@ -4,27 +4,66 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(name = "empty")
 
-TOOLCHAINS = {
-    "osx-x86_64": "cc-compiler-osx-x86_64",
-    "osx-aarch_64": "cc-compiler-osx-aarch_64",
-    "linux-aarch_64": "cc-compiler-linux-aarch_64",
-    "linux-ppcle_64": "cc-compiler-linux-ppcle_64",
-    "linux-s390_64": "cc-compiler-linux-s390_64",
-    "linux-x86_32": "cc-compiler-linux-x86_32",
-    "linux-x86_64": "cc-compiler-linux-x86_64",
-    "win32": "cc-compiler-windows-x86_32",
-    "win64": "cc-compiler-windows-x86_64",
-    "k8": "cc-compiler-k8",
+################################################################################
+# A dict that stores all the data needed to define platforms and toolchains
+#
+# The key is the platform name and the entry is the list of bazel constraint
+# values (cpu/os) the name maps to
+###############################################################################
+PLATFORM_DATA = {
+    "osx-x86_64": [
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
+    "osx-aarch_64": [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
+    "linux-aarch_64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:arm64",
+    ],
+    "linux-ppcle_64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:ppc",
+    ],
+    "linux-s390_64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:s390x",
+    ],
+    "linux-x86_32": [
+        "@platforms//os:linux",
+        "@platforms//cpu:i386",
+    ],
+    "linux-x86_64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    "win32": [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_32",
+    ],
+    "win64": [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
+    ],
+    "k8": [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
 }
 
-cc_toolchain_suite(
-    name = "clang_suite",
-    toolchains = TOOLCHAINS
-)
+[
+    platform(
+        name = platform_name,
+        constraint_values = platform_constraints,
+    )
+    for platform_name, platform_constraints in PLATFORM_DATA.items()
+]
 
 [
     cc_toolchain(
-        name = toolchain,
+        name = platform_name + "_cc_toolchain",
         all_files = ":empty",
         compiler_files = ":empty",
         dwp_files = ":empty",
@@ -34,10 +73,20 @@ cc_toolchain_suite(
         output_licenses = ["restricted"],
         static_runtime_lib = ":empty",
         strip_files = ":empty",
-        toolchain_config = ":" + cpu + "-config",
-        toolchain_identifier = toolchain,
+        toolchain_config = ":" + platform_name + "-config",
+        toolchain_identifier = platform_name + "_cc_toolchain",
     )
-    for cpu, toolchain in TOOLCHAINS.items()
+    for platform_name, platform_constraints in PLATFORM_DATA.items()
+]
+
+[
+    toolchain(
+        name = platform_name + "_toolchain",
+        target_compatible_with = platform_constraints,
+        toolchain = platform_name + "_cc_toolchain",
+        toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+    )
+    for platform_name, platform_constraints in PLATFORM_DATA.items()
 ]
 
 cc_toolchain_config(
@@ -50,8 +99,8 @@ cc_toolchain_config(
 
 cc_toolchain_config(
     name = "linux-aarch_64-config",
-    sysroot = "/opt/manylinux/2014/aarch64",
     linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/aarch64",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
 )
