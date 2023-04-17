@@ -28,22 +28,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <iostream>
+#include <cstddef>
 
 #include "google/protobuf/rust/cpp_kernel/cpp_api.h"
 #include "google/protobuf/unittest.pb.h"
 
-extern "C" void MutateInt64Field(protobuf_unittest::TestAllTypes* msg) {
+extern "C" void MutateTestAllTypes(protobuf_unittest::TestAllTypes* msg) {
   msg->set_optional_int64(42);
+  msg->set_optional_bytes("something mysterious");
+  msg->set_optional_bool(false);
 }
 
-extern "C" google::protobuf::rust_internal::SerializedData Serialize(
+extern "C" google::protobuf::rust_internal::SerializedData SerializeTestAllTypes(
     const protobuf_unittest::TestAllTypes* msg) {
   return google::protobuf::rust_internal::SerializeMsg(msg);
 }
 
-extern "C" google::protobuf::rust_internal::SerializedData SerializeMutatedInstance() {
-  protobuf_unittest::TestAllTypes* inst = new protobuf_unittest::TestAllTypes();
-  MutateInt64Field(inst);
-  return Serialize(inst);
+extern "C" void* DeserializeTestAllTypes(const void* data, size_t size) {
+  auto* proto = new protobuf_unittest::TestAllTypes;
+  proto->ParseFromArray(data, size);
+  return proto;
 }

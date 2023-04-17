@@ -31,43 +31,66 @@
 use std::ptr::NonNull;
 use unittest_proto::proto2_unittest::TestAllTypes;
 
-macro_rules! assert_serializes_equally {
-    ($msg:ident) => {{
-        let mut msg = $msg;
-        let serialized_cpp =
-            unsafe { Serialize(msg.__unstable_cpp_repr_grant_permission_to_break()) };
-        let serialized_rs = msg.serialize();
+macro_rules! proto_assert_eq {
+    ($lhs:expr, $rhs:expr) => {{
+        let lhs = &$lhs;
+        let rhs = &$rhs;
 
-        assert_eq!(*serialized_rs, *serialized_cpp);
+        assert_eq!(lhs.optional_int64(), rhs.optional_int64());
+        assert_eq!(lhs.optional_bytes(), rhs.optional_bytes());
+        assert_eq!(lhs.optional_bool(), rhs.optional_bool());
     }};
+}
+
+// Helper functions invoking C++ Protobuf APIs directly in C++.
+// Defined in `test_utils.cc`.
+extern "C" {
+    fn DeserializeTestAllTypes(data: *const u8, len: usize) -> NonNull<u8>;
+    fn MutateTestAllTypes(msg: NonNull<u8>);
+    fn SerializeTestAllTypes(msg: NonNull<u8>) -> protobuf_cpp::SerializedData;
 }
 
 #[test]
 fn mutate_message_in_cpp() {
-    let mut msg = TestAllTypes::new();
-    unsafe { MutateInt64Field(msg.__unstable_cpp_repr_grant_permission_to_break()) };
-    assert_serializes_equally!(msg);
+    let mut msg1 = TestAllTypes::new();
+    unsafe {
+        MutateTestAllTypes(msg1.__unstable_cpp_repr_grant_permission_to_break());
+    }
+
+    let mut msg2 = TestAllTypes::new();
+    msg2.optional_int64_set(Some(42));
+    msg2.optional_bytes_set(Some(b"something mysterious"));
+    msg2.optional_bool_set(Some(false));
+
+    proto_assert_eq!(msg1, msg2);
 }
 
 #[test]
-fn mutate_message_in_rust() {
-    let mut msg = TestAllTypes::new();
-    msg.optional_int64_set(Some(43));
-    assert_serializes_equally!(msg);
+fn deserialize_in_rust() {
+    let mut msg1 = TestAllTypes::new();
+    msg1.optional_int64_set(Some(-1));
+    msg1.optional_bytes_set(Some(b"some cool data I guess"));
+    let serialized = unsafe {
+        SerializeTestAllTypes(msg1.__unstable_cpp_repr_grant_permission_to_break())
+    };
+
+    let mut msg2 = TestAllTypes::new();
+    msg2.deserialize(&serialized).unwrap();
+    proto_assert_eq!(msg1, msg2);
 }
 
 #[test]
-fn deserialize_message_in_rust() {
-    let serialized = unsafe { SerializeMutatedInstance() };
-    let mut msg = TestAllTypes::new();
-    msg.deserialize(&serialized).unwrap();
-    assert_serializes_equally!(msg);
-}
+fn deserialize_in_cpp() {
+    let mut msg1 = TestAllTypes::new();
+    msg1.optional_int64_set(Some(-1));
+    msg1.optional_bytes_set(Some(b"some cool data I guess"));
+    let data = msg1.serialize();
 
-// Helper functions invoking C++ Protobuf APIs directly in C++. Defined in
-// `//third_party/protobuf/rust/test/cpp/interop:test_utils`.
-extern "C" {
-    fn SerializeMutatedInstance() -> protobuf_cpp::SerializedData;
-    fn MutateInt64Field(msg: NonNull<u8>);
-    fn Serialize(msg: NonNull<u8>) -> protobuf_cpp::SerializedData;
+    let msg2 = unsafe {
+        TestAllTypes::__unstable_wrap_cpp_grant_permission_to_break(
+            DeserializeTestAllTypes(data.as_ptr(), data.len()),
+        )
+    };
+
+    proto_assert_eq!(msg1, msg2);
 }
