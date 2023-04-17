@@ -1233,19 +1233,12 @@ static PyObject* PyUpb_Message_UnknownFields(PyObject* _self, PyObject* arg) {
 
 PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
-  char* buf;
-  Py_ssize_t size;
-  PyObject* bytes = NULL;
+  Py_buffer data;
 
-  if (PyMemoryView_Check(arg)) {
-    bytes = PyBytes_FromObject(arg);
-    // Cannot fail when passed something of the correct type.
-    int err = PyBytes_AsStringAndSize(bytes, &buf, &size);
-    (void)err;
-    assert(err >= 0);
-  } else if (PyBytes_AsStringAndSize(arg, &buf, &size) < 0) {
-    return NULL;
+  if (PyObject_GetBuffer(arg, &data, PyBUF_SIMPLE) < 0) {
+    return 0;
   }
+  Py_ssize_t len = data.len;
 
   PyUpb_Message_EnsureReified(self);
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
@@ -1259,14 +1252,14 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
       state->allow_oversize_protos ? UINT16_MAX
                                    : kUpb_WireFormat_DefaultDepthLimit);
   upb_DecodeStatus status =
-      upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
-  Py_XDECREF(bytes);
+      upb_Decode(data.buf, len, self->ptr.msg, layout, extreg, options, arena);
+  PyBuffer_Release(&data);
   if (status != kUpb_DecodeStatus_Ok) {
     PyErr_Format(state->decode_error_class, "Error parsing message");
     return NULL;
   }
   PyUpb_Message_SyncSubobjs(self);
-  return PyLong_FromSsize_t(size);
+  return PyLong_FromSsize_t(len);
 }
 
 static PyObject* PyUpb_Message_Clear(PyUpb_Message* self, PyObject* args);
