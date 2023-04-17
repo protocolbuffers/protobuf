@@ -38,6 +38,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"
@@ -300,7 +301,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$.Clear();
+      _internal_mutable_$name$()->Clear();
     )cc");
   }
 
@@ -324,9 +325,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateConstructorCode(io::Printer* p) const override {}
 
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    ABSL_CHECK(!ShouldSplit(field_, *opts_));
-  }
+  void GenerateCopyConstructorCode(io::Printer* p) const override {}
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
@@ -336,6 +335,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
+    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
     p->Emit(R"cc(
       decltype($field_$) { arena }
     )cc");
@@ -343,6 +343,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
+    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
     p->Emit(R"cc(
       decltype($field_$) { from.$field_$ }
     )cc");
@@ -422,7 +423,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     }
     inline void $Msg$::set_$name$(int index, $Type$ value) {
       $annotate_set$;
-      $field_$.Set(index, value);
+      _internal_mutable_$name$()->Set(index, value);
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
     inline void $Msg$::add_$name$($Type$ value) {
@@ -442,9 +443,11 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     }
 
     inline $Type$ $Msg$::_internal_$name$(int index) const {
-      return $field_$.Get(index);
+      return _internal_$name$().Get(index);
     }
-    inline void $Msg$::_internal_add_$name$($Type$ value) { $field_$.Add(value); }
+    inline void $Msg$::_internal_add_$name$($Type$ value) {
+      _internal_mutable_$name$()->Add(value);
+    }
     inline const $pb$::RepeatedField<$Type$>& $Msg$::_internal_$name$() const {
       return $field_$;
     }
@@ -500,7 +503,8 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
                   )cc");
                 } else {
                   p->Emit(R"cc(
-                    ::_pbi::WireFormatLite::$DeclaredType$Size(this->$field_$)
+                    ::_pbi::WireFormatLite::$DeclaredType$Size(
+                        this->_internal_$name$())
                   )cc");
                 }
               }}  // Here and below, we need to disable the default ;-chomping

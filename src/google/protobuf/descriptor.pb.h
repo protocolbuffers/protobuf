@@ -8896,14 +8896,14 @@ inline int FileDescriptorProto::public_dependency_size() const {
   return _internal_public_dependency_size();
 }
 inline void FileDescriptorProto::clear_public_dependency() {
-  _impl_.public_dependency_.Clear();
+  _internal_mutable_public_dependency()->Clear();
 }
 inline ::int32_t FileDescriptorProto::public_dependency(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.public_dependency)
   return _internal_public_dependency(index);
 }
 inline void FileDescriptorProto::set_public_dependency(int index, ::int32_t value) {
-  _impl_.public_dependency_.Set(index, value);
+  _internal_mutable_public_dependency()->Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.public_dependency)
 }
 inline void FileDescriptorProto::add_public_dependency(::int32_t value) {
@@ -8920,9 +8920,11 @@ inline ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>* FileDescriptorProto::m
 }
 
 inline ::int32_t FileDescriptorProto::_internal_public_dependency(int index) const {
-  return _impl_.public_dependency_.Get(index);
+  return _internal_public_dependency().Get(index);
 }
-inline void FileDescriptorProto::_internal_add_public_dependency(::int32_t value) { _impl_.public_dependency_.Add(value); }
+inline void FileDescriptorProto::_internal_add_public_dependency(::int32_t value) {
+  _internal_mutable_public_dependency()->Add(value);
+}
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>& FileDescriptorProto::_internal_public_dependency() const {
   return _impl_.public_dependency_;
 }
@@ -8938,14 +8940,14 @@ inline int FileDescriptorProto::weak_dependency_size() const {
   return _internal_weak_dependency_size();
 }
 inline void FileDescriptorProto::clear_weak_dependency() {
-  _impl_.weak_dependency_.Clear();
+  _internal_mutable_weak_dependency()->Clear();
 }
 inline ::int32_t FileDescriptorProto::weak_dependency(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.weak_dependency)
   return _internal_weak_dependency(index);
 }
 inline void FileDescriptorProto::set_weak_dependency(int index, ::int32_t value) {
-  _impl_.weak_dependency_.Set(index, value);
+  _internal_mutable_weak_dependency()->Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.weak_dependency)
 }
 inline void FileDescriptorProto::add_weak_dependency(::int32_t value) {
@@ -8962,9 +8964,11 @@ inline ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>* FileDescriptorProto::m
 }
 
 inline ::int32_t FileDescriptorProto::_internal_weak_dependency(int index) const {
-  return _impl_.weak_dependency_.Get(index);
+  return _internal_weak_dependency().Get(index);
 }
-inline void FileDescriptorProto::_internal_add_weak_dependency(::int32_t value) { _impl_.weak_dependency_.Add(value); }
+inline void FileDescriptorProto::_internal_add_weak_dependency(::int32_t value) {
+  _internal_mutable_weak_dependency()->Add(value);
+}
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>& FileDescriptorProto::_internal_weak_dependency() const {
   return _impl_.weak_dependency_;
 }
@@ -14492,14 +14496,14 @@ inline int SourceCodeInfo_Location::path_size() const {
   return _internal_path_size();
 }
 inline void SourceCodeInfo_Location::clear_path() {
-  _impl_.path_.Clear();
+  _internal_mutable_path()->Clear();
 }
 inline ::int32_t SourceCodeInfo_Location::path(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.path)
   return _internal_path(index);
 }
 inline void SourceCodeInfo_Location::set_path(int index, ::int32_t value) {
-  _impl_.path_.Set(index, value);
+  _internal_mutable_path()->Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.path)
 }
 inline void SourceCodeInfo_Location::add_path(::int32_t value) {
@@ -14516,9 +14520,11 @@ inline ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>* SourceCodeInfo_Locatio
 }
 
 inline ::int32_t SourceCodeInfo_Location::_internal_path(int index) const {
-  return _impl_.path_.Get(index);
+  return _internal_path().Get(index);
 }
-inline void SourceCodeInfo_Location::_internal_add_path(::int32_t value) { _impl_.path_.Add(value); }
+inline void SourceCodeInfo_Location::_internal_add_path(::int32_t value) {
+  _internal_mutable_path()->Add(value);
+}
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_path() const {
   return _impl_.path_;
 }
@@ -14534,14 +14540,14 @@ inline int SourceCodeInfo_Location::span_size() const {
   return _internal_span_size();
 }
 inline void SourceCodeInfo_Location::clear_span() {
-  _impl_.span_.Clear();
+  _internal_mutable_span()->Clear();
 }
 inline ::int32_t SourceCodeInfo_Location::span(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.span)
   return _internal_span(index);
 }
 inline void SourceCodeInfo_Location::set_span(int index, ::int32_t value) {
-  _impl_.span_.Set(index, value);
+  _internal_mutable_span()->Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.span)
 }
 inline void SourceCodeInfo_Location::add_span(::int32_t value) {
@@ -14558,9 +14564,11 @@ inline ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>* SourceCodeInfo_Locatio
 }
 
 inline ::int32_t SourceCodeInfo_Location::_internal_span(int index) const {
-  return _impl_.span_.Get(index);
+  return _internal_span().Get(index);
 }
-inline void SourceCodeInfo_Location::_internal_add_span(::int32_t value) { _impl_.span_.Add(value); }
+inline void SourceCodeInfo_Location::_internal_add_span(::int32_t value) {
+  _internal_mutable_span()->Add(value);
+}
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_span() const {
   return _impl_.span_;
 }
@@ -14834,14 +14842,14 @@ inline int GeneratedCodeInfo_Annotation::path_size() const {
   return _internal_path_size();
 }
 inline void GeneratedCodeInfo_Annotation::clear_path() {
-  _impl_.path_.Clear();
+  _internal_mutable_path()->Clear();
 }
 inline ::int32_t GeneratedCodeInfo_Annotation::path(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.GeneratedCodeInfo.Annotation.path)
   return _internal_path(index);
 }
 inline void GeneratedCodeInfo_Annotation::set_path(int index, ::int32_t value) {
-  _impl_.path_.Set(index, value);
+  _internal_mutable_path()->Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
 inline void GeneratedCodeInfo_Annotation::add_path(::int32_t value) {
@@ -14858,9 +14866,11 @@ inline ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>* GeneratedCodeInfo_Anno
 }
 
 inline ::int32_t GeneratedCodeInfo_Annotation::_internal_path(int index) const {
-  return _impl_.path_.Get(index);
+  return _internal_path().Get(index);
 }
-inline void GeneratedCodeInfo_Annotation::_internal_add_path(::int32_t value) { _impl_.path_.Add(value); }
+inline void GeneratedCodeInfo_Annotation::_internal_add_path(::int32_t value) {
+  _internal_mutable_path()->Add(value);
+}
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::_internal_path() const {
   return _impl_.path_;
 }

@@ -2166,8 +2166,8 @@ void FileDescriptorProto::Clear() {
   _impl_.enum_type_.Clear();
   _impl_.service_.Clear();
   _impl_.extension_.Clear();
-  _impl_.public_dependency_.Clear();
-  _impl_.weak_dependency_.Clear();
+  _internal_mutable_public_dependency()->Clear();
+  _internal_mutable_weak_dependency()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -2563,7 +2563,8 @@ failure:
 
   // repeated int32 public_dependency = 10;
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.public_dependency_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_public_dependency())
     ;
     std::size_t tag_size = std::size_t{1} *
         ::_pbi::FromIntSize(this->_internal_public_dependency_size());
@@ -2573,7 +2574,8 @@ failure:
 
   // repeated int32 weak_dependency = 11;
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.weak_dependency_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_weak_dependency())
     ;
     std::size_t tag_size = std::size_t{1} *
         ::_pbi::FromIntSize(this->_internal_weak_dependency_size());
@@ -11467,8 +11469,8 @@ void SourceCodeInfo_Location::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.path_.Clear();
-  _impl_.span_.Clear();
+  _internal_mutable_path()->Clear();
+  _internal_mutable_span()->Clear();
   _impl_.leading_detached_comments_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -11649,7 +11651,8 @@ failure:
 
   // repeated int32 path = 1 [packed = true];
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.path_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_path())
     ;
     _impl_._path_cached_byte_size_.Set(::_pbi::ToCachedSize(data_size));
     std::size_t tag_size = data_size == 0
@@ -11662,7 +11665,8 @@ failure:
 
   // repeated int32 span = 2 [packed = true];
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.span_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_span())
     ;
     _impl_._span_cached_byte_size_.Set(::_pbi::ToCachedSize(data_size));
     std::size_t tag_size = data_size == 0
@@ -12046,7 +12050,7 @@ void GeneratedCodeInfo_Annotation::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.path_.Clear();
+  _internal_mutable_path()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     _impl_.source_file_.ClearNonDefaultToEmpty();
@@ -12213,7 +12217,8 @@ failure:
 
   // repeated int32 path = 1 [packed = true];
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.path_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_path())
     ;
     _impl_._path_cached_byte_size_.Set(::_pbi::ToCachedSize(data_size));
     std::size_t tag_size = data_size == 0
