@@ -36,11 +36,11 @@ cc_library(
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/rust",
     deps = [
+        ":accessors",
         ":context",
         ":naming",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler/cpp:names",
-        ":accessors",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
     ],
@@ -57,15 +57,14 @@ cc_library(
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/rust",
     deps = [
-        "//src/google/protobuf:protobuf_nowkt",
-        "//src/google/protobuf/compiler/cpp:names_internal",
         ":context",
         ":naming",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler/cpp:names_internal",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",
     ],
 )
-
 
 cc_library(
     name = "context",

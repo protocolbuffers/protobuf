@@ -65,15 +65,15 @@ void MessageStructFields(Context<Descriptor> msg) {
 void MessageNew(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
-      msg.Emit(R"rs(
-        Self { msg: unsafe { __rust_proto_thunk__$pkg_Msg$__new() } }
+      msg.Emit({{"new_thunk", Thunk(msg, "new")}}, R"rs(
+        Self { msg: unsafe { $new_thunk$() } }
       )rs");
       return;
 
     case Kernel::kUpb:
-      msg.Emit(R"rs(
+      msg.Emit({{"new_thunk", Thunk(msg, "new")}}, R"rs(
         let arena = unsafe { $pb$::Arena::new() };
-        let msg = unsafe { $pkg_Msg$_new(arena) };
+        let msg = unsafe { $new_thunk$(arena) };
         $Msg$ { msg, arena }
       )rs");
       return;
@@ -85,17 +85,17 @@ void MessageNew(Context<Descriptor> msg) {
 void MessageSerialize(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
-      msg.Emit(R"rs(
-        unsafe { __rust_proto_thunk__$pkg_Msg$__serialize(self.msg) }
+      msg.Emit({{"serialize_thunk", Thunk(msg, "serialize")}}, R"rs(
+        unsafe { $serialize_thunk$(self.msg) }
       )rs");
       return;
 
     case Kernel::kUpb:
-      msg.Emit(R"rs(
+      msg.Emit({{"serialize_thunk", Thunk(msg, "serialize")}}, R"rs(
         let arena = unsafe { $pb$::__runtime::upb_Arena_New() };
         let mut len = 0;
         unsafe {
-          let data = $pkg_Msg$_serialize(self.msg, arena, &mut len);
+          let data = $serialize_thunk$(self.msg, arena, &mut len);
           $pb$::SerializedData::from_raw_parts(arena, data, len)
         }
       )rs");
@@ -108,17 +108,21 @@ void MessageSerialize(Context<Descriptor> msg) {
 void MessageDeserialize(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
-      msg.Emit(R"rs(
-        let success = unsafe {
-          let data = $pb$::SerializedData::from_raw_parts(
-            $NonNull$::new(data.as_ptr() as *mut _).unwrap(),
-            data.len(),
-          );
+      msg.Emit(
+          {
+              {"deserialize_thunk", Thunk(msg, "deserialize")},
+          },
+          R"rs(
+          let success = unsafe {
+            let data = $pb$::SerializedData::from_raw_parts(
+              $NonNull$::new(data.as_ptr() as *mut _).unwrap(),
+              data.len(),
+            );
 
-          __rust_proto_thunk__$pkg_Msg$__deserialize(self.msg, data)
-        };
-        success.then_some(()).ok_or($pb$::ParseError)
-      )rs");
+            $deserialize_thunk$(self.msg, data)
+          };
+          success.then_some(()).ok_or($pb$::ParseError)
+        )rs");
       return;
 
     case Kernel::kUpb:
@@ -135,29 +139,51 @@ void MessageDeserialize(Context<Descriptor> msg) {
 void MessageExterns(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
-      msg.Emit(R"rs(
-          fn __rust_proto_thunk__$pkg_Msg$__new() -> $NonNull$<u8>;
-          fn __rust_proto_thunk__$pkg_Msg$__serialize(raw_msg: $NonNull$<u8>)
-            -> $pb$::SerializedData;
-          fn __rust_proto_thunk__$pkg_Msg$__deserialize(
-            raw_msg: $NonNull$<u8>,
-            data: $pb$::SerializedData,
-          ) -> bool;
-      )rs");
+      msg.Emit(
+          {
+              {"new_thunk", Thunk(msg, "new")},
+              {"delete_thunk", Thunk(msg, "delete")},
+              {"serialize_thunk", Thunk(msg, "serialize")},
+              {"deserialize_thunk", Thunk(msg, "deserialize")},
+          },
+          R"rs(
+          fn $new_thunk$() -> $NonNull$<u8>;
+          fn $delete_thunk$(raw_msg: $NonNull$<u8>);
+          fn $serialize_thunk$(raw_msg: $NonNull$<u8>) -> $pb$::SerializedData;
+          fn $deserialize_thunk$( raw_msg: $NonNull$<u8>, data: $pb$::SerializedData) -> bool;
+        )rs");
       return;
 
     case Kernel::kUpb:
-      msg.Emit(R"rs(
-          fn $pkg_Msg$_new(arena: *mut $pb$::Arena) -> $NonNull$<u8>;
-          fn $pkg_Msg$_serialize(
+      msg.Emit(
+          {
+              {"new_thunk", Thunk(msg, "new")},
+              {"serialize_thunk", Thunk(msg, "serialize")},
+          },
+          R"rs(
+          fn $new_thunk$(arena: *mut $pb$::Arena) -> $NonNull$<u8>;
+          fn $serialize_thunk$(
             msg: $NonNull$<u8>,
             arena: *mut $pb$::Arena,
-            len: &mut usize) -> $NonNull$<u8>;
-      )rs");
+            len: &mut usize,
+          ) -> $NonNull$<u8>;
+        )rs");
       return;
   }
 
   ABSL_LOG(FATAL) << "unreachable";
+}
+
+void MessageDrop(Context<Descriptor> msg) {
+  if (msg.is_upb()) {
+    // Nothing to do here; drop glue (which will run drop(self.arena)
+    // automatically) is sufficient.
+    return;
+  }
+
+  msg.Emit({{"delete_thunk", Thunk(msg, "delete")}}, R"rs(
+    unsafe { $delete_thunk$(self.msg); }
+  )rs");
 }
 }  // namespace
 
@@ -176,11 +202,11 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
   msg.Emit(
       {
           {"Msg", msg.desc().name()},
-          {"pkg_Msg", GetUnderscoreDelimitedFullName(msg)},
           {"Msg.fields", [&] { MessageStructFields(msg); }},
           {"Msg::new", [&] { MessageNew(msg); }},
           {"Msg::serialize", [&] { MessageSerialize(msg); }},
           {"Msg::deserialize", [&] { MessageDeserialize(msg); }},
+          {"Msg::drop", [&] { MessageDrop(msg); }},
           {"Msg_externs", [&] { MessageExterns(msg); }},
           {"accessor_fns",
            [&] {
@@ -235,6 +261,14 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
           $accessor_fns$
         }  // impl $Msg$
 
+        //~ We implement drop unconditionally, so that `$Msg$: Drop` regardless
+        //~ of kernel.
+        impl $std$::ops::Drop for $Msg$ {
+          fn drop(&mut self) {
+            $Msg::drop$
+          }
+        }
+
         extern "C" {
           $Msg_externs$
 
@@ -262,8 +296,11 @@ void MessageGenerator::GenerateThunkCc(Context<Descriptor> msg) {
       {
           {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
           {"Msg", msg.desc().name()},
-          {"pkg_Msg", GetUnderscoreDelimitedFullName(msg)},
-          {"namespace", cpp::Namespace(&msg.desc())},
+          {"pkg", cpp::Namespace(&msg.desc())},
+          {"new_thunk", Thunk(msg, "new")},
+          {"delete_thunk", Thunk(msg, "delete")},
+          {"serialize_thunk", Thunk(msg, "serialize")},
+          {"deserialize_thunk", Thunk(msg, "deserialize")},
           {"accessor_thunks",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
@@ -276,18 +313,13 @@ void MessageGenerator::GenerateThunkCc(Context<Descriptor> msg) {
       },
       R"cc(
         extern $abi$ {
-          void* __rust_proto_thunk__$pkg_Msg$__new() {
-            return new $namespace$::$Msg$();
-          }
-
-          google::protobuf::rust_internal::SerializedData
-          __rust_proto_thunk__$pkg_Msg$__serialize($namespace$::$Msg$ * msg) {
+          void* $new_thunk$() { return new $pkg$::$Msg$(); }
+          void $delete_thunk$(void* ptr) { delete static_cast<$pkg$::$Msg$*>(ptr); }
+          google::protobuf::rust_internal::SerializedData $serialize_thunk$($pkg$::$Msg$ * msg) {
             return google::protobuf::rust_internal::SerializeMsg(msg);
           }
-
-          bool __rust_proto_thunk__$pkg_Msg$__deserialize(
-              $namespace$::$Msg$ * msg,
-              google::protobuf::rust_internal::SerializedData data) {
+          bool $deserialize_thunk$($pkg$::$Msg$ * msg,
+                                   google::protobuf::rust_internal::SerializedData data) {
             return msg->ParseFromArray(data.data, data.len);
           }
 

@@ -45,6 +45,14 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
+namespace {
+std::string GetUnderscoreDelimitedFullName(Context<Descriptor> msg) {
+  std::string result = msg.desc().full_name();
+  absl::StrReplaceAll({{".", "_"}}, &result);
+  return result;
+}
+}  // namespace
+
 std::string GetCrateName(Context<FileDescriptor> dep) {
   absl::string_view path = dep.desc().name();
   auto basename = path.substr(path.rfind('/') + 1);
@@ -74,26 +82,28 @@ std::string GetHeaderFile(Context<FileDescriptor> file) {
   return absl::StrCat(basename, ".proto.h");
 }
 
-std::string GetUnderscoreDelimitedFullName(Context<Descriptor> msg) {
-  std::string result = msg.desc().full_name();
-  absl::StrReplaceAll({{".", "_"}}, &result);
-  return result;
-}
+std::string Thunk(Context<FieldDescriptor> field, absl::string_view op) {
+  // NOTE: When field.is_upb(), this functions outputs must match the symbols
+  // that the upbc plugin generates exactly. Failure to do so correctly results
+  // in a link-time failure.
 
-std::string GetAccessorThunkName(Context<FieldDescriptor> field,
-                                 absl::string_view op) {
   absl::string_view prefix = field.is_cpp() ? "__rust_proto_thunk__" : "";
   std::string thunk =
       absl::StrCat(prefix, GetUnderscoreDelimitedFullName(
                                field.WithDesc(field.desc().containing_type())));
 
-  if (field.is_upb() && op.empty()) {
+  if (field.is_upb() && op == "get") {
     absl::SubstituteAndAppend(&thunk, "_$0", field.desc().name());
   } else {
     absl::SubstituteAndAppend(&thunk, "_$0_$1", op, field.desc().name());
   }
 
   return thunk;
+}
+
+std::string Thunk(Context<Descriptor> msg, absl::string_view op) {
+  absl::string_view prefix = msg.is_cpp() ? "__rust_proto_thunk__" : "";
+  return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(msg), "_", op);
 }
 
 absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field) {
