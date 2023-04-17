@@ -8671,7 +8671,7 @@ FieldOptions::FieldOptions(const FieldOptions& from)
       /*decltype(_impl_._extensions_)*/{}
     , decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.targets_) { from._impl_.targets_ }
+    , decltype(_impl_.targets_) { from._internal_targets() }
 
     , decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_}
     , decltype(_impl_.ctype_) {}
@@ -8747,7 +8747,7 @@ FieldOptions::~FieldOptions() {
 inline void FieldOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _impl_.targets_.~RepeatedField();
+  _internal_mutable_targets()->~RepeatedField();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 
@@ -8762,7 +8762,7 @@ void FieldOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _impl_.targets_.Clear();
+  _internal_mutable_targets()->Clear();
   _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
@@ -9178,7 +9178,7 @@ void FieldOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::P
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.targets_.MergeFrom(from._impl_.targets_);
+  _this->_internal_mutable_targets()->MergeFrom(from._internal_targets());
   _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
@@ -9243,7 +9243,8 @@ void FieldOptions::InternalSwap(FieldOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.targets_.InternalSwap(&other->_impl_.targets_);
+  _internal_mutable_targets()->InternalSwap(
+      other->_internal_mutable_targets());
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.target_)

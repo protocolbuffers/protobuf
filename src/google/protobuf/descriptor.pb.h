@@ -5319,6 +5319,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType _internal_targets(int index) const;
   void _internal_add_targets(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>& _internal_targets() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>* _internal_mutable_targets();
 
   public:
@@ -13606,7 +13607,7 @@ inline int FieldOptions::targets_size() const {
   return _internal_targets_size();
 }
 inline void FieldOptions::clear_targets() {
-  _impl_.targets_.Clear();
+  _internal_mutable_targets()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::targets(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.targets)
@@ -13614,7 +13615,7 @@ inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::targ
 }
 inline void FieldOptions::set_targets(int index, ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
   assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType_IsValid(value));
-  _impl_.targets_.Set(index, value);
+  _internal_mutable_targets()->Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.targets)
 }
 inline void FieldOptions::add_targets(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
@@ -13623,18 +13624,21 @@ inline void FieldOptions::add_targets(::PROTOBUF_NAMESPACE_ID::FieldOptions_Opti
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>& FieldOptions::targets() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FieldOptions.targets)
-  return _impl_.targets_;
+  return _internal_targets();
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>* FieldOptions::mutable_targets() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.targets)
   return _internal_mutable_targets();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::_internal_targets(int index) const {
-  return static_cast<::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType>(_impl_.targets_.Get(index));
+  return static_cast<::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType>(_internal_targets().Get(index));
 }
 inline void FieldOptions::_internal_add_targets(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
   assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType_IsValid(value));
-  _impl_.targets_.Add(value);
+  _internal_mutable_targets()->Add(value);
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>& FieldOptions::_internal_targets() const {
+  return _impl_.targets_;
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>* FieldOptions::_internal_mutable_targets() {
   return &_impl_.targets_;
