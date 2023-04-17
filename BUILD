@@ -265,6 +265,7 @@ cc_library(
     name = "message_accessors",
     srcs = [
         "upb/message/accessors.c",
+        "upb/message/accessors_internal.h",
     ],
     hdrs = [
         "upb/message/accessors.h",
@@ -388,6 +389,7 @@ cc_library(
         "upb/collections/message_value.h",
         "upb/extension_registry.h",
         "upb/message/accessors.h",
+        "upb/message/accessors_internal.h",
         "upb/message/extension_internal.h",
         "upb/message/internal.h",
         "upb/message/message.h",

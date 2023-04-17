@@ -105,6 +105,7 @@ UPB_INLINE bool _upb_array_reserve(upb_Array* arr, size_t size,
 // Resize without initializing new elements.
 UPB_INLINE bool _upb_Array_ResizeUninitialized(upb_Array* arr, size_t size,
                                                upb_Arena* arena) {
+  UPB_ASSERT(size <= arr->size || arena);  // Allow NULL arena when shrinking.
   if (!_upb_array_reserve(arr, size, arena)) return false;
   arr->size = size;
   return true;

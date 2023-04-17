@@ -66,6 +66,7 @@ void upb_Map_Clear(upb_Map* map) { _upb_Map_Clear(map); }
 
 upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
                                    upb_MessageValue val, upb_Arena* arena) {
+  UPB_ASSERT(arena);
   return (upb_MapInsertStatus)_upb_Map_Insert(map, &key, map->key_size, &val,
                                               map->val_size, arena);
 }

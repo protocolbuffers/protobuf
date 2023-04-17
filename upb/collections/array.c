@@ -69,6 +69,7 @@ void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
 }
 
 bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
+  UPB_ASSERT(arena);
   if (!upb_Array_Resize(arr, arr->size + 1, arena)) {
     return false;
   }
@@ -85,6 +86,7 @@ void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
 
 bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
                       upb_Arena* arena) {
+  UPB_ASSERT(arena);
   UPB_ASSERT(i <= arr->size);
   UPB_ASSERT(count + arr->size >= count);
   const size_t oldsize = arr->size;
