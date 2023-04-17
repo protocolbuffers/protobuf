@@ -97,8 +97,8 @@ void WriteMessageClassDeclarations(
   output("}  // namespace internal\n");
   WriteModelPublicDeclaration(descriptor, file_exts, file_enums, output);
   output("namespace internal {\n");
-  WriteModelProxyDeclaration(descriptor, output);
   WriteModelCProxyDeclaration(descriptor, output);
+  WriteModelProxyDeclaration(descriptor, output);
   output("}  // namespace internal\n");
 }
 
@@ -151,22 +151,38 @@ void WriteModelPublicDeclaration(
           using Access = internal::$0Access;
           using Proxy = internal::$0Proxy;
           using CProxy = internal::$0CProxy;
+
           $0();
-          $0(const $0& m) = delete;
-          $0& operator=(const $0& m) = delete;
+
+          $0(const $0& from);
+          inline $0& operator=(const $3& from) {
+            arena_ = owned_arena_.ptr();
+            msg_ = ($2*)upb_Message_DeepClone(from.msg_, &$1, arena_);
+            return *this;
+          }
+
+          $0(const CProxy& from);
+          $0(const Proxy& from);
+          inline $0& operator=(const CProxy& from) {
+            arena_ = owned_arena_.ptr();
+            msg_ = ($2*)upb_Message_DeepClone(
+                ::protos::internal::GetInternalMsg(from), &$1, arena_);
+            return *this;
+          }
           $0($0&& m)
-              : Access(m.msg_, m.arena_),
+              : Access(absl::exchange(m.msg_, nullptr),
+                       absl::exchange(m.arena_, nullptr)),
                 owned_arena_(std::move(m.owned_arena_)) {}
+
           $0& operator=($0&& m) {
-            msg_ = m.msg_;
-            arena_ = m.arena_;
-            m.msg_ = nullptr;
-            m.arena_ = nullptr;
+            msg_ = absl::exchange(m.msg_, nullptr);
+            arena_ = absl::exchange(m.arena_, nullptr);
             owned_arena_ = std::move(m.owned_arena_);
             return *this;
           }
       )cc",
-      ClassName(descriptor));
+      ClassName(descriptor), ::upbc::MessageInit(descriptor->full_name()),
+      MessageName(descriptor), QualifiedClassName(descriptor));
 
   WriteUsingAccessorsInHeader(descriptor, MessageClassType::kMessage, output);
   WriteUsingEnumsInHeader(descriptor, file_enums, output);
@@ -274,6 +290,7 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
          public:
           $0CProxy() = delete;
           $0CProxy(const $0* m) : internal::$0Access(m->msg_, nullptr) {}
+          $0CProxy($0Proxy m);
           using $0Access::GetInternalArena;
       )cc",
       ClassName(descriptor), MessageName(descriptor));
@@ -318,15 +335,32 @@ void WriteMessageImplementation(
             arena_ = owned_arena_.ptr();
             msg_ = $1_new(arena_);
           }
+          $0::$0(const $0& from) : $0Access() {
+            arena_ = owned_arena_.ptr();
+            msg_ = ($1*)upb_Message_DeepClone(from.msg_, &$2, arena_);
+          }
+          $0::$0(const CProxy& from) : $0Access() {
+            arena_ = owned_arena_.ptr();
+            msg_ = ($1*)upb_Message_DeepClone(
+                ::protos::internal::GetInternalMsg(from), &$2, arena_);
+          }
+          $0::$0(const Proxy& from) : $0(static_cast<const CProxy&>(from)) {}
+          internal::$0CProxy::$0CProxy($0Proxy m) : $0Access() {
+            arena_ = m.arena_;
+            msg_ = ($1*)::protos::internal::GetInternalMsg(m);
+          }
         )cc",
-        ClassName(descriptor), MessageName(descriptor));
+        ClassName(descriptor), MessageName(descriptor),
+        ::upbc::MessageInit(descriptor->full_name()),
+        QualifiedClassName(descriptor));
+    output("\n");
     // Minitable
-    OutputIndenter i(output);
     output(
         R"cc(
           const upb_MiniTable* $0::minitable() { return &$1; }
         )cc",
         ClassName(descriptor), ::upbc::MessageInit(descriptor->full_name()));
+    output("\n");
   }
 
   WriteAccessorsInSource(descriptor, output);

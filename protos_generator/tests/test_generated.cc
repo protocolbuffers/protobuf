@@ -25,6 +25,7 @@
 
 #include <limits>
 #include <memory>
+#include <utility>
 
 #include "gtest/gtest.h"
 #include "protos/protos.h"
@@ -639,4 +640,61 @@ TEST(CppGeneratedCode, UniquePointer) {
   ::upb::Arena arena;
   auto bytes = protos::Serialize(model, arena);
   EXPECT_TRUE(protos::Parse(model, bytes.value()));
+}
+
+TEST(CppGeneratedCode, Assignment) {
+  TestModel model;
+  model.set_category(5);
+  model.mutable_child_model_1()->set_child_str1("text in child");
+  TestModel model2 = model;
+  EXPECT_EQ(5, model2.category());
+  EXPECT_EQ(model2.child_model_1()->child_str1(), "text in child");
+}
+
+TEST(CppGeneratedCode, PtrAssignment) {
+  TestModel model;
+  model.mutable_child_model_1()->set_child_str1("text in child");
+  ChildModel1 child_from_const_ptr = *model.child_model_1();
+  EXPECT_EQ(child_from_const_ptr.child_str1(), "text in child");
+  ChildModel1 child_from_ptr = *model.mutable_child_model_1();
+  EXPECT_EQ(child_from_ptr.child_str1(), "text in child");
+}
+
+TEST(CppGeneratedCode, CopyConstructor) {
+  TestModel model;
+  model.set_category(6);
+  TestModel model2(model);
+  EXPECT_EQ(6, model2.category());
+}
+
+TEST(CppGeneratedCode, PtrConstructor) {
+  TestModel model;
+  model.mutable_child_model_1()->set_child_str1("text in child");
+  ChildModel1 child_from_ptr(*model.mutable_child_model_1());
+  EXPECT_EQ(child_from_ptr.child_str1(), "text in child");
+  ChildModel1 child_from_const_ptr(*model.child_model_1());
+  EXPECT_EQ(child_from_const_ptr.child_str1(), "text in child");
+}
+
+TEST(CppGeneratedCode, MutableToProxy) {
+  TestModel model;
+  ::protos::Ptr<ChildModel1> child = model.mutable_child_model_1();
+  (void)child;
+}
+
+TEST(CppGeneratedCode, ProxyToCProxy) {
+  TestModel model;
+  ::protos::Ptr<ChildModel1> child = model.mutable_child_model_1();
+  ::protos::Ptr<const ChildModel1> child2 = child;
+  (void)child2;
+}
+
+bool ProxyToCProxyMethod(::protos::Ptr<const ChildModel1> child) {
+  return child->child_str1() == "text in child";
+}
+
+TEST(CppGeneratedCode, PassProxyToCProxy) {
+  TestModel model;
+  model.mutable_child_model_1()->set_child_str1("text in child");
+  EXPECT_TRUE(ProxyToCProxyMethod(model.mutable_child_model_1()));
 }

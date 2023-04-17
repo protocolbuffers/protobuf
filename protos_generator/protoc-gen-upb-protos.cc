@@ -134,6 +134,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
 #include "absl/strings/string_view.h"
 #include "absl/status/statusor.h"
 #include "upb/message/internal.h"
+#include "upb/message/copy.h"
       )cc",
       ToPreproc(file->name()));
 

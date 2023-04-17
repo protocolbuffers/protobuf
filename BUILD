@@ -421,9 +421,11 @@ cc_library(
 cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
+        "upb/message/copy.h",
         "upb/message/extension_internal.h",
         "upb/message/internal.h",
         "upb/message/message.h",
+        "upb/mini_table/common.h",
         "upb/mini_table/enum_internal.h",
         "upb/mini_table/extension_internal.h",
         "upb/mini_table/field_internal.h",
@@ -444,6 +446,7 @@ cc_library(
         ":base",
         ":collections_internal",
         ":hash",
+        ":message_copy",
         ":mini_table",
         ":upb",
     ],

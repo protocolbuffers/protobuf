@@ -65,6 +65,7 @@ cc_library(
     ],
     visibility = ["//visibility:private"],
     deps = [
+        "//:message_copy",
         "//upbc:common",
         "//upbc:file_layout",
         "//upbc:keywords",
