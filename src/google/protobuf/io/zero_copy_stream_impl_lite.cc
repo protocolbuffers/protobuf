@@ -146,23 +146,19 @@ bool StringOutputStream::Next(void** data, int* size) {
   ABSL_CHECK(target_ != NULL);
   size_t old_size = target_->size();
 
-  // Grow the string.
-  size_t new_size;
-  if (old_size < target_->capacity()) {
-    // Resize the string to match its capacity, since we can get away
-    // without a memory allocation this way.
-    new_size = target_->capacity();
-  } else {
+  if (old_size == target_->capacity()) {
     // Size has reached capacity, try to double it.
-    new_size = old_size * 2;
+    // Also make sure that it is at least kMinimumSize.
+    size_t new_size = std::max(old_size * 2, kMinimumSize);
+    // Avoid integer overflow in returned '*size'.
+    new_size = std::min(new_size, old_size + std::numeric_limits<int>::max());
+    // Use reserve `new_size` but grow to the whole capacity. Due to allocator
+    // class sizes, NULL terminator, etc the new capacity is not exactly twice
+    // the old one.
+    target_->reserve(new_size);
   }
-  // Avoid integer overflow in returned '*size'.
-  new_size = std::min(new_size, old_size + std::numeric_limits<int>::max());
-  // Increase the size, also make sure that it is at least kMinimumSize.
-  absl::strings_internal::STLStringResizeUninitialized(
-      target_,
-      std::max(new_size,
-               kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
+  absl::strings_internal::STLStringResizeUninitialized(target_,
+                                                       target_->capacity());
 
   *data = mutable_string_data(target_) + old_size;
   *size = target_->size() - old_size;

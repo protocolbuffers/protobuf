@@ -729,6 +729,19 @@ TEST_F(IoTest, StringIo) {
   }
 }
 
+TEST_F(IoTest, StringIoUsesAllCapacityWhenGrowing) {
+  std::string str;
+  StringOutputStream output(&str);
+  int already_used = 0;
+  for (int i = 0; i < 10; ++i) {
+    void* unused_data;
+    int size;
+    ASSERT_TRUE(output.Next(&unused_data, &size));
+    EXPECT_EQ(str.capacity(), size + already_used);
+    already_used += size;
+  }
+}
+
 // Verifies that outputs up to kint32max can be created.
 TEST_F(IoTest, LargeOutput) {
   // Filter out this test on 32-bit architectures and builds where our test
