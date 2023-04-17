@@ -94,25 +94,25 @@ class SingularBytes final : public AccessorGenerator {
     field.Emit(
         {
             {"field", field.desc().name()},
-            {"namespace", cpp::Namespace(field.desc().containing_type())},
+            {"QualifiedMsg",
+             cpp::QualifiedClassName(field.desc().containing_type())},
             {"hazzer_thunk", Thunk(field, "has")},
             {"getter_thunk", Thunk(field, "get")},
             {"setter_thunk", Thunk(field, "set")},
             {"clearer_thunk", Thunk(field, "clear")},
         },
         R"cc(
-          bool $hazzer_thunk$($namespace$::$Msg$* msg) {
+          bool $hazzer_thunk$($QualifiedMsg$* msg) {
             return msg->has_$field$();
           }
-          ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($namespace$::$Msg$* msg) {
+          ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
             absl::string_view val = msg->$field$();
             return google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
           }
-          void $setter_thunk$($namespace$::$Msg$* msg, const char* ptr,
-                              ::std::size_t size) {
+          void $setter_thunk$($QualifiedMsg$* msg, const char* ptr, ::std::size_t size) {
             msg->set_$field$(absl::string_view(ptr, size));
           }
-          void $clearer_thunk$($namespace$::$Msg$* msg) { msg->clear_$field$(); }
+          void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
         )cc");
   }
 };

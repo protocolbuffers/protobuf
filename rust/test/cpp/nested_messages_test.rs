@@ -28,38 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_MESSAGE_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_MESSAGE_H__
+/// Tests covering nested messages.
 
-#include <memory>
-#include <vector>
-
-#include "google/protobuf/compiler/rust/accessors/accessors.h"
-#include "google/protobuf/compiler/rust/context.h"
-#include "google/protobuf/descriptor.h"
-
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace rust {
-
-class MessageGenerator final {
- public:
-  explicit MessageGenerator(Context<Descriptor> msg);
-
-  // Generates code for a particular message in `.pb.rs`.
-  void GenerateRs(Context<Descriptor> msg);
-
-  // Generates code for a particular message in `.pb.thunk.cc`.
-  void GenerateThunksCc(Context<Descriptor> msg);
-
- private:
-  std::vector<std::unique_ptr<AccessorGenerator>> accessors_;
-};
-
-}  // namespace rust
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_MESSAGE_H__
+#[test]
+fn test_nested_messages_accesible() {
+    let _parent: unittest_proto::proto2_unittest::TestAllTypes;
+    let _child: unittest_proto::proto2_unittest::TestAllTypes_::NestedMessage;
+    unittest_proto::proto2_unittest::TestChildExtensionData_::
+    NestedTestAllExtensionsData_::NestedDynamicExtensions::new();
+}
