@@ -92,8 +92,20 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: Optimized, flags: --config=opt }
-          - { name: Debug, flags: --config=dbg }
+          - name: Optimized
+            flags: --config=opt
+            bazel_action: test
+          - name: Debug
+            flags: --config=dbg
+            bazel_action: test
+          # Current github runners are all Intel based, so just build/compile
+          # for Apple Silicon to detect issues there.
+          - name: Apple_Silicon_Optimized
+            flags: --config=opt --cpu=darwin_arm64
+            bazel_action: build
+          - name: Apple_Silicon_Debug
+            flags: --config=dbg --cpu=darwin_arm64
+            bazel_action: build
         # TODO: Could add iOS to atleast build the objc_library targets for that.
         platform: ["macOS"]
         include:
@@ -106,9 +118,9 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
-      - name: Run tests
+      - name: bazel ${{ matrix.config.bazel_action }}
         uses: ./.github/actions/bazel
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel: test ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
+          bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
           bazel-cache: objc_${{ matrix.platform }}_${{ matrix.config.name }}
