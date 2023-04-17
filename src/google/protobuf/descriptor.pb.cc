@@ -2136,7 +2136,7 @@ FileDescriptorProto::~FileDescriptorProto() {
 
 inline void FileDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.dependency_.~RepeatedPtrField();
+  _internal_mutable_dependency()->~RepeatedPtrField();
   _impl_.message_type_.~RepeatedPtrField();
   _impl_.enum_type_.~RepeatedPtrField();
   _impl_.service_.~RepeatedPtrField();
@@ -2161,7 +2161,7 @@ void FileDescriptorProto::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.dependency_.Clear();
+  _internal_mutable_dependency()->Clear();
   _impl_.message_type_.Clear();
   _impl_.enum_type_.Clear();
   _impl_.service_.Clear();
@@ -2528,9 +2528,10 @@ failure:
   (void) cached_has_bits;
 
   // repeated string dependency = 3;
-  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.dependency_.size());
-  for (int i = 0, n = _impl_.dependency_.size(); i < n; ++i) {
-    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(_impl_.dependency_.Get(i));
+  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_internal_dependency().size());
+  for (int i = 0, n = _internal_dependency().size(); i < n; ++i) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        _internal_dependency().Get(i));
   }
 
   // repeated .google.protobuf.DescriptorProto message_type = 4;
@@ -2642,7 +2643,7 @@ void FileDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, co
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.dependency_.MergeFrom(from._impl_.dependency_);
+  _this->_internal_mutable_dependency()->MergeFrom(from._internal_dependency());
   _this->_impl_.message_type_.MergeFrom(from._impl_.message_type_);
   _this->_impl_.enum_type_.MergeFrom(from._impl_.enum_type_);
   _this->_impl_.service_.MergeFrom(from._impl_.service_);
@@ -2703,7 +2704,8 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.dependency_.InternalSwap(&other->_impl_.dependency_);
+  _internal_mutable_dependency()->InternalSwap(
+      other->_internal_mutable_dependency());
   _impl_.message_type_.InternalSwap(&other->_impl_.message_type_);
   _impl_.enum_type_.InternalSwap(&other->_impl_.enum_type_);
   _impl_.service_.InternalSwap(&other->_impl_.service_);
@@ -3356,7 +3358,7 @@ inline void DescriptorProto::SharedDtor() {
   _impl_.extension_.~RepeatedPtrField();
   _impl_.oneof_decl_.~RepeatedPtrField();
   _impl_.reserved_range_.~RepeatedPtrField();
-  _impl_.reserved_name_.~RepeatedPtrField();
+  _internal_mutable_reserved_name()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
@@ -3378,7 +3380,7 @@ void DescriptorProto::Clear() {
   _impl_.extension_.Clear();
   _impl_.oneof_decl_.Clear();
   _impl_.reserved_range_.Clear();
-  _impl_.reserved_name_.Clear();
+  _internal_mutable_reserved_name()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -3714,9 +3716,10 @@ failure:
   }
 
   // repeated string reserved_name = 10;
-  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.reserved_name_.size());
-  for (int i = 0, n = _impl_.reserved_name_.size(); i < n; ++i) {
-    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(_impl_.reserved_name_.Get(i));
+  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_internal_reserved_name().size());
+  for (int i = 0, n = _internal_reserved_name().size(); i < n; ++i) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        _internal_reserved_name().Get(i));
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -3760,7 +3763,7 @@ void DescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const 
   _this->_impl_.extension_.MergeFrom(from._impl_.extension_);
   _this->_impl_.oneof_decl_.MergeFrom(from._impl_.oneof_decl_);
   _this->_impl_.reserved_range_.MergeFrom(from._impl_.reserved_range_);
-  _this->_impl_.reserved_name_.MergeFrom(from._impl_.reserved_name_);
+  _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -3813,7 +3816,8 @@ void DescriptorProto::InternalSwap(DescriptorProto* other) {
   _impl_.extension_.InternalSwap(&other->_impl_.extension_);
   _impl_.oneof_decl_.InternalSwap(&other->_impl_.oneof_decl_);
   _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
-  _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
+  _internal_mutable_reserved_name()->InternalSwap(
+      other->_internal_mutable_reserved_name());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   swap(_impl_.options_, other->_impl_.options_);
@@ -5724,7 +5728,7 @@ inline void EnumDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.~RepeatedPtrField();
   _impl_.reserved_range_.~RepeatedPtrField();
-  _impl_.reserved_name_.~RepeatedPtrField();
+  _internal_mutable_reserved_name()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
@@ -5741,7 +5745,7 @@ void EnumDescriptorProto::Clear() {
 
   _impl_.value_.Clear();
   _impl_.reserved_range_.Clear();
-  _impl_.reserved_name_.Clear();
+  _internal_mutable_reserved_name()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -5932,9 +5936,10 @@ failure:
   }
 
   // repeated string reserved_name = 5;
-  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.reserved_name_.size());
-  for (int i = 0, n = _impl_.reserved_name_.size(); i < n; ++i) {
-    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(_impl_.reserved_name_.Get(i));
+  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_internal_reserved_name().size());
+  for (int i = 0, n = _internal_reserved_name().size(); i < n; ++i) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        _internal_reserved_name().Get(i));
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -5973,7 +5978,7 @@ void EnumDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, co
 
   _this->_impl_.value_.MergeFrom(from._impl_.value_);
   _this->_impl_.reserved_range_.MergeFrom(from._impl_.reserved_range_);
-  _this->_impl_.reserved_name_.MergeFrom(from._impl_.reserved_name_);
+  _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -6011,7 +6016,8 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.value_.InternalSwap(&other->_impl_.value_);
   _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
-  _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
+  _internal_mutable_reserved_name()->InternalSwap(
+      other->_internal_mutable_reserved_name());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   swap(_impl_.options_, other->_impl_.options_);
@@ -11455,7 +11461,7 @@ inline void SourceCodeInfo_Location::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.path_.~RepeatedField();
   _impl_.span_.~RepeatedField();
-  _impl_.leading_detached_comments_.~RepeatedPtrField();
+  _internal_mutable_leading_detached_comments()->~RepeatedPtrField();
   _impl_.leading_comments_.Destroy();
   _impl_.trailing_comments_.Destroy();
 }
@@ -11472,7 +11478,7 @@ void SourceCodeInfo_Location::Clear() {
 
   _internal_mutable_path()->Clear();
   _internal_mutable_span()->Clear();
-  _impl_.leading_detached_comments_.Clear();
+  _internal_mutable_leading_detached_comments()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -11679,9 +11685,10 @@ failure:
   }
 
   // repeated string leading_detached_comments = 6;
-  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.leading_detached_comments_.size());
-  for (int i = 0, n = _impl_.leading_detached_comments_.size(); i < n; ++i) {
-    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(_impl_.leading_detached_comments_.Get(i));
+  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_internal_leading_detached_comments().size());
+  for (int i = 0, n = _internal_leading_detached_comments().size(); i < n; ++i) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        _internal_leading_detached_comments().Get(i));
   }
 
   cached_has_bits = _impl_._has_bits_[0];
@@ -11719,7 +11726,7 @@ void SourceCodeInfo_Location::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg
 
   _this->_impl_.path_.MergeFrom(from._impl_.path_);
   _this->_impl_.span_.MergeFrom(from._impl_.span_);
-  _this->_impl_.leading_detached_comments_.MergeFrom(from._impl_.leading_detached_comments_);
+  _this->_internal_mutable_leading_detached_comments()->MergeFrom(from._internal_leading_detached_comments());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -11751,7 +11758,8 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.path_.InternalSwap(&other->_impl_.path_);
   _impl_.span_.InternalSwap(&other->_impl_.span_);
-  _impl_.leading_detached_comments_.InternalSwap(&other->_impl_.leading_detached_comments_);
+  _internal_mutable_leading_detached_comments()->InternalSwap(
+      other->_internal_mutable_leading_detached_comments());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.leading_comments_, lhs_arena,
                                        &other->_impl_.leading_comments_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.trailing_comments_, lhs_arena,

@@ -482,6 +482,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   private:
   const std::string& _internal_file_to_generate(int index) const;
   std::string* _internal_add_file_to_generate();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& _internal_file_to_generate() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* _internal_mutable_file_to_generate();
 
   public:
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -1173,15 +1175,12 @@ inline int CodeGeneratorRequest::file_to_generate_size() const {
   return _internal_file_to_generate_size();
 }
 inline void CodeGeneratorRequest::clear_file_to_generate() {
-  _impl_.file_to_generate_.Clear();
+  _internal_mutable_file_to_generate()->Clear();
 }
 inline std::string* CodeGeneratorRequest::add_file_to_generate() {
   std::string* _s = _internal_add_file_to_generate();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _s;
-}
-inline const std::string& CodeGeneratorRequest::_internal_file_to_generate(int index) const {
-  return _impl_.file_to_generate_.Get(index);
 }
 inline const std::string& CodeGeneratorRequest::file_to_generate(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
@@ -1189,59 +1188,75 @@ inline const std::string& CodeGeneratorRequest::file_to_generate(int index) cons
 }
 inline std::string* CodeGeneratorRequest::mutable_file_to_generate(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-  return _impl_.file_to_generate_.Mutable(index);
+  return _internal_mutable_file_to_generate()->Mutable(index);
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, const std::string& value) {
-  _impl_.file_to_generate_.Mutable(index)->assign(value);
+  _internal_mutable_file_to_generate()->Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, std::string&& value) {
-  _impl_.file_to_generate_.Mutable(index)->assign(std::move(value));
+  _internal_mutable_file_to_generate()->Mutable(index)->assign(std::move(value));
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _impl_.file_to_generate_.Mutable(index)->assign(value);
+  _internal_mutable_file_to_generate()->Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value,
                               std::size_t size) {
-  _impl_.file_to_generate_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
+  _internal_mutable_file_to_generate()->Mutable(index)->assign(
+      reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, absl::string_view value) {
-  _impl_.file_to_generate_.Mutable(index)->assign(value.data(), value.size());
+  _internal_mutable_file_to_generate()->Mutable(index)->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
-inline std::string* CodeGeneratorRequest::_internal_add_file_to_generate() { return _impl_.file_to_generate_.Add(); }
 inline void CodeGeneratorRequest::add_file_to_generate(const std::string& value) {
-  _impl_.file_to_generate_.Add()->assign(value);
+  _internal_mutable_file_to_generate()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::add_file_to_generate(std::string&& value) {
-  _impl_.file_to_generate_.Add(std::move(value));
+  _internal_mutable_file_to_generate()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::add_file_to_generate(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _impl_.file_to_generate_.Add()->assign(value);
+  _internal_mutable_file_to_generate()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::add_file_to_generate(const char* value, std::size_t size) {
-  _impl_.file_to_generate_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  _internal_mutable_file_to_generate()->Add()->assign(
+      reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::add_file_to_generate(absl::string_view value) {
-  _impl_.file_to_generate_.Add()->assign(value.data(), value.size());
+  _internal_mutable_file_to_generate()->Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
 CodeGeneratorRequest::file_to_generate() const {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-  return _impl_.file_to_generate_;
+  return _internal_file_to_generate();
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* CodeGeneratorRequest::mutable_file_to_generate() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+  return _internal_mutable_file_to_generate();
+}
+inline const std::string& CodeGeneratorRequest::_internal_file_to_generate(int index) const {
+  return _internal_file_to_generate().Get(index);
+}
+inline std::string* CodeGeneratorRequest::_internal_add_file_to_generate() {
+  return _internal_mutable_file_to_generate()->Add();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+CodeGeneratorRequest::_internal_file_to_generate() const {
+  return _impl_.file_to_generate_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+CodeGeneratorRequest::_internal_mutable_file_to_generate() {
   return &_impl_.file_to_generate_;
 }
 
