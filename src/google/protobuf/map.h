@@ -658,7 +658,7 @@ struct KeyNode : NodeBase {
 // Multiply two numbers where overflow is expected.
 template <typename N>
 N MultiplyWithOverflow(N a, N b) {
-#if __has_builtin(__builtin_mul_overflow)
+#if defined(PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW)
   N res;
   (void)__builtin_mul_overflow(a, b, &res);
   return res;

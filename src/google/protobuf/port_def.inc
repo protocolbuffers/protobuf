@@ -149,6 +149,11 @@
 #define PROTOBUF_BUILTIN_BSWAP64(x) __builtin_bswap64(x)
 #endif
 
+// Portable check for __builtin_mul_overflow.
+#if __has_builtin(__builtin_mul_overflow)
+#define PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW 1
+#endif
+
 // Portable check for gcc-style atomic built-ins
 #if __has_builtin(__atomic_load_n)
 #define PROTOBUF_BUILTIN_ATOMIC 1
