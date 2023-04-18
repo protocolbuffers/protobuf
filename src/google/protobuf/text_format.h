@@ -70,6 +70,7 @@ PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_redaction_marker;
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_random_marker;
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_format_marker;
+int64_t GetRedactedFieldCount();
 
 }  // namespace internal
 
