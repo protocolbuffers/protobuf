@@ -10,4 +10,7 @@ internal_py_test(
     deps = [
         requirement("numpy"),
     ],
+    visibility = [
+      "@upb//python/pb_unit_tests:__pkg__",
+    ]
 )
