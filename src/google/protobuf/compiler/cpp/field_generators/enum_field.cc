@@ -258,25 +258,26 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$.Clear();
+      _internal_mutable_$name$()->Clear();
     )cc");
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->$field_$.MergeFrom(from.$field_$);
+      _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
     )cc");
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      _internal_mutable_$name$()->InternalSwap(
+          other->_internal_mutable_$name$());
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$.~RepeatedField();
+      _internal_mutable_$name$()->~RepeatedField();
     )cc");
   }
 
@@ -306,7 +307,7 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      decltype($field_$) { from.$field_$ })cc");
+      decltype($field_$) { from._internal_$name$() })cc");
     if (has_cached_size_) {
       // std::atomic has no copy constructor.
       p->Emit(R"cc(
@@ -351,6 +352,7 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
     private:
     $Enum$ $_internal_name$(int index) const;
     void $_internal_add_name$($Enum$ value);
+    const $pb$::RepeatedField<int>& $_internal_name$() const;
     $pb$::RepeatedField<int>* $_internal_mutable_name$();
 
     public:
@@ -366,7 +368,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
     inline void $Msg$::set_$name$(int index, $Enum$ value) {
       $assert_valid$;
-      $field_$.Set(index, value);
+      _internal_mutable_$name$()->Set(index, value);
       $annotate_set$
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
@@ -378,7 +380,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline const $pb$::RepeatedField<int>& $Msg$::$name$() const {
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-      return $field_$;
+      return _internal_$name$();
     }
     inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$() {
       $annotate_mutable_list$;
@@ -386,11 +388,14 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name$();
     }
     inline $Enum$ $Msg$::_internal_$name$(int index) const {
-      return static_cast<$Enum$>($field_$.Get(index));
+      return static_cast<$Enum$>(_internal_$name$().Get(index));
     }
     inline void $Msg$::_internal_add_$name$($Enum$ value) {
       $assert_valid$;
-      $field_$.Add(value);
+      _internal_mutable_$name$()->Add(value);
+    }
+    inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
+      return $field_$;
     }
     inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name$() {
       return &$field_$;
@@ -405,7 +410,8 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
       {
         int byte_size = $cached_size_$.Get();
         if (byte_size > 0) {
-          target = stream->WriteEnumPacked($number$, $field_$, byte_size, target);
+          target = stream->WriteEnumPacked($number$, _internal_$name$(),
+                                           byte_size, target);
         }
       }
     )cc");
