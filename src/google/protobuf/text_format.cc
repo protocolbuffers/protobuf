@@ -92,6 +92,13 @@ inline bool IsOctNumber(const std::string& str) {
           (str[1] >= '0' && str[1] < '8'));
 }
 
+// The number of fields that are redacted in AbslStringify.
+std::atomic<int64_t> num_redacted_field{0};
+
+inline void IncrementRedactedFieldCounter() {
+  num_redacted_field.fetch_add(1, std::memory_order_relaxed);
+}
+
 }  // namespace
 
 namespace internal {
@@ -106,6 +113,10 @@ PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_random_marker;
 
 // Controls insertion of kDebugStringSilentMarker.
 PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
+
+int64_t GetRedactedFieldCount() {
+  return num_redacted_field.load(std::memory_order_relaxed);
+}
 }  // namespace internal
 
 std::string Message::DebugString() const {
@@ -181,8 +192,8 @@ void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
 
 namespace internal {
 
-void PerformAbslStringify(const Message& message,
-                          absl::FunctionRef<void(absl::string_view)> append) {
+PROTOBUF_EXPORT void PerformAbslStringify(
+    const Message& message, absl::FunctionRef<void(absl::string_view)> append) {
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
 
@@ -2619,6 +2630,7 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
 
   const FastFieldValuePrinter* printer = GetFieldPrinter(field);
   if (redact_debug_string_ && field->options().debug_redact()) {
+    IncrementRedactedFieldCounter();
     // TODO(b/258975650): Create OSS redaction documentation
     generator->PrintString("[REDACTED]");
     return;

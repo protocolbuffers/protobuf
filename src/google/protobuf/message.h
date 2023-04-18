@@ -182,7 +182,7 @@ class CelMapReflectionFriend;  // field_backed_map_impl.cc
 
 namespace internal {
 class MapFieldPrinterHelper;  // text_format.cc
-void PerformAbslStringify(
+PROTOBUF_EXPORT void PerformAbslStringify(
     const Message& message,
     absl::FunctionRef<void(absl::string_view)> append);  // text_format.cc
 }  // namespace internal
