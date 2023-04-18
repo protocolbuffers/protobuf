@@ -42,7 +42,9 @@
 #define upb_Atomic_Add(addr, val, order) \
   atomic_fetch_add_explicit(addr, val, order)
 #define upb_Atomic_Sub(addr, val, order) \
-  atomic_fetch_sub_explicit(addr, val, memory_order_release);
+  atomic_fetch_sub_explicit(addr, val, order)
+#define upb_Atomic_Exchange(addr, val, order) \
+  atomic_exchange_explicit(addr, val, order)
 #define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
                                          success_order, failure_order) \
   atomic_compare_exchange_strong_explicit(addr, expected, desired,     \
@@ -61,6 +63,15 @@
 #define upb_Atomic_Store(addr, val, order) (*(addr) = val)
 #define upb_Atomic_Add(addr, val, order) (*(addr) += val)
 #define upb_Atomic_Sub(addr, val, order) (*(addr) -= val)
+
+UPB_INLINE void* _upb_NonAtomic_Exchange(void* addr, void* value) {
+  void* old;
+  memcpy(&old, addr, sizeof(value));
+  memcpy(addr, &value, sizeof(value));
+  return old;
+}
+
+#define upb_Atomic_Exchange(addr, val, order) _upb_NonAtomic_Exchange(addr, val)
 
 // `addr` and `expected` are logically double pointers.
 UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
