@@ -197,6 +197,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
       R"cc(
 #include <stddef.h>
 #include "absl/strings/string_view.h"
+#include "upb/message/copy.h"
 #include "upb/message/internal.h"
 #include "protos/protos.h"
 #include "$0"

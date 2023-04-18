@@ -31,6 +31,7 @@
 #include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/output.h"
+#include "upbc/common.h"
 #include "upbc/keywords.h"
 #include "upbc/names.h"
 
@@ -486,23 +487,27 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
     output(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
-            $6return $4_$8_set(msg_, $7, ($5*)value->msg(), arena_);
+            upb_Message* clone = upb_Message_DeepClone(value->msg(), &$9, arena_);
+            $6return $4_$8_set(msg_, $7, ($5*)clone, arena_);
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key),
         MessagePtrConstType(val, /* is_const */ true), MessageName(message),
         MessageName(val->message_type()), optional_conversion_code,
-        converted_key_name, upbc_name);
+        converted_key_name, upbc_name,
+        ::upbc::MessageInit(val->message_type()->full_name()));
     output(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
-            $6return $4_$8_set(msg_, $7, ($5*)value->msg(), arena_);
+            upb_Message* clone = upb_Message_DeepClone(value->msg(), &$9, arena_);
+            $6return $4_$8_set(msg_, $7, ($5*)clone, arena_);
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key),
         MessagePtrConstType(val, /* is_const */ false), MessageName(message),
         MessageName(val->message_type()), optional_conversion_code,
-        converted_key_name, upbc_name);
+        converted_key_name, upbc_name,
+        ::upbc::MessageInit(val->message_type()->full_name()));
     output(
         R"cc(
           absl::StatusOr<$3> $0::get_$1($2 key) {

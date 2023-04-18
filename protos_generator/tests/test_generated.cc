@@ -404,15 +404,20 @@ TEST(CppGeneratedCode, RepeatedStrings) {
 TEST(CppGeneratedCode, MessageMapInt32KeyMessageValue) {
   const int key_test_value = 3;
   ::protos::Arena arena;
+  ::protos::Arena child_arena;
   auto test_model = ::protos::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.child_map_size());
   test_model.clear_child_map();
   EXPECT_EQ(0, test_model.child_map_size());
-  auto child_model1 = ::protos::CreateMessage<ChildModel1>(arena);
+  auto child_model1 = ::protos::CreateMessage<ChildModel1>(child_arena);
   child_model1.set_child_str1("abc");
   test_model.set_child_map(key_test_value, child_model1);
   auto map_result = test_model.get_child_map(key_test_value);
   EXPECT_EQ(true, map_result.ok());
+  EXPECT_EQ("abc", map_result.value()->child_str1());
+  // Now mutate original child model to verify that value semantics are
+  // preserved.
+  child_model1.set_child_str1("abc V2");
   EXPECT_EQ("abc", map_result.value()->child_str1());
   test_model.delete_child_map(key_test_value);
   auto map_result_after_delete = test_model.get_child_map(key_test_value);
