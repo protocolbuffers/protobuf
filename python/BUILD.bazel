@@ -161,8 +161,10 @@ py_library(
     srcs = glob([
         "google/protobuf/internal/*_test.py",
     ]) + [
-        "google/protobuf/internal/test_util.py",
         "google/protobuf/internal/import_test_package/__init__.py",
+        "google/protobuf/internal/test_util.py",
+        "//python/google/protobuf/internal/numpy:__init__.py",
+        "//python/google/protobuf/internal/numpy:numpy_test.py",
     ],
     imports = ["python"],
     srcs_version = "PY3",
@@ -267,12 +269,12 @@ py_library(
     ],
     imports = ["python"],
     srcs_version = "PY2AND3",
+    visibility = ["//python:__subpackages__"],
     deps = [
         ":protobuf_python",
         ":python_common_test_protos",
         ":python_specific_test_protos",
     ],
-    visibility = ["//python:__subpackages__"],
 )
 
 internal_py_test(
@@ -429,13 +431,13 @@ pkg_files(
             "google/protobuf/internal/import_test_package/__init__.py",
         ],
     ) + [
-      "README.md",
-      "google/__init__.py",
-      "setup.cfg",
-      "tox.ini",
+        "README.md",
+        "google/__init__.py",
+        "setup.cfg",
+        "tox.ini",
     ],
-    visibility = ["@upb//:__subpackages__"],
     strip_prefix = "",
+    visibility = ["@upb//:__subpackages__"],
 )
 
 pkg_files(
