@@ -461,3 +461,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/cybozu/protobuf
     *   Extension: 1179
+
+1.  Wire use_array
+
+    *   Website: https://square.github.io/wire/
+    *   Extensions: 1180
