@@ -499,6 +499,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto& _internal_proto_file(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* _internal_add_proto_file();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto>& _internal_proto_file() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto>* _internal_mutable_proto_file();
   public:
   const ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto& proto_file(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* add_proto_file();
@@ -952,6 +954,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File& _internal_file(int index) const;
   ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* _internal_add_file();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File>& _internal_file() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File>* _internal_mutable_file();
   public:
   const ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File& file(int index) const;
   ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* add_file();
@@ -1334,22 +1338,22 @@ inline int CodeGeneratorRequest::proto_file_size() const {
 }
 inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* CodeGeneratorRequest::mutable_proto_file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return _impl_.proto_file_.Mutable(index);
+  return _internal_mutable_proto_file()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto >*
 CodeGeneratorRequest::mutable_proto_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return &_impl_.proto_file_;
+  return _internal_mutable_proto_file();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto& CodeGeneratorRequest::_internal_proto_file(int index) const {
-  return _impl_.proto_file_.Get(index);
+  return _internal_proto_file().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _internal_proto_file(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* CodeGeneratorRequest::_internal_add_proto_file() {
-  return _impl_.proto_file_.Add();
+  return _internal_mutable_proto_file()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* CodeGeneratorRequest::add_proto_file() {
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* _add = _internal_add_proto_file();
@@ -1359,7 +1363,15 @@ inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* CodeGeneratorRequest::add_p
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto >&
 CodeGeneratorRequest::proto_file() const {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
+  return _internal_proto_file();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto>&
+CodeGeneratorRequest::_internal_proto_file() const {
   return _impl_.proto_file_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto>*
+CodeGeneratorRequest::_internal_mutable_proto_file() {
+  return &_impl_.proto_file_;
 }
 
 // optional .google.protobuf.compiler.Version compiler_version = 3;
@@ -1834,26 +1846,26 @@ inline int CodeGeneratorResponse::file_size() const {
   return _internal_file_size();
 }
 inline void CodeGeneratorResponse::clear_file() {
-  _impl_.file_.Clear();
+  _internal_mutable_file()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return _impl_.file_.Mutable(index);
+  return _internal_mutable_file()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >*
 CodeGeneratorResponse::mutable_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return &_impl_.file_;
+  return _internal_mutable_file();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::_internal_file(int index) const {
-  return _impl_.file_.Get(index);
+  return _internal_file().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _internal_file(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::_internal_add_file() {
-  return _impl_.file_.Add();
+  return _internal_mutable_file()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::add_file() {
   ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* _add = _internal_add_file();
@@ -1863,7 +1875,15 @@ inline ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* CodeGenera
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >&
 CodeGeneratorResponse::file() const {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorResponse.file)
+  return _internal_file();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File>&
+CodeGeneratorResponse::_internal_file() const {
   return _impl_.file_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File>*
+CodeGeneratorResponse::_internal_mutable_file() {
+  return &_impl_.file_;
 }
 
 #ifdef __GNUC__

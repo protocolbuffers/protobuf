@@ -626,6 +626,8 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto& _internal_file(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* _internal_add_file();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto>& _internal_file() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto>* _internal_mutable_file();
   public:
   const ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto& file(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* add_file();
@@ -830,6 +832,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::DescriptorProto& _internal_message_type(int index) const;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* _internal_add_message_type();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto>& _internal_message_type() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto>* _internal_mutable_message_type();
   public:
   const ::PROTOBUF_NAMESPACE_ID::DescriptorProto& message_type(int index) const;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* add_message_type();
@@ -848,6 +852,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto& _internal_enum_type(int index) const;
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* _internal_add_enum_type();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto>& _internal_enum_type() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto>* _internal_mutable_enum_type();
   public:
   const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto& enum_type(int index) const;
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* add_enum_type();
@@ -866,6 +872,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto& _internal_service(int index) const;
   ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* _internal_add_service();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto>& _internal_service() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto>* _internal_mutable_service();
   public:
   const ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto& service(int index) const;
   ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* add_service();
@@ -884,6 +892,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& _internal_extension(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* _internal_add_extension();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>& _internal_extension() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>* _internal_mutable_extension();
   public:
   const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& extension(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* add_extension();
@@ -1577,6 +1587,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& _internal_field(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* _internal_add_field();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>& _internal_field() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>* _internal_mutable_field();
   public:
   const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& field(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* add_field();
@@ -1595,6 +1607,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::DescriptorProto& _internal_nested_type(int index) const;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* _internal_add_nested_type();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto>& _internal_nested_type() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto>* _internal_mutable_nested_type();
   public:
   const ::PROTOBUF_NAMESPACE_ID::DescriptorProto& nested_type(int index) const;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* add_nested_type();
@@ -1613,6 +1627,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto& _internal_enum_type(int index) const;
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* _internal_add_enum_type();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto>& _internal_enum_type() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto>* _internal_mutable_enum_type();
   public:
   const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto& enum_type(int index) const;
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* add_enum_type();
@@ -1631,6 +1647,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange& _internal_extension_range(int index) const;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* _internal_add_extension_range();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange>& _internal_extension_range() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange>* _internal_mutable_extension_range();
   public:
   const ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange& extension_range(int index) const;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* add_extension_range();
@@ -1649,6 +1667,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& _internal_extension(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* _internal_add_extension();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>& _internal_extension() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>* _internal_mutable_extension();
   public:
   const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& extension(int index) const;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* add_extension();
@@ -1667,6 +1687,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto& _internal_oneof_decl(int index) const;
   ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* _internal_add_oneof_decl();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto>& _internal_oneof_decl() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto>* _internal_mutable_oneof_decl();
   public:
   const ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto& oneof_decl(int index) const;
   ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* add_oneof_decl();
@@ -1685,6 +1707,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange& _internal_reserved_range(int index) const;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* _internal_add_reserved_range();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange>& _internal_reserved_range() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange>* _internal_mutable_reserved_range();
   public:
   const ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange& reserved_range(int index) const;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* add_reserved_range();
@@ -2153,6 +2177,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration& _internal_declaration(int index) const;
   ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* _internal_add_declaration();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration>& _internal_declaration() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration>* _internal_mutable_declaration();
   public:
   const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration& declaration(int index) const;
   ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* add_declaration();
@@ -2171,6 +2197,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& _internal_uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _internal_add_uninterpreted_option();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
@@ -3240,6 +3268,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto& _internal_value(int index) const;
   ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* _internal_add_value();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto>& _internal_value() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto>* _internal_mutable_value();
   public:
   const ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto& value(int index) const;
   ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* add_value();
@@ -3258,6 +3288,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange& _internal_reserved_range(int index) const;
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* _internal_add_reserved_range();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange>& _internal_reserved_range() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange>* _internal_mutable_reserved_range();
   public:
   const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange& reserved_range(int index) const;
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* add_reserved_range();
@@ -3687,6 +3719,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto& _internal_method(int index) const;
   ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* _internal_add_method();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto>& _internal_method() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto>* _internal_mutable_method();
   public:
   const ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto& method(int index) const;
   ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* add_method();
@@ -4182,6 +4216,8 @@ class PROTOBUF_EXPORT FileOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& _internal_uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _internal_add_uninterpreted_option();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
@@ -4843,6 +4879,8 @@ class PROTOBUF_EXPORT MessageOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& _internal_uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _internal_add_uninterpreted_option();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
@@ -5342,6 +5380,8 @@ class PROTOBUF_EXPORT FieldOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& _internal_uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _internal_add_uninterpreted_option();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
@@ -5779,6 +5819,8 @@ class PROTOBUF_EXPORT OneofOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& _internal_uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _internal_add_uninterpreted_option();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
@@ -6097,6 +6139,8 @@ class PROTOBUF_EXPORT EnumOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& _internal_uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _internal_add_uninterpreted_option();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
@@ -6450,6 +6494,8 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& _internal_uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _internal_add_uninterpreted_option();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
@@ -6779,6 +6825,8 @@ class PROTOBUF_EXPORT ServiceOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& _internal_uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _internal_add_uninterpreted_option();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
@@ -7130,6 +7178,8 @@ class PROTOBUF_EXPORT MethodOptions final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& _internal_uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _internal_add_uninterpreted_option();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& uninterpreted_option(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
@@ -7660,6 +7710,8 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart& _internal_name(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* _internal_add_name();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart>& _internal_name() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart>* _internal_mutable_name();
   public:
   const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart& name(int index) const;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* add_name();
@@ -8194,6 +8246,8 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location& _internal_location(int index) const;
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* _internal_add_location();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location>& _internal_location() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location>* _internal_mutable_location();
   public:
   const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location& location(int index) const;
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* add_location();
@@ -8607,6 +8661,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   private:
   const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation& _internal_annotation(int index) const;
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* _internal_add_annotation();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation>& _internal_annotation() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation>* _internal_mutable_annotation();
   public:
   const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation& annotation(int index) const;
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* add_annotation();
@@ -8651,26 +8707,26 @@ inline int FileDescriptorSet::file_size() const {
   return _internal_file_size();
 }
 inline void FileDescriptorSet::clear_file() {
-  _impl_.file_.Clear();
+  _internal_mutable_file()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* FileDescriptorSet::mutable_file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorSet.file)
-  return _impl_.file_.Mutable(index);
+  return _internal_mutable_file()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto >*
 FileDescriptorSet::mutable_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorSet.file)
-  return &_impl_.file_;
+  return _internal_mutable_file();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto& FileDescriptorSet::_internal_file(int index) const {
-  return _impl_.file_.Get(index);
+  return _internal_file().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto& FileDescriptorSet::file(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorSet.file)
   return _internal_file(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* FileDescriptorSet::_internal_add_file() {
-  return _impl_.file_.Add();
+  return _internal_mutable_file()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* FileDescriptorSet::add_file() {
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* _add = _internal_add_file();
@@ -8680,7 +8736,15 @@ inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* FileDescriptorSet::add_file
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto >&
 FileDescriptorSet::file() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorSet.file)
+  return _internal_file();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto>&
+FileDescriptorSet::_internal_file() const {
   return _impl_.file_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto>*
+FileDescriptorSet::_internal_mutable_file() {
+  return &_impl_.file_;
 }
 
 // -------------------------------------------------------------------
@@ -9006,26 +9070,26 @@ inline int FileDescriptorProto::message_type_size() const {
   return _internal_message_type_size();
 }
 inline void FileDescriptorProto::clear_message_type() {
-  _impl_.message_type_.Clear();
+  _internal_mutable_message_type()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto* FileDescriptorProto::mutable_message_type(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.message_type)
-  return _impl_.message_type_.Mutable(index);
+  return _internal_mutable_message_type()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto >*
 FileDescriptorProto::mutable_message_type() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.message_type)
-  return &_impl_.message_type_;
+  return _internal_mutable_message_type();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::DescriptorProto& FileDescriptorProto::_internal_message_type(int index) const {
-  return _impl_.message_type_.Get(index);
+  return _internal_message_type().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::DescriptorProto& FileDescriptorProto::message_type(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.message_type)
   return _internal_message_type(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto* FileDescriptorProto::_internal_add_message_type() {
-  return _impl_.message_type_.Add();
+  return _internal_mutable_message_type()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto* FileDescriptorProto::add_message_type() {
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* _add = _internal_add_message_type();
@@ -9035,7 +9099,15 @@ inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto* FileDescriptorProto::add_messag
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto >&
 FileDescriptorProto::message_type() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.message_type)
+  return _internal_message_type();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto>&
+FileDescriptorProto::_internal_message_type() const {
   return _impl_.message_type_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto>*
+FileDescriptorProto::_internal_mutable_message_type() {
+  return &_impl_.message_type_;
 }
 
 // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
@@ -9046,26 +9118,26 @@ inline int FileDescriptorProto::enum_type_size() const {
   return _internal_enum_type_size();
 }
 inline void FileDescriptorProto::clear_enum_type() {
-  _impl_.enum_type_.Clear();
+  _internal_mutable_enum_type()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* FileDescriptorProto::mutable_enum_type(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.enum_type)
-  return _impl_.enum_type_.Mutable(index);
+  return _internal_mutable_enum_type()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >*
 FileDescriptorProto::mutable_enum_type() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.enum_type)
-  return &_impl_.enum_type_;
+  return _internal_mutable_enum_type();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto& FileDescriptorProto::_internal_enum_type(int index) const {
-  return _impl_.enum_type_.Get(index);
+  return _internal_enum_type().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto& FileDescriptorProto::enum_type(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.enum_type)
   return _internal_enum_type(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* FileDescriptorProto::_internal_add_enum_type() {
-  return _impl_.enum_type_.Add();
+  return _internal_mutable_enum_type()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* FileDescriptorProto::add_enum_type() {
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* _add = _internal_add_enum_type();
@@ -9075,7 +9147,15 @@ inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* FileDescriptorProto::add_en
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >&
 FileDescriptorProto::enum_type() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.enum_type)
+  return _internal_enum_type();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto>&
+FileDescriptorProto::_internal_enum_type() const {
   return _impl_.enum_type_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto>*
+FileDescriptorProto::_internal_mutable_enum_type() {
+  return &_impl_.enum_type_;
 }
 
 // repeated .google.protobuf.ServiceDescriptorProto service = 6;
@@ -9086,26 +9166,26 @@ inline int FileDescriptorProto::service_size() const {
   return _internal_service_size();
 }
 inline void FileDescriptorProto::clear_service() {
-  _impl_.service_.Clear();
+  _internal_mutable_service()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* FileDescriptorProto::mutable_service(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.service)
-  return _impl_.service_.Mutable(index);
+  return _internal_mutable_service()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto >*
 FileDescriptorProto::mutable_service() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.service)
-  return &_impl_.service_;
+  return _internal_mutable_service();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto& FileDescriptorProto::_internal_service(int index) const {
-  return _impl_.service_.Get(index);
+  return _internal_service().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto& FileDescriptorProto::service(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.service)
   return _internal_service(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* FileDescriptorProto::_internal_add_service() {
-  return _impl_.service_.Add();
+  return _internal_mutable_service()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* FileDescriptorProto::add_service() {
   ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* _add = _internal_add_service();
@@ -9115,7 +9195,15 @@ inline ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* FileDescriptorProto::add
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto >&
 FileDescriptorProto::service() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.service)
+  return _internal_service();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto>&
+FileDescriptorProto::_internal_service() const {
   return _impl_.service_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto>*
+FileDescriptorProto::_internal_mutable_service() {
+  return &_impl_.service_;
 }
 
 // repeated .google.protobuf.FieldDescriptorProto extension = 7;
@@ -9126,26 +9214,26 @@ inline int FileDescriptorProto::extension_size() const {
   return _internal_extension_size();
 }
 inline void FileDescriptorProto::clear_extension() {
-  _impl_.extension_.Clear();
+  _internal_mutable_extension()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* FileDescriptorProto::mutable_extension(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.extension)
-  return _impl_.extension_.Mutable(index);
+  return _internal_mutable_extension()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >*
 FileDescriptorProto::mutable_extension() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.extension)
-  return &_impl_.extension_;
+  return _internal_mutable_extension();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& FileDescriptorProto::_internal_extension(int index) const {
-  return _impl_.extension_.Get(index);
+  return _internal_extension().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& FileDescriptorProto::extension(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.extension)
   return _internal_extension(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* FileDescriptorProto::_internal_add_extension() {
-  return _impl_.extension_.Add();
+  return _internal_mutable_extension()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* FileDescriptorProto::add_extension() {
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* _add = _internal_add_extension();
@@ -9155,7 +9243,15 @@ inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* FileDescriptorProto::add_e
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >&
 FileDescriptorProto::extension() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.extension)
+  return _internal_extension();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>&
+FileDescriptorProto::_internal_extension() const {
   return _impl_.extension_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>*
+FileDescriptorProto::_internal_mutable_extension() {
+  return &_impl_.extension_;
 }
 
 // optional .google.protobuf.FileOptions options = 8;
@@ -9734,26 +9830,26 @@ inline int DescriptorProto::field_size() const {
   return _internal_field_size();
 }
 inline void DescriptorProto::clear_field() {
-  _impl_.field_.Clear();
+  _internal_mutable_field()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::mutable_field(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.field)
-  return _impl_.field_.Mutable(index);
+  return _internal_mutable_field()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >*
 DescriptorProto::mutable_field() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.field)
-  return &_impl_.field_;
+  return _internal_mutable_field();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& DescriptorProto::_internal_field(int index) const {
-  return _impl_.field_.Get(index);
+  return _internal_field().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& DescriptorProto::field(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.field)
   return _internal_field(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::_internal_add_field() {
-  return _impl_.field_.Add();
+  return _internal_mutable_field()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::add_field() {
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* _add = _internal_add_field();
@@ -9763,7 +9859,15 @@ inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::add_field
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >&
 DescriptorProto::field() const {
   // @@protoc_insertion_point(field_list:google.protobuf.DescriptorProto.field)
+  return _internal_field();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>&
+DescriptorProto::_internal_field() const {
   return _impl_.field_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>*
+DescriptorProto::_internal_mutable_field() {
+  return &_impl_.field_;
 }
 
 // repeated .google.protobuf.FieldDescriptorProto extension = 6;
@@ -9774,26 +9878,26 @@ inline int DescriptorProto::extension_size() const {
   return _internal_extension_size();
 }
 inline void DescriptorProto::clear_extension() {
-  _impl_.extension_.Clear();
+  _internal_mutable_extension()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::mutable_extension(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.extension)
-  return _impl_.extension_.Mutable(index);
+  return _internal_mutable_extension()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >*
 DescriptorProto::mutable_extension() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.extension)
-  return &_impl_.extension_;
+  return _internal_mutable_extension();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& DescriptorProto::_internal_extension(int index) const {
-  return _impl_.extension_.Get(index);
+  return _internal_extension().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto& DescriptorProto::extension(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.extension)
   return _internal_extension(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::_internal_add_extension() {
-  return _impl_.extension_.Add();
+  return _internal_mutable_extension()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::add_extension() {
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* _add = _internal_add_extension();
@@ -9803,7 +9907,15 @@ inline ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::add_exten
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >&
 DescriptorProto::extension() const {
   // @@protoc_insertion_point(field_list:google.protobuf.DescriptorProto.extension)
+  return _internal_extension();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>&
+DescriptorProto::_internal_extension() const {
   return _impl_.extension_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto>*
+DescriptorProto::_internal_mutable_extension() {
+  return &_impl_.extension_;
 }
 
 // repeated .google.protobuf.DescriptorProto nested_type = 3;
@@ -9814,26 +9926,26 @@ inline int DescriptorProto::nested_type_size() const {
   return _internal_nested_type_size();
 }
 inline void DescriptorProto::clear_nested_type() {
-  _impl_.nested_type_.Clear();
+  _internal_mutable_nested_type()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto* DescriptorProto::mutable_nested_type(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.nested_type)
-  return _impl_.nested_type_.Mutable(index);
+  return _internal_mutable_nested_type()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto >*
 DescriptorProto::mutable_nested_type() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.nested_type)
-  return &_impl_.nested_type_;
+  return _internal_mutable_nested_type();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::DescriptorProto& DescriptorProto::_internal_nested_type(int index) const {
-  return _impl_.nested_type_.Get(index);
+  return _internal_nested_type().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::DescriptorProto& DescriptorProto::nested_type(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.nested_type)
   return _internal_nested_type(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto* DescriptorProto::_internal_add_nested_type() {
-  return _impl_.nested_type_.Add();
+  return _internal_mutable_nested_type()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto* DescriptorProto::add_nested_type() {
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* _add = _internal_add_nested_type();
@@ -9843,7 +9955,15 @@ inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto* DescriptorProto::add_nested_typ
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto >&
 DescriptorProto::nested_type() const {
   // @@protoc_insertion_point(field_list:google.protobuf.DescriptorProto.nested_type)
+  return _internal_nested_type();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto>&
+DescriptorProto::_internal_nested_type() const {
   return _impl_.nested_type_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto>*
+DescriptorProto::_internal_mutable_nested_type() {
+  return &_impl_.nested_type_;
 }
 
 // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
@@ -9854,26 +9974,26 @@ inline int DescriptorProto::enum_type_size() const {
   return _internal_enum_type_size();
 }
 inline void DescriptorProto::clear_enum_type() {
-  _impl_.enum_type_.Clear();
+  _internal_mutable_enum_type()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* DescriptorProto::mutable_enum_type(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.enum_type)
-  return _impl_.enum_type_.Mutable(index);
+  return _internal_mutable_enum_type()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >*
 DescriptorProto::mutable_enum_type() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.enum_type)
-  return &_impl_.enum_type_;
+  return _internal_mutable_enum_type();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto& DescriptorProto::_internal_enum_type(int index) const {
-  return _impl_.enum_type_.Get(index);
+  return _internal_enum_type().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto& DescriptorProto::enum_type(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.enum_type)
   return _internal_enum_type(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* DescriptorProto::_internal_add_enum_type() {
-  return _impl_.enum_type_.Add();
+  return _internal_mutable_enum_type()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* DescriptorProto::add_enum_type() {
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* _add = _internal_add_enum_type();
@@ -9883,7 +10003,15 @@ inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* DescriptorProto::add_enum_t
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >&
 DescriptorProto::enum_type() const {
   // @@protoc_insertion_point(field_list:google.protobuf.DescriptorProto.enum_type)
+  return _internal_enum_type();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto>&
+DescriptorProto::_internal_enum_type() const {
   return _impl_.enum_type_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto>*
+DescriptorProto::_internal_mutable_enum_type() {
+  return &_impl_.enum_type_;
 }
 
 // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
@@ -9894,26 +10022,26 @@ inline int DescriptorProto::extension_range_size() const {
   return _internal_extension_range_size();
 }
 inline void DescriptorProto::clear_extension_range() {
-  _impl_.extension_range_.Clear();
+  _internal_mutable_extension_range()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* DescriptorProto::mutable_extension_range(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.extension_range)
-  return _impl_.extension_range_.Mutable(index);
+  return _internal_mutable_extension_range()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange >*
 DescriptorProto::mutable_extension_range() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.extension_range)
-  return &_impl_.extension_range_;
+  return _internal_mutable_extension_range();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange& DescriptorProto::_internal_extension_range(int index) const {
-  return _impl_.extension_range_.Get(index);
+  return _internal_extension_range().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange& DescriptorProto::extension_range(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.extension_range)
   return _internal_extension_range(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* DescriptorProto::_internal_add_extension_range() {
-  return _impl_.extension_range_.Add();
+  return _internal_mutable_extension_range()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* DescriptorProto::add_extension_range() {
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* _add = _internal_add_extension_range();
@@ -9923,7 +10051,15 @@ inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* DescriptorProto:
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange >&
 DescriptorProto::extension_range() const {
   // @@protoc_insertion_point(field_list:google.protobuf.DescriptorProto.extension_range)
+  return _internal_extension_range();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange>&
+DescriptorProto::_internal_extension_range() const {
   return _impl_.extension_range_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange>*
+DescriptorProto::_internal_mutable_extension_range() {
+  return &_impl_.extension_range_;
 }
 
 // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
@@ -9934,26 +10070,26 @@ inline int DescriptorProto::oneof_decl_size() const {
   return _internal_oneof_decl_size();
 }
 inline void DescriptorProto::clear_oneof_decl() {
-  _impl_.oneof_decl_.Clear();
+  _internal_mutable_oneof_decl()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* DescriptorProto::mutable_oneof_decl(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.oneof_decl)
-  return _impl_.oneof_decl_.Mutable(index);
+  return _internal_mutable_oneof_decl()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto >*
 DescriptorProto::mutable_oneof_decl() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.oneof_decl)
-  return &_impl_.oneof_decl_;
+  return _internal_mutable_oneof_decl();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto& DescriptorProto::_internal_oneof_decl(int index) const {
-  return _impl_.oneof_decl_.Get(index);
+  return _internal_oneof_decl().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto& DescriptorProto::oneof_decl(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.oneof_decl)
   return _internal_oneof_decl(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* DescriptorProto::_internal_add_oneof_decl() {
-  return _impl_.oneof_decl_.Add();
+  return _internal_mutable_oneof_decl()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* DescriptorProto::add_oneof_decl() {
   ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* _add = _internal_add_oneof_decl();
@@ -9963,7 +10099,15 @@ inline ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* DescriptorProto::add_oneof
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto >&
 DescriptorProto::oneof_decl() const {
   // @@protoc_insertion_point(field_list:google.protobuf.DescriptorProto.oneof_decl)
+  return _internal_oneof_decl();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto>&
+DescriptorProto::_internal_oneof_decl() const {
   return _impl_.oneof_decl_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto>*
+DescriptorProto::_internal_mutable_oneof_decl() {
+  return &_impl_.oneof_decl_;
 }
 
 // optional .google.protobuf.MessageOptions options = 7;
@@ -10061,26 +10205,26 @@ inline int DescriptorProto::reserved_range_size() const {
   return _internal_reserved_range_size();
 }
 inline void DescriptorProto::clear_reserved_range() {
-  _impl_.reserved_range_.Clear();
+  _internal_mutable_reserved_range()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* DescriptorProto::mutable_reserved_range(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.reserved_range)
-  return _impl_.reserved_range_.Mutable(index);
+  return _internal_mutable_reserved_range()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange >*
 DescriptorProto::mutable_reserved_range() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_range)
-  return &_impl_.reserved_range_;
+  return _internal_mutable_reserved_range();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange& DescriptorProto::_internal_reserved_range(int index) const {
-  return _impl_.reserved_range_.Get(index);
+  return _internal_reserved_range().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange& DescriptorProto::reserved_range(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.reserved_range)
   return _internal_reserved_range(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* DescriptorProto::_internal_add_reserved_range() {
-  return _impl_.reserved_range_.Add();
+  return _internal_mutable_reserved_range()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* DescriptorProto::add_reserved_range() {
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* _add = _internal_add_reserved_range();
@@ -10090,7 +10234,15 @@ inline ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* DescriptorProto::
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange >&
 DescriptorProto::reserved_range() const {
   // @@protoc_insertion_point(field_list:google.protobuf.DescriptorProto.reserved_range)
+  return _internal_reserved_range();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange>&
+DescriptorProto::_internal_reserved_range() const {
   return _impl_.reserved_range_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange>*
+DescriptorProto::_internal_mutable_reserved_range() {
+  return &_impl_.reserved_range_;
 }
 
 // repeated string reserved_name = 10;
@@ -10407,26 +10559,26 @@ inline int ExtensionRangeOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void ExtensionRangeOptions::clear_uninterpreted_option() {
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* ExtensionRangeOptions::mutable_uninterpreted_option(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
-  return _impl_.uninterpreted_option_.Mutable(index);
+  return _internal_mutable_uninterpreted_option()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
 ExtensionRangeOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
-  return &_impl_.uninterpreted_option_;
+  return _internal_mutable_uninterpreted_option();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& ExtensionRangeOptions::_internal_uninterpreted_option(int index) const {
-  return _impl_.uninterpreted_option_.Get(index);
+  return _internal_uninterpreted_option().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& ExtensionRangeOptions::uninterpreted_option(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
   return _internal_uninterpreted_option(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* ExtensionRangeOptions::_internal_add_uninterpreted_option() {
-  return _impl_.uninterpreted_option_.Add();
+  return _internal_mutable_uninterpreted_option()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* ExtensionRangeOptions::add_uninterpreted_option() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
@@ -10436,7 +10588,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* ExtensionRangeOptions::add_
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 ExtensionRangeOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
+  return _internal_uninterpreted_option();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>&
+ExtensionRangeOptions::_internal_uninterpreted_option() const {
   return _impl_.uninterpreted_option_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>*
+ExtensionRangeOptions::_internal_mutable_uninterpreted_option() {
+  return &_impl_.uninterpreted_option_;
 }
 
 // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
@@ -10447,26 +10607,26 @@ inline int ExtensionRangeOptions::declaration_size() const {
   return _internal_declaration_size();
 }
 inline void ExtensionRangeOptions::clear_declaration() {
-  _impl_.declaration_.Clear();
+  _internal_mutable_declaration()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* ExtensionRangeOptions::mutable_declaration(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.declaration)
-  return _impl_.declaration_.Mutable(index);
+  return _internal_mutable_declaration()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration >*
 ExtensionRangeOptions::mutable_declaration() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.declaration)
-  return &_impl_.declaration_;
+  return _internal_mutable_declaration();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration& ExtensionRangeOptions::_internal_declaration(int index) const {
-  return _impl_.declaration_.Get(index);
+  return _internal_declaration().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration& ExtensionRangeOptions::declaration(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.declaration)
   return _internal_declaration(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* ExtensionRangeOptions::_internal_add_declaration() {
-  return _impl_.declaration_.Add();
+  return _internal_mutable_declaration()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* ExtensionRangeOptions::add_declaration() {
   ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* _add = _internal_add_declaration();
@@ -10476,7 +10636,15 @@ inline ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration* ExtensionRang
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration >&
 ExtensionRangeOptions::declaration() const {
   // @@protoc_insertion_point(field_list:google.protobuf.ExtensionRangeOptions.declaration)
+  return _internal_declaration();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration>&
+ExtensionRangeOptions::_internal_declaration() const {
   return _impl_.declaration_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration>*
+ExtensionRangeOptions::_internal_mutable_declaration() {
+  return &_impl_.declaration_;
 }
 
 // -------------------------------------------------------------------
@@ -11309,26 +11477,26 @@ inline int EnumDescriptorProto::value_size() const {
   return _internal_value_size();
 }
 inline void EnumDescriptorProto::clear_value() {
-  _impl_.value_.Clear();
+  _internal_mutable_value()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* EnumDescriptorProto::mutable_value(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.value)
-  return _impl_.value_.Mutable(index);
+  return _internal_mutable_value()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto >*
 EnumDescriptorProto::mutable_value() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.value)
-  return &_impl_.value_;
+  return _internal_mutable_value();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto& EnumDescriptorProto::_internal_value(int index) const {
-  return _impl_.value_.Get(index);
+  return _internal_value().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto& EnumDescriptorProto::value(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.value)
   return _internal_value(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* EnumDescriptorProto::_internal_add_value() {
-  return _impl_.value_.Add();
+  return _internal_mutable_value()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* EnumDescriptorProto::add_value() {
   ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* _add = _internal_add_value();
@@ -11338,7 +11506,15 @@ inline ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* EnumDescriptorProto::a
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto >&
 EnumDescriptorProto::value() const {
   // @@protoc_insertion_point(field_list:google.protobuf.EnumDescriptorProto.value)
+  return _internal_value();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto>&
+EnumDescriptorProto::_internal_value() const {
   return _impl_.value_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto>*
+EnumDescriptorProto::_internal_mutable_value() {
+  return &_impl_.value_;
 }
 
 // optional .google.protobuf.EnumOptions options = 3;
@@ -11436,26 +11612,26 @@ inline int EnumDescriptorProto::reserved_range_size() const {
   return _internal_reserved_range_size();
 }
 inline void EnumDescriptorProto::clear_reserved_range() {
-  _impl_.reserved_range_.Clear();
+  _internal_mutable_reserved_range()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* EnumDescriptorProto::mutable_reserved_range(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.reserved_range)
-  return _impl_.reserved_range_.Mutable(index);
+  return _internal_mutable_reserved_range()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange >*
 EnumDescriptorProto::mutable_reserved_range() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.reserved_range)
-  return &_impl_.reserved_range_;
+  return _internal_mutable_reserved_range();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange& EnumDescriptorProto::_internal_reserved_range(int index) const {
-  return _impl_.reserved_range_.Get(index);
+  return _internal_reserved_range().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange& EnumDescriptorProto::reserved_range(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.reserved_range)
   return _internal_reserved_range(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* EnumDescriptorProto::_internal_add_reserved_range() {
-  return _impl_.reserved_range_.Add();
+  return _internal_mutable_reserved_range()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* EnumDescriptorProto::add_reserved_range() {
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* _add = _internal_add_reserved_range();
@@ -11465,7 +11641,15 @@ inline ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* EnumDescr
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange >&
 EnumDescriptorProto::reserved_range() const {
   // @@protoc_insertion_point(field_list:google.protobuf.EnumDescriptorProto.reserved_range)
+  return _internal_reserved_range();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange>&
+EnumDescriptorProto::_internal_reserved_range() const {
   return _impl_.reserved_range_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange>*
+EnumDescriptorProto::_internal_mutable_reserved_range() {
+  return &_impl_.reserved_range_;
 }
 
 // repeated string reserved_name = 5;
@@ -11819,26 +12003,26 @@ inline int ServiceDescriptorProto::method_size() const {
   return _internal_method_size();
 }
 inline void ServiceDescriptorProto::clear_method() {
-  _impl_.method_.Clear();
+  _internal_mutable_method()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* ServiceDescriptorProto::mutable_method(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceDescriptorProto.method)
-  return _impl_.method_.Mutable(index);
+  return _internal_mutable_method()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto >*
 ServiceDescriptorProto::mutable_method() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ServiceDescriptorProto.method)
-  return &_impl_.method_;
+  return _internal_mutable_method();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto& ServiceDescriptorProto::_internal_method(int index) const {
-  return _impl_.method_.Get(index);
+  return _internal_method().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto& ServiceDescriptorProto::method(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceDescriptorProto.method)
   return _internal_method(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* ServiceDescriptorProto::_internal_add_method() {
-  return _impl_.method_.Add();
+  return _internal_mutable_method()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* ServiceDescriptorProto::add_method() {
   ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* _add = _internal_add_method();
@@ -11848,7 +12032,15 @@ inline ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* ServiceDescriptorProto::a
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto >&
 ServiceDescriptorProto::method() const {
   // @@protoc_insertion_point(field_list:google.protobuf.ServiceDescriptorProto.method)
+  return _internal_method();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto>&
+ServiceDescriptorProto::_internal_method() const {
   return _impl_.method_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto>*
+ServiceDescriptorProto::_internal_mutable_method() {
+  return &_impl_.method_;
 }
 
 // optional .google.protobuf.ServiceOptions options = 3;
@@ -13187,26 +13379,26 @@ inline int FileOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void FileOptions::clear_uninterpreted_option() {
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* FileOptions::mutable_uninterpreted_option(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.uninterpreted_option)
-  return _impl_.uninterpreted_option_.Mutable(index);
+  return _internal_mutable_uninterpreted_option()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
 FileOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileOptions.uninterpreted_option)
-  return &_impl_.uninterpreted_option_;
+  return _internal_mutable_uninterpreted_option();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& FileOptions::_internal_uninterpreted_option(int index) const {
-  return _impl_.uninterpreted_option_.Get(index);
+  return _internal_uninterpreted_option().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& FileOptions::uninterpreted_option(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.uninterpreted_option)
   return _internal_uninterpreted_option(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* FileOptions::_internal_add_uninterpreted_option() {
-  return _impl_.uninterpreted_option_.Add();
+  return _internal_mutable_uninterpreted_option()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* FileOptions::add_uninterpreted_option() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
@@ -13216,7 +13408,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* FileOptions::add_uninterpre
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 FileOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FileOptions.uninterpreted_option)
+  return _internal_uninterpreted_option();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>&
+FileOptions::_internal_uninterpreted_option() const {
   return _impl_.uninterpreted_option_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>*
+FileOptions::_internal_mutable_uninterpreted_option() {
+  return &_impl_.uninterpreted_option_;
 }
 
 // -------------------------------------------------------------------
@@ -13356,26 +13556,26 @@ inline int MessageOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void MessageOptions::clear_uninterpreted_option() {
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* MessageOptions::mutable_uninterpreted_option(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.MessageOptions.uninterpreted_option)
-  return _impl_.uninterpreted_option_.Mutable(index);
+  return _internal_mutable_uninterpreted_option()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
 MessageOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.MessageOptions.uninterpreted_option)
-  return &_impl_.uninterpreted_option_;
+  return _internal_mutable_uninterpreted_option();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& MessageOptions::_internal_uninterpreted_option(int index) const {
-  return _impl_.uninterpreted_option_.Get(index);
+  return _internal_uninterpreted_option().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& MessageOptions::uninterpreted_option(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.uninterpreted_option)
   return _internal_uninterpreted_option(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* MessageOptions::_internal_add_uninterpreted_option() {
-  return _impl_.uninterpreted_option_.Add();
+  return _internal_mutable_uninterpreted_option()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* MessageOptions::add_uninterpreted_option() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
@@ -13385,7 +13585,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* MessageOptions::add_uninter
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 MessageOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.MessageOptions.uninterpreted_option)
+  return _internal_uninterpreted_option();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>&
+MessageOptions::_internal_uninterpreted_option() const {
   return _impl_.uninterpreted_option_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>*
+MessageOptions::_internal_mutable_uninterpreted_option() {
+  return &_impl_.uninterpreted_option_;
 }
 
 // -------------------------------------------------------------------
@@ -13699,26 +13907,26 @@ inline int FieldOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void FieldOptions::clear_uninterpreted_option() {
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* FieldOptions::mutable_uninterpreted_option(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.uninterpreted_option)
-  return _impl_.uninterpreted_option_.Mutable(index);
+  return _internal_mutable_uninterpreted_option()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
 FieldOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.uninterpreted_option)
-  return &_impl_.uninterpreted_option_;
+  return _internal_mutable_uninterpreted_option();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& FieldOptions::_internal_uninterpreted_option(int index) const {
-  return _impl_.uninterpreted_option_.Get(index);
+  return _internal_uninterpreted_option().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& FieldOptions::uninterpreted_option(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.uninterpreted_option)
   return _internal_uninterpreted_option(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* FieldOptions::_internal_add_uninterpreted_option() {
-  return _impl_.uninterpreted_option_.Add();
+  return _internal_mutable_uninterpreted_option()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* FieldOptions::add_uninterpreted_option() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
@@ -13728,7 +13936,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* FieldOptions::add_uninterpr
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 FieldOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FieldOptions.uninterpreted_option)
+  return _internal_uninterpreted_option();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>&
+FieldOptions::_internal_uninterpreted_option() const {
   return _impl_.uninterpreted_option_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>*
+FieldOptions::_internal_mutable_uninterpreted_option() {
+  return &_impl_.uninterpreted_option_;
 }
 
 // -------------------------------------------------------------------
@@ -13743,26 +13959,26 @@ inline int OneofOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void OneofOptions::clear_uninterpreted_option() {
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* OneofOptions::mutable_uninterpreted_option(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.OneofOptions.uninterpreted_option)
-  return _impl_.uninterpreted_option_.Mutable(index);
+  return _internal_mutable_uninterpreted_option()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
 OneofOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.OneofOptions.uninterpreted_option)
-  return &_impl_.uninterpreted_option_;
+  return _internal_mutable_uninterpreted_option();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& OneofOptions::_internal_uninterpreted_option(int index) const {
-  return _impl_.uninterpreted_option_.Get(index);
+  return _internal_uninterpreted_option().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& OneofOptions::uninterpreted_option(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.OneofOptions.uninterpreted_option)
   return _internal_uninterpreted_option(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* OneofOptions::_internal_add_uninterpreted_option() {
-  return _impl_.uninterpreted_option_.Add();
+  return _internal_mutable_uninterpreted_option()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* OneofOptions::add_uninterpreted_option() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
@@ -13772,7 +13988,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* OneofOptions::add_uninterpr
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 OneofOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.OneofOptions.uninterpreted_option)
+  return _internal_uninterpreted_option();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>&
+OneofOptions::_internal_uninterpreted_option() const {
   return _impl_.uninterpreted_option_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>*
+OneofOptions::_internal_mutable_uninterpreted_option() {
+  return &_impl_.uninterpreted_option_;
 }
 
 // -------------------------------------------------------------------
@@ -13862,26 +14086,26 @@ inline int EnumOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void EnumOptions::clear_uninterpreted_option() {
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumOptions::mutable_uninterpreted_option(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumOptions.uninterpreted_option)
-  return _impl_.uninterpreted_option_.Mutable(index);
+  return _internal_mutable_uninterpreted_option()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
 EnumOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumOptions.uninterpreted_option)
-  return &_impl_.uninterpreted_option_;
+  return _internal_mutable_uninterpreted_option();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& EnumOptions::_internal_uninterpreted_option(int index) const {
-  return _impl_.uninterpreted_option_.Get(index);
+  return _internal_uninterpreted_option().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& EnumOptions::uninterpreted_option(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumOptions.uninterpreted_option)
   return _internal_uninterpreted_option(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumOptions::_internal_add_uninterpreted_option() {
-  return _impl_.uninterpreted_option_.Add();
+  return _internal_mutable_uninterpreted_option()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumOptions::add_uninterpreted_option() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
@@ -13891,7 +14115,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumOptions::add_uninterpre
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 EnumOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.EnumOptions.uninterpreted_option)
+  return _internal_uninterpreted_option();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>&
+EnumOptions::_internal_uninterpreted_option() const {
   return _impl_.uninterpreted_option_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>*
+EnumOptions::_internal_mutable_uninterpreted_option() {
+  return &_impl_.uninterpreted_option_;
 }
 
 // -------------------------------------------------------------------
@@ -13931,26 +14163,26 @@ inline int EnumValueOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void EnumValueOptions::clear_uninterpreted_option() {
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumValueOptions::mutable_uninterpreted_option(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValueOptions.uninterpreted_option)
-  return _impl_.uninterpreted_option_.Mutable(index);
+  return _internal_mutable_uninterpreted_option()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
 EnumValueOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValueOptions.uninterpreted_option)
-  return &_impl_.uninterpreted_option_;
+  return _internal_mutable_uninterpreted_option();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& EnumValueOptions::_internal_uninterpreted_option(int index) const {
-  return _impl_.uninterpreted_option_.Get(index);
+  return _internal_uninterpreted_option().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& EnumValueOptions::uninterpreted_option(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueOptions.uninterpreted_option)
   return _internal_uninterpreted_option(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumValueOptions::_internal_add_uninterpreted_option() {
-  return _impl_.uninterpreted_option_.Add();
+  return _internal_mutable_uninterpreted_option()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumValueOptions::add_uninterpreted_option() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
@@ -13960,7 +14192,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumValueOptions::add_unint
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 EnumValueOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.EnumValueOptions.uninterpreted_option)
+  return _internal_uninterpreted_option();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>&
+EnumValueOptions::_internal_uninterpreted_option() const {
   return _impl_.uninterpreted_option_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>*
+EnumValueOptions::_internal_mutable_uninterpreted_option() {
+  return &_impl_.uninterpreted_option_;
 }
 
 // -------------------------------------------------------------------
@@ -14000,26 +14240,26 @@ inline int ServiceOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void ServiceOptions::clear_uninterpreted_option() {
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* ServiceOptions::mutable_uninterpreted_option(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceOptions.uninterpreted_option)
-  return _impl_.uninterpreted_option_.Mutable(index);
+  return _internal_mutable_uninterpreted_option()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
 ServiceOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ServiceOptions.uninterpreted_option)
-  return &_impl_.uninterpreted_option_;
+  return _internal_mutable_uninterpreted_option();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& ServiceOptions::_internal_uninterpreted_option(int index) const {
-  return _impl_.uninterpreted_option_.Get(index);
+  return _internal_uninterpreted_option().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& ServiceOptions::uninterpreted_option(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceOptions.uninterpreted_option)
   return _internal_uninterpreted_option(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* ServiceOptions::_internal_add_uninterpreted_option() {
-  return _impl_.uninterpreted_option_.Add();
+  return _internal_mutable_uninterpreted_option()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* ServiceOptions::add_uninterpreted_option() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
@@ -14029,7 +14269,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* ServiceOptions::add_uninter
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 ServiceOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.ServiceOptions.uninterpreted_option)
+  return _internal_uninterpreted_option();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>&
+ServiceOptions::_internal_uninterpreted_option() const {
   return _impl_.uninterpreted_option_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>*
+ServiceOptions::_internal_mutable_uninterpreted_option() {
+  return &_impl_.uninterpreted_option_;
 }
 
 // -------------------------------------------------------------------
@@ -14095,26 +14343,26 @@ inline int MethodOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void MethodOptions::clear_uninterpreted_option() {
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* MethodOptions::mutable_uninterpreted_option(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodOptions.uninterpreted_option)
-  return _impl_.uninterpreted_option_.Mutable(index);
+  return _internal_mutable_uninterpreted_option()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
 MethodOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.MethodOptions.uninterpreted_option)
-  return &_impl_.uninterpreted_option_;
+  return _internal_mutable_uninterpreted_option();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& MethodOptions::_internal_uninterpreted_option(int index) const {
-  return _impl_.uninterpreted_option_.Get(index);
+  return _internal_uninterpreted_option().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption& MethodOptions::uninterpreted_option(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodOptions.uninterpreted_option)
   return _internal_uninterpreted_option(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* MethodOptions::_internal_add_uninterpreted_option() {
-  return _impl_.uninterpreted_option_.Add();
+  return _internal_mutable_uninterpreted_option()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* MethodOptions::add_uninterpreted_option() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
@@ -14124,7 +14372,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* MethodOptions::add_uninterp
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 MethodOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.MethodOptions.uninterpreted_option)
+  return _internal_uninterpreted_option();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>&
+MethodOptions::_internal_uninterpreted_option() const {
   return _impl_.uninterpreted_option_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption>*
+MethodOptions::_internal_mutable_uninterpreted_option() {
+  return &_impl_.uninterpreted_option_;
 }
 
 // -------------------------------------------------------------------
@@ -14233,26 +14489,26 @@ inline int UninterpretedOption::name_size() const {
   return _internal_name_size();
 }
 inline void UninterpretedOption::clear_name() {
-  _impl_.name_.Clear();
+  _internal_mutable_name()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* UninterpretedOption::mutable_name(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.name)
-  return _impl_.name_.Mutable(index);
+  return _internal_mutable_name()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart >*
 UninterpretedOption::mutable_name() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.UninterpretedOption.name)
-  return &_impl_.name_;
+  return _internal_mutable_name();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart& UninterpretedOption::_internal_name(int index) const {
-  return _impl_.name_.Get(index);
+  return _internal_name().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart& UninterpretedOption::name(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.UninterpretedOption.name)
   return _internal_name(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* UninterpretedOption::_internal_add_name() {
-  return _impl_.name_.Add();
+  return _internal_mutable_name()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* UninterpretedOption::add_name() {
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* _add = _internal_add_name();
@@ -14262,7 +14518,15 @@ inline ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* UninterpretedOptio
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart >&
 UninterpretedOption::name() const {
   // @@protoc_insertion_point(field_list:google.protobuf.UninterpretedOption.name)
+  return _internal_name();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart>&
+UninterpretedOption::_internal_name() const {
   return _impl_.name_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart>*
+UninterpretedOption::_internal_mutable_name() {
+  return &_impl_.name_;
 }
 
 // optional string identifier_value = 3;
@@ -14862,26 +15126,26 @@ inline int SourceCodeInfo::location_size() const {
   return _internal_location_size();
 }
 inline void SourceCodeInfo::clear_location() {
-  _impl_.location_.Clear();
+  _internal_mutable_location()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* SourceCodeInfo::mutable_location(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.location)
-  return _impl_.location_.Mutable(index);
+  return _internal_mutable_location()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location >*
 SourceCodeInfo::mutable_location() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.location)
-  return &_impl_.location_;
+  return _internal_mutable_location();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location& SourceCodeInfo::_internal_location(int index) const {
-  return _impl_.location_.Get(index);
+  return _internal_location().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location& SourceCodeInfo::location(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.location)
   return _internal_location(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* SourceCodeInfo::_internal_add_location() {
-  return _impl_.location_.Add();
+  return _internal_mutable_location()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* SourceCodeInfo::add_location() {
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* _add = _internal_add_location();
@@ -14891,7 +15155,15 @@ inline ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* SourceCodeInfo::add_loc
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location >&
 SourceCodeInfo::location() const {
   // @@protoc_insertion_point(field_list:google.protobuf.SourceCodeInfo.location)
+  return _internal_location();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location>&
+SourceCodeInfo::_internal_location() const {
   return _impl_.location_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location>*
+SourceCodeInfo::_internal_mutable_location() {
+  return &_impl_.location_;
 }
 
 // -------------------------------------------------------------------
@@ -15095,26 +15367,26 @@ inline int GeneratedCodeInfo::annotation_size() const {
   return _internal_annotation_size();
 }
 inline void GeneratedCodeInfo::clear_annotation() {
-  _impl_.annotation_.Clear();
+  _internal_mutable_annotation()->Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::mutable_annotation(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.GeneratedCodeInfo.annotation)
-  return _impl_.annotation_.Mutable(index);
+  return _internal_mutable_annotation()->Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation >*
 GeneratedCodeInfo::mutable_annotation() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.GeneratedCodeInfo.annotation)
-  return &_impl_.annotation_;
+  return _internal_mutable_annotation();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation& GeneratedCodeInfo::_internal_annotation(int index) const {
-  return _impl_.annotation_.Get(index);
+  return _internal_annotation().Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation& GeneratedCodeInfo::annotation(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.GeneratedCodeInfo.annotation)
   return _internal_annotation(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::_internal_add_annotation() {
-  return _impl_.annotation_.Add();
+  return _internal_mutable_annotation()->Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::add_annotation() {
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* _add = _internal_add_annotation();
@@ -15124,7 +15396,15 @@ inline ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* GeneratedCodeInfo:
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation >&
 GeneratedCodeInfo::annotation() const {
   // @@protoc_insertion_point(field_list:google.protobuf.GeneratedCodeInfo.annotation)
+  return _internal_annotation();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation>&
+GeneratedCodeInfo::_internal_annotation() const {
   return _impl_.annotation_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation>*
+GeneratedCodeInfo::_internal_mutable_annotation() {
+  return &_impl_.annotation_;
 }
 
 #ifdef __GNUC__
