@@ -207,10 +207,18 @@ jobs:
         include:
           - name: MacOS
             os: macos-12
-            bazel: //src/...
+            cache_key: macos-12
+            bazel: test //src/...
+          - name: MacOS Apple Silicon (build only)
+            os: macos-12
+            cache_key: macos-12-arm
+            # Current github runners are all Intel based, so just build/compile
+            # for Apple Silicon to detect issues there.
+            bazel: build --cpu=darwin_arm64 //src/...
           - name: Windows
             os: windows-2019
-            bazel: //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
+            cache_key: windows-2019
+            bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
     name: ${{ matrix.name }} Bazel
     runs-on: ${{ matrix.os }}
     steps:
@@ -222,8 +230,8 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel: test ${{ matrix.bazel }}
-          bazel-cache: cpp_${{ matrix.os }}
+          bazel: ${{ matrix.bazel }}
+          bazel-cache: cpp_${{ matrix.cache_key }}
 
   non-linux-cmake:
     strategy:
