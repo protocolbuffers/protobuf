@@ -682,11 +682,6 @@ cc_test(
         "upb/reflection/def_builder_test.cc",
         "upb/reflection/def_type.h",
     ],
-    # TODO(b/259158612): fix this test on Windows.
-    target_compatible_with = select({
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     deps = [
         ":descriptor_upb_proto",
         ":hash",
@@ -694,6 +689,7 @@ cc_test(
         ":reflection",
         ":reflection_internal",
         ":upb",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
 )

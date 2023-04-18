@@ -26,33 +26,21 @@
  */
 
 #include "gtest/gtest.h"
-#include "upb/reflection/def.hpp"
+#include "absl/strings/string_view.h"
 #include "upb/reflection/def_builder_internal.h"
+#include "upb/upb.hpp"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-struct IdentTest {
-  const char* text;
+struct IdentTestData {
+  absl::string_view text;
   bool ok;
 };
 
-static const std::vector<IdentTest> FullIdentTests = {
-    {"foo.bar", true},   {"foo.", true},  {"foo", true},
+class FullIdentTestBase : public testing::TestWithParam<IdentTestData> {};
 
-    {"foo.7bar", false}, {".foo", false}, {"#", false},
-    {".", false},        {"", false},
-};
-
-static const std::vector<IdentTest> NotFullIdentTests = {
-    {"foo", true},      {"foo1", true},
-
-    {"foo.bar", false}, {"1foo", false}, {"#", false},
-    {".", false},       {"", false},
-};
-
-TEST(DefBuilder, TestIdents) {
-  upb_StringView sv;
+TEST_P(FullIdentTestBase, CheckFullIdent) {
   upb_Status status;
   upb_DefBuilder ctx;
   upb::Arena arena;
@@ -60,27 +48,56 @@ TEST(DefBuilder, TestIdents) {
   ctx.arena = arena.ptr();
   upb_Status_Clear(&status);
 
-  for (const auto& test : FullIdentTests) {
-    sv.data = test.text;
-    sv.size = strlen(test.text);
-
-    if (UPB_SETJMP(ctx.err)) {
-      EXPECT_FALSE(test.ok);
-    } else {
-      _upb_DefBuilder_CheckIdentFull(&ctx, sv);
-      EXPECT_TRUE(test.ok);
-    }
-  }
-
-  for (const auto& test : NotFullIdentTests) {
-    sv.data = test.text;
-    sv.size = strlen(test.text);
-
-    if (UPB_SETJMP(ctx.err)) {
-      EXPECT_FALSE(test.ok);
-    } else {
-      _upb_DefBuilder_MakeFullName(&ctx, "abc", sv);
-      EXPECT_TRUE(test.ok);
-    }
+  if (UPB_SETJMP(ctx.err)) {
+    EXPECT_FALSE(GetParam().ok);
+  } else {
+    _upb_DefBuilder_CheckIdentFull(
+        &ctx, upb_StringView_FromDataAndSize(GetParam().text.data(),
+                                             GetParam().text.size()));
+    EXPECT_TRUE(GetParam().ok);
   }
 }
+
+INSTANTIATE_TEST_SUITE_P(FullIdentTest, FullIdentTestBase,
+                         testing::ValuesIn(std::vector<IdentTestData>{
+                             {"foo.bar", true},
+                             {"foo.", true},
+                             {"foo", true},
+
+                             {"foo.7bar", false},
+                             {".foo", false},
+                             {"#", false},
+                             {".", false},
+                             {"", false}}));
+
+class PartIdentTestBase : public testing::TestWithParam<IdentTestData> {};
+
+TEST_P(PartIdentTestBase, TestNotFullIdent) {
+  upb_Status status;
+  upb_DefBuilder ctx;
+  upb::Arena arena;
+  ctx.status = &status;
+  ctx.arena = arena.ptr();
+  upb_Status_Clear(&status);
+
+  if (UPB_SETJMP(ctx.err)) {
+    EXPECT_FALSE(GetParam().ok);
+  } else {
+    _upb_DefBuilder_MakeFullName(
+        &ctx, "abc",
+        upb_StringView_FromDataAndSize(GetParam().text.data(),
+                                       GetParam().text.size()));
+    EXPECT_TRUE(GetParam().ok);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(PartIdentTest, PartIdentTestBase,
+                         testing::ValuesIn(std::vector<IdentTestData>{
+                             {"foo", true},
+                             {"foo1", true},
+
+                             {"foo.bar", false},
+                             {"1foo", false},
+                             {"#", false},
+                             {".", false},
+                             {"", false}}));

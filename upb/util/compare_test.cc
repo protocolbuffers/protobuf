@@ -29,12 +29,12 @@
 
 #include <stdint.h>
 
-#include <string_view>
+#include <initializer_list>
+#include <string>
+#include <variant>
 #include <vector>
 
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "absl/strings/string_view.h"
 #include "upb/wire/swap_internal.h"
 #include "upb/wire/types.h"
 
@@ -42,69 +42,35 @@ struct UnknownField;
 
 using UnknownFields = std::vector<UnknownField>;
 
-enum class UnknownFieldType {
-  kVarint,
-  kLongVarint,  // Over-encoded to have distinct wire format.
-  kDelimited,
-  kFixed64,
-  kFixed32,
-  kGroup,
+struct Varint {
+  explicit Varint(uint64_t _val) : val(_val) {}
+  uint64_t val;
 };
-
-union UnknownFieldValue {
-  uint64_t varint;
-  uint64_t fixed64;
-  uint32_t fixed32;
-  // NULL-terminated (strings must not have embedded NULL).
-  const char* delimited;
-  UnknownFields* group;
+struct LongVarint {
+  explicit LongVarint(uint64_t _val) : val(_val) {}
+  uint64_t val;  // Over-encoded.
 };
-
-struct TypeAndValue {
-  UnknownFieldType type;
-  UnknownFieldValue value;
+struct Delimited {
+  explicit Delimited(std::string _val) : val(_val) {}
+  std::string val;
+};
+struct Fixed64 {
+  explicit Fixed64(uint64_t _val) : val(_val) {}
+  uint64_t val;
+};
+struct Fixed32 {
+  explicit Fixed32(uint32_t _val) : val(_val) {}
+  uint32_t val;
+};
+struct Group {
+  Group(std::initializer_list<UnknownField> _val) : val(_val) {}
+  UnknownFields val;
 };
 
 struct UnknownField {
   uint32_t field_number;
-  TypeAndValue value;
+  std::variant<Varint, LongVarint, Delimited, Fixed64, Fixed32, Group> value;
 };
-
-TypeAndValue Varint(uint64_t val) {
-  TypeAndValue ret{UnknownFieldType::kVarint};
-  ret.value.varint = val;
-  return ret;
-}
-
-TypeAndValue LongVarint(uint64_t val) {
-  TypeAndValue ret{UnknownFieldType::kLongVarint};
-  ret.value.varint = val;
-  return ret;
-}
-
-TypeAndValue Fixed64(uint64_t val) {
-  TypeAndValue ret{UnknownFieldType::kFixed64};
-  ret.value.fixed64 = val;
-  return ret;
-}
-
-TypeAndValue Fixed32(uint32_t val) {
-  TypeAndValue ret{UnknownFieldType::kFixed32};
-  ret.value.fixed32 = val;
-  return ret;
-}
-
-TypeAndValue Delimited(const char* val) {
-  TypeAndValue ret{UnknownFieldType::kDelimited};
-  ret.value.delimited = val;
-  return ret;
-}
-
-TypeAndValue Group(UnknownFields nested) {
-  TypeAndValue ret{UnknownFieldType::kGroup};
-  ret.value.group = &nested;
-  return ret;
-}
 
 void EncodeVarint(uint64_t val, std::string* str) {
   do {
@@ -116,45 +82,33 @@ void EncodeVarint(uint64_t val, std::string* str) {
 }
 
 std::string ToBinaryPayload(const UnknownFields& fields) {
-  static const upb_WireType wire_types[] = {
-      kUpb_WireType_Varint, kUpb_WireType_Varint, kUpb_WireType_Delimited,
-      kUpb_WireType_64Bit,  kUpb_WireType_32Bit,  kUpb_WireType_StartGroup,
-  };
   std::string ret;
 
   for (const auto& field : fields) {
-    uint32_t tag = field.field_number << 3 |
-                   (wire_types[static_cast<int>(field.value.type)]);
-    EncodeVarint(tag, &ret);
-    switch (field.value.type) {
-      case UnknownFieldType::kVarint:
-        EncodeVarint(field.value.value.varint, &ret);
-        break;
-      case UnknownFieldType::kLongVarint:
-        EncodeVarint(field.value.value.varint, &ret);
-        ret.back() |= 0x80;
-        ret.push_back(0);
-        break;
-      case UnknownFieldType::kDelimited:
-        EncodeVarint(strlen(field.value.value.delimited), &ret);
-        ret.append(field.value.value.delimited);
-        break;
-      case UnknownFieldType::kFixed64: {
-        uint64_t val = _upb_BigEndian_Swap64(field.value.value.fixed64);
-        ret.append(reinterpret_cast<const char*>(&val), sizeof(val));
-        break;
-      }
-      case UnknownFieldType::kFixed32: {
-        uint32_t val = _upb_BigEndian_Swap32(field.value.value.fixed32);
-        ret.append(reinterpret_cast<const char*>(&val), sizeof(val));
-        break;
-      }
-      case UnknownFieldType::kGroup: {
-        uint32_t end_tag = field.field_number << 3 | kUpb_WireType_EndGroup;
-        ret.append(ToBinaryPayload(*field.value.value.group));
-        EncodeVarint(end_tag, &ret);
-        break;
-      }
+    if (const auto* val = std::get_if<Varint>(&field.value)) {
+      EncodeVarint(field.field_number << 3 | kUpb_WireType_Varint, &ret);
+      EncodeVarint(val->val, &ret);
+    } else if (const auto* val = std::get_if<LongVarint>(&field.value)) {
+      EncodeVarint(field.field_number << 3 | kUpb_WireType_Varint, &ret);
+      EncodeVarint(val->val, &ret);
+      ret.back() |= 0x80;
+      ret.push_back(0);
+    } else if (const auto* val = std::get_if<Delimited>(&field.value)) {
+      EncodeVarint(field.field_number << 3 | kUpb_WireType_Delimited, &ret);
+      EncodeVarint(val->val.size(), &ret);
+      ret.append(val->val);
+    } else if (const auto* val = std::get_if<Fixed64>(&field.value)) {
+      EncodeVarint(field.field_number << 3 | kUpb_WireType_64Bit, &ret);
+      uint64_t swapped = _upb_BigEndian_Swap64(val->val);
+      ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
+    } else if (const auto* val = std::get_if<Fixed32>(&field.value)) {
+      EncodeVarint(field.field_number << 3 | kUpb_WireType_32Bit, &ret);
+      uint32_t swapped = _upb_BigEndian_Swap32(val->val);
+      ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
+    } else if (const auto* val = std::get_if<Group>(&field.value)) {
+      EncodeVarint(field.field_number << 3 | kUpb_WireType_StartGroup, &ret);
+      ret.append(ToBinaryPayload(val->val));
+      EncodeVarint(field.field_number << 3 | kUpb_WireType_EndGroup, &ret);
     }
   }
 
