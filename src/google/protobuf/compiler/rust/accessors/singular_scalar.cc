@@ -51,10 +51,10 @@ class SingularScalar final : public AccessorGenerator {
         {
             {"field", field.desc().name()},
             {"Scalar", PrimitiveRsTypeName(field)},
-            {"hazzer_thunk", GetAccessorThunkName(field, "has")},
-            {"getter_thunk", GetAccessorThunkName(field, "")},
-            {"setter_thunk", GetAccessorThunkName(field, "set")},
-            {"clearer_thunk", GetAccessorThunkName(field, "clear")},
+            {"hazzer_thunk", Thunk(field, "has")},
+            {"getter_thunk", Thunk(field, "get")},
+            {"setter_thunk", Thunk(field, "set")},
+            {"clearer_thunk", Thunk(field, "clear")},
         },
         R"rs(
           pub fn $field$(&self) -> Option<$Scalar$> {
@@ -76,10 +76,10 @@ class SingularScalar final : public AccessorGenerator {
     field.Emit(
         {
             {"Scalar", PrimitiveRsTypeName(field)},
-            {"hazzer_thunk", GetAccessorThunkName(field, "has")},
-            {"getter_thunk", GetAccessorThunkName(field, "")},
-            {"setter_thunk", GetAccessorThunkName(field, "set")},
-            {"clearer_thunk", GetAccessorThunkName(field, "clear")},
+            {"hazzer_thunk", Thunk(field, "has")},
+            {"getter_thunk", Thunk(field, "get")},
+            {"setter_thunk", Thunk(field, "set")},
+            {"clearer_thunk", Thunk(field, "clear")},
         },
         R"rs(
           fn $hazzer_thunk$(raw_msg: $NonNull$<u8>) -> bool;
@@ -95,10 +95,10 @@ class SingularScalar final : public AccessorGenerator {
             {"field", field.desc().name()},
             {"Scalar", cpp::PrimitiveTypeName(field.desc().cpp_type())},
             {"namespace", cpp::Namespace(field.desc().containing_type())},
-            {"hazzer_thunk", GetAccessorThunkName(field, "has")},
-            {"getter_thunk", GetAccessorThunkName(field, "")},
-            {"setter_thunk", GetAccessorThunkName(field, "set")},
-            {"clearer_thunk", GetAccessorThunkName(field, "clear")},
+            {"hazzer_thunk", Thunk(field, "has")},
+            {"getter_thunk", Thunk(field, "get")},
+            {"setter_thunk", Thunk(field, "set")},
+            {"clearer_thunk", Thunk(field, "clear")},
         },
         R"cc(
           bool $hazzer_thunk$($namespace$::$Msg$* msg) {

@@ -34,8 +34,8 @@ cc_library(
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/cpp",
     visibility = [
-      "//pkg:__pkg__",
-      "//src/google/protobuf/compiler/rust:__subpackages__",
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler/rust:__subpackages__",
     ],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",

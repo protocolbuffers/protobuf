@@ -48,10 +48,8 @@ std::string GetRsFile(Context<FileDescriptor> file);
 std::string GetThunkCcFile(Context<FileDescriptor> file);
 std::string GetHeaderFile(Context<FileDescriptor> file);
 
-std::string GetUnderscoreDelimitedFullName(Context<Descriptor> msg);
-
-std::string GetAccessorThunkName(Context<FieldDescriptor> field,
-                                 absl::string_view op);
+std::string Thunk(Context<FieldDescriptor> field, absl::string_view op);
+std::string Thunk(Context<Descriptor> msg, absl::string_view op);
 
 bool IsSupportedFieldType(Context<FieldDescriptor> field);
 
