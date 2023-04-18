@@ -17,7 +17,8 @@ jobs:
     runs-on: ubuntu-large
     if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
     env:
-      DOCKER_IMAGE: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple@sha256:8f5ae27bccb454068b14a6fe50628adf2ce867ddf3b15807aaf1d9d4affcbc51
+      # Bazel 5.4.0.  Once we have moved to toolchains, we can update to Bazel 6.x.
+      DOCKER_IMAGE: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple@sha256:bb1d14738449916d489c1cbb062508c4dca5bd265ea3e67a2628ae40912b9b00
 
     steps:
       - uses: actions/checkout@v2
@@ -32,6 +33,8 @@ jobs:
         run: gcloud auth configure-docker -q us-docker.pkg.dev
       - name: Pull Docker Image
         run: docker pull $DOCKER_IMAGE
+      - name: Check Bazel version
+        run: cd ${{ github.workspace }} && docker run -v$PWD:/workspace $DOCKER_IMAGE --version
       - id: bazel-cache
         name: Set up Bazel caching
         uses: ./.github/actions/setup-bazel-cache
