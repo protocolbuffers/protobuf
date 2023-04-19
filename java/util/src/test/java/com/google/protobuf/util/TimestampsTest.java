@@ -74,11 +74,39 @@ public class TimestampsTest {
       Timestamp.newBuilder().setSeconds(Long.MIN_VALUE).setNanos(Integer.MIN_VALUE).build();
 
   @Test
+  public void testNow() {
+    Timestamp now = Timestamps.now();
+    long epochSeconds = System.currentTimeMillis() / 1000;
+    assertThat(now.getSeconds()).isAtLeast(epochSeconds - 1);
+    assertThat(now.getSeconds()).isAtMost(epochSeconds + 1);
+  }
+
+  @Test
+  public void testNowWithSubMillisecondPrecision() {
+    try {
+      // throws if we're not on Java9+
+      Class.forName("java.lang.Runtime$Version");
+    } catch (ClassNotFoundException e) {
+      // ignored; we're not on Java 9+
+      return;
+    }
+
+    // grab 100 timestamps, and ensure that at least 1 of them has sub-millisecond precision
+    for (int i = 0; i < 100; i++) {
+      Timestamp now = Timestamps.now();
+      Timestamp nowWithMilliPrecision = Timestamps.fromMillis(Timestamps.toMillis(now));
+      if (!now.equals(nowWithMilliPrecision)) {
+        return;
+      }
+    }
+    assertWithMessage("no timestamp had sub-millisecond precision").fail();
+  }
+
+  @Test
   public void testMinMaxAreValid() {
     assertThat(Timestamps.isValid(Timestamps.MAX_VALUE)).isTrue();
     assertThat(Timestamps.isValid(Timestamps.MIN_VALUE)).isTrue();
   }
-
 
   @Test
   public void testIsValid_false() {
@@ -475,7 +503,7 @@ public class TimestampsTest {
     Timestamp timestamp = Timestamps.fromDate(date);
     assertThat(Timestamps.toString(timestamp)).isEqualTo("1970-01-01T00:00:01.111Z");
   }
-  
+
   @Test
   public void testFromSqlTimestamp_beforeEpoch() {
     Date date = new java.sql.Timestamp(-1111);
@@ -615,6 +643,7 @@ public class TimestampsTest {
     } catch (IllegalArgumentException expected) {
     }
   }
+
   @Test
   public void testInvalidMaxMicrosecondsOverflow() {
     try {
@@ -686,13 +715,12 @@ public class TimestampsTest {
 
   @Test
   public void testIllegalArgumentExceptionForMaxMicroseconds() {
-   try {
+    try {
       Timestamps.fromMicros(Long.MAX_VALUE);
       assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
     } catch (IllegalArgumentException expected) {
     }
   }
-
 
   @Test
   public void testIllegalArgumentExceptionForMaxMilliseconds() {
@@ -717,7 +745,6 @@ public class TimestampsTest {
     } catch (IllegalArgumentException expected) {
     }
   }
-
 
   @Test
   public void testIllegalArgumentExceptionForMinMilliseconds() {
