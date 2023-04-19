@@ -7314,51 +7314,6 @@ void DescriptorBuilder::ValidateFieldOptions(
              "option json_name is not allowed on extension fields.");
   }
 
-
-  // If this is a declared extension, validate that the actual name and type
-  // match the declaration.
-  if (field->is_extension()) {
-    const Descriptor::ExtensionRange* extension_range =
-        field->containing_type()->FindExtensionRangeContainingNumber(
-            field->number());
-
-
-    if (extension_range->options_ == nullptr) {
-      return;
-    }
-
-    for (const auto& declaration : extension_range->options_->declaration()) {
-      if (declaration.number() != field->number()) continue;
-      if (declaration.reserved()) {
-        AddError(field->full_name(), proto,
-                 DescriptorPool::ErrorCollector::EXTENDEE, [&] {
-                   return absl::Substitute(
-                       "Cannot use number $0 for extension field $1, as it is "
-                       "reserved in the extension declarations for message $2.",
-                       field->number(), field->full_name(),
-                       field->containing_type()->full_name());
-                 });
-        return;
-      }
-      CheckExtensionDeclaration(*field, proto, declaration.full_name(),
-                                declaration.type(), declaration.is_repeated());
-      return;
-    }
-
-    if (!extension_range->options_->declaration().empty()) {
-      AddError(
-          field->full_name(), proto, DescriptorPool::ErrorCollector::EXTENDEE,
-          [&] {
-            return absl::Substitute(
-                "Missing extension declaration for field $0 with number $1. "
-                "An extension range must declare for all extension fields "
-                "once if there's any declaration in the range. Otherwise, "
-                "consider splitting up the range.",
-                field->full_name(), field->number());
-          });
-      return;
-    }
-  }
 }
 
 void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
