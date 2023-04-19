@@ -153,7 +153,7 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
       thunks_msg.Emit({{"Msg", msg.desc().full_name()}}, R"cc(
         // $Msg$
       )cc");
-      gen.GenerateThunkCc(thunks_msg);
+      gen.GenerateThunksCc(thunks_msg);
       thunks_msg.printer().PrintRaw("\n");
     }
   }

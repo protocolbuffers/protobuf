@@ -94,21 +94,22 @@ class SingularScalar final : public AccessorGenerator {
         {
             {"field", field.desc().name()},
             {"Scalar", cpp::PrimitiveTypeName(field.desc().cpp_type())},
-            {"namespace", cpp::Namespace(field.desc().containing_type())},
+            {"QualifiedMsg",
+             cpp::QualifiedClassName(field.desc().containing_type())},
             {"hazzer_thunk", Thunk(field, "has")},
             {"getter_thunk", Thunk(field, "get")},
             {"setter_thunk", Thunk(field, "set")},
             {"clearer_thunk", Thunk(field, "clear")},
         },
         R"cc(
-          bool $hazzer_thunk$($namespace$::$Msg$* msg) {
+          bool $hazzer_thunk$($QualifiedMsg$* msg) {
             return msg->has_$field$();
           }
-          $Scalar$ $getter_thunk$($namespace$::$Msg$* msg) { return msg->$field$(); }
-          void $setter_thunk$($namespace$::$Msg$* msg, $Scalar$ val) {
+          $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
+          void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
             msg->set_$field$(val);
           }
-          void $clearer_thunk$($namespace$::$Msg$* msg) { msg->clear_$field$(); }
+          void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
         )cc");
   }
 };

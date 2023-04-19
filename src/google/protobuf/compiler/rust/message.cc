@@ -32,6 +32,8 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/rust/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -239,6 +241,28 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
                msg.printer().PrintRaw("\n");
              }
            }},
+          {"nested_msgs",
+           [&] {
+             if (msg.desc().nested_type_count() == 0) {
+               return;
+             }
+             msg.Emit({{"Msg", msg.desc().name()},
+                       {"nested_msgs",
+                        [&] {
+                          for (int i = 0; i < msg.desc().nested_type_count();
+                               ++i) {
+                            auto nested_msg =
+                                msg.WithDesc(msg.desc().nested_type(i));
+                            MessageGenerator gen(nested_msg);
+                            gen.GenerateRs(nested_msg);
+                          }
+                        }}},
+                      R"rs(
+                 pub mod $Msg$_ {
+                   $nested_msgs$
+                 }  // mod $Msg$_
+                )rs");
+           }},
       },
       R"rs(
         #[allow(non_camel_case_types)]
@@ -274,6 +298,8 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
 
           $accessor_externs$
         }  // extern "C" for $Msg$
+
+        $nested_msgs$
       )rs");
 
   if (msg.is_cpp()) {
@@ -289,18 +315,27 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
 }
 
 // Generates code for a particular message in `.pb.thunk.cc`.
-void MessageGenerator::GenerateThunkCc(Context<Descriptor> msg) {
+void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
   ABSL_CHECK(msg.is_cpp());
 
   msg.Emit(
       {
           {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
           {"Msg", msg.desc().name()},
-          {"pkg", cpp::Namespace(&msg.desc())},
+          {"QualifiedMsg", cpp::QualifiedClassName(&msg.desc())},
           {"new_thunk", Thunk(msg, "new")},
           {"delete_thunk", Thunk(msg, "delete")},
           {"serialize_thunk", Thunk(msg, "serialize")},
           {"deserialize_thunk", Thunk(msg, "deserialize")},
+          {"nested_msg_thunks",
+           [&] {
+             for (int i = 0; i < msg.desc().nested_type_count(); ++i) {
+               Context<Descriptor> nested_msg =
+                   msg.WithDesc(msg.desc().nested_type(i));
+               MessageGenerator gen(nested_msg);
+               gen.GenerateThunksCc(nested_msg);
+             }
+           }},
           {"accessor_thunks",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
@@ -312,19 +347,26 @@ void MessageGenerator::GenerateThunkCc(Context<Descriptor> msg) {
            }},
       },
       R"cc(
+        // $abi$ is a workaround for a syntax highlight bug in VSCode. However,
+        // that confuses clang-format (it refuses to keep the newline after
+        // `$abi${`). Disabling clang-format for the block.
+        // clang-format off
         extern $abi$ {
-          void* $new_thunk$() { return new $pkg$::$Msg$(); }
-          void $delete_thunk$(void* ptr) { delete static_cast<$pkg$::$Msg$*>(ptr); }
-          google::protobuf::rust_internal::SerializedData $serialize_thunk$($pkg$::$Msg$ * msg) {
-            return google::protobuf::rust_internal::SerializeMsg(msg);
-          }
-          bool $deserialize_thunk$($pkg$::$Msg$ * msg,
-                                   google::protobuf::rust_internal::SerializedData data) {
-            return msg->ParseFromArray(data.data, data.len);
-          }
+        void * $new_thunk$(){return new $QualifiedMsg$(); }
+        void $delete_thunk$(void* ptr) { delete static_cast<$QualifiedMsg$*>(ptr); }
+        google::protobuf::rust_internal::SerializedData $serialize_thunk$($QualifiedMsg$* msg) {
+          return google::protobuf::rust_internal::SerializeMsg(msg);
+        }
+        bool $deserialize_thunk$($QualifiedMsg$* msg,
+                                 google::protobuf::rust_internal::SerializedData data) {
+          return msg->ParseFromArray(data.data, data.len);
+        }
 
-          $accessor_thunks$
+        $accessor_thunks$
         }  // extern $abi$
+        // clang-format on
+
+        $nested_msg_thunks$
       )cc");
 }
 

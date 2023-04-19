@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/// Tests covering accessors for singular bool and int64 fields.
+/// Tests covering accessors for singular bool, int64, and bytes fields.
 use unittest_proto::proto2_unittest::TestAllTypes;
 
 #[test]
