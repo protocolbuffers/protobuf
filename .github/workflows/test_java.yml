@@ -93,25 +93,25 @@ jobs:
       run: |
         mv ${{ steps.build-protoc.outputs.protoc }} protoc
         sudo rm -rf _build
+    - name: Install snapshot version locally (not using generated pom.xml)
+      run: |
+        mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
+      working-directory: java
     - name: Generate pom.xml files from the template
       uses: protocolbuffers/protobuf-ci/bazel-docker@v1
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-03a376b5d6ef66f827fc307716e3b841cc26b709
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
-        bazel: build //java/core:core_mvn-pom //java/core:lite_mvn-pom //java/kotlin:kotlin_mvn-pom //java/kotlin-lite:kotlin-lite_mvn-pom //java/util:util_mvn-pom
-    - name: Copy the generated pom.xml files to the java directory
+        # protobuf-java and protobuf-java-util are the member of the BOM
+        bazel: build //java/core:core_mvn-pom //java/util:util_mvn-pom
+    - name: Copy the generated pom.xml files to the local Maven repository
+      shell: bash
       run: |
-        cp bazel-bin/java/core/core_mvn-pom.xml java/core/pom.xml
-        cp bazel-bin/java/util/util_mvn-pom.xml java/util/pom.xml
-        # TODO: Check whether this location below is a bug or not
-        cp bazel-bin/java/core/lite_mvn-pom.xml java/lite/pom.xml
-        cp bazel-bin/java/kotlin/kotlin_mvn-pom.xml java/kotlin/pom.xml
-        cp bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml java/kotlin-lite/pom.xml
-    - name: Install snapshot version locally
-      run: |
-        mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
-      working-directory: java
+        LOCAL_MAVEN_GROUP_DIR="${HOME}/.m2/repository/com/google/protobuf"
+        VERSION=3.22.3
+        cp bazel-bin/java/core/core_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java/${VERSION}/protobuf-java-${VERSION}.pom
+        cp bazel-bin/java/util/util_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java-util/${VERSION}/protobuf-java-util-${VERSION}.pom
     - name: Validate Protobuf BOM
       uses: googleapis/java-cloud-bom/tests/validate-bom@main
       with:
