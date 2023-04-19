@@ -383,6 +383,8 @@ class PROTOBUF_EXPORT Type final :
   private:
   const std::string& _internal_oneofs(int index) const;
   std::string* _internal_add_oneofs();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& _internal_oneofs() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* _internal_mutable_oneofs();
 
   public:
   // repeated .google.protobuf.Option options = 4;
@@ -1601,15 +1603,12 @@ inline int Type::oneofs_size() const {
   return _internal_oneofs_size();
 }
 inline void Type::clear_oneofs() {
-  _impl_.oneofs_.Clear();
+  _internal_mutable_oneofs()->Clear();
 }
 inline std::string* Type::add_oneofs() {
   std::string* _s = _internal_add_oneofs();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.Type.oneofs)
   return _s;
-}
-inline const std::string& Type::_internal_oneofs(int index) const {
-  return _impl_.oneofs_.Get(index);
 }
 inline const std::string& Type::oneofs(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.oneofs)
@@ -1617,59 +1616,75 @@ inline const std::string& Type::oneofs(int index) const {
 }
 inline std::string* Type::mutable_oneofs(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.oneofs)
-  return _impl_.oneofs_.Mutable(index);
+  return _internal_mutable_oneofs()->Mutable(index);
 }
 inline void Type::set_oneofs(int index, const std::string& value) {
-  _impl_.oneofs_.Mutable(index)->assign(value);
+  _internal_mutable_oneofs()->Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Type.oneofs)
 }
 inline void Type::set_oneofs(int index, std::string&& value) {
-  _impl_.oneofs_.Mutable(index)->assign(std::move(value));
+  _internal_mutable_oneofs()->Mutable(index)->assign(std::move(value));
   // @@protoc_insertion_point(field_set:google.protobuf.Type.oneofs)
 }
 inline void Type::set_oneofs(int index, const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _impl_.oneofs_.Mutable(index)->assign(value);
+  _internal_mutable_oneofs()->Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.Type.oneofs)
 }
 inline void Type::set_oneofs(int index, const char* value,
                               std::size_t size) {
-  _impl_.oneofs_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
+  _internal_mutable_oneofs()->Mutable(index)->assign(
+      reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Type.oneofs)
 }
 inline void Type::set_oneofs(int index, absl::string_view value) {
-  _impl_.oneofs_.Mutable(index)->assign(value.data(), value.size());
+  _internal_mutable_oneofs()->Mutable(index)->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.Type.oneofs)
 }
-inline std::string* Type::_internal_add_oneofs() { return _impl_.oneofs_.Add(); }
 inline void Type::add_oneofs(const std::string& value) {
-  _impl_.oneofs_.Add()->assign(value);
+  _internal_mutable_oneofs()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(std::string&& value) {
-  _impl_.oneofs_.Add(std::move(value));
+  _internal_mutable_oneofs()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _impl_.oneofs_.Add()->assign(value);
+  _internal_mutable_oneofs()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(const char* value, std::size_t size) {
-  _impl_.oneofs_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  _internal_mutable_oneofs()->Add()->assign(
+      reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(absl::string_view value) {
-  _impl_.oneofs_.Add()->assign(value.data(), value.size());
+  _internal_mutable_oneofs()->Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.Type.oneofs)
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
 Type::oneofs() const {
   // @@protoc_insertion_point(field_list:google.protobuf.Type.oneofs)
-  return _impl_.oneofs_;
+  return _internal_oneofs();
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* Type::mutable_oneofs() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.oneofs)
+  return _internal_mutable_oneofs();
+}
+inline const std::string& Type::_internal_oneofs(int index) const {
+  return _internal_oneofs().Get(index);
+}
+inline std::string* Type::_internal_add_oneofs() {
+  return _internal_mutable_oneofs()->Add();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+Type::_internal_oneofs() const {
+  return _impl_.oneofs_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+Type::_internal_mutable_oneofs() {
   return &_impl_.oneofs_;
 }
 

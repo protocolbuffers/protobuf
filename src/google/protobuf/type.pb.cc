@@ -550,7 +550,7 @@ Type::~Type() {
 inline void Type::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fields_.~RepeatedPtrField();
-  _impl_.oneofs_.~RepeatedPtrField();
+  _internal_mutable_oneofs()->~RepeatedPtrField();
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
@@ -568,7 +568,7 @@ void Type::Clear() {
   (void) cached_has_bits;
 
   _impl_.fields_.Clear();
-  _impl_.oneofs_.Clear();
+  _internal_mutable_oneofs()->Clear();
   _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.edition_.ClearToEmpty();
@@ -783,9 +783,10 @@ failure:
   }
 
   // repeated string oneofs = 3;
-  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.oneofs_.size());
-  for (int i = 0, n = _impl_.oneofs_.size(); i < n; ++i) {
-    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(_impl_.oneofs_.Get(i));
+  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_internal_oneofs().size());
+  for (int i = 0, n = _internal_oneofs().size(); i < n; ++i) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        _internal_oneofs().Get(i));
   }
 
   // repeated .google.protobuf.Option options = 4;
@@ -840,7 +841,7 @@ void Type::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_
   (void) cached_has_bits;
 
   _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
-  _this->_impl_.oneofs_.MergeFrom(from._impl_.oneofs_);
+  _this->_internal_mutable_oneofs()->MergeFrom(from._internal_oneofs());
   _this->_impl_.options_.MergeFrom(from._impl_.options_);
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
@@ -876,7 +877,8 @@ void Type::InternalSwap(Type* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.fields_.InternalSwap(&other->_impl_.fields_);
-  _impl_.oneofs_.InternalSwap(&other->_impl_.oneofs_);
+  _internal_mutable_oneofs()->InternalSwap(
+      other->_internal_mutable_oneofs());
   _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);

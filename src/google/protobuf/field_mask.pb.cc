@@ -146,7 +146,7 @@ FieldMask::~FieldMask() {
 
 inline void FieldMask::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.paths_.~RepeatedPtrField();
+  _internal_mutable_paths()->~RepeatedPtrField();
 }
 
 void FieldMask::SetCachedSize(int size) const {
@@ -159,7 +159,7 @@ void FieldMask::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.paths_.Clear();
+  _internal_mutable_paths()->Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -239,9 +239,10 @@ failure:
   (void) cached_has_bits;
 
   // repeated string paths = 1;
-  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.paths_.size());
-  for (int i = 0, n = _impl_.paths_.size(); i < n; ++i) {
-    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(_impl_.paths_.Get(i));
+  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_internal_paths().size());
+  for (int i = 0, n = _internal_paths().size(); i < n; ++i) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        _internal_paths().Get(i));
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -262,7 +263,7 @@ void FieldMask::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.paths_.MergeFrom(from._impl_.paths_);
+  _this->_internal_mutable_paths()->MergeFrom(from._internal_paths());
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -280,7 +281,8 @@ bool FieldMask::IsInitialized() const {
 void FieldMask::InternalSwap(FieldMask* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _impl_.paths_.InternalSwap(&other->_impl_.paths_);
+  _internal_mutable_paths()->InternalSwap(
+      other->_internal_mutable_paths());
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldMask::GetMetadata() const {
