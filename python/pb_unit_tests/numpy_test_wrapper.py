@@ -25,7 +25,7 @@
 
 import unittest
 
-from google.protobuf.internal.numpy_test import *
+from google.protobuf.internal.numpy.numpy_test import *
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)

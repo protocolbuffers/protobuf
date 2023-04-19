@@ -47,10 +47,22 @@ pyproto_test_wrapper(name = "keywords_test")
 pyproto_test_wrapper(name = "message_factory_test")
 
 # begin:github_only
-# pyproto_test_wrapper(
-#    name = "numpy_test",
-#    deps = [requirement("numpy")],
-# )
+# This target has different dependencies and fails when using the wrapper
+# TODO: Move this to using pyproto_test_wrapper
+py_test(
+    name = "numpy_test",
+    srcs = ["numpy_test_wrapper.py"],
+    main = "numpy_test_wrapper.py",
+    deps = [
+      requirement("numpy"),
+      "@com_google_protobuf//python/google/protobuf/internal/numpy:numpy_test",
+      "//python:_message",
+    ],
+    target_compatible_with = select({
+      "@system_python//:supported": [],
+      "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
 # end:github_only
 
 # begin:google_only
