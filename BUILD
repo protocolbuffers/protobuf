@@ -286,6 +286,30 @@ cc_library(
 )
 
 cc_library(
+    name = "message_promote",
+    srcs = [
+        "upb/message/promote.c",
+    ],
+    hdrs = [
+        "upb/message/promote.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":collections_internal",
+        ":eps_copy_input_stream",
+        ":hash",
+        ":message_accessors",
+        ":message_internal",
+        ":mini_table_internal",
+        ":port",
+        ":upb",
+        ":wire",
+        ":wire_reader",
+    ],
+)
+
+cc_library(
     name = "message_copy",
     srcs = [
         "upb/message/copy.c",
@@ -329,6 +353,25 @@ cc_test(
     deps = [
         ":collections",
         ":message_accessors",
+        ":mini_table_internal",
+        ":port",
+        ":upb",
+        "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/test:test_upb_proto",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_test(
+    name = "message_promote_test",
+    srcs = ["upb/message/promote_test.cc"],
+    deps = [
+        ":collections",
+        ":message_accessors",
+        ":message_promote",
         ":mini_table_internal",
         ":port",
         ":upb",

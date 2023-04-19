@@ -25,11 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Public APIs for message operations that do not require descriptors.
-// These functions can be used even in build that does not want to depend on
-// reflection or descriptors.
+// Public APIs for message operations that do not depend on the schema.
 //
-// Descriptor-based reflection functionality lives in reflection.h.
+// MiniTable-based accessors live in accessors.h.
 
 #ifndef UPB_MESSAGE_MESSAGE_H_
 #define UPB_MESSAGE_MESSAGE_H_
