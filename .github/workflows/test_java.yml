@@ -73,3 +73,46 @@ jobs:
         run: curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
       - name: Fails if there's new linkage errors compared with baseline
         run: java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:libraries-bom
+
+  protobuf-bom:
+    name: Protobuf Maven BOM
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout pending changes
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      with:
+        ref: ${{ inputs.safe-checkout }}
+    - name: Build protoc
+      id: build-protoc
+      uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+      with:
+        image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+        credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+        architecture: linux-x86_64
+    - name: Move protoc into place and clean up
+      run: |
+        mv ${{ steps.build-protoc.outputs.protoc }} protoc
+        sudo rm -rf _build
+    - name: Generate pom.xml files from the template
+      uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+      with:
+        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-03a376b5d6ef66f827fc307716e3b841cc26b709
+        credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+        bazel-cache: java_linux/11
+        bazel: build //java/core:core_mvn-pom //java/core:lite_mvn-pom //java/kotlin:kotlin_mvn-pom //java/kotlin-lite:kotlin-lite_mvn-pom //java/util:util_mvn-pom
+    - name: Copy the generated pom.xml files to the java directory
+      run: |
+        cp bazel-bin/java/core/core_mvn-pom.xml java/core/pom.xml
+        cp bazel-bin/java/util/util_mvn-pom.xml java/util/pom.xml
+        # TODO: Check whether this location below is a bug or not
+        cp bazel-bin/java/core/lite_mvn-pom.xml java/lite/pom.xml
+        cp bazel-bin/java/kotlin/kotlin_mvn-pom.xml java/kotlin/pom.xml
+        cp bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml java/kotlin-lite/pom.xml
+    - name: Install snapshot version locally
+      run: |
+        mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
+      working-directory: java
+    - name: Validate Protobuf BOM
+      uses: googleapis/java-cloud-bom/tests/validate-bom@main
+      with:
+        bom-path: java/bom/pom.xml
