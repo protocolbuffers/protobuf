@@ -197,17 +197,16 @@ void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
   auto v = p->WithVars(
       AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
-  p->Emit(
-      R"cc(
-        $DEPRECATED$ $Type$ $name$() const;
-        $DEPRECATED$ void $set_name$($Type$ value);
+  p->Emit(R"cc(
+    $DEPRECATED$ $Type$ $name$() const;
+    $DEPRECATED$ void $set_name$($Type$ value);
 
-        private:
-        $Type$ $_internal_name$() const;
-        void $_internal_set_name$($Type$ value);
+    private:
+    $Type$ $_internal_name$() const;
+    void $_internal_set_name$($Type$ value);
 
-        public:
-      )cc");
+    public:
+  )cc");
 }
 
 void SingularPrimitive::GenerateInlineAccessorDefinitions(
