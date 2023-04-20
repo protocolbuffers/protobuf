@@ -37,16 +37,21 @@ namespace upbc {
 
 namespace protobuf = ::google::protobuf;
 
-static constexpr absl::string_view kClearAccessor = "clear_";
-static constexpr absl::string_view kSetAccessor = "set_";
+// Prefixes used by C code generator for field access.
+static constexpr absl::string_view kClearMethodPrefix = "clear_";
+static constexpr absl::string_view kSetMethodPrefix = "set_";
+static constexpr absl::string_view kHasMethodPrefix = "has_";
+static constexpr absl::string_view kDeleteMethodPrefix = "delete_";
+static constexpr absl::string_view kAddToRepeatedMethodPrefix = "add_";
+static constexpr absl::string_view kResizeArrayMethodPrefix = "resize_";
 
 // List of generated accessor prefixes to check against.
 // Example:
 //     optional repeated string phase = 236;
 //     optional bool clear_phase = 237;
 static constexpr absl::string_view kAccessorPrefixes[] = {
-    kClearAccessor, "delete_", "add_", "resize_", kSetAccessor,
-};
+    kClearMethodPrefix,       kDeleteMethodPrefix, kAddToRepeatedMethodPrefix,
+    kResizeArrayMethodPrefix, kSetMethodPrefix,    kHasMethodPrefix};
 
 std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
                              const NameToFieldDescriptorMap& field_names) {
@@ -62,8 +67,8 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
         if (candidate->is_repeated() || candidate->is_map() ||
             (candidate->cpp_type() ==
                  protobuf::FieldDescriptor::CPPTYPE_STRING &&
-             prefix == kClearAccessor) ||
-            prefix == kSetAccessor) {
+             prefix == kClearMethodPrefix) ||
+            prefix == kSetMethodPrefix || prefix == kHasMethodPrefix) {
           return absl::StrCat(field_name, "_");
         }
       }
@@ -105,8 +110,8 @@ std::string ResolveFieldName(upb::FieldDefPtr field,
         const auto candidate = match->second;
         if (candidate.IsSequence() || candidate.IsMap() ||
             (candidate.ctype() == kUpb_CType_String &&
-             prefix == kClearAccessor) ||
-            prefix == kSetAccessor) {
+             prefix == kClearMethodPrefix) ||
+            prefix == kSetMethodPrefix || prefix == kHasMethodPrefix) {
           return absl::StrCat(field_name, "_");
         }
       }

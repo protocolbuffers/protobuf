@@ -60,6 +60,13 @@ proto_library(
 )
 
 proto_library(
+    name = "naming_conflict_proto",
+    srcs = [
+        "naming_conflict.proto",
+    ],
+)
+
+proto_library(
     name = "no_package_enum_user_proto",
     srcs = [
         "no_package_enum_user.proto",
@@ -79,6 +86,12 @@ upb_cc_proto_library(
     name = "test_model_upb_cc_proto",
     visibility = ["//protos:__pkg__"],
     deps = [":test_model_proto"],
+)
+
+upb_cc_proto_library(
+    name = "naming_conflict_upb_cc_proto",
+    visibility = ["//protos:__pkg__"],
+    deps = [":naming_conflict_proto"],
 )
 
 upb_cc_proto_library(
@@ -128,6 +141,7 @@ cc_test(
         ":no_package_upb_cc_proto",
         ":test_model_upb_cc_proto",
         ":test_model_upb_proto",
+        ":naming_conflict_upb_cc_proto",
         "@com_google_googletest//:gtest_main",
         "//:upb",
         "//protos",
