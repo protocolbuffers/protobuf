@@ -549,9 +549,9 @@ Type::~Type() {
 
 inline void Type::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.fields_.~RepeatedPtrField();
+  _internal_mutable_fields()->~RepeatedPtrField();
   _internal_mutable_oneofs()->~RepeatedPtrField();
-  _impl_.options_.~RepeatedPtrField();
+  _internal_mutable_options()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
@@ -567,9 +567,9 @@ void Type::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.fields_.Clear();
+  _internal_mutable_fields()->Clear();
   _internal_mutable_oneofs()->Clear();
-  _impl_.options_.Clear();
+  _internal_mutable_options()->Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.edition_.ClearToEmpty();
   cached_has_bits = _impl_._has_bits_[0];
@@ -777,7 +777,7 @@ failure:
 
   // repeated .google.protobuf.Field fields = 2;
   total_size += 1UL * this->_internal_fields_size();
-  for (const auto& msg : this->_impl_.fields_) {
+  for (const auto& msg : this->_internal_fields()) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
@@ -791,7 +791,7 @@ failure:
 
   // repeated .google.protobuf.Option options = 4;
   total_size += 1UL * this->_internal_options_size();
-  for (const auto& msg : this->_impl_.options_) {
+  for (const auto& msg : this->_internal_options()) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
@@ -840,9 +840,9 @@ void Type::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
+  _this->_internal_mutable_fields()->MergeFrom(from._internal_fields());
   _this->_internal_mutable_oneofs()->MergeFrom(from._internal_oneofs());
-  _this->_impl_.options_.MergeFrom(from._impl_.options_);
+  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -876,10 +876,10 @@ void Type::InternalSwap(Type* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.fields_.InternalSwap(&other->_impl_.fields_);
+  _internal_mutable_fields()->InternalSwap(other->_internal_mutable_fields());
   _internal_mutable_oneofs()->InternalSwap(
       other->_internal_mutable_oneofs());
-  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, lhs_arena,
@@ -1021,7 +1021,7 @@ Field::~Field() {
 
 inline void Field::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.options_.~RepeatedPtrField();
+  _internal_mutable_options()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.type_url_.Destroy();
   _impl_.json_name_.Destroy();
@@ -1038,7 +1038,7 @@ void Field::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.options_.Clear();
+  _internal_mutable_options()->Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.type_url_.ClearToEmpty();
   _impl_.json_name_.ClearToEmpty();
@@ -1282,7 +1282,7 @@ failure:
 
   // repeated .google.protobuf.Option options = 9;
   total_size += 1UL * this->_internal_options_size();
-  for (const auto& msg : this->_impl_.options_) {
+  for (const auto& msg : this->_internal_options()) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
@@ -1358,7 +1358,7 @@ void Field::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.options_.MergeFrom(from._impl_.options_);
+  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -1405,7 +1405,7 @@ void Field::InternalSwap(Field* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, lhs_arena,
@@ -1527,8 +1527,8 @@ Enum::~Enum() {
 
 inline void Enum::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.enumvalue_.~RepeatedPtrField();
-  _impl_.options_.~RepeatedPtrField();
+  _internal_mutable_enumvalue()->~RepeatedPtrField();
+  _internal_mutable_options()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
@@ -1544,8 +1544,8 @@ void Enum::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.enumvalue_.Clear();
-  _impl_.options_.Clear();
+  _internal_mutable_enumvalue()->Clear();
+  _internal_mutable_options()->Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.edition_.ClearToEmpty();
   cached_has_bits = _impl_._has_bits_[0];
@@ -1729,14 +1729,14 @@ failure:
 
   // repeated .google.protobuf.EnumValue enumvalue = 2;
   total_size += 1UL * this->_internal_enumvalue_size();
-  for (const auto& msg : this->_impl_.enumvalue_) {
+  for (const auto& msg : this->_internal_enumvalue()) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .google.protobuf.Option options = 3;
   total_size += 1UL * this->_internal_options_size();
-  for (const auto& msg : this->_impl_.options_) {
+  for (const auto& msg : this->_internal_options()) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
@@ -1785,8 +1785,8 @@ void Enum::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.enumvalue_.MergeFrom(from._impl_.enumvalue_);
-  _this->_impl_.options_.MergeFrom(from._impl_.options_);
+  _this->_internal_mutable_enumvalue()->MergeFrom(from._internal_enumvalue());
+  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -1820,8 +1820,8 @@ void Enum::InternalSwap(Enum* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.enumvalue_.InternalSwap(&other->_impl_.enumvalue_);
-  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  _internal_mutable_enumvalue()->InternalSwap(other->_internal_mutable_enumvalue());
+  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, lhs_arena,
@@ -1900,7 +1900,7 @@ EnumValue::~EnumValue() {
 
 inline void EnumValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.options_.~RepeatedPtrField();
+  _internal_mutable_options()->~RepeatedPtrField();
   _impl_.name_.Destroy();
 }
 
@@ -1914,7 +1914,7 @@ void EnumValue::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.options_.Clear();
+  _internal_mutable_options()->Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.number_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
@@ -2030,7 +2030,7 @@ failure:
 
   // repeated .google.protobuf.Option options = 3;
   total_size += 1UL * this->_internal_options_size();
-  for (const auto& msg : this->_impl_.options_) {
+  for (const auto& msg : this->_internal_options()) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
@@ -2065,7 +2065,7 @@ void EnumValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.options_.MergeFrom(from._impl_.options_);
+  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -2091,7 +2091,7 @@ void EnumValue::InternalSwap(EnumValue* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
 
