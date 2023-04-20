@@ -38,7 +38,6 @@ pub extern crate cpp as __runtime;
 #[cfg(upb_kernel)]
 pub extern crate upb as __runtime;
 
-pub use __runtime::Arena;
 pub use __runtime::SerializedData;
 
 use std::fmt;

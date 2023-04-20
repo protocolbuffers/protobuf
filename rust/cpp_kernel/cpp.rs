@@ -30,27 +30,73 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use std::alloc::{dealloc, Layout};
+use std::alloc;
+use std::alloc::Layout;
 use std::boxed::Box;
+use std::cell::UnsafeCell;
+use std::fmt;
+use std::marker::PhantomData;
+use std::mem::MaybeUninit;
 use std::ops::Deref;
 use std::ptr::NonNull;
 use std::slice;
 
+/// A wrapper over a `proto2::Arena`.
+///
+/// This is not a safe wrapper per se, because the allocation functions still
+/// have sharp edges (see their safety docs for more info).
+///
+/// This is an owning type and will automatically free the arena when
+/// dropped.
+///
+/// Note that this type is neither `Sync` nor `Send`.
+///
 /// TODO(b/272728844): Replace this placeholder code with a real implementation.
-#[repr(C)]
 pub struct Arena {
-    _data: [u8; 0],
+    ptr: NonNull<u8>,
+    _not_sync: PhantomData<UnsafeCell<()>>,
 }
 
 impl Arena {
-    pub unsafe fn new() -> *mut Self {
-        let arena = Box::new(Arena { _data: [] });
-        Box::leak(arena) as *mut _
+    /// Allocates a fresh arena.
+    #[inline]
+    pub fn new() -> Self {
+        Self { ptr: NonNull::dangling(), _not_sync: PhantomData }
     }
 
-    pub unsafe fn free(arena: *mut Self) {
-        let arena = Box::from_raw(arena);
-        std::mem::drop(arena);
+    /// Returns the raw, C++-managed pointer to the arena.
+    #[inline]
+    pub fn raw(&self) -> ! {
+        unimplemented!()
+    }
+
+    /// Allocates some memory on the arena.
+    ///
+    /// # Safety
+    ///
+    /// `layout`'s alignment must be less than `UPB_MALLOC_ALIGN`.
+    #[inline]
+    pub unsafe fn alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
+        unimplemented!()
+    }
+
+    /// Resizes some memory on the arena.
+    ///
+    /// # Safety
+    ///
+    /// After calling this function, `ptr` is essentially zapped. `old` must
+    /// be the layout `ptr` was allocated with via [`Arena::alloc()`]. `new`'s
+    /// alignment must be less than `UPB_MALLOC_ALIGN`.
+    #[inline]
+    pub unsafe fn resize(&self, ptr: *mut u8, old: Layout, new: Layout) -> &[MaybeUninit<u8>] {
+        unimplemented!()
+    }
+}
+
+impl Drop for Arena {
+    #[inline]
+    fn drop(&mut self) {
+        // unimplemented
     }
 }
 
@@ -63,7 +109,6 @@ impl Arena {
 // LINT.IfChange
 // copybara:strip_end
 #[repr(C)]
-#[derive(Debug)]
 pub struct SerializedData {
     /// Owns the memory.
     data: NonNull<u8>,
@@ -89,8 +134,14 @@ impl Deref for SerializedData {
 impl Drop for SerializedData {
     fn drop(&mut self) {
         unsafe {
-            dealloc(self.data.as_ptr(), Layout::array::<u8>(self.len).unwrap());
+            alloc::dealloc(self.data.as_ptr(), Layout::array::<u8>(self.len).unwrap());
         };
+    }
+}
+
+impl fmt::Debug for SerializedData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(self.deref(), f)
     }
 }
 
