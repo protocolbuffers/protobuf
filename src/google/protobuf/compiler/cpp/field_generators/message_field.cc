@@ -765,6 +765,8 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
       "private:\n"
       "const $Submsg$& ${1$_internal_$name$$}$(int index) const;\n"
       "$Submsg$* ${1$_internal_add_$name$$}$();\n"
+      "const $pb$::RepeatedPtrField<$Submsg$>& _internal_$name$() const;\n"
+      "$pb$::RepeatedPtrField<$Submsg$>* _internal_mutable_$name$();\n"
       "public:\n",
       field_);
   format("$DEPRECATED$ const $Submsg$& ${1$$name$$}$(int index) const;\n",
@@ -784,21 +786,21 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // TODO(dlj): move insertion points
       "  // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)\n"
       "$StrongRef$;"
-      "  return $field_$$.weak$.Mutable(index);\n"
+      "  return _internal_mutable_$name$()->Mutable(index);\n"
       "}\n"
       "inline $pb$::RepeatedPtrField< $Submsg$ >*\n"
       "$Msg$::mutable_$name$() {\n"
       "$annotate_mutable_list$"
       "  // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)\n"
       "$StrongRef$;"
-      "  return &$field_$$.weak$;\n"
+      "  return _internal_mutable_$name$();\n"
       "}\n");
 
   if (opts_->safe_boundary_check) {
     p->Emit(
         "inline const $Submsg$& $Msg$::_internal_$name$(int index) const "
         "{\n"
-        "  return $field_$$.weak$.InternalCheckedGet(index,\n"
+        "  return _internal_$name$().InternalCheckedGet(index,\n"
         "      reinterpret_cast<const $Submsg$&>($kDefault$));\n"
         "}\n");
   } else {
@@ -806,7 +808,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         "inline const $Submsg$& $Msg$::_internal_$name$(int index) const "
         "{\n"
         "$StrongRef$;"
-        "  return $field_$$.weak$.Get(index);\n"
+        "  return _internal_$name$().Get(index);\n"
         "}\n");
   }
 
@@ -817,7 +819,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "  return _internal_$name$(index);\n"
       "}\n"
       "inline $Submsg$* $Msg$::_internal_add_$name$() {\n"
-      "  return $field_$$.weak$.Add();\n"
+      "  return _internal_mutable_$name$()->Add();\n"
       "}\n"
       "inline $Submsg$* $Msg$::add_$name$() {\n"
       "  $Submsg$* _add = _internal_add_$name$();\n"
@@ -832,20 +834,46 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "$annotate_list$"
       "  // @@protoc_insertion_point(field_list:$pkg.Msg.field$)\n"
       "$StrongRef$;"
-      "  return $field_$$.weak$;\n"
+      "  return _internal_$name$();\n"
+      "}\n");
+
+  p->Emit(
+      "inline const $pb$::RepeatedPtrField<$Submsg$>&\n"
+      "$classname$::_internal_$name$() const {\n"
+      "  return $field$$.weak$;\n"
+      "}\n"
+      "inline $pb$::RepeatedPtrField<$Submsg$>*\n"
+      "$classname$::_internal_mutable_$name$() {\n"
+      "  return &$field$$.weak$;\n"
       "}\n");
 }
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
-  p->Emit("$field_$.Clear();\n");
+  if (weak_) {
+    p->Emit("$field_$.Clear();\n");
+  } else {
+    p->Emit("_internal_mutable_$name$()->Clear();\n");
+  }
 }
 
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
-  p->Emit("_this->$field_$.MergeFrom(from.$field_$);\n");
+  if (weak_) {
+    p->Emit("_this->$field_$.MergeFrom(from.$field_$);\n");
+  } else {
+    p->Emit(
+        "_this->_internal_mutable_$name$()->MergeFrom("
+        "from._internal_$name$());\n");
+  }
 }
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
-  p->Emit("$field_$.InternalSwap(&other->$field_$);\n");
+  if (weak_) {
+    p->Emit("$field_$.InternalSwap(&other->$field_$);\n");
+  } else {
+    p->Emit(
+        "_internal_mutable_$name$()->InternalSwap(other->_internal_mutable_"
+        "$name$());\n");
+  }
 }
 
 void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
@@ -856,7 +884,7 @@ void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
   if (weak_) {
     p->Emit("$field_$.~WeakRepeatedPtrField();\n");
   } else {
-    p->Emit("$field_$.~RepeatedPtrField();\n");
+    p->Emit("_internal_mutable_$name$()->~RepeatedPtrField();\n");
   }
 }
 
@@ -903,9 +931,13 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 }
 
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
+  p->Emit("total_size += $tag_size$UL * this->_internal_$name$_size();\n");
+  if (weak_) {
+    p->Emit("for (const auto& msg : this->$field_$) {\n");
+  } else {
+    p->Emit("for (const auto& msg : this->_internal_$name$()) {\n");
+  }
   p->Emit(
-      "total_size += $tag_size$UL * this->_internal_$name$_size();\n"
-      "for (const auto& msg : this->$field_$) {\n"
       "  total_size +=\n"
       "    $pbi$::WireFormatLite::$declared_type$Size(msg);\n"
       "}\n");
@@ -920,7 +952,7 @@ void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
         "  return false;\n");
   } else {
     p->Emit(
-        "if (!$pbi$::AllAreInitialized($field_$))\n"
+        "if (!$pbi$::AllAreInitialized(_internal_$name$()))\n"
         "  return false;\n");
   }
 }
