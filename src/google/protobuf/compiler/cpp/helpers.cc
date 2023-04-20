@@ -87,13 +87,14 @@ std::string DotsToColons(absl::string_view name) {
 }
 
 static const char* const kKeywordList[] = {
-    //
+    // clang-format off
     "NULL",
     "alignas",
     "alignof",
     "and",
     "and_eq",
     "asm",
+    "assert",
     "auto",
     "bitand",
     "bitor",
@@ -181,6 +182,7 @@ static const char* const kKeywordList[] = {
     "co_return",
     "co_yield",
     "requires",
+    // clang-format on
 };
 
 const absl::flat_hash_set<absl::string_view>& Keywords() {
