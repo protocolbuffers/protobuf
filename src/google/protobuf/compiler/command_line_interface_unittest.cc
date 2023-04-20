@@ -2688,8 +2688,11 @@ TEST_F(CommandLineInterfaceTest, PrintFreeFieldNumbers) {
       "Bar                                 free: 1 3 6-7 9 11-INF\n"
       "Baz                                 free: 1 3 6-7 9 14\n"
       "Quz.Foo                             free: 1-INF\n"
+      "Quz.C                               free: 1-4 6-INF\n"
       "Quz.E.G.Foo                         free: 1-INF\n"
-      "Quz                                 free: 1 3 6-7 12-14 16-INF\n");
+      "Quz.E.G                             free: 1-INF\n"
+      "Quz.E                               free: 1-8 10-14 16-INF\n"
+      "Quz                                 free: 1 3 5-7 12-INF\n");
 #endif
 }
 
