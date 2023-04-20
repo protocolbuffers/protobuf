@@ -101,3 +101,23 @@ rust_test(
         "//rust/test:unittest_upb_rust_proto",
     ],
 )
+
+rust_test(
+    name = "nested_messages_cpp_test",
+    srcs = ["nested_messages_test.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+    ],
+    deps = ["//rust/test:unittest_cc_rust_proto"],
+)
+
+rust_test(
+    name = "nested_messages_upb_test",
+    srcs = ["nested_messages_test.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+    ],
+    deps = ["//rust/test:unittest_upb_rust_proto"],
+)
