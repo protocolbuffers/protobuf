@@ -34,11 +34,7 @@ import java.io.IOException;
 
 class UnknownFieldSetSchema extends UnknownFieldSchema<UnknownFieldSet, UnknownFieldSet.Builder> {
 
-  private final boolean proto3;
-
-  public UnknownFieldSetSchema(boolean proto3) {
-    this.proto3 = proto3;
-  }
+  public UnknownFieldSetSchema() {}
 
   @Override
   boolean shouldDiscardUnknownFields(Reader reader) {
