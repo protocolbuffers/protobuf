@@ -69,6 +69,7 @@
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "absl/types/variant.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_database.h"
@@ -1268,11 +1269,6 @@ class DescriptorPool::Tables {
   // Roll back the Tables to the state of the checkpoint at the top of the
   // stack, removing everything that was added after that point.
   void RollbackToLastCheckpoint();
-
-  // The stack of files which are currently being built.  Used to detect
-  // cyclic dependencies when loading files from a DescriptorDatabase.  Not
-  // used when fallback_database_ == nullptr.
-  std::vector<std::string> pending_files_;
 
   // A set of files which we have tried to load from the fallback database
   // and encountered errors.  We will not attempt to load them again during
@@ -3734,6 +3730,8 @@ class DescriptorBuilder {
   DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
                     DescriptorPool::ErrorCollector* error_collector);
 
+  bool LoadTransitiveDependencies(const FileDescriptorProto& root);
+
   friend class OptionInterpreter;
 
   // Non-recursive part of BuildFile functionality.
@@ -3821,11 +3819,11 @@ class DescriptorBuilder {
   // directly using the literal.
   void AddError(const std::string& element_name, const Message& descriptor,
                 DescriptorPool::ErrorCollector::ErrorLocation location,
-                absl::FunctionRef<std::string()> make_error);
+                absl::FunctionRef<std::string()> make_error,
+                absl::optional<absl::string_view> filename = absl::nullopt);
   void AddError(const std::string& element_name, const Message& descriptor,
                 DescriptorPool::ErrorCollector::ErrorLocation location,
                 const char* error);
-  void AddRecursiveImportError(const FileDescriptorProto& proto, int from_here);
   void AddTwiceListedError(const FileDescriptorProto& proto, int index);
   void AddImportError(const FileDescriptorProto& proto, int index);
 
@@ -4286,16 +4284,18 @@ DescriptorBuilder::~DescriptorBuilder() {}
 PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
     const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
-    absl::FunctionRef<std::string()> make_error) {
+    absl::FunctionRef<std::string()> make_error,
+    absl::optional<absl::string_view> filename) {
   std::string error = make_error();
+  if (!filename.has_value()) filename = filename_;
   if (error_collector_ == nullptr) {
     if (!had_errors_) {
-      ABSL_LOG(ERROR) << "Invalid proto descriptor for file \"" << filename_
+      ABSL_LOG(ERROR) << "Invalid proto descriptor for file \"" << *filename
                       << "\":";
     }
     ABSL_LOG(ERROR) << "  " << element_name << ": " << error;
   } else {
-    error_collector_->RecordError(filename_, element_name, &descriptor,
+    error_collector_->RecordError(*filename, element_name, &descriptor,
                                   location, error);
   }
   had_errors_ = true;
@@ -4932,27 +4932,6 @@ void DescriptorBuilder::AllocateOptionsImpl(
     METHOD(INPUT.NAME(i), PARENT, OUTPUT->NAME##s_ + i, alloc);        \
   }
 
-PROTOBUF_NOINLINE void DescriptorBuilder::AddRecursiveImportError(
-    const FileDescriptorProto& proto, int from_here) {
-  auto make_error = [&] {
-    std::string error_message("File recursively imports itself: ");
-    for (size_t i = from_here; i < tables_->pending_files_.size(); i++) {
-      error_message.append(tables_->pending_files_[i]);
-      error_message.append(" -> ");
-    }
-    error_message.append(proto.name());
-    return error_message;
-  };
-
-  if (static_cast<size_t>(from_here) < tables_->pending_files_.size() - 1) {
-    AddError(tables_->pending_files_[from_here + 1], proto,
-             DescriptorPool::ErrorCollector::IMPORT, make_error);
-  } else {
-    AddError(proto.name(), proto, DescriptorPool::ErrorCollector::IMPORT,
-             make_error);
-  }
-}
-
 void DescriptorBuilder::AddTwiceListedError(const FileDescriptorProto& proto,
                                             int index) {
   AddError(proto.dependency(index), proto,
@@ -5117,6 +5096,142 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
   alloc.PlanArray<const FileDescriptor*>(proto.dependency_size());
 }
 
+bool DescriptorBuilder::LoadTransitiveDependencies(
+    const FileDescriptorProto& root) {
+  // If we have a fallback_database_, and we aren't doing lazy import building,
+  // attempt to load all dependencies now.
+  // We do a full recursive inspection of dependencies to load them in reverse
+  // dependency order. This avoids recursion of BuildFile calls, which can cause
+  // stack overflow.
+  if (pool_->lazily_build_dependencies_ ||
+      pool_->fallback_database_ == nullptr) {
+    return true;
+  }
+
+  // To avoid deep recursion, we use a manually controlled stack.
+  // We do two passes of each file. On the first pass we expand all needed deps
+  // into the stack. On the second pass we assume the deps have been loaded and
+  // try to load the file.
+  struct NeedsToExpand {
+    std::vector<const FileDescriptorProto*> path;
+  };
+  struct NeedsToLoad {
+    const FileDescriptorProto* file;
+  };
+  std::vector<absl::variant<NeedsToExpand, NeedsToLoad>> stack = {
+      NeedsToExpand{{&root}},
+  };
+
+  absl::optional<Arena> arena;
+
+  const auto needs_dep = [&](const auto& dep) {
+    return tables_->FindFile(dep) == nullptr &&
+           (pool_->underlay_ == nullptr ||
+            pool_->underlay_->FindFileByName(dep) == nullptr);
+  };
+  bool found_recursive_error = false;
+  auto& bad_files = pool_->tables_->known_bad_files_;
+  const auto add_import_error = [&](const auto& file, const auto& bad_dep) {
+    bad_files.insert(file.name());
+    if (&file == &root && !found_recursive_error) {
+      // These are reported outside.
+      return;
+    }
+    if (file.name() == bad_dep) {
+      // This was already reported below.
+      return;
+    }
+    AddError(
+        bad_dep, file, DescriptorPool::ErrorCollector::IMPORT,
+        [&] {
+          return absl::StrCat("Import \"", bad_dep,
+                              "\" was not found or had errors.");
+        },
+        // This error is not in `filename_`, but on one of the
+        // transitive dependencies, so specify the filename.
+        file.name());
+  };
+
+  while (!stack.empty()) {
+    auto node = std::move(stack.back());
+    stack.pop_back();
+
+    if (absl::holds_alternative<NeedsToLoad>(node)) {
+      const auto* file = absl::get<NeedsToLoad>(node).file;
+      const auto& name = file->name();
+
+      for (const auto& dep : file->dependency()) {
+        if (bad_files.contains(dep)) {
+          add_import_error(*file, dep);
+        }
+      }
+
+      // The root is the one being loaded outside. We don't need to load it
+      // here.
+      if (file == &root) continue;
+
+      if (bad_files.contains(name)) continue;
+      if (needs_dep(name)) {
+        if (!pool_->BuildFileFromDatabase(*file)) {
+          bad_files.insert(name);
+        }
+      }
+      continue;
+    }
+
+    auto& path = absl::get<NeedsToExpand>(node).path;
+
+    // Push the node again, but for loading.
+    stack.push_back(NeedsToLoad{path.back()});
+
+    const auto* elem = path.back();
+
+    for (const auto& dep : elem->dependency()) {
+      if (bad_files.contains(dep)) {
+        continue;
+      }
+      if (!needs_dep(dep)) continue;
+
+      if (!arena.has_value()) arena.emplace();
+      auto* sub_proto = Arena::Create<FileDescriptorProto>(&*arena);
+
+      if (!pool_->fallback_database_->FindFileByName(dep, sub_proto)) {
+        bad_files.insert(dep);
+        // We ignore this file. The building of the parent file will choose if
+        // this is an error or not. Eg they could be using placeholders.
+        continue;
+      }
+
+      stack.push_back(node);  // make a copy to append self.
+      auto& new_path = absl::get<NeedsToExpand>(stack.back()).path;
+      new_path.push_back(sub_proto);
+
+      // Check for recursive import.
+      for (int cycle_i = 0; cycle_i + 1 < new_path.size(); ++cycle_i) {
+        if (new_path[cycle_i]->name() != sub_proto->name()) continue;
+
+        // Found the recursion.
+        found_recursive_error = true;
+        AddError(
+            new_path[cycle_i + 1]->name(), *new_path[cycle_i],
+            DescriptorPool::ErrorCollector::IMPORT, [&] {
+              return absl::StrCat(
+                  "File recursively imports itself: ",
+                  absl::StrJoin(new_path, " -> ", [](auto* str, const auto* p) {
+                    absl::StrAppend(str, p->name());
+                  }));
+            });
+        bad_files.insert(dep);
+        // Remove the newly added path
+        stack.pop_back();
+        break;
+      }
+    }
+  }
+
+  return !found_recursive_error;
+}
+
 const FileDescriptor* DescriptorBuilder::BuildFile(
     const FileDescriptorProto& proto) {
   filename_ = proto.name();
@@ -5137,22 +5252,6 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
     // Not a match.  The error will be detected and handled later.
   }
 
-  // Check to see if this file is already on the pending files list.
-  // TODO(kenton):  Allow recursive imports?  It may not work with some
-  //   (most?) programming languages.  E.g., in C++, a forward declaration
-  //   of a type is not sufficient to allow it to be used even in a
-  //   generated header file due to inlining.  This could perhaps be
-  //   worked around using tricks involving inserting #include statements
-  //   mid-file, but that's pretty ugly, and I'm pretty sure there are
-  //   some languages out there that do not allow recursive dependencies
-  //   at all.
-  for (size_t i = 0; i < tables_->pending_files_.size(); i++) {
-    if (tables_->pending_files_[i] == proto.name()) {
-      AddRecursiveImportError(proto, i);
-      return nullptr;
-    }
-  }
-
   static const int kMaximumPackageLength = 511;
   if (proto.package().size() > kMaximumPackageLength) {
     AddError(proto.package(), proto, DescriptorPool::ErrorCollector::NAME,
@@ -5163,21 +5262,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   // If we have a fallback_database_, and we aren't doing lazy import building,
   // attempt to load all dependencies now, before checkpointing tables_.  This
   // avoids confusion with recursive checkpoints.
-  if (!pool_->lazily_build_dependencies_) {
-    if (pool_->fallback_database_ != nullptr) {
-      tables_->pending_files_.push_back(proto.name());
-      for (int i = 0; i < proto.dependency_size(); i++) {
-        if (tables_->FindFile(proto.dependency(i)) == nullptr &&
-            (pool_->underlay_ == nullptr ||
-             pool_->underlay_->FindFileByName(proto.dependency(i)) ==
-                 nullptr)) {
-          // We don't care what this returns since we'll find out below anyway.
-          pool_->TryFindFileInFallbackDatabase(proto.dependency(i));
-        }
-      }
-      tables_->pending_files_.pop_back();
-    }
-  }
+  if (!LoadTransitiveDependencies(proto)) return nullptr;
 
   // Checkpoint the tables so that we can roll back if something goes wrong.
   tables_->AddCheckpoint();
