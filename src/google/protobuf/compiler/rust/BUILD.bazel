@@ -19,7 +19,6 @@ cc_library(
         ":context",
         ":message",
         ":naming",
-        ":upb_kernel",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler/cpp:names",
@@ -94,19 +93,6 @@ cc_library(
         ":context",
         "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-cc_library(
-    name = "upb_kernel",
-    srcs = ["upb_kernel.cc"],
-    hdrs = ["upb_kernel.h"],
-    copts = COPTS,
-    include_prefix = "google/protobuf/compiler/rust",
-    visibility = ["//visibility:private"],
-    deps = [
-        "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/strings",
     ],
 )
