@@ -109,7 +109,7 @@ jobs:
       shell: bash
       run: |
         LOCAL_MAVEN_GROUP_DIR="${HOME}/.m2/repository/com/google/protobuf"
-        VERSION=$(grep 'Bundle-Version:' ./java/core/target/classes/META-INF/MANIFEST.MF |awk '{print $2}')
+        VERSION=$(grep 'Bundle-Version:' ./java/core/target/classes/META-INF/MANIFEST.MF |awk '{print $2}' |tr -d '\r')
         cp bazel-bin/java/core/core_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java/${VERSION}/protobuf-java-${VERSION}.pom
         cp bazel-bin/java/util/util_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java-util/${VERSION}/protobuf-java-util-${VERSION}.pom
     - name: Validate Protobuf BOM
