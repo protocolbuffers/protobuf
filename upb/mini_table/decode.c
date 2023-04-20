@@ -1116,7 +1116,7 @@ bool upb_MiniTable_Link(upb_MiniTable* mt, const upb_MiniTable** sub_tables,
     upb_MiniTableField* f = (upb_MiniTableField*)&mt->fields[i];
     if (upb_MiniTableField_CType(f) == kUpb_CType_Enum) {
       const upb_MiniTableEnum* sub = sub_enums[enum_count++];
-      if (enum_count > sub_table_count) return false;
+      if (enum_count > sub_enum_count) return false;
       if (sub != NULL) {
         if (!upb_MiniTable_SetSubEnum(mt, f, sub)) return false;
       }
