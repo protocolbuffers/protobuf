@@ -25,10 +25,14 @@
 
 #include "protos_generator/gen_accessors.h"
 
+#include <string>
+
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
+#include "protos_generator/gen_repeated_fields.h"
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/output.h"
 #include "upbc/common.h"
@@ -44,37 +48,23 @@ using NameToFieldDescriptorMap =
 
 void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
                               const protobuf::FieldDescriptor* field,
-                              const absl::string_view resolved_field_name,
-                              const absl::string_view resolved_upbc_name,
+                              absl::string_view resolved_field_name,
+                              absl::string_view resolved_upbc_name,
                               Output& output);
 void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
                              const protobuf::FieldDescriptor* field,
-                             const absl::string_view resolved_field_name,
-                             const absl::string_view resolved_upbc_name,
+                             absl::string_view resolved_field_name,
+                             absl::string_view resolved_upbc_name,
                              Output& output);
 void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
                             const protobuf::FieldDescriptor* field,
-                            const absl::string_view resolved_field_name,
-                            const absl::string_view resolved_upbc_name,
+                            absl::string_view resolved_field_name,
+                            absl::string_view resolved_upbc_name,
                             Output& output);
 
 void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
                                  const protobuf::FieldDescriptor* field,
-                                 const absl::string_view resolved_field_name,
-                                 const absl::string_view class_name,
-                                 Output& output);
-void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
-                                  const protobuf::FieldDescriptor* field,
-                                  const absl::string_view resolved_field_name,
-                                  absl::string_view class_name, Output& output);
-void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
-                                 const protobuf::FieldDescriptor* field,
-                                 const absl::string_view resolved_field_name,
-                                 const absl::string_view class_name,
-                                 Output& output);
-void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
-                                 const protobuf::FieldDescriptor* field,
-                                 const absl::string_view resolved_field_name,
+                                 absl::string_view resolved_field_name,
                                  absl::string_view class_name, Output& output);
 
 // Returns C++ class member name by resolving naming conflicts across
@@ -119,38 +109,8 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
     } else if (desc->options().map_entry()) {
       // TODO(b/237399867) Implement map entry
     } else if (field->is_repeated()) {
-      output(
-          R"cc(
-            inline size_t $1_size() const {
-              size_t len;
-              $0_$2(msg_, &len);
-              return len;
-            }
-
-            inline void clear_$1() { $0_clear_$2(msg_); }
-          )cc",
-          MessageName(desc), resolved_field_name, resolved_upbc_name);
-
-      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-        output(
-            R"cc(
-              $1 $2(size_t index) const;
-              absl::StatusOr<$0> add_$2();
-              $0 mutable_$2(size_t index) const;
-            )cc",
-            MessagePtrConstType(field, /* const */ false),
-            MessagePtrConstType(field, /* const */ true), resolved_field_name,
-            resolved_upbc_name);
-      } else {
-        output(
-            R"cc(
-              $0 $1(size_t index) const;
-              bool add_$1($0 val);
-              void set_$1(size_t index, $0 val);
-              bool resize_$1(size_t len);
-            )cc",
-            CppConstType(field), resolved_field_name);
-      }
+      WriteRepeatedFieldsInMessageHeader(desc, field, resolved_field_name,
+                                         resolved_upbc_name, output);
     } else {
       // non-repeated.
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
@@ -327,143 +287,6 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
   output("}  // namespace internal\n\n");
 }
 
-void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
-                                  const protobuf::FieldDescriptor* field,
-                                  const absl::string_view resolved_field_name,
-                                  const absl::string_view class_name,
-                                  Output& output) {
-  const char arena_expression[] = "arena_";
-  absl::string_view upbc_name = field->name();
-  output(
-      R"cc(
-        $1 $0::$2(size_t index) const {
-          size_t len;
-          auto* ptr = $3_$5(msg_, &len);
-          assert(index < len);
-          return ::protos::internal::CreateMessage<$4>((upb_Message*)*(ptr + index));
-        }
-      )cc",
-      class_name, MessagePtrConstType(field, /* is_const */ true),
-      resolved_field_name, MessageName(message),
-      MessageBaseType(field, /* maybe_const */ false), upbc_name);
-  output(
-      R"cc(
-        absl::StatusOr<$1> $0::add_$2() {
-          auto new_msg = $3_add_$6(msg_, $5);
-          if (!new_msg) {
-            return ::protos::MessageAllocationError();
-          }
-          return ::protos::internal::CreateMessageProxy<$4>((upb_Message*)new_msg, $5);
-        }
-      )cc",
-      class_name, MessagePtrConstType(field, /* const */ false),
-      resolved_field_name, MessageName(message),
-      MessageBaseType(field, /* maybe_const */ false), arena_expression,
-      upbc_name);
-  output(
-      R"cc(
-        $1 $0::mutable_$2(size_t index) const {
-          size_t len;
-          auto* ptr = $3_$6(msg_, &len);
-          assert(index < len);
-          return ::protos::internal::CreateMessageProxy<$4>(
-              (upb_Message*)*(ptr + index), $5);
-        }
-      )cc",
-      class_name, MessagePtrConstType(field, /* is_const */ false),
-      resolved_field_name, MessageName(message),
-      MessageBaseType(field, /* maybe_const */ false), arena_expression,
-      upbc_name);
-}
-
-void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
-                                 const protobuf::FieldDescriptor* field,
-                                 const absl::string_view resolved_field_name,
-                                 const absl::string_view class_name,
-                                 Output& output) {
-  absl::string_view upbc_name = field->name();
-  output(
-      R"cc(
-        $1 $0::$2(size_t index) const {
-          size_t len;
-          auto* ptr = $3_mutable_$4(msg_, &len);
-          assert(index < len);
-          return ::protos::UpbStrToStringView(*(ptr + index));
-        }
-      )cc",
-      class_name, CppConstType(field), resolved_field_name,
-      MessageName(message), upbc_name);
-  output(
-      R"cc(
-        bool $0::resize_$1(size_t len) {
-          return $2_resize_$3(msg_, len, arena_);
-        }
-      )cc",
-      class_name, resolved_field_name, MessageName(message), upbc_name);
-  output(
-      R"cc(
-        bool $0::add_$2($1 val) {
-          return $3_add_$4(msg_, ::protos::UpbStrFromStringView(val, arena_), arena_);
-        }
-      )cc",
-      class_name, CppConstType(field), resolved_field_name,
-      MessageName(message), upbc_name);
-  output(
-      R"cc(
-        void $0::set_$2(size_t index, $1 val) {
-          size_t len;
-          auto* ptr = $3_mutable_$4(msg_, &len);
-          assert(index < len);
-          *(ptr + index) = ::protos::UpbStrFromStringView(val, arena_);
-        }
-      )cc",
-      class_name, CppConstType(field), resolved_field_name,
-      MessageName(message), upbc_name);
-}
-
-void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
-                                 const protobuf::FieldDescriptor* field,
-                                 const absl::string_view resolved_field_name,
-                                 const absl::string_view class_name,
-                                 Output& output) {
-  absl::string_view upbc_name = field->name();
-  output(
-      R"cc(
-        $1 $0::$2(size_t index) const {
-          size_t len;
-          auto* ptr = $3_mutable_$4(msg_, &len);
-          assert(index < len);
-          return *(ptr + index);
-        }
-      )cc",
-      class_name, CppConstType(field), resolved_field_name,
-      MessageName(message), upbc_name);
-  output(
-      R"cc(
-        bool $0::resize_$1(size_t len) {
-          return $2_resize_$3(msg_, len, arena_);
-        }
-      )cc",
-      class_name, resolved_field_name, MessageName(message), upbc_name);
-  output(
-      R"cc(
-        bool $0::add_$2($1 val) { return $3_add_$4(msg_, val, arena_); }
-      )cc",
-      class_name, CppConstType(field), resolved_field_name,
-      MessageName(message), upbc_name);
-  output(
-      R"cc(
-        void $0::set_$2(size_t index, $1 val) {
-          size_t len;
-          auto* ptr = $3_mutable_$4(msg_, &len);
-          assert(index < len);
-          *(ptr + index) = val;
-        }
-      )cc",
-      class_name, CppConstType(field), resolved_field_name,
-      MessageName(message), upbc_name);
-}
-
 void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
                                  const protobuf::FieldDescriptor* field,
                                  const absl::string_view resolved_field_name,
@@ -628,40 +451,8 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
     } else if (desc->options().map_entry()) {
       // TODO(b/237399867) Implement map entry
     } else if (field->is_repeated()) {
-      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-        output(
-            R"cc(
-              using $0Access::$1;
-              using $0Access::$1_size;
-              using $0Access::mutable_$1;
-            )cc",
-            class_name, resolved_field_name);
-        if (!read_only) {
-          output(
-              R"cc(
-                using $0Access::add_$1;
-                using $0Access::clear_$1;
-              )cc",
-              class_name, resolved_field_name);
-        }
-      } else {
-        output(
-            R"cc(
-              using $0Access::$1;
-              using $0Access::$1_size;
-            )cc",
-            class_name, resolved_field_name);
-        if (!read_only) {
-          output(
-              R"cc(
-                using $0Access::add_$1;
-                using $0Access::clear_$1;
-                using $0Access::resize_$1;
-                using $0Access::set_$1;
-              )cc",
-              class_name, resolved_field_name);
-        }
-      }
+      WriteRepeatedFieldUsingAccessors(field, class_name, resolved_field_name,
+                                       output, read_only);
     } else {
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         output("using $0Access::$1;\n", ClassName(desc), resolved_field_name);
