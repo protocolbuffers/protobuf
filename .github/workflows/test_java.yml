@@ -113,7 +113,6 @@ jobs:
         cp bazel-bin/java/core/core_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java/${VERSION}/protobuf-java-${VERSION}.pom
         cp bazel-bin/java/util/util_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java-util/${VERSION}/protobuf-java-util-${VERSION}.pom
     - name: Validate Protobuf BOM
-      # TODO: Switch main branch to a version tag
-      uses: googleapis/java-cloud-bom/tests/validate-bom@main
+      uses: googleapis/java-cloud-bom/tests/validate-bom@v26.13.0
       with:
         bom-path: java/bom/pom.xml
