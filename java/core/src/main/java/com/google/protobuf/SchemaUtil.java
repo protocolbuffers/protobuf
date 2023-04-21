@@ -44,10 +44,8 @@ import java.util.RandomAccess;
 @CheckReturnValue
 final class SchemaUtil {
   private static final Class<?> GENERATED_MESSAGE_CLASS = getGeneratedMessageClass();
-  private static final UnknownFieldSchema<?, ?> PROTO2_UNKNOWN_FIELD_SET_SCHEMA =
-      getUnknownFieldSetSchema(false);
-  private static final UnknownFieldSchema<?, ?> PROTO3_UNKNOWN_FIELD_SET_SCHEMA =
-      getUnknownFieldSetSchema(true);
+  private static final UnknownFieldSchema<?, ?> UNKNOWN_FIELD_SET_FULL_SCHEMA =
+      getUnknownFieldSetSchema();
   private static final UnknownFieldSchema<?, ?> UNKNOWN_FIELD_SET_LITE_SCHEMA =
       new UnknownFieldSetLiteSchema();
 
@@ -785,25 +783,21 @@ final class SchemaUtil {
     return tableSpaceCost + 3 * tableTimeCost <= lookupSpaceCost + 3 * lookupTimeCost;
   }
 
-  public static UnknownFieldSchema<?, ?> proto2UnknownFieldSetSchema() {
-    return PROTO2_UNKNOWN_FIELD_SET_SCHEMA;
-  }
-
-  public static UnknownFieldSchema<?, ?> proto3UnknownFieldSetSchema() {
-    return PROTO3_UNKNOWN_FIELD_SET_SCHEMA;
+  public static UnknownFieldSchema<?, ?> unknownFieldSetFullSchema() {
+    return UNKNOWN_FIELD_SET_FULL_SCHEMA;
   }
 
   public static UnknownFieldSchema<?, ?> unknownFieldSetLiteSchema() {
     return UNKNOWN_FIELD_SET_LITE_SCHEMA;
   }
 
-  private static UnknownFieldSchema<?, ?> getUnknownFieldSetSchema(boolean proto3) {
+  private static UnknownFieldSchema<?, ?> getUnknownFieldSetSchema() {
     try {
       Class<?> clz = getUnknownFieldSetSchemaClass();
       if (clz == null) {
         return null;
       }
-      return (UnknownFieldSchema) clz.getConstructor(boolean.class).newInstance(proto3);
+      return (UnknownFieldSchema) clz.getConstructor().newInstance();
     } catch (Throwable t) {
       return null;
     }
