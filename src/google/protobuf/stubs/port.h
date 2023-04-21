@@ -59,7 +59,7 @@
 #pragma runtime_checks("c", off)
 #endif
 #else
-#if (defined(__APPLE__) || defined(_NEWLIB__))
+#if (defined(__APPLE__) || defined(__NEWLIB__))
 #include <machine/endian.h>  // __BYTE_ORDER
 #elif defined(__FreeBSD__)
 #include <sys/endian.h>  // __BYTE_ORDER
