@@ -31,10 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
 #define GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
 
-#include <cstdint>
-#include <string>
 #include <type_traits>
-#include <vector>
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message_lite.h"
@@ -77,61 +74,6 @@ PROTOBUF_EXPORT int LookUpEnumName(const EnumEntry* enums,
 PROTOBUF_EXPORT bool InitializeEnumStrings(
     const EnumEntry* enums, const int* sorted_indices, size_t size,
     internal::ExplicitlyConstructed<std::string>* enum_strings);
-
-// The enum validation format is split in 3 parts:
-//  - A dense sequence, with start+length
-//  - A variable size presence bitmap.
-//  - A variable size sorted int32_t set for everything else. The int32's are
-//  stored in 2 uint16_t each in little endian.
-//
-// The values are as follows:
-//
-// 0 - [ sequence start (int16_t) ]
-// 1 - [ sequence length (uint16_t) ]
-// 2 - [ bitmap length in bits (uint16_t) ]
-// 3 - [ ordered length (uint16_t) ]
-// x - [ variable length bitmap ]
-// y - [ variable length of int32_t values ]
-//
-// Where the bitmap starts right after the end of the sequence.
-PROTOBUF_EXPORT bool ValidateEnum(int value, const uint16_t* data);
-PROTOBUF_EXPORT std::vector<uint16_t> GenerateEnumData(
-    const std::vector<int32_t>& values);
-
-inline PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
-                                                       const uint16_t* data) {
-  const int16_t min_seq = static_cast<int16_t>(data[0]);
-  const uint16_t length_seq = data[1];
-  uint64_t adjusted =
-      static_cast<uint64_t>(static_cast<int64_t>(value)) - min_seq;
-  if (PROTOBUF_PREDICT_TRUE(adjusted < length_seq)) {
-    return true;
-  }
-
-  const uint16_t length_bitmap = data[2];
-  adjusted -= length_seq;
-  if (PROTOBUF_PREDICT_TRUE(adjusted < length_bitmap)) {
-    data += 4;
-#if defined(__x86_64__) && defined(__GNUC__)
-    bool result;
-    asm("bt %1, %2" : "=@ccc"(result) : "r"(adjusted), "m"(*data));
-    return result;
-#else
-    return data[adjusted / 16] & (1 << (adjusted % 16));
-#endif
-  }
-  const uint16_t num_sorted = data[3];
-  data += 4 + length_bitmap / 16;
-  size_t pos = 0;
-  while (pos < num_sorted) {
-    auto it = data + pos * 2;
-    auto sample =
-        (static_cast<int32_t>(it[1]) << 16) | static_cast<int32_t>(it[0]);
-    if (sample == value) return true;
-    pos = 2 * pos + (sample > value ? 1 : 2);
-  }
-  return false;
-}
 
 }  // namespace internal
 }  // namespace protobuf
