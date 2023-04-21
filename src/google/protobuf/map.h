@@ -1070,6 +1070,12 @@ class KeyMapBase : public UntypedMapBase {
   }
 };
 
+template <typename T, typename K>
+bool InitializeMapKey(T*, K&&, Arena*) {
+  return false;
+}
+
+
 }  // namespace internal
 
 // This is the class for Map's internal value_type.
@@ -1555,13 +1561,17 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
         std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
         key_type>::type;
     Node* node = static_cast<Node*>(this->AllocNode(sizeof(Node)));
+
     // Even when arena is nullptr, CreateInArenaStorage is still used to
     // ensure the arena of submessage will be consistent. Otherwise,
     // submessage may have its own arena when message-owned arena is enabled.
     // Note: This only works if `Key` is not arena constructible.
-    Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
-                                this->alloc_.arena(),
-                                static_cast<TypeToInit>(std::forward<K>(k)));
+    if (!internal::InitializeMapKey(const_cast<Key*>(&node->kv.first),
+                                    std::forward<K>(k), this->alloc_.arena())) {
+      Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
+                                  this->alloc_.arena(),
+                                  static_cast<TypeToInit>(std::forward<K>(k)));
+    }
     // Note: if `T` is arena constructible, `Args` needs to be empty.
     Arena::CreateInArenaStorage(&node->kv.second, this->alloc_.arena(),
                                 std::forward<Args>(args)...);

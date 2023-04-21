@@ -821,13 +821,16 @@ class PROTOBUF_EXPORT TcParser final {
 
   static void InitializeMapNodeEntry(void* obj, MapTypeCard type_card,
                                      UntypedMapBase& map,
-                                     const TcParseTableBase::FieldAux* aux);
+                                     const TcParseTableBase::FieldAux* aux,
+                                     bool is_key);
   static void DestroyMapNode(NodeBase* node, MapAuxInfo map_info,
                              UntypedMapBase& map);
-  static const char* ParseOneMapEntry(
-      NodeBase* node, const char* ptr, ParseContext* ctx,
-      const TcParseTableBase::FieldAux* aux, const TcParseTableBase* table,
-      const TcParseTableBase::FieldEntry& entry);
+  static const char* ParseOneMapEntry(NodeBase* node, const char* ptr,
+                                      ParseContext* ctx,
+                                      const TcParseTableBase::FieldAux* aux,
+                                      const TcParseTableBase* table,
+                                      const TcParseTableBase::FieldEntry& entry,
+                                      Arena* arena);
 
   // Mini field lookup:
   static const TcParseTableBase::FieldEntry* FindFieldEntry(

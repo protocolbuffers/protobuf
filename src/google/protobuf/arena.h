@@ -36,6 +36,7 @@
 #include <limits>
 #include <type_traits>
 #include <utility>
+#include <vector>
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
 #include <exception>
@@ -666,6 +667,14 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   void* AllocateForArray(size_t n);
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*));
+
+  // Test only API.
+  // It returns the objects that are in the cleanup list for the current
+  // SerialArena. This API is meant for tests that want to see if something was
+  // added or not to the cleanup list. Sometimes adding something to the cleanup
+  // list has no visible side effect so peeking into the list is the only way to
+  // test.
+  std::vector<void*> PeekCleanupListForTesting();
 
   template <typename Type>
   friend class internal::GenericTypeHandler;
