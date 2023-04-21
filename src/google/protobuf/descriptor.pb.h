@@ -4445,10 +4445,10 @@ class PROTOBUF_EXPORT FileOptions final :
 
   public:
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  PROTOBUF_DEPRECATED  bool has_java_generate_equals_and_hash() const;
-  PROTOBUF_DEPRECATED  void clear_java_generate_equals_and_hash() ;
-  PROTOBUF_DEPRECATED bool java_generate_equals_and_hash() const;
-  PROTOBUF_DEPRECATED void set_java_generate_equals_and_hash(bool value);
+  [[deprecated]]  bool has_java_generate_equals_and_hash() const;
+  [[deprecated]]  void clear_java_generate_equals_and_hash() ;
+  [[deprecated]] bool java_generate_equals_and_hash() const;
+  [[deprecated]] void set_java_generate_equals_and_hash(bool value);
 
   private:
   bool _internal_java_generate_equals_and_hash() const;
@@ -4931,10 +4931,10 @@ class PROTOBUF_EXPORT MessageOptions final :
 
   public:
   // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
-  PROTOBUF_DEPRECATED  bool has_deprecated_legacy_json_field_conflicts() const;
-  PROTOBUF_DEPRECATED  void clear_deprecated_legacy_json_field_conflicts() ;
-  PROTOBUF_DEPRECATED bool deprecated_legacy_json_field_conflicts() const;
-  PROTOBUF_DEPRECATED void set_deprecated_legacy_json_field_conflicts(bool value);
+  [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts() const;
+  [[deprecated]]  void clear_deprecated_legacy_json_field_conflicts() ;
+  [[deprecated]] bool deprecated_legacy_json_field_conflicts() const;
+  [[deprecated]] void set_deprecated_legacy_json_field_conflicts(bool value);
 
   private:
   bool _internal_deprecated_legacy_json_field_conflicts() const;
@@ -5487,10 +5487,10 @@ class PROTOBUF_EXPORT FieldOptions final :
 
   public:
   // optional .google.protobuf.FieldOptions.OptionTargetType target = 18 [deprecated = true];
-  PROTOBUF_DEPRECATED  bool has_target() const;
-  PROTOBUF_DEPRECATED  void clear_target() ;
-  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType target() const;
-  PROTOBUF_DEPRECATED void set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
+  [[deprecated]]  bool has_target() const;
+  [[deprecated]]  void clear_target() ;
+  [[deprecated]] ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType target() const;
+  [[deprecated]] void set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
 
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType _internal_target() const;
@@ -6169,10 +6169,10 @@ class PROTOBUF_EXPORT EnumOptions final :
 
   public:
   // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
-  PROTOBUF_DEPRECATED  bool has_deprecated_legacy_json_field_conflicts() const;
-  PROTOBUF_DEPRECATED  void clear_deprecated_legacy_json_field_conflicts() ;
-  PROTOBUF_DEPRECATED bool deprecated_legacy_json_field_conflicts() const;
-  PROTOBUF_DEPRECATED void set_deprecated_legacy_json_field_conflicts(bool value);
+  [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts() const;
+  [[deprecated]]  void clear_deprecated_legacy_json_field_conflicts() ;
+  [[deprecated]] bool deprecated_legacy_json_field_conflicts() const;
+  [[deprecated]] void set_deprecated_legacy_json_field_conflicts(bool value);
 
   private:
   bool _internal_deprecated_legacy_json_field_conflicts() const;

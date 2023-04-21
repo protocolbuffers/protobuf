@@ -1000,7 +1000,8 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
-  Element** mutable_data();
+  Element**
+  mutable_data();
   const Element* const* data() const;
 
   // Swaps entire contents with "other". If they are on separate arenas, then

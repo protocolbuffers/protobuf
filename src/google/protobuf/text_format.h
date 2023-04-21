@@ -346,8 +346,8 @@ class PROTOBUF_EXPORT TextFormat {
     // Takes ownership of the printer.
     void SetDefaultFieldValuePrinter(const FastFieldValuePrinter* printer);
 
-    PROTOBUF_DEPRECATED_MSG("Please use FastFieldValuePrinter")
-    void SetDefaultFieldValuePrinter(const FieldValuePrinter* printer);
+    [[deprecated("Please use FastFieldValuePrinter")]] void
+    SetDefaultFieldValuePrinter(const FieldValuePrinter* printer);
 
     // Sets whether we want to hide unknown fields or not.
     // Usually unknown fields are printed in a generic way that includes the
@@ -400,9 +400,9 @@ class PROTOBUF_EXPORT TextFormat {
     bool RegisterFieldValuePrinter(const FieldDescriptor* field,
                                    const FastFieldValuePrinter* printer);
 
-    PROTOBUF_DEPRECATED_MSG("Please use FastFieldValuePrinter")
-    bool RegisterFieldValuePrinter(const FieldDescriptor* field,
-                                   const FieldValuePrinter* printer);
+    [[deprecated("Please use FastFieldValuePrinter")]] bool
+    RegisterFieldValuePrinter(const FieldDescriptor* field,
+                              const FieldValuePrinter* printer);
 
     // Register a custom message-specific MessagePrinter for messages with a
     // particular Descriptor.

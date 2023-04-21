@@ -316,8 +316,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // include a random fuzz factor to prevent these dependencies.
   virtual size_t SpaceUsedLong() const;
 
-  PROTOBUF_DEPRECATED_MSG("Please use SpaceUsedLong() instead")
-  int SpaceUsed() const { return internal::ToIntSize(SpaceUsedLong()); }
+  [[deprecated("Please use SpaceUsedLong() instead")]] int SpaceUsed() const {
+    return internal::ToIntSize(SpaceUsedLong());
+  }
 
   // Debugging & Testing----------------------------------------------
 
@@ -498,8 +499,8 @@ class PROTOBUF_EXPORT Reflection final {
   // Estimate the amount of memory used by the message object.
   size_t SpaceUsedLong(const Message& message) const;
 
-  PROTOBUF_DEPRECATED_MSG("Please use SpaceUsedLong() instead")
-  int SpaceUsed(const Message& message) const {
+  [[deprecated("Please use SpaceUsedLong() instead")]] int SpaceUsed(
+      const Message& message) const {
     return internal::ToIntSize(SpaceUsedLong(message));
   }
 
@@ -895,9 +896,9 @@ class PROTOBUF_EXPORT Reflection final {
   //
   // for T = Cord and all protobuf scalar types except enums.
   template <typename T>
-  PROTOBUF_DEPRECATED_MSG("Please use GetRepeatedFieldRef() instead")
-  const RepeatedField<T>& GetRepeatedField(const Message& msg,
-                                           const FieldDescriptor* d) const {
+  [[deprecated(
+      "Please use GetRepeatedFieldRef() instead")]] const RepeatedField<T>&
+  GetRepeatedField(const Message& msg, const FieldDescriptor* d) const {
     return GetRepeatedFieldInternal<T>(msg, d);
   }
 
@@ -905,9 +906,9 @@ class PROTOBUF_EXPORT Reflection final {
   //
   // for T = Cord and all protobuf scalar types except enums.
   template <typename T>
-  PROTOBUF_DEPRECATED_MSG("Please use GetMutableRepeatedFieldRef() instead")
-  RepeatedField<T>* MutableRepeatedField(Message* msg,
-                                         const FieldDescriptor* d) const {
+  [[deprecated(
+      "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedField<T>*
+  MutableRepeatedField(Message* msg, const FieldDescriptor* d) const {
     return MutableRepeatedFieldInternal<T>(msg, d);
   }
 
@@ -916,9 +917,9 @@ class PROTOBUF_EXPORT Reflection final {
   // for T = std::string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template <typename T>
-  PROTOBUF_DEPRECATED_MSG("Please use GetRepeatedFieldRef() instead")
-  const RepeatedPtrField<T>& GetRepeatedPtrField(
-      const Message& msg, const FieldDescriptor* d) const {
+  [[deprecated(
+      "Please use GetRepeatedFieldRef() instead")]] const RepeatedPtrField<T>&
+  GetRepeatedPtrField(const Message& msg, const FieldDescriptor* d) const {
     return GetRepeatedPtrFieldInternal<T>(msg, d);
   }
 
@@ -927,9 +928,9 @@ class PROTOBUF_EXPORT Reflection final {
   // for T = std::string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template <typename T>
-  PROTOBUF_DEPRECATED_MSG("Please use GetMutableRepeatedFieldRef() instead")
-  RepeatedPtrField<T>* MutableRepeatedPtrField(Message* msg,
-                                               const FieldDescriptor* d) const {
+  [[deprecated(
+      "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedPtrField<T>*
+  MutableRepeatedPtrField(Message* msg, const FieldDescriptor* d) const {
     return MutableRepeatedPtrFieldInternal<T>(msg, d);
   }
 

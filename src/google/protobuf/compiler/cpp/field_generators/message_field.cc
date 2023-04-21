@@ -155,7 +155,7 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   Formatter format(p);
   format(
       "$DEPRECATED$ const $Submsg$& ${1$$name$$}$() const;\n"
-      "PROTOBUF_NODISCARD $DEPRECATED$ $Submsg$* "
+      "$DEPRECATED$ PROTOBUF_NODISCARD $Submsg$* "
       "${1$$release_name$$}$();\n",
       field_);
   format("$DEPRECATED$ $Submsg$* ${1$mutable_$name$$}$();\n",
