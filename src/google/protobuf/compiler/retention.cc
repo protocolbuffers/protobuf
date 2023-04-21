@@ -110,29 +110,39 @@ void ConvertToDynamicMessageAndStripOptions(
     // having to resort to DynamicMessage.
     StripMessage(m, path, stripped_paths);
   } else {
+    // To convert to a dynamic message, we need to serialize the original
+    // descriptor and parse it back again. This can fail if the descriptor is
+    // invalid, so in that case we try to handle it gracefully by stripping the
+    // original descriptor without using DynamicMessage. In this situation we
+    // will generally not be able to strip custom options, but we can at least
+    // strip built-in options.
     DynamicMessageFactory factory;
     std::unique_ptr<Message> dynamic_message(
         factory.GetPrototype(descriptor)->New());
     std::string serialized;
     if (!m.SerializePartialToString(&serialized)) {
       ABSL_LOG_EVERY_N_SEC(ERROR, 1)
-          << "Failed to strip source-retention options";
+          << "Failed to fully strip source-retention options";
+      StripMessage(m, path, stripped_paths);
       return;
     }
     if (!dynamic_message->ParsePartialFromString(serialized)) {
       ABSL_LOG_EVERY_N_SEC(ERROR, 1)
-          << "Failed to strip source-retention options";
+          << "Failed to fully strip source-retention options";
+      StripMessage(m, path, stripped_paths);
       return;
     }
     StripMessage(*dynamic_message, path, stripped_paths);
     if (!dynamic_message->SerializePartialToString(&serialized)) {
       ABSL_LOG_EVERY_N_SEC(ERROR, 1)
-          << "Failed to strip source-retention options";
+          << "Failed to fully strip source-retention options";
+      StripMessage(m, path, stripped_paths);
       return;
     }
     if (!m.ParsePartialFromString(serialized)) {
       ABSL_LOG_EVERY_N_SEC(ERROR, 1)
-          << "Failed to strip source-retention options";
+          << "Failed to fully strip source-retention options";
+      StripMessage(m, path, stripped_paths);
       return;
     }
   }
