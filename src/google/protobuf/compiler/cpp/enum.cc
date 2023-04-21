@@ -142,9 +142,8 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
                                         EnumValueName(value)))
                            .AnnotatedAs(value),
                        {"kNumber", Int32ToString(value->number())},
-                       {"DEPRECATED", value->options().deprecated()
-                                          ? "PROTOBUF_DEPRECATED"
-                                          : ""},
+                       {"DEPRECATED",
+                        value->options().deprecated() ? "[[deprecated]]" : ""},
                    },
                    R"cc(
                      $Msg_Enum_VALUE$$ DEPRECATED$ = $kNumber$,
@@ -302,7 +301,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
         {
             Sub("VALUE", EnumValueName(enum_->value(j))).AnnotatedAs(value),
             {"DEPRECATED",
-             value->options().deprecated() ? "PROTOBUF_DEPRECATED" : ""},
+             value->options().deprecated() ? "[[deprecated]]" : ""},
         },
         R"cc(
           $DEPRECATED $static constexpr $Enum_$ $VALUE$ = $Msg_Enum$_$VALUE$;

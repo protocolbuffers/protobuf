@@ -397,23 +397,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 # define PROTOBUF_SECTION_VARIABLE(x)
 #endif
 
-#if defined(PROTOBUF_DEPRECATED)
-#error PROTOBUF_DEPRECATED was previously defined
-#endif
-#if defined(PROTOBUF_DEPRECATED_MSG)
-#error PROTOBUF_DEPRECATED_MSG was previously defined
-#endif
-#if __has_attribute(deprecated) || defined(__GNUC__)
-# define PROTOBUF_DEPRECATED __attribute__((deprecated))
-# define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
-#elif defined(_MSC_VER)
-# define PROTOBUF_DEPRECATED __declspec(deprecated)
-# define PROTOBUF_DEPRECATED_MSG(msg) __declspec(deprecated(msg))
-#else
-# define PROTOBUF_DEPRECATED
-# define PROTOBUF_DEPRECATED_MSG(msg)
-#endif
-
 #if defined(__clang__)
 #define PROTOBUF_IGNORE_DEPRECATION_START                     \
   _Pragma("clang diagnostic push")                                  \

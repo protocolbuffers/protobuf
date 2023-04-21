@@ -1168,9 +1168,8 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Like WriteVarint32()  but writing directly to the target array.
   static uint8_t* WriteVarint32ToArray(uint32_t value, uint8_t* target);
   // Like WriteVarint32ToArray()
-  PROTOBUF_DEPRECATED_MSG("Please use WriteVarint32ToArray() instead")
-  static uint8_t* WriteVarint32ToArrayOutOfLine(uint32_t value,
-                                                uint8_t* target) {
+  [[deprecated("Please use WriteVarint32ToArray() instead")]] static uint8_t*
+  WriteVarint32ToArrayOutOfLine(uint32_t value, uint8_t* target) {
     return WriteVarint32ToArray(value, target);
   }
   // Write an unsigned integer with Varint encoding.

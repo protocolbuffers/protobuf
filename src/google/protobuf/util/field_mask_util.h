@@ -122,8 +122,8 @@ class PROTOBUF_EXPORT FieldMaskUtil {
     return out;
   }
   template <typename T>
-  PROTOBUF_DEPRECATED_MSG("Use *out = GetFieldMaskForAllFields() instead")
-  static void GetFieldMaskForAllFields(FieldMask* out) {
+  [[deprecated("Use *out = GetFieldMaskForAllFields() instead")]] static void
+  GetFieldMaskForAllFields(FieldMask* out) {
     GetFieldMaskForAllFields(T::descriptor(), out);
   }
   // This flavor takes the protobuf type descriptor as an argument.

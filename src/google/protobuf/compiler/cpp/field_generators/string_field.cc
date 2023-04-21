@@ -243,7 +243,7 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
         template <typename Arg_ = const std::string&, typename... Args_>
         $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
         $DEPRECATED$ std::string* $mutable_name$();
-        PROTOBUF_NODISCARD $DEPRECATED$ std::string* $release_name$();
+        $DEPRECATED$ PROTOBUF_NODISCARD std::string* $release_name$();
         $DEPRECATED$ void $set_allocated_name$(std::string* ptr);
 
         private:

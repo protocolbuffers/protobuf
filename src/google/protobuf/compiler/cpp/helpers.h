@@ -77,12 +77,12 @@ inline std::string MacroPrefix(const Options& /* options */) {
 
 inline std::string DeprecatedAttribute(const Options& /* options */,
                                        const FieldDescriptor* d) {
-  return d->options().deprecated() ? "PROTOBUF_DEPRECATED " : "";
+  return d->options().deprecated() ? "[[deprecated]] " : "";
 }
 
 inline std::string DeprecatedAttribute(const Options& /* options */,
                                        const EnumValueDescriptor* d) {
-  return d->options().deprecated() ? "PROTOBUF_DEPRECATED " : "";
+  return d->options().deprecated() ? "[[deprecated]] " : "";
 }
 
 // Commonly-used separator comments.  Thick is a line of '=', thin is a line
