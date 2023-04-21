@@ -38,12 +38,16 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {

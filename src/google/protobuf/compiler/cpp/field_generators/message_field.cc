@@ -763,12 +763,9 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
       std::make_tuple(field_, GeneratedCodeInfo::Annotation::ALIAS));
   format(
       "private:\n"
-      "const $Submsg$& ${1$_internal_$name$$}$(int index) const;\n"
-      "$Submsg$* ${1$_internal_add_$name$$}$();\n"
       "const $pb$::RepeatedPtrField<$Submsg$>& _internal_$name$() const;\n"
       "$pb$::RepeatedPtrField<$Submsg$>* _internal_mutable_$name$();\n"
-      "public:\n",
-      field_);
+      "public:\n");
   format("$DEPRECATED$ const $Submsg$& ${1$$name$$}$(int index) const;\n",
          field_);
   format("$DEPRECATED$ $Submsg$* ${1$add_$name$$}$();\n",
@@ -796,37 +793,25 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "  return _internal_mutable_$name$();\n"
       "}\n");
 
-  if (opts_->safe_boundary_check) {
-    p->Emit(
-        "inline const $Submsg$& $Msg$::_internal_$name$(int index) const "
-        "{\n"
-        "  return _internal_$name$().InternalCheckedGet(index,\n"
-        "      reinterpret_cast<const $Submsg$&>($kDefault$));\n"
-        "}\n");
-  } else {
-    p->Emit(
-        "inline const $Submsg$& $Msg$::_internal_$name$(int index) const "
-        "{\n"
-        "$StrongRef$;"
-        "  return _internal_$name$().Get(index);\n"
-        "}\n");
-  }
-
-  p->Emit(
-      "inline const $Submsg$& $Msg$::$name$(int index) const {\n"
-      "$annotate_get$"
-      "  // @@protoc_insertion_point(field_get:$pkg.Msg.field$)\n"
-      "  return _internal_$name$(index);\n"
-      "}\n"
-      "inline $Submsg$* $Msg$::_internal_add_$name$() {\n"
-      "  return _internal_mutable_$name$()->Add();\n"
-      "}\n"
-      "inline $Submsg$* $Msg$::add_$name$() {\n"
-      "  $Submsg$* _add = _internal_add_$name$();\n"
-      "$annotate_add_mutable$"
-      "  // @@protoc_insertion_point(field_add:$pkg.Msg.field$)\n"
-      "  return _add;\n"
-      "}\n");
+  p->Emit({{"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
+           {"GetExtraArg",
+            [&] {
+              p->Emit(opts_->safe_boundary_check
+                          ? ", reinterpret_cast<const $Submsg$&>($kDefault$)"
+                          : "");
+            }}},
+          "inline const $Submsg$& $Msg$::$name$(int index) const {\n"
+          "$annotate_get$"
+          "  // @@protoc_insertion_point(field_get:$pkg.Msg.field$)\n"
+          "  $StrongRef$;"
+          "  return _internal_$name$().$Get$(index$GetExtraArg$);\n"
+          "}\n"
+          "inline $Submsg$* $Msg$::add_$name$() {\n"
+          "  $Submsg$* _add = _internal_mutable_$name$()->Add();\n"
+          "$annotate_add_mutable$"
+          "  // @@protoc_insertion_point(field_add:$pkg.Msg.field$)\n"
+          "  return _add;\n"
+          "}\n");
 
   p->Emit(
       "inline const $pb$::RepeatedPtrField< $Submsg$ >&\n"
@@ -914,7 +899,7 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
         " i < n; i++) {\n");
     if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
       p->Emit(
-          "  const auto& repfield = this->_internal_$name$(i);\n"
+          "  const auto& repfield = this->_internal_$name$().Get(i);\n"
           "  target = $pbi$::WireFormatLite::\n"
           "      InternalWrite$declared_type$($number$, "
           "repfield, repfield.GetCachedSize(), target, stream);\n"
@@ -924,7 +909,7 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
           "  target = stream->EnsureSpace(target);\n"
           "  target = $pbi$::WireFormatLite::\n"
           "    InternalWrite$declared_type$($number$, "
-          "this->_internal_$name$(i), target, stream);\n"
+          "this->_internal_$name$().Get(i), target, stream);\n"
           "}\n");
     }
   }
