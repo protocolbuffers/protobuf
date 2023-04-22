@@ -195,6 +195,34 @@ PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* Arena::Cr
 PROTOBUF_NAMESPACE_CLOSE
 
 PROTOBUF_NAMESPACE_OPEN
+enum ExtensionRangeOptions_VerificationState : int {
+  ExtensionRangeOptions_VerificationState_DECLARATION = 0,
+  ExtensionRangeOptions_VerificationState_UNVERIFIED = 1,
+};
+
+PROTOBUF_EXPORT bool ExtensionRangeOptions_VerificationState_IsValid(int value);
+constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MIN = static_cast<ExtensionRangeOptions_VerificationState>(0);
+constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MAX = static_cast<ExtensionRangeOptions_VerificationState>(1);
+constexpr int ExtensionRangeOptions_VerificationState_VerificationState_ARRAYSIZE = 1 + 1;
+PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor*
+ExtensionRangeOptions_VerificationState_descriptor();
+template <typename T>
+const std::string& ExtensionRangeOptions_VerificationState_Name(T value) {
+  static_assert(std::is_same<T, ExtensionRangeOptions_VerificationState>::value ||
+                    std::is_integral<T>::value,
+                "Incorrect type passed to VerificationState_Name().");
+  return ExtensionRangeOptions_VerificationState_Name(static_cast<ExtensionRangeOptions_VerificationState>(value));
+}
+template <>
+inline const std::string& ExtensionRangeOptions_VerificationState_Name(ExtensionRangeOptions_VerificationState value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum<ExtensionRangeOptions_VerificationState_descriptor,
+                                                 0, 1>(
+      static_cast<int>(value));
+}
+inline bool ExtensionRangeOptions_VerificationState_Parse(absl::string_view name, ExtensionRangeOptions_VerificationState* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ExtensionRangeOptions_VerificationState>(
+      ExtensionRangeOptions_VerificationState_descriptor(), name, value);
+}
 enum FieldDescriptorProto_Type : int {
   FieldDescriptorProto_Type_TYPE_DOUBLE = 1,
   FieldDescriptorProto_Type_TYPE_FLOAT = 2,
@@ -1936,6 +1964,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     kNumberFieldNumber = 1,
     kIsRepeatedFieldNumber = 4,
     kReservedFieldNumber = 5,
+    kRepeatedFieldNumber = 6,
   };
   // optional string full_name = 2;
   bool has_full_name() const;
@@ -1990,11 +2019,11 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   void _internal_set_number(::int32_t value);
 
   public:
-  // optional bool is_repeated = 4;
-  bool has_is_repeated() const;
-  void clear_is_repeated() ;
-  bool is_repeated() const;
-  void set_is_repeated(bool value);
+  // optional bool is_repeated = 4 [deprecated = true];
+  [[deprecated]]  bool has_is_repeated() const;
+  [[deprecated]]  void clear_is_repeated() ;
+  [[deprecated]] bool is_repeated() const;
+  [[deprecated]] void set_is_repeated(bool value);
 
   private:
   bool _internal_is_repeated() const;
@@ -2012,6 +2041,17 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   void _internal_set_reserved(bool value);
 
   public:
+  // optional bool repeated = 6;
+  bool has_repeated() const;
+  void clear_repeated() ;
+  bool repeated() const;
+  void set_repeated(bool value);
+
+  private:
+  bool _internal_repeated() const;
+  void _internal_set_repeated(bool value);
+
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions.Declaration)
  private:
   class _Internal;
@@ -2027,6 +2067,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     ::int32_t number_;
     bool is_repeated_;
     bool reserved_;
+    bool repeated_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -2158,11 +2199,32 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
 
   typedef ExtensionRangeOptions_Declaration Declaration;
 
+  using VerificationState = ExtensionRangeOptions_VerificationState;
+  static constexpr VerificationState DECLARATION = ExtensionRangeOptions_VerificationState_DECLARATION;
+  static constexpr VerificationState UNVERIFIED = ExtensionRangeOptions_VerificationState_UNVERIFIED;
+  static inline bool VerificationState_IsValid(int value) {
+    return ExtensionRangeOptions_VerificationState_IsValid(value);
+  }
+  static constexpr VerificationState VerificationState_MIN = ExtensionRangeOptions_VerificationState_VerificationState_MIN;
+  static constexpr VerificationState VerificationState_MAX = ExtensionRangeOptions_VerificationState_VerificationState_MAX;
+  static constexpr int VerificationState_ARRAYSIZE = ExtensionRangeOptions_VerificationState_VerificationState_ARRAYSIZE;
+  static inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* VerificationState_descriptor() {
+    return ExtensionRangeOptions_VerificationState_descriptor();
+  }
+  template <typename T>
+  static inline const std::string& VerificationState_Name(T value) {
+    return ExtensionRangeOptions_VerificationState_Name(value);
+  }
+  static inline bool VerificationState_Parse(absl::string_view name, VerificationState* value) {
+    return ExtensionRangeOptions_VerificationState_Parse(name, value);
+  }
+
   // accessors -------------------------------------------------------
 
   enum : int {
     kDeclarationFieldNumber = 2,
     kUninterpretedOptionFieldNumber = 999,
+    kVerificationFieldNumber = 3,
   };
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
   int declaration_size() const;
@@ -2204,6 +2266,17 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
+  // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED];
+  bool has_verification() const;
+  void clear_verification() ;
+  ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState verification() const;
+  void set_verification(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState value);
+
+  private:
+  ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState _internal_verification() const;
+  void _internal_set_verification(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState value);
+
+  public:
   template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
@@ -2365,9 +2438,11 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::internal::ExtensionSet _extensions_;
 
+    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration > declaration_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption > uninterpreted_option_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    int verification_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -10497,7 +10572,7 @@ inline void ExtensionRangeOptions_Declaration::set_allocated_type(std::string* v
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.type)
 }
 
-// optional bool is_repeated = 4;
+// optional bool is_repeated = 4 [deprecated = true];
 inline bool ExtensionRangeOptions_Declaration::has_is_repeated() const {
   bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
@@ -10545,6 +10620,31 @@ inline bool ExtensionRangeOptions_Declaration::_internal_reserved() const {
 inline void ExtensionRangeOptions_Declaration::_internal_set_reserved(bool value) {
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.reserved_ = value;
+}
+
+// optional bool repeated = 6;
+inline bool ExtensionRangeOptions_Declaration::has_repeated() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
+  return value;
+}
+inline void ExtensionRangeOptions_Declaration::clear_repeated() {
+  _impl_.repeated_ = false;
+  _impl_._has_bits_[0] &= ~0x00000020u;
+}
+inline bool ExtensionRangeOptions_Declaration::repeated() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.repeated)
+  return _internal_repeated();
+}
+inline void ExtensionRangeOptions_Declaration::set_repeated(bool value) {
+  _internal_set_repeated(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.repeated)
+}
+inline bool ExtensionRangeOptions_Declaration::_internal_repeated() const {
+  return _impl_.repeated_;
+}
+inline void ExtensionRangeOptions_Declaration::_internal_set_repeated(bool value) {
+  _impl_._has_bits_[0] |= 0x00000020u;
+  _impl_.repeated_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -10645,6 +10745,32 @@ ExtensionRangeOptions::_internal_declaration() const {
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_Declaration>*
 ExtensionRangeOptions::_internal_mutable_declaration() {
   return &_impl_.declaration_;
+}
+
+// optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED];
+inline bool ExtensionRangeOptions::has_verification() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline void ExtensionRangeOptions::clear_verification() {
+  _impl_.verification_ = 1;
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState ExtensionRangeOptions::verification() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.verification)
+  return _internal_verification();
+}
+inline void ExtensionRangeOptions::set_verification(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState value) {
+   _internal_set_verification(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.verification)
+}
+inline ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState ExtensionRangeOptions::_internal_verification() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState>(_impl_.verification_);
+}
+inline void ExtensionRangeOptions::_internal_set_verification(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState value) {
+  assert(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState_IsValid(value));
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.verification_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -15417,6 +15543,12 @@ PROTOBUF_NAMESPACE_CLOSE
 
 PROTOBUF_NAMESPACE_OPEN
 
+template <>
+struct is_proto_enum<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState> : std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState>() {
+  return ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState_descriptor();
+}
 template <>
 struct is_proto_enum<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type> : std::true_type {};
 template <>

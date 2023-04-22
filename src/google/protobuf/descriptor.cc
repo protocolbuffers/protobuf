@@ -7488,6 +7488,18 @@ void DescriptorBuilder::ValidateExtensionRangeOptions(
 
 
     if (!range_options.declaration().empty()) {
+      // TODO(b/278783756): remove the "has_verification" check once the default
+      // is flipped to DECLARATION.
+      if (range_options.has_verification() &&
+          range_options.verification() == ExtensionRangeOptions::UNVERIFIED) {
+        AddError(message.full_name(), proto.extension_range(i),
+                 DescriptorPool::ErrorCollector::EXTENDEE, [&] {
+                   return absl::Substitute(
+                       "Cannot mark the extension range as UNVERIFIED when it "
+                       "has extension(s) declared.");
+                 });
+        return;
+      }
       ValidateExtensionDeclaration(
           message.full_name(), range_options.declaration(),
           proto.extension_range(i), declaration_full_name_set);
