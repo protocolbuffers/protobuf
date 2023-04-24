@@ -38,6 +38,8 @@
 #include "google/protobuf/repeated_field.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <iterator>
 #include <limits>
@@ -45,14 +47,23 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
+#include "google/protobuf/arena.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/span.h"
+#include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
 
 
@@ -1211,6 +1222,19 @@ TEST(RepeatedField, PoisonsMemoryOnAssign) {
 
 #endif
 
+TEST(RepeatedField, Cleanups) {
+  Arena arena;
+  auto growth = internal::CleanupGrowth(
+      arena, [&] { Arena::CreateMessage<RepeatedField<int>>(&arena); });
+  EXPECT_THAT(growth.cleanups, testing::IsEmpty());
+
+  void* ptr;
+  growth = internal::CleanupGrowth(arena, [&] {
+    ptr = Arena::CreateMessage<RepeatedField<absl::Cord>>(&arena);
+  });
+  EXPECT_THAT(growth.cleanups, testing::UnorderedElementsAre(ptr));
+}
+
 // ===================================================================
 // RepeatedPtrField tests.  These pretty much just mirror the RepeatedField
 // tests above.
@@ -1990,6 +2014,19 @@ TEST(RepeatedPtrField, ExtractSubrange) {
 
 TEST(RepeatedPtrField, DeleteSubrange) {
   // DeleteSubrange is a trivial extension of ExtendSubrange.
+}
+
+TEST(RepeatedPtrField, Cleanups) {
+  Arena arena;
+  auto growth = internal::CleanupGrowth(arena, [&] {
+    Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+  });
+  EXPECT_THAT(growth.cleanups, testing::IsEmpty());
+
+  growth = internal::CleanupGrowth(arena, [&] {
+    Arena::CreateMessage<RepeatedPtrField<TestAllTypes>>(&arena);
+  });
+  EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 }
 
 // ===================================================================

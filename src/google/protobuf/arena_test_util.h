@@ -31,6 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 
+#include <cstddef>
+
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -83,6 +86,25 @@ struct ArenaTestPeer {
     return arena->PeekCleanupListForTesting();
   }
 };
+
+struct CleanupGrowthInfo {
+  size_t space_used;
+  absl::flat_hash_set<void*> cleanups;
+};
+
+template <typename Func>
+CleanupGrowthInfo CleanupGrowth(Arena& arena, Func f) {
+  auto old_space_used = arena.SpaceUsed();
+  auto old_cleanups = ArenaTestPeer::PeekCleanupListForTesting(&arena);
+  f();
+  auto new_space_used = arena.SpaceUsed();
+  auto new_cleanups = ArenaTestPeer::PeekCleanupListForTesting(&arena);
+  CleanupGrowthInfo res;
+  res.space_used = new_space_used - old_space_used;
+  res.cleanups.insert(new_cleanups.begin(), new_cleanups.end());
+  for (auto p : old_cleanups) res.cleanups.erase(p);
+  return res;
+}
 
 class NoHeapChecker {
  public:
