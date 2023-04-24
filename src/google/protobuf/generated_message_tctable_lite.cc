@@ -37,6 +37,7 @@
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/inlined_string_field.h"
+#include "google/protobuf/intrinsic.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
@@ -1658,13 +1659,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastUR2(PROTOBUF_TC_PARAM_DECL) {
 
 namespace {
 inline void SetHas(const FieldEntry& entry, MessageLite* msg) {
-  auto has_idx = static_cast<uint32_t>(entry.has_idx);
-#if defined(__x86_64__) && defined(__GNUC__)
-  asm("bts %1, %0\n" : "+m"(*msg) : "r"(has_idx));
-#else
-  auto& hasblock = TcParser::RefAt<uint32_t>(msg, has_idx / 32 * 4);
-  hasblock |= uint32_t{1} << (has_idx % 32);
-#endif
+  return internal::BitSet<uint32_t>(msg, entry.has_idx);
 }
 }  // namespace
 
