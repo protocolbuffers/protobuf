@@ -108,7 +108,8 @@ UPB_API_INLINE int32_t upb_Message_GetInt32(const upb_Message* msg,
 UPB_API_INLINE bool upb_Message_SetInt32(upb_Message* msg,
                                          const upb_MiniTableField* field,
                                          int32_t value, upb_Arena* a) {
-  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Int32);
+  UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Int32 ||
+             upb_MiniTableField_CType(field) == kUpb_CType_Enum);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_4Byte);
   UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   return _upb_Message_SetField(msg, field, &value, a);
@@ -134,7 +135,7 @@ UPB_API_INLINE bool upb_Message_SetUInt32(upb_Message* msg,
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
-UPB_API_INLINE void upb_Message_SetEnumProto2(
+UPB_API_INLINE void upb_Message_SetClosedEnum(
     upb_Message* msg, const upb_MiniTable* msg_mini_table,
     const upb_MiniTableField* field, int32_t value) {
   UPB_ASSERT(upb_MiniTableField_IsClosedEnum(field));

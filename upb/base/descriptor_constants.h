@@ -40,7 +40,7 @@ typedef enum {
   kUpb_CType_Float = 2,
   kUpb_CType_Int32 = 3,
   kUpb_CType_UInt32 = 4,
-  kUpb_CType_Enum = 5,  // Enum values are int32.
+  kUpb_CType_Enum = 5,  // Enum values are int32. TODO(b/279178239): rename
   kUpb_CType_Message = 6,
   kUpb_CType_Double = 7,
   kUpb_CType_Int64 = 8,
