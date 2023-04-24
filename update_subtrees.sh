@@ -1,4 +1,4 @@
-#! /bin/bash -eux
+#!/bin/bash -eux
 
 set -eux
 

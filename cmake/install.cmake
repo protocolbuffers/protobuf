@@ -1,5 +1,14 @@
 include(GNUInstallDirs)
 
+foreach(_target IN LISTS protobuf_ABSL_USED_TARGETS)
+  string(REPLACE :: _ _modified_target ${_target})
+  list(APPEND _pc_targets ${_modified_target})
+endforeach()
+list(APPEND _pc_targets "utf8_range")
+
+string(JOIN " " _pc_target_list ${_pc_targets})
+set(_protobuf_PC_REQUIRES ${_pc_target_list})
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake

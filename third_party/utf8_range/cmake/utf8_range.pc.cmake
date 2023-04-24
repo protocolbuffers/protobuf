@@ -3,10 +3,10 @@ exec_prefix=@CMAKE_INSTALL_PREFIX@
 libdir=@CMAKE_INSTALL_FULL_LIBDIR@
 includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 
-Name: Protocol Buffers
-Description: Google's Data Interchange Format
-Version: @protobuf_VERSION@
-Requires: @_protobuf_PC_REQUIRES@
+Name: UTF8 Range
+Description: Google's UTF8 Library
+Version: 1.0
+Requires: absl_strings
 Libs: -L${libdir} -lprotobuf-lite @CMAKE_THREAD_LIBS_INIT@
 Cflags: -I${includedir}
 Conflicts: protobuf
