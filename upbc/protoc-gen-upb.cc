@@ -519,6 +519,10 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
                              absl::string_view msg_name,
                              const NameToFieldDefMap& field_names,
                              const Options& options, Output& output) {
+  // Generate getter returning first item and size.
+  //
+  // Example:
+  //   UPB_INLINE const struct Bar* const* name(const Foo* msg, size_t* size)
   output(
       R"cc(
         UPB_INLINE $0 const* $1_$2(const $1* msg, size_t* size) {
@@ -533,8 +537,44 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           }
         }
       )cc",
-      CTypeConst(field), msg_name, ResolveFieldName(field, field_names),
-      FieldInitializer(pools, field, options));
+      CTypeConst(field),                       // $0
+      msg_name,                                // $1
+      ResolveFieldName(field, field_names),    // $2
+      FieldInitializer(pools, field, options)  // #3
+  );
+  // Generate private getter returning array or NULL for immutable and upb_Array
+  // for mutable.
+  //
+  // Example:
+  //   UPB_INLINE const upb_Array* _name_upbarray(size_t* size)
+  //   UPB_INLINE upb_Array* _name_mutable_upbarray(size_t* size)
+  output(
+      R"cc(
+        UPB_INLINE const upb_Array* _$1_$2_$4(const $1* msg, size_t* size) {
+          const upb_MiniTableField field = $3;
+          const upb_Array* arr = upb_Message_GetArray(msg, &field);
+          if (size) {
+            *size = arr ? arr->size : 0;
+          }
+          return arr;
+        }
+        UPB_INLINE upb_Array* _$1_$2_$5(const $1* msg, size_t* size, upb_Arena* arena) {
+          const upb_MiniTableField field = $3;
+          upb_Array* arr = upb_Message_GetOrCreateMutableArray(
+              (upb_Message*)msg, &field, arena);
+          if (size) {
+            *size = arr ? arr->size : 0;
+          }
+          return arr;
+        }
+      )cc",
+      CTypeConst(field),                        // $0
+      msg_name,                                 // $1
+      ResolveFieldName(field, field_names),     // $2
+      FieldInitializer(pools, field, options),  // $3
+      kRepeatedFieldArrayGetterPostfix,         // $4
+      kRepeatedFieldMutableArrayGetterPostfix   // $5
+  );
 }
 
 void GenerateScalarGetters(upb::FieldDefPtr field, const DefPoolPair& pools,

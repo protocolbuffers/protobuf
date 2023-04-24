@@ -30,9 +30,16 @@
  * upb/def.c and tests/conformance_upb.c, respectively).
  */
 
+#include <cstddef>
+#include <cstdint>
+
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
+#include "upb/collections/array.h"
+#include "upb/mem/arena.h"
 #include "upb/test/test.upb.h"
 #include "upb/upb.hpp"
 
@@ -75,7 +82,7 @@ TEST(GeneratedCode, ScalarsProto3) {
                                                                       50.5);
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_double(msg,
                                                                        60.6);
-  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_bool(msg, 1);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_bool(msg, true);
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(
       msg, test_str_view);
 
@@ -258,7 +265,7 @@ TEST(GeneratedCode, ScalarsProto2) {
   EXPECT_EQ(
       false,
       protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_bool(msg));
-  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_bool(msg, 1);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_bool(msg, true);
   EXPECT_EQ(
       true,
       protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_bool(msg));
@@ -632,7 +639,7 @@ TEST(GeneratedCode, StringMap) {
   while (
       (const_ent =
            protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_next(
-               msg, &iter)) != NULL) {
+               msg, &iter)) != nullptr) {
     upb_StringView key =
         protobuf_test_messages_proto3_TestAllTypesProto3_MapStringStringEntry_key(
             const_ent);
@@ -753,7 +760,7 @@ TEST(GeneratedCode, Int32Map) {
   while (
       (const_ent =
            protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_next(
-               msg, &iter)) != NULL) {
+               msg, &iter)) != nullptr) {
     int32_t key =
         protobuf_test_messages_proto3_TestAllTypesProto3_MapInt32Int32Entry_key(
             const_ent);
@@ -786,14 +793,35 @@ TEST(GeneratedCode, TestRepeated) {
   size_t size;
   const int* elems;
 
+  EXPECT_EQ(
+      _protobuf_test_messages_proto3_TestAllTypesProto3_repeated_int32_upb_array(
+          msg, &size),
+      nullptr);
+
   protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_int32(msg, 5,
                                                                       arena);
+
+  EXPECT_NE(
+      _protobuf_test_messages_proto3_TestAllTypesProto3_repeated_int32_upb_array(
+          msg, &size),
+      nullptr);
 
   elems = protobuf_test_messages_proto3_TestAllTypesProto3_repeated_int32(
       msg, &size);
 
-  EXPECT_EQ(1, size);
-  EXPECT_EQ(5, elems[0]);
+  EXPECT_EQ(size, 1);
+  EXPECT_EQ(elems[0], 5);
+
+  const upb_Array* arr =
+      _protobuf_test_messages_proto3_TestAllTypesProto3_repeated_int32_upb_array(
+          msg, &size);
+  EXPECT_EQ(size, 1);
+  upb_Array* mutable_arr =
+      _protobuf_test_messages_proto3_TestAllTypesProto3_repeated_int32_mutable_upb_array(
+          msg, &size, arena);
+  EXPECT_EQ(mutable_arr, arr);
+  EXPECT_EQ(upb_Array_Size(arr), 1);
+  EXPECT_EQ(size, 1);
 
   upb_Arena_Free(arena);
 }
@@ -811,7 +839,7 @@ TEST(GeneratedCode, Issue9440) {
 TEST(GeneratedCode, NullDecodeBuffer) {
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_parse(NULL, 0, arena);
+      protobuf_test_messages_proto3_TestAllTypesProto3_parse(nullptr, 0, arena);
   size_t size;
 
   ASSERT_NE(nullptr, msg);
@@ -849,24 +877,13 @@ TEST(GeneratedCode, StatusTruncation) {
   }
 }
 
-static void decrement_int(void* ptr) {
-  int* iptr = static_cast<int*>(ptr);
-  (*iptr)--;
-}
-
-/* Do nothing allocator for testing */
-static void* test_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
-                            size_t size) {
-  return upb_alloc_global.func(alloc, ptr, oldsize, size);
-}
-
 TEST(GeneratedCode, ArenaUnaligned) {
   char buf1[1024];
   // Force the pointer to be unaligned.
   uintptr_t low_bits = UPB_MALLOC_ALIGN - 1;
   char* unaligned_buf_ptr = (char*)((uintptr_t)buf1 | low_bits);
   upb_Arena* arena = upb_Arena_Init(
-      unaligned_buf_ptr, &buf1[sizeof(buf1)] - unaligned_buf_ptr, NULL);
+      unaligned_buf_ptr, &buf1[sizeof(buf1)] - unaligned_buf_ptr, nullptr);
   char* mem = static_cast<char*>(upb_Arena_Malloc(arena, 5));
   EXPECT_EQ(0, reinterpret_cast<uintptr_t>(mem) & low_bits);
   upb_Arena_Free(arena);

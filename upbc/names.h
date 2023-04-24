@@ -30,7 +30,9 @@
 
 #include <string>
 
+#include "absl/base/attributes.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "upb/reflection/def.hpp"
 
@@ -57,6 +59,11 @@ std::string ResolveFieldName(upb::FieldDefPtr field,
 
 // Returns field map by name to use for conflict checks.
 NameToFieldDefMap CreateFieldNameMap(upb::MessageDefPtr message);
+
+// Private array getter name postfix for repeated fields.
+ABSL_CONST_INIT extern const absl::string_view kRepeatedFieldArrayGetterPostfix;
+ABSL_CONST_INIT extern const absl::string_view
+    kRepeatedFieldMutableArrayGetterPostfix;
 
 }  // namespace upbc
 

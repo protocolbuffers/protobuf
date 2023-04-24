@@ -198,6 +198,7 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//protos_generator:__pkg__"],
     deps = [
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",

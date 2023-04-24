@@ -30,6 +30,7 @@
 #include <string>
 
 #include "absl/strings/match.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "upb/reflection/def.hpp"
 
@@ -44,6 +45,10 @@ static constexpr absl::string_view kHasMethodPrefix = "has_";
 static constexpr absl::string_view kDeleteMethodPrefix = "delete_";
 static constexpr absl::string_view kAddToRepeatedMethodPrefix = "add_";
 static constexpr absl::string_view kResizeArrayMethodPrefix = "resize_";
+
+const absl::string_view kRepeatedFieldArrayGetterPostfix = "upb_array";
+const absl::string_view kRepeatedFieldMutableArrayGetterPostfix =
+    "mutable_upb_array";
 
 // List of generated accessor prefixes to check against.
 // Example:
