@@ -28,8 +28,7 @@ jobs:
           - { NAME: "UBSAN", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--config=ubsan -c dbg -- -benchmarks:benchmark -python/... -lua/...", install: "libunwind-dev" }
           - { NAME: "32-bit", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--copt=-m32 --linkopt=-m32 -- -... benchmarks:benchmark ", install: "g++-multilib" }
           - { NAME: "macOS", BAZEL: bazel, CC: clang, os: macos-11 }
-          # TODO(b/277357519): fix the Windows test.
-          # - { NAME: "Windows", BAZEL: bazel, os: windows-2019, startup-flags: "--output_user_root=C:/tmp", flags: "--config=cpp17_msvc", targets: "upb/... upbc/... python/... protos/... protos_generator/..." }
+          - { NAME: "Windows", BAZEL: bazel, os: windows-2019, startup-flags: "--output_user_root=C:/tmp", flags: "--config=cpp17_msvc", targets: "upb/... upbc/... python/... protos/... protos_generator/..." }
           # We support two Bazel versions back per https://opensource.google/documentation/policies/cplusplus-support
           - { NAME: "Bazel 4.1.0", BAZEL: bazel-4.1.0-linux-x86_64, CC: clang, os: ubuntu-20-large }
           - { NAME: "Bazel 5.3.0", BAZEL: bazel-5.3.0-linux-x86_64, CC: clang, os: ubuntu-20-large }

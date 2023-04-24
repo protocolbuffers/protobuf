@@ -25,7 +25,14 @@
 
 #include "upbc/upbdev.h"
 
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#else  // _WIN32
 #include <unistd.h>
+#endif  // !_WIN32
 
 #include "google/protobuf/compiler/plugin.upb.h"
 #include "google/protobuf/compiler/plugin.upbdefs.h"
