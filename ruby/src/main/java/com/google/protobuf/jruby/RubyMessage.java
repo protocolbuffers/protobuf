@@ -901,7 +901,11 @@ public class RubyMessage extends RubyObject {
       if (fdef.isRepeated()) {
         copy.fields.put(fdef, this.getRepeatedField(context, fdef).deepCopy(context));
       } else if (fields.containsKey(fdef)) {
-        copy.setFieldInternal(context, fdef, fields.get(fdef));
+        if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
+          copy.setFieldInternal(context, fdef, ((RubyMessage)fields.get(fdef)).deepCopy(context));
+        } else {
+          copy.setFieldInternal(context, fdef, fields.get(fdef));
+        }
       } else if (builder.hasField(fdef)) {
         copy.fields.put(fdef, wrapField(context, fdef, builder.getField(fdef)));
       }
