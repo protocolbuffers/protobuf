@@ -54,7 +54,7 @@ std::unique_ptr<AccessorGenerator> AccessorGenerator::For(
       if (field.desc().is_repeated()) return nullptr;
       return ForSingularScalar(field);
     case FieldDescriptor::TYPE_BYTES:
-      if (field.desc().is_repeated() || field.is_upb()) return nullptr;
+      if (field.desc().is_repeated()) return nullptr;
       return ForSingularBytes(field);
 
     default:

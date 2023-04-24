@@ -9,15 +9,3 @@
 # To do that use:
 # * `rust_cc_proto_library` instead of `rust_proto_library`.
 # * `//rust:protobuf_cpp` instead of `//rust:protobuf``.
-
-load("@rules_rust//rust:defs.bzl", "rust_test")
-
-rust_test(
-    name = "accessors_test",
-    srcs = ["accessors_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
-    deps = ["//rust/test:unittest_cc_rust_proto"],
-)
