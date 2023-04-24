@@ -1409,7 +1409,11 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(all_set, golden_message)
     self.assertEqual(golden_data, golden_message.SerializeToString())
     golden_copy = copy.deepcopy(golden_message)
-    self.assertEqual(golden_data, golden_copy.SerializeToString())
+    self.assertEqual(golden_message, golden_copy)
+    # Depend on a specific serialization order for extensions is not
+    # reasonable to guarantee.
+    if api_implementation.Type() != 'upb':
+      self.assertEqual(golden_data, golden_copy.SerializeToString())
 
   def testGoldenPackedExtensions(self):
     golden_data = test_util.GoldenFileData('golden_packed_fields_message')
@@ -1420,7 +1424,11 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(all_set, golden_message)
     self.assertEqual(golden_data, all_set.SerializeToString())
     golden_copy = copy.deepcopy(golden_message)
-    self.assertEqual(golden_data, golden_copy.SerializeToString())
+    self.assertEqual(golden_message, golden_copy)
+    # Depend on a specific serialization order for extensions is not
+    # reasonable to guarantee.
+    if api_implementation.Type() != 'upb':
+      self.assertEqual(golden_data, golden_copy.SerializeToString())
 
   def testPickleIncompleteProto(self):
     golden_message = unittest_pb2.TestRequired(a=1)
