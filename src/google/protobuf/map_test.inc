@@ -132,6 +132,8 @@ struct ConstructorTag {
   ConstructorTag(ConstructorTag&&)
       : invoked_constructor(ConstructorType::kMove) {}
 
+  bool operator<(const ConstructorTag&) const { return false; }
+
   ConstructorType invoked_constructor;
 };
 
