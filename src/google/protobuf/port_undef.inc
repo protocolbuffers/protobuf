@@ -127,6 +127,11 @@
 #undef PROTOBUF_DID_UNDEF_PACKAGE
 #endif
 
+#ifdef PROTOBUF_DID_UNDEF_PACKED
+#pragma pop_macro("PACKED")
+#undef PROTOBUF_DID_UNDEF_PACKED
+#endif
+
 #ifdef PROTOBUF_DID_UNDEF_LINUX
 #pragma pop_macro("linux")
 #endif
