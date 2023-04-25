@@ -264,7 +264,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: ./.github/actions/ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
         with:
           cache-prefix: ${{ matrix.name }}
           vsversion: ${{ matrix.vsversion }}
