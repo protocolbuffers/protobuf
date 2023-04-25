@@ -23,7 +23,7 @@ If you are using Maven, use the following:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>3.22.3</version>
+  <version>3.23.0-rc-1</version>
 </dependency>
 ```
 
@@ -37,14 +37,14 @@ protobuf-java-util package:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java-util</artifactId>
-  <version>3.22.3</version>
+  <version>3.23.0-rc-1</version>
 </dependency>
 ```
 
 ### Gradle
 
 If you are using Gradle, add the following to your `build.gradle` file's
-dependencies: `implementation 'com.google.protobuf:protobuf-java:3.22.3'` Again,
+dependencies: `implementation 'com.google.protobuf:protobuf-java:3.23.0-rc-1'` Again,
 be sure to check that the version number matches (or is newer than) the version
 number of protoc that you are using.
 
