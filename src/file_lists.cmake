@@ -748,6 +748,7 @@ set(util_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/json_format.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/json_format_proto3.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/message_differencer_unittest.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/message_differencer_unittest_proto3.proto
 )
 
 # @//src/google/protobuf/stubs:test_srcs
