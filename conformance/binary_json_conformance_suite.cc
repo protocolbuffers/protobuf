@@ -2940,6 +2940,56 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldMask() {
                                 R"(optional_field_mask: {paths: "foo_3_bar"})");
   ExpectSerializeFailureForJson("FieldMaskTooManyUnderscore", RECOMMENDED,
                                 R"(optional_field_mask: {paths: "foo__bar"})");
+
+  // https://google.aip.dev/161#map-fields introduces map keys as part of FieldMask path
+  // elements. If map keys contain characters otherwise problematic for FieldMask,
+  // backticks can be used for quoting. Backtick itself is escaped using
+  // double-backtick.
+  // If a path element is quoted, no camelCase conversion will be done when serializing
+  // to JSON, it will be copied to JSON as-is, including the quotes.
+  RunValidJsonTest("FieldMaskWithBacktickQuotes", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`foo`"})json",
+                   R"(optional_field_mask: {paths: "`foo`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesNoCamelCase", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`foo_bar`"})json",
+                   R"(optional_field_mask: {paths: "`foo_bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesTwoPaths", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`foo`,`bar`"})json",
+                   R"(optional_field_mask: {paths: "`foo`" paths: "`bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesTwoElements", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`foo`.`bar`"})json",
+                   R"(optional_field_mask: {paths: "`foo`.`bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesUppercase", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`A`"})json",
+                   R"(optional_field_mask: {paths: "`A`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesDot", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`.`"})json",
+                   R"(optional_field_mask: {paths: "`.`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesComma", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`,`"})json",
+                   R"(optional_field_mask: {paths: "`,`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesEscapedBacktick", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`escaped `` here`"})json",
+                   R"(optional_field_mask: {paths: "`escaped `` here`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesTooManyUnderscores", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`foo__bar`"})json",
+                   R"(optional_field_mask: {paths: "`foo__bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesNumber", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`foo_3_bar`"})json",
+                   R"(optional_field_mask: {paths: "`foo_3_bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesOnlyNumber", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`3`"})json",
+                   R"(optional_field_mask: {paths: "`3`"})");
 }
 
 void BinaryAndJsonConformanceSuite::RunJsonTestsForStruct() {
