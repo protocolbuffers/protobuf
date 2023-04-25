@@ -2963,6 +2963,14 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldMask() {
                    R"json({"optionalFieldMask": "`foo`.`bar`"})json",
                    R"(optional_field_mask: {paths: "`foo`.`bar`"})");
 
+  RunValidJsonTest("FieldMaskWithBacktickQuotesOneElementWithDot", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`foo.bar`"})json",
+                   R"(optional_field_mask: {paths: "`foo.bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesOneElementWithComma", RECOMMENDED,
+                   R"json({"optionalFieldMask": "`foo,bar`"})json",
+                   R"(optional_field_mask: {paths: "`foo,bar`"})");
+
   RunValidJsonTest("FieldMaskWithBacktickQuotesUppercase", RECOMMENDED,
                    R"json({"optionalFieldMask": "`A`"})json",
                    R"(optional_field_mask: {paths: "`A`"})");
@@ -2990,6 +2998,48 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldMask() {
   RunValidJsonTest("FieldMaskWithBacktickQuotesOnlyNumber", RECOMMENDED,
                    R"json({"optionalFieldMask": "`3`"})json",
                    R"(optional_field_mask: {paths: "`3`"})");
+
+  // Backtick can only occur either at the start and end of a path element or as a
+  // double-backtick in an escape sequence.
+  //
+  // Everything else should fail to serialize ...
+  ExpectSerializeFailureForJson("FieldMaskWithUnexpectedBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "foo`bar"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnexpectedTrailingBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "foo`"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "`foo"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnexpectedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "foo``bar"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnexpectedTrailingDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "foo``"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "``foo"})");
+
+  // ... and parse.
+  ExpectParseFailureForJson("FieldMaskWithUnexpectedBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "foo`bar"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnexpectedTrailingBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "foo`"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "`foo"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnexpectedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "foo``bar"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnexpectedTrailingDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "foo``"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "``foo"})json");
+
 }
 
 void BinaryAndJsonConformanceSuite::RunJsonTestsForStruct() {
