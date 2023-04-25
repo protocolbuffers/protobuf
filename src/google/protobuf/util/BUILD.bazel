@@ -82,6 +82,7 @@ cc_test(
     deps = [
         ":differencer",
         ":message_differencer_unittest_cc_proto",
+        ":message_differencer_unittest_proto3_cc_proto",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf/testing",
@@ -202,6 +203,7 @@ filegroup(
         "json_format.proto",
         "json_format_proto3.proto",
         "message_differencer_unittest.proto",
+        "message_differencer_unittest_proto3.proto",
     ],
     visibility = [
         "//pkg:__pkg__",
@@ -258,6 +260,19 @@ cc_proto_library(
     name = "message_differencer_unittest_cc_proto",
     testonly = 1,
     deps = [":message_differencer_unittest_proto"],
+)
+
+proto_library(
+    name = "message_differencer_unittest_proto3_proto",
+    testonly = 1,
+    srcs = ["message_differencer_unittest_proto3.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "message_differencer_unittest_proto3_cc_proto",
+    testonly = 1,
+    deps = [":message_differencer_unittest_proto3_proto"],
 )
 
 ################################################################################

@@ -229,6 +229,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // reporting an addition or deletion.
     int unknown_field_index1 = -1;
     int unknown_field_index2 = -1;
+
+    // Was this field added to the diffing because set_force_compare_no_presence
+    // was called on the MessageDifferencer object.
+    bool forced_compare_no_presence_ = false;
   };
 
   // Abstract base class from which all MessageDifferencer
@@ -600,6 +604,12 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // Returns the current scope used by this differencer.
   Scope scope() const;
 
+  // Only affects PARTIAL diffing. When set, all non-repeated no-presence fields
+  // which are set to their default value (which is the same as being unset) in
+  // message1 but are set to a non-default value in message2 will also be used
+  // in the comparison.
+  void set_force_compare_no_presence(bool value);
+
   // DEPRECATED. Pass a DefaultFieldComparator instance instead.
   // Sets the type of comparison (as defined in the FloatComparison enumeration
   // above) that is used by this differencer when comparing float (and double)
@@ -936,6 +946,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   DefaultFieldComparator default_field_comparator_;
   MessageFieldComparison message_field_comparison_;
   Scope scope_;
+  absl::flat_hash_set<const FieldDescriptor*> force_compare_no_presence_fields_;
   RepeatedFieldComparison repeated_field_comparison_;
 
   absl::flat_hash_map<const FieldDescriptor*, RepeatedFieldComparison>
@@ -965,6 +976,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   bool report_matches_;
   bool report_moves_;
   bool report_ignores_;
+  bool force_compare_no_presence_ = false;
 
   std::string* output_string_;
 

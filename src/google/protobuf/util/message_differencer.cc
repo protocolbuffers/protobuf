@@ -368,6 +368,10 @@ void MessageDifferencer::set_scope(Scope scope) { scope_ = scope; }
 
 MessageDifferencer::Scope MessageDifferencer::scope() const { return scope_; }
 
+void MessageDifferencer::set_force_compare_no_presence(bool value) {
+  force_compare_no_presence_ = value;
+}
+
 void MessageDifferencer::set_float_comparison(FloatComparison comparison) {
   default_field_comparator_.set_float_comparison(
       comparison == EXACT ? DefaultFieldComparator::EXACT
@@ -759,6 +763,17 @@ FieldDescriptorArray MessageDifferencer::CombineFields(
     } else if (FieldBefore(field2, field1)) {
       if (fields2_scope == FULL) {
         tmp_message_fields_.push_back(fields2[index2]);
+      } else if (fields2_scope == PARTIAL && force_compare_no_presence_ &&
+                 !field2->has_presence() && !field2->is_repeated()) {
+        // In order to make MessageDifferencer play nicely with no-presence
+        // fields in unit tests, we want to check if the expected proto
+        // (message1) has some fields which are set to their default value but
+        // are not set to their default value in message2 (the actual message).
+        // Those fields will appear in fields2 (since they have non default
+        // value) but will not appear in fields1 (since they have the default
+        // value or were never set).
+        force_compare_no_presence_fields_.insert(fields2[index2]);
+        tmp_message_fields_.push_back(fields2[index2]);
       }
       ++index2;
     } else {
@@ -889,6 +904,10 @@ bool MessageDifferencer::CompareWithFieldsInternal(
             specific_field.new_index = -1;
           }
 
+          specific_field.forced_compare_no_presence_ =
+              force_compare_no_presence_ &&
+              force_compare_no_presence_fields_.contains(specific_field.field);
+
           parent_fields->push_back(specific_field);
           reporter_->ReportAdded(message1, message2, *parent_fields);
           parent_fields->pop_back();
@@ -944,6 +963,10 @@ bool MessageDifferencer::CompareWithFieldsInternal(
         specific_field.unpacked_any = unpacked_any;
         specific_field.field = field1;
         parent_fields->push_back(specific_field);
+        specific_field.forced_compare_no_presence_ =
+            force_compare_no_presence_ &&
+            force_compare_no_presence_fields_.contains(field1);
+
         if (fieldDifferent) {
           reporter_->ReportModified(message1, message2, *parent_fields);
           isDifferent = true;
@@ -2048,6 +2071,9 @@ void MessageDifferencer::StreamReporter::PrintPath(
         printer_->Print("($name$)", "name", specific_field.field->full_name());
       } else {
         printer_->PrintRaw(specific_field.field->name());
+        if (specific_field.forced_compare_no_presence_) {
+          printer_->Print(" (added for better PARTIAL comparison)");
+        }
       }
 
       if (specific_field.field->is_map()) {
