@@ -33,7 +33,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
 PROTOBUF_CONSTEXPR Struct::Struct(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.fields_)*/{::_pbi::ConstantInitialized()}
+    /*decltype(_impl_.fields_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct StructDefaultTypeInternal {
   PROTOBUF_CONSTEXPR StructDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -231,9 +231,6 @@ class Struct::_Internal {
 Struct::Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
   SharedCtor(arena);
-  if (arena != nullptr) {
-    arena->OwnCustomDestructor(this, &Struct::ArenaDtor);
-  }
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Struct)
 }
 Struct::Struct(const Struct& from)
@@ -260,7 +257,6 @@ Struct::~Struct() {
   // @@protoc_insertion_point(destructor:google.protobuf.Struct)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
   (void)arena;
-    ArenaDtor(this);
     return;
   }
   SharedDtor();
@@ -271,10 +267,6 @@ inline void Struct::SharedDtor() {
   _impl_.fields_.~MapField();
 }
 
-void Struct::ArenaDtor(void* object) {
-  Struct* _this = reinterpret_cast< Struct* >(object);
-  _this->_impl_.fields_.ArenaDestruct();
-}
 void Struct::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }

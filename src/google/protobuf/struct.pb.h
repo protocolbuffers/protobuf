@@ -255,8 +255,6 @@ class PROTOBUF_EXPORT Struct final :
   }
   protected:
   explicit Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  private:
-  static void ArenaDtor(void* object);
   public:
 
   static const ClassData _class_data_;
