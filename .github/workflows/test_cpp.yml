@@ -232,11 +232,20 @@ jobs:
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
+            vsversion: '2019'
+          - name: Windows CMake 2022
+            os: windows-2022
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -Dprotobuf_BUILD_SHARED_LIBS=OFF
+              -Dprotobuf_BUILD_EXAMPLES=ON
+            vsversion: '2022'
           - name: Windows CMake Shared
             os: windows-2019
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=ON
+            vsversion: '2019'
           - name: Windows CMake Install
             os: windows-2019
             install-flags: -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
@@ -244,6 +253,7 @@ jobs:
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
+            vsversion: '2019'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -257,6 +267,7 @@ jobs:
         uses: ./.github/actions/ccache
         with:
           cache-prefix: ${{ matrix.name }}
+          vsversion: ${{ matrix.vsversion }}
 
       # Install phase.
       - name: Configure CMake for install
