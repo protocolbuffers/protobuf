@@ -5419,7 +5419,6 @@ class PROTOBUF_EXPORT FieldOptions final :
     kWeakFieldNumber = 10,
     kDebugRedactFieldNumber = 16,
     kRetentionFieldNumber = 17,
-    kTargetFieldNumber = 18,
   };
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
   int targets_size() const;
@@ -5559,17 +5558,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention _internal_retention() const;
   void _internal_set_retention(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention value);
-
-  public:
-  // optional .google.protobuf.FieldOptions.OptionTargetType target = 18 [deprecated = true];
-  [[deprecated]]  bool has_target() const;
-  [[deprecated]]  void clear_target() ;
-  [[deprecated]] ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType target() const;
-  [[deprecated]] void set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
-
-  private:
-  ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType _internal_target() const;
-  void _internal_set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value);
 
   public:
   template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
@@ -5746,7 +5734,6 @@ class PROTOBUF_EXPORT FieldOptions final :
     bool weak_;
     bool debug_redact_;
     int retention_;
-    int target_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -13952,32 +13939,6 @@ inline void FieldOptions::_internal_set_retention(::PROTOBUF_NAMESPACE_ID::Field
   assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionRetention_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.retention_ = value;
-}
-
-// optional .google.protobuf.FieldOptions.OptionTargetType target = 18 [deprecated = true];
-inline bool FieldOptions::has_target() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000200u) != 0;
-  return value;
-}
-inline void FieldOptions::clear_target() {
-  _impl_.target_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000200u;
-}
-inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::target() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.target)
-  return _internal_target();
-}
-inline void FieldOptions::set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
-   _internal_set_target(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.target)
-}
-inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType FieldOptions::_internal_target() const {
-  return static_cast<::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType>(_impl_.target_);
-}
-inline void FieldOptions::_internal_set_target(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType value) {
-  assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_OptionTargetType_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000200u;
-  _impl_.target_ = value;
 }
 
 // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
