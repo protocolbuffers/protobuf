@@ -178,14 +178,27 @@ public class FieldMaskUtilTest {
   }
 
   @Test
-  // This test passes, but it points to a failure in the current implementation.
-  public void testJsonSerializationRoundtripWithUppercaseLetter() throws Exception {
-    FieldMask mask = FieldMask.newBuilder().addPaths("A").build();
+  public void testJsonSerializationRoundtrip() throws Exception {
+    FieldMask mask = FieldMask.newBuilder().addPaths("foo_bar").build();
     String maskSerialized = FieldMaskUtil.toJsonString(mask);
-    assertThat(maskSerialized).isEqualTo("a");
+    assertThat(maskSerialized).isEqualTo("fooBar");
 
     FieldMask mask2 = FieldMaskUtil.fromJsonString(maskSerialized);
-    assertThat(mask2.getPaths(0)).isEqualTo("a");
+    assertThat(mask2.getPaths(0)).isEqualTo("foo_bar");
+
+    assertThat(mask2).isEqualTo(mask);
+  }
+
+
+  @Test
+  // This test passes, but it points to a failure in the current implementation.
+  public void testJsonSerializationRoundtripWithUppercaseLetter() throws Exception {
+    FieldMask mask = FieldMask.newBuilder().addPaths("fooBar").build();
+    String maskSerialized = FieldMaskUtil.toJsonString(mask);
+    assertThat(maskSerialized).isEqualTo("foobar");
+
+    FieldMask mask2 = FieldMaskUtil.fromJsonString(maskSerialized);
+    assertThat(mask2.getPaths(0)).isEqualTo("foobar");
 
     // This points to a serialization failure, since roundtrip yields different results.
     assertThat(mask2).isNotEqualTo(mask);
@@ -194,12 +207,12 @@ public class FieldMaskUtilTest {
   @Test
   // This test passes, but it points to a failure in the current implementation.
   public void testJsonSerializationRoundtripWithLeadingUnderscore() throws Exception {
-    FieldMask mask = FieldMask.newBuilder().addPaths("_a").build();
+    FieldMask mask = FieldMask.newBuilder().addPaths("_foobar").build();
     String maskSerialized = FieldMaskUtil.toJsonString(mask);
-    assertThat(maskSerialized).isEqualTo("A");
+    assertThat(maskSerialized).isEqualTo("Foobar");
 
     FieldMask mask2 = FieldMaskUtil.fromJsonString(maskSerialized);
-    assertThat(mask2.getPaths(0)).isEqualTo("a");
+    assertThat(mask2.getPaths(0)).isEqualTo("foobar");
 
     // This points to a serialization failure, since roundtrip yields different results.
     assertThat(mask2).isNotEqualTo(mask);
