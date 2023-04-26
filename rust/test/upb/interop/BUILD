@@ -1,4 +1,4 @@
-# This package contains tests exercising C++/Rust interop for the C++ and UPB kernels.
+# This package contains tests exercising UPB/Rust interop in the UPB kernel.
 
 load("@rules_rust//rust:defs.bzl", "rust_test")
 
@@ -8,7 +8,7 @@ cc_library(
     srcs = ["test_utils.cc"],
     visibility = ["//rust/test:__subpackages__"],
     deps = [
-        "//rust/cpp_kernel:cpp_api",
-        "//rust/test:unittest_cc_proto",
+        "//rust/test:unittest_upb_proto",
+        "@upb//:upb",
     ],
 )

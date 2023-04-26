@@ -28,20 +28,34 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/rust/cpp_kernel/cpp_api.h"
-#include "google/protobuf/unittest.pb.h"
+use unittest_proto::proto2_unittest::TestAllTypes;
 
-extern "C" void MutateInt64Field(protobuf_unittest::TestAllTypes* msg) {
-  msg->set_optional_int64(42);
+#[test]
+fn serialize_deserialize_message() {
+    let mut msg = TestAllTypes::new();
+    msg.optional_int64_set(Some(42));
+    msg.optional_bool_set(Some(true));
+    msg.optional_bytes_set(Some(b"serialize deserialize test"));
+
+    let serialized = msg.serialize();
+
+    let mut msg2 = TestAllTypes::new();
+    assert!(msg2.deserialize(&serialized).is_ok());
+
+    assert_eq!(msg.optional_int64(), msg2.optional_int64());
+    assert_eq!(msg.optional_bool(), msg2.optional_bool());
+    assert_eq!(msg.optional_bytes(), msg2.optional_bytes());
 }
 
-extern "C" google::protobuf::rust_internal::SerializedData Serialize(
-    const protobuf_unittest::TestAllTypes* msg) {
-  return google::protobuf::rust_internal::SerializeMsg(msg);
+#[test]
+fn deserialize_empty() {
+    let mut msg = TestAllTypes::new();
+    assert!(msg.deserialize(&[]).is_ok());
 }
 
-extern "C" google::protobuf::rust_internal::SerializedData SerializeMutatedInstance() {
-  protobuf_unittest::TestAllTypes* inst = new protobuf_unittest::TestAllTypes();
-  MutateInt64Field(inst);
-  return Serialize(inst);
+#[test]
+fn deserialize_error() {
+    let mut msg = TestAllTypes::new();
+    let data = b"not a serialized proto";
+    assert!(msg.deserialize(&*data).is_err());
 }

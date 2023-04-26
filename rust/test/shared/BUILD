@@ -141,3 +141,53 @@ rust_test(
     ],
     deps = ["//rust/test:unittest_upb_rust_proto"],
 )
+
+rust_test(
+    name = "serialization_upb_test",
+    srcs = ["serialization_test.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+    ],
+    deps = ["//rust/test:unittest_upb_rust_proto"],
+)
+
+rust_test(
+    name = "serialization_cpp_test",
+    srcs = ["serialization_test.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+    ],
+    deps = ["//rust/test:unittest_cc_rust_proto"],
+)
+
+rust_test(
+    name = "interop_cpp_test",
+    srcs = ["interop_test.rs"],
+    rustc_flags = ["--cfg=cpp_kernel"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test/cpp/interop:test_utils",
+    ],
+)
+
+rust_test(
+    name = "interop_upb_test",
+    srcs = ["interop_test.rs"],
+    rustc_flags = ["--cfg=upb_kernel"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_upb_rust_proto",
+        "//rust/test/upb/interop:test_utils",
+    ],
+)

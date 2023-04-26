@@ -28,20 +28,38 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/rust/cpp_kernel/cpp_api.h"
-#include "google/protobuf/unittest.pb.h"
+#include <cstddef>
 
-extern "C" void MutateInt64Field(protobuf_unittest::TestAllTypes* msg) {
-  msg->set_optional_int64(42);
+#include "google/protobuf/unittest.upb.h"
+#include "upb/mem/arena.h"
+
+extern "C" struct SerializedData {
+  /// Owns the memory.
+  const char* data;
+  size_t len;
+  upb_Arena* arena;
+
+  SerializedData(const char* data, size_t len, upb_Arena* arena)
+      : data(data), len(len), arena(arena) {}
+};
+
+extern "C" void MutateInt64Field(protobuf_unittest_TestAllTypes* msg) {
+  protobuf_unittest_TestAllTypes_set_optional_int64(msg, 42);
 }
 
-extern "C" google::protobuf::rust_internal::SerializedData Serialize(
-    const protobuf_unittest::TestAllTypes* msg) {
-  return google::protobuf::rust_internal::SerializeMsg(msg);
+extern "C" SerializedData Serialize(protobuf_unittest_TestAllTypes* msg) {
+  upb_Arena* arena = upb_Arena_New();
+  size_t len;
+  char* data = protobuf_unittest_TestAllTypes_serialize(msg, arena, &len);
+
+  return SerializedData(data, len, arena);
 }
 
-extern "C" google::protobuf::rust_internal::SerializedData SerializeMutatedInstance() {
-  protobuf_unittest::TestAllTypes* inst = new protobuf_unittest::TestAllTypes();
-  MutateInt64Field(inst);
-  return Serialize(inst);
+extern "C" SerializedData SerializeMutatedInstance() {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_unittest_TestAllTypes* msg = protobuf_unittest_TestAllTypes_new(arena);
+  MutateInt64Field(msg);
+  SerializedData serialized = Serialize(msg);
+  upb_Arena_Free(arena);
+  return serialized;
 }

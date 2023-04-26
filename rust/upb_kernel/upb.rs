@@ -61,6 +61,7 @@ pub struct RawArenaData {
 /// dropped.
 ///
 /// Note that this type is neither `Sync` nor `Send`.
+#[repr(C)]
 pub struct Arena {
     raw: RawArena,
     _not_sync: PhantomData<UnsafeCell<()>>,
@@ -133,6 +134,7 @@ impl Drop for Arena {
 /// Represents serialized Protobuf wire format data.
 ///
 /// It's typically produced by `<Message>::serialize()`.
+#[repr(C)]
 pub struct SerializedData {
     data: NonNull<u8>,
     len: usize,

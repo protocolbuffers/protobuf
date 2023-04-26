@@ -28,20 +28,50 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/rust/cpp_kernel/cpp_api.h"
-#include "google/protobuf/unittest.pb.h"
+use std::ptr::NonNull;
+use unittest_proto::proto2_unittest::TestAllTypes;
 
-extern "C" void MutateInt64Field(protobuf_unittest::TestAllTypes* msg) {
-  msg->set_optional_int64(42);
+#[cfg(cpp_kernel)]
+use protobuf_cpp::SerializedData;
+#[cfg(upb_kernel)]
+use protobuf_upb::SerializedData;
+
+macro_rules! assert_serializes_equally {
+    ($msg:ident) => {{
+        let mut msg = $msg;
+        let serialized_cpp = unsafe { Serialize(msg.__unstable_repr_grant_permission_to_break()) };
+        let serialized_rs = msg.serialize();
+
+        assert_eq!(*serialized_rs, *serialized_cpp);
+    }};
 }
 
-extern "C" google::protobuf::rust_internal::SerializedData Serialize(
-    const protobuf_unittest::TestAllTypes* msg) {
-  return google::protobuf::rust_internal::SerializeMsg(msg);
+#[test]
+fn mutate_message_in_cpp() {
+    let mut msg = TestAllTypes::new();
+    unsafe { MutateInt64Field(msg.__unstable_repr_grant_permission_to_break()) };
+    assert_serializes_equally!(msg);
 }
 
-extern "C" google::protobuf::rust_internal::SerializedData SerializeMutatedInstance() {
-  protobuf_unittest::TestAllTypes* inst = new protobuf_unittest::TestAllTypes();
-  MutateInt64Field(inst);
-  return Serialize(inst);
+#[test]
+fn mutate_message_in_rust() {
+    let mut msg = TestAllTypes::new();
+    msg.optional_int64_set(Some(43));
+    assert_serializes_equally!(msg);
+}
+
+#[test]
+fn deserialize_message_in_rust() {
+    let serialized = unsafe { SerializeMutatedInstance() };
+    let mut msg = TestAllTypes::new();
+    msg.deserialize(&serialized).unwrap();
+    assert_serializes_equally!(msg);
+}
+
+// Helper functions invoking C++ Protobuf APIs directly in C++. Defined in
+// `//third_party/protobuf/rust/test/cpp/interop:test_utils`.
+extern "C" {
+    fn SerializeMutatedInstance() -> SerializedData;
+    fn MutateInt64Field(msg: NonNull<u8>);
+    fn Serialize(msg: NonNull<u8>) -> SerializedData;
 }

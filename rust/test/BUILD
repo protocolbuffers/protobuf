@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load("@upb//bazel:upb_proto_library.bzl", "upb_proto_library")
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",
@@ -18,6 +19,13 @@ alias(
     name = "unittest_cc_proto",
     actual = UNITTEST_CC_PROTO_TARGET,
     visibility = ["//rust/test:__subpackages__"],
+)
+
+upb_proto_library(
+    name = "unittest_upb_proto",
+    testonly = True,
+    visibility = ["//rust/test:__subpackages__"],
+    deps = [UNITTEST_PROTO_TARGET],
 )
 
 rust_proto_library(
