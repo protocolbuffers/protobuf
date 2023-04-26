@@ -63,7 +63,7 @@ struct Fixed32 {
   uint32_t val;
 };
 struct Group {
-  Group(std::initializer_list<UnknownField> _val) : val(_val) {}
+  Group(std::initializer_list<UnknownField> _val);
   UnknownFields val;
 };
 
@@ -71,6 +71,8 @@ struct UnknownField {
   uint32_t field_number;
   std::variant<Varint, LongVarint, Delimited, Fixed64, Fixed32, Group> value;
 };
+
+Group::Group(std::initializer_list<UnknownField> _val) : val(_val) {}
 
 void EncodeVarint(uint64_t val, std::string* str) {
   do {
