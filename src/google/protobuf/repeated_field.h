@@ -137,6 +137,16 @@ void memswap(char* a, char* b) {
 template <typename Element>
 class RepeatedIterator;
 
+// We can't skip the destructor for, e.g., arena allocated RepeatedField<Cord>.
+template <typename Element,
+          bool Trivial = Arena::is_destructor_skippable<Element>::value>
+struct RepeatedFieldDestructorSkippableBase {};
+
+template <typename Element>
+struct RepeatedFieldDestructorSkippableBase<Element, true> {
+  using DestructorSkippable_ = void;
+};
+
 }  // namespace internal
 
 // RepeatedField is used to represent repeated fields of a primitive type (in
@@ -148,7 +158,8 @@ class RepeatedIterator;
 // We have to specialize several methods in the Cord case to get the memory
 // management right; e.g. swapping when appropriate, etc.
 template <typename Element>
-class RepeatedField final {
+class RepeatedField final
+    : private internal::RepeatedFieldDestructorSkippableBase<Element> {
   static_assert(
       alignof(Arena) >= alignof(Element),
       "We only support types that have an alignment smaller than Arena");

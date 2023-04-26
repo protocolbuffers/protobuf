@@ -1224,7 +1224,8 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   template <typename T>
   friend struct WeakRepeatedPtrField;
 
-  typedef void InternalArenaConstructable_;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
 
 };
 
