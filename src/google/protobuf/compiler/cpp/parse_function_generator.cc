@@ -31,18 +31,25 @@
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 
 #include <algorithm>
-#include <limits>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 namespace google {
 namespace protobuf {
@@ -908,12 +915,17 @@ void ParseFunctionGenerator::GenerateStrings(Formatter& format,
         parser_name = "StringPieceParser";
         break;
     }
-    format(
-        "auto str = $msg$$1$$2$_$name$();\n"
-        "ptr = ::_pbi::Inline$3$(str, ptr, ctx);\n",
-        HasInternalAccessors(ctype) ? "_internal_" : "",
-        field->is_repeated() && !field->is_packable() ? "add" : "mutable",
-        parser_name);
+    // Repeated cord doesn't have _internal_mutable_$name$(), unlike other
+    // repeated fields.
+    if (field->options().ctype() == FieldOptions::CORD &&
+        field->is_repeated() && !field->is_packable()) {
+      format("auto str = $msg$$field$.Add();\n");
+    } else {
+      format("auto str = $msg$$1$mutable_$name$()$2$;\n",
+             HasInternalAccessors(ctype) ? "_internal_" : "",
+             field->is_repeated() && !field->is_packable() ? "->Add()" : "");
+    }
+    format("ptr = ::_pbi::Inline$1$(str, ptr, ctx);\n", parser_name);
   }
   // It is intentionally placed before VerifyUTF8 because it doesn't make sense
   // to verify UTF8 when we already know parsing failed.
@@ -1094,8 +1106,9 @@ void ParseFunctionGenerator::GenerateFieldBody(
       {{"name", FieldName(field)},
        {"primitive_type", PrimitiveTypeName(options_, field->cpp_type())}});
   if (field->is_repeated()) {
-    format.AddMap({{"put_field", absl::StrCat("add_", FieldName(field))},
-                   {"mutable_field", absl::StrCat("add_", FieldName(field))}});
+    const std::string add_field =
+        absl::StrCat("mutable_", FieldName(field), "()->Add");
+    format.AddMap({{"put_field", add_field}, {"mutable_field", add_field}});
   } else {
     format.AddMap(
         {{"put_field", absl::StrCat("set_", FieldName(field))},

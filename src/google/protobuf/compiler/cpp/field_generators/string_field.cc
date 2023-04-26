@@ -36,12 +36,14 @@
 #include <string>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
@@ -769,8 +771,7 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
     )cc");
   }
 
-  auto v1 = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_add_"}));
+  auto v1 = p->WithVars(AnnotatedAccessors(field_, {"", "_internal_"}));
   auto v2 = p->WithVars(
       AnnotatedAccessors(field_, {"set_", "add_"}, AnnotationCollector::kSet));
   auto v3 = p->WithVars(
@@ -794,8 +795,6 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ $pb$::RepeatedPtrField<std::string>* $mutable_name$();
 
     private:
-    const std::string& $_internal_name$(int index) const;
-    std::string* $_internal_add_name$();
     const $pb$::RepeatedPtrField<std::string>& _internal_$name$() const;
     $pb$::RepeatedPtrField<std::string>* _internal_mutable_$name$();
 
@@ -805,18 +804,15 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit({{"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
-           {"get_args",
+           {"GetExtraArg",
             [&] {
-              if (!opts_->safe_boundary_check) {
-                p->Emit("index");
-                return;
-              }
-
-              p->Emit(R"cc(index, $pbi$::GetEmptyStringAlreadyInited())cc");
+              p->Emit(opts_->safe_boundary_check
+                          ? ", $pbi$::GetEmptyStringAlreadyInited()"
+                          : "");
             }}},
           R"cc(
             inline std::string* $Msg$::add_$name$() {
-              std::string* _s = _internal_add_$name$();
+              std::string* _s = _internal_mutable_$name$()->Add();
               $annotate_add_mutable$;
               // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
               return _s;
@@ -824,7 +820,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
             inline const std::string& $Msg$::$name$(int index) const {
               $annotate_get$;
               // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-              return _internal_$name$(index);
+              return _internal_$name$().$Get$(index$GetExtraArg$);
             }
             inline std::string* $Msg$::mutable_$name$(int index) {
               $annotate_mutable$;
@@ -898,12 +894,6 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
               // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
               return _internal_mutable_$name$();
             }
-            inline const std::string& $Msg$::_internal_$name$(int index) const {
-              return _internal_$name$().$Get$($get_args$);
-            }
-            inline std::string* $Msg$::_internal_add_$name$() {
-              return _internal_mutable_$name$()->Add();
-            }
             inline const ::$proto_ns$::RepeatedPtrField<std::string>&
             $Msg$::_internal_$name$() const {
               return $field_$;
@@ -925,7 +915,7 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
             }}},
           R"cc(
             for (int i = 0, n = this->_internal_$name$_size(); i < n; ++i) {
-              const auto& s = this->_internal_$name$(i);
+              const auto& s = this->_internal_$name$().Get(i);
               $utf8_check$;
               target = stream->Write$DeclaredType$($number$, s, target);
             }
