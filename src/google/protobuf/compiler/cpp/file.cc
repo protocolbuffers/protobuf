@@ -567,7 +567,6 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
       {
           {"type", DefaultInstanceType(generator->descriptor(), options_)},
           {"name", DefaultInstanceName(generator->descriptor(), options_)},
-          {"default", [&] { generator->GenerateInitDefaultSplitInstance(p); }},
           {"class", ClassName(generator->descriptor())},
       },
       R"cc(
