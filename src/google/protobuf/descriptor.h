@@ -922,14 +922,9 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   friend class Reflection;
   friend class FieldDescriptorLegacy;
 
-
- public:
-  ABSL_DEPRECATED("Syntax is deprecated in favor of editions")
   // Returns true if this field was syntactically written with "optional" in the
   // .proto file. Excludes singular proto3 fields that do not have a label.
   bool has_optional_keyword() const;
-
- private:
 
   // Fill the json_name field of FieldDescriptorProto.
   void CopyJsonNameTo(FieldDescriptorProto* proto) const;
@@ -1088,14 +1083,9 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   friend class compiler::cpp::Formatter;
   friend class OneofDescriptorLegacy;
 
-
- public:
-  ABSL_DEPRECATED("Syntax is deprecated in favor of editions")
   // Returns whether this oneof was inserted by the compiler to wrap a proto3
   // optional field. If this returns true, code generators should *not* emit it.
   bool is_synthetic() const;
-
- private:
 
   // See Descriptor::DebugString().
   void DebugString(int depth, std::string* contents,
@@ -1667,13 +1657,12 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // descriptor.proto, and any available extensions of that message.
   const FileOptions& options() const;
 
+ private:
   // With the upcoming release of editions, syntax should not be used for
   // business logic.  Instead, the various feature helpers defined in this file
   // should be used to query more targeted behaviors.  For example:
   // has_presence, is_closed, requires_utf8_validation.
-  enum
-      ABSL_DEPRECATED("Syntax is deprecated in favor of editions")
-          Syntax
+  enum Syntax
 #ifndef SWIG
       : int
 #endif  // !SWIG
@@ -1682,19 +1671,13 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
     SYNTAX_PROTO2 = 2,
     SYNTAX_PROTO3 = 3,
   };
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DEPRECATED("Syntax is deprecated in favor of editions")
   Syntax syntax() const;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   // Define a visibility-restricted wrapper for internal use until the migration
   // is complete.
   friend class FileDescriptorLegacy;
 
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DEPRECATED("Syntax is deprecated in favor of editions")
   static const char* SyntaxName(Syntax syntax);
-  PROTOBUF_IGNORE_DEPRECATION_STOP
 
  public:
 
@@ -2331,9 +2314,7 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
 
 inline bool EnumDescriptor::is_closed() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
   return file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 PROTOBUF_DEFINE_NAME_ACCESSOR(EnumValueDescriptor)
@@ -2484,33 +2465,25 @@ inline bool FieldDescriptor::is_map() const {
 }
 
 inline bool FieldDescriptor::has_optional_keyword() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
   return proto3_optional_ ||
          (file()->syntax() == FileDescriptor::SYNTAX_PROTO2 && is_optional() &&
           !containing_oneof());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
   auto* oneof = containing_oneof();
   return oneof && !oneof->is_synthetic() ? oneof : nullptr;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 inline bool FieldDescriptor::has_presence() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
   if (is_repeated()) return false;
   return cpp_type() == CPPTYPE_MESSAGE || containing_oneof() ||
          file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 inline bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
   return type() == TYPE_ENUM &&
          file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 // To save space, index() is computed by looking at the descriptor's position
@@ -2613,11 +2586,9 @@ inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
   return dependency(weak_dependencies_[index]);
 }
 
-PROTOBUF_IGNORE_DEPRECATION_START
 inline FileDescriptor::Syntax FileDescriptor::syntax() const {
   return static_cast<Syntax>(syntax_);
 }
-PROTOBUF_IGNORE_DEPRECATION_STOP
 
 namespace internal {
 
