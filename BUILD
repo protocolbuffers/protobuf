@@ -329,6 +329,19 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "message_split64",
+    hdrs = [
+        "upb/message/accessors_split64.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":message_accessors",
+        ":port",
+    ],
+)
+
 cc_test(
     name = "mini_table_encode_test",
     srcs = [
@@ -572,6 +585,19 @@ cc_library(
         ":mem",
         ":message_internal",
         ":mini_table_internal",
+        ":port",
+    ],
+)
+
+cc_library(
+    name = "collections_split64",
+    hdrs = [
+        "upb/collections/array_split64.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":collections",
         ":port",
     ],
 )

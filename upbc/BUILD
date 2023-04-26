@@ -99,9 +99,11 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         "//:collections",
+        "//:collections_split64",
         "//:mem",
         "//:message",
         "//:message_accessors",
+        "//:message_split64",
         "//:mini_table",
         "//:port",
     ],
