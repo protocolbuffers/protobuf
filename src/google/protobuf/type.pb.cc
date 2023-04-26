@@ -606,7 +606,7 @@ const char* Type::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_fields(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_fields()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
@@ -620,7 +620,7 @@ const char* Type::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            auto str = _internal_add_oneofs();
+            auto str = _internal_mutable_oneofs()->Add();
             ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
             CHK_(ptr);
             CHK_(::_pbi::VerifyUTF8(str, "google.protobuf.Type.oneofs"));
@@ -636,7 +636,7 @@ const char* Type::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_options(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_options()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<34>(ptr));
@@ -715,14 +715,14 @@ failure:
   // repeated .google.protobuf.Field fields = 2;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_fields_size()); i < n; i++) {
-    const auto& repfield = this->_internal_fields(i);
+    const auto& repfield = this->_internal_fields().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   // repeated string oneofs = 3;
   for (int i = 0, n = this->_internal_oneofs_size(); i < n; ++i) {
-    const auto& s = this->_internal_oneofs(i);
+    const auto& s = this->_internal_oneofs().Get(i);
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
         s.data(), static_cast<int>(s.length()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.oneofs");
     target = stream->WriteString(3, s, target);
@@ -731,7 +731,7 @@ failure:
   // repeated .google.protobuf.Option options = 4;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_options_size()); i < n; i++) {
-    const auto& repfield = this->_internal_options(i);
+    const auto& repfield = this->_internal_options().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -1130,7 +1130,7 @@ const char* Field::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_options(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_options()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<74>(ptr));
@@ -1243,7 +1243,7 @@ failure:
   // repeated .google.protobuf.Option options = 9;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_options_size()); i < n; i++) {
-    const auto& repfield = this->_internal_options(i);
+    const auto& repfield = this->_internal_options().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(9, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -1582,7 +1582,7 @@ const char* Enum::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_enumvalue(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_enumvalue()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
@@ -1596,7 +1596,7 @@ const char* Enum::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_options(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_options()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
@@ -1675,7 +1675,7 @@ failure:
   // repeated .google.protobuf.EnumValue enumvalue = 2;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_enumvalue_size()); i < n; i++) {
-    const auto& repfield = this->_internal_enumvalue(i);
+    const auto& repfield = this->_internal_enumvalue().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -1683,7 +1683,7 @@ failure:
   // repeated .google.protobuf.Option options = 3;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_options_size()); i < n; i++) {
-    const auto& repfield = this->_internal_options(i);
+    const auto& repfield = this->_internal_options().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -1952,7 +1952,7 @@ const char* EnumValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_options(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_options()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
@@ -2007,7 +2007,7 @@ failure:
   // repeated .google.protobuf.Option options = 3;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_options_size()); i < n; i++) {
-    const auto& repfield = this->_internal_options(i);
+    const auto& repfield = this->_internal_options().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
   }

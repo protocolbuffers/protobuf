@@ -394,7 +394,7 @@ const char* Api::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_methods(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_methods()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
@@ -408,7 +408,7 @@ const char* Api::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_options(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_options()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
@@ -442,7 +442,7 @@ const char* Api::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_mixins(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_mixins()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<50>(ptr));
@@ -501,7 +501,7 @@ failure:
   // repeated .google.protobuf.Method methods = 2;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_methods_size()); i < n; i++) {
-    const auto& repfield = this->_internal_methods(i);
+    const auto& repfield = this->_internal_methods().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -509,7 +509,7 @@ failure:
   // repeated .google.protobuf.Option options = 3;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_options_size()); i < n; i++) {
-    const auto& repfield = this->_internal_options(i);
+    const auto& repfield = this->_internal_options().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -533,7 +533,7 @@ failure:
   // repeated .google.protobuf.Mixin mixins = 6;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_mixins_size()); i < n; i++) {
-    const auto& repfield = this->_internal_mixins(i);
+    const auto& repfield = this->_internal_mixins().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(6, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -875,7 +875,7 @@ const char* Method::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_options(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_options()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<50>(ptr));
@@ -963,7 +963,7 @@ failure:
   // repeated .google.protobuf.Option options = 6;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_options_size()); i < n; i++) {
-    const auto& repfield = this->_internal_options(i);
+    const auto& repfield = this->_internal_options().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(6, repfield, repfield.GetCachedSize(), target, stream);
   }

@@ -717,8 +717,6 @@ class PROTOBUF_EXPORT ListValue final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Value >*
       mutable_values();
   private:
-  const ::PROTOBUF_NAMESPACE_ID::Value& _internal_values(int index) const;
-  ::PROTOBUF_NAMESPACE_ID::Value* _internal_add_values();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Value>& _internal_values() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Value>* _internal_mutable_values();
   public:
@@ -1156,18 +1154,12 @@ ListValue::mutable_values() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
   return _internal_mutable_values();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::Value& ListValue::_internal_values(int index) const {
-  return _internal_values().Get(index);
-}
 inline const ::PROTOBUF_NAMESPACE_ID::Value& ListValue::values(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.ListValue.values)
-  return _internal_values(index);
-}
-inline ::PROTOBUF_NAMESPACE_ID::Value* ListValue::_internal_add_values() {
-  return _internal_mutable_values()->Add();
+    return _internal_values().Get(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::Value* ListValue::add_values() {
-  ::PROTOBUF_NAMESPACE_ID::Value* _add = _internal_add_values();
+  ::PROTOBUF_NAMESPACE_ID::Value* _add = _internal_mutable_values()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
   return _add;
 }

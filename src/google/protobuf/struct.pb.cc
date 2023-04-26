@@ -934,7 +934,7 @@ const char* ListValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_values(), ptr);
+            ptr = ctx->ParseMessage(_internal_mutable_values()->Add(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
@@ -974,7 +974,7 @@ failure:
   // repeated .google.protobuf.Value values = 1;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_values_size()); i < n; i++) {
-    const auto& repfield = this->_internal_values(i);
+    const auto& repfield = this->_internal_values().Get(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(1, repfield, repfield.GetCachedSize(), target, stream);
   }

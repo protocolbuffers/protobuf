@@ -223,8 +223,6 @@ class PROTOBUF_EXPORT Api final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Method >*
       mutable_methods();
   private:
-  const ::PROTOBUF_NAMESPACE_ID::Method& _internal_methods(int index) const;
-  ::PROTOBUF_NAMESPACE_ID::Method* _internal_add_methods();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Method>& _internal_methods() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Method>* _internal_mutable_methods();
   public:
@@ -243,8 +241,6 @@ class PROTOBUF_EXPORT Api final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
   private:
-  const ::PROTOBUF_NAMESPACE_ID::Option& _internal_options(int index) const;
-  ::PROTOBUF_NAMESPACE_ID::Option* _internal_add_options();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Option>& _internal_options() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Option>* _internal_mutable_options();
   public:
@@ -263,8 +259,6 @@ class PROTOBUF_EXPORT Api final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Mixin >*
       mutable_mixins();
   private:
-  const ::PROTOBUF_NAMESPACE_ID::Mixin& _internal_mixins(int index) const;
-  ::PROTOBUF_NAMESPACE_ID::Mixin* _internal_add_mixins();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Mixin>& _internal_mixins() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Mixin>* _internal_mutable_mixins();
   public:
@@ -504,8 +498,6 @@ class PROTOBUF_EXPORT Method final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
   private:
-  const ::PROTOBUF_NAMESPACE_ID::Option& _internal_options(int index) const;
-  ::PROTOBUF_NAMESPACE_ID::Option* _internal_add_options();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Option>& _internal_options() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<::PROTOBUF_NAMESPACE_ID::Option>* _internal_mutable_options();
   public:
@@ -892,18 +884,12 @@ Api::mutable_methods() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
   return _internal_mutable_methods();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::Method& Api::_internal_methods(int index) const {
-  return _internal_methods().Get(index);
-}
 inline const ::PROTOBUF_NAMESPACE_ID::Method& Api::methods(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.methods)
-  return _internal_methods(index);
-}
-inline ::PROTOBUF_NAMESPACE_ID::Method* Api::_internal_add_methods() {
-  return _internal_mutable_methods()->Add();
+    return _internal_methods().Get(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::Method* Api::add_methods() {
-  ::PROTOBUF_NAMESPACE_ID::Method* _add = _internal_add_methods();
+  ::PROTOBUF_NAMESPACE_ID::Method* _add = _internal_mutable_methods()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.methods)
   return _add;
 }
@@ -937,18 +923,12 @@ Api::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
   return _internal_mutable_options();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::Option& Api::_internal_options(int index) const {
-  return _internal_options().Get(index);
-}
 inline const ::PROTOBUF_NAMESPACE_ID::Option& Api::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.options)
-  return _internal_options(index);
-}
-inline ::PROTOBUF_NAMESPACE_ID::Option* Api::_internal_add_options() {
-  return _internal_mutable_options()->Add();
+    return _internal_options().Get(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::Option* Api::add_options() {
-  ::PROTOBUF_NAMESPACE_ID::Option* _add = _internal_add_options();
+  ::PROTOBUF_NAMESPACE_ID::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.options)
   return _add;
 }
@@ -1116,18 +1096,12 @@ Api::mutable_mixins() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
   return _internal_mutable_mixins();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::Mixin& Api::_internal_mixins(int index) const {
-  return _internal_mixins().Get(index);
-}
 inline const ::PROTOBUF_NAMESPACE_ID::Mixin& Api::mixins(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.mixins)
-  return _internal_mixins(index);
-}
-inline ::PROTOBUF_NAMESPACE_ID::Mixin* Api::_internal_add_mixins() {
-  return _internal_mutable_mixins()->Add();
+    return _internal_mixins().Get(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::Mixin* Api::add_mixins() {
-  ::PROTOBUF_NAMESPACE_ID::Mixin* _add = _internal_add_mixins();
+  ::PROTOBUF_NAMESPACE_ID::Mixin* _add = _internal_mutable_mixins()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.mixins)
   return _add;
 }
@@ -1366,18 +1340,12 @@ Method::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
   return _internal_mutable_options();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::Option& Method::_internal_options(int index) const {
-  return _internal_options().Get(index);
-}
 inline const ::PROTOBUF_NAMESPACE_ID::Option& Method::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.options)
-  return _internal_options(index);
-}
-inline ::PROTOBUF_NAMESPACE_ID::Option* Method::_internal_add_options() {
-  return _internal_mutable_options()->Add();
+    return _internal_options().Get(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::Option* Method::add_options() {
-  ::PROTOBUF_NAMESPACE_ID::Option* _add = _internal_add_options();
+  ::PROTOBUF_NAMESPACE_ID::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Method.options)
   return _add;
 }
