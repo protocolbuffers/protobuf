@@ -178,6 +178,34 @@ public class FieldMaskUtilTest {
   }
 
   @Test
+  // This test passes, but it points to a failure in the current implementation.
+  public void testJsonSerializationRoundtripWithUppercaseLetter() throws Exception {
+    FieldMask mask = FieldMask.newBuilder().addPaths("A").build();
+    String maskSerialized = FieldMaskUtil.toJsonString(mask);
+    assertThat(maskSerialized).isEqualTo("a");
+
+    FieldMask mask2 = FieldMaskUtil.fromJsonString(maskSerialized);
+    assertThat(mask2.getPaths(0)).isEqualTo("a");
+
+    // This points to a serialization failure, since roundtrip yields different results.
+    assertThat(mask2).isNotEqualTo(mask);
+  }
+
+  @Test
+  // This test passes, but it points to a failure in the current implementation.
+  public void testJsonSerializationRoundtripWithLeadingUnderscore() throws Exception {
+    FieldMask mask = FieldMask.newBuilder().addPaths("_a").build();
+    String maskSerialized = FieldMaskUtil.toJsonString(mask);
+    assertThat(maskSerialized).isEqualTo("A");
+
+    FieldMask mask2 = FieldMaskUtil.fromJsonString(maskSerialized);
+    assertThat(mask2.getPaths(0)).isEqualTo("a");
+
+    // This points to a serialization failure, since roundtrip yields different results.
+    assertThat(mask2).isNotEqualTo(mask);
+  }
+
+  @Test
   public void testFromJsonString() throws Exception {
     FieldMask mask = FieldMaskUtil.fromJsonString("");
     assertThat(mask.getPathsCount()).isEqualTo(0);
