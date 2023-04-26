@@ -66,7 +66,6 @@
 
 namespace google {
 namespace protobuf {
-PROTOBUF_IGNORE_DEPRECATION_START
 
 // Wraps FileDescriptor.
 class PROTOBUF_EXPORT FileDescriptorLegacy {
@@ -75,15 +74,10 @@ class PROTOBUF_EXPORT FileDescriptorLegacy {
 
   // Any dependencies on file-level syntax keyword should be replaced by
   // feature-level switches to support go/protobuf-editions.
-  enum Syntax {
-    SYNTAX_UNKNOWN = FileDescriptor::SYNTAX_UNKNOWN,
-    SYNTAX_PROTO2 = FileDescriptor::SYNTAX_PROTO2,
-    SYNTAX_PROTO3 = FileDescriptor::SYNTAX_PROTO3,
-  };
-  Syntax syntax() const { return static_cast<Syntax>(desc_->syntax()); }
+  using Syntax = FileDescriptor::Syntax;
+  Syntax syntax() const { return desc_->syntax(); }
   static absl::string_view SyntaxName(Syntax syntax) {
-    return FileDescriptor::SyntaxName(
-        static_cast<FileDescriptor::Syntax>(syntax));
+    return FileDescriptor::SyntaxName(syntax);
   }
 
  private:
@@ -110,7 +104,6 @@ class PROTOBUF_EXPORT OneofDescriptorLegacy {
   const OneofDescriptor* desc_;
 };
 
-PROTOBUF_IGNORE_DEPRECATION_STOP
 }  // namespace protobuf
 }  // namespace google
 
