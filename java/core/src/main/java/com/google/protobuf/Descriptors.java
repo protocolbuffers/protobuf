@@ -162,6 +162,8 @@ public final class Descriptors {
     }
 
     /** The syntax of the .proto file. */
+    @Deprecated
+    public
     enum Syntax {
       UNKNOWN("unknown"),
       PROTO2("proto2"),
@@ -175,6 +177,8 @@ public final class Descriptors {
     }
 
     /** Get the syntax of the .proto file. */
+    @Deprecated
+    public
     Syntax getSyntax() {
       if (Syntax.PROTO3.name.equals(proto.getSyntax())) {
         return Syntax.PROTO3;
