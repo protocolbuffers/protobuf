@@ -54,6 +54,11 @@ UPB_API upb_StringView upbdev_ProcessOutput(const char* buf, size_t size,
 UPB_API void upbdev_ProcessStdout(const char* buf, size_t size,
                                   upb_Arena* arena, upb_Status* status);
 
+// The following wrappers allow the protoc plugins to call the above functions
+// without pulling in the entire pb_runtime library.
+UPB_API upb_Arena* upbdev_Arena_New();
+UPB_API void upbdev_Status_Clear(upb_Status* status);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

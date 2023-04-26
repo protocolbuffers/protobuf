@@ -104,7 +104,6 @@ cc_binary(
         "//:message_accessors",
         "//:mini_table",
         "//:port",
-        "//upbc:upbdev",
     ],
 )
 
@@ -207,6 +206,21 @@ bootstrap_cc_library(
 )
 
 cc_library(
+    name = "upbdev_ffi_headers",
+    srcs = [
+        "upbdev.h",
+    ],
+    copts = ["-DUPB_BUILD_API"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":upbdev",
+        "//:base",
+        "//:mem",
+        "//:port",
+    ],
+)
+
+cc_library(
     name = "upbdev",
     srcs = [
         "code_generator_request.c",
@@ -217,7 +231,7 @@ cc_library(
         "upbdev.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
+    visibility = ["//visibility:private"],
     deps = [
         ":code_generator_request_upb_proto",
         ":code_generator_request_upb_proto_reflection",
@@ -230,6 +244,21 @@ cc_library(
         "//:port",
         "//:reflection",
     ],
+)
+
+cc_binary(
+    name = "lib/libupbdev.so",
+    linkshared = 1,
+    visibility = ["//visibility:private"],
+    deps = [
+        ":upbdev",
+    ],
+)
+
+cc_library(
+    name = "libupbdev",
+    srcs = [":lib/libupbdev.so"],
+    visibility = ["//visibility:public"],
 )
 
 bootstrap_cc_binary(

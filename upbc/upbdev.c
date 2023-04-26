@@ -92,10 +92,9 @@ upb_StringView upbdev_ProcessInput(const char* buf, size_t size,
 
   const upbc_CodeGeneratorRequest* outer_request =
       upbc_MakeCodeGeneratorRequest(inner_request, arena, status);
-  if (upb_Status_IsOk(status))
-    out = upbc_JsonEncode(outer_request, arena, status);
+  if (!upb_Status_IsOk(status)) return out;
 
-  return out;
+  return upbc_JsonEncode(outer_request, arena, status);
 }
 
 upb_StringView upbdev_ProcessOutput(const char* buf, size_t size,
@@ -126,3 +125,7 @@ void upbdev_ProcessStdout(const char* buf, size_t size, upb_Arena* arena,
     }
   }
 }
+
+upb_Arena* upbdev_Arena_New() { return upb_Arena_New(); }
+
+void upbdev_Status_Clear(upb_Status* status) { upb_Status_Clear(status); }

@@ -36,7 +36,6 @@
 #include "upb/message/accessors.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/decode.h"
-#include "upbc/upbdev.h"
 
 // Must be last.
 #include "upb/port/def.inc"
