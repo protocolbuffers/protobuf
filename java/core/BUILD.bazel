@@ -121,19 +121,24 @@ internal_gen_well_known_protos_java(
 )
 
 # Should be used as `//java/lite`.
-protobuf_versioned_java_library(
+java_library(
     name = "lite",
     srcs = LITE_SRCS + [
         ":gen_well_known_protos_javalite",
     ],
+    visibility = [
+        "//java/lite:__pkg__",
+    ],
+)
+
+protobuf_versioned_java_library(
+    name = "lite_bundle",
+    base_java_library = ":lite",
     bundle_description = "Lite version of Protocol Buffers library. This " +
                          "version is optimized for code size, but does not " +
                          "guarantee API/ABI stability.",
     bundle_name = "Protocol Buffers [Lite]",
     bundle_symbolic_name = "com.google.protobuf",
-    visibility = [
-        "//java/lite:__pkg__",
-    ],
 )
 
 # Bazel users, don't depend on this target, use //java/lite.
@@ -145,7 +150,7 @@ protobuf_java_export(
         "//:lite_well_known_protos",
     ],
     tags = ["manual"],
-    runtime_deps = [":lite"],
+    runtime_deps = [":lite_bundle"],
 )
 
 protobuf_java_library(
@@ -171,7 +176,7 @@ internal_gen_well_known_protos_java(
     ],
 )
 
-protobuf_versioned_java_library(
+java_library(
     name = "core",
     srcs = glob(
         [
@@ -181,11 +186,6 @@ protobuf_versioned_java_library(
     ) + [
         ":gen_well_known_protos_java",
     ],
-    bundle_description = "Core Protocol Buffers library. Protocol Buffers " +
-                         "are a way of encoding structured data in an " +
-                         "efficient yet extensible format.",
-    bundle_name = "Protocol Buffers [Core]",
-    bundle_symbolic_name = "com.google.protobuf",
     visibility = ["//visibility:public"],
     exports = [
         ":lite_runtime_only",
@@ -193,6 +193,16 @@ protobuf_versioned_java_library(
     deps = [
         ":lite_runtime_only",
     ],
+)
+
+protobuf_versioned_java_library(
+    name = "core_bundle",
+    base_java_library = ":core",
+    bundle_description = "Core Protocol Buffers library. Protocol Buffers " +
+                         "are a way of encoding structured data in an " +
+                         "efficient yet extensible format.",
+    bundle_name = "Protocol Buffers [Core]",
+    bundle_symbolic_name = "com.google.protobuf",
 )
 
 # Bazel users, don't depend on this target, use :core.
@@ -205,7 +215,7 @@ protobuf_java_export(
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
-    runtime_deps = [":core"],
+    runtime_deps = [":core_bundle"],
 )
 
 filegroup(

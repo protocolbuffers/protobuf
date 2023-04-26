@@ -27,6 +27,7 @@ def protobuf_java_library(**kwargs):
     )
 
 def protobuf_versioned_java_library(
+        base_java_library,
         bundle_description,
         bundle_name,
         bundle_symbolic_name,
@@ -42,6 +43,7 @@ def protobuf_versioned_java_library(
 
     Takes all the args that are standard for a java_library target plus the following.
     Args:
+        base_java_library: (required) Java library without OSGi headers
         bundle_description: (required) The Bundle-Description header defines a short
             description of this bundle.
         bundle_name: (required) The Bundle-Name header defines a readable name for this
@@ -65,6 +67,7 @@ def protobuf_versioned_java_library(
     """
     osgi_java_library(
         javacopts = JAVA_OPTS,
+        base_java_library = base_java_library,
         bundle_doc_url = BUNDLE_DOC_URL,
         bundle_license = BUNDLE_LICENSE,
         bundle_version = PROTOBUF_JAVA_VERSION,

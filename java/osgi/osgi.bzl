@@ -23,6 +23,7 @@ load("@rules_java//java:defs.bzl", "java_library")
 #    which is probably sub-optimal.
 def osgi_java_library(
         name,
+        base_java_library,
         bundle_description,
         bundle_doc_url,
         bundle_license,
@@ -47,6 +48,7 @@ def osgi_java_library(
 
     Args:
         name: (required) A unique name for this target.
+        base_java_library: Java library without osgi headers
         bundle_description: (required) The Bundle-Description header defines a short
             description of this bundle.
         bundle_doc_url: (required) The Bundle-DocURL headers must contain a URL pointing
@@ -104,18 +106,6 @@ def osgi_java_library(
             java_library target.
     """
 
-    # Build the private jar without the OSGI manifest
-    private_library_name = "%s-no-manifest-do-not-use" % name
-    java_library(
-        name = private_library_name,
-        deps = deps,
-        runtime_deps = runtime_deps,
-        neverlink = True,
-        exported_plugins = exported_plugins,
-        visibility = ["//visibility:private"],
-        **kwargs
-    )
-
     # Repackage the jar with an OSGI manifest
     _osgi_jar(
         name = name,
@@ -127,7 +117,7 @@ def osgi_java_library(
         bundle_version = bundle_version,
         export_package = bundle_additional_exports + ["*;version=${Bundle-Version}"],
         import_package = bundle_additional_imports + ["*"],
-        target = private_library_name,
+        target = base_java_library,
         deps = deps,
         runtime_deps = runtime_deps,
         exported_plugins = exported_plugins,
