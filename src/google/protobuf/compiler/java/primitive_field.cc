@@ -761,6 +761,18 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                    "}\n");
   }
 
+  if (FixedSize(GetType(descriptor_)) != -1) {
+    printer->Print(
+      variables_,
+      "private void ensure$capitalized_name$IsMutable(int capacity) {\n"
+      "  if (!$name$_.isModifiable()) {\n"
+      "    $name$_ = $name$_.mutableCopyWithCapacity(capacity);\n"
+      "  }\n"
+      "  $set_mutable_bit_builder$;\n"
+      "}\n"
+    );
+  }
+
   // Note:  We return an unmodifiable list because otherwise the caller
   //   could hold on to the returned list and modify it after the message
   //   has been built, thus mutating the message which is supposed to be
@@ -1024,14 +1036,25 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
 
 void RepeatedImmutablePrimitiveFieldGenerator::
     GenerateBuilderParsingCodeFromPacked(io::Printer* printer) const {
-  printer->Print(variables_,
-                 "int length = input.readRawVarint32();\n"
-                 "int limit = input.pushLimit(length);\n"
-                 "ensure$capitalized_name$IsMutable();\n"
-                 "while (input.getBytesUntilLimit() > 0) {\n"
-                 "  $repeated_add$(input.read$capitalized_type$());\n"
-                 "}\n"
-                 "input.popLimit(limit);\n");
+  if (FixedSize(GetType(descriptor_)) != -1) {
+    printer->Print(variables_,
+                  "int length = input.readRawVarint32();\n"
+                  "int limit = input.pushLimit(length);\n"
+                  "ensure$capitalized_name$IsMutable(length / $fixed_size$);\n"
+                  "while (input.getBytesUntilLimit() > 0) {\n"
+                  "  $repeated_add$(input.read$capitalized_type$());\n"
+                  "}\n"
+                  "input.popLimit(limit);\n");
+  } else {
+    printer->Print(variables_,
+                  "int length = input.readRawVarint32();\n"
+                  "int limit = input.pushLimit(length);\n"
+                  "ensure$capitalized_name$IsMutable();\n"
+                  "while (input.getBytesUntilLimit() > 0) {\n"
+                  "  $repeated_add$(input.read$capitalized_type$());\n"
+                  "}\n"
+                  "input.popLimit(limit);\n");
+  }
 }
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializationCode(
