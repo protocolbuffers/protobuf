@@ -71,8 +71,6 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   python2.6-dev \
   python3.3-dev \
   python3.4-dev \
-  # -- For Ruby --
-  ruby \
   # -- For C++ benchmarks --
   cmake \
   # -- For PHP --
@@ -100,21 +98,6 @@ RUN wget www.nuget.org/NuGet.exe -O /usr/local/bin/nuget.exe
 
 RUN pip install pip --upgrade
 RUN pip install virtualenv tox yattag
-
-##################
-# Ruby dependencies
-
-# Install rvm
-RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-RUN \curl -sSL https://get.rvm.io | bash -s stable
-
-# Install Ruby 2.1, Ruby 2.2 and JRuby 1.7
-RUN /bin/bash -l -c "rvm install ruby-2.1"
-RUN /bin/bash -l -c "rvm install ruby-2.2"
-RUN /bin/bash -l -c "rvm install jruby-1.7"
-RUN /bin/bash -l -c "echo 'gem: --no-ri --no-rdoc' > ~/.gemrc"
-RUN /bin/bash -l -c "echo 'export PATH=/usr/local/rvm/bin:$PATH' >> ~/.bashrc"
-RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
 
 ##################
 # Java dependencies
