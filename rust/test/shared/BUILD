@@ -17,34 +17,6 @@
 load("@rules_rust//rust:defs.bzl", "rust_test")
 
 rust_test(
-    name = "unittest_proto_upb_test",
-    srcs = ["unittest_proto_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-        # TODO(b/243126140): Enable tsan once we support sanitizers with Rust.
-        "notsan",
-        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
-        "nomsan",
-    ],
-    deps = ["//rust/test:unittest_upb_rust_proto"],
-)
-
-rust_test(
-    name = "unittest_proto_cpp_test",
-    srcs = ["unittest_proto_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-        # TODO(b/243126140): Enable tsan once we support sanitizers with Rust.
-        "notsan",
-        # TODO(b/243126140): Enable msan once we support sanitizers with Rust.
-        "nomsan",
-    ],
-    deps = ["//rust/test:unittest_cc_rust_proto"],
-)
-
-rust_test(
     name = "child_parent_upb_test",
     srcs = ["child_parent_test.rs"],
     tags = [
@@ -140,4 +112,24 @@ rust_test(
         "not_build:arm",
     ],
     deps = ["//rust/test:unittest_upb_rust_proto"],
+)
+
+rust_test(
+    name = "serialization_upb_test",
+    srcs = ["serialization_test.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+    ],
+    deps = ["//rust/test:unittest_upb_rust_proto"],
+)
+
+rust_test(
+    name = "serialization_cpp_test",
+    srcs = ["serialization_test.rs"],
+    tags = [
+        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        "not_build:arm",
+    ],
+    deps = ["//rust/test:unittest_cc_rust_proto"],
 )
