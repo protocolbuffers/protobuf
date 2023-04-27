@@ -154,14 +154,17 @@ jobs:
       - name: Update submodules
         run: git submodule update --init --remote --recursive
 
+      - name: Uninstall problematic libgd
+        run: brew uninstall --ignore-dependencies gd
+
       - name: Install dependencies
-        run: brew install coreutils # For sha256sum
+        run: brew install coreutils gd
 
       - name: Pin PHP version
         uses: shivammathur/setup-php@d30ad8b1843ace22e6698ab99bbafaa747b6bd0d # 2.24.0
         with:
           php-version: ${{ matrix.version }}
-
+      
       - name: Check PHP version
         run: php --version | grep ${{ matrix.version }} || (echo "Invalid PHP version - $(php --version)" && exit 1)
 
