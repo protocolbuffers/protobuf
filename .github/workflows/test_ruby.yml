@@ -63,7 +63,7 @@ jobs:
           skip-staleness-check: true
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /bin/bash -c '
+            /bin/bash -cex '
             gem install bundler;
             cd /workspace/ruby;
             bundle;

@@ -95,7 +95,7 @@ jobs:
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /bin/bash -c '
+            /bin/bash -cex '
             cd php && php -v && php -m;
             composer update --ignore-platform-reqs;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
