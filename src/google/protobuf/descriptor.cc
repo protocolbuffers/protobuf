@@ -825,6 +825,7 @@ const char* const FieldDescriptor::kLabelToName[MAX_LABEL + 1] = {
     "repeated",  // LABEL_REPEATED
 };
 
+PROTOBUF_IGNORE_DEPRECATION_START
 const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
   switch (syntax) {
     case SYNTAX_PROTO2:
@@ -837,6 +838,7 @@ const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
   ABSL_LOG(FATAL) << "can't reach here.";
   return nullptr;
 }
+PROTOBUF_IGNORE_DEPRECATION_STOP
 
 static const char* const kNonLinkedWeakMessageReplacementName = "google.protobuf.Empty";
 
