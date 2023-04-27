@@ -92,6 +92,9 @@ message FileDescriptorProto {
 
   // The edition of the proto file, which is an opaque string.
   optional string edition = 13;
+
+  // New field to demonstrate RPC replay failures
+  optional bool new_field = 14;
 }
 
 // Describes a message type.

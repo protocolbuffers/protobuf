@@ -195,6 +195,33 @@ PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* Arena::Cr
 PROTOBUF_NAMESPACE_CLOSE
 
 PROTOBUF_NAMESPACE_OPEN
+enum FileDescriptorProto_NewEnum : int {
+  FileDescriptorProto_NewEnum_NEW_ENUM_DEFAULT = 0,
+};
+
+PROTOBUF_EXPORT bool FileDescriptorProto_NewEnum_IsValid(int value);
+constexpr FileDescriptorProto_NewEnum FileDescriptorProto_NewEnum_NewEnum_MIN = static_cast<FileDescriptorProto_NewEnum>(0);
+constexpr FileDescriptorProto_NewEnum FileDescriptorProto_NewEnum_NewEnum_MAX = static_cast<FileDescriptorProto_NewEnum>(0);
+constexpr int FileDescriptorProto_NewEnum_NewEnum_ARRAYSIZE = 0 + 1;
+PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor*
+FileDescriptorProto_NewEnum_descriptor();
+template <typename T>
+const std::string& FileDescriptorProto_NewEnum_Name(T value) {
+  static_assert(std::is_same<T, FileDescriptorProto_NewEnum>::value ||
+                    std::is_integral<T>::value,
+                "Incorrect type passed to NewEnum_Name().");
+  return FileDescriptorProto_NewEnum_Name(static_cast<FileDescriptorProto_NewEnum>(value));
+}
+template <>
+inline const std::string& FileDescriptorProto_NewEnum_Name(FileDescriptorProto_NewEnum value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum<FileDescriptorProto_NewEnum_descriptor,
+                                                 0, 0>(
+      static_cast<int>(value));
+}
+inline bool FileDescriptorProto_NewEnum_Parse(absl::string_view name, FileDescriptorProto_NewEnum* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FileDescriptorProto_NewEnum>(
+      FileDescriptorProto_NewEnum_descriptor(), name, value);
+}
 enum ExtensionRangeOptions_VerificationState : int {
   ExtensionRangeOptions_VerificationState_DECLARATION = 0,
   ExtensionRangeOptions_VerificationState_UNVERIFIED = 1,
@@ -798,6 +825,25 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   // nested types ----------------------------------------------------
 
+  using NewEnum = FileDescriptorProto_NewEnum;
+  static constexpr NewEnum NEW_ENUM_DEFAULT = FileDescriptorProto_NewEnum_NEW_ENUM_DEFAULT;
+  static inline bool NewEnum_IsValid(int value) {
+    return FileDescriptorProto_NewEnum_IsValid(value);
+  }
+  static constexpr NewEnum NewEnum_MIN = FileDescriptorProto_NewEnum_NewEnum_MIN;
+  static constexpr NewEnum NewEnum_MAX = FileDescriptorProto_NewEnum_NewEnum_MAX;
+  static constexpr int NewEnum_ARRAYSIZE = FileDescriptorProto_NewEnum_NewEnum_ARRAYSIZE;
+  static inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* NewEnum_descriptor() {
+    return FileDescriptorProto_NewEnum_descriptor();
+  }
+  template <typename T>
+  static inline const std::string& NewEnum_Name(T value) {
+    return FileDescriptorProto_NewEnum_Name(value);
+  }
+  static inline bool NewEnum_Parse(absl::string_view name, NewEnum* value) {
+    return FileDescriptorProto_NewEnum_Parse(name, value);
+  }
+
   // accessors -------------------------------------------------------
 
   enum : int {
@@ -814,6 +860,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     kEditionFieldNumber = 13,
     kOptionsFieldNumber = 8,
     kSourceCodeInfoFieldNumber = 9,
+    kNewFieldFieldNumber = 14,
   };
   // repeated string dependency = 3;
   int dependency_size() const;
@@ -1063,6 +1110,17 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   void unsafe_arena_set_allocated_source_code_info(
       ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* source_code_info);
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* unsafe_arena_release_source_code_info();
+  // optional .google.protobuf.FileDescriptorProto.NewEnum new_field = 14;
+  bool has_new_field() const;
+  void clear_new_field() ;
+  ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum new_field() const;
+  void set_new_field(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum value);
+
+  private:
+  ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum _internal_new_field() const;
+  void _internal_set_new_field(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum value);
+
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
  private:
   class _Internal;
@@ -1086,6 +1144,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr edition_;
     ::PROTOBUF_NAMESPACE_ID::FileOptions* options_;
     ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* source_code_info_;
+    int new_field_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -9509,6 +9568,32 @@ inline void FileDescriptorProto::set_allocated_edition(std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.edition)
 }
 
+// optional .google.protobuf.FileDescriptorProto.NewEnum new_field = 14;
+inline bool FileDescriptorProto::has_new_field() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
+  return value;
+}
+inline void FileDescriptorProto::clear_new_field() {
+  _impl_.new_field_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000040u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum FileDescriptorProto::new_field() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.new_field)
+  return _internal_new_field();
+}
+inline void FileDescriptorProto::set_new_field(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum value) {
+   _internal_set_new_field(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.new_field)
+}
+inline ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum FileDescriptorProto::_internal_new_field() const {
+  return static_cast<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum>(_impl_.new_field_);
+}
+inline void FileDescriptorProto::_internal_set_new_field(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum value) {
+  assert(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum_IsValid(value));
+  _impl_._has_bits_[0] |= 0x00000040u;
+  _impl_.new_field_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // DescriptorProto_ExtensionRange
@@ -15239,6 +15324,12 @@ PROTOBUF_NAMESPACE_CLOSE
 
 PROTOBUF_NAMESPACE_OPEN
 
+template <>
+struct is_proto_enum<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum> : std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor<::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum>() {
+  return ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto_NewEnum_descriptor();
+}
 template <>
 struct is_proto_enum<::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions_VerificationState> : std::true_type {};
 template <>
