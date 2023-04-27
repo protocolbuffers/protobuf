@@ -241,6 +241,7 @@ py_extension(
         "//:descriptor_upb_proto_reflection",
         "//:eps_copy_input_stream",
         "//:hash",
+        "//:message_copy",
         "//:port",
         "//:reflection",
         "//:textformat",

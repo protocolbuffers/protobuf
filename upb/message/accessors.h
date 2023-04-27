@@ -57,6 +57,13 @@ UPB_API_INLINE void upb_Message_ClearField(upb_Message* msg,
   }
 }
 
+UPB_API_INLINE void upb_Message_Clear(upb_Message* msg,
+                                      const upb_MiniTable* l) {
+  // Note: Can't use UPB_PTR_AT() here because we are doing pointer subtraction.
+  char* mem = (char*)msg - sizeof(upb_Message_Internal);
+  memset(mem, 0, upb_msg_sizeof(l));
+}
+
 UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
                                          const upb_MiniTableField* field) {
   if (upb_MiniTableField_IsExtension(field)) {

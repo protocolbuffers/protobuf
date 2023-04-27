@@ -32,6 +32,7 @@
 #include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/repeated.h"
+#include "upb/message/copy.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/text/encode.h"
@@ -325,12 +326,7 @@ static bool PyUpb_Message_LookupName(PyUpb_Message* self, PyObject* py_name,
 static bool PyUpb_Message_InitMessageMapEntry(PyObject* dst, PyObject* src) {
   if (!src || !dst) return false;
 
-  // TODO(haberman): Currently we are doing Clear()+MergeFrom().  Replace with
-  // CopyFrom() once that is implemented.
-  PyObject* ok = PyObject_CallMethod(dst, "Clear", NULL);
-  if (!ok) return false;
-  Py_DECREF(ok);
-  ok = PyObject_CallMethod(dst, "MergeFrom", "O", src);
+  PyObject* ok = PyObject_CallMethod(dst, "CopyFrom", "O", src);
   if (!ok) return false;
   Py_DECREF(ok);
 
@@ -1218,6 +1214,34 @@ static PyObject* PyUpb_Message_MergePartialFrom(PyObject* self, PyObject* arg) {
   return PyUpb_Message_MergeInternal(self, arg, false);
 }
 
+static PyObject* PyUpb_Message_Clear(PyUpb_Message* self);
+
+static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
+  if (_self->ob_type != arg->ob_type) {
+    PyErr_Format(PyExc_TypeError,
+                 "Parameter to CopyFrom() must be instance of same class: "
+                 "expected %S got %S.",
+                 Py_TYPE(_self), Py_TYPE(arg));
+    return NULL;
+  }
+  if (_self == arg) {
+    Py_RETURN_NONE;
+  }
+  PyUpb_Message* self = (void*)_self;
+  PyUpb_Message* other = (void*)arg;
+  PyUpb_Message_EnsureReified(self);
+
+  PyObject* tmp = PyUpb_Message_Clear(self);
+  Py_DECREF(tmp);
+
+  upb_Message_DeepCopy(self->ptr.msg, other->ptr.msg,
+                       upb_MessageDef_MiniTable(other->def),
+                       PyUpb_Arena_Get(self->arena));
+  PyUpb_Message_SyncSubobjs(self);
+
+  Py_RETURN_NONE;
+}
+
 static PyObject* PyUpb_Message_SetInParent(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
   PyUpb_Message_EnsureReified(self);
@@ -1269,10 +1293,8 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   return PyLong_FromSsize_t(size);
 }
 
-static PyObject* PyUpb_Message_Clear(PyUpb_Message* self, PyObject* args);
-
 static PyObject* PyUpb_Message_ParseFromString(PyObject* self, PyObject* arg) {
-  PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)self, NULL);
+  PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)self);
   Py_DECREF(tmp);
   return PyUpb_Message_MergeFromString(self, arg);
 }
@@ -1290,7 +1312,7 @@ static PyObject* PyUpb_Message_ByteSize(PyObject* self, PyObject* args) {
   return PyLong_FromSize_t(size);
 }
 
-static PyObject* PyUpb_Message_Clear(PyUpb_Message* self, PyObject* args) {
+static PyObject* PyUpb_Message_Clear(PyUpb_Message* self) {
   PyUpb_Message_EnsureReified(self);
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   PyUpb_WeakMap* subobj_map = self->unset_subobj_map;
@@ -1620,9 +1642,8 @@ static PyMethodDef PyUpb_Message_Methods[] = {
     {"ClearExtension", PyUpb_Message_ClearExtension, METH_O,
      "Clears a message field."},
     {"ClearField", PyUpb_Message_ClearField, METH_O, "Clears a message field."},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "CopyFrom", (PyCFunction)CopyFrom, METH_O,
-    //  "Copies a protocol message into the current message." },
+    {"CopyFrom", PyUpb_Message_CopyFrom, METH_O,
+     "Copies a protocol message into the current message."},
     {"DiscardUnknownFields", (PyCFunction)PyUpb_Message_DiscardUnknownFields,
      METH_NOARGS, "Discards the unknown fields."},
     {"FindInitializationErrors", PyUpb_Message_FindInitializationErrors,

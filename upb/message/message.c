@@ -46,12 +46,6 @@ upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
   return _upb_Message_New(mini_table, arena);
 }
 
-void _upb_Message_Clear(upb_Message* msg, const upb_MiniTable* l) {
-  // Note: Can't use UPB_PTR_AT() here because we are doing pointer subtraction.
-  char* mem = (char*)msg - sizeof(upb_Message_Internal);
-  memset(mem, 0, upb_msg_sizeof(l));
-}
-
 static bool realloc_internal(upb_Message* msg, size_t need, upb_Arena* arena) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) {

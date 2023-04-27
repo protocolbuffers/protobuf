@@ -115,9 +115,6 @@ UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(
   return (upb_Message_Internal*)((char*)msg - size);
 }
 
-// Clears the given message.
-void _upb_Message_Clear(upb_Message* msg, const upb_MiniTable* l);
-
 // Discards the unknown fields for this message only.
 void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
 

@@ -54,6 +54,10 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
                            const upb_MiniTable* map_entry_table,
                            upb_Arena* arena);
 
+// Deep copies the message from src to dst.
+void upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
+                          const upb_MiniTable* mini_table, upb_Arena* arena);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
