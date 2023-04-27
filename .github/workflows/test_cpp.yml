@@ -185,7 +185,7 @@ jobs:
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-              /bin/bash -c '
+              /bin/bash -cex '
               cd /workspace;
               ccache -z;
               cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }};
