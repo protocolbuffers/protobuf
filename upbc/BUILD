@@ -188,17 +188,15 @@ bootstrap_cc_library(
     ],
 )
 
-cc_library(
-    name = "upbdev_ffi_headers",
-    srcs = [
-        "upbdev.h",
-    ],
-    copts = ["-DUPB_BUILD_API"],
+cc_binary(
+    name = "libupbc.so",
+    srcs = ["upbc_so.c"],
+    copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
+    linkshared = 1,
+    linkstatic = 1,
     visibility = ["//visibility:public"],
     deps = [
         ":upbdev",
-        "//:base",
-        "//:mem",
         "//:port",
     ],
 )
@@ -227,21 +225,6 @@ cc_library(
         "//:port",
         "//:reflection",
     ],
-)
-
-cc_binary(
-    name = "lib/libupbdev.so",
-    linkshared = 1,
-    visibility = ["//visibility:private"],
-    deps = [
-        ":upbdev",
-    ],
-)
-
-cc_library(
-    name = "libupbdev",
-    srcs = [":lib/libupbdev.so"],
-    visibility = ["//visibility:public"],
 )
 
 bootstrap_cc_binary(

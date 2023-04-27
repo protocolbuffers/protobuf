@@ -1059,7 +1059,7 @@ cc_library(
 
 cc_binary(
     name = "libupb.so",
-    srcs = ["upb/ffi.c"],
+    srcs = ["upb/upb_so.c"],
     copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
     linkshared = 1,
     linkstatic = 1,
@@ -1074,13 +1074,6 @@ cc_binary(
         "//:mini_table",
         "//:port",
     ],
-)
-
-cc_library(
-    name = "libupb",
-    srcs = [":libupb.so"],
-    linkstatic = 1,
-    visibility = ["//visibility:public"],
 )
 
 # Amalgamation #################################################################
