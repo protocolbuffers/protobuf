@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,19 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This disables inlining and forces all public functions to be exported to the
-// linker. It is used to generate bindings for FFIs from other languages.
-#ifndef UPB_BUILD_API
-#define UPB_BUILD_API
-#endif
+// These headers form a spanning tree for the upb defs needed by FFI layers.
 
-#include "upb/collections/array.h"
 #include "upb/collections/array_split64.h"
 #include "upb/collections/map.h"
-#include "upb/message/accessors.h"
 #include "upb/message/accessors_split64.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/decode.h"
-
-// Must be last.
-#include "upb/port/def.inc"

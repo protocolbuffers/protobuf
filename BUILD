@@ -1057,6 +1057,32 @@ cc_library(
     deps = [":port"],
 )
 
+cc_binary(
+    name = "libupb.so",
+    srcs = ["upb/ffi.c"],
+    copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
+    linkshared = 1,
+    linkstatic = 1,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:collections",
+        "//:collections_split64",
+        "//:mem",
+        "//:message",
+        "//:message_accessors",
+        "//:message_split64",
+        "//:mini_table",
+        "//:port",
+    ],
+)
+
+cc_library(
+    name = "libupb",
+    srcs = [":libupb.so"],
+    linkstatic = 1,
+    visibility = ["//visibility:public"],
+)
+
 # Amalgamation #################################################################
 
 # begin:github_only

@@ -90,25 +90,6 @@ upb_proto_reflection_library(
     deps = ["@com_google_protobuf//:compiler_plugin_proto"],
 )
 
-cc_binary(
-    name = "upbc_so",
-    srcs = ["upbc_so.c"],
-    copts = UPB_DEFAULT_COPTS,
-    linkshared = 1,
-    linkstatic = 1,
-    visibility = ["//visibility:public"],
-    deps = [
-        "//:collections",
-        "//:collections_split64",
-        "//:mem",
-        "//:message",
-        "//:message_accessors",
-        "//:message_split64",
-        "//:mini_table",
-        "//:port",
-    ],
-)
-
 bootstrap_cc_library(
     name = "common",
     srcs = [
