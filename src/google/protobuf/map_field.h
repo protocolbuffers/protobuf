@@ -604,7 +604,7 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   constexpr MapField() : impl_() {}
   MapField(const MapField&) = delete;
   MapField& operator=(const MapField&) = delete;
-  ~MapField() = default;
+  ~MapField() {}
 
   explicit MapField(Arena* arena)
       : TypeDefinedMapFieldBase<Key, T>(arena), impl_(arena) {}
