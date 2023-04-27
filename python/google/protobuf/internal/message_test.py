@@ -1373,6 +1373,33 @@ class Proto2Test(unittest.TestCase):
         123,
         msg1.submessage.Extensions[more_extensions_pb2.optional_int_extension])
 
+  def testCopyFromAll(self):
+    message = unittest_pb2.TestAllTypes()
+    test_util.SetAllFields(message)
+    copy = unittest_pb2.TestAllTypes()
+    copy.CopyFrom(message)
+    self.assertEqual(message, copy)
+    message.repeated_nested_message.add().bb = 123
+    self.assertNotEqual(message, copy)
+
+  def testCopyFromAllExtensions(self):
+    all_set = unittest_pb2.TestAllExtensions()
+    test_util.SetAllExtensions(all_set)
+    copy =  unittest_pb2.TestAllExtensions()
+    copy.CopyFrom(all_set)
+    self.assertEqual(all_set, copy)
+    all_set.Extensions[unittest_pb2.repeatedgroup_extension].add().a = 321
+    self.assertNotEqual(all_set, copy)
+
+  def testCopyFromAllPackedExtensions(self):
+    all_set = unittest_pb2.TestPackedExtensions()
+    test_util.SetAllPackedExtensions(all_set)
+    copy =  unittest_pb2.TestPackedExtensions()
+    copy.CopyFrom(all_set)
+    self.assertEqual(all_set, copy)
+    all_set.Extensions[unittest_pb2.packed_float_extension].extend([61.0, 71.0])
+    self.assertNotEqual(all_set, copy)
+
   def testGoldenExtensions(self):
     golden_data = test_util.GoldenFileData('golden_message')
     golden_message = unittest_pb2.TestAllExtensions()
