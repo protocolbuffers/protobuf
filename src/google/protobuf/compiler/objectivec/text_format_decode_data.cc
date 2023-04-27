@@ -35,6 +35,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
