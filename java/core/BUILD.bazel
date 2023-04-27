@@ -121,8 +121,18 @@ internal_gen_well_known_protos_java(
 )
 
 # Should be used as `//java/lite`.
-protobuf_versioned_java_library(
+java_library(
     name = "lite",
+    srcs = LITE_SRCS + [
+        ":gen_well_known_protos_javalite",
+    ],
+    visibility = [
+        "//java/lite:__pkg__",
+    ],
+)
+
+protobuf_versioned_java_library(
+    name = "lite_bundle",
     srcs = LITE_SRCS + [
         ":gen_well_known_protos_javalite",
     ],
@@ -145,7 +155,7 @@ protobuf_java_export(
         "//:lite_well_known_protos",
     ],
     tags = ["manual"],
-    runtime_deps = [":lite"],
+    runtime_deps = [":lite_bundle"],
 )
 
 protobuf_java_library(
@@ -171,8 +181,27 @@ internal_gen_well_known_protos_java(
     ],
 )
 
-protobuf_versioned_java_library(
+java_library(
     name = "core",
+    srcs = glob(
+        [
+            "src/main/java/com/google/protobuf/*.java",
+        ],
+        exclude = LITE_SRCS,
+    ) + [
+        ":gen_well_known_protos_java",
+    ],
+    visibility = ["//visibility:public"],
+    exports = [
+        ":lite_runtime_only",
+    ],
+    deps = [
+        ":lite_runtime_only",
+    ],
+)
+
+protobuf_versioned_java_library(
+    name = "core_bundle",
     srcs = glob(
         [
             "src/main/java/com/google/protobuf/*.java",
@@ -205,7 +234,7 @@ protobuf_java_export(
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
-    runtime_deps = [":core"],
+    runtime_deps = [":core_bundle"],
 )
 
 filegroup(
