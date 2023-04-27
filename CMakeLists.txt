@@ -332,6 +332,9 @@ endif (protobuf_UNICODE)
 set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
 set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
 
+set(protobuf_JSONCPP_PROVIDER "module" CACHE STRING "Provider of jsoncpp library")
+set_property(CACHE protobuf_JSONCPP_PROVIDER PROPERTY STRINGS "module" "package")
+
 if (protobuf_BUILD_TESTS)
   include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)
 endif (protobuf_BUILD_TESTS)
