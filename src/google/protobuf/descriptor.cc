@@ -7336,6 +7336,12 @@ void DescriptorBuilder::ValidateFieldOptions(
              "option json_name is not allowed on extension fields.");
   }
 
+  if (absl::StrContains(field->json_name(), '\0')) {
+    AddError(field->full_name(), proto,
+             DescriptorPool::ErrorCollector::OPTION_NAME,
+             "json_name cannot have embedded null characters.");
+  }
+
 }
 
 void DescriptorBuilder::ValidateEnumOptions(const EnumDescriptor* enm,
