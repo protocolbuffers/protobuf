@@ -312,7 +312,7 @@ jobs:
         run: git submodule update --init --remote --recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@version-test
         with:
           cache-prefix: ${{ matrix.name }}
           vsversion: ${{ matrix.vsversion }}
