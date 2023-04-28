@@ -30,4 +30,4 @@
 
 # Copyright 2007 Google Inc. All Rights Reserved.
 
-__version__ = '4.23.0rc1'
+__version__ = '4.23.0rc2'
