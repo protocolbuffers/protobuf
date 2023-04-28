@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2021, Google LLC
+# Copyright (c) 2023, Google LLC
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,17 +23,46 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+"""A wrapper around proto_common.compile() that fixes some surprising behaviors.
 
-licenses(["notice"])
+More info in: https://github.com/bazelbuild/bazel/issues/18263
+"""
 
-bzl_library(
-    name = "upb_cc_proto_library_bzl",
-    srcs = ["upb_cc_proto_library.bzl"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//bazel:proto_common_wrapper_bzl",
-        "//bazel:upb_proto_library_bzl",
-        "@bazel_tools//tools/cpp:toolchain_utils.bzl",
-    ],
-)
+load("@rules_proto//proto:defs.bzl", "proto_common")
+
+def output_dir(ctx, proto_info):
+    """Returns the output directory where generated proto files will be placed.
+
+    Args:
+      ctx: Rule context.
+      proto_info: ProtoInfo provider.
+
+    Returns:
+      A string specifying the output directory
+    """
+    proto_root = proto_info.proto_source_root
+    if proto_root.startswith(ctx.bin_dir.path):
+        path = proto_root
+    else:
+        path = ctx.bin_dir.path + "/" + proto_root
+
+    if proto_root == ".":
+        path = ctx.bin_dir.path
+    return path
+
+def proto_common_compile(ctx, proto_info, proto_lang_toolchain_info, generated_files):
+    """A wrapper around proto_common.compile that automatically calculates the output dir.
+
+    Args:
+      ctx: Rule context.
+      proto_info: ProtoInfo provider.
+      proto_lang_toolchain_info: ProtoLangToolchainInfo provider.
+      generated_files: The files we expect to be generated from this protoc invocation.
+    """
+    proto_common.compile(
+        actions = ctx.actions,
+        proto_info = proto_info,
+        proto_lang_toolchain_info = proto_lang_toolchain_info,
+        generated_files = generated_files,
+        plugin_output = output_dir(ctx, proto_info),
+    )

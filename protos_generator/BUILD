@@ -81,3 +81,13 @@ cc_library(
         "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
     ],
 )
+
+proto_lang_toolchain(
+    name = "protoc-gen-upbprotos_toolchain",
+    command_line = "--upbprotos_out=%s",
+    plugin = ":protoc-gen-upb-protos",
+    plugin_format_flag = "--plugin=protoc-gen-upbprotos=%s",
+    progress_message = "Generating upb C++ protos",
+    runtime = "//protos:generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    visibility = ["//visibility:public"],
+)
