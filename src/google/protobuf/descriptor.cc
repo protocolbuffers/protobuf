@@ -825,6 +825,7 @@ const char* const FieldDescriptor::kLabelToName[MAX_LABEL + 1] = {
     "repeated",  // LABEL_REPEATED
 };
 
+PROTOBUF_IGNORE_DEPRECATION_START
 const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
   switch (syntax) {
     case SYNTAX_PROTO2:
@@ -837,6 +838,7 @@ const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
   ABSL_LOG(FATAL) << "can't reach here.";
   return nullptr;
 }
+PROTOBUF_IGNORE_DEPRECATION_STOP
 
 static const char* const kNonLinkedWeakMessageReplacementName = "google.protobuf.Empty";
 
@@ -2612,10 +2614,12 @@ void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
   }
 
   // TODO(liujisi): Also populate when syntax="proto2".
-  if (syntax() == SYNTAX_PROTO3
+  FileDescriptorLegacy::Syntax syntax = FileDescriptorLegacy(this).syntax();
+  if (syntax == FileDescriptorLegacy::Syntax::SYNTAX_PROTO3
   ) {
-    proto->set_syntax(SyntaxName(syntax()));
+    proto->set_syntax(FileDescriptorLegacy::SyntaxName(syntax));
   }
+
   if (&options() != &FileOptions::default_instance()) {
     *proto->mutable_options() = options();
   }
@@ -3010,8 +3014,9 @@ std::string FileDescriptor::DebugStringWithOptions(
     SourceLocationCommentPrinter syntax_comment(this, path, "",
                                                 debug_string_options);
     syntax_comment.AddPreComment(&contents);
-    absl::SubstituteAndAppend(&contents, "syntax = \"$0\";\n\n",
-                              SyntaxName(syntax()));
+    absl::SubstituteAndAppend(
+        &contents, "syntax = \"$0\";\n\n",
+        FileDescriptorLegacy::SyntaxName(FileDescriptorLegacy(this).syntax()));
     syntax_comment.AddPostComment(&contents);
   }
 
@@ -3282,7 +3287,7 @@ void FieldDescriptor::DebugString(
 
   // Label is omitted for maps, oneof, and plain proto3 fields.
   if (is_map() || real_containing_oneof() ||
-      (is_optional() && !has_optional_keyword())) {
+      (is_optional() && !FieldDescriptorLegacy(this).has_optional_keyword())) {
     label.clear();
   }
 
@@ -3573,7 +3578,8 @@ bool FileDescriptor::GetSourceLocation(SourceLocation* out_location) const {
 
 bool FieldDescriptor::is_packed() const {
   if (!is_packable()) return false;
-  if (file_->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (FileDescriptorLegacy(file_).syntax() ==
+      FileDescriptorLegacy::Syntax::SYNTAX_PROTO2) {
     return (options_ != nullptr) && options_->packed();
   } else {
     return options_ == nullptr || !options_->has_packed() || options_->packed();
@@ -3582,7 +3588,8 @@ bool FieldDescriptor::is_packed() const {
 
 bool FieldDescriptor::requires_utf8_validation() const {
   return type() == TYPE_STRING &&
-         file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+         FileDescriptorLegacy(file_).syntax() ==
+             FileDescriptorLegacy::Syntax::SYNTAX_PROTO3;
 }
 
 bool Descriptor::GetSourceLocation(SourceLocation* out_location) const {
@@ -3989,7 +3996,7 @@ class DescriptorBuilder {
                                     const Descriptor* result);
   void CheckFieldJsonNameUniqueness(const std::string& message_name,
                                     const DescriptorProto& message,
-                                    FileDescriptor::Syntax syntax,
+                                    FileDescriptorLegacy::Syntax syntax,
                                     bool use_custom_names);
   void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
                                 const EnumDescriptor* result);
@@ -4711,7 +4718,7 @@ FileDescriptor* DescriptorPool::NewPlaceholderFileWithMutexHeld(
   placeholder->tables_ = &FileDescriptorTables::GetEmptyInstance();
   placeholder->source_code_info_ = &SourceCodeInfo::default_instance();
   placeholder->is_placeholder_ = true;
-  placeholder->syntax_ = FileDescriptor::SYNTAX_UNKNOWN;
+  placeholder->syntax_ = FileDescriptorLegacy::SYNTAX_UNKNOWN;
   placeholder->finished_building_ = true;
   // All other fields are zero or nullptr.
 
@@ -5226,11 +5233,11 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   // TODO(liujisi): Report error when the syntax is empty after all the protos
   // have added the syntax statement.
   if (proto.syntax().empty() || proto.syntax() == "proto2") {
-    file_->syntax_ = FileDescriptor::SYNTAX_PROTO2;
+    file_->syntax_ = FileDescriptorLegacy::SYNTAX_PROTO2;
   } else if (proto.syntax() == "proto3") {
-    file_->syntax_ = FileDescriptor::SYNTAX_PROTO3;
+    file_->syntax_ = FileDescriptorLegacy::SYNTAX_PROTO3;
   } else {
-    file_->syntax_ = FileDescriptor::SYNTAX_UNKNOWN;
+    file_->syntax_ = FileDescriptorLegacy::SYNTAX_UNKNOWN;
     AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER, [&] {
       return absl::StrCat("Unrecognized syntax: ", proto.syntax());
     });
@@ -5681,11 +5688,12 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
 
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const DescriptorProto& proto, const Descriptor* result) {
-  FileDescriptor::Syntax syntax = result->file()->syntax();
+  FileDescriptorLegacy::Syntax syntax =
+      FileDescriptorLegacy(result->file()).syntax();
   std::string message_name = result->full_name();
   if (pool_->deprecated_legacy_json_field_conflicts_ ||
       IsLegacyJsonFieldConflictEnabled(result->options())) {
-    if (syntax == FileDescriptor::SYNTAX_PROTO3) {
+    if (syntax == FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
       // Only check default JSON names for conflicts in proto3.  This is legacy
       // behavior that will be removed in a later version.
       CheckFieldJsonNameUniqueness(message_name, proto, syntax, false);
@@ -5725,7 +5733,7 @@ bool JsonNameLooksLikeExtension(std::string name) {
 
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const std::string& message_name, const DescriptorProto& message,
-    FileDescriptor::Syntax syntax, bool use_custom_names) {
+    FileDescriptorLegacy::Syntax syntax, bool use_custom_names) {
   absl::flat_hash_map<std::string, JsonNameDetails> name_to_field;
   for (const FieldDescriptorProto& field : message.field()) {
     JsonNameDetails details = GetJsonNameDetails(&field, use_custom_names);
@@ -5769,7 +5777,7 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     };
 
     bool involves_default = !details.is_custom || !match.is_custom;
-    if (syntax == FileDescriptor::SYNTAX_PROTO2 && involves_default) {
+    if (syntax == FileDescriptorLegacy::SYNTAX_PROTO2 && involves_default) {
       // TODO(b/261750676) Upgrade this to an error once downstream protos have
       // been fixed.
       AddWarning(message_name, field, DescriptorPool::ErrorCollector::NAME,
@@ -5808,7 +5816,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->proto3_optional_ = proto.proto3_optional();
 
   if (proto.proto3_optional() &&
-      file_->syntax() != FileDescriptor::SYNTAX_PROTO3) {
+      FileDescriptorLegacy(file_).syntax() !=
+          FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
              [&] {
                return absl::StrCat(
@@ -6221,7 +6230,8 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
       // compatibility we issue only a warning for proto2.
       if ((pool_->deprecated_legacy_json_field_conflicts_ ||
            IsLegacyJsonFieldConflictEnabled(result->options())) &&
-          result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+          FileDescriptorLegacy(result->file()).syntax() ==
+              FileDescriptorLegacy::Syntax::SYNTAX_PROTO2) {
         AddWarning(value->full_name(), proto.value(i),
                    DescriptorPool::ErrorCollector::NAME, make_error);
         continue;
@@ -6585,7 +6595,7 @@ void DescriptorBuilder::CrossLinkMessage(Descriptor* message,
     const FieldDescriptor* field = message->field(i);
     if (field->proto3_optional_) {
       if (!field->containing_oneof() ||
-          !field->containing_oneof()->is_synthetic()) {
+          !OneofDescriptorLegacy(field->containing_oneof()).is_synthetic()) {
         AddError(message->full_name(), proto.field(i),
                  DescriptorPool::ErrorCollector::OTHER,
                  "Fields with proto3_optional set must be "
@@ -6598,7 +6608,7 @@ void DescriptorBuilder::CrossLinkMessage(Descriptor* message,
   int first_synthetic = -1;
   for (int i = 0; i < message->oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
-    if (oneof->is_synthetic()) {
+    if (OneofDescriptorLegacy(oneof).is_synthetic()) {
       if (first_synthetic == -1) {
         first_synthetic = i;
       }
@@ -7140,7 +7150,8 @@ void DescriptorBuilder::ValidateFileOptions(FileDescriptor* file,
       }
     }
   }
-  if (file->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+  if (FileDescriptorLegacy(file).syntax() ==
+      FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
     ValidateProto3(file, proto);
   }
 }
@@ -7203,8 +7214,10 @@ void DescriptorBuilder::ValidateProto3Field(FieldDescriptor* field,
   }
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM &&
       field->enum_type() &&
-      field->enum_type()->file()->syntax() != FileDescriptor::SYNTAX_PROTO3 &&
-      field->enum_type()->file()->syntax() != FileDescriptor::SYNTAX_UNKNOWN) {
+      FileDescriptorLegacy(field->enum_type()->file()).syntax() !=
+          FileDescriptorLegacy::Syntax::SYNTAX_PROTO3 &&
+      FileDescriptorLegacy(field->enum_type()->file()).syntax() !=
+          FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN) {
     // Proto3 messages can only use Proto3 enum types; otherwise we can't
     // guarantee that the default value is zero.
     AddError(
