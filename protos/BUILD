@@ -68,7 +68,6 @@ cc_library(
 cc_library(
     name = "generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "protos.h",
         "protos_internal.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
@@ -76,10 +75,6 @@ cc_library(
     deps = [
         ":protos",
         ":protos_internal",
-        "//:mini_table_internal",
-        "//:upb",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
     ],
 )
 

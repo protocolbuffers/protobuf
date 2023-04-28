@@ -30,8 +30,8 @@ jobs:
           - { NAME: "macOS", BAZEL: bazel, CC: clang, os: macos-11 }
           - { NAME: "Windows", BAZEL: bazel, os: windows-2019, startup-flags: "--output_user_root=C:/tmp", flags: "--config=cpp17_msvc", targets: "upb/... upbc/... python/... protos/... protos_generator/..." }
           # We support two Bazel versions back per https://opensource.google/documentation/policies/cplusplus-support
+          - { NAME: "Bazel 4.1.0", BAZEL: bazel-4.1.0-linux-x86_64, CC: clang, os: ubuntu-20-large }
           - { NAME: "Bazel 5.3.0", BAZEL: bazel-5.3.0-linux-x86_64, CC: clang, os: ubuntu-20-large }
-          - { NAME: "Bazel 6.1.1", BAZEL: bazel-6.1.1-linux-x86_64, CC: clang, os: ubuntu-20-large }
 
     name: ${{ matrix.NAME }}
 
@@ -52,10 +52,10 @@ jobs:
              wget -O $FILENAME https://github.com/bazelbuild/bazel/releases/download/$VERSION/${{ matrix.BAZEL }}
              chmod a+x $FILENAME
         if: ${{ matrix.BAZEL != 'bazel' }}
-      - name: Check compiler version
+      - name: Check compiler versions
         if: matrix.CC
         run: ${{ matrix.CC }} --version
-      - name: Check Bazel version
+      - name: Check Bazel versions
         run: ${{ matrix.BAZEL }} --version
       - id: bazel-cache
         name: Set up Bazel caching

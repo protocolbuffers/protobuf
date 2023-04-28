@@ -280,12 +280,6 @@ class WorkspaceFileFunctions(object):
   def googletest_deps(self):
     pass
 
-  def rules_proto_dependencies(self):
-    pass
-
-  def rules_proto_toolchains(self):
-    pass
-
 
 class Converter(object):
   def __init__(self):

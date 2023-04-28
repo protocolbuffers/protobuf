@@ -29,9 +29,6 @@ jobs:
           export_environment_variables: true
       - name: Use gcloud CLI
         run: gcloud info
-      - name: Check compiler version
-        if: matrix.CC
-        run: ${{ matrix.CC }} --version
       - name: Configure Docker
         run: gcloud auth configure-docker -q us-docker.pkg.dev
       - name: Pull Docker Image

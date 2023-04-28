@@ -56,14 +56,12 @@ http_archive(
 )
 
 load("@com_google_googletest//:googletest_deps.bzl", "googletest_deps")
+
 googletest_deps()
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
-rules_pkg_dependencies()
 
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
-rules_proto_dependencies()
-rules_proto_toolchains()
+rules_pkg_dependencies()
 
 load("//bazel:system_python.bzl", "system_python")
 system_python(

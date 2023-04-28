@@ -28,9 +28,19 @@
   - upb_proto_reflection_library()
 """
 
-load(":proto_common_wrapper.bzl", "output_dir", "proto_common_compile")
-load("@rules_proto//proto:defs.bzl", "proto_common")
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+load("@bazel_skylib//lib:paths.bzl", "paths")
+
+# begin:google_only
+# load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+# end:google_only
+
+# begin:github_only
+# Compatibility code for Bazel 4.x. Remove this when we drop support for Bazel 4.x.
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+
+def use_cpp_toolchain():
+    return ["@bazel_tools//tools/cpp:toolchain_type"]
+# end:github_only
 
 # Generic support code #########################################################
 
@@ -41,6 +51,61 @@ _is_google3 = False
 # begin:google_only
 # _is_google3 = True
 # end:google_only
+
+def _get_real_short_path(file):
+    # For some reason, files from other archives have short paths that look like:
+    #   ../com_google_protobuf/google/protobuf/descriptor.proto
+    short_path = file.short_path
+    if short_path.startswith("../"):
+        second_slash = short_path.index("/", 3)
+        short_path = short_path[second_slash + 1:]
+
+    # Sometimes it has another few prefixes like:
+    #   _virtual_imports/any_proto/google/protobuf/any.proto
+    #   benchmarks/_virtual_imports/100_msgs_proto/benchmarks/100_msgs.proto
+    # We want just google/protobuf/any.proto.
+    virtual_imports = "_virtual_imports/"
+    if virtual_imports in short_path:
+        short_path = short_path.split(virtual_imports)[1].split("/", 1)[1]
+    return short_path
+
+def _get_real_root(ctx, file):
+    real_short_path = _get_real_short_path(file)
+    root = file.path[:-len(real_short_path) - 1]
+
+    if not _is_google3 and ctx.rule.attr.strip_import_prefix:
+        root = paths.join(root, ctx.rule.attr.strip_import_prefix[1:])
+    return root
+
+def _generate_output_file(ctx, src, extension):
+    package = ctx.label.package
+    if not _is_google3:
+        strip_import_prefix = ctx.rule.attr.strip_import_prefix
+        if strip_import_prefix and strip_import_prefix != "/":
+            if not package.startswith(strip_import_prefix[1:]):
+                fail("%s does not begin with prefix %s" % (package, strip_import_prefix))
+            package = package[len(strip_import_prefix):]
+
+    real_short_path = _get_real_short_path(src)
+    real_short_path = paths.relativize(real_short_path, package)
+    output_filename = paths.replace_extension(real_short_path, extension)
+    ret = ctx.actions.declare_file(output_filename)
+    return ret
+
+def _generate_include_path(src, out, extension):
+    short_path = _get_real_short_path(src)
+    short_path = paths.replace_extension(short_path, extension)
+    if not out.path.endswith(short_path):
+        fail("%s does not end with %s" % (out.path, short_path))
+
+    return out.path[:-len(short_path)]
+
+def _filter_none(elems):
+    out = []
+    for elem in elems:
+        if elem:
+            out.append(elem)
+    return out
 
 def _cc_library_func(ctx, name, hdrs, srcs, copts, includes, dep_ccinfos):
     """Like cc_library(), but callable from rules.
@@ -140,12 +205,57 @@ _WrappedDefsGeneratedSrcsInfo = provider(
     fields = ["srcs"],
 )
 
-def _filter_none(elems):
-    out = []
-    for elem in elems:
-        if elem:
-            out.append(elem)
-    return out
+def _compile_upb_protos(ctx, generator, proto_info, proto_sources):
+    if len(proto_sources) == 0:
+        return GeneratedSrcsInfo(srcs = [], hdrs = [], thunks = [], includes = [])
+
+    ext = "." + generator
+    tool = getattr(ctx.executable, "_gen_" + generator)
+    srcs = [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
+    hdrs = [_generate_output_file(ctx, name, ext + ".h") for name in proto_sources]
+    thunks = []
+    if generator == "upb":
+        thunks = [_generate_output_file(ctx, name, ext + ".thunks.c") for name in proto_sources]
+    transitive_sets = proto_info.transitive_descriptor_sets.to_list()
+
+    args = ctx.actions.args()
+    args.use_param_file(param_file_arg = "@%s")
+    args.set_param_file_format("multiline")
+
+    args.add("--" + generator + "_out=" + _get_real_root(ctx, srcs[0]))
+    args.add("--plugin=protoc-gen-" + generator + "=" + tool.path)
+    args.add("--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]))
+    args.add_all(proto_sources, map_each = _get_real_short_path)
+
+    ctx.actions.run(
+        inputs = depset(
+            direct = [proto_info.direct_descriptor_set],
+            transitive = [proto_info.transitive_descriptor_sets],
+        ),
+        tools = [tool],
+        outputs = srcs + hdrs,
+        executable = ctx.executable._protoc,
+        arguments = [args],
+        progress_message = "Generating upb protos for :" + ctx.label.name,
+        mnemonic = "GenUpbProtos",
+    )
+    if generator == "upb":
+        ctx.actions.run_shell(
+            inputs = hdrs,
+            outputs = thunks,
+            command = " && ".join([
+                "sed 's/UPB_INLINE //' {} > {}".format(hdr.path, thunk.path)
+                for (hdr, thunk) in zip(hdrs, thunks)
+            ]),
+            progress_message = "Generating thunks for upb protos API for: " + ctx.label.name,
+            mnemonic = "GenUpbProtosThunks",
+        )
+    return GeneratedSrcsInfo(
+        srcs = srcs,
+        hdrs = hdrs,
+        thunks = thunks,
+        includes = [_generate_include_path(proto_sources[0], hdrs[0], ext + ".h")],
+    )
 
 def _upb_proto_rule_impl(ctx):
     if len(ctx.attr.deps) != 1:
@@ -180,64 +290,10 @@ def _upb_proto_rule_impl(ctx):
         cc_info,
     ]
 
-def _get_lang_toolchain(ctx, generator):
-    lang_toolchain_name = "_" + generator + "_toolchain"
-    return getattr(ctx.attr, lang_toolchain_name)[proto_common.ProtoLangToolchainInfo]
-
-def _compile_upb_protos(ctx, generator, proto_info):
-    proto_sources = proto_info.direct_sources
-    if len(proto_sources) == 0:
-        return [], []
-
-    srcs = proto_common.declare_generated_files(
-        ctx.actions,
-        extension = "." + generator + ".c",
-        proto_info = proto_info,
-    )
-    hdrs = proto_common.declare_generated_files(
-        ctx.actions,
-        extension = "." + generator + ".h",
-        proto_info = proto_info,
-    )
-
-    proto_common_compile(
-        ctx = ctx,
-        proto_info = proto_info,
-        proto_lang_toolchain_info = _get_lang_toolchain(ctx, generator),
-        generated_files = srcs + hdrs,
-    )
-
-    if generator == "upb":
-        thunks = proto_common.declare_generated_files(
-            ctx.actions,
-            extension = "." + generator + ".thunks.c",
-            proto_info = proto_info,
-        )
-        ctx.actions.run_shell(
-            inputs = hdrs,
-            outputs = thunks,
-            command = " && ".join([
-                "sed 's/UPB_INLINE //' {} > {}".format(hdr.path, thunk.path)
-                for (hdr, thunk) in zip(hdrs, thunks)
-            ]),
-            progress_message = "Generating thunks for upb protos API for: " + ctx.label.name,
-            mnemonic = "GenUpbProtosThunks",
-        )
-    else:
-        thunks = []
-
-    return srcs, hdrs, thunks
-
 def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
     proto_info = target[ProtoInfo]
-    srcs, hdrs, thunks = _compile_upb_protos(ctx, generator, proto_info)
-    files = GeneratedSrcsInfo(
-        srcs = srcs,
-        hdrs = hdrs,
-        thunks = thunks,
-    )
-    runtime = _get_lang_toolchain(ctx, generator).runtime
-    deps = ctx.rule.attr.deps + [runtime]
+    files = _compile_upb_protos(ctx, generator, proto_info, proto_info.direct_sources)
+    deps = ctx.rule.attr.deps + getattr(ctx.attr, "_" + generator)
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
     dep_ccinfos += [dep[_UpbDefsWrappedCcInfo].cc_info for dep in deps if _UpbDefsWrappedCcInfo in dep]
@@ -250,7 +306,7 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
         name = ctx.rule.attr.name + "." + generator,
         hdrs = files.hdrs,
         srcs = files.srcs,
-        includes = [output_dir(ctx, proto_info)],
+        includes = files.includes,
         copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
         dep_ccinfos = dep_ccinfos,
     )
@@ -261,7 +317,7 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
             name = ctx.rule.attr.name + "." + generator + ".thunks",
             hdrs = [],
             srcs = files.thunks,
-            includes = [output_dir(ctx, proto_info)],
+            includes = files.includes,
             copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
             dep_ccinfos = dep_ccinfos + [cc_info],
         )
@@ -291,10 +347,6 @@ def _maybe_add(d):
             cfg = "exec",
             default = "@bazel_tools//tools/cpp:grep-includes",
         )
-    else:
-        d["_cc_toolchain"] = attr.label(
-            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
-        )
     return d
 
 # upb_proto_library() ##########################################################
@@ -304,10 +356,23 @@ upb_proto_library_aspect = aspect(
         "_copts": attr.label(
             default = "//:upb_proto_library_copts__for_generated_code_only_do_not_use",
         ),
-        "_upb_toolchain": attr.label(
-            default = Label("//upbc:protoc-gen-upb_toolchain"),
-            cfg = getattr(proto_common, "proto_lang_toolchain_cfg", "target"),
+        "_gen_upb": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = "//upbc:protoc-gen-upb_stage1",
         ),
+        "_protoc": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = "@com_google_protobuf//:protoc",
+        ),
+        "_cc_toolchain": attr.label(
+            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
+        ),
+        "_upb": attr.label_list(default = [
+            "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        ]),
+        "_fasttable_enabled": attr.label(default = "//:fasttable_enabled"),
     }),
     implementation = upb_proto_library_aspect_impl,
     provides = [
@@ -321,6 +386,7 @@ upb_proto_library_aspect = aspect(
 )
 
 upb_proto_library = rule(
+    output_to_genfiles = True,
     implementation = _upb_proto_rule_impl,
     attrs = {
         "deps": attr.label_list(
@@ -338,9 +404,23 @@ _upb_proto_reflection_library_aspect = aspect(
         "_copts": attr.label(
             default = "//:upb_proto_library_copts__for_generated_code_only_do_not_use",
         ),
-        "_upbdefs_toolchain": attr.label(
-            default = Label("//upbc:protoc-gen-upbdefs_toolchain"),
-            cfg = getattr(proto_common, "proto_lang_toolchain_cfg", "target"),
+        "_gen_upbdefs": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = "//upbc:protoc-gen-upbdefs",
+        ),
+        "_protoc": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = "@com_google_protobuf//:protoc",
+        ),
+        "_cc_toolchain": attr.label(
+            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
+        ),
+        "_upbdefs": attr.label_list(
+            default = [
+                "//:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            ],
         ),
     }),
     implementation = _upb_proto_reflection_library_aspect_impl,
@@ -359,6 +439,7 @@ _upb_proto_reflection_library_aspect = aspect(
 )
 
 upb_proto_reflection_library = rule(
+    output_to_genfiles = True,
     implementation = _upb_proto_rule_impl,
     attrs = {
         "deps": attr.label_list(

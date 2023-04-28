@@ -47,21 +47,12 @@ bzl_library(
 )
 
 bzl_library(
-    name = "proto_common_wrapper_bzl",
-    srcs = ["proto_common_wrapper.bzl"],
-    visibility = ["//protos/bazel:__pkg__"],
-    deps = [
-        "@rules_proto//proto:defs",
-    ],
-)
-
-bzl_library(
     name = "upb_proto_library_bzl",
     srcs = ["upb_proto_library.bzl"],
     visibility = ["//visibility:public"],
     deps = [
-        ":proto_common_wrapper_bzl",
-        "@rules_proto//proto:defs",
+        "@bazel_skylib//lib:paths",
         "@bazel_tools//tools/cpp:toolchain_utils.bzl",
+        "@rules_proto//proto:defs",
     ],
 )
