@@ -2044,12 +2044,10 @@ class FileDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::FileOptions&
-FileDescriptorProto::_Internal::options(const FileDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::FileOptions& FileDescriptorProto::_Internal::options(const FileDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
-const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo&
-FileDescriptorProto::_Internal::source_code_info(const FileDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo& FileDescriptorProto::_Internal::source_code_info(const FileDescriptorProto* msg) {
   return *msg->_impl_.source_code_info_;
 }
 FileDescriptorProto::FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -2791,8 +2789,7 @@ class DescriptorProto_ExtensionRange::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions&
-DescriptorProto_ExtensionRange::_Internal::options(const DescriptorProto_ExtensionRange* msg) {
+const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions& DescriptorProto_ExtensionRange::_Internal::options(const DescriptorProto_ExtensionRange* msg) {
   return *msg->_impl_.options_;
 }
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -3315,8 +3312,7 @@ class DescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::MessageOptions&
-DescriptorProto::_Internal::options(const DescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::MessageOptions& DescriptorProto::_Internal::options(const DescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 DescriptorProto::DescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -4622,8 +4618,7 @@ class FieldDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::FieldOptions&
-FieldDescriptorProto::_Internal::options(const FieldDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::FieldOptions& FieldDescriptorProto::_Internal::options(const FieldDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 FieldDescriptorProto::FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -5278,8 +5273,7 @@ class OneofDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::OneofOptions&
-OneofDescriptorProto::_Internal::options(const OneofDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::OneofOptions& OneofDescriptorProto::_Internal::options(const OneofDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 OneofDescriptorProto::OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -5783,8 +5777,7 @@ class EnumDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::EnumOptions&
-EnumDescriptorProto::_Internal::options(const EnumDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::EnumOptions& EnumDescriptorProto::_Internal::options(const EnumDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 EnumDescriptorProto::EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -6169,8 +6162,7 @@ class EnumValueDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::EnumValueOptions&
-EnumValueDescriptorProto::_Internal::options(const EnumValueDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::EnumValueOptions& EnumValueDescriptorProto::_Internal::options(const EnumValueDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 EnumValueDescriptorProto::EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -6478,8 +6470,7 @@ class ServiceDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::ServiceOptions&
-ServiceDescriptorProto::_Internal::options(const ServiceDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::ServiceOptions& ServiceDescriptorProto::_Internal::options(const ServiceDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 ServiceDescriptorProto::ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -6798,8 +6789,7 @@ class MethodDescriptorProto::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::MethodOptions&
-MethodDescriptorProto::_Internal::options(const MethodDescriptorProto* msg) {
+const ::PROTOBUF_NAMESPACE_ID::MethodOptions& MethodDescriptorProto::_Internal::options(const MethodDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
 MethodDescriptorProto::MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -10169,8 +10159,7 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
-
-  swap(_impl_.deprecated_, other->_impl_.deprecated_);
+        swap(_impl_.deprecated_, other->_impl_.deprecated_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumValueOptions::GetMetadata() const {
@@ -10422,8 +10411,7 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
-
-  swap(_impl_.deprecated_, other->_impl_.deprecated_);
+        swap(_impl_.deprecated_, other->_impl_.deprecated_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ServiceOptions::GetMetadata() const {
@@ -11004,8 +10992,7 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* ot
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_part_, lhs_arena,
                                        &other->_impl_.name_part_, rhs_arena);
-
-  swap(_impl_.is_extension_, other->_impl_.is_extension_);
+        swap(_impl_.is_extension_, other->_impl_.is_extension_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UninterpretedOption_NamePart::GetMetadata() const {
