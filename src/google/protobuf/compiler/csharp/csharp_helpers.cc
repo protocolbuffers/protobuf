@@ -56,6 +56,7 @@
 #include "google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h"
 #include "google/protobuf/compiler/csharp/csharp_wrapper_field.h"
 #include "google/protobuf/compiler/csharp/names.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
@@ -380,8 +381,7 @@ std::string StringToBase64(absl::string_view input) {
 
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor) {
   std::string fdp_bytes;
-  FileDescriptorProto fdp;
-  descriptor->CopyTo(&fdp);
+  FileDescriptorProto fdp = StripSourceRetentionOptions(*descriptor);
   fdp.SerializeToString(&fdp_bytes);
   return StringToBase64(fdp_bytes);
 }
