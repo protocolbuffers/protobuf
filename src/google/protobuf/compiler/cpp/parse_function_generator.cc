@@ -406,8 +406,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
   // unknown fields and potentially an extension range.
   auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
   format(
-      "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1\n"
-      "const ::_pbi::TcParseTable<$1$, $2$, $3$, $4$, $5$> "
+      "constexpr ::_pbi::TcParseTable<$1$, $2$, $3$, $4$, $5$> "
       "$classname$::_table_ = "
       "{\n",
       tc_table_info_->table_size_log2, ordered_fields_.size(),
