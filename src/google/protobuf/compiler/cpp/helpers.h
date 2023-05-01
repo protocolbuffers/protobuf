@@ -119,10 +119,10 @@ std::string Namespace(const FileDescriptor* d, const Options& options);
 std::string Namespace(const Descriptor* d, const Options& options);
 std::string Namespace(const FieldDescriptor* d, const Options& options);
 std::string Namespace(const EnumDescriptor* d, const Options& options);
-std::string Namespace(const FileDescriptor* d);
-std::string Namespace(const Descriptor* d);
-std::string Namespace(const FieldDescriptor* d);
-std::string Namespace(const EnumDescriptor* d);
+PROTOC_EXPORT std::string Namespace(const FileDescriptor* d);
+PROTOC_EXPORT std::string Namespace(const Descriptor* d);
+PROTOC_EXPORT std::string Namespace(const FieldDescriptor* d);
+PROTOC_EXPORT std::string Namespace(const EnumDescriptor* d);
 
 class MessageSCCAnalyzer;
 
@@ -136,14 +136,14 @@ bool CanClearByZeroing(const FieldDescriptor* field);
 bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
                     MessageSCCAnalyzer* scc_analyzer);
 
-std::string ClassName(const Descriptor* descriptor);
-std::string ClassName(const EnumDescriptor* enum_descriptor);
+PROTOC_EXPORT std::string ClassName(const Descriptor* descriptor);
+PROTOC_EXPORT std::string ClassName(const EnumDescriptor* enum_descriptor);
 
 std::string QualifiedClassName(const Descriptor* d, const Options& options);
 std::string QualifiedClassName(const EnumDescriptor* d, const Options& options);
 
-std::string QualifiedClassName(const Descriptor* d);
-std::string QualifiedClassName(const EnumDescriptor* d);
+PROTOC_EXPORT std::string QualifiedClassName(const Descriptor* d);
+PROTOC_EXPORT std::string QualifiedClassName(const EnumDescriptor* d);
 
 // DEPRECATED just use ClassName or QualifiedClassName, a boolean is very
 // unreadable at the callsite.
@@ -215,7 +215,7 @@ std::string ResolveKeyword(absl::string_view name);
 // The name is coerced to lower-case to emulate proto1 behavior.  People
 // should be using lowercase-with-underscores style for proto field names
 // anyway, so normally this just returns field->name().
-std::string FieldName(const FieldDescriptor* field);
+PROTOC_EXPORT std::string FieldName(const FieldDescriptor* field);
 
 // Returns the (unqualified) private member name for this field in C++ code.
 std::string FieldMemberName(const FieldDescriptor* field, bool split);
