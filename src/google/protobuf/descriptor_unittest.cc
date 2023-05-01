@@ -5892,6 +5892,24 @@ TEST_F(ValidationErrorTest, JsonNameOptionOnExtensions) {
       "extension fields.\n");
 }
 
+TEST_F(ValidationErrorTest, JsonNameEmbeddedNull) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"foo\" "
+      "message_type {"
+      "  name: \"Foo\""
+      "  field {"
+      "    name: \"value\""
+      "    number: 10"
+      "    label: LABEL_OPTIONAL"
+      "    type: TYPE_INT32"
+      "    json_name: \"embedded\\000null\""
+      "  }"
+      "}",
+      "foo.proto: foo.Foo.value: OPTION_NAME: json_name cannot have embedded "
+      "null characters.\n");
+}
+
 TEST_F(ValidationErrorTest, DuplicateExtensionFieldNumber) {
   BuildDescriptorMessagesInTestPool();
 
