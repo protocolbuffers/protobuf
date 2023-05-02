@@ -462,6 +462,21 @@ namespace Google.Protobuf.Reflection
             }
         }
 
+        [Test]
+        public void OptionRetention()
+        {
+          var proto = UnittestRetentionReflection.Descriptor.Proto;
+          Assert.AreEqual(1, proto.Options.GetExtension(
+              UnittestRetentionExtensions.PlainOption));
+          Assert.AreEqual(2, proto.Options.GetExtension(
+              UnittestRetentionExtensions.RuntimeRetentionOption));
+          // This option has a value of 3 in the .proto file, but we expect it
+          // to be zeroed out in the generated descriptor since it has source
+          // retention.
+          Assert.AreEqual(0, proto.Options.GetExtension(
+              UnittestRetentionExtensions.SourceRetentionOption));
+        }
+
         private static void TestDescriptorToProto(Func<IMessage> toProtoFunction, IMessage expectedProto)
         {
             var clone1 = toProtoFunction();
