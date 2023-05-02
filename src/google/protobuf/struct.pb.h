@@ -476,10 +476,6 @@ class PROTOBUF_EXPORT Value final :
   bool has_string_value() const;
   void clear_string_value() ;
   const std::string& string_value() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
   std::string* mutable_string_value();
@@ -514,14 +510,15 @@ class PROTOBUF_EXPORT Value final :
   const ::PROTOBUF_NAMESPACE_ID::Struct& struct_value() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::Struct* release_struct_value();
   ::PROTOBUF_NAMESPACE_ID::Struct* mutable_struct_value();
-  void set_allocated_struct_value(::PROTOBUF_NAMESPACE_ID::Struct* struct_value);
+  void set_allocated_struct_value(::PROTOBUF_NAMESPACE_ID::Struct* value);
+  void unsafe_arena_set_allocated_struct_value(::PROTOBUF_NAMESPACE_ID::Struct* value);
+  ::PROTOBUF_NAMESPACE_ID::Struct* unsafe_arena_release_struct_value();
+
   private:
   const ::PROTOBUF_NAMESPACE_ID::Struct& _internal_struct_value() const;
   ::PROTOBUF_NAMESPACE_ID::Struct* _internal_mutable_struct_value();
+
   public:
-  void unsafe_arena_set_allocated_struct_value(
-      ::PROTOBUF_NAMESPACE_ID::Struct* struct_value);
-  ::PROTOBUF_NAMESPACE_ID::Struct* unsafe_arena_release_struct_value();
   // .google.protobuf.ListValue list_value = 6;
   bool has_list_value() const;
   private:
@@ -532,14 +529,15 @@ class PROTOBUF_EXPORT Value final :
   const ::PROTOBUF_NAMESPACE_ID::ListValue& list_value() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::ListValue* release_list_value();
   ::PROTOBUF_NAMESPACE_ID::ListValue* mutable_list_value();
-  void set_allocated_list_value(::PROTOBUF_NAMESPACE_ID::ListValue* list_value);
+  void set_allocated_list_value(::PROTOBUF_NAMESPACE_ID::ListValue* value);
+  void unsafe_arena_set_allocated_list_value(::PROTOBUF_NAMESPACE_ID::ListValue* value);
+  ::PROTOBUF_NAMESPACE_ID::ListValue* unsafe_arena_release_list_value();
+
   private:
   const ::PROTOBUF_NAMESPACE_ID::ListValue& _internal_list_value() const;
   ::PROTOBUF_NAMESPACE_ID::ListValue* _internal_mutable_list_value();
+
   public:
-  void unsafe_arena_set_allocated_list_value(
-      ::PROTOBUF_NAMESPACE_ID::ListValue* list_value);
-  ::PROTOBUF_NAMESPACE_ID::ListValue* unsafe_arena_release_list_value();
   void clear_kind();
   KindCase kind_case() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.Value)
@@ -907,8 +905,6 @@ inline void Value::_internal_set_string_value(const std::string& value) {
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
   }
-
-
   _impl_.kind_.string_value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Value::_internal_mutable_string_value() {

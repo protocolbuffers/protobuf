@@ -460,8 +460,7 @@ class Type::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::SourceContext&
-Type::_Internal::source_context(const Type* msg) {
+const ::PROTOBUF_NAMESPACE_ID::SourceContext& Type::_Internal::source_context(const Type* msg) {
   return *msg->_impl_.source_context_;
 }
 void Type::clear_source_context() {
@@ -1440,8 +1439,7 @@ class Enum::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::SourceContext&
-Enum::_Internal::source_context(const Enum* msg) {
+const ::PROTOBUF_NAMESPACE_ID::SourceContext& Enum::_Internal::source_context(const Enum* msg) {
   return *msg->_impl_.source_context_;
 }
 void Enum::clear_source_context() {
@@ -2094,8 +2092,7 @@ void EnumValue::InternalSwap(EnumValue* other) {
   _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
-
-  swap(_impl_.number_, other->_impl_.number_);
+        swap(_impl_.number_, other->_impl_.number_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumValue::GetMetadata() const {
@@ -2116,8 +2113,7 @@ class Option::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::Any&
-Option::_Internal::value(const Option* msg) {
+const ::PROTOBUF_NAMESPACE_ID::Any& Option::_Internal::value(const Option* msg) {
   return *msg->_impl_.value_;
 }
 void Option::clear_value() {

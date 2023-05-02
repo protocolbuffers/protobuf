@@ -245,8 +245,7 @@ class Api::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::SourceContext&
-Api::_Internal::source_context(const Api* msg) {
+const ::PROTOBUF_NAMESPACE_ID::SourceContext& Api::_Internal::source_context(const Api* msg) {
   return *msg->_impl_.source_context_;
 }
 void Api::clear_options() {

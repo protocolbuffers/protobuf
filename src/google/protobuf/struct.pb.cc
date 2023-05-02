@@ -434,12 +434,10 @@ class Value::_Internal {
   static const ::PROTOBUF_NAMESPACE_ID::ListValue& list_value(const Value* msg);
 };
 
-const ::PROTOBUF_NAMESPACE_ID::Struct&
-Value::_Internal::struct_value(const Value* msg) {
+const ::PROTOBUF_NAMESPACE_ID::Struct& Value::_Internal::struct_value(const Value* msg) {
   return *msg->_impl_.kind_.struct_value_;
 }
-const ::PROTOBUF_NAMESPACE_ID::ListValue&
-Value::_Internal::list_value(const Value* msg) {
+const ::PROTOBUF_NAMESPACE_ID::ListValue& Value::_Internal::list_value(const Value* msg) {
   return *msg->_impl_.kind_.list_value_;
 }
 void Value::set_allocated_struct_value(::PROTOBUF_NAMESPACE_ID::Struct* struct_value) {

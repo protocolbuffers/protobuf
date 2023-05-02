@@ -1315,10 +1315,6 @@ class PROTOBUF_EXPORT StringValue final :
   // string value = 1;
   void clear_value() ;
   const std::string& value() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
@@ -1479,10 +1475,6 @@ class PROTOBUF_EXPORT BytesValue final :
   // bytes value = 1;
   void clear_value() ;
   const std::string& value() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
@@ -1720,8 +1712,6 @@ inline const std::string& StringValue::_internal_value() const {
 }
 inline void StringValue::_internal_set_value(const std::string& value) {
   ;
-
-
   _impl_.value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* StringValue::_internal_mutable_value() {
@@ -1771,8 +1761,6 @@ inline const std::string& BytesValue::_internal_value() const {
 }
 inline void BytesValue::_internal_set_value(const std::string& value) {
   ;
-
-
   _impl_.value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* BytesValue::_internal_mutable_value() {

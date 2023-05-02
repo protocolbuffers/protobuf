@@ -269,10 +269,6 @@ class PROTOBUF_EXPORT Api final :
   // string name = 1;
   void clear_name() ;
   const std::string& name() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
@@ -289,10 +285,6 @@ class PROTOBUF_EXPORT Api final :
   // string version = 4;
   void clear_version() ;
   const std::string& version() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_version(Arg_&& arg, Args_... args);
   std::string* mutable_version();
@@ -312,14 +304,15 @@ class PROTOBUF_EXPORT Api final :
   const ::PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   ::PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
-  void set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
+  void set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceContext* value);
+  void unsafe_arena_set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceContext* value);
+  ::PROTOBUF_NAMESPACE_ID::SourceContext* unsafe_arena_release_source_context();
+
   private:
   const ::PROTOBUF_NAMESPACE_ID::SourceContext& _internal_source_context() const;
   ::PROTOBUF_NAMESPACE_ID::SourceContext* _internal_mutable_source_context();
+
   public:
-  void unsafe_arena_set_allocated_source_context(
-      ::PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
-  ::PROTOBUF_NAMESPACE_ID::SourceContext* unsafe_arena_release_source_context();
   // .google.protobuf.Syntax syntax = 7;
   void clear_syntax() ;
   ::PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
@@ -508,10 +501,6 @@ class PROTOBUF_EXPORT Method final :
   // string name = 1;
   void clear_name() ;
   const std::string& name() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
@@ -528,10 +517,6 @@ class PROTOBUF_EXPORT Method final :
   // string request_type_url = 2;
   void clear_request_type_url() ;
   const std::string& request_type_url() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_request_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_request_type_url();
@@ -548,10 +533,6 @@ class PROTOBUF_EXPORT Method final :
   // string response_type_url = 4;
   void clear_response_type_url() ;
   const std::string& response_type_url() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_response_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_response_type_url();
@@ -749,10 +730,6 @@ class PROTOBUF_EXPORT Mixin final :
   // string name = 1;
   void clear_name() ;
   const std::string& name() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
@@ -769,10 +746,6 @@ class PROTOBUF_EXPORT Mixin final :
   // string root = 2;
   void clear_root() ;
   const std::string& root() const;
-
-
-
-
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_root(Arg_&& arg, Args_... args);
   std::string* mutable_root();
@@ -843,8 +816,6 @@ inline const std::string& Api::_internal_name() const {
 }
 inline void Api::_internal_set_name(const std::string& value) {
   ;
-
-
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Api::_internal_mutable_name() {
@@ -971,8 +942,6 @@ inline const std::string& Api::_internal_version() const {
 }
 inline void Api::_internal_set_version(const std::string& value) {
   ;
-
-
   _impl_.version_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Api::_internal_mutable_version() {
@@ -1001,20 +970,18 @@ inline bool Api::has_source_context() const {
 }
 inline const ::PROTOBUF_NAMESPACE_ID::SourceContext& Api::_internal_source_context() const {
   const ::PROTOBUF_NAMESPACE_ID::SourceContext* p = _impl_.source_context_;
-  return p != nullptr ? *p : reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::SourceContext&>(
-      ::PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::SourceContext&>(::PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::SourceContext& Api::source_context() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)
   return _internal_source_context();
 }
-inline void Api::unsafe_arena_set_allocated_source_context(
-    ::PROTOBUF_NAMESPACE_ID::SourceContext* source_context) {
+inline void Api::unsafe_arena_set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceContext* value) {
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.source_context_);
   }
-  _impl_.source_context_ = source_context;
-  if (source_context) {
+  _impl_.source_context_ = reinterpret_cast<::PROTOBUF_NAMESPACE_ID::SourceContext*>(value);
+  if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
@@ -1022,22 +989,26 @@ inline void Api::unsafe_arena_set_allocated_source_context(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Api.source_context)
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceContext* Api::release_source_context() {
+
   _impl_._has_bits_[0] &= ~0x00000001u;
-  ::PROTOBUF_NAMESPACE_ID::SourceContext* temp = _impl_.source_context_;
+  ::PROTOBUF_NAMESPACE_ID::SourceContext* released = _impl_.source_context_;
   _impl_.source_context_ = nullptr;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
-  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
-  if (GetArenaForAllocation() == nullptr) { delete old; }
-#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(released);
+  released = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
-    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    released = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
-  return temp;
+  return released;
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceContext* Api::unsafe_arena_release_source_context() {
   // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
+
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::PROTOBUF_NAMESPACE_ID::SourceContext* temp = _impl_.source_context_;
   _impl_.source_context_ = nullptr;
@@ -1047,7 +1018,7 @@ inline ::PROTOBUF_NAMESPACE_ID::SourceContext* Api::_internal_mutable_source_con
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.source_context_ == nullptr) {
     auto* p = CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::SourceContext>(GetArenaForAllocation());
-    _impl_.source_context_ = p;
+    _impl_.source_context_ = reinterpret_cast<::PROTOBUF_NAMESPACE_ID::SourceContext*>(p);
   }
   return _impl_.source_context_;
 }
@@ -1056,24 +1027,24 @@ inline ::PROTOBUF_NAMESPACE_ID::SourceContext* Api::mutable_source_context() {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
   return _msg;
 }
-inline void Api::set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceContext* source_context) {
+inline void Api::set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceContext* value) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
   if (message_arena == nullptr) {
-    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.source_context_);
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.source_context_);
   }
-  if (source_context) {
+
+  if (value != nullptr) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(
-                reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(source_context));
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(value));
     if (message_arena != submessage_arena) {
-      source_context = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, source_context, submessage_arena);
+      value = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.source_context_ = source_context;
+
+  _impl_.source_context_ = reinterpret_cast<::PROTOBUF_NAMESPACE_ID::SourceContext*>(value);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.source_context)
 }
 
@@ -1168,8 +1139,6 @@ inline const std::string& Method::_internal_name() const {
 }
 inline void Method::_internal_set_name(const std::string& value) {
   ;
-
-
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Method::_internal_mutable_name() {
@@ -1215,8 +1184,6 @@ inline const std::string& Method::_internal_request_type_url() const {
 }
 inline void Method::_internal_set_request_type_url(const std::string& value) {
   ;
-
-
   _impl_.request_type_url_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Method::_internal_mutable_request_type_url() {
@@ -1282,8 +1249,6 @@ inline const std::string& Method::_internal_response_type_url() const {
 }
 inline void Method::_internal_set_response_type_url(const std::string& value) {
   ;
-
-
   _impl_.response_type_url_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Method::_internal_mutable_response_type_url() {
@@ -1412,8 +1377,6 @@ inline const std::string& Mixin::_internal_name() const {
 }
 inline void Mixin::_internal_set_name(const std::string& value) {
   ;
-
-
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Mixin::_internal_mutable_name() {
@@ -1459,8 +1422,6 @@ inline const std::string& Mixin::_internal_root() const {
 }
 inline void Mixin::_internal_set_root(const std::string& value) {
   ;
-
-
   _impl_.root_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Mixin::_internal_mutable_root() {
