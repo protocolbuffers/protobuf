@@ -36,20 +36,6 @@ http_archive(
     urls = ["https://github.com/bazelbuild/platforms/archive/da5541f26b7de1dc8e04c075c99df5351742a4a2.zip"],  # 2022-05-27
 )
 
-http_archive(
-    name = "com_google_googletest",
-    sha256 = "730215d76eace9dd49bf74ce044e8daa065d175f1ac891cc1d6bb184ef94e565",
-    strip_prefix = "googletest-f53219cdcb7b084ef57414efea92ee5b71989558",
-    urls = [
-        "https://github.com/google/googletest/archive/f53219cdcb7b084ef57414efea92ee5b71989558.tar.gz" # 2023-03-16
-    ],
-)
-
-load("@com_google_googletest//:googletest_deps.bzl", "googletest_deps")
-
-googletest_deps()
->>>>>>> 99529a220 (Update abseil dependency and reorder dependencies to ensure we use the version specified in protobuf_deps.)
-
 load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
 
 rules_jvm_external_deps()
