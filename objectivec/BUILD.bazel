@@ -45,6 +45,7 @@ genrule(
         for ext in _OBJC_EXTS
     ]),
     exec_tools = ["//:protoc"],
+    tags = ["manual"],
 )
 
 staleness_test(
