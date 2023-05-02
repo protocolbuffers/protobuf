@@ -33,7 +33,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
 PROTOBUF_CONSTEXPR Struct::Struct(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.fields_)*/{}
+    /* decltype(_impl_.fields_) */ {}
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct StructDefaultTypeInternal {
   PROTOBUF_CONSTEXPR StructDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -237,7 +237,7 @@ Struct::Struct(const Struct& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   Struct* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      /*decltype(_impl_.fields_)*/{}
+      /* decltype(_impl_.fields_) */ {}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -248,7 +248,8 @@ Struct::Struct(const Struct& from)
 inline void Struct::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      /*decltype(_impl_.fields_)*/{::_pbi::ArenaInitialized(), arena}
+      /* decltype(_impl_.fields_) */ { ::PROTOBUF_NAMESPACE_ID::internal::ArenaInitialized(), arena }
+
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -331,26 +332,26 @@ failure:
   (void) cached_has_bits;
 
   // map<string, .google.protobuf.Value> fields = 1;
-  if (!this->_internal_fields().empty()) {
-    using MapType = ::_pb::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>;
+  if (!_internal_fields().empty()) {
+    using MapType = ::PROTOBUF_NAMESPACE_ID::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>;
     using WireHelper = Struct_FieldsEntry_DoNotUse::Funcs;
-    const auto& map_field = this->_internal_fields();
-    auto check_utf8 = [](const MapType::value_type& entry) {
-      (void)entry;
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-          entry.first.data(), static_cast<int>(entry.first.length()),
- ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.Struct.fields");
-    };
+    const auto& field = _internal_fields();
 
-    if (stream->IsSerializationDeterministic() && map_field.size() > 1) {
-      for (const auto& entry : ::_pbi::MapSorterPtr<MapType>(map_field)) {
-        target = WireHelper::InternalSerialize(1, entry.first, entry.second, target, stream);
-        check_utf8(entry);
+    if (stream->IsSerializationDeterministic() && field.size() > 1) {
+      for (const auto& entry : ::PROTOBUF_NAMESPACE_ID::internal::MapSorterPtr<MapType>(field)) {
+        target = WireHelper::InternalSerialize(
+            1, entry.first, entry.second, target, stream);
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+            entry.first.data(), static_cast<int>(entry.first.length()),
+ ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.Struct.fields");
       }
     } else {
-      for (const auto& entry : map_field) {
-        target = WireHelper::InternalSerialize(1, entry.first, entry.second, target, stream);
-        check_utf8(entry);
+      for (const auto& entry : field) {
+        target = WireHelper::InternalSerialize(
+            1, entry.first, entry.second, target, stream);
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+            entry.first.data(), static_cast<int>(entry.first.length()),
+ ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.Struct.fields");
       }
     }
   }
@@ -372,12 +373,9 @@ failure:
   (void) cached_has_bits;
 
   // map<string, .google.protobuf.Value> fields = 1;
-  total_size += 1 *
-      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(this->_internal_fields_size());
-  for (::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >::const_iterator
-      it = this->_internal_fields().begin();
-      it != this->_internal_fields().end(); ++it) {
-    total_size += Struct_FieldsEntry_DoNotUse::Funcs::ByteSizeLong(it->first, it->second);
+  total_size += 1 * ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_internal_fields_size());
+  for (const auto& entry : _internal_fields()) {
+    total_size += Struct_FieldsEntry_DoNotUse::Funcs::ByteSizeLong(entry.first, entry.second);
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);

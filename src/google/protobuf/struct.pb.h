@@ -277,16 +277,14 @@ class PROTOBUF_EXPORT Struct final :
 
   public:
   void clear_fields() ;
+  const ::PROTOBUF_NAMESPACE_ID::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>& fields() const;
+  ::PROTOBUF_NAMESPACE_ID::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>* mutable_fields();
+
   private:
-  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >&
-      _internal_fields() const;
-  ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >*
-      _internal_mutable_fields();
+  const ::PROTOBUF_NAMESPACE_ID::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>& _internal_fields() const;
+  ::PROTOBUF_NAMESPACE_ID::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>* _internal_mutable_fields();
+
   public:
-  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >&
-      fields() const;
-  ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >*
-      mutable_fields();
   // @@protoc_insertion_point(class_scope:google.protobuf.Struct)
  private:
   class _Internal;
@@ -295,11 +293,10 @@ class PROTOBUF_EXPORT Struct final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::internal::MapField<
-        Struct_FieldsEntry_DoNotUse,
-        std::string, ::PROTOBUF_NAMESPACE_ID::Value,
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE> fields_;
+    ::PROTOBUF_NAMESPACE_ID::internal::MapField<Struct_FieldsEntry_DoNotUse, std::string, ::PROTOBUF_NAMESPACE_ID::Value,
+                      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+                      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE>
+        fields_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -765,21 +762,17 @@ inline int Struct::fields_size() const {
 inline void Struct::clear_fields() {
   _impl_.fields_.Clear();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >&
-Struct::_internal_fields() const {
+inline const ::PROTOBUF_NAMESPACE_ID::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>& Struct::_internal_fields() const {
   return _impl_.fields_.GetMap();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >&
-Struct::fields() const {
+inline const ::PROTOBUF_NAMESPACE_ID::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>& Struct::fields() const {
   // @@protoc_insertion_point(field_map:google.protobuf.Struct.fields)
   return _internal_fields();
 }
-inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >*
-Struct::_internal_mutable_fields() {
+inline ::PROTOBUF_NAMESPACE_ID::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>* Struct::_internal_mutable_fields() {
   return _impl_.fields_.MutableMap();
 }
-inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >*
-Struct::mutable_fields() {
+inline ::PROTOBUF_NAMESPACE_ID::Map<std::string, ::PROTOBUF_NAMESPACE_ID::Value>* Struct::mutable_fields() {
   // @@protoc_insertion_point(field_mutable_map:google.protobuf.Struct.fields)
   return _internal_mutable_fields();
 }
