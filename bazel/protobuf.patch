@@ -38,33 +38,3 @@
  
    # Search internally.
    path = '.'
-
---- python/internal.bzl
-+++ python/internal.bzl
-@@ -1,5 +1,11 @@
- # Internal helpers for building the Python protobuf runtime.
- 
-+def _remove_cross_repo_path(path):
-+    components = path.split("/")
-+    if components[0] == "..":
-+        return "/".join(components[2:])
-+    return path
-+
- def _internal_copy_files_impl(ctx):
-     strip_prefix = ctx.attr.strip_prefix
-     if strip_prefix[-1] != "/":
-@@ -7,10 +13,11 @@ def _internal_copy_files_impl(ctx):
- 
-     src_dests = []
-     for src in ctx.files.srcs:
--        if src.short_path[:len(strip_prefix)] != strip_prefix:
-+        short_path = _remove_cross_repo_path(src.short_path)
-+        if short_path[:len(strip_prefix)] != strip_prefix:
-             fail("Source does not start with %s: %s" %
--                 (strip_prefix, src.short_path))
--        dest = ctx.actions.declare_file(src.short_path[len(strip_prefix):])
-+                 (strip_prefix, short_path))
-+        dest = ctx.actions.declare_file(short_path[len(strip_prefix):])
-         src_dests.append([src, dest])
- 
-     if ctx.attr.is_windows:
