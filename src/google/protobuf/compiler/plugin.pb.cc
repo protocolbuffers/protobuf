@@ -637,8 +637,7 @@ class CodeGeneratorRequest::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::compiler::Version&
-CodeGeneratorRequest::_Internal::compiler_version(const CodeGeneratorRequest* msg) {
+const ::PROTOBUF_NAMESPACE_ID::compiler::Version& CodeGeneratorRequest::_Internal::compiler_version(const CodeGeneratorRequest* msg) {
   return *msg->_impl_.compiler_version_;
 }
 void CodeGeneratorRequest::clear_proto_file() {
@@ -991,8 +990,7 @@ class CodeGeneratorResponse_File::_Internal {
   }
 };
 
-const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo&
-CodeGeneratorResponse_File::_Internal::generated_code_info(const CodeGeneratorResponse_File* msg) {
+const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& CodeGeneratorResponse_File::_Internal::generated_code_info(const CodeGeneratorResponse_File* msg) {
   return *msg->_impl_.generated_code_info_;
 }
 void CodeGeneratorResponse_File::clear_generated_code_info() {
@@ -1633,8 +1631,7 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
   _internal_mutable_file()->InternalSwap(other->_internal_mutable_file());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_, lhs_arena,
                                        &other->_impl_.error_, rhs_arena);
-
-  swap(_impl_.supported_features_, other->_impl_.supported_features_);
+        swap(_impl_.supported_features_, other->_impl_.supported_features_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata CodeGeneratorResponse::GetMetadata() const {
