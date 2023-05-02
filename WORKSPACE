@@ -7,6 +7,10 @@ local_repository(
     path = "examples",
 )
 
+# Load common dependencies first to ensure we use the correct version
+load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
+protobuf_deps()
+
 # Bazel platform rules.
 http_archive(
     name = "platforms",
@@ -27,10 +31,6 @@ http_archive(
 load("@com_google_googletest//:googletest_deps.bzl", "googletest_deps")
 
 googletest_deps()
-
-# Load common dependencies.
-load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
-protobuf_deps()
 
 load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
 
