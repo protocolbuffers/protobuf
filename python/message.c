@@ -1601,6 +1601,19 @@ static PyObject* PyUpb_Message_WhichOneof(PyObject* _self, PyObject* name) {
   return PyUnicode_FromString(upb_FieldDef_Name(f));
 }
 
+PyObject* DeepCopy(PyObject* _self, PyObject* arg) {
+  PyUpb_Message* self = (void*)_self;
+
+  PyObject* arena = PyUpb_Arena_New();
+  upb_Message* clone =
+      upb_Message_DeepClone(self->ptr.msg, upb_MessageDef_MiniTable(self->def),
+                            PyUpb_Arena_Get(arena));
+  PyObject* ret = PyUpb_Message_Get(clone, self->def, arena);
+  Py_DECREF(arena);
+
+  return ret;
+}
+
 void PyUpb_Message_ClearExtensionDict(PyObject* _self) {
   PyUpb_Message* self = (void*)_self;
   assert(self->ext_dict);
@@ -1630,9 +1643,9 @@ static PyGetSetDef PyUpb_Message_Getters[] = {
     {NULL}};
 
 static PyMethodDef PyUpb_Message_Methods[] = {
+    {"__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
+     "Makes a deep copy of the class."},
     // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
-    //  "Makes a deep copy of the class." },
     //{ "__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
     //  "Outputs a unicode representation of the message." },
     {"ByteSize", (PyCFunction)PyUpb_Message_ByteSize, METH_NOARGS,
