@@ -15,8 +15,8 @@ def upb_deps():
         _github_archive,
         name = "com_google_absl",
         repo = "https://github.com/abseil/abseil-cpp",
-        commit = "78be63686ba732b25052be15f8d6dee891c05749",  # Abseil LTS 20230125
-        sha256 = "4f356a07b9ec06ef51f943928508566e992f621ed5fa4dd588865d7bed1284cd",
+        commit = "b971ac5250ea8de900eae9f95e06548d14cd95fe",  # Abseil LTS 20230125.2
+        sha256 = "f7c2cb2c5accdcbbbd5c0c59f241a988c0b1da2a3b7134b823c0bd613b1a6880",
     )
 
     maybe(
