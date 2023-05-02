@@ -7,6 +7,11 @@ local_repository(
     path = "examples",
 )
 
+# Load common dependencies first to ensure we use the correct version.
+load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
+protobuf_deps()
+
+
 http_archive(
     name = "com_google_googletest",
     sha256 = "833bfaf9f8f508a4ef4a35e25131112ed55bf9ff5c073e272397ff38eb4d90ec",
@@ -30,10 +35,6 @@ http_archive(
     strip_prefix = "platforms-da5541f26b7de1dc8e04c075c99df5351742a4a2",
     urls = ["https://github.com/bazelbuild/platforms/archive/da5541f26b7de1dc8e04c075c99df5351742a4a2.zip"],  # 2022-05-27
 )
-
-# Load common dependencies.
-load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
-protobuf_deps()
 
 load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
 
