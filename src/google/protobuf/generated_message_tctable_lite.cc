@@ -2100,6 +2100,15 @@ bool TcParser::MpVerifyUtf8(absl::string_view wire_bytes,
 #endif  // NDEBUG
   return true;
 }
+bool TcParser::MpVerifyUtf8(const absl::Cord& wire_bytes,
+                            const TcParseTableBase* table,
+                            const FieldEntry& entry, uint16_t xform_val) {
+  switch (xform_val) {
+    default:
+      ABSL_DCHECK_EQ(xform_val, 0);
+      return true;
+  }
+}
 
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
@@ -2144,10 +2153,29 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
       break;
     }
 
-    case field_layout::kRepIString: {
-      ABSL_DCHECK(false);
+
+    case field_layout::kRepCord: {
+      absl::Cord* field;
+      if (is_oneof) {
+        if (need_init) {
+          field = new absl::Cord;
+          RefAt<absl::Cord*>(msg, entry.offset) = field;
+          Arena* arena = msg->GetArenaForAllocation();
+          if (arena) arena->Own(field);
+        } else {
+          field = RefAt<absl::Cord*>(msg, entry.offset);
+        }
+      } else {
+        field = &RefAt<absl::Cord>(base, entry.offset);
+      }
+      ptr = InlineCordParser(field, ptr, ctx);
+      if (!ptr) break;
+      is_valid = MpVerifyUtf8(*field, table, entry, xform_val);
       break;
     }
+
+    default:
+      PROTOBUF_ASSUME(false);
   }
 
   if (ptr == nullptr || !is_valid) {
