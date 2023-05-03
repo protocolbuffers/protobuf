@@ -324,6 +324,9 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
     msg.printer().PrintRaw("\n");
     msg.Emit({{"Msg", msg.desc().name()}}, R"rs(
       impl $Msg$ {
+        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $NonNull$<u8>) -> Self {
+          Self { msg }
+        }
         pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $NonNull$<u8> {
           self.msg
         }
