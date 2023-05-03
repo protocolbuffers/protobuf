@@ -153,7 +153,7 @@ void FieldMask::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void FieldMask::Clear() {
+PROTOBUF_NOINLINE void FieldMask::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -274,7 +274,7 @@ void FieldMask::CopyFrom(const FieldMask& from) {
   MergeFrom(from);
 }
 
-bool FieldMask::IsInitialized() const {
+PROTOBUF_NOINLINE bool FieldMask::IsInitialized() const {
   return true;
 }
 

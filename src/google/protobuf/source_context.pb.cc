@@ -169,7 +169,7 @@ void SourceContext::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void SourceContext::Clear() {
+PROTOBUF_NOINLINE void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -286,7 +286,7 @@ void SourceContext::CopyFrom(const SourceContext& from) {
   MergeFrom(from);
 }
 
-bool SourceContext::IsInitialized() const {
+PROTOBUF_NOINLINE bool SourceContext::IsInitialized() const {
   return true;
 }
 

@@ -560,7 +560,7 @@ void Type::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void Type::Clear() {
+PROTOBUF_NOINLINE void Type::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -865,7 +865,7 @@ void Type::CopyFrom(const Type& from) {
   MergeFrom(from);
 }
 
-bool Type::IsInitialized() const {
+PROTOBUF_NOINLINE bool Type::IsInitialized() const {
   return true;
 }
 
@@ -1031,7 +1031,7 @@ void Field::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void Field::Clear() {
+PROTOBUF_NOINLINE void Field::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -1204,9 +1204,9 @@ failure:
 
   // int32 number = 3;
   if (this->_internal_number() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
-        3, this->_internal_number(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        WriteInt32ToArrayWithField<3>(
+            stream, this->_internal_number(), target);
   }
 
   // string name = 4;
@@ -1227,9 +1227,9 @@ failure:
 
   // int32 oneof_index = 7;
   if (this->_internal_oneof_index() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
-        7, this->_internal_oneof_index(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        WriteInt32ToArrayWithField<7>(
+            stream, this->_internal_oneof_index(), target);
   }
 
   // bool packed = 8;
@@ -1395,7 +1395,7 @@ void Field::CopyFrom(const Field& from) {
   MergeFrom(from);
 }
 
-bool Field::IsInitialized() const {
+PROTOBUF_NOINLINE bool Field::IsInitialized() const {
   return true;
 }
 
@@ -1536,7 +1536,7 @@ void Enum::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void Enum::Clear() {
+PROTOBUF_NOINLINE void Enum::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -1808,7 +1808,7 @@ void Enum::CopyFrom(const Enum& from) {
   MergeFrom(from);
 }
 
-bool Enum::IsInitialized() const {
+PROTOBUF_NOINLINE bool Enum::IsInitialized() const {
   return true;
 }
 
@@ -1906,7 +1906,7 @@ void EnumValue::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void EnumValue::Clear() {
+PROTOBUF_NOINLINE void EnumValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -1997,9 +1997,9 @@ failure:
 
   // int32 number = 2;
   if (this->_internal_number() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
-        2, this->_internal_number(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        WriteInt32ToArrayWithField<2>(
+            stream, this->_internal_number(), target);
   }
 
   // repeated .google.protobuf.Option options = 3;
@@ -2080,7 +2080,7 @@ void EnumValue::CopyFrom(const EnumValue& from) {
   MergeFrom(from);
 }
 
-bool EnumValue::IsInitialized() const {
+PROTOBUF_NOINLINE bool EnumValue::IsInitialized() const {
   return true;
 }
 
@@ -2183,7 +2183,7 @@ void Option::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void Option::Clear() {
+PROTOBUF_NOINLINE void Option::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -2337,7 +2337,7 @@ void Option::CopyFrom(const Option& from) {
   MergeFrom(from);
 }
 
-bool Option::IsInitialized() const {
+PROTOBUF_NOINLINE bool Option::IsInitialized() const {
   return true;
 }
 

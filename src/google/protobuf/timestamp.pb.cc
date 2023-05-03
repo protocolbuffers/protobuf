@@ -155,7 +155,7 @@ void Timestamp::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void Timestamp::Clear() {
+PROTOBUF_NOINLINE void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -222,16 +222,16 @@ failure:
 
   // int64 seconds = 1;
   if (this->_internal_seconds() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt64ToArray(
-        1, this->_internal_seconds(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        WriteInt64ToArrayWithField<1>(
+            stream, this->_internal_seconds(), target);
   }
 
   // int32 nanos = 2;
   if (this->_internal_nanos() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(
-        2, this->_internal_nanos(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        WriteInt32ToArrayWithField<2>(
+            stream, this->_internal_nanos(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -296,7 +296,7 @@ void Timestamp::CopyFrom(const Timestamp& from) {
   MergeFrom(from);
 }
 
-bool Timestamp::IsInitialized() const {
+PROTOBUF_NOINLINE bool Timestamp::IsInitialized() const {
   return true;
 }
 

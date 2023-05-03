@@ -272,7 +272,7 @@ void Struct::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void Struct::Clear() {
+PROTOBUF_NOINLINE void Struct::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -407,7 +407,7 @@ void Struct::CopyFrom(const Struct& from) {
   MergeFrom(from);
 }
 
-bool Struct::IsInitialized() const {
+PROTOBUF_NOINLINE bool Struct::IsInitialized() const {
   return true;
 }
 
@@ -586,7 +586,7 @@ void Value::clear_kind() {
 }
 
 
-void Value::Clear() {
+PROTOBUF_NOINLINE void Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -844,7 +844,7 @@ void Value::CopyFrom(const Value& from) {
   MergeFrom(from);
 }
 
-bool Value::IsInitialized() const {
+PROTOBUF_NOINLINE bool Value::IsInitialized() const {
   return true;
 }
 
@@ -908,7 +908,7 @@ void ListValue::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void ListValue::Clear() {
+PROTOBUF_NOINLINE void ListValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -1027,7 +1027,7 @@ void ListValue::CopyFrom(const ListValue& from) {
   MergeFrom(from);
 }
 
-bool ListValue::IsInitialized() const {
+PROTOBUF_NOINLINE bool ListValue::IsInitialized() const {
   return true;
 }
 
