@@ -39,8 +39,8 @@
 #include <unistd.h>
 #endif
 
-#include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/io_win32.h"

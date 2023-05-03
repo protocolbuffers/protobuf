@@ -170,7 +170,7 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* p) {
   // Only do this for protobuf's own types. There are some google3 protos using
   // macros as field names and the generated code compiles after the macro
   // expansion. Undefing these macros actually breaks such code.
-  if (file_->name() != "net/proto2/compiler/proto/plugin.proto" &&
+  if (file_->name() != "third_party/protobuf/compiler/plugin.proto" &&
       file_->name() != "google/protobuf/compiler/plugin.proto") {
     return;
   }

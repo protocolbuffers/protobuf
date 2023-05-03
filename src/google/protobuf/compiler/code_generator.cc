@@ -36,13 +36,13 @@
 
 #include <utility>
 
-#include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/compiler/plugin.pb.h"
 
 namespace google {
 namespace protobuf {
