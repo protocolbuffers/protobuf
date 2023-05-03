@@ -242,6 +242,24 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   return CheckFieldPresence(ctx, *this, parse_flags);
 }
 
+bool MessageLite::SerializePartialToZeroCopyStreamImpl(io::ZeroCopyOutputStream* output, size_t byte_size) const
+{
+  if (byte_size > INT_MAX) {
+    ABSL_LOG(ERROR) << GetTypeName()
+                    << " exceeded maximum protobuf size of 2GB: " << byte_size;
+    return false;
+  }
+
+  uint8_t* target;
+  io::EpsCopyOutputStream stream(
+      output, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
+      &target);
+  target = _InternalSerialize(target, &stream);
+  stream.Trim(target);
+  if (stream.HadError()) return false;
+  return true;
+}
+
 bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {
   return MergeFromImpl(input, kMergePartial);
 }
@@ -441,20 +459,19 @@ bool MessageLite::SerializeToZeroCopyStream(
 bool MessageLite::SerializePartialToZeroCopyStream(
     io::ZeroCopyOutputStream* output) const {
   const size_t size = ByteSizeLong();  // Force size to be cached.
-  if (size > INT_MAX) {
-    ABSL_LOG(ERROR) << GetTypeName()
-                    << " exceeded maximum protobuf size of 2GB: " << size;
-    return false;
-  }
+  return SerializePartialToZeroCopyStreamImpl(output, size);
+}
 
-  uint8_t* target;
-  io::EpsCopyOutputStream stream(
-      output, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
-      &target);
-  target = _InternalSerialize(target, &stream);
-  stream.Trim(target);
-  if (stream.HadError()) return false;
-  return true;
+bool MessageLite::SerializeWithCachedSizesToZeroCopyStream(io::ZeroCopyOutputStream* output) const
+{
+  ABSL_DCHECK(IsInitialized())
+      << InitializationErrorMessage("serialize", *this);
+  return SerializeWithCachedSizesPartialToZeroCopyStream(output);
+}
+
+bool MessageLite::SerializeWithCachedSizesPartialToZeroCopyStream(io::ZeroCopyOutputStream* output) const
+{
+  return SerializePartialToZeroCopyStreamImpl(output, GetCachedSize());
 }
 
 bool MessageLite::SerializeToFileDescriptor(int file_descriptor) const {

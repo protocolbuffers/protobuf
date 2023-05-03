@@ -439,6 +439,10 @@ class PROTOBUF_EXPORT MessageLite {
   // deterministic serialization, e.g., maps in sorted order, is determined by
   // CodedOutputStream::IsDefaultSerializationDeterministic().
   uint8_t* SerializeWithCachedSizesToArray(uint8_t* target) const;
+  // Like SerializeToZeroCopyStream, but without recomputing the size
+  bool SerializeWithCachedSizesToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
+  // Like SerializePartialToZeroCopyStream, but without recomputing the size
+  bool SerializeWithCachedSizesPartialToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
 
   // Returns the result of the last call to ByteSize().  An embedded message's
   // size is needed both to serialize it (because embedded messages are
@@ -528,6 +532,8 @@ class PROTOBUF_EXPORT MessageLite {
   void LogInitializationErrorMessage() const;
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
+
+  bool SerializePartialToZeroCopyStreamImpl(io::ZeroCopyOutputStream* output, size_t byte_size) const;
 };
 
 namespace internal {
