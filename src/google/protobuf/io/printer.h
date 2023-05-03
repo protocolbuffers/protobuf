@@ -465,6 +465,9 @@ class AnnotationProtoCollector : public AnnotationCollector {
 // call_ descriptor.
 class PROTOBUF_EXPORT Printer {
  private:
+  struct AnnotationRecord;
+
+ public:
   // This type exists to work around an absl type that has not yet been
   // released.
   struct SourceLocation {
@@ -473,9 +476,6 @@ class PROTOBUF_EXPORT Printer {
     int line() { return 0; }
   };
 
-  struct AnnotationRecord;
-
- public:
   static constexpr char kDefaultVariableDelimiter = '$';
   static constexpr absl::string_view kProtocCodegenTrace =
       "PROTOC_CODEGEN_TRACE";
