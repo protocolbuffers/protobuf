@@ -545,6 +545,30 @@ class PROTOBUF_EXPORT WireFormatLite {
       const RepeatedField<int>& value, uint8_t* output);
 
   // Write fields, including tags.
+  template <int field_number>
+  PROTOBUF_NOINLINE static uint8_t* WriteInt32ToArrayWithField(
+      ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream, int32_t value,
+      uint8_t* target) {
+    target = stream->EnsureSpace(target);
+    return WriteInt32ToArray(field_number, value, target);
+  }
+
+  template <int field_number>
+  PROTOBUF_NOINLINE static uint8_t* WriteInt64ToArrayWithField(
+      ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream, int64_t value,
+      uint8_t* target) {
+    target = stream->EnsureSpace(target);
+    return WriteInt64ToArray(field_number, value, target);
+  }
+
+  template <int field_number>
+  PROTOBUF_NOINLINE static uint8_t* WriteEnumToArrayWithField(
+      ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream, int value,
+      uint8_t* target) {
+    target = stream->EnsureSpace(target);
+    return WriteEnumToArray(field_number, value, target);
+  }
+
   PROTOBUF_NDEBUG_INLINE static uint8_t* WriteInt32ToArray(int field_number,
                                                            int32_t value,
                                                            uint8_t* target);

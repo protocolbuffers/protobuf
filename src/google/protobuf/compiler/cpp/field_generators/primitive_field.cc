@@ -257,11 +257,25 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
 
 void SingularPrimitive::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
-  p->Emit(R"cc(
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
-        $number$, this->_internal_$name$(), target);
-  )cc");
+  if ((descriptor_->number() < 16) &&
+      (descriptor_->type() == FieldDescriptor::TYPE_INT32 ||
+       descriptor_->type() == FieldDescriptor::TYPE_INT64 ||
+       descriptor_->type() == FieldDescriptor::TYPE_ENUM)) {
+    // Call special non-inlined routine with tag number hardcoded as a
+    // template parameter that handles the EnsureSpace and the writing
+    // of the tag+value to the array
+    p->Emit(R"cc(
+      target = ::$proto_ns$::internal::WireFormatLite::
+          Write$declared_type$ToArrayWithField<$number$>(
+              stream, this->_internal_$name$(), target);
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
+          $number$, this->_internal_$name$(), target);
+    )cc");
+  }
 }
 
 void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
