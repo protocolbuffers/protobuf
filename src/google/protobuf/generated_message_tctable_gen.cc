@@ -694,10 +694,23 @@ uint16_t MakeTypeCardForField(
   // Fill in extra information about string and bytes field representations.
   if (field->type() == FieldDescriptor::TYPE_BYTES ||
       field->type() == FieldDescriptor::TYPE_STRING) {
-    if (field->is_repeated()) {
-      type_card |= fl::kRepSString;
-    } else {
-      type_card |= fl::kRepAString;
+    switch (internal::cpp::EffectiveStringCType(field)) {
+      case FieldOptions::CORD:
+        // `Cord` is always used, even for repeated fields.
+        type_card |= fl::kRepCord;
+        break;
+      case FieldOptions::STRING:
+        if (field->is_repeated()) {
+          // A repeated string field uses RepeatedPtrField<std::string>
+          // (unless it has a ctype option; see above).
+          type_card |= fl::kRepSString;
+        } else {
+          // Otherwise, non-repeated string fields use ArenaStringPtr.
+          type_card |= fl::kRepAString;
+        }
+        break;
+      default:
+        PROTOBUF_ASSUME(false);
     }
   }
 
