@@ -276,8 +276,15 @@ class PROTOBUF_EXPORT MapKey {
 };
 
 namespace internal {
+
 template <>
 struct is_internal_map_key_type<MapKey> : std::true_type {};
+
+template <>
+struct RealKeyToVariantKey<MapKey> {
+  VariantKey operator()(const MapKey& value) const;
+};
+
 }  // namespace internal
 
 }  // namespace protobuf
@@ -286,37 +293,8 @@ namespace std {
 template <>
 struct hash<google::protobuf::MapKey> {
   size_t operator()(const google::protobuf::MapKey& map_key) const {
-    switch (map_key.type()) {
-      case google::protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-      case google::protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-      case google::protobuf::FieldDescriptor::CPPTYPE_ENUM:
-      case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-        ABSL_LOG(FATAL) << "Unsupported";
-        break;
-      case google::protobuf::FieldDescriptor::CPPTYPE_STRING:
-        return hash<std::string>()(map_key.GetStringValue());
-      case google::protobuf::FieldDescriptor::CPPTYPE_INT64: {
-        auto value = map_key.GetInt64Value();
-        return hash<decltype(value)>()(value);
-      }
-      case google::protobuf::FieldDescriptor::CPPTYPE_INT32: {
-        auto value = map_key.GetInt32Value();
-        return hash<decltype(value)>()(map_key.GetInt32Value());
-      }
-      case google::protobuf::FieldDescriptor::CPPTYPE_UINT64: {
-        auto value = map_key.GetUInt64Value();
-        return hash<decltype(value)>()(map_key.GetUInt64Value());
-      }
-      case google::protobuf::FieldDescriptor::CPPTYPE_UINT32: {
-        auto value = map_key.GetUInt32Value();
-        return hash<decltype(value)>()(map_key.GetUInt32Value());
-      }
-      case google::protobuf::FieldDescriptor::CPPTYPE_BOOL: {
-        return hash<bool>()(map_key.GetBoolValue());
-      }
-    }
-    ABSL_LOG(FATAL) << "Can't get here.";
-    return 0;
+    return ::google::protobuf::internal::RealKeyToVariantKey<::google::protobuf::MapKey>{}(map_key)
+        .Hash();
   }
   bool operator()(const google::protobuf::MapKey& map_key1,
                   const google::protobuf::MapKey& map_key2) const {
@@ -944,8 +922,8 @@ class PROTOBUF_EXPORT MapIterator {
   // This field provides the storage for Map<...>::const_iterator. We use
   // reinterpret_cast to get the right type. The real iterator is trivially
   // destructible/copyable, so no need to manage that.
-  alignas(internal::MapIteratorPayload) char map_iter_buffer_[sizeof(
-      internal::MapIteratorPayload)]{};
+  alignas(internal::UntypedMapIterator) char map_iter_buffer_[sizeof(
+      internal::UntypedMapIterator)]{};
   // Point to a MapField to call helper methods implemented in MapField.
   // MapIterator does not own this object.
   internal::MapFieldBase* map_;

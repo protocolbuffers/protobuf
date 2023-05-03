@@ -44,6 +44,25 @@ namespace protobuf {
 namespace internal {
 using ::google::protobuf::internal::DownCast;
 
+VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
+  switch (value.type()) {
+    case FieldDescriptor::CPPTYPE_STRING:
+      return VariantKey(value.GetStringValue());
+    case FieldDescriptor::CPPTYPE_INT64:
+      return VariantKey(value.GetInt64Value());
+    case FieldDescriptor::CPPTYPE_INT32:
+      return VariantKey(value.GetInt32Value());
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return VariantKey(value.GetUInt64Value());
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return VariantKey(value.GetUInt32Value());
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return VariantKey(static_cast<uint64_t>(value.GetBoolValue()));
+    default:
+      ABSL_ASSUME(false);
+  }
+}
+
 MapFieldBase::~MapFieldBase() {
   ABSL_DCHECK_EQ(arena(), nullptr);
   delete maybe_payload();
