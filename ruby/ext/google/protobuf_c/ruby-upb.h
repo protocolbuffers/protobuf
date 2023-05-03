@@ -7156,18 +7156,18 @@ UPB_INLINE bool google_protobuf_FieldOptions_has_retention(const google_protobuf
   const upb_MiniTableField field = {17, 20, 9, 2, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
-UPB_INLINE void google_protobuf_FieldOptions_clear_target(google_protobuf_FieldOptions* msg) {
+UPB_INLINE void google_protobuf_FieldOptions_clear_target_obsolete_do_not_use(google_protobuf_FieldOptions* msg) {
   const upb_MiniTableField field = {18, 24, 10, 3, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_ClearNonExtensionField(msg, &field);
 }
-UPB_INLINE int32_t google_protobuf_FieldOptions_target(const google_protobuf_FieldOptions* msg) {
+UPB_INLINE int32_t google_protobuf_FieldOptions_target_obsolete_do_not_use(const google_protobuf_FieldOptions* msg) {
   int32_t default_val = 0;
   int32_t ret;
   const upb_MiniTableField field = {18, 24, 10, 3, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
   return ret;
 }
-UPB_INLINE bool google_protobuf_FieldOptions_has_target(const google_protobuf_FieldOptions* msg) {
+UPB_INLINE bool google_protobuf_FieldOptions_has_target_obsolete_do_not_use(const google_protobuf_FieldOptions* msg) {
   const upb_MiniTableField field = {18, 24, 10, 3, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
@@ -7282,7 +7282,7 @@ UPB_INLINE void google_protobuf_FieldOptions_set_retention(google_protobuf_Field
   const upb_MiniTableField field = {17, 20, 9, 2, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_FieldOptions_set_target(google_protobuf_FieldOptions *msg, int32_t value) {
+UPB_INLINE void google_protobuf_FieldOptions_set_target_obsolete_do_not_use(google_protobuf_FieldOptions *msg, int32_t value) {
   const upb_MiniTableField field = {18, 24, 10, 3, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
