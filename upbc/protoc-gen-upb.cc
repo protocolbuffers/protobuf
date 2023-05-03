@@ -1350,12 +1350,15 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   std::string subenums_array_ref = "NULL";
   const upb_MiniTable* mt_32 = pools.GetMiniTable32(message);
   const upb_MiniTable* mt_64 = pools.GetMiniTable64(message);
-  std::vector<std::string> subs;
+  std::map<int, std::string> subs;
 
   for (int i = 0; i < mt_64->field_count; i++) {
     const upb_MiniTableField* f = &mt_64->fields[i];
-    if (f->UPB_PRIVATE(submsg_index) != kUpb_NoSub) {
-      subs.push_back(GetSub(message.FindFieldByNumber(f->number)));
+    uint32_t index = f->UPB_PRIVATE(submsg_index);
+    if (index != kUpb_NoSub) {
+      auto pair =
+          subs.emplace(index, GetSub(message.FindFieldByNumber(f->number)));
+      ABSL_CHECK(pair.second);
     }
   }
 
@@ -1365,8 +1368,10 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("static const upb_MiniTableSub $0[$1] = {\n", submsgs_array_name,
            subs.size());
 
-    for (const auto& sub : subs) {
-      output("  $0,\n", sub);
+    int i = 0;
+    for (const auto& pair : subs) {
+      ABSL_CHECK(pair.first == i++);
+      output("  $0,\n", pair.second);
     }
 
     output("};\n\n");
