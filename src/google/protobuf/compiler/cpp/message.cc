@@ -1426,7 +1426,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP\n"
       "    InternalSwap(other);\n"
       "  } else {\n"
-      "    ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);\n"
+      "    $pbi$::GenericSwap(this, other);\n"
       "  }\n"
       "}\n"
       "void UnsafeArenaSwap($classname$* other) {\n"
@@ -2022,8 +2022,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     format(
         "void $classname$::PrepareSplitMessageForWrite() {\n"
         "  if (IsSplitMessageDefault()) {\n"
-        "    void* chunk = "
-        "::PROTOBUF_NAMESPACE_ID::internal::CreateSplitMessageGeneric("
+        "    void* chunk = $pbi$::CreateSplitMessageGeneric("
         "GetArenaForAllocation(), &$1$, sizeof(Impl_::Split), this, &$2$);\n"
         "    $split$ = reinterpret_cast<Impl_::Split*>(chunk);\n"
         "  }\n"
@@ -3139,7 +3138,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
         });
 
         format(
-            "::PROTOBUF_NAMESPACE_ID::internal::memswap<\n"
+            "$pbi$::memswap<\n"
             "    PROTOBUF_FIELD_OFFSET($classname$, $last$)\n"
             "    + sizeof($classname$::$last$)\n"
             "    - PROTOBUF_FIELD_OFFSET($classname$, $first$)>(\n"

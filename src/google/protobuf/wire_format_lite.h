@@ -547,7 +547,7 @@ class PROTOBUF_EXPORT WireFormatLite {
   // Write fields, including tags.
   template <int field_number>
   PROTOBUF_NOINLINE static uint8_t* WriteInt32ToArrayWithField(
-      ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream, int32_t value,
+      ::google::protobuf::io::EpsCopyOutputStream* stream, int32_t value,
       uint8_t* target) {
     target = stream->EnsureSpace(target);
     return WriteInt32ToArray(field_number, value, target);
@@ -555,7 +555,7 @@ class PROTOBUF_EXPORT WireFormatLite {
 
   template <int field_number>
   PROTOBUF_NOINLINE static uint8_t* WriteInt64ToArrayWithField(
-      ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream, int64_t value,
+      ::google::protobuf::io::EpsCopyOutputStream* stream, int64_t value,
       uint8_t* target) {
     target = stream->EnsureSpace(target);
     return WriteInt64ToArray(field_number, value, target);
@@ -563,8 +563,7 @@ class PROTOBUF_EXPORT WireFormatLite {
 
   template <int field_number>
   PROTOBUF_NOINLINE static uint8_t* WriteEnumToArrayWithField(
-      ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream, int value,
-      uint8_t* target) {
+      ::google::protobuf::io::EpsCopyOutputStream* stream, int value, uint8_t* target) {
     target = stream->EnsureSpace(target);
     return WriteEnumToArray(field_number, value, target);
   }

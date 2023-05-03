@@ -1106,8 +1106,8 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename T, typename Enable>
   friend class MutableRepeatedFieldRef;
   friend class Message;
-  friend class ::PROTOBUF_NAMESPACE_ID::MessageLayoutInspector;
-  friend class ::PROTOBUF_NAMESPACE_ID::AssignDescriptorsHelper;
+  friend class MessageLayoutInspector;
+  friend class AssignDescriptorsHelper;
   friend class DynamicMessageFactory;
   friend class GeneratedMessageReflectionTestHelper;
   friend class python::MapReflectionFriend;

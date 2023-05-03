@@ -49,6 +49,11 @@
 // detect/prohibit anytime it is #included twice without a corresponding
 // #undef.
 
+#ifdef PROTOBUF_PORT_
+#error "port_def.inc included multiple times"
+#endif
+#define PROTOBUF_PORT_
+
 // The definitions in this file are intended to be portable across Clang,
 // GCC, and MSVC. Function-like macros are usable without an #ifdef guard.
 // Syntax macros (for example, attributes) are always defined, although
@@ -247,18 +252,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #error PROTOBUF_VERSION_SUFFIX was previously defined
 #endif
 #define PROTOBUF_VERSION_SUFFIX ""
-
-#if defined(PROTOBUF_NAMESPACE) || defined(PROTOBUF_NAMESPACE_ID)
-#error PROTOBUF_NAMESPACE or PROTOBUF_NAMESPACE_ID was previously defined
-#endif
-#define PROTOBUF_NAMESPACE "google::protobuf"
-#define PROTOBUF_NAMESPACE_ID google::protobuf
-#define PROTOBUF_NAMESPACE_OPEN \
-  namespace google {            \
-  namespace protobuf {
-#define PROTOBUF_NAMESPACE_CLOSE \
-  } /* namespace protobuf */     \
-  } /* namespace google */
 
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined

@@ -68,8 +68,8 @@ void SetCordVariables(
   (*variables)["default_variable_field"] = MakeDefaultFieldName(descriptor);
   (*variables)["default_variable"] =
       descriptor->default_value_string().empty()
-          ? ProtobufNamespace(options) +
-                "::internal::GetEmptyCordAlreadyInited()"
+          ? absl::StrCat(ProtobufNamespace(options),
+                         "::internal::GetEmptyCordAlreadyInited()")
           : absl::StrCat(
                 QualifiedClassName(descriptor->containing_type(), options),
                 "::", MakeDefaultFieldName(descriptor));
@@ -289,8 +289,7 @@ void CordFieldGenerator::GenerateAggregateInitializer(
 
 CordOneofFieldGenerator::CordOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
-    : CordFieldGenerator(descriptor, options) {
-}
+    : CordFieldGenerator(descriptor, options) {}
 
 void CordOneofFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {

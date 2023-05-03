@@ -127,7 +127,7 @@ class MapFieldLite {
     Map<Key, T> map_;
   };
 
-  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
+  friend class google::protobuf::Arena;
 };
 
 template <typename UnknownType, typename T>
