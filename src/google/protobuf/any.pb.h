@@ -38,27 +38,32 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fany_2eproto PROTOBUF_EXPORT
 
-PROTOBUF_NAMESPACE_OPEN
+namespace google {
+namespace protobuf {
 namespace internal {
 class AnyMetadata;
 }  // namespace internal
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fany_2eproto {
   static const ::uint32_t offsets[];
 };
-PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fany_2eproto;
-PROTOBUF_NAMESPACE_OPEN
+namespace google {
+namespace protobuf {
 class Any;
 struct AnyDefaultTypeInternal;
 PROTOBUF_EXPORT extern AnyDefaultTypeInternal _Any_default_instance_;
 template <>
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Any* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::Any>(Arena*);
-PROTOBUF_NAMESPACE_CLOSE
+PROTOBUF_EXPORT ::google::protobuf::Any* Arena::CreateMaybeMessage<::google::protobuf::Any>(Arena*);
+}  // namespace protobuf
+}  // namespace google
 
-PROTOBUF_NAMESPACE_OPEN
+namespace google {
+namespace protobuf {
 
 // ===================================================================
 
@@ -66,11 +71,11 @@ PROTOBUF_NAMESPACE_OPEN
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT Any final :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
  public:
   inline Any() : Any(nullptr) {}
   ~Any() override;
-  explicit PROTOBUF_CONSTEXPR Any(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Any(::google::protobuf::internal::ConstantInitialized);
 
   Any(const Any& from);
   Any(Any&& from) noexcept
@@ -96,20 +101,20 @@ class PROTOBUF_EXPORT Any final :
     return *this;
   }
 
-  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* descriptor() {
     return GetDescriptor();
   }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const Any& default_instance() {
@@ -124,31 +129,31 @@ class PROTOBUF_EXPORT Any final :
 
   // implements Any -----------------------------------------------
 
-  bool PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message) {
+  bool PackFrom(const ::google::protobuf::Message& message) {
     ABSL_DCHECK_NE(&message, this);
     return _impl_._any_metadata_.PackFrom(GetArena(), message);
   }
-  bool PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message,
+  bool PackFrom(const ::google::protobuf::Message& message,
                 ::absl::string_view type_url_prefix) {
     ABSL_DCHECK_NE(&message, this);
     return _impl_._any_metadata_.PackFrom(GetArena(), message, type_url_prefix);
   }
-  bool UnpackTo(::PROTOBUF_NAMESPACE_ID::Message* message) const {
+  bool UnpackTo(::google::protobuf::Message* message) const {
     return _impl_._any_metadata_.UnpackTo(message);
   }
   static bool GetAnyFieldDescriptors(
-      const ::PROTOBUF_NAMESPACE_ID::Message& message,
-      const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** type_url_field,
-      const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** value_field);
-  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
+      const ::google::protobuf::Message& message,
+      const ::google::protobuf::FieldDescriptor** type_url_field,
+      const ::google::protobuf::FieldDescriptor** value_field);
+  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::google::protobuf::Message&>::value>::type>
   bool PackFrom(const T& message) {
     return _impl_._any_metadata_.PackFrom<T>(GetArena(), message);
   }
-  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
+  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::google::protobuf::Message&>::value>::type>
   bool PackFrom(const T& message,
                 ::absl::string_view type_url_prefix) {
     return _impl_._any_metadata_.PackFrom<T>(GetArena(), message, type_url_prefix);}
-  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
+  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::google::protobuf::Message&>::value>::type>
   bool UnpackTo(T* message) const {
     return _impl_._any_metadata_.UnpackTo<T>(message);
   }
@@ -170,7 +175,7 @@ class PROTOBUF_EXPORT Any final :
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
-      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+      ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
   void UnsafeArenaSwap(Any* other) {
@@ -181,46 +186,46 @@ class PROTOBUF_EXPORT Any final :
 
   // implements Message ----------------------------------------------
 
-  Any* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+  Any* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Any>(arena);
   }
-  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Any& from);
-  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  using ::google::protobuf::Message::MergeFrom;
   void MergeFrom( const Any& from) {
     Any::MergeImpl(*this, from);
   }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Any* other);
 
   private:
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.Any";
   }
   protected:
-  explicit Any(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Any(::google::protobuf::Arena* arena);
   public:
 
   static const ClassData _class_data_;
-  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
   // nested types ----------------------------------------------------
 
@@ -266,14 +271,14 @@ class PROTOBUF_EXPORT Any final :
  private:
   class _Internal;
 
-  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr type_url_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-    ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata _any_metadata_;
+    ::google::protobuf::internal::ArenaStringPtr type_url_;
+    ::google::protobuf::internal::ArenaStringPtr value_;
+    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::AnyMetadata _any_metadata_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fany_2eproto;
@@ -390,7 +395,8 @@ inline void Any::set_allocated_value(std::string* value) {
 #endif  // __GNUC__
 
 // @@protoc_insertion_point(namespace_scope)
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 
 
 // @@protoc_insertion_point(global_scope)

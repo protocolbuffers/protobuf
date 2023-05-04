@@ -16,13 +16,14 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 PROTOBUF_PRAGMA_INIT_SEG
-namespace _pb = ::PROTOBUF_NAMESPACE_ID;
-namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
+namespace _pb = ::google::protobuf;
+namespace _pbi = ::google::protobuf::internal;
 #if defined(__llvm__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wuninitialized"
 #endif  // __llvm__
-PROTOBUF_NAMESPACE_OPEN
+namespace google {
+namespace protobuf {
 PROTOBUF_CONSTEXPR Any::Any(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.type_url_)*/ {
@@ -45,7 +46,8 @@ struct AnyDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AnyDefaultTypeInternal _Any_default_instance_;
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fany_2eproto[1];
 static constexpr const ::_pb::EnumDescriptor**
     file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto = nullptr;
@@ -54,24 +56,24 @@ static constexpr const ::_pb::ServiceDescriptor**
 const ::uint32_t TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
     protodesc_cold) = {
     ~0u,  // no _has_bits_
-    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, _internal_metadata_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _internal_metadata_),
     ~0u,  // no _extensions_
     ~0u,  // no _oneof_case_
     ~0u,  // no _weak_field_map_
     ~0u,  // no _inlined_string_donated_
     ~0u,  // no _split_
     ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, _impl_.type_url_),
-    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, _impl_.value_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_.type_url_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_.value_),
 };
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Any)},
+        { 0, -1, -1, sizeof(::google::protobuf::Any)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
-    &::PROTOBUF_NAMESPACE_ID::_Any_default_instance_._instance,
+    &::google::protobuf::_Any_default_instance_._instance,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
     "\n\031google/protobuf/any.proto\022\017google.prot"
@@ -117,13 +119,14 @@ PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
 static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fany_2eproto(&descriptor_table_google_2fprotobuf_2fany_2eproto);
-PROTOBUF_NAMESPACE_OPEN
+namespace google {
+namespace protobuf {
 // ===================================================================
 
 bool Any::GetAnyFieldDescriptors(
-    const ::PROTOBUF_NAMESPACE_ID::Message& message,
-    const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** type_url_field,
-    const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** value_field) {
+    const ::google::protobuf::Message& message,
+    const ::google::protobuf::FieldDescriptor** type_url_field,
+    const ::google::protobuf::FieldDescriptor** value_field) {
   return ::_pbi::GetAnyFieldDescriptors(
       message, type_url_field, value_field);
 }
@@ -137,13 +140,13 @@ class Any::_Internal {
  public:
 };
 
-Any::Any(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+Any::Any(::google::protobuf::Arena* arena)
+  : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
 Any::Any(const Any& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  : ::google::protobuf::Message() {
   Any* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.type_url_) {}
@@ -153,7 +156,7 @@ Any::Any(const Any& from)
     , /*decltype(_impl_._cached_size_)*/{}
     , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}};
 
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
   _impl_.type_url_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.type_url_.Set("", GetArenaForAllocation());
@@ -193,7 +196,7 @@ inline void Any::SharedCtor(::_pb::Arena* arena) {
 
 Any::~Any() {
   // @@protoc_insertion_point(destructor:google.protobuf.Any)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
   (void)arena;
     return;
   }
@@ -219,7 +222,7 @@ PROTOBUF_NOINLINE void Any::Clear() {
 
   _impl_.type_url_.ClearToEmpty();
   _impl_.value_.ClearToEmpty();
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 const char* Any::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
@@ -260,7 +263,7 @@ const char* Any::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
     }
     ptr = UnknownFieldParse(
         tag,
-        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(),
         ptr, ctx);
     CHK_(ptr != nullptr);
   }  // while
@@ -273,7 +276,7 @@ failure:
 }
 
 ::uint8_t* Any::_InternalSerialize(
-    ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -281,8 +284,8 @@ failure:
   // string type_url = 1;
   if (!this->_internal_type_url().empty()) {
     const std::string& _s = this->_internal_type_url();
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE, "google.protobuf.Any.type_url");
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Any.type_url");
     target = stream->WriteStringMaybeAliased(1, _s, target);
   }
 
@@ -294,7 +297,7 @@ failure:
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+        _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Any)
   return target;
@@ -310,27 +313,27 @@ failure:
 
   // string type_url = 1;
   if (!this->_internal_type_url().empty()) {
-    total_size += 1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                     this->_internal_type_url());
   }
 
   // bytes value = 2;
   if (!this->_internal_value().empty()) {
-    total_size += 1 + ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
+    total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
                                     this->_internal_value());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Any::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+const ::google::protobuf::Message::ClassData Any::_class_data_ = {
+    ::google::protobuf::Message::CopyWithSourceCheck,
     Any::MergeImpl
 };
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Any::GetClassData() const { return &_class_data_; }
+const ::google::protobuf::Message::ClassData*Any::GetClassData() const { return &_class_data_; }
 
 
-void Any::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+void Any::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Any*>(&to_msg);
   auto& from = static_cast<const Any&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Any)
@@ -344,7 +347,7 @@ void Any::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_N
   if (!from._internal_value().empty()) {
     _this->_internal_set_value(from._internal_value());
   }
-  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Any::CopyFrom(const Any& from) {
@@ -369,19 +372,22 @@ void Any::InternalSwap(Any* other) {
                                        &other->_impl_.value_, rhs_arena);
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata Any::GetMetadata() const {
+::google::protobuf::Metadata Any::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fany_2eproto_getter, &descriptor_table_google_2fprotobuf_2fany_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fany_2eproto[0]);
 }
 // @@protoc_insertion_point(namespace_scope)
-PROTOBUF_NAMESPACE_CLOSE
-PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::Any*
-Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::Any >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::Any >(arena);
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
+template<> PROTOBUF_NOINLINE ::google::protobuf::Any*
+Arena::CreateMaybeMessage< ::google::protobuf::Any >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::google::protobuf::Any >(arena);
 }
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 // @@protoc_insertion_point(global_scope)
 #if defined(__llvm__)
 #pragma clang diagnostic pop

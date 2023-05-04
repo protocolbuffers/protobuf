@@ -38,27 +38,32 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftimestamp_2eproto PROTOBUF_EXPORT
 
-PROTOBUF_NAMESPACE_OPEN
+namespace google {
+namespace protobuf {
 namespace internal {
 class AnyMetadata;
 }  // namespace internal
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2ftimestamp_2eproto {
   static const ::uint32_t offsets[];
 };
-PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2ftimestamp_2eproto;
-PROTOBUF_NAMESPACE_OPEN
+namespace google {
+namespace protobuf {
 class Timestamp;
 struct TimestampDefaultTypeInternal;
 PROTOBUF_EXPORT extern TimestampDefaultTypeInternal _Timestamp_default_instance_;
 template <>
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Timestamp* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::Timestamp>(Arena*);
-PROTOBUF_NAMESPACE_CLOSE
+PROTOBUF_EXPORT ::google::protobuf::Timestamp* Arena::CreateMaybeMessage<::google::protobuf::Timestamp>(Arena*);
+}  // namespace protobuf
+}  // namespace google
 
-PROTOBUF_NAMESPACE_OPEN
+namespace google {
+namespace protobuf {
 
 // ===================================================================
 
@@ -66,11 +71,11 @@ PROTOBUF_NAMESPACE_OPEN
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT Timestamp final :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
  public:
   inline Timestamp() : Timestamp(nullptr) {}
   ~Timestamp() override;
-  explicit PROTOBUF_CONSTEXPR Timestamp(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Timestamp(::google::protobuf::internal::ConstantInitialized);
 
   Timestamp(const Timestamp& from);
   Timestamp(Timestamp&& from) noexcept
@@ -96,20 +101,20 @@ class PROTOBUF_EXPORT Timestamp final :
     return *this;
   }
 
-  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* descriptor() {
     return GetDescriptor();
   }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const Timestamp& default_instance() {
@@ -135,7 +140,7 @@ class PROTOBUF_EXPORT Timestamp final :
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
-      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+      ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
   void UnsafeArenaSwap(Timestamp* other) {
@@ -146,46 +151,46 @@ class PROTOBUF_EXPORT Timestamp final :
 
   // implements Message ----------------------------------------------
 
-  Timestamp* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+  Timestamp* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Timestamp>(arena);
   }
-  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Timestamp& from);
-  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  using ::google::protobuf::Message::MergeFrom;
   void MergeFrom( const Timestamp& from) {
     Timestamp::MergeImpl(*this, from);
   }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Timestamp* other);
 
   private:
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.Timestamp";
   }
   protected:
-  explicit Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Timestamp(::google::protobuf::Arena* arena);
   public:
 
   static const ClassData _class_data_;
-  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
   // nested types ----------------------------------------------------
 
@@ -219,13 +224,13 @@ class PROTOBUF_EXPORT Timestamp final :
  private:
   class _Internal;
 
-  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::int64_t seconds_;
     ::int32_t nanos_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    mutable ::google::protobuf::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftimestamp_2eproto;
@@ -292,7 +297,8 @@ inline void Timestamp::_internal_set_nanos(::int32_t value) {
 #endif  // __GNUC__
 
 // @@protoc_insertion_point(namespace_scope)
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 
 
 // @@protoc_insertion_point(global_scope)

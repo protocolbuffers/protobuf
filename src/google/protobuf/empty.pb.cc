@@ -16,9 +16,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 PROTOBUF_PRAGMA_INIT_SEG
-namespace _pb = ::PROTOBUF_NAMESPACE_ID;
-namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
-PROTOBUF_NAMESPACE_OPEN
+namespace _pb = ::google::protobuf;
+namespace _pbi = ::google::protobuf::internal;
+namespace google {
+namespace protobuf {
 PROTOBUF_CONSTEXPR Empty::Empty(
     ::_pbi::ConstantInitialized) {}
 struct EmptyDefaultTypeInternal {
@@ -31,7 +32,8 @@ struct EmptyDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EmptyDefaultTypeInternal _Empty_default_instance_;
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fempty_2eproto[1];
 static constexpr const ::_pb::EnumDescriptor**
     file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto = nullptr;
@@ -40,7 +42,7 @@ static constexpr const ::_pb::ServiceDescriptor**
 const ::uint32_t TableStruct_google_2fprotobuf_2fempty_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
     protodesc_cold) = {
     ~0u,  // no _has_bits_
-    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Empty, _internal_metadata_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Empty, _internal_metadata_),
     ~0u,  // no _extensions_
     ~0u,  // no _oneof_case_
     ~0u,  // no _weak_field_map_
@@ -51,11 +53,11 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fempty_2eproto::offsets[] PROTOB
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Empty)},
+        { 0, -1, -1, sizeof(::google::protobuf::Empty)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
-    &::PROTOBUF_NAMESPACE_ID::_Empty_default_instance_._instance,
+    &::google::protobuf::_Empty_default_instance_._instance,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
     "\n\033google/protobuf/empty.proto\022\017google.pr"
@@ -100,21 +102,22 @@ PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
 static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fempty_2eproto(&descriptor_table_google_2fprotobuf_2fempty_2eproto);
-PROTOBUF_NAMESPACE_OPEN
+namespace google {
+namespace protobuf {
 // ===================================================================
 
 class Empty::_Internal {
  public:
 };
 
-Empty::Empty(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase(arena) {
+Empty::Empty(::google::protobuf::Arena* arena)
+  : ::google::protobuf::internal::ZeroFieldsBase(arena) {
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
 }
 Empty::Empty(const Empty& from)
-  : ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase() {
+  : ::google::protobuf::internal::ZeroFieldsBase() {
   Empty* const _this = this; (void)_this;
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Empty)
 }
 
@@ -122,11 +125,11 @@ Empty::Empty(const Empty& from)
 
 
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Empty::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::CopyImpl,
-    ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase::MergeImpl,
+const ::google::protobuf::Message::ClassData Empty::_class_data_ = {
+    ::google::protobuf::internal::ZeroFieldsBase::CopyImpl,
+    ::google::protobuf::internal::ZeroFieldsBase::MergeImpl,
 };
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Empty::GetClassData() const { return &_class_data_; }
+const ::google::protobuf::Message::ClassData*Empty::GetClassData() const { return &_class_data_; }
 
 
 
@@ -134,18 +137,21 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Empty::GetClassData() const { 
 
 
 
-::PROTOBUF_NAMESPACE_ID::Metadata Empty::GetMetadata() const {
+::google::protobuf::Metadata Empty::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fempty_2eproto_getter, &descriptor_table_google_2fprotobuf_2fempty_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fempty_2eproto[0]);
 }
 // @@protoc_insertion_point(namespace_scope)
-PROTOBUF_NAMESPACE_CLOSE
-PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::Empty*
-Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::Empty >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::Empty >(arena);
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
+template<> PROTOBUF_NOINLINE ::google::protobuf::Empty*
+Arena::CreateMaybeMessage< ::google::protobuf::Empty >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::google::protobuf::Empty >(arena);
 }
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 // @@protoc_insertion_point(global_scope)
 #include "google/protobuf/port_undef.inc"
