@@ -829,6 +829,31 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #  endif
 #endif
 
+#ifdef PROTOBUF_TSAN_READ
+#error PROTOBUF_TSAN_READ was previously defined
+#endif
+#ifdef PROTOBUF_TSAN_WRITE
+#error PROTOBUF_TSAN_WRITE was previously defined
+#endif
+#ifdef PROTOBUF_TSAN
+// TODO(b/285620714): it would be preferable to use __tsan_external_read/
+// __tsan_external_write, but they can cause dlopen issues.
+#define PROTOBUF_TSAN_READ(addr)                                               \
+  do {                                                                         \
+    volatile char protobuf_tsan_dummy = *reinterpret_cast<const char *>(addr); \
+    (void)protobuf_tsan_dummy;                                                 \
+  } while (0)
+#define PROTOBUF_TSAN_WRITE(addr)                          \
+  do {                                                     \
+    char protobuf_tsan_zero = 0;                           \
+    asm volatile("" : "+m"(protobuf_tsan_zero));           \
+    *reinterpret_cast<char *>(addr) += protobuf_tsan_zero; \
+  } while (0)
+#else  // PROTOBUF_TSAN
+#define PROTOBUF_TSAN_READ(addr)
+#define PROTOBUF_TSAN_WRITE(addr)
+#endif  // PROTOBUF_TSAN
+
 #ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
 #error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
 #endif

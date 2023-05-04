@@ -826,10 +826,12 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
     inline const $pb$::RepeatedPtrField<$Submsg$>&
     $classname$::_internal_$name$() const {
+      $TsanDetectConcurrentRead$;
       return $field$$.weak$;
     }
     inline $pb$::RepeatedPtrField<$Submsg$>*
     $classname$::_internal_mutable_$name$() {
+      $TsanDetectConcurrentMutation$;
       return &$field$$.weak$;
     }
   )cc");
@@ -837,10 +839,12 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     p->Emit(R"cc(
       inline const $pb$::WeakRepeatedPtrField<$Submsg$>&
       $Msg$::_internal_weak_$name$() const {
+        $TsanDetectConcurrentRead$;
         return $field$;
       }
       inline $pb$::WeakRepeatedPtrField<$Submsg$>*
       $Msg$::_internal_mutable_weak_$name$() {
+        $TsanDetectConcurrentMutation$;
         return &$field$;
       }
     )cc");

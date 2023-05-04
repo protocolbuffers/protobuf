@@ -455,9 +455,11 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     }
 
     inline const $pb$::RepeatedField<$Type$>& $Msg$::_internal_$name$() const {
+      $TsanDetectConcurrentRead$;
       return $field_$;
     }
     inline $pb$::RepeatedField<$Type$>* $Msg$::_internal_mutable_$name$() {
+      $TsanDetectConcurrentMutation$;
       return &$field_$;
     }
   )cc");

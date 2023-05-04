@@ -1239,10 +1239,12 @@ inline ::google::protobuf::RepeatedPtrField<std::string>* CodeGeneratorRequest::
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 CodeGeneratorRequest::_internal_file_to_generate() const {
+  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.file_to_generate_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 CodeGeneratorRequest::_internal_mutable_file_to_generate() {
+  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.file_to_generate_;
 }
 
@@ -1341,10 +1343,12 @@ CodeGeneratorRequest::proto_file() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
 CodeGeneratorRequest::_internal_proto_file() const {
+  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.proto_file_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>*
 CodeGeneratorRequest::_internal_mutable_proto_file() {
+  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.proto_file_;
 }
 
@@ -1844,10 +1848,12 @@ CodeGeneratorResponse::file() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>&
 CodeGeneratorResponse::_internal_file() const {
+  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.file_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>*
 CodeGeneratorResponse::_internal_mutable_file() {
+  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.file_;
 }
 
