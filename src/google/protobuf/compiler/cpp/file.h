@@ -168,6 +168,8 @@ class FileGenerator {
 
   void GenerateProto2NamespaceEnumSpecializations(io::Printer* p);
 
+  bool IsFileDescriptorProto() const;
+
   // Sometimes the names we use in a .proto file happen to be defined as
   // macros on some platforms (e.g., macro/minor used in plugin.proto are
   // defined as macros in sys/types.h on FreeBSD and a few other platforms).

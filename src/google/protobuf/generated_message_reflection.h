@@ -355,6 +355,14 @@ PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8_t* base,
                                                uint32_t has_offset,
                                                io::CodedOutputStream* output);
 
+// This function is defined in descriptor.pb.cc
+PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
+PROTOBUF_EXPORT inline void InitializeFileDescriptorDefaultInstances() {
+  ABSL_CONST_INIT static absl::once_flag init_file_descriptor_defaults;
+  absl::call_once(init_file_descriptor_defaults,
+                  InitializeFileDescriptorDefaultInstancesSlow);
+}
+
 struct PROTOBUF_EXPORT AddDescriptorsRunner {
   explicit AddDescriptorsRunner(const DescriptorTable* table);
 };

@@ -529,6 +529,17 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   }
 }
 
+bool FileGenerator::IsFileDescriptorProto() const {
+  if (Namespace(file_, options_) !=
+      absl::StrCat("::", ProtobufNamespace(options_))) {
+    return false;
+  }
+  for (int i = 0; i < file_->message_type_count(); ++i) {
+    if (file_->message_type(i)->name() == "FileDescriptorProto") return true;
+  }
+  return false;
+}
+
 void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   MessageGenerator* generator = message_generators_[idx].get();
 
@@ -569,24 +580,50 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
 
   generator->GenerateConstexprConstructor(p);
 
-  p->Emit(
-      {
-          {"type", DefaultInstanceType(generator->descriptor(), options_)},
-          {"name", DefaultInstanceName(generator->descriptor(), options_)},
-          {"class", ClassName(generator->descriptor())},
-      },
-      R"cc(
-        struct $type$ {
-          PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
-          ~$type$() {}
-          union {
-            $class$ _instance;
+  if (IsFileDescriptorProto()) {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+            ~$type$() {}
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            void Init() {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            $type$() {}
+            void Init() { ::new (&_instance) $class$(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            union {
+              $class$ _instance;
+            };
           };
-        };
 
-        PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-      )cc");
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT $type$ $name$;
+        )cc");
+  } else {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            ~$type$() {}
+            union {
+              $class$ _instance;
+            };
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  }
 
   for (int i = 0; i < generator->descriptor()->field_count(); ++i) {
     const FieldDescriptor* field = generator->descriptor()->field(i);
@@ -1109,15 +1146,41 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // because in some situations that would otherwise pull in a lot of
   // unnecessary code that can't be stripped by --gc-sections. Descriptor
   // initialization will still be performed lazily when it's needed.
-  if (file_->name() == "net/proto2/proto/descriptor.proto") {
-    return;
+  if (file_->name() != "net/proto2/proto/descriptor.proto") {
+    p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
+            R"cc(
+              // Force running AddDescriptors() at dynamic initialization time.
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+              static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
+            )cc");
   }
 
-  p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}}, R"cc(
-    // Force running AddDescriptors() at dynamic initialization time.
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-    static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
-  )cc");
+  // However, we must provide a way to force initialize the default instances
+  // of FileDescriptorProto which will be used during registration of other
+  // files.
+  if (IsFileDescriptorProto()) {
+    NamespaceOpener ns(p);
+    ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
+    p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)},
+             {"initializers",
+              absl::StrJoin(message_generators_, "\n",
+                            [&](std::string* out, const auto& gen) {
+                              absl::StrAppend(out,
+                                              DefaultInstanceName(
+                                                  gen->descriptor(), options_),
+                                              ".Init();");
+                            })}},
+            // TODO(b/281053818): Adding cc tag to this raw string breaks
+            // clang-format.
+            R"(
+          PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow() {
+            $initializers$;
+          }
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+          static std::true_type $dummy${
+              (InitializeFileDescriptorDefaultInstances(), std::true_type{})};
+        )");
+  }
 }
 
 class FileGenerator::ForwardDeclarations {

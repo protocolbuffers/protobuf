@@ -3570,6 +3570,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
 void AddDescriptorsImpl(const DescriptorTable* table) {
   // Reflection refers to the default fields so make sure they are initialized.
   internal::InitProtobufDefaults();
+  internal::InitializeFileDescriptorDefaultInstances();
 
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.
