@@ -67,7 +67,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
       QualifiedDefaultInstanceName(field->message_type(), opts);
   std::string default_ptr =
       QualifiedDefaultInstancePtr(field->message_type(), opts);
-  absl::string_view base = "::PROTOBUF_NAMESPACE_ID::MessageLite";
+  absl::string_view base = "::google::protobuf::MessageLite";
 
   return {
       {"Submsg", type},
@@ -87,11 +87,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
       {".weak", weak ? ".weak" : ""},
       Sub("StrongRef",
           !weak ? ""
-                : absl::Substitute(
-                      "  "
-                      "::PROTOBUF_NAMESPACE_ID::internal::StrongReference("
-                      "reinterpret_cast<const $0&>($1));\n",
-                      type, default_ref))
+                : absl::Substitute("::google::protobuf::internal::StrongReference("
+                                   "reinterpret_cast<const $0&>($1));\n",
+                                   type, default_ref))
           .WithSuffix(";"),
   };
 }

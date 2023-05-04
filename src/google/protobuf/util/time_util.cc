@@ -446,8 +446,8 @@ timeval TimeUtil::DurationToTimeval(const Duration& value) {
 namespace google {
 namespace protobuf {
 namespace {
-using ::PROTOBUF_NAMESPACE_ID::util::CreateNormalized;
-using ::PROTOBUF_NAMESPACE_ID::util::kNanosPerSecond;
+using ::google::protobuf::util::CreateNormalized;
+using ::google::protobuf::util::kNanosPerSecond;
 
 // Convert a Duration to uint128.
 void ToUint128(const Duration& value, absl::uint128* result, bool* negative) {

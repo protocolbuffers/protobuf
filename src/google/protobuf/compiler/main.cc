@@ -125,5 +125,5 @@ int ProtobufMain(int argc, char* argv[]) {
 }  // namespace google
 
 int main(int argc, char* argv[]) {
-  return PROTOBUF_NAMESPACE_ID::compiler::ProtobufMain(argc, argv);
+  return google::protobuf::compiler::ProtobufMain(argc, argv);
 }
