@@ -72,12 +72,6 @@ bool HasWeakFields(const Descriptor* descriptor) {
 }
 bool UseDirectTcParserTable(const FieldDescriptor* field,
                             const Options& options) {
-  if (options.opensource_runtime) {
-    // We can only use direct tables when the default instances are constant
-    // initialized. In OSS we support some compilers that do not provide this
-    // requirement, so disable the direct use.
-    return false;
-  }
   if (field->cpp_type() != field->CPPTYPE_MESSAGE) return false;
   auto* m = field->message_type();
   return !m->options().message_set_wire_format() &&
@@ -539,9 +533,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
                 format("{_fl::Offset{sizeof($classname$::Impl_::Split)}},\n");
                 break;
               case TailCallTableInfo::kSubMessage:
-                format("{::_pbi::FieldAuxMessageCreator<$1$>{}, &$2$},\n",
-                       QualifiedClassName(aux_entry.field->message_type(),
-                                          options_),
+                format("{::_pbi::FieldAuxDefaultMessage{}, &$1$},\n",
                        QualifiedDefaultInstanceName(
                            aux_entry.field->message_type(), options_));
                 break;
