@@ -165,30 +165,6 @@ struct Offset {
 
 struct FieldAuxDefaultMessage {};
 
-template <typename T>
-struct FieldAuxMessageCreator {};
-
-template <typename T>
-MessageLite* NewImpl(Arena* arena) {
-  return Arena::CreateMessage<T>(arena);
-}
-
-#if defined(_MSC_VER)
-// In some versions of MSVC the globals are not properly constant initialized
-// unless they are marked `constexpr`, which the default instances are not.
-// In that case, we can't use them during parse because we need to be able to
-// parse during dynamic initialization.
-template <typename = void>
-constexpr std::false_type CanUseDefaultInstanceForNew() {
-  return {};
-}
-#else
-template <typename = void>
-constexpr std::true_type CanUseDefaultInstanceForNew() {
-  return {};
-}
-#endif
-
 // Small type card used by mini parse to handle map entries.
 // Map key/values are very limited, so we can encode the whole thing in a single
 // byte.
@@ -435,24 +411,13 @@ struct alignas(uint64_t) TcParseTableBase {
         : enum_range{range_start, range_length} {}
     constexpr FieldAux(const MessageLite* msg) : message_default_p(msg) {}
     constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
-        : message_default_p(msg) {
-      ABSL_ASSERT(CanUseDefaultInstanceForNew());
-    }
-    template <typename T,
-              std::enable_if_t<CanUseDefaultInstanceForNew<T>(), int> = 0>
-    constexpr FieldAux(FieldAuxMessageCreator<T>, const void* msg)
         : message_default_p(msg) {}
-    template <typename T,
-              std::enable_if_t<!CanUseDefaultInstanceForNew<T>(), int> = 0>
-    constexpr FieldAux(FieldAuxMessageCreator<T>, const void*)
-        : creator(&NewImpl<T>) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(void (*create_in_arena)(Arena*, void*))
         : create_in_arena(create_in_arena) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
-
     bool (*enum_validator)(int);
     struct {
       int16_t start;    // minimum enum number (if it fits)
@@ -460,18 +425,15 @@ struct alignas(uint64_t) TcParseTableBase {
     } enum_range;
     uint32_t offset;
     const void* message_default_p;
-    MessageLite* (*creator)(Arena* arena);
     const TcParseTableBase* table;
     MapAuxInfo map_info;
     void (*create_in_arena)(Arena*, void*);
     LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
-      ABSL_DCHECK(CanUseDefaultInstanceForNew());
       return static_cast<const MessageLite*>(message_default_p);
     }
     const MessageLite* message_default_weak() const {
-      ABSL_DCHECK(CanUseDefaultInstanceForNew());
       return *static_cast<const MessageLite* const*>(message_default_p);
     }
   };
