@@ -173,7 +173,7 @@ MessageLite* NewImpl(Arena* arena) {
   return Arena::CreateMessage<T>(arena);
 }
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__)
 // In some versions of MSVC the globals are not properly constant initialized
 // unless they are marked `constexpr`, which the default instances are not.
 // In that case, we can't use them during parse because we need to be able to
