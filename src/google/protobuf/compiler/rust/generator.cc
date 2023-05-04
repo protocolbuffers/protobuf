@@ -116,7 +116,6 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
     std::string crate_name = GetCrateName(dep);
     for (int j = 0; j < dep.desc().message_type_count(); ++j) {
       auto msg = file.WithDesc(dep.desc().message_type(j));
-      // TODO(b/272728844): Implement real logic
       file.Emit(
           {
               {"crate", crate_name},
