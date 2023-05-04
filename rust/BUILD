@@ -64,7 +64,6 @@ rust_test(
     ],
 )
 
-# TODO(b/270125787): Move to the right location once rust_proto_library is no longer experimental.
 proto_lang_toolchain(
     name = "proto_rust_upb_toolchain",
     command_line = "--rust_out=experimental-codegen=enabled,kernel=upb:$(OUT)",
