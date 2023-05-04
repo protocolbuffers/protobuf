@@ -32,9 +32,9 @@ else()
           "GTEST_CREATE_SHARED_LIBRARY=1"
     )
 
-  endif()
-  if (protobuf_INSTALL)
-    set(protobuf_INSTALL_TESTS ON)
+    if (protobuf_INSTALL)
+      set(protobuf_INSTALL_TESTS ON)
+    endif()
   endif()
 
   target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})
