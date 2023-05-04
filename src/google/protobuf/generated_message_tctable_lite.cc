@@ -2113,7 +2113,7 @@ bool TcParser::MpVerifyUtf8(const absl::Cord& wire_bytes,
   }
 }
 
-PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::AddMessage(
+PROTOBUF_ALWAYS_INLINE inline MessageLite* TcParser::AddMessage(
     RepeatedPtrFieldBase& field, TcParseTableBase::FieldAux aux) {
   if (CanUseDefaultInstanceForNew()) {
     return field.Add<GenericTypeHandler<MessageLite>>(aux.message_default());
@@ -2128,7 +2128,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::AddMessage(
   }
 }
 
-PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
+PROTOBUF_ALWAYS_INLINE inline MessageLite* TcParser::NewMessage(
     Arena* arena, TcParseTableBase::FieldAux aux) {
   return CanUseDefaultInstanceForNew() ? aux.message_default()->New(arena)
                                        : aux.creator(arena);
