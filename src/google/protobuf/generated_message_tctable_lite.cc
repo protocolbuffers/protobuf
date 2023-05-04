@@ -425,6 +425,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   if (aux_is_table) {
     const auto* inner_table = table->field_aux(data.aux_idx())->table;
     if (field == nullptr) {
+      ABSL_DCHECK(CanUseDefaultInstanceForNew());
       field = inner_table->default_instance->New(msg->GetArenaForAllocation());
     }
     if (group_coding) {
@@ -434,9 +435,8 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     return ctx->ParseMessage<TcParser>(field, ptr, inner_table);
   } else {
     if (field == nullptr) {
-      const MessageLite* default_instance =
-          table->field_aux(data.aux_idx())->message_default();
-      field = default_instance->New(msg->GetArenaForAllocation());
+      field = NewMessage(msg->GetArenaForAllocation(),
+                         *table->field_aux(data.aux_idx()));
     }
     if (group_coding) {
       return ctx->ParseGroup(field, ptr, FastDecodeTag(saved_tag));
@@ -510,9 +510,10 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
   do {
     ptr += sizeof(TagType);
-    MessageLite* submsg = field.Add<GenericTypeHandler<MessageLite>>(
-        aux_is_table ? aux.table->default_instance : aux.message_default());
     if (aux_is_table) {
+      ABSL_DCHECK(CanUseDefaultInstanceForNew());
+      MessageLite* submsg = field.Add<GenericTypeHandler<MessageLite>>(
+          aux.table->default_instance);
       if (group_coding) {
         ptr = ctx->ParseGroup<TcParser>(submsg, ptr,
                                         FastDecodeTag(expected_tag), aux.table);
@@ -520,6 +521,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
         ptr = ctx->ParseMessage<TcParser>(submsg, ptr, aux.table);
       }
     } else {
+      MessageLite* submsg = AddMessage(field, aux);
       if (group_coding) {
         ptr = ctx->ParseGroup(submsg, ptr, FastDecodeTag(expected_tag));
       } else {
@@ -1741,6 +1743,7 @@ void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
   void* out = msg;
   if (is_split) {
     const uint32_t split_offset = GetSplitOffset(table);
+    ABSL_DCHECK(CanUseDefaultInstanceForNew());
     void* default_split =
         TcParser::RefAt<void*>(table->default_instance, split_offset);
     void*& split = TcParser::RefAt<void*>(msg, split_offset);
@@ -2110,6 +2113,27 @@ bool TcParser::MpVerifyUtf8(const absl::Cord& wire_bytes,
   }
 }
 
+PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::AddMessage(
+    RepeatedPtrFieldBase& field, TcParseTableBase::FieldAux aux) {
+  if (CanUseDefaultInstanceForNew()) {
+    return field.Add<GenericTypeHandler<MessageLite>>(aux.message_default());
+  } else {
+    MessageLite* value =
+        field.AddFromCleared<GenericTypeHandler<MessageLite>>();
+    if (value == nullptr) {
+      value = aux.creator(field.GetArena());
+      field.AddAllocated<GenericTypeHandler<MessageLite>>(value);
+    }
+    return value;
+  }
+}
+
+PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
+    Arena* arena, TcParseTableBase::FieldAux aux) {
+  return CanUseDefaultInstanceForNew() ? aux.message_default()->New(arena)
+                                       : aux.creator(arena);
+}
+
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
@@ -2310,6 +2334,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
     auto* inner_table = table->field_aux(&entry)->table;
     if (need_init || field == nullptr) {
+      ABSL_DCHECK(CanUseDefaultInstanceForNew());
       field = inner_table->default_instance->New(msg->GetArenaForAllocation());
     }
     if (is_group) {
@@ -2318,15 +2343,15 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     return ctx->ParseMessage<TcParser>(field, ptr, inner_table);
   } else {
     if (need_init || field == nullptr) {
-      const MessageLite* def;
       if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
-        def = table->field_aux(&entry)->message_default();
+        field =
+            NewMessage(msg->GetArenaForAllocation(), *table->field_aux(&entry));
       } else {
         ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
                        +field_layout::kTvWeakPtr);
-        def = table->field_aux(&entry)->message_default_weak();
+        field = table->field_aux(&entry)->message_default_weak()->New(
+            msg->GetArenaForAllocation());
       }
-      field = def->New(msg->GetArenaForAllocation());
     }
     if (is_group) {
       return ctx->ParseGroup(field, ptr, decoded_tag);
@@ -2375,15 +2400,15 @@ const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
     }
     return ctx->ParseMessage<TcParser>(value, ptr, inner_table);
   } else {
-    const MessageLite* def;
+    MessageLite* value;
     if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
-      def = aux.message_default();
+      value = AddMessage(field, aux);
     } else {
       ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
                      +field_layout::kTvWeakPtr);
-      def = aux.message_default_weak();
+      value = field.Add<GenericTypeHandler<MessageLite>>(
+          aux.message_default_weak());
     }
-    MessageLite* value = field.Add<GenericTypeHandler<MessageLite>>(def);
     if (is_group) {
       return ctx->ParseGroup(value, ptr, decoded_tag);
     }

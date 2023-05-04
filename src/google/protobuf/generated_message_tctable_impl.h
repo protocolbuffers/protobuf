@@ -811,6 +811,10 @@ class PROTOBUF_EXPORT TcParser final {
       const char* ptr, Arena* arena, SerialArena* serial_arena,
       ParseContext* ctx, RepeatedPtrField<std::string>& field);
 
+  static MessageLite* NewMessage(Arena* arena, TcParseTableBase::FieldAux aux);
+  static MessageLite* AddMessage(RepeatedPtrFieldBase& field,
+                                 TcParseTableBase::FieldAux aux);
+
   static void AddUnknownEnum(MessageLite* msg, const TcParseTableBase* table,
                              uint32_t tag, int32_t enum_value);
 
