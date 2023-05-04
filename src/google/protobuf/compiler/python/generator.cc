@@ -331,10 +331,11 @@ bool Generator::Generate(const FileDescriptor* file,
   printer.Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
   printer_->Indent();
 
-  // We have to fix up the extensions after the message classes themselves,
-  // since they need to call static RegisterExtension() methods on these
-  // classes.
-  FixForeignFieldsInExtensions();
+  // We have to fix up the extensions after the message classes themselves
+  if (HasExtensions()) {
+    printer.Print("_builder.AddHelpersToExtensions(DESCRIPTOR)\n");
+  }
+
   // Descriptor options may have custom extensions. These custom options
   // can only be successfully parsed after we register corresponding
   // extensions. Therefore we parse all options again here to recognize
@@ -1006,47 +1007,20 @@ void Generator::FixForeignFieldsInDescriptors() const {
   printer_->Print("\n");
 }
 
-// We need to not only set any necessary message_type fields, but
-// also need to call RegisterExtension() on each message we're
-// extending.
-void Generator::FixForeignFieldsInExtensions() const {
-  // Top-level extensions.
-  for (int i = 0; i < file_->extension_count(); ++i) {
-    FixForeignFieldsInExtension(*file_->extension(i));
-  }
-  // Nested extensions.
+bool Generator::HasExtensions() const {
+  if (file_->extension_count() > 0) return true;
   for (int i = 0; i < file_->message_type_count(); ++i) {
-    FixForeignFieldsInNestedExtensions(*file_->message_type(i));
+    if (HasExtensionsInMessage(*file_->message_type(i))) return true;
   }
-  printer_->Print("\n");
+  return false;
 }
 
-void Generator::FixForeignFieldsInExtension(
-    const FieldDescriptor& extension_field) const {
-  ABSL_CHECK(extension_field.is_extension());
-
-  absl::flat_hash_map<absl::string_view, std::string> m;
-  // Confusingly, for FieldDescriptors that happen to be extensions,
-  // containing_type() means "extended type."
-  // On the other hand, extension_scope() will give us what we normally
-  // mean by containing_type().
-  m["extended_message_class"] =
-      ModuleLevelMessageName(*extension_field.containing_type());
-  m["field"] = FieldReferencingExpression(
-      extension_field.extension_scope(), extension_field, "extensions_by_name");
-  printer_->Print(m, "$extended_message_class$.RegisterExtension($field$)\n");
-}
-
-void Generator::FixForeignFieldsInNestedExtensions(
-    const Descriptor& descriptor) const {
-  // Recursively fix up extensions in all nested types.
+bool Generator::HasExtensionsInMessage(const Descriptor& descriptor) const {
+  if (descriptor.extension_count() > 0) return true;
   for (int i = 0; i < descriptor.nested_type_count(); ++i) {
-    FixForeignFieldsInNestedExtensions(*descriptor.nested_type(i));
+    if (HasExtensionsInMessage(*descriptor.nested_type(i))) return true;
   }
-  // Fix up extensions directly contained within this type.
-  for (int i = 0; i < descriptor.extension_count(); ++i) {
-    FixForeignFieldsInExtension(*descriptor.extension(i));
-  }
+  return false;
 }
 
 // Returns a Python expression that instantiates a Python EnumValueDescriptor

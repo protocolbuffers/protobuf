@@ -805,12 +805,17 @@ class DescriptorPool(object):
       self._file_descriptors[file_proto.name] = file_descriptor
 
     # Add extensions to the pool
+    def AddExtensionForNested(message_type):
+      for nested in message_type.nested_types:
+        AddExtensionForNested(nested)
+      for extension in message_type.extensions:
+        self._AddExtensionDescriptor(extension)
+
     file_desc = self._file_descriptors[file_proto.name]
     for extension in file_desc.extensions_by_name.values():
       self._AddExtensionDescriptor(extension)
     for message_type in file_desc.message_types_by_name.values():
-      for extension in message_type.extensions:
-        self._AddExtensionDescriptor(extension)
+      AddExtensionForNested(message_type)
 
     return file_desc
 
