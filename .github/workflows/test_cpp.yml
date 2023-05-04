@@ -95,23 +95,11 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - command: >-
-              /test.sh
-              -Dprotobuf_BUILD_CONFORMANCE=ON
-              -Dprotobuf_BUILD_EXAMPLES=ON
-              -DCMAKE_CXX_STANDARD=14
+          - flags: -Dprotobuf_BUILD_EXAMPLES=ON
           - name: Ninja
-            command: >-
-              /test.sh
-              -G Ninja
-              -Dprotobuf_BUILD_CONFORMANCE=ON
-              -DCMAKE_CXX_STANDARD=14
+            flags: -G Ninja
           - name: Shared
-            command: >-
-              /test.sh
-              -Dprotobuf_BUILD_CONFORMANCE=ON
-              -Dprotobuf_BUILD_SHARED_LIBS=ON
-              -DCMAKE_CXX_STANDARD=14
+            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON
 
     name: Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
@@ -119,7 +107,6 @@ jobs:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
-          submodules: recursive
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
@@ -130,9 +117,13 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/docker
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e0eb6c69b7551d89f0dbdbe11906077a1d501229c28db39623b945e0c5d7029a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7058879cac0224e443043eae2de82c13a63a54dd31855dac020c5522aa573cd2
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: ${{ matrix.command }} ${{ env.CCACHE_CMAKE_FLAGS }}
+          command: >-
+            /test.sh ${{ matrix.flags}} ${{ env.CCACHE_CMAKE_FLAGS }}
+            -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_TESTS=ON
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+              
 
   linux-cmake-install:
     name: Linux CMake Install
@@ -141,8 +132,8 @@ jobs:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
-          submodules: recursive
           ref: ${{ inputs.safe-checkout }}
+          submodules: recursive
 
       - name: Setup ccache
         uses: ./.github/actions/ccache
@@ -152,16 +143,69 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/docker
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e0eb6c69b7551d89f0dbdbe11906077a1d501229c28db39623b945e0c5d7029a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7058879cac0224e443043eae2de82c13a63a54dd31855dac020c5522aa573cd2
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} \&\&
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package \&\&
             /test.sh
             ${{ env.CCACHE_CMAKE_FLAGS }}
             -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
             -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
             -Dprotobuf_BUILD_CONFORMANCE=ON
             -DCMAKE_CXX_STANDARD=14
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+
+  linux-cmake-examples:
+    name: Linux CMake Examples
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup ccache
+        uses: ./.github/actions/ccache
+        with:
+          cache-prefix: linux-cmake-examples
+
+      - name: Run tests
+        uses: ./.github/actions/docker
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7058879cac0224e443043eae2de82c13a63a54dd31855dac020c5522aa573cd2
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }}
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+            -Dprotobuf_BUILD_EXAMPLES=OFF \&\&
+            cd examples \&\&
+            mkdir build \&\&
+            cmake -S . -B build -DCMAKE_CXX_STANDARD=14 \&\&
+            cmake --build build
+
+  linux-cmake-submodules:
+    name: Linux CMake Submodules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+          submodules: recursive
+
+      - name: Setup ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
+        with:
+          cache-prefix: linux-cmake-${{ matrix.name }}
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e0eb6c69b7551d89f0dbdbe11906077a1d501229c28db39623b945e0c5d7029a
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /test.sh ${{ env.CCACHE_CMAKE_FLAGS }}
+            -Dprotobuf_BUILD_CONFORMANCE=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
 
   linux-cmake-32-bit:
     name: Linux CMake 32-bit
@@ -170,16 +214,16 @@ jobs:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
-          submodules: recursive
           ref: ${{ inputs.safe-checkout }}
+          submodules: recursive
 
       - name: Setup ccache
-        uses: ./.github/actions/ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
         with:
           cache-prefix: linux-cmake-32-bit
 
       - name: Run tests
-        uses: ./.github/actions/docker
+        uses: protocolbuffers/protobuf-ci/docker@v1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:f99f051daa8b12f4ebad5927f389bc71372f771ab080290ab451cbaf1648f9ea
           platform: linux/386
@@ -260,8 +304,8 @@ jobs:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
-          submodules: recursive
           ref: ${{ inputs.safe-checkout }}
+          submodules: recursive
 
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
