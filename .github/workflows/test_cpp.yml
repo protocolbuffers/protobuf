@@ -123,7 +123,7 @@ jobs:
       # Initialize/update the submodule from remote to validate a new fetch based on .gitmodules
       # We have to do this separately since actions/checkout doesn't support the "--remote" flag
       - name: Update submodules
-        run: git submodule update --init --remote --recursive
+        run: git submodule update --init --recursive
 
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
