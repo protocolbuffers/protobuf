@@ -664,8 +664,6 @@ static PyMethodDef Methods[] = {
     {"AddSerializedFile", AddSerializedFile, METH_O,
      "Adds a serialized FileDescriptorProto to this pool."},
 
-    // TODO(amauryfa): Understand why the Python implementation differs from
-    // this one, ask users to use another API and deprecate these functions.
     {"AddFileDescriptor", AddFileDescriptor, METH_O,
      "No-op. Add() must have been called before."},
     {"AddDescriptor", AddDescriptor, METH_O,
