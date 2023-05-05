@@ -45,10 +45,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/generated_message_util.h"
-#include "google/protobuf/map_entry_lite.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -59,7 +55,6 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -430,7 +425,6 @@ bool ColdChunkSkipper::IsColdChunk(int chunk) {
 
 void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
                                     const std::string& from, io::Printer* p) {
-  Formatter format(p);
   if (!access_info_map_) {
     return;
   } else if (chunk < limit_chunk_) {
@@ -454,42 +448,53 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
   }
 
   // Emit has_bit check for each has_bit_dword index.
-  format("if (PROTOBUF_PREDICT_FALSE(");
-  int first_word = HasbitWord(chunk, 0);
-  while (chunk < limit_chunk_) {
-    uint32_t mask = 0;
-    int this_word = HasbitWord(chunk, 0);
-    // Generate mask for chunks on the same word.
-    for (; chunk < limit_chunk_ && HasbitWord(chunk, 0) == this_word; chunk++) {
-      for (auto field : chunks_[chunk]) {
-        int hasbit_index = has_bit_indices_[field->index()];
-        // Fields on a chunk must be in the same word.
-        ABSL_CHECK_EQ(this_word, hasbit_index / 32);
-        mask |= 1 << (hasbit_index % 32);
-      }
-    }
+  p->Emit(
+      {{"cond",
+        [&] {
+          int first_word = HasbitWord(chunk, 0);
+          while (chunk < limit_chunk_) {
+            uint32_t mask = 0;
+            int this_word = HasbitWord(chunk, 0);
+            // Generate mask for chunks on the same word.
+            for (; chunk < limit_chunk_ && HasbitWord(chunk, 0) == this_word;
+                 chunk++) {
+              for (auto field : chunks_[chunk]) {
+                int hasbit_index = has_bit_indices_[field->index()];
+                // Fields on a chunk must be in the same word.
+                ABSL_CHECK_EQ(this_word, hasbit_index / 32);
+                mask |= 1 << (hasbit_index % 32);
+              }
+            }
 
-    if (this_word != first_word) {
-      format(" ||\n    ");
-    }
-    auto v = p->WithVars({{"mask", absl::Hex(mask, absl::kZeroPad8)}});
-    if (this_word == cached_has_word_index) {
-      format("(cached_has_bits & 0x$mask$u) != 0");
-    } else {
-      format("($1$_impl_._has_bits_[$2$] & 0x$mask$u) != 0", from, this_word);
-    }
-  }
-  format(")) {\n");
-  format.Indent();
+            Formatter format(p);
+            if (this_word != first_word) {
+              p->Emit(R"cc(
+                ||
+              )cc");
+            }
+            auto v = p->WithVars({{"mask", absl::StrFormat("0x%08xu", mask)}});
+            if (this_word == cached_has_word_index) {
+              p->Emit("(cached_has_bits & $mask$) != 0");
+            } else {
+              p->Emit({{"from", from}, {"word", this_word}},
+                      "($from$_impl_._has_bits_[$word$] & $mask$) != 0");
+            }
+          }
+        }}},
+      R"cc(
+        if (PROTOBUF_PREDICT_FALSE($cond$)) {
+      )cc");
+  p->Indent();
 }
 
 bool ColdChunkSkipper::OnEndChunk(int chunk, io::Printer* p) {
-  Formatter format(p);
   if (chunk != limit_chunk_ - 1) {
     return false;
   }
-  format.Outdent();
-  format("}\n");
+  p->Outdent();
+  p->Emit(R"cc(
+    }
+  )cc");
   return true;
 }
 
@@ -2395,9 +2400,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
   }
 
   format.Outdent();
-  format(
-      "}\n"
-      "\n");
+  format("}\n\n");
 }
 
 ArenaDtorNeeds MessageGenerator::NeedsArenaDestructor() const {
