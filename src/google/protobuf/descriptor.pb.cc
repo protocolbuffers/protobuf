@@ -1875,7 +1875,7 @@ FileDescriptorSet::~FileDescriptorSet() {
 
 inline void FileDescriptorSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_file()->~RepeatedPtrField();
+  _impl_.file_.~RepeatedPtrField();
 }
 
 void FileDescriptorSet::SetCachedSize(int size) const {
@@ -2177,10 +2177,10 @@ FileDescriptorProto::~FileDescriptorProto() {
 inline void FileDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _internal_mutable_dependency()->~RepeatedPtrField();
-  _internal_mutable_message_type()->~RepeatedPtrField();
-  _internal_mutable_enum_type()->~RepeatedPtrField();
-  _internal_mutable_service()->~RepeatedPtrField();
-  _internal_mutable_extension()->~RepeatedPtrField();
+  _impl_.message_type_.~RepeatedPtrField();
+  _impl_.enum_type_.~RepeatedPtrField();
+  _impl_.service_.~RepeatedPtrField();
+  _impl_.extension_.~RepeatedPtrField();
   _impl_.public_dependency_.~RepeatedField();
   _impl_.weak_dependency_.~RepeatedField();
   _impl_.name_.Destroy();
@@ -3389,13 +3389,13 @@ DescriptorProto::~DescriptorProto() {
 
 inline void DescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_field()->~RepeatedPtrField();
-  _internal_mutable_nested_type()->~RepeatedPtrField();
-  _internal_mutable_enum_type()->~RepeatedPtrField();
-  _internal_mutable_extension_range()->~RepeatedPtrField();
-  _internal_mutable_extension()->~RepeatedPtrField();
-  _internal_mutable_oneof_decl()->~RepeatedPtrField();
-  _internal_mutable_reserved_range()->~RepeatedPtrField();
+  _impl_.field_.~RepeatedPtrField();
+  _impl_.nested_type_.~RepeatedPtrField();
+  _impl_.enum_type_.~RepeatedPtrField();
+  _impl_.extension_range_.~RepeatedPtrField();
+  _impl_.extension_.~RepeatedPtrField();
+  _impl_.oneof_decl_.~RepeatedPtrField();
+  _impl_.reserved_range_.~RepeatedPtrField();
   _internal_mutable_reserved_name()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
@@ -4346,8 +4346,8 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
 inline void ExtensionRangeOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _internal_mutable_declaration()->~RepeatedPtrField();
-  _internal_mutable_uninterpreted_option()->~RepeatedPtrField();
+  _impl_.declaration_.~RepeatedPtrField();
+  _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 
 void ExtensionRangeOptions::SetCachedSize(int size) const {
@@ -5844,8 +5844,8 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 
 inline void EnumDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_value()->~RepeatedPtrField();
-  _internal_mutable_reserved_range()->~RepeatedPtrField();
+  _impl_.value_.~RepeatedPtrField();
+  _impl_.reserved_range_.~RepeatedPtrField();
   _internal_mutable_reserved_name()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
@@ -6533,7 +6533,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 
 inline void ServiceDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_method()->~RepeatedPtrField();
+  _impl_.method_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
@@ -7521,7 +7521,7 @@ FileOptions::~FileOptions() {
 inline void FileOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _internal_mutable_uninterpreted_option()->~RepeatedPtrField();
+  _impl_.uninterpreted_option_.~RepeatedPtrField();
   _impl_.java_package_.Destroy();
   _impl_.java_outer_classname_.Destroy();
   _impl_.go_package_.Destroy();
@@ -8431,7 +8431,7 @@ MessageOptions::~MessageOptions() {
 inline void MessageOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _internal_mutable_uninterpreted_option()->~RepeatedPtrField();
+  _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 
 void MessageOptions::SetCachedSize(int size) const {
@@ -8869,7 +8869,7 @@ inline void FieldOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
   _internal_mutable_targets()->~RepeatedField();
-  _internal_mutable_uninterpreted_option()->~RepeatedPtrField();
+  _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 
 void FieldOptions::SetCachedSize(int size) const {
@@ -9426,7 +9426,7 @@ OneofOptions::~OneofOptions() {
 inline void OneofOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _internal_mutable_uninterpreted_option()->~RepeatedPtrField();
+  _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 
 void OneofOptions::SetCachedSize(int size) const {
@@ -9661,7 +9661,7 @@ EnumOptions::~EnumOptions() {
 inline void EnumOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _internal_mutable_uninterpreted_option()->~RepeatedPtrField();
+  _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 
 void EnumOptions::SetCachedSize(int size) const {
@@ -9976,7 +9976,7 @@ EnumValueOptions::~EnumValueOptions() {
 inline void EnumValueOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _internal_mutable_uninterpreted_option()->~RepeatedPtrField();
+  _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 
 void EnumValueOptions::SetCachedSize(int size) const {
@@ -10228,7 +10228,7 @@ ServiceOptions::~ServiceOptions() {
 inline void ServiceOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _internal_mutable_uninterpreted_option()->~RepeatedPtrField();
+  _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 
 void ServiceOptions::SetCachedSize(int size) const {
@@ -10489,7 +10489,7 @@ MethodOptions::~MethodOptions() {
 inline void MethodOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _internal_mutable_uninterpreted_option()->~RepeatedPtrField();
+  _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 
 void MethodOptions::SetCachedSize(int size) const {
@@ -11127,7 +11127,7 @@ UninterpretedOption::~UninterpretedOption() {
 
 inline void UninterpretedOption::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_name()->~RepeatedPtrField();
+  _impl_.name_.~RepeatedPtrField();
   _impl_.identifier_value_.Destroy();
   _impl_.string_value_.Destroy();
   _impl_.aggregate_value_.Destroy();
@@ -11925,7 +11925,7 @@ SourceCodeInfo::~SourceCodeInfo() {
 
 inline void SourceCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_location()->~RepeatedPtrField();
+  _impl_.location_.~RepeatedPtrField();
 }
 
 void SourceCodeInfo::SetCachedSize(int size) const {
@@ -12490,7 +12490,7 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
 
 inline void GeneratedCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_annotation()->~RepeatedPtrField();
+  _impl_.annotation_.~RepeatedPtrField();
 }
 
 void GeneratedCodeInfo::SetCachedSize(int size) const {

@@ -734,11 +734,7 @@ class RepeatedMessage : public FieldGeneratorBase {
 };
 
 void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
-  if (weak_) {
-    p->Emit("$pb$::WeakRepeatedPtrField< $Submsg$ > $name$_;\n");
-  } else {
-    p->Emit("$pb$::RepeatedPtrField< $Submsg$ > $name$_;\n");
-  }
+  p->Emit("$pb$::$Weak$RepeatedPtrField< $Submsg$ > $name$_;\n");
 }
 
 void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
@@ -752,10 +748,18 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   format(
       "private:\n"
       "const $pb$::RepeatedPtrField<$Submsg$>& _internal_$name$() const;\n"
-      "$pb$::RepeatedPtrField<$Submsg$>* _internal_mutable_$name$();\n"
-      "public:\n");
-  format("$DEPRECATED$ const $Submsg$& ${1$$name$$}$(int index) const;\n",
-         field_);
+      "$pb$::RepeatedPtrField<$Submsg$>* _internal_mutable_$name$();\n");
+  if (weak_) {
+    format(
+        "const $pb$::WeakRepeatedPtrField<$Submsg$>& _internal_weak_$name$() "
+        "const;\n"
+        "$pb$::WeakRepeatedPtrField<$Submsg$>* "
+        "_internal_mutable_weak_$name$();\n");
+  }
+  format(
+      "public:\n"
+      "$DEPRECATED$ const $Submsg$& ${1$$name$$}$(int index) const;\n",
+      field_);
   format("$DEPRECATED$ $Submsg$* ${1$add_$name$$}$();\n",
          std::make_tuple(field_, GeneratedCodeInfo::Annotation::SET));
   format(
@@ -810,15 +814,28 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "  return _internal_$name$();\n"
       "}\n");
 
-  p->Emit(
-      "inline const $pb$::RepeatedPtrField<$Submsg$>&\n"
-      "$classname$::_internal_$name$() const {\n"
-      "  return $field$$.weak$;\n"
-      "}\n"
-      "inline $pb$::RepeatedPtrField<$Submsg$>*\n"
-      "$classname$::_internal_mutable_$name$() {\n"
-      "  return &$field$$.weak$;\n"
-      "}\n");
+  p->Emit(R"cc(
+    inline const $pb$::RepeatedPtrField<$Submsg$>&
+    $classname$::_internal_$name$() const {
+      return $field$$.weak$;
+    }
+    inline $pb$::RepeatedPtrField<$Submsg$>*
+    $classname$::_internal_mutable_$name$() {
+      return &$field$$.weak$;
+    }
+  )cc");
+  if (weak_) {
+    p->Emit(R"cc(
+      inline const $pb$::WeakRepeatedPtrField<$Submsg$>&
+      $Msg$::_internal_weak_$name$() const {
+        return $field$;
+      }
+      inline $pb$::WeakRepeatedPtrField<$Submsg$>*
+      $Msg$::_internal_mutable_weak_$name$() {
+        return &$field$;
+      }
+    )cc");
+  }
 }
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
@@ -831,7 +848,9 @@ void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
 
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
   if (weak_) {
-    p->Emit("_this->$field_$.MergeFrom(from.$field_$);\n");
+    p->Emit(
+        "_this->_internal_mutable_weak_$name$()->MergeFrom(from._internal_weak_"
+        "$name$());\n");
   } else {
     p->Emit(
         "_this->_internal_mutable_$name$()->MergeFrom("
@@ -841,7 +860,9 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   if (weak_) {
-    p->Emit("$field_$.InternalSwap(&other->$field_$);\n");
+    p->Emit(
+        "_internal_mutable_weak_$name$()->InternalSwap(other->_internal_"
+        "mutable_weak_$name$());\n");
   } else {
     p->Emit(
         "_internal_mutable_$name$()->InternalSwap(other->_internal_mutable_"
@@ -854,11 +875,7 @@ void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
-  if (weak_) {
-    p->Emit("$field_$.~WeakRepeatedPtrField();\n");
-  } else {
-    p->Emit("_internal_mutable_$name$()->~RepeatedPtrField();\n");
-  }
+  p->Emit("$field_$.~$Weak$RepeatedPtrField();\n");
 }
 
 void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
