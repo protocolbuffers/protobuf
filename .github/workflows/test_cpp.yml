@@ -116,7 +116,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7058879cac0224e443043eae2de82c13a63a54dd31855dac020c5522aa573cd2
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.CCACHE_CMAKE_FLAGS }}
@@ -142,7 +142,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7058879cac0224e443043eae2de82c13a63a54dd31855dac020c5522aa573cd2
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package \&\&
@@ -171,16 +171,16 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:7058879cac0224e443043eae2de82c13a63a54dd31855dac020c5522aa573cd2
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }}
             -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
             -Dprotobuf_BUILD_EXAMPLES=OFF \&\&
-            cd examples \&\&
-            mkdir build \&\&
-            cmake -S . -B build -DCMAKE_CXX_STANDARD=14 \&\&
-            cmake --build build
+            mkdir examples/build \&\&
+            cd examples/build \&\&
+            cmake .. -DCMAKE_CXX_STANDARD=14 \&\&
+            cmake --build .
 
   linux-cmake-submodules:
     name: Linux CMake Submodules
@@ -200,7 +200,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e0eb6c69b7551d89f0dbdbe11906077a1d501229c28db39623b945e0c5d7029a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ env.CCACHE_CMAKE_FLAGS }}
