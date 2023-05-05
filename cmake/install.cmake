@@ -6,8 +6,12 @@ foreach(_target IN LISTS protobuf_ABSL_USED_TARGETS)
 endforeach()
 list(APPEND _pc_targets "utf8_range")
 
-string(JOIN " " _pc_target_list ${_pc_targets})
-set(_protobuf_PC_REQUIRES ${_pc_target_list})
+set(_protobuf_PC_REQUIRES "")
+set(_sep "")
+foreach (_target IN LISTS _pc_target_list)
+  string(CONCAT _protobuf_PC_REQUIRES "${_protobuf_PC_REQUIRES}" "${_sep}" "${_target}")
+  set(_sep " ")
+endforeach ()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
