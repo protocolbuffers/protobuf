@@ -25,10 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <inttypes.h>
 
 #include "upb/base/log2.h"
-#include "upb/mem/arena.h"
 #include "upb/mini_table/common.h"
 #include "upb/mini_table/common_internal.h"
 #include "upb/mini_table/encode_internal.h"
@@ -154,9 +152,26 @@ char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
   return upb_MtDataEncoder_PutModifier(e, ptr, msg_mod);
 }
 
-char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
-                                 upb_FieldType type, uint32_t field_num,
-                                 uint64_t field_mod) {
+static char* _upb_MtDataEncoder_MaybePutFieldSkip(upb_MtDataEncoder* e,
+                                                  char* ptr,
+                                                  uint32_t field_num) {
+  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
+  if (field_num <= in->state.msg_state.last_field_num) return NULL;
+  if (in->state.msg_state.last_field_num + 1 != field_num) {
+    // Put skip.
+    UPB_ASSERT(field_num > in->state.msg_state.last_field_num);
+    uint32_t skip = field_num - in->state.msg_state.last_field_num;
+    ptr = upb_MtDataEncoder_PutBase92Varint(
+        e, ptr, skip, kUpb_EncodedValue_MinSkip, kUpb_EncodedValue_MaxSkip);
+    if (!ptr) return NULL;
+  }
+  in->state.msg_state.last_field_num = field_num;
+  return ptr;
+}
+
+static char* _upb_MtDataEncoder_PutFieldType(upb_MtDataEncoder* e, char* ptr,
+                                             upb_FieldType type,
+                                             uint64_t field_mod) {
   static const char kUpb_TypeToEncoded[] = {
       [kUpb_FieldType_Double] = kUpb_EncodedType_Double,
       [kUpb_FieldType_Float] = kUpb_EncodedType_Float,
@@ -178,50 +193,60 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
       [kUpb_FieldType_SInt64] = kUpb_EncodedType_SInt64,
   };
 
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  if (field_num <= in->state.msg_state.last_field_num) return NULL;
-  if (in->state.msg_state.last_field_num + 1 != field_num) {
-    // Put skip.
-    UPB_ASSERT(field_num > in->state.msg_state.last_field_num);
-    uint32_t skip = field_num - in->state.msg_state.last_field_num;
-    ptr = upb_MtDataEncoder_PutBase92Varint(
-        e, ptr, skip, kUpb_EncodedValue_MinSkip, kUpb_EncodedValue_MaxSkip);
-    if (!ptr) return NULL;
-  }
-  in->state.msg_state.last_field_num = field_num;
-
-  uint32_t encoded_modifiers = 0;
-
-  // Put field type.
   int encoded_type = kUpb_TypeToEncoded[type];
+
   if (field_mod & kUpb_FieldModifier_IsClosedEnum) {
     UPB_ASSERT(type == kUpb_FieldType_Enum);
     encoded_type = kUpb_EncodedType_ClosedEnum;
   }
+
   if (field_mod & kUpb_FieldModifier_IsRepeated) {
     // Repeated fields shift the type number up (unlike other modifiers which
     // are bit flags).
     encoded_type += kUpb_EncodedType_RepeatedBase;
+  }
 
-    if (upb_FieldType_IsPackable(type)) {
-      bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
-      bool default_is_packed = in->state.msg_state.msg_modifiers &
-                               kUpb_MessageModifier_DefaultIsPacked;
-      if (field_is_packed != default_is_packed) {
-        encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
-      }
+  return upb_MtDataEncoder_Put(e, ptr, encoded_type);
+}
+
+static char* _upb_MtDataEncoder_MaybePutModifiers(upb_MtDataEncoder* e,
+                                                  char* ptr, upb_FieldType type,
+                                                  uint64_t field_mod) {
+  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
+  uint32_t encoded_modifiers = 0;
+  if ((field_mod & kUpb_FieldModifier_IsRepeated) &&
+      upb_FieldType_IsPackable(type)) {
+    bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
+    bool default_is_packed = in->state.msg_state.msg_modifiers &
+                             kUpb_MessageModifier_DefaultIsPacked;
+    if (field_is_packed != default_is_packed) {
+      encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
     }
   }
-  ptr = upb_MtDataEncoder_Put(e, ptr, encoded_type);
-  if (!ptr) return NULL;
 
   if (field_mod & kUpb_FieldModifier_IsProto3Singular) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsProto3Singular;
   }
+
   if (field_mod & kUpb_FieldModifier_IsRequired) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsRequired;
   }
+
   return upb_MtDataEncoder_PutModifier(e, ptr, encoded_modifiers);
+}
+
+char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
+                                 upb_FieldType type, uint32_t field_num,
+                                 uint64_t field_mod) {
+  upb_MtDataEncoder_GetInternal(e, ptr);
+
+  ptr = _upb_MtDataEncoder_MaybePutFieldSkip(e, ptr, field_num);
+  if (!ptr) return NULL;
+
+  ptr = _upb_MtDataEncoder_PutFieldType(e, ptr, type, field_mod);
+  if (!ptr) return NULL;
+
+  return _upb_MtDataEncoder_MaybePutModifiers(e, ptr, type, field_mod);
 }
 
 char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr) {
