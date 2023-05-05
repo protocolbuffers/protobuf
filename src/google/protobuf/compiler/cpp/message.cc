@@ -130,7 +130,6 @@ void PrintPresenceCheck(const FieldDescriptor* field,
   } else {
     format("if (has_$1$()) {\n", FieldName(field));
   }
-  format.Indent();
 }
 
 struct FieldOrderingByNumber {
@@ -210,7 +209,6 @@ RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
 bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
                                   const FieldDescriptor* field) {
   ABSL_CHECK(!HasHasbit(field));
-  Formatter format(p);
   auto v = p->WithVars({{
       {"prefix", prefix},
       {"name", FieldName(field)},
@@ -219,34 +217,42 @@ bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
   // if non-zero (numeric) or non-empty (string).
   if (!field->is_repeated() && !field->containing_oneof()) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      format("if (!$prefix$_internal_$name$().empty()) {\n");
+      p->Emit(R"cc(
+        if (!$prefix$_internal_$name$().empty()) {
+      )cc");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // Message fields still have has_$name$() methods.
-      format("if ($prefix$_internal_has_$name$()) {\n");
+      p->Emit(R"cc(
+        if ($prefix$_internal_has_$name$()) {
+      )cc");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
-      format(
-          "static_assert(sizeof(::uint32_t) == sizeof(float), \"Code assumes "
-          "::uint32_t and float are the same size.\");\n"
-          "float tmp_$name$ = $prefix$_internal_$name$();\n"
-          "::uint32_t raw_$name$;\n"
-          "memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));\n"
-          "if (raw_$name$ != 0) {\n");
+      p->Emit(R"cc(
+        static_assert(sizeof(::uint32_t) == sizeof(float),
+                      "Code assumes ::uint32_t and float are the same size.");
+        float tmp_$name$ = $prefix$_internal_$name$();
+        ::uint32_t raw_$name$;
+        memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));
+        if (raw_$name$ != 0) {
+      )cc");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE) {
-      format(
-          "static_assert(sizeof(::uint64_t) == sizeof(double), \"Code assumes "
-          "::uint64_t and double are the same size.\");\n"
-          "double tmp_$name$ = $prefix$_internal_$name$();\n"
-          "::uint64_t raw_$name$;\n"
-          "memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));\n"
-          "if (raw_$name$ != 0) {\n");
+      p->Emit(R"cc(
+        static_assert(sizeof(::uint64_t) == sizeof(double),
+                      "Code assumes ::uint64_t and double are the same size.");
+        double tmp_$name$ = $prefix$_internal_$name$();
+        ::uint64_t raw_$name$;
+        memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));
+        if (raw_$name$ != 0) {
+      )cc");
     } else {
-      format("if ($prefix$_internal_$name$() != 0) {\n");
+      p->Emit(R"cc(
+        if ($prefix$_internal_$name$() != 0) {
+      )cc");
     }
-    format.Indent();
     return true;
   } else if (field->real_containing_oneof()) {
-    format("if ($has_field$) {\n");
-    format.Indent();
+    p->Emit(R"cc(
+      if ($has_field$) {
+    )cc");
     return true;
   }
   return false;
@@ -2985,6 +2991,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
 
       if (have_enclosing_if) {
         PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index);
+        format.Indent();
       }
 
       field_generators_.get(field).GenerateMessageClearingCode(p);
@@ -3323,6 +3330,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         // merged only if non-zero (numeric) or non-empty (string).
         bool have_enclosing_if =
             EmitFieldNonDefaultCondition(p, "from.", field);
+        if (have_enclosing_if) format.Indent();
         generator.GenerateMergingCode(p);
         if (have_enclosing_if) {
           format.Outdent();
@@ -3537,14 +3545,13 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
       field_generators_.get(field).GenerateIfHasField(p);
     }
 
-    format.Indent();
     have_enclosing_if = true;
   } else if (field->is_optional() && !HasHasbit(field)) {
     have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
   }
 
+  if (have_enclosing_if) format.Indent();
   field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
-
   if (have_enclosing_if) {
     format.Outdent();
     format("}\n");
@@ -4096,6 +4103,8 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         // non-default value.
         have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
       }
+
+      if (have_enclosing_if) format.Indent();
 
       field_generators_.get(field).GenerateByteSize(p);
 
