@@ -21,6 +21,8 @@ cc_library(
     name = "allowlists",
     srcs = [
         "empty_package.cc",
+        "open_enum.cc",
+        "unused_imports.cc",
         "weak_imports.cc",
     ],
     hdrs = ["allowlists.h"],
