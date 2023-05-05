@@ -117,18 +117,23 @@ std::string ConditionalToCheckBitmasks(
 void PrintPresenceCheck(const FieldDescriptor* field,
                         const std::vector<int>& has_bit_indices, io::Printer* p,
                         int* cached_has_word_index) {
-  Formatter format(p);
   if (!field->options().weak()) {
     int has_bit_index = has_bit_indices[field->index()];
     if (*cached_has_word_index != (has_bit_index / 32)) {
       *cached_has_word_index = (has_bit_index / 32);
-      format("cached_has_bits = $has_bits$[$1$];\n", *cached_has_word_index);
+      p->Emit({{"index", *cached_has_word_index}},
+              R"cc(
+                cached_has_bits = $has_bits$[$index$];
+              )cc");
     }
-    const std::string mask =
-        absl::StrCat(absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-    format("if (cached_has_bits & 0x$1$u) {\n", mask);
+    p->Emit({{"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))}},
+            R"cc(
+              if (cached_has_bits & $mask$) {
+            )cc");
   } else {
-    format("if (has_$1$()) {\n", FieldName(field));
+    p->Emit(R"cc(
+      if (has_$name$()) {
+    )cc");
   }
 }
 
