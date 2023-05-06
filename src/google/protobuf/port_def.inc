@@ -1013,6 +1013,12 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // This error has been generally flaky, but we need to disable it specifically
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#ifndef __clang__
+// This causes spurious warnings in GCC 13.
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+// This causes spurious warnings in GCC 13.
+#pragma GCC diagnostic ignored "-Wself-move"
+#endif
 #if __GNUC__ == 12 && __GNUC_MINOR__ < 4
 // Wrong warning emitted when assigning a single char c-string to a std::string
 // in c++20 mode and optimization on.
