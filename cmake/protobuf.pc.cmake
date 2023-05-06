@@ -8,5 +8,5 @@ Description: Google's Data Interchange Format
 Version: @protobuf_VERSION@
 Requires: @_protobuf_PC_REQUIRES@
 Libs: -L${libdir} -lprotobuf @CMAKE_THREAD_LIBS_INIT@
-Cflags: -I${includedir}
+Cflags: -I${includedir} @_protobuf_PC_CFLAGS@
 Conflicts: protobuf-lite
