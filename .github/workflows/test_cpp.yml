@@ -51,6 +51,26 @@ jobs:
           bazel-cache: cpp_linux/${{ matrix.config.name }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }} --distinct_host_configuration=false
 
+  linux-gcc:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ['9.5', '13.1']
+    name: Linux GCC ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-5.4.0-2d15d9e888c9e7f90961dbd3afc8ea209717fb4b
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/gcc-${{ matrix.version }}
+          bazel: test //pkg/... //src/... @com_google_protobuf_examples//...
+
   linux-release:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
@@ -123,7 +143,6 @@ jobs:
             /test.sh ${{ matrix.flags}} ${{ env.CCACHE_CMAKE_FLAGS }}
             -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_TESTS=ON
             -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
-              
 
   linux-cmake-install:
     name: Linux CMake Install
@@ -182,6 +201,36 @@ jobs:
             cd examples/build \&\&
             cmake .. -DCMAKE_CXX_STANDARD=14 \&\&
             cmake --build .
+
+  linux-cmake-gcc:
+    name: Linux CMake GCC
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+          submodules: recursive
+
+      - name: Setup ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
+        with:
+          cache-prefix: linux-cmake-gcc
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:13.1-5.4.0-307caa02808127e49720f3e77d6a9f3b3ef5a915
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          entrypoint: bash
+          command: >-
+              -c 'set -ex;
+              cd /workspace;
+              ccache -z;
+              cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }};
+              cmake --build . --parallel 20;
+              ctest --verbose --parallel 20;
+              ccache -s'
 
   linux-cmake-submodules:
     name: Linux CMake Submodules
