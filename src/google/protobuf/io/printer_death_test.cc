@@ -90,6 +90,7 @@ class FakeAnnotationCollector : public AnnotationCollector {
  public:
   ~FakeAnnotationCollector() override = default;
 
+  using AnnotationCollector::AddAnnotation;
   void AddAnnotation(size_t begin_offset, size_t end_offset,
                      const std::string& file_path,
                      const std::vector<int>& path) override {
