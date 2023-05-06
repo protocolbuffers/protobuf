@@ -988,7 +988,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
       Element* pold = elements();
       // TODO(b/263791665): add absl::is_trivially_relocatable<Element>
       if (std::is_trivial<Element>::value) {
-        memcpy(pnew, pold, current_size * sizeof(Element));
+        memcpy(static_cast<void*>(pnew), pold, current_size * sizeof(Element));
       } else {
         for (Element* end = pnew + current_size; pnew != end; ++pnew, ++pold) {
           ::new (static_cast<void*>(pnew)) Element(std::move(*pold));
