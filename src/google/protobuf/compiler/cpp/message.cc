@@ -466,7 +466,6 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
               }
             }
 
-            Formatter format(p);
             if (this_word != first_word) {
               p->Emit(R"cc(
                 ||
@@ -1019,20 +1018,21 @@ void MessageGenerator::GenerateSingularFieldHasBits(
 }
 
 void MessageGenerator::GenerateOneofHasBits(io::Printer* p) {
-  Formatter format(p);
   for (const auto* oneof : OneOfRange(descriptor_)) {
-    auto v = p->WithVars({
-        {"oneof_index", oneof->index()},
-        {"oneof_name", oneof->name()},
-        {"cap_oneof_name", absl::AsciiStrToUpper(oneof->name())},
-    });
-    format(
-        "inline bool $classname$::has_$oneof_name$() const {\n"
-        "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
-        "}\n"
-        "inline void $classname$::clear_has_$oneof_name$() {\n"
-        "  $oneof_case$[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n"
-        "}\n");
+    p->Emit(
+        {
+            {"oneof_index", oneof->index()},
+            {"oneof_name", oneof->name()},
+            {"cap_oneof_name", absl::AsciiStrToUpper(oneof->name())},
+        },
+        R"cc(
+          inline bool $classname$::has_$oneof_name$() const {
+            return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;
+          }
+          inline void $classname$::clear_has_$oneof_name$() {
+            $oneof_case$[$oneof_index$] = $cap_oneof_name$_NOT_SET;
+          }
+        )cc");
   }
 }
 
