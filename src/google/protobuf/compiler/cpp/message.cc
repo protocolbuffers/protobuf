@@ -524,9 +524,7 @@ absl::flat_hash_map<absl::string_view, std::string> HasbitVars(
     int has_bit_index) {
   return {
       {"has_array_index", absl::StrCat(has_bit_index / 32)},
-      {"has_mask",
-       absl::StrCat(
-           "0x", absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8), "u")},
+      {"has_mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))},
   };
 }
 
@@ -963,13 +961,14 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 void MessageGenerator::GenerateSingularFieldHasBits(
     const FieldDescriptor* field, io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
-  Formatter format(p);
   if (field->options().weak()) {
-    format(
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  return $weak_field_map$.Has($number$);\n"
-        "}\n");
+    p->Emit(
+        R"cc(
+          inline bool $classname$::has_$name$() const {
+            $annotate_has$;
+            return $weak_field_map$.Has($number$);
+          }
+        )cc");
     return;
   }
   if (HasHasbit(field)) {
@@ -977,41 +976,49 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     ABSL_CHECK_NE(has_bit_index, kNoHasbit);
 
     auto v = p->WithVars(HasbitVars(has_bit_index));
-    format(
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  bool value = ($has_bits$[$has_array_index$] & $has_mask$) != 0;\n");
-
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !IsLazy(field, options_, scc_analyzer_)) {
-      // We maintain the invariant that for a submessage x, has_x() returning
-      // true implies that x_ is not null. By giving this information to the
-      // compiler, we allow it to eliminate unnecessary null checks later on.
-      format("  PROTOBUF_ASSUME(!value || $field$ != nullptr);\n");
-    }
-
-    format(
-        "  return value;\n"
-        "}\n");
+    p->Emit(
+        {Sub{"ASSUME",
+             [&] {
+               if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+                   !IsLazy(field, options_, scc_analyzer_)) {
+                 // We maintain the invariant that for a submessage x, has_x()
+                 // returning true implies that x_ is not null. By giving this
+                 // information to the compiler, we allow it to eliminate
+                 // unnecessary null checks later on.
+                 p->Emit(
+                     R"cc(PROTOBUF_ASSUME(!value || $field$ != nullptr);)cc");
+               }
+             }}
+             .WithSuffix(";")},
+        R"cc(
+          inline bool $classname$::has_$name$() const {
+            $annotate_has$;
+            bool value = ($has_bits$[$has_array_index$] & $has_mask$) != 0;
+            $ASSUME$;
+            return value;
+          }
+        )cc");
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // Message fields have a has_$name$() method.
     if (IsLazy(field, options_, scc_analyzer_)) {
-      format(
-          "inline bool $classname$::_internal_has_$name$() const {\n"
-          "  return !$field$.IsCleared();\n"
-          "}\n");
+      p->Emit(R"cc(
+        inline bool $classname$::_internal_has_$name$() const {
+          return !$field$.IsCleared();
+        }
+      )cc");
     } else {
-      format(
-          "inline bool $classname$::_internal_has_$name$() const {\n"
-          "  return this != internal_default_instance() "
-          "&& $field$ != nullptr;\n"
-          "}\n");
+      p->Emit(R"cc(
+        inline bool $classname$::_internal_has_$name$() const {
+          return this != internal_default_instance() && $field$ != nullptr;
+        }
+      )cc");
     }
-    format(
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  return _internal_has_$name$();\n"
-        "}\n");
+    p->Emit(R"cc(
+      inline bool $classname$::has_$name$() const {
+        $annotate_has$;
+        return _internal_has_$name$();
+      }
+    )cc");
   }
 }
 
