@@ -270,6 +270,8 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
         friend upb_Arena* ::protos::internal::GetArena<$2>(const $2& message);
         friend upb_Arena* ::protos::internal::GetArena<$2>(
             const ::protos::Ptr<$2>& message);
+        friend $0Proxy(::protos::CloneMessage(::protos::Ptr<$2> message,
+                                              ::upb::Arena& arena));
         static void Rebind($0Proxy& lhs, const $0Proxy& rhs) {
           lhs.msg_ = rhs.msg_;
           lhs.arena_ = rhs.arena_;

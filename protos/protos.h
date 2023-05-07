@@ -33,6 +33,7 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "upb/message/copy.h"
 #include "upb/message/extension_internal.h"
 #include "upb/mini_table/types.h"
 #include "upb/upb.hpp"
@@ -119,7 +120,8 @@ typename T::Proxy CreateMessage(::protos::Arena& arena) {
 template <typename T>
 typename T::Proxy CloneMessage(Ptr<T> message, upb::Arena& arena) {
   return typename T::Proxy(
-      upb_Message_DeepClone(message, T::minitable(), arena.ptr()), arena.ptr());
+      upb_Message_DeepClone(message->msg(), T::minitable(), arena.ptr()),
+      arena.ptr());
 }
 
 // begin:github_only
