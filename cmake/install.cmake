@@ -8,7 +8,7 @@ list(APPEND _pc_targets "utf8_range")
 
 set(_protobuf_PC_REQUIRES "")
 set(_sep "")
-foreach (_target IN LISTS _pc_target_list)
+foreach (_target IN LISTS _pc_targets)
   string(CONCAT _protobuf_PC_REQUIRES "${_protobuf_PC_REQUIRES}" "${_sep}" "${_target}")
   set(_sep " ")
 endforeach ()
