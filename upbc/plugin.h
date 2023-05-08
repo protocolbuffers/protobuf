@@ -37,8 +37,8 @@
 
 // begin:google_only
 // #ifndef UPB_BOOTSTRAP_STAGE0
-// #include "net/proto2/compiler/proto/plugin.upb.h"
 // #include "net/proto2/proto/descriptor.upb.h"
+// #include "third_party/protobuf/compiler/plugin.upb.h"
 // #else
 // #include "google/protobuf/compiler/plugin.upb.h"
 // #include "google/protobuf/descriptor.upb.h"

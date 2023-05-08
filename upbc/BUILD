@@ -65,13 +65,13 @@ bootstrap_upb_proto_library(
     name = "plugin_upb_proto",
     base_dir = "",
     google3_src_files = [
-        "net/proto2/compiler/proto/plugin.proto",
         "net/proto2/compiler/proto/profile.proto",
+        "third_party/protobuf/compiler/plugin.proto",
     ],
     google3_src_rules = [
         "//net/proto2/proto:descriptor_proto_source",
-        "//net/proto2/compiler/proto:plugin.proto",
         "//net/proto2/compiler/proto:profile.proto",
+        "//third_party/protobuf/compiler:plugin_proto_source",
     ],
     oss_src_files = ["google/protobuf/compiler/plugin.proto"],
     oss_src_rules = [
