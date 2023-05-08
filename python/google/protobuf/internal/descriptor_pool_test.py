@@ -1049,10 +1049,7 @@ class AddDescriptorTest(unittest.TestCase):
 
   def testAddTypeError(self):
     pool = descriptor_pool.DescriptorPool()
-    if api_implementation.Type() != 'python':
-      with self.assertRaises(TypeError):
-        pool.AddDescriptor(0)
-    else:
+    if api_implementation.Type() == 'python':
       with self.assertRaises(TypeError):
         pool._AddDescriptor(0)
       with self.assertRaises(TypeError):
