@@ -261,4 +261,9 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     {
         return count($this->container);
     }
+
+    public function __debugInfo()
+    {
+        return iterator_to_array($this);
+    }
 }
