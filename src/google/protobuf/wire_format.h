@@ -357,8 +357,9 @@ inline size_t WireFormat::TagSize(int field_number,
 inline void WireFormat::VerifyUTF8String(const char* data, int size,
                                          WireFormat::Operation op) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  WireFormatLite::VerifyUtf8String(
-      data, size, static_cast<WireFormatLite::Operation>(op), nullptr);
+  WireFormatLite::VerifyUtf8String(data, size,
+                                   static_cast<WireFormatLite::Operation>(op),
+                                   /* field_name = */ "");
 #else
   // Avoid the compiler warning about unused variables.
   (void)data;
