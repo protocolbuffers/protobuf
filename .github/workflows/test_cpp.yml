@@ -114,11 +114,15 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - flags: -Dprotobuf_BUILD_EXAMPLES=ON
+          - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
           - name: Ninja
-            flags: -G Ninja
+            flags: -G Ninja -DCMAKE_CXX_STANDARD=14
           - name: Shared
-            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON
+            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
+          - name: C++17
+            flags: -DCMAKE_CXX_STANDARD=17
+          - name: C++20
+            flags: -DCMAKE_CXX_STANDARD=20
 
     name: Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
@@ -202,7 +206,18 @@ jobs:
             cmake --build .
 
   linux-cmake-gcc:
-    name: Linux CMake GCC
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: C++14
+            flags: -DCMAKE_CXX_STANDARD=14
+          - name: C++17
+            flags: -DCMAKE_CXX_STANDARD=17
+          - name: C++20
+            flags: -DCMAKE_CXX_STANDARD=20
+
+    name: Linux CMake GCC ${{ matrix.name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -214,7 +229,7 @@ jobs:
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
         with:
-          cache-prefix: linux-cmake-gcc
+          cache-prefix: linux-cmake-gcc-${{ matrix.name }}
 
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
@@ -226,7 +241,7 @@ jobs:
               -c 'set -ex;
               cd /workspace;
               ccache -z;
-              cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }};
+              cmake . ${{ matrix.flags }} ${{ env.CCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
               ctest --verbose --parallel 20;
               ccache -s'
