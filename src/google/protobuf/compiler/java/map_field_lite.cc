@@ -312,12 +312,6 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
       "              $value_wire_type$,\n"
       "              $value_default_value$);\n"
       "}\n");
-  if (!context_->options().opensource_runtime) {
-    printer->Print(variables_,
-                   "@com.google.protobuf.ProtoField(\n"
-                   "  fieldNumber=$number$,\n"
-                   "  type=com.google.protobuf.FieldType.MAP)\n");
-  }
   printer->Print(variables_,
                  "private com.google.protobuf.MapFieldLite<\n"
                  "    $type_parameters$> $name$_ =\n"

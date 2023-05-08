@@ -199,10 +199,7 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
     printer->Print(
         variables_,
         "@com.google.protobuf.ProtoField(\n"
-        "  fieldNumber=$number$,\n"
-        "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
-        "  isRequired=$required$,\n"
-        "  isEnforceUtf8=$enforce_utf8$)\n");
+        "  isRequired=$required$)\n");
     if (HasHasbit(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
@@ -549,9 +546,7 @@ RepeatedImmutableStringFieldLiteGenerator::
     RepeatedImmutableStringFieldLiteGenerator(const FieldDescriptor* descriptor,
                                               int messageBitIndex,
                                               Context* context)
-    : descriptor_(descriptor),
-      name_resolver_(context->GetNameResolver()),
-      context_(context) {
+    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, 0,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_, context);
@@ -589,14 +584,6 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
-  if (!context_->options().opensource_runtime) {
-    printer->Print(
-        variables_,
-        "@com.google.protobuf.ProtoField(\n"
-        "  fieldNumber=$number$,\n"
-        "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
-        "  isEnforceUtf8=$enforce_utf8$)\n");
-  }
   printer->Print(
       variables_,
       "private com.google.protobuf.Internal.ProtobufList<java.lang.String> "

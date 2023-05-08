@@ -182,12 +182,9 @@ void ImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
 void ImmutableEnumFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   if (!context_->options().opensource_runtime) {
-    printer->Print(
-        variables_,
-        "@com.google.protobuf.ProtoField(\n"
-        "  fieldNumber=$number$,\n"
-        "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
-        "  isRequired=$required$)\n");
+    printer->Print(variables_,
+                   "@com.google.protobuf.ProtoField(\n"
+                   "  isRequired=$required$)\n");
     if (HasHasbit(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
@@ -583,13 +580,6 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
-  if (!context_->options().opensource_runtime) {
-    printer->Print(
-        variables_,
-        "@com.google.protobuf.ProtoField(\n"
-        "  fieldNumber=$number$,\n"
-        "  type=com.google.protobuf.FieldType.$annotation_field_type$)\n");
-  }
   printer->Print(
       variables_,
       "private com.google.protobuf.Internal.IntList $name$_;\n"
