@@ -339,9 +339,9 @@ Api::~Api() {
 
 inline void Api::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_methods()->~RepeatedPtrField();
-  _internal_mutable_options()->~RepeatedPtrField();
-  _internal_mutable_mixins()->~RepeatedPtrField();
+  _impl_.methods_.~RepeatedPtrField();
+  _impl_.options_.~RepeatedPtrField();
+  _impl_.mixins_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.version_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
@@ -788,7 +788,7 @@ Method::~Method() {
 
 inline void Method::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_options()->~RepeatedPtrField();
+  _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.request_type_url_.Destroy();
   _impl_.response_type_url_.Destroy();

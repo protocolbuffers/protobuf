@@ -904,7 +904,7 @@ ListValue::~ListValue() {
 
 inline void ListValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_values()->~RepeatedPtrField();
+  _impl_.values_.~RepeatedPtrField();
 }
 
 void ListValue::SetCachedSize(int size) const {

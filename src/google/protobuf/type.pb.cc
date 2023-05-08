@@ -551,9 +551,9 @@ Type::~Type() {
 
 inline void Type::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_fields()->~RepeatedPtrField();
+  _impl_.fields_.~RepeatedPtrField();
   _internal_mutable_oneofs()->~RepeatedPtrField();
-  _internal_mutable_options()->~RepeatedPtrField();
+  _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
@@ -1023,7 +1023,7 @@ Field::~Field() {
 
 inline void Field::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_options()->~RepeatedPtrField();
+  _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.type_url_.Destroy();
   _impl_.json_name_.Destroy();
@@ -1528,8 +1528,8 @@ Enum::~Enum() {
 
 inline void Enum::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_enumvalue()->~RepeatedPtrField();
-  _internal_mutable_options()->~RepeatedPtrField();
+  _impl_.enumvalue_.~RepeatedPtrField();
+  _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
@@ -1901,7 +1901,7 @@ EnumValue::~EnumValue() {
 
 inline void EnumValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_options()->~RepeatedPtrField();
+  _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
 }
 
