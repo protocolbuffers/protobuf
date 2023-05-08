@@ -201,6 +201,11 @@ class GPBJsonWire
                     $output->writeRaw("null", 4);
                     break;
                 }
+                if ($output->getOptions() & CodedOutputStream::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS) {
+                    $str_value = strval($value);
+                    $output->writeRaw($str_value, strlen($str_value));
+                    break;
+                }
                 $enum_value_desc = $enum_desc->getValueByNumber($value);
                 if (!is_null($enum_value_desc)) {
                     $str_value = $enum_value_desc->getName();

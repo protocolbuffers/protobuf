@@ -1532,4 +1532,18 @@ class EncodeDecodeTest extends TestBase
         $this->assertInstanceOf(EmptyAnySerialization::class, $m);
         $this->assertEquals('', $m->getA());
     }
+
+    public function testJsonStringWithIntegerEnums()
+    {
+        $m = new TestMessage();
+
+        $m->setOneofEnum(TestEnum::ONE);
+        $data = $m->serializeToJsonString(false, true);
+        $expected = '{"oneofEnum":1}';
+        $this->assertSame($expected, $data);
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_enum", $n->getMyOneof());
+        $this->assertSame(TestEnum::ONE, $n->getOneofEnum());
+    }
 }

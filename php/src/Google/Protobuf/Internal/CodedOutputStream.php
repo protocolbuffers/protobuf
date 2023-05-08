@@ -34,23 +34,34 @@ namespace Google\Protobuf\Internal;
 
 class CodedOutputStream
 {
+    /* @see ext/php-upb.h */
+    const JSON_ENCODE_EMIT_DEFAULTS = 1 << 0;
+    const JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS = 1 << 1;
+    const JSON_ENCODE_PRESERVE_PROTO_FILENAMES = 1 << 2;
 
     private $buffer;
     private $buffer_size;
     private $current;
+    private $options;
 
     const MAX_VARINT64_BYTES = 10;
 
-    public function __construct($size)
+    public function __construct($size, $options = 0)
     {
         $this->current = 0;
         $this->buffer_size = $size;
         $this->buffer = str_repeat(chr(0), $this->buffer_size);
+        $this->options = $options;
     }
 
     public function getData()
     {
         return $this->buffer;
+    }
+
+    public function getOptions()
+    {
+        return $this->options;
     }
 
     public function writeVarint32($value, $trim)

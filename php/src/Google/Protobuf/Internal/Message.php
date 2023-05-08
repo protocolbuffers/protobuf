@@ -1570,10 +1570,17 @@ class Message
      * Serialize the message to json string.
      * @return string Serialized json protobuf data.
      */
-    public function serializeToJsonString()
+    public function serializeToJsonString($preserveProtoFieldnames = false, $formatEnumsAsIntegers = false)
     {
-        $output = new CodedOutputStream($this->jsonByteSize());
-        $this->serializeToJsonStream($output);
+        $options = 0;
+        if ($preserveProtoFieldnames) {
+            $options |= CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FILENAMES;
+        }
+        if ($formatEnumsAsIntegers) {
+            $options |= CodedOutputStream::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS;
+        }
+        $output = new CodedOutputStream($this->jsonByteSize($options), $options);
+        $this->serializeToJsonStream($output, $preserveProtoFieldnames, $formatEnumsAsIntegers);
         return $output->getData();
     }
 
@@ -1685,7 +1692,7 @@ class Message
     /**
      * @ignore
      */
-    private function fieldDataOnlyJsonByteSize($field, $value)
+    private function fieldDataOnlyJsonByteSize($field, $value, $options = 0)
     {
         $size = 0;
 
@@ -1742,13 +1749,17 @@ class Message
                     $size += 4;
                     break;
                 }
-                $enum_value_desc = $enum_desc->getValueByNumber($value);
-                if (!is_null($enum_value_desc)) {
-                    $size += 2;  // size for ""
-                    $size += strlen($enum_value_desc->getName());
+                if ($options & CodedOutputStream::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS) {
+                    $size += strlen(strval($value)); // size for integer length
                 } else {
-                    $str_value = strval($value);
-                    $size += strlen($str_value);
+                    $enum_value_desc = $enum_desc->getValueByNumber($value);
+                    if (!is_null($enum_value_desc)) {
+                        $size += 2;  // size for ""
+                        $size += strlen($enum_value_desc->getName());
+                    } else {
+                        $str_value = strval($value);
+                        $size += strlen($str_value);
+                    }
                 }
                 break;
             case GPBType::BOOL:
@@ -1773,7 +1784,7 @@ class Message
                 $size += 2;  // size for \"\"
                 break;
             case GPBType::MESSAGE:
-                $size += $value->jsonByteSize();
+                $size += $value->jsonByteSize($options);
                 break;
 #             case GPBType::GROUP:
 #                 // TODO(teboring): Add support.
@@ -1851,7 +1862,7 @@ class Message
     /**
      * @ignore
      */
-    private function fieldJsonByteSize($field)
+    private function fieldJsonByteSize($field, $options = 0)
     {
         $size = 0;
 
@@ -1886,8 +1897,8 @@ class Message
                     if ($additional_quote) {
                         $size += 2;  // size for ""
                     }
-                    $size += $this->fieldDataOnlyJsonByteSize($key_field, $key);
-                    $size += $this->fieldDataOnlyJsonByteSize($value_field, $value);
+                    $size += $this->fieldDataOnlyJsonByteSize($key_field, $key, $options);
+                    $size += $this->fieldDataOnlyJsonByteSize($value_field, $value, $options);
                     $size += 1;  // size for :
                 }
             }
@@ -1904,7 +1915,7 @@ class Message
                 $size += $count - 1;                     // size for commas
                 $getter = $field->getGetter();
                 foreach ($values as $value) {
-                    $size += $this->fieldDataOnlyJsonByteSize($field, $value);
+                    $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options);
                 }
             }
         } elseif ($this->existField($field) || GPBUtil::hasJsonValue($this)) {
@@ -1914,7 +1925,7 @@ class Message
             }
             $getter = $field->getGetter();
             $value = $this->$getter();
-            $size += $this->fieldDataOnlyJsonByteSize($field, $value);
+            $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options);
         }
         return $size;
     }
@@ -1963,7 +1974,7 @@ class Message
     /**
      * @ignore
      */
-    public function jsonByteSize()
+    public function jsonByteSize($options = 0)
     {
         $size = 0;
         if (is_a($this, 'Google\Protobuf\Any')) {
@@ -1980,9 +1991,9 @@ class Message
             if (GPBUtil::hasSpecialJsonMapping($value_msg)) {
                 // Size for "\",value\":".
                 $size += 9;
-                $size += $value_msg->jsonByteSize();
+                $size += $value_msg->jsonByteSize($options);
             } else {
-                $value_size = $value_msg->jsonByteSize();
+                $value_size = $value_msg->jsonByteSize($options);
                 // size === 2 it's empty message {} which is not serialized inside any
                 if ($value_size !== 2) {
                     // Size for value. +1 for comma, -2 for "{}".
@@ -2002,7 +2013,7 @@ class Message
         } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
             $field = $this->desc->getField()[1];
             if ($this->existField($field)) {
-                $field_size = $this->fieldJsonByteSize($field);
+                $field_size = $this->fieldJsonByteSize($field, $options);
                 $size += $field_size;
             } else {
                 // Size for "[]".
@@ -2011,7 +2022,7 @@ class Message
         } elseif (get_class($this) === 'Google\Protobuf\Struct') {
             $field = $this->desc->getField()[1];
             if ($this->existField($field)) {
-                $field_size = $this->fieldJsonByteSize($field);
+                $field_size = $this->fieldJsonByteSize($field, $options);
                 $size += $field_size;
             } else {
                 // Size for "{}".
@@ -2026,7 +2037,7 @@ class Message
             $fields = $this->desc->getField();
             $count = 0;
             foreach ($fields as $field) {
-                $field_size = $this->fieldJsonByteSize($field);
+                $field_size = $this->fieldJsonByteSize($field, $options);
                 $size += $field_size;
                 if ($field_size != 0) {
                   $count++;
