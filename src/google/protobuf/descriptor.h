@@ -1677,7 +1677,6 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   const FileOptions& options() const;
 
 
-
  private:
   // With the upcoming release of editions, syntax should not be used for
   // business logic.  Instead, the various feature helpers defined in this file
