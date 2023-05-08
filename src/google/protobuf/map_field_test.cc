@@ -90,8 +90,6 @@ class MapFieldBaseStub : public MapFieldBase {
   void MapEnd(MapIterator* map_iter) const override {}
   void MergeFrom(const MapFieldBase& other) override {}
   void Swap(MapFieldBase* other) override {}
-  void InitializeIterator(MapIterator* map_iter) const override {}
-  void DeleteIterator(MapIterator* map_iter) const override {}
   void CopyIterator(MapIterator* this_iterator,
                     const MapIterator& other_iterator) const override {}
   void IncreaseIterator(MapIterator* map_iter) const override {}
@@ -268,17 +266,16 @@ class MapFieldStateTest
     MakeMapDirty(map_field);
     MapFieldBase* map_field_base = map_field;
     map_field_base->MutableRepeatedField();
-    // We use MutableMap on impl_ because we don't want to disturb the syncing
-    Map<int32_t, int32_t>* map = map_field->impl_.MutableMap();
-    map->clear();
+    // We use map_ because we don't want to disturb the syncing
+    map_field->map_.clear();
 
     Expect(map_field, REPEATED_DIRTY, 0, 1);
   }
 
   void Expect(MapFieldType* map_field, State state, int map_size,
               int repeated_size) {
-    // We use MutableMap on impl_ because we don't want to disturb the syncing
-    Map<int32_t, int32_t>* map = map_field->impl_.MutableMap();
+    // We use map_ because we don't want to disturb the syncing
+    Map<int32_t, int32_t>* map = &map_field->map_;
 
     switch (state) {
       case MAP_DIRTY:
