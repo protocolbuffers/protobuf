@@ -177,6 +177,7 @@ TEST_F(UnknownFieldSetTest, Fixed64) {
 TEST_F(UnknownFieldSetTest, LengthDelimited) {
   const UnknownField* field = GetField("optional_string");
   ASSERT_TRUE(field != nullptr);
+  ASSERT_TRUE(field != nullptr);
 
   ASSERT_EQ(UnknownField::TYPE_LENGTH_DELIMITED, field->type());
   EXPECT_EQ(all_fields_.optional_string(), field->length_delimited());
