@@ -12,4 +12,4 @@ if (NOT TARGET utf8_range)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/utf8_range)
 endif ()
 
-set(_protobuf_FIND_UTF8_RANGE "if(NOT TARGET utf8_range)\n  find_package(utf8_range CONFIG)\nendif()")
+set(_protobuf_FIND_UTF8_RANGE "if(NOT TARGET utf8_range)\n  find_dependency(utf8_range CONFIG)\nendif()")

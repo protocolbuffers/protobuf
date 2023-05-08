@@ -176,7 +176,7 @@ if (protobuf_WITH_ZLIB)
     # Using imported target if exists
     if (TARGET ZLIB::ZLIB)
       set(ZLIB_LIBRARIES ZLIB::ZLIB)
-      set(_protobuf_FIND_ZLIB "if(NOT ZLIB_FOUND)\n  find_package(ZLIB)\nendif()")
+      set(_protobuf_FIND_ZLIB "if(NOT ZLIB_FOUND)\n  find_dependency(ZLIB)\nendif()")
     endif (TARGET ZLIB::ZLIB)
   else (ZLIB_FOUND)
     set(HAVE_ZLIB 0)

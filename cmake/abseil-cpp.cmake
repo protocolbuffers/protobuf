@@ -35,7 +35,7 @@ elseif(protobuf_ABSL_PROVIDER STREQUAL "package")
   # Use "CONFIG" as there is no built-in cmake module for absl.
   find_package(absl REQUIRED CONFIG)
 endif()
-set(_protobuf_FIND_ABSL "if(NOT TARGET absl::strings)\n  find_package(absl CONFIG)\nendif()")
+set(_protobuf_FIND_ABSL "if(NOT TARGET absl::strings)\n  find_dependency(absl CONFIG)\nendif()")
 
 if (BUILD_SHARED_LIBS AND MSVC)
   # On MSVC Abseil is bundled into a single DLL.
