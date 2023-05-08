@@ -1073,69 +1073,73 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
 void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                                           bool is_inline, io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
-  Formatter format(p);
-
-  // Generate clear_$name$().
-  if (is_inline) {
-    format("inline ");
-  }
-  format("void $classname$::clear_$name$() {\n");
-
-  format.Indent();
-
-  if (field->real_containing_oneof()) {
-    // Clear this field only if it is the active field in this oneof,
-    // otherwise ignore
-    auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    format("if ($has_field$) {\n");
-    format.Indent();
-    field_generators_.get(field).GenerateClearingCode(p);
-    format("clear_has_$oneof_name$();\n");
-    format.Outdent();
-    format("}\n");
-  } else {
-    if (ShouldSplit(field, options_)) {
-      format("if (IsSplitMessageDefault()) return;\n");
-    }
-    field_generators_.get(field).GenerateClearingCode(p);
-    if (HasHasbit(field)) {
-      int has_bit_index = HasBitIndex(field);
-      auto v = p->WithVars(HasbitVars(has_bit_index));
-      format("$has_bits$[$has_array_index$] &= ~$has_mask$;\n");
-    }
-  }
-  format("$annotate_clear$");
-  format.Outdent();
-  format("}\n");
+  p->Emit({{"inline", is_inline ? "inline" : ""},
+           {"body",
+            [&] {
+              if (field->real_containing_oneof()) {
+                // Clear this field only if it is the active field in this
+                // oneof, otherwise ignore
+                p->Emit(
+                    {{"clearing_code",
+                      [&] {
+                        field_generators_.get(field).GenerateClearingCode(p);
+                      }}},
+                    R"cc(
+                      if ($has_field$) {
+                        $clearing_code$;
+                        clear_has_$oneof_name$();
+                      }
+                    )cc");
+              } else {
+                // TODO(b/281513105): figure out if early return breaks tracking
+                if (ShouldSplit(field, options_)) {
+                  p->Emit(R"cc(
+                    if (IsSplitMessageDefault()) return;
+                  )cc");
+                }
+                field_generators_.get(field).GenerateClearingCode(p);
+                if (HasHasbit(field)) {
+                  int has_bit_index = HasBitIndex(field);
+                  auto v = p->WithVars(HasbitVars(has_bit_index));
+                  p->Emit(R"cc(
+                    $has_bits$[$has_array_index$] &= ~$has_mask$;
+                  )cc");
+                }
+              }
+            }}},
+          R"cc(
+            $inline $void $classname$::clear_$name$() {
+              $body$;
+              $annotate_clear$;
+            }
+          )cc");
 }
 
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
-  Formatter format(p);
-  format("// $classname$\n\n");
+  p->Emit("// $classname$\n\n");
 
   for (auto field : FieldRange(descriptor_)) {
-    PrintFieldComment(format, field);
+    PrintFieldComment(Formatter{p}, field);
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
-      format(
-          "inline int $classname$::_internal_$name$_size() const {\n"
-          "  return $field$$1$.size();\n"
-          "}\n"
-          "inline int $classname$::$name$_size() const {\n"
-          "$annotate_size$"
-          "  return _internal_$name$_size();\n"
-          "}\n",
-          IsImplicitWeakField(field, options_, scc_analyzer_) &&
-                  field->message_type()
-              ? ".weak"
-              : "");
+      p->Emit({{"weak", IsImplicitWeakField(field, options_, scc_analyzer_) &&
+                                field->message_type()
+                            ? ".weak"
+                            : ""}},
+              R"cc(
+                inline int $classname$::_internal_$name$_size() const {
+                  return $field$$weak$.size();
+                }
+                inline int $classname$::$name$_size() const {
+                  $annotate_size$;
+                  return _internal_$name$_size();
+                }
+              )cc");
     } else if (field->real_containing_oneof()) {
       GenerateOneofMemberHasBits(field, p);
     } else {
-      // Singular field.
       GenerateSingularFieldHasBits(field, p);
     }
 
@@ -1145,10 +1149,9 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     // Generate type-specific accessors.
     field_generators_.get(field).GenerateInlineAccessorDefinitions(p);
 
-    format("\n");
+    p->Emit("\n");
   }
 
-  // Generate has_$name$() and clear_has_$name$() functions for oneofs.
   GenerateOneofHasBits(p);
 }
 
