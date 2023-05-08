@@ -638,7 +638,6 @@ void MessageGenerator::AddGenerators(
 
 void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   auto v = p->WithVars(MessageVars(descriptor_));
-  Formatter format(p);
 
   // optimized_fields_ does not contain fields where
   //    field->real_containing_oneof()
@@ -950,15 +949,14 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   }
 
   for (auto oneof : OneOfRange(descriptor_)) {
-    Formatter::SaveState saver(&format);
-    auto v = p->WithVars({
-        {"oneof_name", oneof->name()},
-        {"camel_oneof_name", UnderscoresToCamelCase(oneof->name(), true)},
-    });
-    format(
-        "void ${1$clear_$oneof_name$$}$();\n"
-        "$camel_oneof_name$Case $oneof_name$_case() const;\n",
-        oneof);
+    p->Emit({{"oneof_name", oneof->name()},
+             Sub{"clear_oneof_name", absl::StrCat("clear_", oneof->name())}
+                 .AnnotatedAs(oneof),
+             {"OneOfName", UnderscoresToCamelCase(oneof->name(), true)}},
+            R"cc(
+              void $clear_oneof_name$();
+              $OneOfName$Case $oneof_name$_case() const;
+            )cc");
   }
 }
 
