@@ -706,7 +706,7 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 inline void CodeGeneratorRequest::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _internal_mutable_file_to_generate()->~RepeatedPtrField();
-  _internal_mutable_proto_file()->~RepeatedPtrField();
+  _impl_.proto_file_.~RepeatedPtrField();
   _impl_.parameter_.Destroy();
   if (this != internal_default_instance()) delete _impl_.compiler_version_;
 }
@@ -1422,7 +1422,7 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
 
 inline void CodeGeneratorResponse::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_file()->~RepeatedPtrField();
+  _impl_.file_.~RepeatedPtrField();
   _impl_.error_.Destroy();
 }
 
