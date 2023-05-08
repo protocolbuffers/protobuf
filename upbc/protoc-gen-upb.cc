@@ -689,7 +689,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE $0* $1_resize_$2($1* msg, size_t size, upb_Arena* arena) {
           upb_MiniTableField field = $3;
-          return ($0*)upb_Message_ResizeArray(msg, &field, size, arena);
+          return ($0*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
         }
       )cc",
       CType(field), msg_name, resolved_name,

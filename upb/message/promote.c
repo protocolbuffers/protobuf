@@ -267,7 +267,7 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
         value.msg_val = ret.message;
         // Allocate array on demand before append.
         if (!repeated_messages) {
-          upb_Message_ResizeArray(msg, field, 0, arena);
+          upb_Message_ResizeArrayUninitialized(msg, field, 0, arena);
           repeated_messages = upb_Message_GetMutableArray(msg, field);
         }
         if (!upb_Array_Append(repeated_messages, value, arena)) {

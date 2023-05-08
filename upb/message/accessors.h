@@ -34,7 +34,6 @@
 #include "upb/collections/map.h"
 #include "upb/collections/map_internal.h"
 #include "upb/message/accessors_internal.h"
-#include "upb/message/extension_internal.h"
 #include "upb/message/internal.h"
 #include "upb/mini_table/common.h"
 #include "upb/mini_table/enum_internal.h"
@@ -325,24 +324,12 @@ UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
   return array;
 }
 
-UPB_INLINE upb_Array* upb_Message_ResizeArrayUninitialized(
+UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
     upb_Message* msg, const upb_MiniTableField* field, size_t size,
     upb_Arena* arena) {
   _upb_MiniTableField_CheckIsArray(field);
   upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, field, arena);
   if (!arr || !_upb_Array_ResizeUninitialized(arr, size, arena)) return NULL;
-  return arr;
-}
-
-// TODO: remove, migrate users to upb_Message_ResizeArrayUninitialized(), which
-// has the same semantics but a clearer name. Alternatively, if users want an
-// initialized variant, we can also offer that.
-UPB_API_INLINE void* upb_Message_ResizeArray(upb_Message* msg,
-                                             const upb_MiniTableField* field,
-                                             size_t size, upb_Arena* arena) {
-  _upb_MiniTableField_CheckIsArray(field);
-  upb_Array* arr =
-      upb_Message_ResizeArrayUninitialized(msg, field, size, arena);
   return _upb_array_ptr(arr);
 }
 

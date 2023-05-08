@@ -236,7 +236,7 @@ UPB_INLINE google_protobuf_FileDescriptorProto** google_protobuf_FileDescriptorS
 }
 UPB_INLINE google_protobuf_FileDescriptorProto** google_protobuf_FileDescriptorSet_resize_file(google_protobuf_FileDescriptorSet* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorSet_msg_init(), 1);
-  return (google_protobuf_FileDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_FileDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_FileDescriptorProto* google_protobuf_FileDescriptorSet_add_file(google_protobuf_FileDescriptorSet* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorSet_msg_init(), 1);
@@ -537,7 +537,7 @@ UPB_INLINE upb_StringView* google_protobuf_FileDescriptorProto_mutable_dependenc
 }
 UPB_INLINE upb_StringView* google_protobuf_FileDescriptorProto_resize_dependency(google_protobuf_FileDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 3);
-  return (upb_StringView*)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (upb_StringView*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_FileDescriptorProto_add_dependency(google_protobuf_FileDescriptorProto* msg, upb_StringView val, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 3);
@@ -561,7 +561,7 @@ UPB_INLINE google_protobuf_DescriptorProto** google_protobuf_FileDescriptorProto
 }
 UPB_INLINE google_protobuf_DescriptorProto** google_protobuf_FileDescriptorProto_resize_message_type(google_protobuf_FileDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 4);
-  return (google_protobuf_DescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_DescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_DescriptorProto* google_protobuf_FileDescriptorProto_add_message_type(google_protobuf_FileDescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 4);
@@ -587,7 +587,7 @@ UPB_INLINE google_protobuf_EnumDescriptorProto** google_protobuf_FileDescriptorP
 }
 UPB_INLINE google_protobuf_EnumDescriptorProto** google_protobuf_FileDescriptorProto_resize_enum_type(google_protobuf_FileDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 5);
-  return (google_protobuf_EnumDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_EnumDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_EnumDescriptorProto* google_protobuf_FileDescriptorProto_add_enum_type(google_protobuf_FileDescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 5);
@@ -613,7 +613,7 @@ UPB_INLINE google_protobuf_ServiceDescriptorProto** google_protobuf_FileDescript
 }
 UPB_INLINE google_protobuf_ServiceDescriptorProto** google_protobuf_FileDescriptorProto_resize_service(google_protobuf_FileDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 6);
-  return (google_protobuf_ServiceDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_ServiceDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_ServiceDescriptorProto* google_protobuf_FileDescriptorProto_add_service(google_protobuf_FileDescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 6);
@@ -639,7 +639,7 @@ UPB_INLINE google_protobuf_FieldDescriptorProto** google_protobuf_FileDescriptor
 }
 UPB_INLINE google_protobuf_FieldDescriptorProto** google_protobuf_FileDescriptorProto_resize_extension(google_protobuf_FileDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 7);
-  return (google_protobuf_FieldDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_FieldDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_FieldDescriptorProto* google_protobuf_FileDescriptorProto_add_extension(google_protobuf_FileDescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 7);
@@ -689,7 +689,7 @@ UPB_INLINE int32_t* google_protobuf_FileDescriptorProto_mutable_public_dependenc
 }
 UPB_INLINE int32_t* google_protobuf_FileDescriptorProto_resize_public_dependency(google_protobuf_FileDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 10);
-  return (int32_t*)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (int32_t*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_FileDescriptorProto_add_public_dependency(google_protobuf_FileDescriptorProto* msg, int32_t val, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 10);
@@ -713,7 +713,7 @@ UPB_INLINE int32_t* google_protobuf_FileDescriptorProto_mutable_weak_dependency(
 }
 UPB_INLINE int32_t* google_protobuf_FileDescriptorProto_resize_weak_dependency(google_protobuf_FileDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 11);
-  return (int32_t*)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (int32_t*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_FileDescriptorProto_add_weak_dependency(google_protobuf_FileDescriptorProto* msg, int32_t val, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileDescriptorProto_msg_init(), 11);
@@ -976,7 +976,7 @@ UPB_INLINE google_protobuf_FieldDescriptorProto** google_protobuf_DescriptorProt
 }
 UPB_INLINE google_protobuf_FieldDescriptorProto** google_protobuf_DescriptorProto_resize_field(google_protobuf_DescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 2);
-  return (google_protobuf_FieldDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_FieldDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_FieldDescriptorProto* google_protobuf_DescriptorProto_add_field(google_protobuf_DescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 2);
@@ -1002,7 +1002,7 @@ UPB_INLINE google_protobuf_DescriptorProto** google_protobuf_DescriptorProto_mut
 }
 UPB_INLINE google_protobuf_DescriptorProto** google_protobuf_DescriptorProto_resize_nested_type(google_protobuf_DescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 3);
-  return (google_protobuf_DescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_DescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_DescriptorProto* google_protobuf_DescriptorProto_add_nested_type(google_protobuf_DescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 3);
@@ -1028,7 +1028,7 @@ UPB_INLINE google_protobuf_EnumDescriptorProto** google_protobuf_DescriptorProto
 }
 UPB_INLINE google_protobuf_EnumDescriptorProto** google_protobuf_DescriptorProto_resize_enum_type(google_protobuf_DescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 4);
-  return (google_protobuf_EnumDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_EnumDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_EnumDescriptorProto* google_protobuf_DescriptorProto_add_enum_type(google_protobuf_DescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 4);
@@ -1054,7 +1054,7 @@ UPB_INLINE google_protobuf_DescriptorProto_ExtensionRange** google_protobuf_Desc
 }
 UPB_INLINE google_protobuf_DescriptorProto_ExtensionRange** google_protobuf_DescriptorProto_resize_extension_range(google_protobuf_DescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 5);
-  return (google_protobuf_DescriptorProto_ExtensionRange**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_DescriptorProto_ExtensionRange**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_DescriptorProto_ExtensionRange* google_protobuf_DescriptorProto_add_extension_range(google_protobuf_DescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 5);
@@ -1080,7 +1080,7 @@ UPB_INLINE google_protobuf_FieldDescriptorProto** google_protobuf_DescriptorProt
 }
 UPB_INLINE google_protobuf_FieldDescriptorProto** google_protobuf_DescriptorProto_resize_extension(google_protobuf_DescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 6);
-  return (google_protobuf_FieldDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_FieldDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_FieldDescriptorProto* google_protobuf_DescriptorProto_add_extension(google_protobuf_DescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 6);
@@ -1118,7 +1118,7 @@ UPB_INLINE google_protobuf_OneofDescriptorProto** google_protobuf_DescriptorProt
 }
 UPB_INLINE google_protobuf_OneofDescriptorProto** google_protobuf_DescriptorProto_resize_oneof_decl(google_protobuf_DescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 8);
-  return (google_protobuf_OneofDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_OneofDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_OneofDescriptorProto* google_protobuf_DescriptorProto_add_oneof_decl(google_protobuf_DescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 8);
@@ -1144,7 +1144,7 @@ UPB_INLINE google_protobuf_DescriptorProto_ReservedRange** google_protobuf_Descr
 }
 UPB_INLINE google_protobuf_DescriptorProto_ReservedRange** google_protobuf_DescriptorProto_resize_reserved_range(google_protobuf_DescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 9);
-  return (google_protobuf_DescriptorProto_ReservedRange**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_DescriptorProto_ReservedRange**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_DescriptorProto_ReservedRange* google_protobuf_DescriptorProto_add_reserved_range(google_protobuf_DescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 9);
@@ -1170,7 +1170,7 @@ UPB_INLINE upb_StringView* google_protobuf_DescriptorProto_mutable_reserved_name
 }
 UPB_INLINE upb_StringView* google_protobuf_DescriptorProto_resize_reserved_name(google_protobuf_DescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 10);
-  return (upb_StringView*)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (upb_StringView*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_DescriptorProto_add_reserved_name(google_protobuf_DescriptorProto* msg, upb_StringView val, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_DescriptorProto_msg_init(), 10);
@@ -1428,7 +1428,7 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_ExtensionRangeO
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_ExtensionRangeOptions_resize_uninterpreted_option(google_protobuf_ExtensionRangeOptions* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_ExtensionRangeOptions_msg_init(), 999);
-  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_ExtensionRangeOptions_add_uninterpreted_option(google_protobuf_ExtensionRangeOptions* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_ExtensionRangeOptions_msg_init(), 999);
@@ -1922,7 +1922,7 @@ UPB_INLINE google_protobuf_EnumValueDescriptorProto** google_protobuf_EnumDescri
 }
 UPB_INLINE google_protobuf_EnumValueDescriptorProto** google_protobuf_EnumDescriptorProto_resize_value(google_protobuf_EnumDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumDescriptorProto_msg_init(), 2);
-  return (google_protobuf_EnumValueDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_EnumValueDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_EnumValueDescriptorProto* google_protobuf_EnumDescriptorProto_add_value(google_protobuf_EnumDescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumDescriptorProto_msg_init(), 2);
@@ -1960,7 +1960,7 @@ UPB_INLINE google_protobuf_EnumDescriptorProto_EnumReservedRange** google_protob
 }
 UPB_INLINE google_protobuf_EnumDescriptorProto_EnumReservedRange** google_protobuf_EnumDescriptorProto_resize_reserved_range(google_protobuf_EnumDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumDescriptorProto_msg_init(), 4);
-  return (google_protobuf_EnumDescriptorProto_EnumReservedRange**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_EnumDescriptorProto_EnumReservedRange**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_EnumDescriptorProto_EnumReservedRange* google_protobuf_EnumDescriptorProto_add_reserved_range(google_protobuf_EnumDescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumDescriptorProto_msg_init(), 4);
@@ -1986,7 +1986,7 @@ UPB_INLINE upb_StringView* google_protobuf_EnumDescriptorProto_mutable_reserved_
 }
 UPB_INLINE upb_StringView* google_protobuf_EnumDescriptorProto_resize_reserved_name(google_protobuf_EnumDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumDescriptorProto_msg_init(), 5);
-  return (upb_StringView*)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (upb_StringView*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_EnumDescriptorProto_add_reserved_name(google_protobuf_EnumDescriptorProto* msg, upb_StringView val, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumDescriptorProto_msg_init(), 5);
@@ -2278,7 +2278,7 @@ UPB_INLINE google_protobuf_MethodDescriptorProto** google_protobuf_ServiceDescri
 }
 UPB_INLINE google_protobuf_MethodDescriptorProto** google_protobuf_ServiceDescriptorProto_resize_method(google_protobuf_ServiceDescriptorProto* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_ServiceDescriptorProto_msg_init(), 2);
-  return (google_protobuf_MethodDescriptorProto**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_MethodDescriptorProto**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_MethodDescriptorProto* google_protobuf_ServiceDescriptorProto_add_method(google_protobuf_ServiceDescriptorProto* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_ServiceDescriptorProto_msg_init(), 2);
@@ -2912,7 +2912,7 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FileOptions_mut
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FileOptions_resize_uninterpreted_option(google_protobuf_FileOptions* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileOptions_msg_init(), 999);
-  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_FileOptions_add_uninterpreted_option(google_protobuf_FileOptions* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FileOptions_msg_init(), 999);
@@ -3090,7 +3090,7 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_MessageOptions_
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_MessageOptions_resize_uninterpreted_option(google_protobuf_MessageOptions* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_MessageOptions_msg_init(), 999);
-  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_MessageOptions_add_uninterpreted_option(google_protobuf_MessageOptions* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_MessageOptions_msg_init(), 999);
@@ -3325,7 +3325,7 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FieldOptions_mu
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FieldOptions_resize_uninterpreted_option(google_protobuf_FieldOptions* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FieldOptions_msg_init(), 999);
-  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_FieldOptions_add_uninterpreted_option(google_protobuf_FieldOptions* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_FieldOptions_msg_init(), 999);
@@ -3408,7 +3408,7 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_OneofOptions_mu
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_OneofOptions_resize_uninterpreted_option(google_protobuf_OneofOptions* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_OneofOptions_msg_init(), 999);
-  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_OneofOptions_add_uninterpreted_option(google_protobuf_OneofOptions* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_OneofOptions_msg_init(), 999);
@@ -3548,7 +3548,7 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_EnumOptions_mut
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_EnumOptions_resize_uninterpreted_option(google_protobuf_EnumOptions* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumOptions_msg_init(), 999);
-  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_EnumOptions_add_uninterpreted_option(google_protobuf_EnumOptions* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumOptions_msg_init(), 999);
@@ -3650,7 +3650,7 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_EnumValueOption
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_EnumValueOptions_resize_uninterpreted_option(google_protobuf_EnumValueOptions* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumValueOptions_msg_init(), 999);
-  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_EnumValueOptions_add_uninterpreted_option(google_protobuf_EnumValueOptions* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_EnumValueOptions_msg_init(), 999);
@@ -3752,7 +3752,7 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_ServiceOptions_
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_ServiceOptions_resize_uninterpreted_option(google_protobuf_ServiceOptions* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_ServiceOptions_msg_init(), 999);
-  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_ServiceOptions_add_uninterpreted_option(google_protobuf_ServiceOptions* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_ServiceOptions_msg_init(), 999);
@@ -3873,7 +3873,7 @@ UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_MethodOptions_m
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_MethodOptions_resize_uninterpreted_option(google_protobuf_MethodOptions* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_MethodOptions_msg_init(), 999);
-  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_MethodOptions_add_uninterpreted_option(google_protobuf_MethodOptions* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_MethodOptions_msg_init(), 999);
@@ -4046,7 +4046,7 @@ UPB_INLINE google_protobuf_UninterpretedOption_NamePart** google_protobuf_Uninte
 }
 UPB_INLINE google_protobuf_UninterpretedOption_NamePart** google_protobuf_UninterpretedOption_resize_name(google_protobuf_UninterpretedOption* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_UninterpretedOption_msg_init(), 2);
-  return (google_protobuf_UninterpretedOption_NamePart**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_UninterpretedOption_NamePart**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption_NamePart* google_protobuf_UninterpretedOption_add_name(google_protobuf_UninterpretedOption* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_UninterpretedOption_msg_init(), 2);
@@ -4228,7 +4228,7 @@ UPB_INLINE google_protobuf_SourceCodeInfo_Location** google_protobuf_SourceCodeI
 }
 UPB_INLINE google_protobuf_SourceCodeInfo_Location** google_protobuf_SourceCodeInfo_resize_location(google_protobuf_SourceCodeInfo* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_SourceCodeInfo_msg_init(), 1);
-  return (google_protobuf_SourceCodeInfo_Location**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_SourceCodeInfo_Location**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_SourceCodeInfo_Location* google_protobuf_SourceCodeInfo_add_location(google_protobuf_SourceCodeInfo* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_SourceCodeInfo_msg_init(), 1);
@@ -4381,7 +4381,7 @@ UPB_INLINE int32_t* google_protobuf_SourceCodeInfo_Location_mutable_path(google_
 }
 UPB_INLINE int32_t* google_protobuf_SourceCodeInfo_Location_resize_path(google_protobuf_SourceCodeInfo_Location* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_SourceCodeInfo_Location_msg_init(), 1);
-  return (int32_t*)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (int32_t*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_SourceCodeInfo_Location_add_path(google_protobuf_SourceCodeInfo_Location* msg, int32_t val, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_SourceCodeInfo_Location_msg_init(), 1);
@@ -4405,7 +4405,7 @@ UPB_INLINE int32_t* google_protobuf_SourceCodeInfo_Location_mutable_span(google_
 }
 UPB_INLINE int32_t* google_protobuf_SourceCodeInfo_Location_resize_span(google_protobuf_SourceCodeInfo_Location* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_SourceCodeInfo_Location_msg_init(), 2);
-  return (int32_t*)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (int32_t*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_SourceCodeInfo_Location_add_span(google_protobuf_SourceCodeInfo_Location* msg, int32_t val, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_SourceCodeInfo_Location_msg_init(), 2);
@@ -4437,7 +4437,7 @@ UPB_INLINE upb_StringView* google_protobuf_SourceCodeInfo_Location_mutable_leadi
 }
 UPB_INLINE upb_StringView* google_protobuf_SourceCodeInfo_Location_resize_leading_detached_comments(google_protobuf_SourceCodeInfo_Location* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_SourceCodeInfo_Location_msg_init(), 6);
-  return (upb_StringView*)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (upb_StringView*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_SourceCodeInfo_Location_add_leading_detached_comments(google_protobuf_SourceCodeInfo_Location* msg, upb_StringView val, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_SourceCodeInfo_Location_msg_init(), 6);
@@ -4518,7 +4518,7 @@ UPB_INLINE google_protobuf_GeneratedCodeInfo_Annotation** google_protobuf_Genera
 }
 UPB_INLINE google_protobuf_GeneratedCodeInfo_Annotation** google_protobuf_GeneratedCodeInfo_resize_annotation(google_protobuf_GeneratedCodeInfo* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_GeneratedCodeInfo_msg_init(), 1);
-  return (google_protobuf_GeneratedCodeInfo_Annotation**)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (google_protobuf_GeneratedCodeInfo_Annotation**)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE struct google_protobuf_GeneratedCodeInfo_Annotation* google_protobuf_GeneratedCodeInfo_add_annotation(google_protobuf_GeneratedCodeInfo* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_GeneratedCodeInfo_msg_init(), 1);
@@ -4661,7 +4661,7 @@ UPB_INLINE int32_t* google_protobuf_GeneratedCodeInfo_Annotation_mutable_path(go
 }
 UPB_INLINE int32_t* google_protobuf_GeneratedCodeInfo_Annotation_resize_path(google_protobuf_GeneratedCodeInfo_Annotation* msg, size_t size, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_GeneratedCodeInfo_Annotation_msg_init(), 1);
-  return (int32_t*)upb_Message_ResizeArray(msg, &field, size, arena);
+  return (int32_t*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
 }
 UPB_INLINE bool google_protobuf_GeneratedCodeInfo_Annotation_add_path(google_protobuf_GeneratedCodeInfo_Annotation* msg, int32_t val, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google_protobuf_GeneratedCodeInfo_Annotation_msg_init(), 1);
