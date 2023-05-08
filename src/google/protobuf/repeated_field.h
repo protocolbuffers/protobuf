@@ -494,7 +494,7 @@ template <typename Element>
 inline RepeatedField<Element>::RepeatedField(const RepeatedField& rhs)
     : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {
   StaticValidityCheck();
-  if (size_t size = rhs.current_size_) {
+  if (auto size = rhs.current_size_) {
     Grow(0, size);
     ExchangeCurrentSize(size);
     UninitializedCopyN(rhs.elements(), size, unsafe_elements());
@@ -775,7 +775,7 @@ inline void RepeatedField<Element>::Clear() {
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& rhs) {
   ABSL_DCHECK_NE(&rhs, this);
-  if (size_t size = rhs.current_size_) {
+  if (auto size = rhs.current_size_) {
     Reserve(current_size_ + size);
     Element* dst = elements() + ExchangeCurrentSize(current_size_ + size);
     UninitializedCopyN(rhs.elements(), size, dst);
