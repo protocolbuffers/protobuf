@@ -264,6 +264,14 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
 
     public function __debugInfo()
     {
-        return iterator_to_array($this);
+        return array_map(
+            function ($item) {
+                if ($item instanceof Message || $item instanceof RepeatedField) {
+                    return $item->__debugInfo();
+                }
+                return $item;
+            },
+            iterator_to_array($this)
+        );
     }
 }

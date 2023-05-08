@@ -3,8 +3,8 @@
 require_once('test_base.php');
 require_once('test_util.php');
 
-use Google\Protobuf\RepeatedField;
-use Google\Protobuf\GPBType;
+use Google\Protobuf\Internal\RepeatedField;
+use Google\Protobuf\Internal\GPBType;
 use Foo\EmptyAnySerialization;
 use Foo\TestInt32Value;
 use Foo\TestStringValue;
@@ -297,7 +297,7 @@ class DebugInfoTest extends TestBase
     public function testRepeatedStringValue()
     {
         $m = new TestStringValue();
-        $r[] = new StringValue(['value' => 'a']);
+        $r = [new StringValue(['value' => 'a'])];
         $m->setRepeatedField($r);
         $this->assertSame(['repeatedField' => ['a']], $m->__debugInfo());
     }
@@ -331,6 +331,33 @@ class DebugInfoTest extends TestBase
         $m = new TestMessage();
         $m->setOneofEnum(TestEnum::ZERO);
         $this->assertSame(['oneofEnum' => 'ZERO'], $m->__debugInfo());
+    }
+
+    public function testTopLevelRepeatedField()
+    {
+        $r1 = new RepeatedField(GPBType::class);
+        $r1[] = 'a';
+        $this->assertSame(['a'], $r1->__debugInfo());
+
+        $r2 = new RepeatedField(TestMessage::class);
+        $r2[] = new TestMessage(['optional_int32' => -42]);
+        $r2[] = new TestMessage(['optional_int64' => 43]);
+        $this->assertSame([
+            ['optionalInt32' => -42],
+            ['optionalInt64' => '43'],
+        ], $r2->__debugInfo());
+
+        $r3 = new RepeatedField(RepeatedField::class);
+        $r3[] = $r1;
+        $r3[] = $r2;
+
+        $this->assertSame([
+            ['a'],
+            [
+                ['optionalInt32' => -42],
+                ['optionalInt64' => '43'],
+            ],
+        ], $r3->__debugInfo());
     }
 
     public function testEverything()
