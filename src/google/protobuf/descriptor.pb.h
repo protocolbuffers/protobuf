@@ -195,6 +195,11 @@ template <>
 PROTOBUF_EXPORT ::google::protobuf::UninterpretedOption* Arena::CreateMaybeMessage<::google::protobuf::UninterpretedOption>(Arena*);
 template <>
 PROTOBUF_EXPORT ::google::protobuf::UninterpretedOption_NamePart* Arena::CreateMaybeMessage<::google::protobuf::UninterpretedOption_NamePart>(Arena*);
+namespace internal {
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
+#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
