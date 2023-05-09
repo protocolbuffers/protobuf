@@ -1116,32 +1116,30 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
 }
 
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
-  Formatter format(p);
-  format("// $classname$\n\n");
+  p->Emit("// $classname$\n\n");
 
   for (auto field : FieldRange(descriptor_)) {
-    PrintFieldComment(format, field);
+    PrintFieldComment(Formatter{p}, field);
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
-      format(
-          "inline int $classname$::_internal_$name$_size() const {\n"
-          "  return $field$$1$.size();\n"
-          "}\n"
-          "inline int $classname$::$name$_size() const {\n"
-          "$annotate_size$"
-          "  return _internal_$name$_size();\n"
-          "}\n",
-          IsImplicitWeakField(field, options_, scc_analyzer_) &&
-                  field->message_type()
-              ? ".weak"
-              : "");
+      p->Emit({{"weak", IsImplicitWeakField(field, options_, scc_analyzer_) &&
+                                field->message_type()
+                            ? ".weak"
+                            : ""}},
+              R"cc(
+                inline int $classname$::_internal_$name$_size() const {
+                  return $field$$weak$.size();
+                }
+                inline int $classname$::$name$_size() const {
+                  $annotate_size$;
+                  return _internal_$name$_size();
+                }
+              )cc");
     } else if (field->real_containing_oneof()) {
       GenerateOneofMemberHasBits(field, p);
     } else {
-      // Singular field.
       GenerateSingularFieldHasBits(field, p);
     }
 
@@ -1151,10 +1149,9 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     // Generate type-specific accessors.
     field_generators_.get(field).GenerateInlineAccessorDefinitions(p);
 
-    format("\n");
+    p->Emit("\n");
   }
 
-  // Generate has_$name$() and clear_has_$name$() functions for oneofs.
   GenerateOneofHasBits(p);
 }
 
