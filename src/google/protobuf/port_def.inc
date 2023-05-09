@@ -672,6 +672,12 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #  define PROTOBUF_CONSTINIT
 #  define PROTOBUF_CONSTEXPR constexpr
 # endif
+#elif defined(__GNUC__) && !defined(__clang__)
+// GCC doesn't support constinit aggregate initialization of absl::Cord.
+# if PROTOBUF_GNUC_MIN(12, 2)
+#  define PROTOBUF_CONSTINIT
+#  define PROTOBUF_CONSTEXPR constexpr
+# endif
 #else
 # if defined(__cpp_constinit) && !defined(__CYGWIN__)
 #  define PROTOBUF_CONSTINIT constinit
@@ -686,10 +692,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
         ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||             \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
 #  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#  define PROTOBUF_CONSTEXPR constexpr
-#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-# elif PROTOBUF_GNUC_MIN(12, 2)
-#  define PROTOBUF_CONSTINIT __constinit
 #  define PROTOBUF_CONSTEXPR constexpr
 #  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 # endif
