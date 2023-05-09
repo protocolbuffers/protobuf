@@ -1043,31 +1043,33 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* p) {
 
 void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
                                                   io::Printer* p) {
-  auto t = p->WithVars(MakeTrackerCalls(field, options_));
-  Formatter format(p);
   // Singular field in a oneof
   // N.B.: Without field presence, we do not use has-bits or generate
   // has_$name$() methods, but oneofs still have set_has_$name$().
   // Oneofs also have private _internal_has_$name$() a helper method.
   if (field->has_presence()) {
-    format(
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  return $has_field$;\n"
-        "}\n");
+    auto t = p->WithVars(MakeTrackerCalls(field, options_));
+    p->Emit(R"cc(
+      inline bool $classname$::has_$name$() const {
+        $annotate_has$;
+        return $has_field$;
+      }
+    )cc");
   }
   if (HasInternalHasMethod(field)) {
-    format(
-        "inline bool $classname$::_internal_has_$name$() const {\n"
-        "  return $has_field$;\n"
-        "}\n");
+    p->Emit(R"cc(
+      inline bool $classname$::_internal_has_$name$() const {
+        return $has_field$;
+      }
+    )cc");
   }
   // set_has_$name$() for oneof fields is always private; hence should not be
   // annotated.
-  format(
-      "inline void $classname$::set_has_$name$() {\n"
-      "  $oneof_case$[$oneof_index$] = k$field_name$;\n"
-      "}\n");
+  p->Emit(R"cc(
+    inline void $classname$::set_has_$name$() {
+      $oneof_case$[$oneof_index$] = k$field_name$;
+    }
+  )cc");
 }
 
 void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
@@ -1876,9 +1878,6 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
 
 void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
                                       int has_offset) {
-  auto v = p->WithVars(ClassVars(descriptor_, options_));
-  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
-  Formatter format(p);
   has_offset = !has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)
                    ? offset + has_offset
                    : -1;
@@ -1890,8 +1889,17 @@ void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
     ABSL_DCHECK(!IsMapEntryMessage(descriptor_));
     inlined_string_indices_offset = has_offset + has_bit_indices_.size();
   }
-  format("{ $1$, $2$, $3$, sizeof($classtype$)},\n", offset, has_offset,
-         inlined_string_indices_offset);
+
+  auto v = p->WithVars(ClassVars(descriptor_, options_));
+  p->Emit(
+      {
+          {"offset", offset},
+          {"has_offset", has_offset},
+          {"string_offsets", inlined_string_indices_offset},
+      },
+      R"cc(
+        {$offset$, $has_offset$, $string_offsets$, sizeof($classtype$)},
+      )cc");
 }
 
 void MessageGenerator::GenerateClassMethods(io::Printer* p) {
