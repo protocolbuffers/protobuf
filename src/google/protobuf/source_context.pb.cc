@@ -59,7 +59,7 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offse
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, -1, -1, sizeof(::google::protobuf::SourceContext)},
+        {0, -1, -1, sizeof(::google::protobuf::SourceContext)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {

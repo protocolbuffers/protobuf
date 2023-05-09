@@ -161,9 +161,9 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] PROTOBUF
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, 15, -1, sizeof(::google::protobuf::Api)},
-        { 22, -1, -1, sizeof(::google::protobuf::Method)},
-        { 37, -1, -1, sizeof(::google::protobuf::Mixin)},
+        {0, 15, -1, sizeof(::google::protobuf::Api)},
+        {22, -1, -1, sizeof(::google::protobuf::Method)},
+        {37, -1, -1, sizeof(::google::protobuf::Mixin)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {

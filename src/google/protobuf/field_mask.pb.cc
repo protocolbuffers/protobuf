@@ -56,7 +56,7 @@ const ::uint32_t TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto::offsets[]
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, -1, -1, sizeof(::google::protobuf::FieldMask)},
+        {0, -1, -1, sizeof(::google::protobuf::FieldMask)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {

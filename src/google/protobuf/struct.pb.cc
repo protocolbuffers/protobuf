@@ -132,10 +132,10 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] PROTO
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, 10, -1, sizeof(::google::protobuf::Struct_FieldsEntry_DoNotUse)},
-        { 12, -1, -1, sizeof(::google::protobuf::Struct)},
-        { 21, -1, -1, sizeof(::google::protobuf::Value)},
-        { 36, -1, -1, sizeof(::google::protobuf::ListValue)},
+        {0, 10, -1, sizeof(::google::protobuf::Struct_FieldsEntry_DoNotUse)},
+        {12, -1, -1, sizeof(::google::protobuf::Struct)},
+        {21, -1, -1, sizeof(::google::protobuf::Value)},
+        {36, -1, -1, sizeof(::google::protobuf::ListValue)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {

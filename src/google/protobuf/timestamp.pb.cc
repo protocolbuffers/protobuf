@@ -60,7 +60,7 @@ const ::uint32_t TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets[] PR
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, -1, -1, sizeof(::google::protobuf::Timestamp)},
+        {0, -1, -1, sizeof(::google::protobuf::Timestamp)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {

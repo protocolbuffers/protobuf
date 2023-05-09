@@ -253,15 +253,15 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fwrappers_2eproto::offsets[] PRO
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, -1, -1, sizeof(::google::protobuf::DoubleValue)},
-        { 9, -1, -1, sizeof(::google::protobuf::FloatValue)},
-        { 18, -1, -1, sizeof(::google::protobuf::Int64Value)},
-        { 27, -1, -1, sizeof(::google::protobuf::UInt64Value)},
-        { 36, -1, -1, sizeof(::google::protobuf::Int32Value)},
-        { 45, -1, -1, sizeof(::google::protobuf::UInt32Value)},
-        { 54, -1, -1, sizeof(::google::protobuf::BoolValue)},
-        { 63, -1, -1, sizeof(::google::protobuf::StringValue)},
-        { 72, -1, -1, sizeof(::google::protobuf::BytesValue)},
+        {0, -1, -1, sizeof(::google::protobuf::DoubleValue)},
+        {9, -1, -1, sizeof(::google::protobuf::FloatValue)},
+        {18, -1, -1, sizeof(::google::protobuf::Int64Value)},
+        {27, -1, -1, sizeof(::google::protobuf::UInt64Value)},
+        {36, -1, -1, sizeof(::google::protobuf::Int32Value)},
+        {45, -1, -1, sizeof(::google::protobuf::UInt32Value)},
+        {54, -1, -1, sizeof(::google::protobuf::BoolValue)},
+        {63, -1, -1, sizeof(::google::protobuf::StringValue)},
+        {72, -1, -1, sizeof(::google::protobuf::BytesValue)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
