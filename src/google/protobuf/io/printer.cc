@@ -364,7 +364,8 @@ absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
 void Printer::Annotate(absl::string_view begin_varname,
                        absl::string_view end_varname,
                        absl::string_view file_path,
-                       const std::vector<int>& path) {
+                       const std::vector<int>& path,
+                       absl::optional<AnnotationCollector::Semantic> semantic) {
   if (options_.annotation_collector == nullptr) {
     return;
   }
@@ -381,8 +382,8 @@ void Printer::Annotate(absl::string_view begin_varname,
                      << " to " << end_varname;
     return;
   }
-  options_.annotation_collector->AddAnnotation(begin->first, end->second,
-                                               std::string(file_path), path);
+  options_.annotation_collector->AddAnnotation(
+      begin->first, end->second, std::string(file_path), path, semantic);
 }
 
 void Printer::WriteRaw(const char* data, size_t size) {

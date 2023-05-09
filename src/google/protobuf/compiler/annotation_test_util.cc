@@ -137,7 +137,8 @@ const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
 bool AtLeastOneAnnotationMatchesSubstring(
     const std::string& file_content,
     const std::vector<const GeneratedCodeInfo::Annotation*>& annotations,
-    const std::string& expected_text) {
+    const std::string& expected_text,
+    absl::optional<GeneratedCodeInfo::Annotation::Semantic> semantic) {
   for (std::vector<const GeneratedCodeInfo::Annotation*>::const_iterator
            i = annotations.begin(),
            e = annotations.end();
@@ -149,7 +150,7 @@ bool AtLeastOneAnnotationMatchesSubstring(
       return false;
     }
     if (file_content.substr(begin, end - begin) == expected_text) {
-      return true;
+      return !semantic || annotation->semantic() == *semantic;
     }
   }
   return false;
