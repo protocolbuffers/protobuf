@@ -380,6 +380,20 @@ namespace Google.Protobuf
                 clearedSource, destination, options, useDynamicMessage);
             Assert.IsNull(destination.Payload);
 
+            // Test merging unset source message fields with inner field paths.
+            destination = new NestedTestAllTypes
+            {
+                Payload = new TestAllTypes
+                {
+                    SingleInt32 = 1000,
+                    SingleUint32 = 2000
+                }
+            };
+            Merge(new FieldMaskTree().AddFieldPath("payload.singleint32").AddFieldPath("payload.singleuint32"),
+                    clearedSource, destination, options, useDynamicMessage);
+            Assert.AreEqual(1000, destination.Payload.SingleInt32);
+            Assert.AreEqual(2000, destination.Payload.SingleUint32);
+
             // Skip a message field if they are unset in both source and target.
             destination = new NestedTestAllTypes();
             Merge(new FieldMaskTree().AddFieldPath("payload.single_int32"),
