@@ -1121,19 +1121,15 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     if (field->is_repeated()) {
-      p->Emit({{"weak", IsImplicitWeakField(field, options_, scc_analyzer_) &&
-                                field->message_type()
-                            ? ".weak"
-                            : ""}},
-              R"cc(
-                inline int $classname$::_internal_$name$_size() const {
-                  return $field$$weak$.size();
-                }
-                inline int $classname$::$name$_size() const {
-                  $annotate_size$;
-                  return _internal_$name$_size();
-                }
-              )cc");
+      p->Emit(R"cc(
+        inline int $classname$::_internal_$name$_size() const {
+          return _internal_$name$().size();
+        }
+        inline int $classname$::$name$_size() const {
+          $annotate_size$;
+          return _internal_$name$_size();
+        }
+      )cc");
     } else if (field->real_containing_oneof()) {
       GenerateOneofMemberHasBits(field, p);
     } else {

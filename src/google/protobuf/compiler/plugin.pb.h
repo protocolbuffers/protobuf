@@ -1161,7 +1161,7 @@ inline void Version::set_allocated_suffix(std::string* value) {
 
 // repeated string file_to_generate = 1;
 inline int CodeGeneratorRequest::_internal_file_to_generate_size() const {
-  return _impl_.file_to_generate_.size();
+  return _internal_file_to_generate().size();
 }
 inline int CodeGeneratorRequest::file_to_generate_size() const {
   return _internal_file_to_generate_size();
@@ -1311,7 +1311,7 @@ inline void CodeGeneratorRequest::set_allocated_parameter(std::string* value) {
 
 // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
 inline int CodeGeneratorRequest::_internal_proto_file_size() const {
-  return _impl_.proto_file_.size();
+  return _internal_proto_file().size();
 }
 inline int CodeGeneratorRequest::proto_file_size() const {
   return _internal_proto_file_size();
@@ -1811,7 +1811,7 @@ inline void CodeGeneratorResponse::_internal_set_supported_features(::uint64_t v
 
 // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
 inline int CodeGeneratorResponse::_internal_file_size() const {
-  return _impl_.file_.size();
+  return _internal_file().size();
 }
 inline int CodeGeneratorResponse::file_size() const {
   return _internal_file_size();
