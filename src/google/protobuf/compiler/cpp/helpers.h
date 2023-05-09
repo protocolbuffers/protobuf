@@ -705,13 +705,23 @@ bool UsingImplicitWeakFields(const FileDescriptor* file,
 bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
                          MessageSCCAnalyzer* scc_analyzer);
 
-inline bool HasSimpleBaseClass(const Descriptor* desc, const Options& options) {
-  if (!HasDescriptorMethods(desc->file(), options)) return false;
-  if (desc->extension_range_count() != 0) return false;
-  if (desc->field_count() == 0) return true;
+inline std::string SimpleBaseClass(const Descriptor* desc,
+                                   const Options& options) {
+  if (!HasDescriptorMethods(desc->file(), options)) return "";
+  if (desc->extension_range_count() != 0) return "";
+  // Don't use a simple base class if the field tracking is enabled. This
+  // ensures generating all methods to track.
+  if (options.field_listener_options.inject_field_listener_events) return "";
+  if (desc->field_count() == 0) {
+    return "ZeroFieldsBase";
+  }
   // TODO(jorg): Support additional common message types with only one
   // or two fields
-  return false;
+  return "";
+}
+
+inline bool HasSimpleBaseClass(const Descriptor* desc, const Options& options) {
+  return !SimpleBaseClass(desc, options).empty();
 }
 
 inline bool HasSimpleBaseClasses(const FileDescriptor* file,
@@ -721,18 +731,6 @@ inline bool HasSimpleBaseClasses(const FileDescriptor* file,
     v |= HasSimpleBaseClass(desc, options);
   });
   return v;
-}
-
-inline std::string SimpleBaseClass(const Descriptor* desc,
-                                   const Options& options) {
-  if (!HasDescriptorMethods(desc->file(), options)) return "";
-  if (desc->extension_range_count() != 0) return "";
-  if (desc->field_count() == 0) {
-    return "ZeroFieldsBase";
-  }
-  // TODO(jorg): Support additional common message types with only one
-  // or two fields
-  return "";
 }
 
 // Returns true if this message has a _tracker_ field.
