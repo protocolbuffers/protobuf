@@ -127,7 +127,9 @@ class Map : public FieldGeneratorBase {
   }
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(/* decltype($field_$) */ {})cc");
+    p->Emit(R"cc(
+      /* decltype($field_$) */ {},
+    )cc");
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
@@ -140,15 +142,15 @@ class Map : public FieldGeneratorBase {
     if (ShouldSplit(field_, *opts_)) {
       p->Emit(R"cc(
         /* decltype($Msg$::Split::$name$_) */ {
-          $pbi$::ArenaInitialized(), arena
-        }
+            $pbi$::ArenaInitialized(),
+            arena,
+        },
       )cc");
-      return;
+    } else {
+      p->Emit(R"cc(
+        /* decltype($field_$) */ {$pbi$::ArenaInitialized(), arena},
+      )cc");
     }
-
-    p->Emit(R"cc(
-      /* decltype($field_$) */ { $pbi$::ArenaInitialized(), arena }
-    )cc");
   }
 
   void GenerateConstructorCode(io::Printer* p) const override {}

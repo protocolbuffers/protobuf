@@ -501,7 +501,9 @@ void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
 
 void SingularMessage::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
-  p->Emit("/*decltype($field_$)*/nullptr");
+  p->Emit(R"cc(
+    /*decltype($field_$)*/ nullptr,
+  )cc");
 }
 
 void SingularMessage::GenerateCopyAggregateInitializer(io::Printer* p) const {
@@ -510,10 +512,14 @@ void SingularMessage::GenerateCopyAggregateInitializer(io::Printer* p) const {
 
 void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {
   if (ShouldSplit(field_, *opts_)) {
-    p->Emit("decltype(Impl_::Split::$name$_){nullptr}");
-    return;
+    p->Emit(R"cc(
+      decltype(Impl_::Split::$name$_){nullptr},
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      decltype($field_$){nullptr},
+    )cc");
   }
-  p->Emit("decltype($field_$){nullptr}");
 }
 
 class OneofMessage : public SingularMessage {

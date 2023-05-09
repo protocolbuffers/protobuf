@@ -665,34 +665,31 @@ void SingularString::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   if (inlined_) {
     p->Emit(R"cc(
-      /*decltype($field_$)*/ { nullptr, false }
+      /*decltype($field_$)*/ {nullptr, false},
     )cc");
-    return;
+  } else {
+    p->Emit(R"cc(
+      /*decltype($field_$)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+    )cc");
   }
-
-  p->Emit(R"cc(
-    /*decltype($field_$)*/ {
-      &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-    }
-  )cc");
 }
 
 void SingularString::GenerateAggregateInitializer(io::Printer* p) const {
   if (ShouldSplit(field_, options_)) {
     ABSL_CHECK(!inlined_);
     p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_) {}
+      decltype(Impl_::Split::$name$_){},
     )cc");
-    return;
-  }
-
-  if (!inlined_) {
+  } else if (!inlined_) {
     p->Emit(R"cc(
-      decltype($field_$) {}
+      decltype($field_$){},
     )cc");
   } else {
     p->Emit(R"cc(
-      decltype($field_$) { arena }
+      decltype($field_$){arena},
     )cc");
   }
 }
