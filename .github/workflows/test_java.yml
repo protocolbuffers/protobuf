@@ -112,7 +112,7 @@ jobs:
       shell: bash
       run: |
         LOCAL_MAVEN_GROUP_DIR="${HOME}/.m2/repository/com/google/protobuf"
-        VERSION=$(grep 'Bundle-Version:' ./java/core/target/classes/META-INF/MANIFEST.MF |awk '{print $2}' |tr -d '\r')
+        VERSION=$(grep "<version>" core_mvn-pom.xml | sed "s/<version>\(.*\)<\/version>/\1/" | xargs)
         cp core_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java/${VERSION}/protobuf-java-${VERSION}.pom
         cp util_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java-util/${VERSION}/protobuf-java-util-${VERSION}.pom
     - name: Clean up
