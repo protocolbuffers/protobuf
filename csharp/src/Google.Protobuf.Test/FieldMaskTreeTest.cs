@@ -34,6 +34,7 @@ using Google.Protobuf.Collections;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using Google.Protobuf.WellKnownTypes;
+using ProtobufUnittest;
 
 namespace Google.Protobuf
 {
@@ -469,6 +470,28 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void MergeOptionalFieldsWithNullFieldsInSource()
+        {
+            var destination = new TestProto3Optional();
+            var source = new TestProto3Optional();
+
+            Assert.False(source.HasOptionalString);
+            Assert.False(source.HasOptionalSint32);
+
+            Assert.False(destination.HasOptionalString);
+            Assert.False(destination.HasOptionalSint32);
+
+            Merge(new FieldMaskTree().AddFieldPath("optional_string").AddFieldPath("optional_sint32"),
+                source,
+                destination,
+                new FieldMask.MergeOptions(),
+                false);
+
+            Assert.False(destination.HasOptionalString);
+            Assert.False(destination.HasOptionalSint32);
+        }
+
+            [Test]
         [TestCase(false, "Hello", 24)]
         [TestCase(true, null, null)]
         public void MergeWrapperFieldsWithNullFieldsInSource(
