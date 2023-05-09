@@ -293,6 +293,13 @@ namespace Google.Protobuf
                         field.Accessor.SetValue(destination, destinationField);
                     }
 
+                    if (sourceField == null)
+                    {
+                        // If the message field is not present in the source but is in the destination, skip recursing
+                        // so we just keep the destination value recursively.
+                        continue;
+                    }
+
                     var childPath = path.Length == 0 ? entry.Key : path + "." + entry.Key;
                     Merge(entry.Value, childPath, (IMessage)sourceField, (IMessage)destinationField, options);
                     continue;
