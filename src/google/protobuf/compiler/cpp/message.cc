@@ -1878,9 +1878,6 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
 
 void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
                                       int has_offset) {
-  auto v = p->WithVars(ClassVars(descriptor_, options_));
-  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
-  Formatter format(p);
   has_offset = !has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)
                    ? offset + has_offset
                    : -1;
@@ -1892,8 +1889,17 @@ void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
     ABSL_DCHECK(!IsMapEntryMessage(descriptor_));
     inlined_string_indices_offset = has_offset + has_bit_indices_.size();
   }
-  format("{ $1$, $2$, $3$, sizeof($classtype$)},\n", offset, has_offset,
-         inlined_string_indices_offset);
+
+  auto v = p->WithVars(ClassVars(descriptor_, options_));
+  p->Emit(
+      {
+          {"offset", offset},
+          {"has_offset", has_offset},
+          {"string_offsets", inlined_string_indices_offset},
+      },
+      R"cc(
+        {$offset$, $has_offset$, $string_offsets$, sizeof($classtype$)},
+      )cc");
 }
 
 void MessageGenerator::GenerateClassMethods(io::Printer* p) {

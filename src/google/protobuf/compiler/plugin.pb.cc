@@ -189,10 +189,10 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offs
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, 12, -1, sizeof(::google::protobuf::compiler::Version)},
-        { 16, 28, -1, sizeof(::google::protobuf::compiler::CodeGeneratorRequest)},
-        { 32, 44, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
-        { 48, 59, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
+        {0, 12, -1, sizeof(::google::protobuf::compiler::Version)},
+        {16, 28, -1, sizeof(::google::protobuf::compiler::CodeGeneratorRequest)},
+        {32, 44, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
+        {48, 59, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
