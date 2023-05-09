@@ -849,6 +849,7 @@ cc_library(
         "//src/google/protobuf/testing",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/time",
         "@com_google_googletest//:gtest",
     ],
 )
@@ -980,9 +981,9 @@ cc_library(
     visibility = ["//pkg:__pkg__"],
     deps = [
         ":protobuf",
-        "@com_google_googletest//:gtest",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/memory",
+        "@com_google_googletest//:gtest",
     ],
 )
 
