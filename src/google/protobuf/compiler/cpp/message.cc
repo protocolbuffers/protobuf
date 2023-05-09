@@ -1858,19 +1858,19 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
 
   // Generate oneof_case() functions.
   for (auto oneof : OneOfRange(descriptor_)) {
-    Formatter format(p);
-    auto v = p->WithVars({
-        {"camel_oneof_name", UnderscoresToCamelCase(oneof->name(), true)},
-        {"oneof_name", oneof->name()},
-        {"oneof_index", oneof->index()},
-    });
-    format(
-        "inline $classname$::$camel_oneof_name$Case $classname$::"
-        "${1$$oneof_name$_case$}$() const {\n"
-        "  return $classname$::$camel_oneof_name$Case("
-        "$oneof_case$[$oneof_index$]);\n"
-        "}\n",
-        oneof);
+    p->Emit(
+        {
+            Sub{"oneof_name", absl::StrCat(oneof->name(), "_case")}.AnnotatedAs(
+                oneof),
+            {"OneofName",
+             absl::StrCat(UnderscoresToCamelCase(oneof->name(), true), "Case")},
+            {"oneof_index", oneof->index()},
+        },
+        R"cc(
+          inline $classname$::$OneofName$ $classname$::$oneof_name$() const {
+            return $classname$::$OneofName$($oneof_case$[$oneof_index$]);
+          }
+        )cc");
   }
 }
 
