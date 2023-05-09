@@ -356,12 +356,12 @@ namespace Google.Protobuf
                     }
                     else
                     {
-                        if (sourceField != null
-                            || !options.ReplacePrimitiveFields)
+                        if ((!field.HasPresence && sourceField != null)
+                            || field.Accessor.HasValue(source))
                         {
                             field.Accessor.SetValue(destination, sourceField);
                         }
-                        else
+                        else if (options.ReplacePrimitiveFields)
                         {
                             field.Accessor.Clear(destination);
                         }
