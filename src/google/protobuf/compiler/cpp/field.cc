@@ -131,8 +131,9 @@ void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
 
 void FieldGeneratorBase::GenerateCopyAggregateInitializer(
     io::Printer* p) const {
-  Formatter format(p, variables_);
-  format("decltype($field$){from.$field$}");
+  p->Emit(R"cc(
+    decltype($field$){from.$field$},
+  )cc");
 }
 
 void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {

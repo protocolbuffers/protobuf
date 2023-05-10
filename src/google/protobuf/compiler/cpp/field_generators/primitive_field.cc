@@ -179,7 +179,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      decltype($field_$) {}
+      decltype($field_$){},
     )cc");
   }
 
@@ -359,15 +359,9 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     ABSL_CHECK(!ShouldSplit(descriptor_, options_));
     p->Emit(R"cc(
-      decltype($field_$) { from.$field_$ }
+      decltype($field_$){from.$field_$},
     )cc");
-    if (HasCachedSize()) {
-      // std::atomic has no move constructor, which prevents explicit aggregate
-      // initialization pre-C++17.
-      p->Emit(R"cc(
-        , /* $_field_cached_byte_size_$ = */ { 0 }
-      )cc");
-    }
+    GenerateCacheSizeInitializer(p);
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
