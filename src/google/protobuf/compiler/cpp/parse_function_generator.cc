@@ -264,7 +264,7 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
   auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
   format(
       "friend class ::$proto_ns$::internal::TcParser;\n"
-      "PROTOBUF_EXPORT static const ::$proto_ns$::internal::"
+      "static const ::$proto_ns$::internal::"
       "TcParseTable<$1$, $2$, $3$, $4$, $5$> _table_;\n",
       tc_table_info_->table_size_log2, ordered_fields_.size(),
       tc_table_info_->aux_entries.size(),
@@ -406,7 +406,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
   // unknown fields and potentially an extension range.
   auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
   format(
-      "PROTOBUF_EXPORT constexpr ::_pbi::TcParseTable<$1$, $2$, $3$, $4$, $5$> "
+      "constexpr ::_pbi::TcParseTable<$1$, $2$, $3$, $4$, $5$> "
       "$classname$::_table_ = "
       "{\n",
       tc_table_info_->table_size_log2, ordered_fields_.size(),
