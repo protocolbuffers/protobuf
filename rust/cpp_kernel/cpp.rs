@@ -50,8 +50,6 @@ use std::slice;
 /// dropped.
 ///
 /// Note that this type is neither `Sync` nor `Send`.
-///
-/// TODO(b/272728844): Replace this placeholder code with a real implementation.
 pub struct Arena {
     ptr: NonNull<u8>,
     _not_sync: PhantomData<UnsafeCell<()>>,

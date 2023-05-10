@@ -105,13 +105,7 @@ namespace internal {
 const char kDebugStringSilentMarker[] = "";
 const char kDebugStringSilentMarkerForDetection[] = "\t ";
 
-// Controls insertion of a marker making debug strings non-parseable.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_redaction_marker;
-
-// Controls insertion of a randomized marker in debug strings.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_random_marker;
-
-// Controls insertion of kDebugStringSilentMarker.
+// Controls insertion of kDebugStringSilentMarker into DebugString() output.
 PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
 
 int64_t GetRedactedFieldCount() {
@@ -128,12 +122,6 @@ std::string Message::DebugString() const {
   printer.SetExpandAny(true);
   printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
       std::memory_order_relaxed));
-  printer.SetRedactDebugString(
-      internal::enable_debug_text_redaction_marker.load(
-          std::memory_order_relaxed));
-  printer.SetRandomizeDebugString(
-      internal::enable_debug_text_random_marker.load(
-          std::memory_order_relaxed));
 
   printer.PrintToString(*this, &debug_string);
 
@@ -150,12 +138,6 @@ std::string Message::ShortDebugString() const {
   printer.SetExpandAny(true);
   printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
       std::memory_order_relaxed));
-  printer.SetRedactDebugString(
-      internal::enable_debug_text_redaction_marker.load(
-          std::memory_order_relaxed));
-  printer.SetRandomizeDebugString(
-      internal::enable_debug_text_random_marker.load(
-          std::memory_order_relaxed));
 
   printer.PrintToString(*this, &debug_string);
   // Single line mode currently might have an extra space at the end.
@@ -176,12 +158,6 @@ std::string Message::Utf8DebugString() const {
   printer.SetExpandAny(true);
   printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
       std::memory_order_relaxed));
-  printer.SetRedactDebugString(
-      internal::enable_debug_text_redaction_marker.load(
-          std::memory_order_relaxed));
-  printer.SetRandomizeDebugString(
-      internal::enable_debug_text_random_marker.load(
-          std::memory_order_relaxed));
 
   printer.PrintToString(*this, &debug_string);
 
@@ -202,6 +178,7 @@ PROTOBUF_EXPORT void PerformAbslStringify(
   printer.SetExpandAny(true);
   printer.SetRedactDebugString(true);
   printer.SetRandomizeDebugString(true);
+  printer.SetRootMessageFullName(message.GetDescriptor()->full_name());
   std::string result;
   printer.PrintToString(message, &result);
   append(result);
@@ -2095,7 +2072,8 @@ TextFormat::Printer::Printer()
       print_message_fields_in_index_order_(false),
       expand_any_(false),
       truncate_string_field_longer_than_(0LL),
-      finder_(nullptr) {
+      finder_(nullptr),
+      root_message_full_name_("") {
   SetUseUtf8StringEscaping(false);
 }
 
@@ -2631,7 +2609,6 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
   const FastFieldValuePrinter* printer = GetFieldPrinter(field);
   if (redact_debug_string_ && field->options().debug_redact()) {
     IncrementRedactedFieldCounter();
-    // TODO(b/258975650): Create OSS redaction documentation
     generator->PrintString("[REDACTED]");
     return;
   }

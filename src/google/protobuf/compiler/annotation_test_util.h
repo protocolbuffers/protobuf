@@ -97,11 +97,13 @@ const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
     const std::vector<int>& path);
 
 // Returns true if at least one of the provided annotations covers a given
-// substring in file_content.
+// substring with the given semantic in file_content.
 bool AtLeastOneAnnotationMatchesSubstring(
     const std::string& file_content,
     const std::vector<const GeneratedCodeInfo::Annotation*>& annotations,
-    const std::string& expected_text);
+    const std::string& expected_text,
+    absl::optional<GeneratedCodeInfo::Annotation::Semantic> expected_semantic =
+        absl::nullopt);
 
 // Returns true if the provided annotation covers a given substring in
 // file_content.

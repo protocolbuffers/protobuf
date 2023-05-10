@@ -34,6 +34,7 @@
 
 #include "google/protobuf/compiler/cpp/file.h"
 
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -169,7 +170,7 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* p) {
   // Only do this for protobuf's own types. There are some google3 protos using
   // macros as field names and the generated code compiles after the macro
   // expansion. Undefing these macros actually breaks such code.
-  if (file_->name() != "net/proto2/compiler/proto/plugin.proto" &&
+  if (file_->name() != "third_party/protobuf/compiler/plugin.proto" &&
       file_->name() != "google/protobuf/compiler/plugin.proto") {
     return;
   }
@@ -207,6 +208,15 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           {"undefs", [&] { GenerateMacroUndefs(p); }},
           {"global_state_decls",
            [&] { GenerateGlobalStateFunctionDeclarations(p); }},
+          {"any_metadata",
+           [&] {
+             NamespaceOpener ns(ProtobufNamespace(options_), p);
+             p->Emit(R"cc(
+               namespace internal {
+               class AnyMetadata;
+               }  // namespace internal
+             )cc");
+           }},
           {"fwd_decls", [&] { GenerateForwardDeclarations(p); }},
           {"proto2_ns_enums",
            [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
@@ -250,11 +260,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           #define $dllexport_macro$$ dllexport_decl$
           $undefs$
 
-          PROTOBUF_NAMESPACE_OPEN
-          namespace internal {
-          class AnyMetadata;
-          }  // namespace internal
-          PROTOBUF_NAMESPACE_CLOSE
+          $any_metadata$;
 
           $global_state_decls$;
           $fwd_decls$
@@ -523,6 +529,17 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   }
 }
 
+bool FileGenerator::IsFileDescriptorProto() const {
+  if (Namespace(file_, options_) !=
+      absl::StrCat("::", ProtobufNamespace(options_))) {
+    return false;
+  }
+  for (int i = 0; i < file_->message_type_count(); ++i) {
+    if (file_->message_type(i)->name() == "FileDescriptorProto") return true;
+  }
+  return false;
+}
+
 void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   MessageGenerator* generator = message_generators_[idx].get();
 
@@ -563,25 +580,50 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
 
   generator->GenerateConstexprConstructor(p);
 
-  p->Emit(
-      {
-          {"type", DefaultInstanceType(generator->descriptor(), options_)},
-          {"name", DefaultInstanceName(generator->descriptor(), options_)},
-          {"default", [&] { generator->GenerateInitDefaultSplitInstance(p); }},
-          {"class", ClassName(generator->descriptor())},
-      },
-      R"cc(
-        struct $type$ {
-          PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
-          ~$type$() {}
-          union {
-            $class$ _instance;
+  if (IsFileDescriptorProto()) {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            $type$() {}
+            void Init() { ::new (&_instance) $class$(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            ~$type$() {}
+            union {
+              $class$ _instance;
+            };
           };
-        };
 
-        PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-      )cc");
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  } else {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            ~$type$() {}
+            union {
+              $class$ _instance;
+            };
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  }
 
   for (int i = 0; i < generator->descriptor()->field_count(); ++i) {
     const FieldDescriptor* field = generator->descriptor()->field(i);
@@ -1104,15 +1146,43 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // because in some situations that would otherwise pull in a lot of
   // unnecessary code that can't be stripped by --gc-sections. Descriptor
   // initialization will still be performed lazily when it's needed.
-  if (file_->name() == "net/proto2/proto/descriptor.proto") {
-    return;
+  if (file_->name() != "net/proto2/proto/descriptor.proto") {
+    p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
+            R"cc(
+              // Force running AddDescriptors() at dynamic initialization time.
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+              static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
+            )cc");
   }
 
-  p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}}, R"cc(
-    // Force running AddDescriptors() at dynamic initialization time.
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-    static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
-  )cc");
+  // However, we must provide a way to force initialize the default instances
+  // of FileDescriptorProto which will be used during registration of other
+  // files.
+  if (IsFileDescriptorProto()) {
+    NamespaceOpener ns(p);
+    ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
+    p->Emit(
+        {{"dummy", UniqueName("dynamic_init_dummy", file_, options_)},
+         {"initializers", absl::StrJoin(message_generators_, "\n",
+                                        [&](std::string* out, const auto& gen) {
+                                          absl::StrAppend(
+                                              out,
+                                              DefaultInstanceName(
+                                                  gen->descriptor(), options_),
+                                              ".Init();");
+                                        })}},
+        R"cc(
+          //~ Emit wants an indented line, so give it a comment to strip.
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+          PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow() {
+            $initializers$;
+          }
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+          static std::true_type $dummy${
+              (InitializeFileDescriptorDefaultInstances(), std::true_type{})};
+#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+        )cc");
+  }
 }
 
 class FileGenerator::ForwardDeclarations {
@@ -1231,9 +1301,19 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
     decl.second.Print(p, options_);
   }
 
-  ns.ChangeTo("PROTOBUF_NAMESPACE_ID");
+  ns.ChangeTo(ProtobufNamespace(options_));
   for (const auto& decl : decls) {
     decl.second.PrintTopLevelDecl(p, options_);
+  }
+
+  if (IsFileDescriptorProto()) {
+    ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
+    p->Emit(R"cc(
+      //~ Emit wants an indented line, so give it a comment to strip.
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+      PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
+#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+    )cc");
   }
 }
 

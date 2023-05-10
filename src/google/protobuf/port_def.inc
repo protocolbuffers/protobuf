@@ -49,6 +49,11 @@
 // detect/prohibit anytime it is #included twice without a corresponding
 // #undef.
 
+#ifdef PROTOBUF_PORT_
+#error "port_def.inc included multiple times"
+#endif
+#define PROTOBUF_PORT_
+
 // The definitions in this file are intended to be portable across Clang,
 // GCC, and MSVC. Function-like macros are usable without an #ifdef guard.
 // Syntax macros (for example, attributes) are always defined, although
@@ -231,34 +236,22 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 4022003
+#define PROTOBUF_VERSION 4023000
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3021000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 4023000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 3021000
+#define PROTOBUF_MIN_PROTOC_VERSION 4023000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
 #endif
 #define PROTOBUF_VERSION_SUFFIX ""
-
-#if defined(PROTOBUF_NAMESPACE) || defined(PROTOBUF_NAMESPACE_ID)
-#error PROTOBUF_NAMESPACE or PROTOBUF_NAMESPACE_ID was previously defined
-#endif
-#define PROTOBUF_NAMESPACE "google::protobuf"
-#define PROTOBUF_NAMESPACE_ID google::protobuf
-#define PROTOBUF_NAMESPACE_OPEN \
-  namespace google {            \
-  namespace protobuf {
-#define PROTOBUF_NAMESPACE_CLOSE \
-  } /* namespace protobuf */     \
-  } /* namespace google */
 
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
@@ -322,9 +315,9 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #ifdef PROTOBUF_TAILCALL
 #error PROTOBUF_TAILCALL was previously defined
 #endif
-#if __has_cpp_attribute(clang::musttail) && !defined(__arm__) && \
-    !defined(_ARCH_PPC) && !defined(__wasm__) &&                 \
-    !(defined(_MSC_VER) && defined(_M_IX86)) &&                  \
+#if __has_cpp_attribute(clang::musttail) && !defined(__arm__) &&      \
+    !defined(_ARCH_PPC) && !defined(__wasm__) &&                      \
+    !(defined(_MSC_VER) && defined(_M_IX86)) && !defined(__i386__) && \
     !(defined(__NDK_MAJOR__) && __NDK_MAJOR <= 24)
 #  ifndef PROTO2_OPENSOURCE
 // Compilation fails on ARM32: b/195943306
@@ -434,7 +427,7 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3021000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 4023000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -679,10 +672,17 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #  define PROTOBUF_CONSTINIT
 #  define PROTOBUF_CONSTEXPR constexpr
 # endif
+#elif defined(__GNUC__) && !defined(__clang__)
+// GCC doesn't support constinit aggregate initialization of absl::Cord.
+# if PROTOBUF_GNUC_MIN(12, 2)
+#  define PROTOBUF_CONSTINIT
+#  define PROTOBUF_CONSTEXPR constexpr
+# endif
 #else
 # if defined(__cpp_constinit) && !defined(__CYGWIN__)
 #  define PROTOBUF_CONSTINIT constinit
 #  define PROTOBUF_CONSTEXPR constexpr
+#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
@@ -693,9 +693,7 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
 #  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #  define PROTOBUF_CONSTEXPR constexpr
-# elif PROTOBUF_GNUC_MIN(12, 2)
-#  define PROTOBUF_CONSTINIT __constinit
-#  define PROTOBUF_CONSTEXPR constexpr
+#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 # endif
 #endif
 
@@ -877,6 +875,13 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #undef PACKAGE
 #endif
 
+// a few common headers define this
+#ifdef PACKED
+#define PROTOBUF_DID_UNDEF_PACKED
+#pragma push_macro("PACKED")
+#undef PACKED
+#endif
+
 // linux is a legacy MACRO defined in most popular C++ standards.
 #ifdef linux
 #pragma push_macro("linux")
@@ -1013,6 +1018,12 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // This error has been generally flaky, but we need to disable it specifically
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#ifndef __clang__
+// This causes spurious warnings in GCC 13.
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+// This causes spurious warnings in GCC 13.
+#pragma GCC diagnostic ignored "-Wself-move"
+#endif
 #if __GNUC__ == 12 && __GNUC_MINOR__ < 4
 // Wrong warning emitted when assigning a single char c-string to a std::string
 // in c++20 mode and optimization on.

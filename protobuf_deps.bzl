@@ -42,8 +42,8 @@ def protobuf_deps():
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "78be63686ba732b25052be15f8d6dee891c05749",  # Abseil LTS 20230125
-            sha256 = "4f356a07b9ec06ef51f943928508566e992f621ed5fa4dd588865d7bed1284cd",
+            commit = "c2435f8342c2d0ed8101cb43adfd605fdc52dca2",  # Abseil LTS 20230125.3
+            sha256 = "ea1d31db00eb37e607bfda17ffac09064670ddf05da067944c4766f517876390",
         )
 
     if not native.existing_rule("zlib"):
@@ -151,7 +151,7 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "8c10056074a2698a134dae73dea86ba3d7e0d56b",
-            sha256 = "c530b25f1afa08016228b7c07066d9cd545b852684bd06dd9235b47d00185b33",
+            commit = "7a04b4027d737828c9c5b8be56c838d5db0db80f",
+            sha256 = "2444c0ce7a869ce320a57fc13d96900364ddac8b8da779e1315b5d83fc38bbc1",
             patches = ["@com_google_protobuf//build_defs:upb.patch"],
         )

@@ -51,6 +51,26 @@ jobs:
           bazel-cache: cpp_linux/${{ matrix.config.name }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }}
 
+  linux-gcc:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ['9.5', '13.1']
+    name: Linux GCC ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-5.4.0-2d15d9e888c9e7f90961dbd3afc8ea209717fb4b
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/gcc-${{ matrix.version }}
+          bazel: test //pkg/... //src/... @com_google_protobuf_examples//...
+
   linux-release:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
@@ -94,23 +114,15 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - command: >-
-              /test.sh
-              -Dprotobuf_BUILD_CONFORMANCE=ON
-              -Dprotobuf_BUILD_EXAMPLES=ON
-              -DCMAKE_CXX_STANDARD=14
+          - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
           - name: Ninja
-            command: >-
-              /test.sh
-              -G Ninja
-              -Dprotobuf_BUILD_CONFORMANCE=ON
-              -DCMAKE_CXX_STANDARD=14
+            flags: -G Ninja -DCMAKE_CXX_STANDARD=14
           - name: Shared
-            command: >-
-              /test.sh
-              -Dprotobuf_BUILD_CONFORMANCE=ON
-              -Dprotobuf_BUILD_SHARED_LIBS=ON
-              -DCMAKE_CXX_STANDARD=14
+            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
+          - name: C++17
+            flags: -DCMAKE_CXX_STANDARD=17
+          - name: C++20
+            flags: -DCMAKE_CXX_STANDARD=20
 
     name: Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
@@ -120,11 +132,6 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
 
-      # Initialize/update the submodule from remote to validate a new fetch based on .gitmodules
-      # We have to do this separately since actions/checkout doesn't support the "--remote" flag
-      - name: Update submodules
-        run: git submodule update --init --remote --recursive
-
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
         with:
@@ -133,9 +140,12 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e0eb6c69b7551d89f0dbdbe11906077a1d501229c28db39623b945e0c5d7029a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: ${{ matrix.command }} ${{ env.CCACHE_CMAKE_FLAGS }}
+          command: >-
+            /test.sh ${{ matrix.flags}} ${{ env.CCACHE_CMAKE_FLAGS }}
+            -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_TESTS=ON
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
 
   linux-cmake-install:
     name: Linux CMake Install
@@ -145,9 +155,7 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
-
-      - name: Update submodules
-        run: git submodule update --init --remote --recursive
+          submodules: recursive
 
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
@@ -157,16 +165,110 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e0eb6c69b7551d89f0dbdbe11906077a1d501229c28db39623b945e0c5d7029a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} \&\&
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package \&\&
             /test.sh
             ${{ env.CCACHE_CMAKE_FLAGS }}
             -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
             -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
             -Dprotobuf_BUILD_CONFORMANCE=ON
             -DCMAKE_CXX_STANDARD=14
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+
+  linux-cmake-examples:
+    name: Linux CMake Examples
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
+        with:
+          cache-prefix: linux-cmake-examples
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }}
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+            -Dprotobuf_BUILD_EXAMPLES=OFF \&\&
+            mkdir examples/build \&\&
+            cd examples/build \&\&
+            cmake .. -DCMAKE_CXX_STANDARD=14 \&\&
+            cmake --build .
+
+  linux-cmake-gcc:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: C++14
+            flags: -DCMAKE_CXX_STANDARD=14
+          - name: C++17
+            flags: -DCMAKE_CXX_STANDARD=17
+          - name: C++20
+            flags: -DCMAKE_CXX_STANDARD=20
+
+    name: Linux CMake GCC ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+          submodules: recursive
+
+      - name: Setup ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
+        with:
+          cache-prefix: linux-cmake-gcc-${{ matrix.name }}
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:13.1-5.4.0-307caa02808127e49720f3e77d6a9f3b3ef5a915
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          entrypoint: bash
+          command: >-
+              -c 'set -ex;
+              cd /workspace;
+              ccache -z;
+              cmake . ${{ matrix.flags }} ${{ env.CCACHE_CMAKE_FLAGS }};
+              cmake --build . --parallel 20;
+              ctest --verbose --parallel 20;
+              ccache -s'
+
+  linux-cmake-submodules:
+    name: Linux CMake Submodules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+          submodules: recursive
+
+      - name: Setup ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v1
+        with:
+          cache-prefix: linux-cmake-${{ matrix.name }}
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /test.sh ${{ env.CCACHE_CMAKE_FLAGS }}
+            -Dprotobuf_BUILD_CONFORMANCE=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
 
   linux-cmake-32-bit:
     name: Linux CMake 32-bit
@@ -176,9 +278,7 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
-
-      - name: Update submodules
-        run: git submodule update --init --remote --recursive
+          submodules: recursive
 
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
@@ -192,44 +292,13 @@ jobs:
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-              /bin/bash -c '
+              /bin/bash -cex '
               cd /workspace;
               ccache -z;
               cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
               ctest --verbose --parallel 20;
               ccache -s'
-
-  linux-cmake-examples:
-    name: Linux CMake Examples
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-        with:
-          ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
-
-      - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
-        with:
-          cache-prefix: linux-cmake-examples
-
-      - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
-        with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake@sha256:e0eb6c69b7551d89f0dbdbe11906077a1d501229c28db39623b945e0c5d7029a
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: >-
-            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} \&\&
-            cd examples \&\&
-            mkdir build \&\&
-            cmake
-            ${{ env.CCACHE_CMAKE_FLAGS }}
-            -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
-            -DCMAKE_CXX_STANDARD=14
-            -S . -B build \&\&
-            cmake --build build
 
   non-linux:
     strategy:
@@ -278,11 +347,20 @@ jobs:
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
+            vsversion: '2019'
+          - name: Windows CMake 2022
+            os: windows-2022
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -Dprotobuf_BUILD_SHARED_LIBS=OFF
+              -Dprotobuf_BUILD_EXAMPLES=ON
+            vsversion: '2022'
           - name: Windows CMake Shared
             os: windows-2019
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=ON
+            vsversion: '2019'
           - name: Windows CMake Install
             os: windows-2019
             install-flags: -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
@@ -290,6 +368,7 @@ jobs:
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
+            vsversion: '2019'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -297,14 +376,13 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
-
-      - name: Update submodules
-        run: git submodule update --init --remote --recursive
+          submodules: recursive
 
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
         with:
           cache-prefix: ${{ matrix.name }}
+          vsversion: ${{ matrix.vsversion }}
 
       # Install phase.
       - name: Configure CMake for install

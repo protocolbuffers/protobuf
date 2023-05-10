@@ -2378,7 +2378,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
   // String fields.
   RunValidJsonTest("StringField", REQUIRED,
                    R"({"optionalString": "Hello world!"})",
-                   "optional_string: \"Hello world!\"");
+                   R"(optional_string: "Hello world!")");
   RunValidJsonTest("StringFieldUnicode", REQUIRED,
                    // Google in Chinese.
                    R"({"optionalString": "谷歌"})",
@@ -2397,6 +2397,9 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
       // The character is an emoji: grinning face with smiling eyes. 😁
       R"({"optionalString": "\uD83D\uDE01"})",
       R"(optional_string: "\xF0\x9F\x98\x81")");
+  RunValidJsonTest("StringFieldEmbeddedNull", REQUIRED,
+                   R"({"optionalString": "Hello\u0000world!"})",
+                   R"(optional_string: "Hello\000world!")");
 
   // Unicode escapes must start with "\u" (lowercase u).
   ExpectParseFailureForJson("StringFieldUppercaseEscapeLetter", RECOMMENDED,

@@ -239,8 +239,6 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
     printer->Print(
         variables_,
         "@com.google.protobuf.ProtoField(\n"
-        "  fieldNumber=$number$,\n"
-        "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
         "  isRequired=$required$)\n");
     if (HasHasbit(descriptor_)) {
       printer->Print(variables_,

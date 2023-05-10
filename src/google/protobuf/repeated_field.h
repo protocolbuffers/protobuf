@@ -137,6 +137,16 @@ void memswap(char* a, char* b) {
 template <typename Element>
 class RepeatedIterator;
 
+// We can't skip the destructor for, e.g., arena allocated RepeatedField<Cord>.
+template <typename Element,
+          bool Trivial = Arena::is_destructor_skippable<Element>::value>
+struct RepeatedFieldDestructorSkippableBase {};
+
+template <typename Element>
+struct RepeatedFieldDestructorSkippableBase<Element, true> {
+  using DestructorSkippable_ = void;
+};
+
 }  // namespace internal
 
 // RepeatedField is used to represent repeated fields of a primitive type (in
@@ -148,7 +158,8 @@ class RepeatedIterator;
 // We have to specialize several methods in the Cord case to get the memory
 // management right; e.g. swapping when appropriate, etc.
 template <typename Element>
-class RepeatedField final {
+class RepeatedField final
+    : private internal::RepeatedFieldDestructorSkippableBase<Element> {
   static_assert(
       alignof(Arena) >= alignof(Element),
       "We only support types that have an alignment smaller than Arena");
@@ -412,17 +423,17 @@ class RepeatedField final {
     return prev_size;
   }
 
-  // Pad the Rep after arena allow for power-of-two byte sizes when
-  // sizeof(Element) > sizeof(Arena*). eg for 16-byte objects.
-  static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize =
-      sizeof(Arena*) < sizeof(Element) ? sizeof(Element) : sizeof(Arena*);
+  // Pad the rep to being max(Arena*, Element) with a minimum align
+  // of 8 as sanitizers are picky on the alignment of containers to
+  // start at 8 byte offsets even when compiling for 32 bit platforms.
   struct Rep {
-    Arena* arena;
-    Element* elements() {
-      return reinterpret_cast<Element*>(reinterpret_cast<char*>(this) +
-                                        kRepHeaderSize);
-    }
+    union {
+      alignas(8) Arena* arena;
+      Element unused;
+    };
+    Element* elements() { return reinterpret_cast<Element*>(this + 1); }
   };
+  static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(Rep);
 
   // If total_size_ == 0 this points to an Arena otherwise it points to the
   // elements member of a Rep struct. Using this invariant allows the storage of
@@ -494,7 +505,7 @@ template <typename Element>
 inline RepeatedField<Element>::RepeatedField(const RepeatedField& rhs)
     : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {
   StaticValidityCheck();
-  if (size_t size = rhs.current_size_) {
+  if (auto size = rhs.current_size_) {
     Grow(0, size);
     ExchangeCurrentSize(size);
     UninitializedCopyN(rhs.elements(), size, unsafe_elements());
@@ -775,7 +786,7 @@ inline void RepeatedField<Element>::Clear() {
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& rhs) {
   ABSL_DCHECK_NE(&rhs, this);
-  if (size_t size = rhs.current_size_) {
+  if (auto size = rhs.current_size_) {
     Reserve(current_size_ + size);
     Element* dst = elements() + ExchangeCurrentSize(current_size_ + size);
     UninitializedCopyN(rhs.elements(), size, dst);
@@ -977,7 +988,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
       Element* pold = elements();
       // TODO(b/263791665): add absl::is_trivially_relocatable<Element>
       if (std::is_trivial<Element>::value) {
-        memcpy(pnew, pold, current_size * sizeof(Element));
+        memcpy(static_cast<void*>(pnew), pold, current_size * sizeof(Element));
       } else {
         for (Element* end = pnew + current_size; pnew != end; ++pnew, ++pold) {
           ::new (static_cast<void*>(pnew)) Element(std::move(*pold));

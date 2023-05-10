@@ -1,21 +1,10 @@
-# Minimum CMake required
-cmake_minimum_required(VERSION 3.10)
+# Minimum CMake required. If available, accept the policy-controlled behavior up
+# to 3.26.
+cmake_minimum_required(VERSION 3.10...3.26)
 
 if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Configuring...")
 endif()
-
-# MSVC runtime library flags are selected by an abstraction.
-# New in CMake 3.15: https://cmake.org/cmake/help/latest/policy/CMP0091.html
-if(POLICY CMP0091)
-  cmake_policy(SET CMP0091 NEW)
-endif()
-
-# option() honors normal variables
-# New in CMake 3.13: https://cmake.org/cmake/help/latest/policy/CMP0077.html
-if (POLICY CMP0077)
-  cmake_policy(SET CMP0077 NEW)
-endif (POLICY CMP0077)
 
 # Project
 project(protobuf C CXX)
@@ -93,7 +82,7 @@ if (protobuf_BUILD_SHARED_LIBS)
 endif ()
 
 # Version metadata
-set(protobuf_VERSION_STRING "4.22.3")
+set(protobuf_VERSION_STRING "4.23.0")
 set(protobuf_DESCRIPTION "Protocol Buffers")
 set(protobuf_CONTACT "protobuf@googlegroups.com")
 
@@ -331,6 +320,9 @@ endif (protobuf_UNICODE)
 
 set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
 set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
+
+set(protobuf_JSONCPP_PROVIDER "module" CACHE STRING "Provider of jsoncpp library")
+set_property(CACHE protobuf_JSONCPP_PROVIDER PROPERTY STRINGS "module" "package")
 
 if (protobuf_BUILD_TESTS)
   include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)

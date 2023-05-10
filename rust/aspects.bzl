@@ -169,6 +169,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     lib = ctx.actions.declare_file(lib_name)
     rmeta = ctx.actions.declare_file(rmeta_name)
 
+    # TODO(b/270125787): Use higher level rules_rust API once available.
     providers = rustc_compile_action(
         ctx = ctx,
         attr = attr,

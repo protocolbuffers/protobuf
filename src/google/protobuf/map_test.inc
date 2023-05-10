@@ -56,6 +56,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/substitute.h"
+#include "absl/time/time.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
@@ -73,7 +74,6 @@
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/message_differencer.h"
-#include "google/protobuf/util/time_util.h"
 #include "google/protobuf/wire_format.h"
 
 
@@ -131,6 +131,8 @@ struct ConstructorTag {
       : invoked_constructor(ConstructorType::kCopy) {}
   ConstructorTag(ConstructorTag&&)
       : invoked_constructor(ConstructorType::kMove) {}
+
+  bool operator<(const ConstructorTag&) const { return false; }
 
   ConstructorType invoked_constructor;
 };
@@ -201,6 +203,24 @@ struct MapTestPeer {
       return false;
     }
     return true;
+  }
+
+  template <typename T>
+  static size_t BucketNumber(T& map, typename T::key_type key) {
+    return map.BucketNumber(key);
+  }
+
+  template <typename T>
+  static void Resize(T& map, size_t num_buckets) {
+    map.Resize(num_buckets);
+  }
+
+  template <typename T>
+  static bool HasTreeBuckets(T& map) {
+    for (size_t i = 0; i < map.num_buckets_; ++i) {
+      if (TableEntryIsTree(map.table_[i])) return true;
+    }
+    return false;
   }
 };
 
@@ -461,16 +481,9 @@ TEST_F(MapImplTest, IteratorBasic) {
   EXPECT_TRUE(it == cit);
 }
 
-template <typename Iterator>
-static int64_t median(Iterator i0, Iterator i1) {
-  std::vector<int64_t> v(i0, i1);
+static absl::Duration median(absl::Span<absl::Duration> v) {
   std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
   return v[v.size() / 2];
-}
-
-static int64_t Now() {
-  return util::TimeUtil::TimestampToNanoseconds(
-      util::TimeUtil::GetCurrentTime());
 }
 
 // Arbitrary odd integers for creating test data.
@@ -478,40 +491,77 @@ static int k0 = 812398771;
 static int k1 = 1312938717;
 static int k2 = 1321555333;
 
-// Try to create kTestSize keys that will land in just a few buckets, and
-// time the insertions, to get a rough estimate of whether an O(n^2) worst case
-// was triggered.  This test is a hacky, but probably better than nothing.
-TEST_F(MapImplTest, HashFlood) {
-  const int kTestSize = 1024;  // must be a power of 2
-  absl::btree_set<int> s;
-  for (int i = 0; s.size() < kTestSize; i++) {
-    if ((map_.hash_function()(i) & (kTestSize - 1)) < 3) {
-      s.insert(i);
+// Finds inputs that will fall in the first few buckets for this particular map
+// (with the random seed it has) and this particular size.
+static std::vector<int> FindBadInputs(Map<int, int>& map, int num_inputs) {
+  // Make sure the seed and the size is set so that BucketNumber works.
+  while (map.size() < num_inputs) map[map.size()];
+  map.clear();
+
+  std::vector<int> out;
+
+  for (int i = 0; out.size() < num_inputs; ++i) {
+    if (MapTestPeer::BucketNumber(map, i) < 3) {
+      out.push_back(i);
     }
   }
-  // Create hash table with kTestSize entries that hash flood a table with
-  // 1024 (or 512 or 2048 or ...) entries.  This assumes that map_ uses powers
-  // of 2 for table sizes, and that it's sufficient to "flood" with respect to
-  // the low bits of the output of map_.hash_function().
-  std::vector<int64_t> times;
-  auto it = s.begin();
+
+  // Reset the table to get it to grow from scratch again.
+  // The capacity will be lost, but we will get it again on insertion.
+  // It will also keep the seed.
+  map.clear();
+  MapTestPeer::Resize(map, 8);
+
+  return out;
+}
+
+TEST_F(MapImplTest, TreePathWorksAsExpected) {
+  const std::vector<int> s = FindBadInputs(map_, 1000);
+
+  for (int i : s) {
+    map_[i] = 0;
+  }
+  // Make sure we are testing what we think we are testing.
+  ASSERT_TRUE(MapTestPeer::HasTreeBuckets(map_));
+  for (int i : s) {
+    ASSERT_NE(map_.find(i), map_.end()) << i;
+  }
+  for (int i : s) {
+    ASSERT_EQ(1, map_.erase(i)) << i;
+  }
+  EXPECT_FALSE(MapTestPeer::HasTreeBuckets(map_));
+  EXPECT_TRUE(map_.empty());
+}
+
+// Create kTestSize keys that will land in just a few buckets, and time the
+// insertions, to get a rough estimate of whether an O(n^2) worst case was
+// triggered.  This test is a hacky, but probably better than nothing.
+TEST_F(MapImplTest, HashFlood) {
+  const std::vector<int> s = FindBadInputs(map_, 1000);
+
+  // Create hash table with 1000 entries that hash flood a table. The entries
+  // were chosen so that they all fall in a few buckets.
+  std::vector<absl::Duration> times;
   int count = 0;
-  do {
-    const int64_t start = Now();
-    map_[*it] = 0;
-    const int64_t end = Now();
+  for (int i : s) {
+    const auto start = absl::Now();
+    map_[i] = 0;
+    const auto end = absl::Now();
     if (end > start) {
       times.push_back(end - start);
     }
     ++count;
-    ++it;
-  } while (it != s.end());
+  }
   if (times.size() < .99 * count) return;
-  int64_t x0 = median(times.begin(), times.begin() + 9);
-  int64_t x1 = median(times.begin() + times.size() - 9, times.end());
-  // x1 will greatly exceed x0 if the code we just executed took O(n^2) time.
-  // But we want to allow O(n log n).  A factor of 20 should be generous enough.
-  EXPECT_LE(x1, x0 * 20);
+  const auto x0 = median(absl::MakeSpan(times).subspan(0, 9));
+  const auto x1 = median(absl::MakeSpan(times).subspan(times.size() - 9));
+  ABSL_LOG(INFO) << "number of samples=" << times.size() << " x0=" << x0
+                 << " x1=" << x1;
+  // x1 will greatly exceed x0 if inserting the elements was O(n) time.
+  // We know it will not be O(1) because of all the collisions, but we want to
+  // allow O(log n).
+  // lg2(1000) is ~10, times a constant for the cost of the tree.
+  EXPECT_LE(x1, x0 * 50);
 }
 
 TEST_F(MapImplTest, CopyIteratorStressTest) {

@@ -997,8 +997,8 @@ RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   return res;
 };
 
-inline PROTOBUF_ALWAYS_INLINE
-const char* ReadTagInlined(const char* ptr, uint32_t* out) {
+inline PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
+                                                         uint32_t* out) {
   uint64_t res = 0xFF & ptr[0];
   if (PROTOBUF_PREDICT_FALSE(res >= 128)) {
     res = RotRight7AndReplaceLowByte(res, ptr[1]);

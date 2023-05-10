@@ -41,6 +41,7 @@ pub extern crate upb as __runtime;
 pub use __runtime::SerializedData;
 
 use std::fmt;
+use std::slice;
 
 /// Represents error during deserialization.
 #[derive(Debug, Clone)]
@@ -55,8 +56,15 @@ impl fmt::Display for ParseError {
 /// Represents an ABI-stable version of &[u8]/string_view (a borrowed slice of
 /// bytes) for FFI use only.
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct PtrAndLen {
     /// Borrows the memory.
     pub ptr: *const u8,
     pub len: usize,
+}
+
+impl PtrAndLen {
+    pub unsafe fn as_ref<'a>(self) -> &'a [u8] {
+        slice::from_raw_parts(self.ptr, self.len)
+    }
 }

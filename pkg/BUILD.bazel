@@ -229,6 +229,7 @@ cc_dist_library(
     testonly = 1,
     tags = ["manual"],
     deps = [
+        "//src/google/protobuf:test_textproto",
         "//src/google/protobuf/compiler:mock_code_generator",
         "//src/google/protobuf/testing",
     ],

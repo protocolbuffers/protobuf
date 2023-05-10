@@ -810,6 +810,7 @@ cc_library(
     deps = [
         ":cc_lite_test_protos",
         ":test_util2",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_googletest//:gtest",
     ],
@@ -848,6 +849,7 @@ cc_library(
         "//src/google/protobuf/testing",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/time",
         "@com_google_googletest//:gtest",
     ],
 )
@@ -960,6 +962,7 @@ cc_test(
         ":cc_test_protos",
         ":descriptor_legacy",
         ":protobuf",
+        ":test_textproto",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/testing",
         "@com_google_absl//absl/log:die_if_null",
@@ -967,6 +970,20 @@ cc_test(
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "test_textproto",
+    testonly = True,
+    hdrs = ["test_textproto.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        ":protobuf",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/memory",
+        "@com_google_googletest//:gtest",
     ],
 )
 
@@ -1296,9 +1313,13 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
+        ":lite_test_util",
         ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

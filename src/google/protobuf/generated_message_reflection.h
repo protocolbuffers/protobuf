@@ -355,6 +355,8 @@ PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8_t* base,
                                                uint32_t has_offset,
                                                io::CodedOutputStream* output);
 
+PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstances();
+
 struct PROTOBUF_EXPORT AddDescriptorsRunner {
   explicit AddDescriptorsRunner(const DescriptorTable* table);
 };

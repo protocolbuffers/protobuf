@@ -281,6 +281,116 @@ TEST(RetentionTest, InvalidDescriptor) {
       compiler::StripSourceRetentionOptions(*file_descriptor);
 }
 
+TEST(RetentionTest, MissingRequiredField) {
+  // Retention stripping should work correctly for a descriptor that has
+  // options with missing required fields.
+  std::string proto_file =
+      absl::Substitute(R"(
+      syntax = "proto2";
+
+      package google.protobuf.internal;
+
+      import "$0";
+
+      message WithRequiredField {
+        required int32 required_field = 1;
+        optional int32 optional_field = 2;
+      }
+
+      // Option with missing required field
+      option (m).optional_field = 42;
+
+      extend google.protobuf.FileOptions {
+        optional WithRequiredField m = 50000;
+      }
+
+      message Extendee {
+        extensions 1 to max [
+          declaration = {number: 1 full_name: ".my.ext" type: ".my.Type"}
+        ];
+      })",
+                       FileDescriptorSet::descriptor()->file()->name());
+  io::ArrayInputStream input_stream(proto_file.data(),
+                                    static_cast<int>(proto_file.size()));
+  io::ErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  FileDescriptorProto file_descriptor_proto;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &file_descriptor_proto));
+  file_descriptor_proto.set_name("retention.proto");
+
+  DescriptorPool pool;
+  FileDescriptorProto descriptor_proto_descriptor;
+  FileDescriptorSet::descriptor()->file()->CopyTo(&descriptor_proto_descriptor);
+  ASSERT_NE(pool.BuildFile(descriptor_proto_descriptor), nullptr);
+  const FileDescriptor* file_descriptor = pool.BuildFile(file_descriptor_proto);
+  ASSERT_NE(file_descriptor, nullptr);
+
+  FileDescriptorProto stripped_file =
+      compiler::StripSourceRetentionOptions(*file_descriptor);
+  ASSERT_EQ(stripped_file.message_type_size(), 2);
+  const DescriptorProto& extendee = stripped_file.message_type(1);
+  EXPECT_EQ(extendee.name(), "Extendee");
+  ASSERT_EQ(extendee.extension_range_size(), 1);
+  EXPECT_EQ(extendee.extension_range(0).options().declaration_size(), 0);
+}
+
+TEST(RetentionTest, InvalidRecursionDepth) {
+  // The excessive nesting in this proto file will make it impossible for us to
+  // use a DynamicMessage to strip custom options, but we should still fall
+  // back to stripping built-in options (specifically extension declarations).
+  std::string proto_file =
+      absl::Substitute(R"(
+      syntax = "proto2";
+
+      package google.protobuf.internal;
+
+      import "$0";
+
+      message Recursive {
+        optional Recursive r = 1;
+      }
+
+      option (r).r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r
+              .r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r
+              .r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r.r
+              .r.r.r.r.r.r.r.r.r.r.r.r = {};
+
+      extend google.protobuf.FileOptions {
+        optional Recursive r = 50000;
+      }
+
+      message Extendee {
+        extensions 1 to max [
+          declaration = {number: 1 full_name: ".my.ext" type: ".my.Type"}
+        ];
+      })",
+                       FileDescriptorSet::descriptor()->file()->name());
+  io::ArrayInputStream input_stream(proto_file.data(),
+                                    static_cast<int>(proto_file.size()));
+  io::ErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  FileDescriptorProto file_descriptor_proto;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &file_descriptor_proto));
+  file_descriptor_proto.set_name("retention.proto");
+
+  DescriptorPool pool;
+  FileDescriptorProto descriptor_proto_descriptor;
+  FileDescriptorSet::descriptor()->file()->CopyTo(&descriptor_proto_descriptor);
+  ASSERT_NE(pool.BuildFile(descriptor_proto_descriptor), nullptr);
+  const FileDescriptor* file_descriptor = pool.BuildFile(file_descriptor_proto);
+  ASSERT_NE(file_descriptor, nullptr);
+
+  FileDescriptorProto stripped_file =
+      compiler::StripSourceRetentionOptions(*file_descriptor);
+  ASSERT_EQ(stripped_file.message_type_size(), 2);
+  const DescriptorProto& extendee = stripped_file.message_type(1);
+  EXPECT_EQ(extendee.name(), "Extendee");
+  ASSERT_EQ(extendee.extension_range_size(), 1);
+  EXPECT_EQ(extendee.extension_range(0).options().declaration_size(), 0);
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

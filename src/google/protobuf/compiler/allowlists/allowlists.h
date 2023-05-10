@@ -43,6 +43,15 @@ bool IsWeakImportFile(absl::string_view file);
 // Returns whether a file can have an empty package.
 bool IsEmptyPackageFile(absl::string_view file);
 
+// Returns whether a file can contain a cc_open_enum.
+bool IsOpenEnumFile(absl::string_view file);
+
+// Returns whether a message can contain a cc_open_enum.
+bool IsOpenEnumMessage(absl::string_view msg);
+
+// Returns whether a file can contain an unused import.
+bool IsUnusedImportFile(absl::string_view file);
+
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

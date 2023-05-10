@@ -174,7 +174,12 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
   for (absl::string_view line_text : absl::StrSplit(format_string, '\n')) {
     if (format.is_raw_string) {
       size_t comment_index = line_text.find(options_.ignored_comment_start);
-      line_text = line_text.substr(0, comment_index);
+      if (comment_index != absl::string_view::npos) {
+        line_text = line_text.substr(0, comment_index);
+        if (absl::StripLeadingAsciiWhitespace(line_text).empty()) {
+          continue;
+        }
+      }
     }
 
     size_t line_indent = 0;
@@ -359,7 +364,8 @@ absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
 void Printer::Annotate(absl::string_view begin_varname,
                        absl::string_view end_varname,
                        absl::string_view file_path,
-                       const std::vector<int>& path) {
+                       const std::vector<int>& path,
+                       absl::optional<AnnotationCollector::Semantic> semantic) {
   if (options_.annotation_collector == nullptr) {
     return;
   }
@@ -376,8 +382,8 @@ void Printer::Annotate(absl::string_view begin_varname,
                      << " to " << end_varname;
     return;
   }
-  options_.annotation_collector->AddAnnotation(begin->first, end->second,
-                                               std::string(file_path), path);
+  options_.annotation_collector->AddAnnotation(
+      begin->first, end->second, std::string(file_path), path, semantic);
 }
 
 void Printer::WriteRaw(const char* data, size_t size) {

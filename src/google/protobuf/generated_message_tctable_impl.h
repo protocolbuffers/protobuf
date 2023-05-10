@@ -850,6 +850,10 @@ class PROTOBUF_EXPORT TcParser final {
                            const TcParseTableBase* table,
                            const TcParseTableBase::FieldEntry& entry,
                            uint16_t xform_val);
+  static bool MpVerifyUtf8(const absl::Cord& wire_bytes,
+                           const TcParseTableBase* table,
+                           const TcParseTableBase::FieldEntry& entry,
+                           uint16_t xform_val);
 
   // For FindFieldEntry tests:
   friend class FindFieldEntryTest;

@@ -77,7 +77,7 @@ void MessageNew(Context<Descriptor> msg) {
 
     case Kernel::kUpb:
       msg.Emit({{"new_thunk", Thunk(msg, "new")}}, R"rs(
-        let arena = unsafe { $pbi$::Arena::new() };
+        let arena = $pbi$::Arena::new();
         Self {
           msg: unsafe { $new_thunk$(arena.raw()) },
           arena,
@@ -133,9 +133,24 @@ void MessageDeserialize(Context<Descriptor> msg) {
       return;
 
     case Kernel::kUpb:
-      msg.Emit(R"rs(
-        let _ = data;
-        $std$::unimplemented!()
+      msg.Emit({{"deserialize_thunk", Thunk(msg, "parse")}}, R"rs(
+        let arena = $pbi$::Arena::new();
+        let msg = unsafe {
+          $NonNull$::<u8>::new(
+            $deserialize_thunk$(data.as_ptr(), data.len(), arena.raw())
+          )
+        };
+
+        match msg {
+          None => Err($pb$::ParseError),
+          Some(msg) => {
+            // This assignment causes self.arena to be dropped and to deallocate
+            // any previous message pointed/owned to by self.msg.
+            self.arena = arena;
+            self.msg = msg;
+            Ok(())
+          }
+        }
       )rs");
       return;
   }
@@ -166,10 +181,12 @@ void MessageExterns(Context<Descriptor> msg) {
           {
               {"new_thunk", Thunk(msg, "new")},
               {"serialize_thunk", Thunk(msg, "serialize")},
+              {"deserialize_thunk", Thunk(msg, "parse")},
           },
           R"rs(
           fn $new_thunk$(arena: $pbi$::RawArena) -> $NonNull$<u8>;
           fn $serialize_thunk$(msg: $NonNull$<u8>, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
+          fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> *mut u8;
       )rs");
       return;
   }
@@ -307,6 +324,9 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
     msg.printer().PrintRaw("\n");
     msg.Emit({{"Msg", msg.desc().name()}}, R"rs(
       impl $Msg$ {
+        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $NonNull$<u8>) -> Self {
+          Self { msg }
+        }
         pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $NonNull$<u8> {
           self.msg
         }

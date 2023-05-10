@@ -45,10 +45,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/generated_message_util.h"
-#include "google/protobuf/map_entry_lite.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -59,7 +55,6 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -117,20 +112,24 @@ std::string ConditionalToCheckBitmasks(
 void PrintPresenceCheck(const FieldDescriptor* field,
                         const std::vector<int>& has_bit_indices, io::Printer* p,
                         int* cached_has_word_index) {
-  Formatter format(p);
   if (!field->options().weak()) {
     int has_bit_index = has_bit_indices[field->index()];
     if (*cached_has_word_index != (has_bit_index / 32)) {
       *cached_has_word_index = (has_bit_index / 32);
-      format("cached_has_bits = $has_bits$[$1$];\n", *cached_has_word_index);
+      p->Emit({{"index", *cached_has_word_index}},
+              R"cc(
+                cached_has_bits = $has_bits$[$index$];
+              )cc");
     }
-    const std::string mask =
-        absl::StrCat(absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-    format("if (cached_has_bits & 0x$1$u) {\n", mask);
+    p->Emit({{"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))}},
+            R"cc(
+              if (cached_has_bits & $mask$) {
+            )cc");
   } else {
-    format("if (has_$1$()) {\n", FieldName(field));
+    p->Emit(R"cc(
+      if (has_$name$()) {
+    )cc");
   }
-  format.Indent();
 }
 
 struct FieldOrderingByNumber {
@@ -210,7 +209,6 @@ RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
 bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
                                   const FieldDescriptor* field) {
   ABSL_CHECK(!HasHasbit(field));
-  Formatter format(p);
   auto v = p->WithVars({{
       {"prefix", prefix},
       {"name", FieldName(field)},
@@ -219,34 +217,42 @@ bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
   // if non-zero (numeric) or non-empty (string).
   if (!field->is_repeated() && !field->containing_oneof()) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      format("if (!$prefix$_internal_$name$().empty()) {\n");
+      p->Emit(R"cc(
+        if (!$prefix$_internal_$name$().empty()) {
+      )cc");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // Message fields still have has_$name$() methods.
-      format("if ($prefix$_internal_has_$name$()) {\n");
+      p->Emit(R"cc(
+        if ($prefix$_internal_has_$name$()) {
+      )cc");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
-      format(
-          "static_assert(sizeof(::uint32_t) == sizeof(float), \"Code assumes "
-          "::uint32_t and float are the same size.\");\n"
-          "float tmp_$name$ = $prefix$_internal_$name$();\n"
-          "::uint32_t raw_$name$;\n"
-          "memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));\n"
-          "if (raw_$name$ != 0) {\n");
+      p->Emit(R"cc(
+        static_assert(sizeof(::uint32_t) == sizeof(float),
+                      "Code assumes ::uint32_t and float are the same size.");
+        float tmp_$name$ = $prefix$_internal_$name$();
+        ::uint32_t raw_$name$;
+        memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));
+        if (raw_$name$ != 0) {
+      )cc");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE) {
-      format(
-          "static_assert(sizeof(::uint64_t) == sizeof(double), \"Code assumes "
-          "::uint64_t and double are the same size.\");\n"
-          "double tmp_$name$ = $prefix$_internal_$name$();\n"
-          "::uint64_t raw_$name$;\n"
-          "memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));\n"
-          "if (raw_$name$ != 0) {\n");
+      p->Emit(R"cc(
+        static_assert(sizeof(::uint64_t) == sizeof(double),
+                      "Code assumes ::uint64_t and double are the same size.");
+        double tmp_$name$ = $prefix$_internal_$name$();
+        ::uint64_t raw_$name$;
+        memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));
+        if (raw_$name$ != 0) {
+      )cc");
     } else {
-      format("if ($prefix$_internal_$name$() != 0) {\n");
+      p->Emit(R"cc(
+        if ($prefix$_internal_$name$() != 0) {
+      )cc");
     }
-    format.Indent();
     return true;
   } else if (field->real_containing_oneof()) {
-    format("if ($has_field$) {\n");
-    format.Indent();
+    p->Emit(R"cc(
+      if ($has_field$) {
+    )cc");
     return true;
   }
   return false;
@@ -419,7 +425,6 @@ bool ColdChunkSkipper::IsColdChunk(int chunk) {
 
 void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
                                     const std::string& from, io::Printer* p) {
-  Formatter format(p);
   if (!access_info_map_) {
     return;
   } else if (chunk < limit_chunk_) {
@@ -443,42 +448,52 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
   }
 
   // Emit has_bit check for each has_bit_dword index.
-  format("if (PROTOBUF_PREDICT_FALSE(");
-  int first_word = HasbitWord(chunk, 0);
-  while (chunk < limit_chunk_) {
-    uint32_t mask = 0;
-    int this_word = HasbitWord(chunk, 0);
-    // Generate mask for chunks on the same word.
-    for (; chunk < limit_chunk_ && HasbitWord(chunk, 0) == this_word; chunk++) {
-      for (auto field : chunks_[chunk]) {
-        int hasbit_index = has_bit_indices_[field->index()];
-        // Fields on a chunk must be in the same word.
-        ABSL_CHECK_EQ(this_word, hasbit_index / 32);
-        mask |= 1 << (hasbit_index % 32);
-      }
-    }
+  p->Emit(
+      {{"cond",
+        [&] {
+          int first_word = HasbitWord(chunk, 0);
+          while (chunk < limit_chunk_) {
+            uint32_t mask = 0;
+            int this_word = HasbitWord(chunk, 0);
+            // Generate mask for chunks on the same word.
+            for (; chunk < limit_chunk_ && HasbitWord(chunk, 0) == this_word;
+                 chunk++) {
+              for (auto field : chunks_[chunk]) {
+                int hasbit_index = has_bit_indices_[field->index()];
+                // Fields on a chunk must be in the same word.
+                ABSL_CHECK_EQ(this_word, hasbit_index / 32);
+                mask |= 1 << (hasbit_index % 32);
+              }
+            }
 
-    if (this_word != first_word) {
-      format(" ||\n    ");
-    }
-    auto v = p->WithVars({{"mask", absl::Hex(mask, absl::kZeroPad8)}});
-    if (this_word == cached_has_word_index) {
-      format("(cached_has_bits & 0x$mask$u) != 0");
-    } else {
-      format("($1$_impl_._has_bits_[$2$] & 0x$mask$u) != 0", from, this_word);
-    }
-  }
-  format(")) {\n");
-  format.Indent();
+            if (this_word != first_word) {
+              p->Emit(R"cc(
+                ||
+              )cc");
+            }
+            auto v = p->WithVars({{"mask", absl::StrFormat("0x%08xu", mask)}});
+            if (this_word == cached_has_word_index) {
+              p->Emit("(cached_has_bits & $mask$) != 0");
+            } else {
+              p->Emit({{"from", from}, {"word", this_word}},
+                      "($from$_impl_._has_bits_[$word$] & $mask$) != 0");
+            }
+          }
+        }}},
+      R"cc(
+        if (PROTOBUF_PREDICT_FALSE($cond$)) {
+      )cc");
+  p->Indent();
 }
 
 bool ColdChunkSkipper::OnEndChunk(int chunk, io::Printer* p) {
-  Formatter format(p);
   if (chunk != limit_chunk_ - 1) {
     return false;
   }
-  format.Outdent();
-  format("}\n");
+  p->Outdent();
+  p->Emit(R"cc(
+    }
+  )cc");
   return true;
 }
 
@@ -509,9 +524,7 @@ absl::flat_hash_map<absl::string_view, std::string> HasbitVars(
     int has_bit_index) {
   return {
       {"has_array_index", absl::StrCat(has_bit_index / 32)},
-      {"has_mask",
-       absl::StrCat(
-           "0x", absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8), "u")},
+      {"has_mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))},
   };
 }
 
@@ -623,7 +636,6 @@ void MessageGenerator::AddGenerators(
 
 void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   auto v = p->WithVars(MessageVars(descriptor_));
-  Formatter format(p);
 
   // optimized_fields_ does not contain fields where
   //    field->real_containing_oneof()
@@ -935,28 +947,28 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   }
 
   for (auto oneof : OneOfRange(descriptor_)) {
-    Formatter::SaveState saver(&format);
-    auto v = p->WithVars({
-        {"oneof_name", oneof->name()},
-        {"camel_oneof_name", UnderscoresToCamelCase(oneof->name(), true)},
-    });
-    format(
-        "void ${1$clear_$oneof_name$$}$();\n"
-        "$camel_oneof_name$Case $oneof_name$_case() const;\n",
-        oneof);
+    p->Emit({{"oneof_name", oneof->name()},
+             Sub{"clear_oneof_name", absl::StrCat("clear_", oneof->name())}
+                 .AnnotatedAs(oneof),
+             {"OneOfName", UnderscoresToCamelCase(oneof->name(), true)}},
+            R"cc(
+              void $clear_oneof_name$();
+              $OneOfName$Case $oneof_name$_case() const;
+            )cc");
   }
 }
 
 void MessageGenerator::GenerateSingularFieldHasBits(
     const FieldDescriptor* field, io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
-  Formatter format(p);
   if (field->options().weak()) {
-    format(
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  return $weak_field_map$.Has($number$);\n"
-        "}\n");
+    p->Emit(
+        R"cc(
+          inline bool $classname$::has_$name$() const {
+            $annotate_has$;
+            return $weak_field_map$.Has($number$);
+          }
+        )cc");
     return;
   }
   if (HasHasbit(field)) {
@@ -964,157 +976,172 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     ABSL_CHECK_NE(has_bit_index, kNoHasbit);
 
     auto v = p->WithVars(HasbitVars(has_bit_index));
-    format(
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  bool value = ($has_bits$[$has_array_index$] & $has_mask$) != 0;\n");
-
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !IsLazy(field, options_, scc_analyzer_)) {
-      // We maintain the invariant that for a submessage x, has_x() returning
-      // true implies that x_ is not null. By giving this information to the
-      // compiler, we allow it to eliminate unnecessary null checks later on.
-      format("  PROTOBUF_ASSUME(!value || $field$ != nullptr);\n");
-    }
-
-    format(
-        "  return value;\n"
-        "}\n");
+    p->Emit(
+        {Sub{"ASSUME",
+             [&] {
+               if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+                   !IsLazy(field, options_, scc_analyzer_)) {
+                 // We maintain the invariant that for a submessage x, has_x()
+                 // returning true implies that x_ is not null. By giving this
+                 // information to the compiler, we allow it to eliminate
+                 // unnecessary null checks later on.
+                 p->Emit(
+                     R"cc(PROTOBUF_ASSUME(!value || $field$ != nullptr);)cc");
+               }
+             }}
+             .WithSuffix(";")},
+        R"cc(
+          inline bool $classname$::has_$name$() const {
+            $annotate_has$;
+            bool value = ($has_bits$[$has_array_index$] & $has_mask$) != 0;
+            $ASSUME$;
+            return value;
+          }
+        )cc");
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // Message fields have a has_$name$() method.
     if (IsLazy(field, options_, scc_analyzer_)) {
-      format(
-          "inline bool $classname$::_internal_has_$name$() const {\n"
-          "  return !$field$.IsCleared();\n"
-          "}\n");
+      p->Emit(R"cc(
+        inline bool $classname$::_internal_has_$name$() const {
+          return !$field$.IsCleared();
+        }
+      )cc");
     } else {
-      format(
-          "inline bool $classname$::_internal_has_$name$() const {\n"
-          "  return this != internal_default_instance() "
-          "&& $field$ != nullptr;\n"
-          "}\n");
+      p->Emit(R"cc(
+        inline bool $classname$::_internal_has_$name$() const {
+          return this != internal_default_instance() && $field$ != nullptr;
+        }
+      )cc");
     }
-    format(
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  return _internal_has_$name$();\n"
-        "}\n");
+    p->Emit(R"cc(
+      inline bool $classname$::has_$name$() const {
+        $annotate_has$;
+        return _internal_has_$name$();
+      }
+    )cc");
   }
 }
 
 void MessageGenerator::GenerateOneofHasBits(io::Printer* p) {
-  Formatter format(p);
   for (const auto* oneof : OneOfRange(descriptor_)) {
-    auto v = p->WithVars({
-        {"oneof_index", oneof->index()},
-        {"oneof_name", oneof->name()},
-        {"cap_oneof_name", absl::AsciiStrToUpper(oneof->name())},
-    });
-    format(
-        "inline bool $classname$::has_$oneof_name$() const {\n"
-        "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
-        "}\n"
-        "inline void $classname$::clear_has_$oneof_name$() {\n"
-        "  $oneof_case$[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n"
-        "}\n");
+    p->Emit(
+        {
+            {"oneof_index", oneof->index()},
+            {"oneof_name", oneof->name()},
+            {"cap_oneof_name", absl::AsciiStrToUpper(oneof->name())},
+        },
+        R"cc(
+          inline bool $classname$::has_$oneof_name$() const {
+            return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;
+          }
+          inline void $classname$::clear_has_$oneof_name$() {
+            $oneof_case$[$oneof_index$] = $cap_oneof_name$_NOT_SET;
+          }
+        )cc");
   }
 }
 
 void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
                                                   io::Printer* p) {
-  auto t = p->WithVars(MakeTrackerCalls(field, options_));
-  Formatter format(p);
   // Singular field in a oneof
   // N.B.: Without field presence, we do not use has-bits or generate
   // has_$name$() methods, but oneofs still have set_has_$name$().
   // Oneofs also have private _internal_has_$name$() a helper method.
   if (field->has_presence()) {
-    format(
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  return $has_field$;\n"
-        "}\n");
+    auto t = p->WithVars(MakeTrackerCalls(field, options_));
+    p->Emit(R"cc(
+      inline bool $classname$::has_$name$() const {
+        $annotate_has$;
+        return $has_field$;
+      }
+    )cc");
   }
   if (HasInternalHasMethod(field)) {
-    format(
-        "inline bool $classname$::_internal_has_$name$() const {\n"
-        "  return $has_field$;\n"
-        "}\n");
+    p->Emit(R"cc(
+      inline bool $classname$::_internal_has_$name$() const {
+        return $has_field$;
+      }
+    )cc");
   }
   // set_has_$name$() for oneof fields is always private; hence should not be
   // annotated.
-  format(
-      "inline void $classname$::set_has_$name$() {\n"
-      "  $oneof_case$[$oneof_index$] = k$field_name$;\n"
-      "}\n");
+  p->Emit(R"cc(
+    inline void $classname$::set_has_$name$() {
+      $oneof_case$[$oneof_index$] = k$field_name$;
+    }
+  )cc");
 }
 
 void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                                           bool is_inline, io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
-  Formatter format(p);
-
-  // Generate clear_$name$().
-  if (is_inline) {
-    format("inline ");
-  }
-  format("void $classname$::clear_$name$() {\n");
-
-  format.Indent();
-
-  if (field->real_containing_oneof()) {
-    // Clear this field only if it is the active field in this oneof,
-    // otherwise ignore
-    auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    format("if ($has_field$) {\n");
-    format.Indent();
-    field_generators_.get(field).GenerateClearingCode(p);
-    format("clear_has_$oneof_name$();\n");
-    format.Outdent();
-    format("}\n");
-  } else {
-    if (ShouldSplit(field, options_)) {
-      format("if (IsSplitMessageDefault()) return;\n");
-    }
-    field_generators_.get(field).GenerateClearingCode(p);
-    if (HasHasbit(field)) {
-      int has_bit_index = HasBitIndex(field);
-      auto v = p->WithVars(HasbitVars(has_bit_index));
-      format("$has_bits$[$has_array_index$] &= ~$has_mask$;\n");
-    }
-  }
-  format("$annotate_clear$");
-  format.Outdent();
-  format("}\n");
+  p->Emit({{"inline", is_inline ? "inline" : ""},
+           {"body",
+            [&] {
+              if (field->real_containing_oneof()) {
+                // Clear this field only if it is the active field in this
+                // oneof, otherwise ignore
+                p->Emit(
+                    {{"clearing_code",
+                      [&] {
+                        field_generators_.get(field).GenerateClearingCode(p);
+                      }}},
+                    R"cc(
+                      if ($has_field$) {
+                        $clearing_code$;
+                        clear_has_$oneof_name$();
+                      }
+                    )cc");
+              } else {
+                // TODO(b/281513105): figure out if early return breaks tracking
+                if (ShouldSplit(field, options_)) {
+                  p->Emit(R"cc(
+                    if (IsSplitMessageDefault()) return;
+                  )cc");
+                }
+                field_generators_.get(field).GenerateClearingCode(p);
+                if (HasHasbit(field)) {
+                  int has_bit_index = HasBitIndex(field);
+                  auto v = p->WithVars(HasbitVars(has_bit_index));
+                  p->Emit(R"cc(
+                    $has_bits$[$has_array_index$] &= ~$has_mask$;
+                  )cc");
+                }
+              }
+            }}},
+          R"cc(
+            $inline $void $classname$::clear_$name$() {
+              $body$;
+              $annotate_clear$;
+            }
+          )cc");
 }
 
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
-  Formatter format(p);
-  format("// $classname$\n\n");
+  p->Emit("// $classname$\n\n");
 
   for (auto field : FieldRange(descriptor_)) {
-    PrintFieldComment(format, field);
+    PrintFieldComment(Formatter{p}, field);
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
-      format(
-          "inline int $classname$::_internal_$name$_size() const {\n"
-          "  return $field$$1$.size();\n"
-          "}\n"
-          "inline int $classname$::$name$_size() const {\n"
-          "$annotate_size$"
-          "  return _internal_$name$_size();\n"
-          "}\n",
-          IsImplicitWeakField(field, options_, scc_analyzer_) &&
-                  field->message_type()
-              ? ".weak"
-              : "");
+      p->Emit({{"weak", IsImplicitWeakField(field, options_, scc_analyzer_) &&
+                                field->message_type()
+                            ? ".weak"
+                            : ""}},
+              R"cc(
+                inline int $classname$::_internal_$name$_size() const {
+                  return $field$$weak$.size();
+                }
+                inline int $classname$::$name$_size() const {
+                  $annotate_size$;
+                  return _internal_$name$_size();
+                }
+              )cc");
     } else if (field->real_containing_oneof()) {
       GenerateOneofMemberHasBits(field, p);
     } else {
-      // Singular field.
       GenerateSingularFieldHasBits(field, p);
     }
 
@@ -1124,10 +1151,9 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     // Generate type-specific accessors.
     field_generators_.get(field).GenerateInlineAccessorDefinitions(p);
 
-    format("\n");
+    p->Emit("\n");
   }
 
-  // Generate has_$name$() and clear_has_$name$() functions for oneofs.
   GenerateOneofHasBits(p);
 }
 
@@ -1426,7 +1452,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP\n"
       "    InternalSwap(other);\n"
       "  } else {\n"
-      "    ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);\n"
+      "    $pbi$::GenericSwap(this, other);\n"
       "  }\n"
       "}\n"
       "void UnsafeArenaSwap($classname$* other) {\n"
@@ -1834,27 +1860,24 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
 
   // Generate oneof_case() functions.
   for (auto oneof : OneOfRange(descriptor_)) {
-    Formatter format(p);
-    auto v = p->WithVars({
-        {"camel_oneof_name", UnderscoresToCamelCase(oneof->name(), true)},
-        {"oneof_name", oneof->name()},
-        {"oneof_index", oneof->index()},
-    });
-    format(
-        "inline $classname$::$camel_oneof_name$Case $classname$::"
-        "${1$$oneof_name$_case$}$() const {\n"
-        "  return $classname$::$camel_oneof_name$Case("
-        "$oneof_case$[$oneof_index$]);\n"
-        "}\n",
-        oneof);
+    p->Emit(
+        {
+            Sub{"oneof_name", absl::StrCat(oneof->name(), "_case")}.AnnotatedAs(
+                oneof),
+            {"OneofName",
+             absl::StrCat(UnderscoresToCamelCase(oneof->name(), true), "Case")},
+            {"oneof_index", oneof->index()},
+        },
+        R"cc(
+          inline $classname$::$OneofName$ $classname$::$oneof_name$() const {
+            return $classname$::$OneofName$($oneof_case$[$oneof_index$]);
+          }
+        )cc");
   }
 }
 
 void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
                                       int has_offset) {
-  auto v = p->WithVars(ClassVars(descriptor_, options_));
-  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
-  Formatter format(p);
   has_offset = !has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)
                    ? offset + has_offset
                    : -1;
@@ -1866,8 +1889,17 @@ void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
     ABSL_DCHECK(!IsMapEntryMessage(descriptor_));
     inlined_string_indices_offset = has_offset + has_bit_indices_.size();
   }
-  format("{ $1$, $2$, $3$, sizeof($classtype$)},\n", offset, has_offset,
-         inlined_string_indices_offset);
+
+  auto v = p->WithVars(ClassVars(descriptor_, options_));
+  p->Emit(
+      {
+          {"offset", offset},
+          {"has_offset", has_offset},
+          {"string_offsets", inlined_string_indices_offset},
+      },
+      R"cc(
+        {$offset$, $has_offset$, $string_offsets$, sizeof($classtype$)},
+      )cc");
 }
 
 void MessageGenerator::GenerateClassMethods(io::Printer* p) {
@@ -2022,8 +2054,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     format(
         "void $classname$::PrepareSplitMessageForWrite() {\n"
         "  if (IsSplitMessageDefault()) {\n"
-        "    void* chunk = "
-        "::PROTOBUF_NAMESPACE_ID::internal::CreateSplitMessageGeneric("
+        "    void* chunk = $pbi$::CreateSplitMessageGeneric("
         "GetArenaForAllocation(), &$1$, sizeof(Impl_::Split), this, &$2$);\n"
         "    $split$ = reinterpret_cast<Impl_::Split*>(chunk);\n"
         "  }\n"
@@ -2385,9 +2416,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
   }
 
   format.Outdent();
-  format(
-      "}\n"
-      "\n");
+  format("}\n\n");
 }
 
 ArenaDtorNeeds MessageGenerator::NeedsArenaDestructor() const {
@@ -2852,7 +2881,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   const int kMaxUnconditionalPrimitiveBytesClear = 4;
 
   format(
-      "void $classname$::Clear() {\n"
+      "PROTOBUF_NOINLINE void $classname$::Clear() {\n"
       "// @@protoc_insertion_point(message_clear_start:$full_name$)\n");
   format.Indent();
 
@@ -2986,6 +3015,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
 
       if (have_enclosing_if) {
         PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index);
+        format.Indent();
       }
 
       field_generators_.get(field).GenerateMessageClearingCode(p);
@@ -3139,7 +3169,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
         });
 
         format(
-            "::PROTOBUF_NAMESPACE_ID::internal::memswap<\n"
+            "$pbi$::memswap<\n"
             "    PROTOBUF_FIELD_OFFSET($classname$, $last$)\n"
             "    + sizeof($classname$::$last$)\n"
             "    - PROTOBUF_FIELD_OFFSET($classname$, $first$)>(\n"
@@ -3324,6 +3354,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         // merged only if non-zero (numeric) or non-empty (string).
         bool have_enclosing_if =
             EmitFieldNonDefaultCondition(p, "from.", field);
+        if (have_enclosing_if) format.Indent();
         generator.GenerateMergingCode(p);
         if (have_enclosing_if) {
           format.Outdent();
@@ -3538,14 +3569,13 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
       field_generators_.get(field).GenerateIfHasField(p);
     }
 
-    format.Indent();
     have_enclosing_if = true;
   } else if (field->is_optional() && !HasHasbit(field)) {
     have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
   }
 
+  if (have_enclosing_if) format.Indent();
   field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
-
   if (have_enclosing_if) {
     format.Outdent();
     format("}\n");
@@ -3939,7 +3969,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
     format(
-        "::size_t $classname$::ByteSizeLong() const {\n"
+        "PROTOBUF_NOINLINE ::size_t $classname$::ByteSizeLong() const {\n"
         "$annotate_bytesize$"
         "// @@protoc_insertion_point(message_set_byte_size_start:$full_name$)\n"
         "  ::size_t total_size = $extensions$.MessageSetByteSize();\n"
@@ -4098,6 +4128,8 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
       }
 
+      if (have_enclosing_if) format.Indent();
+
       field_generators_.get(field).GenerateByteSize(p);
 
       if (have_enclosing_if) {
@@ -4182,7 +4214,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(p);
-  format("bool $classname$::IsInitialized() const {\n");
+  format("PROTOBUF_NOINLINE bool $classname$::IsInitialized() const {\n");
   format.Indent();
 
   if (descriptor_->extension_range_count() > 0) {

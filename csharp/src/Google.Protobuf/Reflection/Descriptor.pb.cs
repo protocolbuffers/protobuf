@@ -122,7 +122,7 @@ namespace Google.Protobuf.Reflection {
             "GAcgASgIEjIKJmRlcHJlY2F0ZWRfbGVnYWN5X2pzb25fZmllbGRfY29uZmxp",
             "Y3RzGAsgASgIQgIYARJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsy",
             "JC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICA",
-            "gIACSgQIBBAFSgQIBRAGSgQIBhAHSgQICBAJSgQICRAKIogICgxGaWVsZE9w",
+            "gIACSgQIBBAFSgQIBRAGSgQIBhAHSgQICBAJSgQICRAKIpwICgxGaWVsZE9w",
             "dGlvbnMSOgoFY3R5cGUYASABKA4yIy5nb29nbGUucHJvdG9idWYuRmllbGRP",
             "cHRpb25zLkNUeXBlOgZTVFJJTkcSDgoGcGFja2VkGAIgASgIEj8KBmpzdHlw",
             "ZRgGIAEoDjIkLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMuSlNUeXBl",
@@ -130,62 +130,62 @@ namespace Google.Protobuf.Reflection {
             "ZF9sYXp5GA8gASgIOgVmYWxzZRIZCgpkZXByZWNhdGVkGAMgASgIOgVmYWxz",
             "ZRITCgR3ZWFrGAogASgIOgVmYWxzZRIbCgxkZWJ1Z19yZWRhY3QYECABKAg6",
             "BWZhbHNlEkAKCXJldGVudGlvbhgRIAEoDjItLmdvb2dsZS5wcm90b2J1Zi5G",
-            "aWVsZE9wdGlvbnMuT3B0aW9uUmV0ZW50aW9uEkIKBnRhcmdldBgSIAEoDjIu",
-            "Lmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMuT3B0aW9uVGFyZ2V0VHlw",
-            "ZUICGAESPwoHdGFyZ2V0cxgTIAMoDjIuLmdvb2dsZS5wcm90b2J1Zi5GaWVs",
-            "ZE9wdGlvbnMuT3B0aW9uVGFyZ2V0VHlwZRJDChR1bmludGVycHJldGVkX29w",
+            "aWVsZE9wdGlvbnMuT3B0aW9uUmV0ZW50aW9uEj8KB3RhcmdldHMYEyADKA4y",
+            "Li5nb29nbGUucHJvdG9idWYuRmllbGRPcHRpb25zLk9wdGlvblRhcmdldFR5",
+            "cGUSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnBy",
+            "b3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24SVgoadGFyZ2V0X29ic29sZXRl",
+            "X2RvX25vdF91c2UYEiABKA4yLi5nb29nbGUucHJvdG9idWYuRmllbGRPcHRp",
+            "b25zLk9wdGlvblRhcmdldFR5cGVCAhgBIi8KBUNUeXBlEgoKBlNUUklORxAA",
+            "EggKBENPUkQQARIQCgxTVFJJTkdfUElFQ0UQAiI1CgZKU1R5cGUSDQoJSlNf",
+            "Tk9STUFMEAASDQoJSlNfU1RSSU5HEAESDQoJSlNfTlVNQkVSEAIiVQoPT3B0",
+            "aW9uUmV0ZW50aW9uEhUKEVJFVEVOVElPTl9VTktOT1dOEAASFQoRUkVURU5U",
+            "SU9OX1JVTlRJTUUQARIUChBSRVRFTlRJT05fU09VUkNFEAIijAIKEE9wdGlv",
+            "blRhcmdldFR5cGUSFwoTVEFSR0VUX1RZUEVfVU5LTk9XThAAEhQKEFRBUkdF",
+            "VF9UWVBFX0ZJTEUQARIfChtUQVJHRVRfVFlQRV9FWFRFTlNJT05fUkFOR0UQ",
+            "AhIXChNUQVJHRVRfVFlQRV9NRVNTQUdFEAMSFQoRVEFSR0VUX1RZUEVfRklF",
+            "TEQQBBIVChFUQVJHRVRfVFlQRV9PTkVPRhAFEhQKEFRBUkdFVF9UWVBFX0VO",
+            "VU0QBhIaChZUQVJHRVRfVFlQRV9FTlVNX0VOVFJZEAcSFwoTVEFSR0VUX1RZ",
+            "UEVfU0VSVklDRRAIEhYKElRBUkdFVF9UWVBFX01FVEhPRBAJKgkI6AcQgICA",
+            "gAJKBAgEEAUiXgoMT25lb2ZPcHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0",
+            "aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0",
+            "aW9uKgkI6AcQgICAgAIixwEKC0VudW1PcHRpb25zEhMKC2FsbG93X2FsaWFz",
+            "GAIgASgIEhkKCmRlcHJlY2F0ZWQYAyABKAg6BWZhbHNlEjIKJmRlcHJlY2F0",
+            "ZWRfbGVnYWN5X2pzb25fZmllbGRfY29uZmxpY3RzGAYgASgIQgIYARJDChR1",
+            "bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYu",
+            "VW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACSgQIBRAGIn0KEEVudW1W",
+            "YWx1ZU9wdGlvbnMSGQoKZGVwcmVjYXRlZBgBIAEoCDoFZmFsc2USQwoUdW5p",
+            "bnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVu",
+            "aW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiJ7Cg5TZXJ2aWNlT3B0aW9u",
+            "cxIZCgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJDChR1bmludGVycHJldGVk",
+            "X29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRl",
+            "ZE9wdGlvbioJCOgHEICAgIACIq0CCg1NZXRob2RPcHRpb25zEhkKCmRlcHJl",
+            "Y2F0ZWQYISABKAg6BWZhbHNlEl8KEWlkZW1wb3RlbmN5X2xldmVsGCIgASgO",
+            "Mi8uZ29vZ2xlLnByb3RvYnVmLk1ldGhvZE9wdGlvbnMuSWRlbXBvdGVuY3lM",
+            "ZXZlbDoTSURFTVBPVEVOQ1lfVU5LTk9XThJDChR1bmludGVycHJldGVkX29w",
             "dGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9w",
-            "dGlvbiIvCgVDVHlwZRIKCgZTVFJJTkcQABIICgRDT1JEEAESEAoMU1RSSU5H",
-            "X1BJRUNFEAIiNQoGSlNUeXBlEg0KCUpTX05PUk1BTBAAEg0KCUpTX1NUUklO",
-            "RxABEg0KCUpTX05VTUJFUhACIlUKD09wdGlvblJldGVudGlvbhIVChFSRVRF",
-            "TlRJT05fVU5LTk9XThAAEhUKEVJFVEVOVElPTl9SVU5USU1FEAESFAoQUkVU",
-            "RU5USU9OX1NPVVJDRRACIowCChBPcHRpb25UYXJnZXRUeXBlEhcKE1RBUkdF",
-            "VF9UWVBFX1VOS05PV04QABIUChBUQVJHRVRfVFlQRV9GSUxFEAESHwobVEFS",
-            "R0VUX1RZUEVfRVhURU5TSU9OX1JBTkdFEAISFwoTVEFSR0VUX1RZUEVfTUVT",
-            "U0FHRRADEhUKEVRBUkdFVF9UWVBFX0ZJRUxEEAQSFQoRVEFSR0VUX1RZUEVf",
-            "T05FT0YQBRIUChBUQVJHRVRfVFlQRV9FTlVNEAYSGgoWVEFSR0VUX1RZUEVf",
-            "RU5VTV9FTlRSWRAHEhcKE1RBUkdFVF9UWVBFX1NFUlZJQ0UQCBIWChJUQVJH",
-            "RVRfVFlQRV9NRVRIT0QQCSoJCOgHEICAgIACSgQIBBAFIl4KDE9uZW9mT3B0",
-            "aW9ucxJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUu",
-            "cHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACIscBCgtF",
-            "bnVtT3B0aW9ucxITCgthbGxvd19hbGlhcxgCIAEoCBIZCgpkZXByZWNhdGVk",
-            "GAMgASgIOgVmYWxzZRIyCiZkZXByZWNhdGVkX2xlZ2FjeV9qc29uX2ZpZWxk",
-            "X2NvbmZsaWN0cxgGIAEoCEICGAESQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y",
-            "5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24q",
-            "CQjoBxCAgICAAkoECAUQBiJ9ChBFbnVtVmFsdWVPcHRpb25zEhkKCmRlcHJl",
-            "Y2F0ZWQYASABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcH",
-            "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI",
-            "6AcQgICAgAIiewoOU2VydmljZU9wdGlvbnMSGQoKZGVwcmVjYXRlZBghIAEo",
-            "CDoFZmFsc2USQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29v",
-            "Z2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiKt",
-            "AgoNTWV0aG9kT3B0aW9ucxIZCgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJf",
-            "ChFpZGVtcG90ZW5jeV9sZXZlbBgiIAEoDjIvLmdvb2dsZS5wcm90b2J1Zi5N",
-            "ZXRob2RPcHRpb25zLklkZW1wb3RlbmN5TGV2ZWw6E0lERU1QT1RFTkNZX1VO",
-            "S05PV04SQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xl",
-            "LnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24iUAoQSWRlbXBvdGVuY3lM",
-            "ZXZlbBIXChNJREVNUE9URU5DWV9VTktOT1dOEAASEwoPTk9fU0lERV9FRkZF",
-            "Q1RTEAESDgoKSURFTVBPVEVOVBACKgkI6AcQgICAgAIingIKE1VuaW50ZXJw",
-            "cmV0ZWRPcHRpb24SOwoEbmFtZRgCIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5V",
-            "bmludGVycHJldGVkT3B0aW9uLk5hbWVQYXJ0EhgKEGlkZW50aWZpZXJfdmFs",
-            "dWUYAyABKAkSGgoScG9zaXRpdmVfaW50X3ZhbHVlGAQgASgEEhoKEm5lZ2F0",
-            "aXZlX2ludF92YWx1ZRgFIAEoAxIUCgxkb3VibGVfdmFsdWUYBiABKAESFAoM",
-            "c3RyaW5nX3ZhbHVlGAcgASgMEhcKD2FnZ3JlZ2F0ZV92YWx1ZRgIIAEoCRoz",
-            "CghOYW1lUGFydBIRCgluYW1lX3BhcnQYASACKAkSFAoMaXNfZXh0ZW5zaW9u",
-            "GAIgAigIItUBCg5Tb3VyY2VDb2RlSW5mbxI6Cghsb2NhdGlvbhgBIAMoCzIo",
-            "Lmdvb2dsZS5wcm90b2J1Zi5Tb3VyY2VDb2RlSW5mby5Mb2NhdGlvbhqGAQoI",
-            "TG9jYXRpb24SEAoEcGF0aBgBIAMoBUICEAESEAoEc3BhbhgCIAMoBUICEAES",
-            "GAoQbGVhZGluZ19jb21tZW50cxgDIAEoCRIZChF0cmFpbGluZ19jb21tZW50",
-            "cxgEIAEoCRIhChlsZWFkaW5nX2RldGFjaGVkX2NvbW1lbnRzGAYgAygJIpwC",
-            "ChFHZW5lcmF0ZWRDb2RlSW5mbxJBCgphbm5vdGF0aW9uGAEgAygLMi0uZ29v",
-            "Z2xlLnByb3RvYnVmLkdlbmVyYXRlZENvZGVJbmZvLkFubm90YXRpb24awwEK",
-            "CkFubm90YXRpb24SEAoEcGF0aBgBIAMoBUICEAESEwoLc291cmNlX2ZpbGUY",
-            "AiABKAkSDQoFYmVnaW4YAyABKAUSCwoDZW5kGAQgASgFEkgKCHNlbWFudGlj",
-            "GAUgASgOMjYuZ29vZ2xlLnByb3RvYnVmLkdlbmVyYXRlZENvZGVJbmZvLkFu",
-            "bm90YXRpb24uU2VtYW50aWMiKAoIU2VtYW50aWMSCAoETk9ORRAAEgcKA1NF",
-            "VBABEgkKBUFMSUFTEAJCfgoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3Jp",
-            "cHRvclByb3Rvc0gBWi1nb29nbGUuZ29sYW5nLm9yZy9wcm90b2J1Zi90eXBl",
-            "cy9kZXNjcmlwdG9ycGL4AQGiAgNHUEKqAhpHb29nbGUuUHJvdG9idWYuUmVm",
-            "bGVjdGlvbg=="));
+            "dGlvbiJQChBJZGVtcG90ZW5jeUxldmVsEhcKE0lERU1QT1RFTkNZX1VOS05P",
+            "V04QABITCg9OT19TSURFX0VGRkVDVFMQARIOCgpJREVNUE9URU5UEAIqCQjo",
+            "BxCAgICAAiKeAgoTVW5pbnRlcnByZXRlZE9wdGlvbhI7CgRuYW1lGAIgAygL",
+            "Mi0uZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24uTmFtZVBh",
+            "cnQSGAoQaWRlbnRpZmllcl92YWx1ZRgDIAEoCRIaChJwb3NpdGl2ZV9pbnRf",
+            "dmFsdWUYBCABKAQSGgoSbmVnYXRpdmVfaW50X3ZhbHVlGAUgASgDEhQKDGRv",
+            "dWJsZV92YWx1ZRgGIAEoARIUCgxzdHJpbmdfdmFsdWUYByABKAwSFwoPYWdn",
+            "cmVnYXRlX3ZhbHVlGAggASgJGjMKCE5hbWVQYXJ0EhEKCW5hbWVfcGFydBgB",
+            "IAIoCRIUCgxpc19leHRlbnNpb24YAiACKAgi1QEKDlNvdXJjZUNvZGVJbmZv",
+            "EjoKCGxvY2F0aW9uGAEgAygLMiguZ29vZ2xlLnByb3RvYnVmLlNvdXJjZUNv",
+            "ZGVJbmZvLkxvY2F0aW9uGoYBCghMb2NhdGlvbhIQCgRwYXRoGAEgAygFQgIQ",
+            "ARIQCgRzcGFuGAIgAygFQgIQARIYChBsZWFkaW5nX2NvbW1lbnRzGAMgASgJ",
+            "EhkKEXRyYWlsaW5nX2NvbW1lbnRzGAQgASgJEiEKGWxlYWRpbmdfZGV0YWNo",
+            "ZWRfY29tbWVudHMYBiADKAkinAIKEUdlbmVyYXRlZENvZGVJbmZvEkEKCmFu",
+            "bm90YXRpb24YASADKAsyLS5nb29nbGUucHJvdG9idWYuR2VuZXJhdGVkQ29k",
+            "ZUluZm8uQW5ub3RhdGlvbhrDAQoKQW5ub3RhdGlvbhIQCgRwYXRoGAEgAygF",
+            "QgIQARITCgtzb3VyY2VfZmlsZRgCIAEoCRINCgViZWdpbhgDIAEoBRILCgNl",
+            "bmQYBCABKAUSSAoIc2VtYW50aWMYBSABKA4yNi5nb29nbGUucHJvdG9idWYu",
+            "R2VuZXJhdGVkQ29kZUluZm8uQW5ub3RhdGlvbi5TZW1hbnRpYyIoCghTZW1h",
+            "bnRpYxIICgROT05FEAASBwoDU0VUEAESCQoFQUxJQVMQAkJ+ChNjb20uZ29v",
+            "Z2xlLnByb3RvYnVmQhBEZXNjcmlwdG9yUHJvdG9zSAFaLWdvb2dsZS5nb2xh",
+            "bmcub3JnL3Byb3RvYnVmL3R5cGVzL2Rlc2NyaXB0b3JwYvgBAaICA0dQQqoC",
+            "Gkdvb2dsZS5Qcm90b2J1Zi5SZWZsZWN0aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -202,7 +202,7 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser, new[]{ "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), global::Google.Protobuf.Reflection.FileOptions.Parser, new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "PhpGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "SwiftPrefix", "PhpClassPrefix", "PhpNamespace", "PhpMetadataNamespace", "RubyPackage", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MessageOptions), global::Google.Protobuf.Reflection.MessageOptions.Parser, new[]{ "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "DeprecatedLegacyJsonFieldConflicts", "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "UnverifiedLazy", "Deprecated", "Weak", "DebugRedact", "Retention", "Target", "Targets", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.OptionRetention), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType) }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "UnverifiedLazy", "Deprecated", "Weak", "DebugRedact", "Retention", "Targets", "UninterpretedOption", "TargetObsoleteDoNotUse" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.OptionRetention), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType) }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.OneofOptions), global::Google.Protobuf.Reflection.OneofOptions.Parser, new[]{ "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), global::Google.Protobuf.Reflection.EnumOptions.Parser, new[]{ "AllowAlias", "Deprecated", "DeprecatedLegacyJsonFieldConflicts", "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueOptions), global::Google.Protobuf.Reflection.EnumValueOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null, null),
@@ -7698,9 +7698,9 @@ namespace Google.Protobuf.Reflection {
       weak_ = other.weak_;
       debugRedact_ = other.debugRedact_;
       retention_ = other.retention_;
-      target_ = other.target_;
       targets_ = other.targets_.Clone();
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
+      targetObsoleteDoNotUse_ = other.targetObsoleteDoNotUse_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
       _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
@@ -8032,36 +8032,6 @@ namespace Google.Protobuf.Reflection {
       _hasBits0 &= ~256;
     }
 
-    /// <summary>Field number for the "target" field.</summary>
-    public const int TargetFieldNumber = 18;
-    private readonly static global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType TargetDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType.TargetTypeUnknown;
-
-    private global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType target_;
-    [global::System.ObsoleteAttribute]
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType Target {
-      get { if ((_hasBits0 & 512) != 0) { return target_; } else { return TargetDefaultValue; } }
-      set {
-        _hasBits0 |= 512;
-        target_ = value;
-      }
-    }
-    /// <summary>Gets whether the "target" field is set</summary>
-    [global::System.ObsoleteAttribute]
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasTarget {
-      get { return (_hasBits0 & 512) != 0; }
-    }
-    /// <summary>Clears the value of the "target" field</summary>
-    [global::System.ObsoleteAttribute]
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearTarget() {
-      _hasBits0 &= ~512;
-    }
-
     /// <summary>Field number for the "targets" field.</summary>
     public const int TargetsFieldNumber = 19;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType> _repeated_targets_codec
@@ -8085,6 +8055,36 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
+    }
+
+    /// <summary>Field number for the "target_obsolete_do_not_use" field.</summary>
+    public const int TargetObsoleteDoNotUseFieldNumber = 18;
+    private readonly static global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType TargetObsoleteDoNotUseDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType.TargetTypeUnknown;
+
+    private global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType targetObsoleteDoNotUse_;
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType TargetObsoleteDoNotUse {
+      get { if ((_hasBits0 & 512) != 0) { return targetObsoleteDoNotUse_; } else { return TargetObsoleteDoNotUseDefaultValue; } }
+      set {
+        _hasBits0 |= 512;
+        targetObsoleteDoNotUse_ = value;
+      }
+    }
+    /// <summary>Gets whether the "target_obsolete_do_not_use" field is set</summary>
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasTargetObsoleteDoNotUse {
+      get { return (_hasBits0 & 512) != 0; }
+    }
+    /// <summary>Clears the value of the "target_obsolete_do_not_use" field</summary>
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearTargetObsoleteDoNotUse() {
+      _hasBits0 &= ~512;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8111,9 +8111,9 @@ namespace Google.Protobuf.Reflection {
       if (Weak != other.Weak) return false;
       if (DebugRedact != other.DebugRedact) return false;
       if (Retention != other.Retention) return false;
-      if (Target != other.Target) return false;
       if(!targets_.Equals(other.targets_)) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
+      if (TargetObsoleteDoNotUse != other.TargetObsoleteDoNotUse) return false;
       if (!Equals(_extensions, other._extensions)) {
         return false;
       }
@@ -8133,9 +8133,9 @@ namespace Google.Protobuf.Reflection {
       if (HasWeak) hash ^= Weak.GetHashCode();
       if (HasDebugRedact) hash ^= DebugRedact.GetHashCode();
       if (HasRetention) hash ^= Retention.GetHashCode();
-      if (HasTarget) hash ^= Target.GetHashCode();
       hash ^= targets_.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
+      if (HasTargetObsoleteDoNotUse) hash ^= TargetObsoleteDoNotUse.GetHashCode();
       if (_extensions != null) {
         hash ^= _extensions.GetHashCode();
       }
@@ -8193,9 +8193,9 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(136, 1);
         output.WriteEnum((int) Retention);
       }
-      if (HasTarget) {
+      if (HasTargetObsoleteDoNotUse) {
         output.WriteRawTag(144, 1);
-        output.WriteEnum((int) Target);
+        output.WriteEnum((int) TargetObsoleteDoNotUse);
       }
       targets_.WriteTo(output, _repeated_targets_codec);
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
@@ -8248,9 +8248,9 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(136, 1);
         output.WriteEnum((int) Retention);
       }
-      if (HasTarget) {
+      if (HasTargetObsoleteDoNotUse) {
         output.WriteRawTag(144, 1);
-        output.WriteEnum((int) Target);
+        output.WriteEnum((int) TargetObsoleteDoNotUse);
       }
       targets_.WriteTo(ref output, _repeated_targets_codec);
       uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
@@ -8294,11 +8294,11 @@ namespace Google.Protobuf.Reflection {
       if (HasRetention) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) Retention);
       }
-      if (HasTarget) {
-        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) Target);
-      }
       size += targets_.CalculateSize(_repeated_targets_codec);
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
+      if (HasTargetObsoleteDoNotUse) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) TargetObsoleteDoNotUse);
+      }
       if (_extensions != null) {
         size += _extensions.CalculateSize();
       }
@@ -8341,11 +8341,11 @@ namespace Google.Protobuf.Reflection {
       if (other.HasRetention) {
         Retention = other.Retention;
       }
-      if (other.HasTarget) {
-        Target = other.Target;
-      }
       targets_.Add(other.targets_);
       uninterpretedOption_.Add(other.uninterpretedOption_);
+      if (other.HasTargetObsoleteDoNotUse) {
+        TargetObsoleteDoNotUse = other.TargetObsoleteDoNotUse;
+      }
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -8401,7 +8401,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 144: {
-            Target = (global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType) input.ReadEnum();
+            TargetObsoleteDoNotUse = (global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType) input.ReadEnum();
             break;
           }
           case 154:
@@ -8467,7 +8467,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 144: {
-            Target = (global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType) input.ReadEnum();
+            TargetObsoleteDoNotUse = (global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType) input.ReadEnum();
             break;
           }
           case 154:

@@ -32,19 +32,20 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <cstddef>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -197,17 +198,16 @@ void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
   auto v = p->WithVars(
       AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
-  p->Emit(
-      R"cc(
-        $DEPRECATED$ $Type$ $name$() const;
-        $DEPRECATED$ void $set_name$($Type$ value);
+  p->Emit(R"cc(
+    $DEPRECATED$ $Type$ $name$() const;
+    $DEPRECATED$ void $set_name$($Type$ value);
 
-        private:
-        $Type$ $_internal_name$() const;
-        void $_internal_set_name$($Type$ value);
+    private:
+    $Type$ $_internal_name$() const;
+    void $_internal_set_name$($Type$ value);
 
-        public:
-      )cc");
+    public:
+  )cc");
 }
 
 void SingularPrimitive::GenerateInlineAccessorDefinitions(
@@ -257,11 +257,25 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
 
 void SingularPrimitive::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
-  p->Emit(R"cc(
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
-        $number$, this->_internal_$name$(), target);
-  )cc");
+  if ((descriptor_->number() < 16) &&
+      (descriptor_->type() == FieldDescriptor::TYPE_INT32 ||
+       descriptor_->type() == FieldDescriptor::TYPE_INT64 ||
+       descriptor_->type() == FieldDescriptor::TYPE_ENUM)) {
+    // Call special non-inlined routine with tag number hardcoded as a
+    // template parameter that handles the EnsureSpace and the writing
+    // of the tag+value to the array
+    p->Emit(R"cc(
+      target = ::$proto_ns$::internal::WireFormatLite::
+          Write$declared_type$ToArrayWithField<$number$>(
+              stream, this->_internal_$name$(), target);
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
+          $number$, this->_internal_$name$(), target);
+    )cc");
+  }
 }
 
 void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
@@ -390,8 +404,8 @@ void RepeatedPrimitive::GeneratePrivateMembers(io::Printer* p) const {
 }
 
 void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v = p->WithVars(AnnotatedAccessors(
-      field_, {"", "_internal_", "_internal_add_", "_internal_mutable_"}));
+  auto v = p->WithVars(
+      AnnotatedAccessors(field_, {"", "_internal_", "_internal_mutable_"}));
   auto vs =
       p->WithVars(AnnotatedAccessors(field_, {"set_", "add_"}, Semantic::kSet));
   auto va =
@@ -404,8 +418,6 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ $pb$::RepeatedField<$Type$>* $mutable_name$();
 
     private:
-    $Type$ $_internal_name$(int index) const;
-    void $_internal_add_name$($Type$ value);
     const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
     $pb$::RepeatedField<$Type$>* $_internal_mutable_name$();
 
@@ -419,7 +431,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     inline $Type$ $Msg$::$name$(int index) const {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-      return _internal_$name$(index);
+      return _internal_$name$().Get(index);
     }
     inline void $Msg$::set_$name$(int index, $Type$ value) {
       $annotate_set$;
@@ -427,7 +439,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
     inline void $Msg$::add_$name$($Type$ value) {
-      _internal_add_$name$(value);
+      _internal_mutable_$name$()->Add(value);
       $annotate_add$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
@@ -442,12 +454,6 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       return _internal_mutable_$name$();
     }
 
-    inline $Type$ $Msg$::_internal_$name$(int index) const {
-      return _internal_$name$().Get(index);
-    }
-    inline void $Msg$::_internal_add_$name$($Type$ value) {
-      _internal_mutable_$name$()->Add(value);
-    }
     inline const $pb$::RepeatedField<$Type$>& $Msg$::_internal_$name$() const {
       return $field_$;
     }
@@ -464,7 +470,7 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
       for (int i = 0, n = this->_internal_$name$_size(); i < n; ++i) {
         target = stream->EnsureSpace(target);
         target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
-            $number$, this->_internal_$name$(i), target);
+            $number$, this->_internal_$name$().Get(i), target);
       }
     )cc");
     return;
