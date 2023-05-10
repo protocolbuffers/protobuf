@@ -299,6 +299,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // available extensions of that message.
   const MessageOptions& options() const;
 
+
   // Write the contents of this Descriptor into the given DescriptorProto.
   // The target DescriptorProto must be clear before calling this; if it
   // isn't, the result may be garbage.
@@ -874,6 +875,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   // descriptor.proto, and any available extensions of that message.
   const FieldOptions& options() const;
 
+
   // See Descriptor::CopyTo().
   void CopyTo(FieldDescriptorProto* proto) const;
 
@@ -1182,6 +1184,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // extensions of that message.
   const EnumOptions& options() const;
 
+
   // See Descriptor::CopyTo().
   void CopyTo(EnumDescriptorProto* proto) const;
 
@@ -1365,6 +1368,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // options are defined by EnumValueOptions in descriptor.proto, and any
   // available extensions of that message.
   const EnumValueOptions& options() const;
+
 
   // See Descriptor::CopyTo().
   void CopyTo(EnumValueDescriptorProto* proto) const;

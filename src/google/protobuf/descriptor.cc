@@ -1104,6 +1104,7 @@ bool AllowedExtendeeInProto3(const std::string& name) {
   return allowed_proto3_extendees->find(name) !=
          allowed_proto3_extendees->end();
 }
+
 }  // anonymous namespace
 
 // Contains tables specific to a particular file.  These tables are not
@@ -2681,6 +2682,7 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
   if (&options() != &MessageOptions::default_instance()) {
     proto->mutable_options()->CopyFrom(options());
   }
+
 }
 
 void Descriptor::CopyJsonNameTo(DescriptorProto* proto) const {
@@ -2753,6 +2755,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
   if (&options() != &FieldOptions::default_instance()) {
     proto->mutable_options()->CopyFrom(options());
   }
+
 }
 
 void FieldDescriptor::CopyJsonNameTo(FieldDescriptorProto* proto) const {
@@ -3948,10 +3951,9 @@ class DescriptorBuilder {
       internal::FlatAllocator& alloc);
 
 
-  // Allocates an array of two strings, the first one is a copy of `proto_name`,
-  // and the second one is the full name.
-  // Full proto name is "scope.proto_name" if scope is non-empty and
-  // "proto_name" otherwise.
+  // Allocates an array of two strings, the first one is a copy of
+  // `proto_name`, and the second one is the full name. Full proto name is
+  // "scope.proto_name" if scope is non-empty and "proto_name" otherwise.
   const std::string* AllocateNameStrings(const std::string& scope,
                                          const std::string& proto_name,
                                          internal::FlatAllocator& alloc);
@@ -4208,6 +4210,8 @@ class DescriptorBuilder {
                             const OneofDescriptorProto& proto);
   void ValidateFieldOptions(const FieldDescriptor* field,
                             const FieldDescriptorProto& proto);
+  void ValidateFieldFeatures(const FieldDescriptor* field,
+                             const FieldDescriptorProto& proto);
   void ValidateEnumOptions(const EnumDescriptor* enm,
                            const EnumDescriptorProto& proto);
   void ValidateEnumValueOptions(const EnumValueDescriptor* enum_value,
@@ -5596,9 +5600,12 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   }
 
   // Copy options.
-  result->options_ =
-      AllocateOptions(proto, result, DescriptorProto::kOptionsFieldNumber,
-                      "google.protobuf.MessageOptions", alloc);
+  {
+    MessageOptions* options =
+        AllocateOptions(proto, result, DescriptorProto::kOptionsFieldNumber,
+                        "google.protobuf.MessageOptions", alloc);
+    result->options_ = options;  // Set to default_instance later if necessary.
+  }
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
@@ -6088,9 +6095,12 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   }
 
   // Copy options.
-  result->options_ =
-      AllocateOptions(proto, result, FieldDescriptorProto::kOptionsFieldNumber,
-                      "google.protobuf.FieldOptions", alloc);
+  {
+    FieldOptions* options = AllocateOptions(
+        proto, result, FieldDescriptorProto::kOptionsFieldNumber,
+        "google.protobuf.FieldOptions", alloc);
+    result->options_ = options;  // Set to default_instance later if necessary.
+  }
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 }
@@ -6301,9 +6311,12 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   }
 
   // Copy options.
-  result->options_ =
-      AllocateOptions(proto, result, EnumDescriptorProto::kOptionsFieldNumber,
-                      "google.protobuf.EnumOptions", alloc);
+  {
+    EnumOptions* options =
+        AllocateOptions(proto, result, EnumDescriptorProto::kOptionsFieldNumber,
+                        "google.protobuf.EnumOptions", alloc);
+    result->options_ = options;
+  }
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
@@ -6379,9 +6392,12 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   ValidateSymbolName(proto.name(), result->full_name(), proto);
 
   // Copy options.
-  result->options_ = AllocateOptions(
-      proto, result, EnumValueDescriptorProto::kOptionsFieldNumber,
-      "google.protobuf.EnumValueOptions", alloc);
+  {
+    EnumValueOptions* options = AllocateOptions(
+        proto, result, EnumValueDescriptorProto::kOptionsFieldNumber,
+        "google.protobuf.EnumValueOptions", alloc);
+    result->options_ = options;
+  }
 
   // Again, enum values are weird because we makes them appear as siblings
   // of the enum type instead of children of it.  So, we use
@@ -7264,6 +7280,8 @@ void DescriptorBuilder::ValidateFieldOptions(
     return;
   }
 
+  ValidateFieldFeatures(field, proto);
+
   // Only message type fields may be lazy.
   if (field->options().lazy() || field->options().unverified_lazy()) {
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
@@ -7342,6 +7360,10 @@ void DescriptorBuilder::ValidateFieldOptions(
              "json_name cannot have embedded null characters.");
   }
 
+}
+
+void DescriptorBuilder::ValidateFieldFeatures(
+    const FieldDescriptor* field, const FieldDescriptorProto& proto) {
 }
 
 void DescriptorBuilder::ValidateEnumOptions(const EnumDescriptor* enm,
