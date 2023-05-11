@@ -360,7 +360,7 @@ namespace Google.Protobuf
                         // Primitives can have presence indicated on them, so check that if available
                         // Otherwise check for default (not null!) (see /docs/field_presence.md#considerations-for-merging)
                         if ((field.HasPresence && field.Accessor.HasValue(source))
-                            || !IsDefaultValue(field, source))
+                            || !IsDefaultValue(field, sourceField))
                         {
                             field.Accessor.SetValue(destination, sourceField);
                         }
