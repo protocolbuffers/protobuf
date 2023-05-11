@@ -2252,7 +2252,7 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
              }
 
              // Initialize member variables with arena constructor.
-             for (auto field : optimized_order_) {
+             for (const auto* field : optimized_order_) {
                if (ShouldSplit(field, options_)) {
                  continue;
                }
@@ -2272,7 +2272,7 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
                          reinterpret_cast<const Impl_::Split*>(&$instance$))},
                    )cc");
              }
-             for (auto oneof : OneOfRange(descriptor_)) {
+             for (const auto* oneof : OneOfRange(descriptor_)) {
                p->Emit({{"name", oneof->name()}},
                        R"cc(
                          decltype(_impl_.$name$_){},
@@ -2655,51 +2655,179 @@ void MessageGenerator::GenerateCopyConstructorBody(io::Printer* p) const {
   }
 }
 
-void MessageGenerator::GenerateStructors(io::Printer* p) {
-  Formatter format(p);
-
-  format(
-      "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
-      "  : $1$(arena) {\n",
-      SuperClassName(descriptor_, options_));
-
-  if (!HasSimpleBaseClass(descriptor_, options_)) {
-    format("  SharedCtor(arena);\n");
-    if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
-      format(
-          "  if (arena != nullptr) {\n"
-          "    arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);\n"
-          "  }\n");
-    }
-  }
-  format(
-      "  // @@protoc_insertion_point(arena_constructor:$full_name$)\n"
-      "}\n");
+bool MessageGenerator::ImplHasCopyCtor() const {
+  if (ShouldSplit(descriptor_, options_)) return false;
+  if (HasSimpleBaseClass(descriptor_, options_)) return false;
+  if (descriptor_->extension_range_count() > 0) return false;
+  if (descriptor_->real_oneof_decl_count() > 0) return false;
+  if (num_weak_fields_ > 0) return false;
 
   // If the message contains only scalar fields (ints and enums),
   // then we can copy the entire impl_ section with a single statement.
-  bool copy_construct_impl =
-      !ShouldSplit(descriptor_, options_) &&
-      !HasSimpleBaseClass(descriptor_, options_) &&
-      (descriptor_->extension_range_count() == 0 &&
-       descriptor_->real_oneof_decl_count() == 0 && num_weak_fields_ == 0);
-  for (const auto& field : optimized_order_) {
-    if (!copy_construct_impl) break;
-    if (field->is_repeated() || field->is_extension()) {
-      copy_construct_impl = false;
-    } else if (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM &&
-               field->cpp_type() != FieldDescriptor::CPPTYPE_INT32 &&
-               field->cpp_type() != FieldDescriptor::CPPTYPE_INT64 &&
-               field->cpp_type() != FieldDescriptor::CPPTYPE_UINT32 &&
-               field->cpp_type() != FieldDescriptor::CPPTYPE_UINT64 &&
-               field->cpp_type() != FieldDescriptor::CPPTYPE_FLOAT &&
-               field->cpp_type() != FieldDescriptor::CPPTYPE_DOUBLE &&
-               field->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
-      copy_construct_impl = false;
-    } else {
-      // non-repeated integer fields are fine to copy en masse.
+  for (const auto* field : optimized_order_) {
+    if (field->is_repeated()) return false;
+    if (field->is_extension()) return false;
+    switch (field->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_INT32:
+      case FieldDescriptor::CPPTYPE_INT64:
+      case FieldDescriptor::CPPTYPE_UINT32:
+      case FieldDescriptor::CPPTYPE_UINT64:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_BOOL:
+        break;
+      default:
+        return false;
     }
   }
+  return true;
+}
+
+void MessageGenerator::GenerateCopyConstructorBodyImpl(io::Printer* p) const {
+  if (!HasImplData(descriptor_, options_)) return;
+
+  p->Emit(
+      {{"initializer",
+        [&] {
+          if (descriptor_->extension_range_count() > 0) {
+            p->Emit(R"cc(
+              /*decltype($extensions$)*/ {},
+            )cc");
+          }
+          if (!inlined_string_indices_.empty()) {
+            // Do not copy inlined_string_donated_, because this is not an
+            // arena constructor.
+            p->Emit(R"cc(
+              decltype($inlined_string_donated_array$){},
+            )cc");
+          }
+
+          bool need_to_emit_cached_size =
+              !HasSimpleBaseClass(descriptor_, options_);
+          if (!has_bit_indices_.empty()) {
+            p->Emit(R"cc(
+              decltype($has_bits$){from.$has_bits$},
+            )cc");
+            if (need_to_emit_cached_size) {
+              p->Emit(R"cc(
+                /*decltype($cached_size$)*/ {},
+              )cc");
+              need_to_emit_cached_size = false;
+            }
+          }
+          // Initialize member variables with arena constructor.
+          for (const auto* field : optimized_order_) {
+            if (ShouldSplit(field, options_)) continue;
+            field_generators_.get(field).GenerateCopyAggregateInitializer(p);
+          }
+          if (ShouldSplit(descriptor_, options_)) {
+            p->Emit({{"name", DefaultInstanceName(descriptor_, options_,
+                                                  /*split=*/true)}},
+                    R"cc(
+                      decltype($split$){const_cast<Impl_::Split*>(
+                          reinterpret_cast<const Impl_::Split*>(&$name$))},
+                    )cc");
+          }
+          for (auto oneof : OneOfRange(descriptor_)) {
+            p->Emit({{"name", oneof->name()}},
+                    R"cc(
+                      decltype(_impl_.$name$_){},
+                    )cc");
+          }
+          if (need_to_emit_cached_size) {
+            p->Emit(R"cc(
+              /*decltype($cached_size$)*/ {},
+            )cc");
+            need_to_emit_cached_size = false;
+          }
+          if (descriptor_->real_oneof_decl_count() > 0) {
+            p->Emit(R"cc(
+              /*decltype($oneof_case$)*/ {},
+            )cc");
+          }
+          if (num_weak_fields_ > 0) {
+            p->Emit(R"cc(
+              decltype($weak_field_map$){from.$weak_field_map$},
+            )cc");
+          }
+          if (IsAnyMessage(descriptor_, options_)) {
+            p->Emit(R"cc(
+              /*decltype($any_metadata$)*/ {
+                  &_impl_.type_url_,
+                  &_impl_.value_,
+              },
+            )cc");
+          }
+        }}},
+      R"cc(
+        new (&_impl_) Impl_{
+            $initializer$,
+        };
+      )cc");
+}
+
+void MessageGenerator::GenerateCopyConstructorBodyOneofs(io::Printer* p) const {
+  // Copy oneof fields. Oneof field requires oneof case check.
+  for (const auto* oneof : OneOfRange(descriptor_)) {
+    p->Emit(
+        {
+            {"name", oneof->name()},
+            {"NAME", absl::AsciiStrToUpper(oneof->name())},
+            {"cases",
+             [&] {
+               for (const auto* field : FieldRange(oneof)) {
+                 p->Emit(
+                     {{"Name", UnderscoresToCamelCase(field->name(), true)},
+                      {"body",
+                       [&] {
+                         field_generators_.get(field).GenerateMergingCode(p);
+                       }}},
+                     R"cc(
+                       case k$Name$: {
+                         $body$;
+                         break;
+                       }
+                     )cc");
+               }
+             }},
+        },
+        R"cc(
+          clear_has_$name$();
+          switch (from.$name$_case()) {
+            $cases$;
+            case $NAME$_NOT_SET: {
+              break;
+            }
+          }
+        )cc");
+  }
+}
+
+void MessageGenerator::GenerateStructors(io::Printer* p) {
+  p->Emit(
+      {
+          {"superclass", SuperClassName(descriptor_, options_)},
+          {"ctor_body",
+           [&] {
+             if (HasSimpleBaseClass(descriptor_, options_)) return;
+             p->Emit(R"cc(SharedCtor(arena);)cc");
+             if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
+               p->Emit(R"cc(
+                 if (arena != nullptr) {
+                   arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
+                 }
+               )cc");
+             }
+           }},
+      },
+      R"cc(
+        $classname$::$classname$(::$proto_ns$::Arena* arena)
+            : $superclass$(arena) {
+          $ctor_body$;
+          // @@protoc_insertion_point(arena_constructor:$full_name$)
+        }
+      )cc");
 
   // Generate the copy constructor.
   if (UsingImplicitWeakFields(descriptor_->file(), options_)) {
@@ -2707,173 +2835,80 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
     // one-liner copy constructor that delegates to MergeFrom. This saves some
     // code size and also cuts down on the complexity of implicit weak fields.
     // We might eventually want to do this for all lite protos.
-    format(
-        "$classname$::$classname$(const $classname$& from)\n"
-        "  : $classname$() {\n"
-        "  MergeFrom(from);\n"
-        "}\n");
-  } else if (copy_construct_impl) {
-    format(
-        "$classname$::$classname$(const $classname$& from)\n"
-        "  : $superclass$(), _impl_(from._impl_) {\n"
-        "  _internal_metadata_.MergeFrom<$unknown_fields_type$>(\n"
-        "      from._internal_metadata_);\n");
-    format(
-        "  // @@protoc_insertion_point(copy_constructor:$full_name$)\n"
-        "}\n"
-        "\n");
+    p->Emit(R"cc(
+      $classname$::$classname$(const $classname$& from) : $classname$() {
+        MergeFrom(from);
+      }
+    )cc");
+  } else if (ImplHasCopyCtor()) {
+    p->Emit(R"cc(
+      $classname$::$classname$(const $classname$& from)
+          : $superclass$(), _impl_(from._impl_) {
+        _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+            from._internal_metadata_);
+        // @@protoc_insertion_point(copy_constructor:$full_name$)
+      }
+    )cc");
   } else {
-    format(
-        "$classname$::$classname$(const $classname$& from)\n"
-        "  : $superclass$() {\n");
-    format.Indent();
-    format("$classname$* const _this = this; (void)_this;\n");
+    p->Emit(
+        {
+            {"copy_impl", [&] { GenerateCopyConstructorBodyImpl(p); }},
+            {"copy_extensions",
+             [&] {
+               if (descriptor_->extension_range_count() == 0) return;
+               p->Emit(R"cc(
+                 $extensions$.MergeFrom(internal_default_instance(),
+                                        from.$extensions$);
+               )cc");
+             }},
+            {"copy_body", [&] { GenerateCopyConstructorBody(p); }},
+            {"copy_oneofs", [&] { GenerateCopyConstructorBodyOneofs(p); }},
+        },
+        R"cc(
+          $classname$::$classname$(const $classname$& from) : $superclass$() {
+            $classname$* const _this = this;
+            (void)_this;
+            $copy_impl$;
+            _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+                from._internal_metadata_);
+            $copy_extensions$;
+            $copy_body$;
+            $copy_oneofs$;
 
-    if (HasImplData(descriptor_, options_)) {
-      const char* field_sep = " ";
-      const auto put_sep = [&] {
-        format("\n$1$ ", field_sep);
-        field_sep = ",";
-      };
-
-      format("new (&_impl_) Impl_{");
-      format.Indent();
-
-      if (descriptor_->extension_range_count() > 0) {
-        put_sep();
-        format("/*decltype($extensions$)*/{}");
-      }
-      if (!inlined_string_indices_.empty()) {
-        // Do not copy inlined_string_donated_, because this is not an arena
-        // constructor.
-        put_sep();
-        format("decltype($inlined_string_donated_array$){}");
-      }
-      bool need_to_emit_cached_size =
-          !HasSimpleBaseClass(descriptor_, options_);
-      if (!has_bit_indices_.empty()) {
-        put_sep();
-        format("decltype($has_bits$){from.$has_bits$}");
-        if (need_to_emit_cached_size) {
-          put_sep();
-          format("/*decltype($cached_size$)*/{}");
-          need_to_emit_cached_size = false;
-        }
-      }
-
-      // Initialize member variables with arena constructor.
-      for (auto field : optimized_order_) {
-        if (ShouldSplit(field, options_)) {
-          continue;
-        }
-        put_sep();
-        field_generators_.get(field).GenerateCopyAggregateInitializer(p);
-      }
-      if (ShouldSplit(descriptor_, options_)) {
-        put_sep();
-        format(
-            "decltype($split$){const_cast<Impl_::Split*>"
-            "(reinterpret_cast<const Impl_::Split*>(&$1$))}",
-            DefaultInstanceName(descriptor_, options_, /*split=*/true));
-      }
-      for (auto oneof : OneOfRange(descriptor_)) {
-        put_sep();
-        format("decltype(_impl_.$1$_){}", oneof->name());
-      }
-
-      if (need_to_emit_cached_size) {
-        put_sep();
-        format("/*decltype($cached_size$)*/{}");
-      }
-
-      if (descriptor_->real_oneof_decl_count() != 0) {
-        put_sep();
-        format("/*decltype($oneof_case$)*/{}");
-      }
-      if (num_weak_fields_ > 0) {
-        put_sep();
-        format("decltype($weak_field_map$){from.$weak_field_map$}");
-      }
-      if (IsAnyMessage(descriptor_, options_)) {
-        put_sep();
-        format(
-            "/*decltype($any_metadata$)*/{&_impl_.type_url_, &_impl_.value_}");
-      }
-      format.Outdent();
-      format("};\n\n");
-    }
-
-    format(
-        "_internal_metadata_.MergeFrom<$unknown_fields_type$>(from._internal_"
-        "metadata_);\n");
-
-    if (descriptor_->extension_range_count() > 0) {
-      format(
-          "$extensions$.MergeFrom(internal_default_instance(), "
-          "from.$extensions$);\n");
-    }
-
-    GenerateCopyConstructorBody(p);
-
-    // Copy oneof fields. Oneof field requires oneof case check.
-    for (auto oneof : OneOfRange(descriptor_)) {
-      format(
-          "clear_has_$1$();\n"
-          "switch (from.$1$_case()) {\n",
-          oneof->name());
-      format.Indent();
-      for (auto field : FieldRange(oneof)) {
-        format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-        format.Indent();
-        field_generators_.get(field).GenerateMergingCode(p);
-        format("break;\n");
-        format.Outdent();
-        format("}\n");
-      }
-      format(
-          "case $1$_NOT_SET: {\n"
-          "  break;\n"
-          "}\n",
-          absl::AsciiStrToUpper(oneof->name()));
-      format.Outdent();
-      format("}\n");
-    }
-
-    format.Outdent();
-    format(
-        "  // @@protoc_insertion_point(copy_constructor:$full_name$)\n"
-        "}\n"
-        "\n");
+            // @@protoc_insertion_point(copy_constructor:$full_name$)
+          }
+        )cc");
   }
 
   // Generate the shared constructor code.
   GenerateSharedConstructorCode(p);
 
   // Generate the destructor.
-  if (!HasSimpleBaseClass(descriptor_, options_)) {
-    format(
-        "$classname$::~$classname$() {\n"
-        "  // @@protoc_insertion_point(destructor:$full_name$)\n");
-    format(
-        "  if (auto *arena = "
-        "_internal_metadata_.DeleteReturnArena<$unknown_fields_type$>()) {\n"
-        "  (void)arena;\n");
-    if (NeedsArenaDestructor() > ArenaDtorNeeds::kNone) {
-      format("    ArenaDtor(this);\n");
-    }
-    format(
-        "    return;\n"
-        "  }\n");
-    format(
-        "  SharedDtor();\n"
-        "}\n"
-        "\n");
-  } else {
+  if (HasSimpleBaseClass(descriptor_, options_)) {
     // For messages using simple base classes, having no destructor
     // allows our vtable to share the same destructor as every other
     // message with a simple base class.  This works only as long as
     // we have no fields needing destruction, of course.  (No strings
     // or extensions)
+  } else {
+    p->Emit(
+        {{"arena_dtor",
+          [&] {
+            if (NeedsArenaDestructor() == ArenaDtorNeeds::kNone) return;
+            p->Emit("ArenaDtor(this);");
+          }}},
+        R"cc(
+          $classname$::~$classname$() {
+            // @@protoc_insertion_point(destructor:$full_name$)
+            if (auto *arena = _internal_metadata_
+                                  .DeleteReturnArena<$unknown_fields_type$>()) {
+              (void)arena;
+              $arena_dtor$;
+              return;
+            }
+            SharedDtor();
+          }
+        )cc");
   }
 
   // Generate the shared destructor code.
@@ -2886,10 +2921,11 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
 
   if (!HasSimpleBaseClass(descriptor_, options_)) {
     // Generate SetCachedSize.
-    format(
-        "void $classname$::SetCachedSize(int size) const {\n"
-        "  $cached_size$.Set(size);\n"
-        "}\n");
+    p->Emit(R"cc(
+      void $classname$::SetCachedSize(int size) const {
+        $cached_size$.Set(size);
+      }
+    )cc");
   }
 }
 

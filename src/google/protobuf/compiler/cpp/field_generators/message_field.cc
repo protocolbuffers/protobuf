@@ -507,7 +507,9 @@ void SingularMessage::GenerateConstexprAggregateInitializer(
 }
 
 void SingularMessage::GenerateCopyAggregateInitializer(io::Printer* p) const {
-  p->Emit("decltype($field_$){nullptr}");
+  p->Emit(R"cc(
+    decltype($field_$){nullptr},
+  )cc");
 }
 
 void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {

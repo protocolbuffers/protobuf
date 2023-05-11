@@ -135,7 +135,9 @@ class Map : public FieldGeneratorBase {
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     // MapField has no move constructor, which prevents explicit aggregate
     // initialization pre-C++17.
-    p->Emit(R"cc(/* decltype($field_$) */ {})cc");
+    p->Emit(R"cc(
+      /* decltype($field_$) */ {},
+    )cc");
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {

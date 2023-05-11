@@ -158,7 +158,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      decltype($field_$) {}
+      decltype($field_$){},
     )cc");
   }
 
@@ -307,11 +307,12 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      decltype($field_$) { from._internal_$name$() })cc");
+      decltype($field_$){from._internal_$name$()},
+    )cc");
     if (has_cached_size_) {
       // std::atomic has no copy constructor.
       p->Emit(R"cc(
-        , /*decltype($cached_size_$)*/ { 0 }
+        /*decltype($cached_size_$)*/ {0},
       )cc");
     }
   }

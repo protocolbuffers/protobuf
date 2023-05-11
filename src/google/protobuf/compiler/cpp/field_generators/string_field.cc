@@ -148,7 +148,7 @@ class SingularString : public FieldGeneratorBase {
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      decltype($field_$) {}
+      decltype($field_$){},
     )cc");
   }
 
