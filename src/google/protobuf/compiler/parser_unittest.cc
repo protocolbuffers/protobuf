@@ -2523,7 +2523,7 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   ASSERT_TRUE(pool_.BuildFile(any_import) != nullptr);
 
   const FileDescriptor* actual = pool_.BuildFile(parsed);
-  ASSERT_TRUE(actual != nullptr);
+  ASSERT_TRUE(actual != nullptr) << error_collector_.text_;
   parsed.Clear();
   actual->CopyTo(&parsed);
 

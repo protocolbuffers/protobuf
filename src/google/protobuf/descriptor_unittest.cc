@@ -566,7 +566,7 @@ TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
     ASSERT_EQ("", error_collector.last_error());
     proto.set_name(name);
     const FileDescriptor* descriptor = pool.BuildFile(proto);
-    ASSERT_TRUE(descriptor != nullptr) << proto.DebugString();
+    ASSERT_TRUE(descriptor != nullptr) << error_collector.last_error();
     EXPECT_EQ(content, descriptor->DebugString());
   }
 }
