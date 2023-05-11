@@ -6183,9 +6183,12 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
   result->fields_ = nullptr;
 
   // Copy options.
-  result->options_ =
-      AllocateOptions(proto, result, OneofDescriptorProto::kOptionsFieldNumber,
-                      "google.protobuf.OneofOptions", alloc);
+  {
+    OneofOptions* options = AllocateOptions(
+        proto, result, OneofDescriptorProto::kOptionsFieldNumber,
+        "google.protobuf.OneofOptions", alloc);
+    result->options_ = options;  // Set to default_instance later if necessary.
+  }
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 }
@@ -6456,9 +6459,12 @@ void DescriptorBuilder::BuildService(const ServiceDescriptorProto& proto,
   BUILD_ARRAY(proto, result, method, BuildMethod, result);
 
   // Copy options.
-  result->options_ = AllocateOptions(
-      proto, result, ServiceDescriptorProto::kOptionsFieldNumber,
-      "google.protobuf.ServiceOptions", alloc);
+  {
+    ServiceOptions* options = AllocateOptions(
+        proto, result, ServiceDescriptorProto::kOptionsFieldNumber,
+        "google.protobuf.ServiceOptions", alloc);
+    result->options_ = options;
+  }
 
   AddSymbol(result->full_name(), nullptr, result->name(), proto,
             Symbol(result));
@@ -6479,9 +6485,12 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
   result->output_type_.Init();
 
   // Copy options.
-  result->options_ =
-      AllocateOptions(proto, result, MethodDescriptorProto::kOptionsFieldNumber,
-                      "google.protobuf.MethodOptions", alloc);
+  {
+    MethodOptions* options = AllocateOptions(
+        proto, result, MethodDescriptorProto::kOptionsFieldNumber,
+        "google.protobuf.MethodOptions", alloc);
+    result->options_ = options;
+  }
 
   result->client_streaming_ = proto.client_streaming();
   result->server_streaming_ = proto.server_streaming();
