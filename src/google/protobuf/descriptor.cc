@@ -6311,9 +6311,12 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   }
 
   // Copy options.
-  result->options_ =
-      AllocateOptions(proto, result, EnumDescriptorProto::kOptionsFieldNumber,
-                      "google.protobuf.EnumOptions", alloc);
+  {
+    EnumOptions* options =
+        AllocateOptions(proto, result, EnumDescriptorProto::kOptionsFieldNumber,
+                        "google.protobuf.EnumOptions", alloc);
+    result->options_ = options;
+  }
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
@@ -6389,9 +6392,12 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   ValidateSymbolName(proto.name(), result->full_name(), proto);
 
   // Copy options.
-  result->options_ = AllocateOptions(
-      proto, result, EnumValueDescriptorProto::kOptionsFieldNumber,
-      "google.protobuf.EnumValueOptions", alloc);
+  {
+    EnumValueOptions* options = AllocateOptions(
+        proto, result, EnumValueDescriptorProto::kOptionsFieldNumber,
+        "google.protobuf.EnumValueOptions", alloc);
+    result->options_ = options;
+  }
 
   // Again, enum values are weird because we makes them appear as siblings
   // of the enum type instead of children of it.  So, we use

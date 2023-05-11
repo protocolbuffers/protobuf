@@ -1184,6 +1184,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // extensions of that message.
   const EnumOptions& options() const;
 
+
   // See Descriptor::CopyTo().
   void CopyTo(EnumDescriptorProto* proto) const;
 
@@ -1367,6 +1368,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // options are defined by EnumValueOptions in descriptor.proto, and any
   // available extensions of that message.
   const EnumValueOptions& options() const;
+
 
   // See Descriptor::CopyTo().
   void CopyTo(EnumValueDescriptorProto* proto) const;
