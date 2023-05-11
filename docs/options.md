@@ -471,3 +471,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/EngFlow/engflowapis
     *   Extensions: 1181
+
+1. Proto-telemetry
+
+    *   Website: https://github.com/clly/proto-telemetry
+    *   Extensions: 1182
