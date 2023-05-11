@@ -422,7 +422,7 @@ namespace Google.Protobuf
             destination = source.Clone();
             Merge(new FieldMaskTree().AddFieldPath("payload.single_int32"),
                 sourceWithPayloadInt32Unset, destination, options, useDynamicMessage);
-            Assert.AreEqual(0, destination.Payload.SingleInt32);
+            Assert.AreEqual(1234, destination.Payload.SingleInt32);
 
             // Change to clear unset primitive fields.
             options.ReplacePrimitiveFields = true;
