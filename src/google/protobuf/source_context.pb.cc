@@ -119,19 +119,19 @@ class SourceContext::_Internal {
 };
 
 SourceContext::SourceContext(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
 }
-SourceContext::SourceContext(const SourceContext& from)
-  : ::google::protobuf::Message() {
-  SourceContext* const _this = this; (void)_this;
+SourceContext::SourceContext(const SourceContext& from) : ::google::protobuf::Message() {
+  SourceContext* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.file_name_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+      decltype(_impl_.file_name_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+  };
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
   _impl_.file_name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.file_name_.Set("", GetArenaForAllocation());
@@ -139,9 +139,9 @@ SourceContext::SourceContext(const SourceContext& from)
   if (!from._internal_file_name().empty()) {
     _this->_impl_.file_name_.Set(from._internal_file_name(), _this->GetArenaForAllocation());
   }
+
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
-
 inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -155,13 +155,13 @@ inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
 }
 SourceContext::~SourceContext() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceContext)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void SourceContext::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_name_.Destroy();

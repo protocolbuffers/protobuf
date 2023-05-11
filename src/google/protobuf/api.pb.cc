@@ -258,28 +258,26 @@ void Api::clear_source_context() {
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 Api::Api(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Api)
 }
-Api::Api(const Api& from)
-  : ::google::protobuf::Message() {
-  Api* const _this = this; (void)_this;
+Api::Api(const Api& from) : ::google::protobuf::Message() {
+  Api* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){from._impl_._has_bits_}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.methods_){from._impl_.methods_}
-    , decltype(_impl_.options_){from._impl_.options_}
-    , decltype(_impl_.mixins_){from._impl_.mixins_}
-    , decltype(_impl_.name_) {}
-
-    , decltype(_impl_.version_) {}
-
-    , decltype(_impl_.source_context_){nullptr}
-    , decltype(_impl_.syntax_) {}
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.methods_){from._impl_.methods_},
+      decltype(_impl_.options_){from._impl_.options_},
+      decltype(_impl_.mixins_){from._impl_.mixins_},
+      decltype(_impl_.name_){},
+      decltype(_impl_.version_){},
+      decltype(_impl_.source_context_){nullptr},
+      decltype(_impl_.syntax_){},
   };
-
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.name_.Set("", GetArenaForAllocation());
@@ -298,9 +296,9 @@ Api::Api(const Api& from)
     _this->_impl_.source_context_ = new ::google::protobuf::SourceContext(*from._impl_.source_context_);
   }
   _this->_impl_.syntax_ = from._impl_.syntax_;
+
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Api)
 }
-
 inline void Api::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -325,13 +323,13 @@ inline void Api::SharedCtor(::_pb::Arena* arena) {
 }
 Api::~Api() {
   // @@protoc_insertion_point(destructor:google.protobuf.Api)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void Api::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.methods_.~RepeatedPtrField();
@@ -689,30 +687,25 @@ void Method::clear_options() {
   _internal_mutable_options()->Clear();
 }
 Method::Method(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Method)
 }
-Method::Method(const Method& from)
-  : ::google::protobuf::Message() {
-  Method* const _this = this; (void)_this;
+Method::Method(const Method& from) : ::google::protobuf::Message() {
+  Method* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.options_){from._impl_.options_}
-    , decltype(_impl_.name_) {}
-
-    , decltype(_impl_.request_type_url_) {}
-
-    , decltype(_impl_.response_type_url_) {}
-
-    , decltype(_impl_.request_streaming_) {}
-
-    , decltype(_impl_.response_streaming_) {}
-
-    , decltype(_impl_.syntax_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+      decltype(_impl_.options_){from._impl_.options_},
+      decltype(_impl_.name_){},
+      decltype(_impl_.request_type_url_){},
+      decltype(_impl_.response_type_url_){},
+      decltype(_impl_.request_streaming_){},
+      decltype(_impl_.response_streaming_){},
+      decltype(_impl_.syntax_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+  };
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.name_.Set("", GetArenaForAllocation());
@@ -737,9 +730,9 @@ Method::Method(const Method& from)
   ::memcpy(&_impl_.request_streaming_, &from._impl_.request_streaming_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.syntax_) -
     reinterpret_cast<char*>(&_impl_.request_streaming_)) + sizeof(_impl_.syntax_));
+
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Method)
 }
-
 inline void Method::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -767,13 +760,13 @@ inline void Method::SharedCtor(::_pb::Arena* arena) {
 }
 Method::~Method() {
   // @@protoc_insertion_point(destructor:google.protobuf.Method)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void Method::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.options_.~RepeatedPtrField();
@@ -1105,21 +1098,20 @@ class Mixin::_Internal {
 };
 
 Mixin::Mixin(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Mixin)
 }
-Mixin::Mixin(const Mixin& from)
-  : ::google::protobuf::Message() {
-  Mixin* const _this = this; (void)_this;
+Mixin::Mixin(const Mixin& from) : ::google::protobuf::Message() {
+  Mixin* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.name_) {}
-
-    , decltype(_impl_.root_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+      decltype(_impl_.name_){},
+      decltype(_impl_.root_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+  };
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.name_.Set("", GetArenaForAllocation());
@@ -1134,9 +1126,9 @@ Mixin::Mixin(const Mixin& from)
   if (!from._internal_root().empty()) {
     _this->_impl_.root_.Set(from._internal_root(), _this->GetArenaForAllocation());
   }
+
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Mixin)
 }
-
 inline void Mixin::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -1155,13 +1147,13 @@ inline void Mixin::SharedCtor(::_pb::Arena* arena) {
 }
 Mixin::~Mixin() {
   // @@protoc_insertion_point(destructor:google.protobuf.Mixin)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void Mixin::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();

@@ -116,21 +116,22 @@ class FieldMask::_Internal {
 };
 
 FieldMask::FieldMask(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
-FieldMask::FieldMask(const FieldMask& from)
-  : ::google::protobuf::Message() {
-  FieldMask* const _this = this; (void)_this;
+FieldMask::FieldMask(const FieldMask& from) : ::google::protobuf::Message() {
+  FieldMask* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.paths_){from._impl_.paths_}
-    , /*decltype(_impl_._cached_size_)*/{}};
+      decltype(_impl_.paths_){from._impl_.paths_},
+      /*decltype(_impl_._cached_size_)*/ {},
+  };
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
-
 inline void FieldMask::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -140,13 +141,13 @@ inline void FieldMask::SharedCtor(::_pb::Arena* arena) {
 }
 FieldMask::~FieldMask() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldMask)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void FieldMask::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _internal_mutable_paths()->~RepeatedPtrField();

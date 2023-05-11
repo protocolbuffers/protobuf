@@ -234,22 +234,23 @@ class Struct::_Internal {
 };
 
 Struct::Struct(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Struct)
 }
-Struct::Struct(const Struct& from)
-  : ::google::protobuf::Message() {
-  Struct* const _this = this; (void)_this;
+Struct::Struct(const Struct& from) : ::google::protobuf::Message() {
+  Struct* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      /* decltype(_impl_.fields_) */ {}
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+      /* decltype(_impl_.fields_) */ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+  };
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
   _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
+
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Struct)
 }
-
 inline void Struct::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -259,13 +260,13 @@ inline void Struct::SharedCtor(::_pb::Arena* arena) {
 }
 Struct::~Struct() {
   // @@protoc_insertion_point(destructor:google.protobuf.Struct)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void Struct::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fields_.~MapField();
@@ -472,19 +473,20 @@ void Value::set_allocated_list_value(::google::protobuf::ListValue* list_value) 
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.list_value)
 }
 Value::Value(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Value)
 }
-Value::Value(const Value& from)
-  : ::google::protobuf::Message() {
-  Value* const _this = this; (void)_this;
+Value::Value(const Value& from) : ::google::protobuf::Message() {
+  Value* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.kind_){}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , /*decltype(_impl_._oneof_case_)*/{}};
-
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+      decltype(_impl_.kind_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_._oneof_case_)*/ {},
+  };
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
   clear_has_kind();
   switch (from.kind_case()) {
     case kNullValue: {
@@ -517,9 +519,9 @@ Value::Value(const Value& from)
       break;
     }
   }
+
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Value)
 }
-
 inline void Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -531,13 +533,13 @@ inline void Value::SharedCtor(::_pb::Arena* arena) {
 }
 Value::~Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Value)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void Value::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (has_kind()) {
@@ -869,21 +871,22 @@ class ListValue::_Internal {
 };
 
 ListValue::ListValue(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ListValue)
 }
-ListValue::ListValue(const ListValue& from)
-  : ::google::protobuf::Message() {
-  ListValue* const _this = this; (void)_this;
+ListValue::ListValue(const ListValue& from) : ::google::protobuf::Message() {
+  ListValue* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.values_){from._impl_.values_}
-    , /*decltype(_impl_._cached_size_)*/{}};
+      decltype(_impl_.values_){from._impl_.values_},
+      /*decltype(_impl_._cached_size_)*/ {},
+  };
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ListValue)
 }
-
 inline void ListValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -893,13 +896,13 @@ inline void ListValue::SharedCtor(::_pb::Arena* arena) {
 }
 ListValue::~ListValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.ListValue)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void ListValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.values_.~RepeatedPtrField();

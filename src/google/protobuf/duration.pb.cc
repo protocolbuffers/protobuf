@@ -118,17 +118,16 @@ class Duration::_Internal {
 };
 
 Duration::Duration(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Duration)
 }
 Duration::Duration(const Duration& from)
-  : ::google::protobuf::Message(), _impl_(from._impl_) {
+    : ::google::protobuf::Message(), _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Duration)
 }
-
 inline void Duration::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -139,13 +138,13 @@ inline void Duration::SharedCtor(::_pb::Arena* arena) {
 }
 Duration::~Duration() {
   // @@protoc_insertion_point(destructor:google.protobuf.Duration)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void Duration::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }

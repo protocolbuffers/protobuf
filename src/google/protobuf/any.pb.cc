@@ -143,22 +143,24 @@ class Any::_Internal {
 };
 
 Any::Any(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
-Any::Any(const Any& from)
-  : ::google::protobuf::Message() {
-  Any* const _this = this; (void)_this;
+Any::Any(const Any& from) : ::google::protobuf::Message() {
+  Any* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.type_url_) {}
-
-    , decltype(_impl_.value_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}
-    , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}};
-
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+      decltype(_impl_.type_url_){},
+      decltype(_impl_.value_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_._any_metadata_)*/ {
+          &_impl_.type_url_,
+          &_impl_.value_,
+      },
+  };
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
   _impl_.type_url_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.type_url_.Set("", GetArenaForAllocation());
@@ -173,9 +175,9 @@ Any::Any(const Any& from)
   if (!from._internal_value().empty()) {
     _this->_impl_.value_.Set(from._internal_value(), _this->GetArenaForAllocation());
   }
+
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
-
 inline void Any::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -196,13 +198,13 @@ inline void Any::SharedCtor(::_pb::Arena* arena) {
 }
 Any::~Any() {
   // @@protoc_insertion_point(destructor:google.protobuf.Any)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
+  if (auto *arena = _internal_metadata_
+                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
+    (void)arena;
     return;
   }
   SharedDtor();
 }
-
 inline void Any::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.type_url_.Destroy();
