@@ -6137,9 +6137,14 @@ void DescriptorBuilder::BuildExtensionRange(
              "Extension range end number must be greater than start number.");
   }
 
-  result->options_ = AllocateOptions<Descriptor::ExtensionRange>(
-      proto, result, DescriptorProto_ExtensionRange::kOptionsFieldNumber,
-      "google.protobuf.ExtensionRangeOptions", alloc);
+  // Copy options
+  {
+    ExtensionRangeOptions* options =
+        AllocateOptions<Descriptor::ExtensionRange>(
+            proto, result, DescriptorProto_ExtensionRange::kOptionsFieldNumber,
+            "google.protobuf.ExtensionRangeOptions", alloc);
+    result->options_ = options;
+  }
 }
 
 void DescriptorBuilder::BuildReservedRange(
@@ -6183,9 +6188,12 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
   result->fields_ = nullptr;
 
   // Copy options.
-  result->options_ =
-      AllocateOptions(proto, result, OneofDescriptorProto::kOptionsFieldNumber,
-                      "google.protobuf.OneofOptions", alloc);
+  {
+    OneofOptions* options = AllocateOptions(
+        proto, result, OneofDescriptorProto::kOptionsFieldNumber,
+        "google.protobuf.OneofOptions", alloc);
+    result->options_ = options;  // Set to default_instance later if necessary.
+  }
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 }
