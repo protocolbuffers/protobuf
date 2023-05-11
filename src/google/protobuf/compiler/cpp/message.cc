@@ -1302,14 +1302,18 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "}\n"
       "\n");
 
-  format(
-      "inline const $unknown_fields_type$& unknown_fields() const {\n"
-      "  return $unknown_fields$;\n"
-      "}\n"
-      "inline $unknown_fields_type$* mutable_unknown_fields() {\n"
-      "  return $mutable_unknown_fields$;\n"
-      "}\n"
-      "\n");
+  p->Emit(R"cc(
+    inline const $unknown_fields_type$& unknown_fields() const {
+      $annotate_unknown_fields$;
+      return $unknown_fields$;
+    }
+    inline $unknown_fields_type$* mutable_unknown_fields() {
+      $annotate_mutable_unknown_fields$;
+      return $mutable_unknown_fields$;
+    }
+  )cc");
+  // Adding a blank line to be consistent with the previous version.
+  p->Emit("\n");
 
   // Only generate this member if it's not disabled.
   if (HasDescriptorMethods(descriptor_->file(), options_) &&

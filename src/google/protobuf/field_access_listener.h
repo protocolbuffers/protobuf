@@ -128,6 +128,12 @@ struct NoOpAccessListener {
   template <int kFieldNum>
   static void OnSize(const MessageLite* msg, const void* field) {}
 
+  // unknown_fields()
+  static void OnUnknownFields(const MessageLite* msg) {}
+
+  // mutable_unknown_fields()
+  static void OnMutableUnknownFields(const MessageLite* msg) {}
+
   static void OnHasExtension(const MessageLite* msg, int extension_tag,
                              const void* field) {}
   // TODO(b/190614678): Support clear in the proto compiler.

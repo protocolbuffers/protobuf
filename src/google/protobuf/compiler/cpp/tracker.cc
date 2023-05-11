@@ -180,6 +180,8 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
           Call("reflection", "OnGetMetadata").This(absl::nullopt),
           Call("bytesize", "OnByteSize"),
           Call("mergefrom", "OnMergeFrom").This("_this").Arg("&from"),
+          Call("unknown_fields", "OnUnknownFields"),
+          Call("mutable_unknown_fields", "OnMutableUnknownFields"),
 
           // "Has" is here as users calling "has" on a repeated field is a
           // mistake.
