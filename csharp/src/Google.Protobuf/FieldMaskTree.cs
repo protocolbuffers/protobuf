@@ -295,9 +295,9 @@ namespace Google.Protobuf
 
                     if (sourceField == null)
                     {
-                        // If the message field is not present in the source but is in the destination, skip recursing
-                        // so we just keep the destination value recursively.
-                        continue;
+                        // If the message field is not present in the source but is in the destination, create an empty one
+                        // so we can properly handle child entries
+                        sourceField = field.MessageType.Parser.CreateTemplate();
                     }
 
                     var childPath = path.Length == 0 ? entry.Key : path + "." + entry.Key;
