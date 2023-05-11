@@ -1486,6 +1486,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
   // available extensions of that message.
   const ServiceOptions& options() const;
 
+
   // The number of methods this service defines.
   int method_count() const;
   // Gets a MethodDescriptor by index, where 0 <= index < method_count().
@@ -1586,6 +1587,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
   // declaration.  Allowed options are defined by MethodOptions in
   // descriptor.proto, and any available extensions of that message.
   const MethodOptions& options() const;
+
 
   // See Descriptor::CopyTo().
   void CopyTo(MethodDescriptorProto* proto) const;
