@@ -21,20 +21,18 @@ namespace _pbi = ::google::protobuf::internal;
 namespace google {
 namespace protobuf {
 namespace compiler {
-PROTOBUF_CONSTEXPR Version::Version(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_._has_bits_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.suffix_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.major_)*/ 0
-
-  , /*decltype(_impl_.minor_)*/ 0
-
-  , /*decltype(_impl_.patch_)*/ 0
-} {}
+PROTOBUF_CONSTEXPR Version::Version(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.suffix_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.major_)*/ 0,
+      /*decltype(_impl_.minor_)*/ 0,
+      /*decltype(_impl_.patch_)*/ 0,
+    } {}
 struct VersionDefaultTypeInternal {
   PROTOBUF_CONSTEXPR VersionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~VersionDefaultTypeInternal() {}
@@ -45,17 +43,18 @@ struct VersionDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_;
-PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_._has_bits_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.file_to_generate_)*/{}
-  , /*decltype(_impl_.proto_file_)*/{}
-  , /*decltype(_impl_.parameter_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.compiler_version_)*/nullptr} {}
+PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.file_to_generate_)*/ {},
+      /*decltype(_impl_.proto_file_)*/ {},
+      /*decltype(_impl_.parameter_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.compiler_version_)*/ nullptr,
+    } {}
 struct CodeGeneratorRequestDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorRequestDefaultTypeInternal() {}
@@ -66,23 +65,24 @@ struct CodeGeneratorRequestDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
-PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_._has_bits_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.name_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.insertion_point_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.content_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.generated_code_info_)*/nullptr} {}
+PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.insertion_point_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.content_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.generated_code_info_)*/ nullptr,
+    } {}
 struct CodeGeneratorResponse_FileDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponse_FileDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponse_FileDefaultTypeInternal() {}
@@ -93,17 +93,17 @@ struct CodeGeneratorResponse_FileDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
-PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_._has_bits_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.file_)*/{}
-  , /*decltype(_impl_.error_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.supported_features_)*/ ::uint64_t{0u}
-} {}
+PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.file_)*/ {},
+      /*decltype(_impl_.error_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.supported_features_)*/ ::uint64_t{0u},
+    } {}
 struct CodeGeneratorResponseDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponseDefaultTypeInternal() {}
@@ -348,23 +348,18 @@ Version::Version(const Version& from)
 inline void Version::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.suffix_) {}
-
-    , decltype(_impl_.major_) { 0 }
-
-    , decltype(_impl_.minor_) { 0 }
-
-    , decltype(_impl_.patch_) { 0 }
-
+      decltype(_impl_._has_bits_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.suffix_){},
+      decltype(_impl_.major_){0},
+      decltype(_impl_.minor_){0},
+      decltype(_impl_.patch_){0},
   };
   _impl_.suffix_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.suffix_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 Version::~Version() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.Version)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -680,20 +675,18 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
 inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.file_to_generate_){arena}
-    , decltype(_impl_.proto_file_){arena}
-    , decltype(_impl_.parameter_) {}
-
-    , decltype(_impl_.compiler_version_){nullptr}
+      decltype(_impl_._has_bits_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.file_to_generate_){arena},
+      decltype(_impl_.proto_file_){arena},
+      decltype(_impl_.parameter_){},
+      decltype(_impl_.compiler_version_){nullptr},
   };
   _impl_.parameter_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.parameter_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 CodeGeneratorRequest::~CodeGeneratorRequest() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorRequest)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -1050,15 +1043,12 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorRespon
 inline void CodeGeneratorResponse_File::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.name_) {}
-
-    , decltype(_impl_.insertion_point_) {}
-
-    , decltype(_impl_.content_) {}
-
-    , decltype(_impl_.generated_code_info_){nullptr}
+      decltype(_impl_._has_bits_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.name_){},
+      decltype(_impl_.insertion_point_){},
+      decltype(_impl_.content_){},
+      decltype(_impl_.generated_code_info_){nullptr},
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -1073,7 +1063,6 @@ inline void CodeGeneratorResponse_File::SharedCtor(::_pb::Arena* arena) {
         _impl_.content_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse.File)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -1397,20 +1386,17 @@ CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from)
 inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.file_){arena}
-    , decltype(_impl_.error_) {}
-
-    , decltype(_impl_.supported_features_) { ::uint64_t{0u} }
-
+      decltype(_impl_._has_bits_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.file_){arena},
+      decltype(_impl_.error_){},
+      decltype(_impl_.supported_features_){::uint64_t{0u}},
   };
   _impl_.error_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.error_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 CodeGeneratorResponse::~CodeGeneratorResponse() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
