@@ -1049,6 +1049,11 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
     absl::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic =
         absl::nullopt);
 
+// Check whether `file` represents the .proto file FileDescriptorProto and
+// friends. This file needs special handling because it must be usable during
+// dynamic initialization.
+bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options);
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
