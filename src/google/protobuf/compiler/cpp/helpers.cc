@@ -1648,6 +1648,17 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
   return vars;
 }
 
+bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
+  if (Namespace(file, options) !=
+      absl::StrCat("::", ProtobufNamespace(options))) {
+    return false;
+  }
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    if (file->message_type(i)->name() == "FileDescriptorProto") return true;
+  }
+  return false;
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

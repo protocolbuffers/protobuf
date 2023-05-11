@@ -406,9 +406,16 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
   // unknown fields and potentially an extension range.
   auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
   format(
-      "constexpr ::_pbi::TcParseTable<$1$, $2$, $3$, $4$, $5$> "
+      "$1$ ::_pbi::TcParseTable<$2$, $3$, $4$, $5$, $6$> "
       "$classname$::_table_ = "
       "{\n",
+      // FileDescriptorProto's table must be constant initialized. For MSVC this
+      // means using `constexpr`. However, we can't use `constexpr` for all
+      // tables because it breaks when crossing DLL boundaries.
+      // FileDescriptorProto is safe from this.
+      IsFileDescriptorProto(descriptor_->file(), options_)
+          ? "constexpr"
+          : "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1\nconst",
       tc_table_info_->table_size_log2, ordered_fields_.size(),
       tc_table_info_->aux_entries.size(),
       FieldNameDataSize(tc_table_info_->field_name_data),

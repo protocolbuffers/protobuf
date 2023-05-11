@@ -529,17 +529,6 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   }
 }
 
-bool FileGenerator::IsFileDescriptorProto() const {
-  if (Namespace(file_, options_) !=
-      absl::StrCat("::", ProtobufNamespace(options_))) {
-    return false;
-  }
-  for (int i = 0; i < file_->message_type_count(); ++i) {
-    if (file_->message_type(i)->name() == "FileDescriptorProto") return true;
-  }
-  return false;
-}
-
 void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   MessageGenerator* generator = message_generators_[idx].get();
 
@@ -580,7 +569,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
 
   generator->GenerateConstexprConstructor(p);
 
-  if (IsFileDescriptorProto()) {
+  if (IsFileDescriptorProto(file_, options_)) {
     p->Emit(
         {
             {"type", DefaultInstanceType(generator->descriptor(), options_)},
@@ -1158,7 +1147,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // However, we must provide a way to force initialize the default instances
   // of FileDescriptorProto which will be used during registration of other
   // files.
-  if (IsFileDescriptorProto()) {
+  if (IsFileDescriptorProto(file_, options_)) {
     NamespaceOpener ns(p);
     ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
     p->Emit(
@@ -1306,7 +1295,7 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
     decl.second.PrintTopLevelDecl(p, options_);
   }
 
-  if (IsFileDescriptorProto()) {
+  if (IsFileDescriptorProto(file_, options_)) {
     ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
     p->Emit(R"cc(
       //~ Emit wants an indented line, so give it a comment to strip.
