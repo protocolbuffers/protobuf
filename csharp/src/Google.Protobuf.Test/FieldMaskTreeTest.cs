@@ -491,7 +491,7 @@ namespace Google.Protobuf
             Assert.False(destination.HasOptionalSint32);
         }
 
-            [Test]
+        [Test]
         [TestCase(false, "Hello", 24)]
         [TestCase(true, null, null)]
         public void MergeWrapperFieldsWithNullFieldsInSource(
