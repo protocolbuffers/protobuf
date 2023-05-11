@@ -553,6 +553,8 @@ bool MessageDifferencer::FieldBefore(const FieldDescriptor* field1,
 bool MessageDifferencer::Compare(const Message& message1,
                                  const Message& message2) {
   std::vector<SpecificField> parent_fields;
+  force_compare_no_presence_fields_.clear();
+  force_compare_failure_triggering_fields_.clear();
 
   bool result = false;
   // Setup the internal reporter if need be.
@@ -580,6 +582,8 @@ bool MessageDifferencer::CompareWithFields(
   }
 
   std::vector<SpecificField> parent_fields;
+  force_compare_no_presence_fields_.clear();
+  force_compare_failure_triggering_fields_.clear();
 
   bool result = false;
 
@@ -757,12 +761,12 @@ FieldDescriptorArray MessageDifferencer::CombineFields(
 
     if (FieldBefore(field1, field2)) {
       if (fields1_scope == FULL) {
-        tmp_message_fields_.push_back(fields1[index1]);
+        tmp_message_fields_.push_back(field1);
       }
       ++index1;
     } else if (FieldBefore(field2, field1)) {
       if (fields2_scope == FULL) {
-        tmp_message_fields_.push_back(fields2[index2]);
+        tmp_message_fields_.push_back(field2);
       } else if (fields2_scope == PARTIAL && force_compare_no_presence_ &&
                  !field2->has_presence() && !field2->is_repeated()) {
         // In order to make MessageDifferencer play nicely with no-presence
@@ -772,12 +776,12 @@ FieldDescriptorArray MessageDifferencer::CombineFields(
         // Those fields will appear in fields2 (since they have non default
         // value) but will not appear in fields1 (since they have the default
         // value or were never set).
-        force_compare_no_presence_fields_.insert(fields2[index2]);
-        tmp_message_fields_.push_back(fields2[index2]);
+        force_compare_no_presence_fields_.insert(field2);
+        tmp_message_fields_.push_back(field2);
       }
       ++index2;
     } else {
-      tmp_message_fields_.push_back(fields1[index1]);
+      tmp_message_fields_.push_back(field1);
       ++index1;
       ++index2;
     }
@@ -865,6 +869,10 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       ++field_index1;
       continue;
     } else if (FieldBefore(field2, field1)) {
+      if (force_compare_no_presence_fields_.contains(field2)) {
+        force_compare_failure_triggering_fields_.insert(field2->full_name());
+      }
+
       // Field 2 is not in the field list for message 1.
       if (IsIgnored(message1, message2, field2, *parent_fields)) {
         // We are ignoring field2. Report the ignore and move on to
@@ -955,6 +963,10 @@ bool MessageDifferencer::CompareWithFieldsInternal(
     } else {
       fieldDifferent = !CompareFieldValueUsingParentFields(
           message1, message2, unpacked_any, field1, -1, -1, parent_fields);
+
+      if (force_compare_no_presence_fields_.contains(field1)) {
+        force_compare_failure_triggering_fields_.insert(field1->full_name());
+      }
 
       if (reporter_ != nullptr) {
         SpecificField specific_field;
