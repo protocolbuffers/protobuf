@@ -443,6 +443,12 @@ namespace Google.Protobuf
             Merge(new FieldMaskTree().AddFieldPath("payload.single_int32"),
                 sourceWithPayloadInt32Unset, destination, options, useDynamicMessage);
             Assert.IsNotNull(destination.Payload);
+
+            // Clear unset primitive fields even if source payload is cleared
+            destination = source.Clone();
+            Merge(new FieldMaskTree().AddFieldPath("payload.single_int32"),
+                clearedSource, destination, options, useDynamicMessage);
+            Assert.AreEqual(0, destination.Payload.SingleInt32);
         }
 
         [Test]
