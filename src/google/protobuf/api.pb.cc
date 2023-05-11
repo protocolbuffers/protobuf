@@ -20,24 +20,24 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR Api::Api(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_._has_bits_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.methods_)*/{}
-  , /*decltype(_impl_.options_)*/{}
-  , /*decltype(_impl_.mixins_)*/{}
-  , /*decltype(_impl_.name_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.version_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.source_context_)*/nullptr
-  , /*decltype(_impl_.syntax_)*/ 0
-} {}
+PROTOBUF_CONSTEXPR Api::Api(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.methods_)*/ {},
+      /*decltype(_impl_.options_)*/ {},
+      /*decltype(_impl_.mixins_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.version_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.source_context_)*/ nullptr,
+      /*decltype(_impl_.syntax_)*/ 0,
+    } {}
 struct ApiDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ApiDefaultTypeInternal() {}
@@ -48,28 +48,26 @@ struct ApiDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiDefaultTypeInternal _Api_default_instance_;
-PROTOBUF_CONSTEXPR Method::Method(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.options_)*/{}
-  , /*decltype(_impl_.name_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.request_type_url_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.response_type_url_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.request_streaming_)*/ false
-
-  , /*decltype(_impl_.response_streaming_)*/ false
-
-  , /*decltype(_impl_.syntax_)*/ 0
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR Method::Method(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.options_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.request_type_url_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.response_type_url_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.request_streaming_)*/ false,
+      /*decltype(_impl_.response_streaming_)*/ false,
+      /*decltype(_impl_.syntax_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct MethodDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MethodDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MethodDefaultTypeInternal() {}
@@ -80,17 +78,18 @@ struct MethodDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDefaultTypeInternal _Method_default_instance_;
-PROTOBUF_CONSTEXPR Mixin::Mixin(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.name_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.root_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR Mixin::Mixin(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.root_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct MixinDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MixinDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MixinDefaultTypeInternal() {}
@@ -305,18 +304,15 @@ Api::Api(const Api& from)
 inline void Api::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.methods_){arena}
-    , decltype(_impl_.options_){arena}
-    , decltype(_impl_.mixins_){arena}
-    , decltype(_impl_.name_) {}
-
-    , decltype(_impl_.version_) {}
-
-    , decltype(_impl_.source_context_){nullptr}
-    , decltype(_impl_.syntax_) { 0 }
-
+      decltype(_impl_._has_bits_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.methods_){arena},
+      decltype(_impl_.options_){arena},
+      decltype(_impl_.mixins_){arena},
+      decltype(_impl_.name_){},
+      decltype(_impl_.version_){},
+      decltype(_impl_.source_context_){nullptr},
+      decltype(_impl_.syntax_){0},
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -327,7 +323,6 @@ inline void Api::SharedCtor(::_pb::Arena* arena) {
         _impl_.version_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 Api::~Api() {
   // @@protoc_insertion_point(destructor:google.protobuf.Api)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -748,20 +743,14 @@ Method::Method(const Method& from)
 inline void Method::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.options_){arena}
-    , decltype(_impl_.name_) {}
-
-    , decltype(_impl_.request_type_url_) {}
-
-    , decltype(_impl_.response_type_url_) {}
-
-    , decltype(_impl_.request_streaming_) { false }
-
-    , decltype(_impl_.response_streaming_) { false }
-
-    , decltype(_impl_.syntax_) { 0 }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.options_){arena},
+      decltype(_impl_.name_){},
+      decltype(_impl_.request_type_url_){},
+      decltype(_impl_.response_type_url_){},
+      decltype(_impl_.request_streaming_){false},
+      decltype(_impl_.response_streaming_){false},
+      decltype(_impl_.syntax_){0},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -776,7 +765,6 @@ inline void Method::SharedCtor(::_pb::Arena* arena) {
         _impl_.response_type_url_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 Method::~Method() {
   // @@protoc_insertion_point(destructor:google.protobuf.Method)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -1152,11 +1140,9 @@ Mixin::Mixin(const Mixin& from)
 inline void Mixin::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.name_) {}
-
-    , decltype(_impl_.root_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.name_){},
+      decltype(_impl_.root_){},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -1167,7 +1153,6 @@ inline void Mixin::SharedCtor(::_pb::Arena* arena) {
         _impl_.root_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 Mixin::~Mixin() {
   // @@protoc_insertion_point(destructor:google.protobuf.Mixin)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {

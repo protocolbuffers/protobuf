@@ -20,8 +20,7 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR Empty::Empty(
-    ::_pbi::ConstantInitialized) {}
+PROTOBUF_CONSTEXPR Empty::Empty(::_pbi::ConstantInitialized) {}
 struct EmptyDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EmptyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EmptyDefaultTypeInternal() {}

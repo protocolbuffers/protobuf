@@ -20,11 +20,11 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/ 0
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct DoubleValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DoubleValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DoubleValueDefaultTypeInternal() {}
@@ -35,11 +35,11 @@ struct DoubleValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
-PROTOBUF_CONSTEXPR FloatValue::FloatValue(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/ 0
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR FloatValue::FloatValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct FloatValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FloatValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FloatValueDefaultTypeInternal() {}
@@ -50,11 +50,11 @@ struct FloatValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FloatValueDefaultTypeInternal _FloatValue_default_instance_;
-PROTOBUF_CONSTEXPR Int64Value::Int64Value(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/ ::int64_t{0}
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR Int64Value::Int64Value(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ ::int64_t{0},
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct Int64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int64ValueDefaultTypeInternal() {}
@@ -65,11 +65,11 @@ struct Int64ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
-PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/ ::uint64_t{0u}
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ ::uint64_t{0u},
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct UInt64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt64ValueDefaultTypeInternal() {}
@@ -80,11 +80,11 @@ struct UInt64ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
-PROTOBUF_CONSTEXPR Int32Value::Int32Value(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/ 0
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR Int32Value::Int32Value(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct Int32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int32ValueDefaultTypeInternal() {}
@@ -95,11 +95,11 @@ struct Int32ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
-PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/ 0u
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ 0u,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct UInt32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt32ValueDefaultTypeInternal() {}
@@ -110,11 +110,11 @@ struct UInt32ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
-PROTOBUF_CONSTEXPR BoolValue::BoolValue(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/ false
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR BoolValue::BoolValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ false,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct BoolValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BoolValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~BoolValueDefaultTypeInternal() {}
@@ -125,13 +125,14 @@ struct BoolValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BoolValueDefaultTypeInternal _BoolValue_default_instance_;
-PROTOBUF_CONSTEXPR StringValue::StringValue(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR StringValue::StringValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct StringValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR StringValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~StringValueDefaultTypeInternal() {}
@@ -142,13 +143,14 @@ struct StringValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StringValueDefaultTypeInternal _StringValue_default_instance_;
-PROTOBUF_CONSTEXPR BytesValue::BytesValue(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.value_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR BytesValue::BytesValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct BytesValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BytesValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~BytesValueDefaultTypeInternal() {}
@@ -348,12 +350,10 @@ DoubleValue::DoubleValue(const DoubleValue& from)
 inline void DoubleValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_) { 0 }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.value_){0},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 DoubleValue::~DoubleValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.DoubleValue)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -535,12 +535,10 @@ FloatValue::FloatValue(const FloatValue& from)
 inline void FloatValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_) { 0 }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.value_){0},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 FloatValue::~FloatValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.FloatValue)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -722,12 +720,10 @@ Int64Value::Int64Value(const Int64Value& from)
 inline void Int64Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_) { ::int64_t{0} }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.value_){::int64_t{0}},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 Int64Value::~Int64Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Int64Value)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -895,12 +891,10 @@ UInt64Value::UInt64Value(const UInt64Value& from)
 inline void UInt64Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_) { ::uint64_t{0u} }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.value_){::uint64_t{0u}},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 UInt64Value::~UInt64Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.UInt64Value)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -1068,12 +1062,10 @@ Int32Value::Int32Value(const Int32Value& from)
 inline void Int32Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_) { 0 }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.value_){0},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 Int32Value::~Int32Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Int32Value)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -1241,12 +1233,10 @@ UInt32Value::UInt32Value(const UInt32Value& from)
 inline void UInt32Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_) { 0u }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.value_){0u},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 UInt32Value::~UInt32Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.UInt32Value)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -1414,12 +1404,10 @@ BoolValue::BoolValue(const BoolValue& from)
 inline void BoolValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_) { false }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.value_){false},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 BoolValue::~BoolValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.BoolValue)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -1598,16 +1586,14 @@ StringValue::StringValue(const StringValue& from)
 inline void StringValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.value_){},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
   _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.value_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 StringValue::~StringValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.StringValue)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -1794,16 +1780,14 @@ BytesValue::BytesValue(const BytesValue& from)
 inline void BytesValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.value_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.value_){},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
   _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.value_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 BytesValue::~BytesValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.BytesValue)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {

@@ -20,8 +20,7 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(
-    ::_pbi::ConstantInitialized) {}
+PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::_pbi::ConstantInitialized) {}
 struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Struct_FieldsEntry_DoNotUseDefaultTypeInternal() {}
@@ -32,10 +31,11 @@ struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
-PROTOBUF_CONSTEXPR Struct::Struct(
-    ::_pbi::ConstantInitialized): _impl_{
-    /* decltype(_impl_.fields_) */ {}
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR Struct::Struct(::_pbi::ConstantInitialized)
+    : _impl_{
+      /* decltype(_impl_.fields_) */ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct StructDefaultTypeInternal {
   PROTOBUF_CONSTEXPR StructDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~StructDefaultTypeInternal() {}
@@ -46,11 +46,12 @@ struct StructDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StructDefaultTypeInternal _Struct_default_instance_;
-PROTOBUF_CONSTEXPR Value::Value(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.kind_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_._oneof_case_)*/{}} {}
+PROTOBUF_CONSTEXPR Value::Value(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.kind_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_._oneof_case_)*/ {},
+    } {}
 struct ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ValueDefaultTypeInternal() {}
@@ -61,10 +62,11 @@ struct ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ValueDefaultTypeInternal _Value_default_instance_;
-PROTOBUF_CONSTEXPR ListValue::ListValue(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.values_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR ListValue::ListValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.values_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct ListValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ListValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ListValueDefaultTypeInternal() {}
@@ -251,12 +253,10 @@ Struct::Struct(const Struct& from)
 inline void Struct::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      /* decltype(_impl_.fields_) */ { ::google::protobuf::internal::ArenaInitialized(), arena }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      /* decltype(_impl_.fields_) */ {::google::protobuf::internal::ArenaInitialized(), arena},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 Struct::~Struct() {
   // @@protoc_insertion_point(destructor:google.protobuf.Struct)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -523,13 +523,12 @@ Value::Value(const Value& from)
 inline void Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.kind_){}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , /*decltype(_impl_._oneof_case_)*/{}
+      decltype(_impl_.kind_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_._oneof_case_)*/ {},
   };
   clear_has_kind();
 }
-
 Value::~Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Value)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
@@ -888,11 +887,10 @@ ListValue::ListValue(const ListValue& from)
 inline void ListValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.values_){arena}
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.values_){arena},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 ListValue::~ListValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.ListValue)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {

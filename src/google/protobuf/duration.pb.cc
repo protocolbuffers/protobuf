@@ -20,13 +20,12 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR Duration::Duration(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.seconds_)*/ ::int64_t{0}
-
-  , /*decltype(_impl_.nanos_)*/ 0
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR Duration::Duration(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.seconds_)*/ ::int64_t{0},
+      /*decltype(_impl_.nanos_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct DurationDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DurationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DurationDefaultTypeInternal() {}
@@ -133,14 +132,11 @@ Duration::Duration(const Duration& from)
 inline void Duration::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.seconds_) { ::int64_t{0} }
-
-    , decltype(_impl_.nanos_) { 0 }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.seconds_){::int64_t{0}},
+      decltype(_impl_.nanos_){0},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 Duration::~Duration() {
   // @@protoc_insertion_point(destructor:google.protobuf.Duration)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {

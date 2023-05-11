@@ -24,18 +24,20 @@ namespace _pbi = ::google::protobuf::internal;
 #endif  // __llvm__
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR Any::Any(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.type_url_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.value_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}} {}
+PROTOBUF_CONSTEXPR Any::Any(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.type_url_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_._any_metadata_)*/ {&_impl_.type_url_,
+                                    &_impl_.value_},
+    } {}
 struct AnyDefaultTypeInternal {
   PROTOBUF_CONSTEXPR AnyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~AnyDefaultTypeInternal() {}
@@ -177,12 +179,11 @@ Any::Any(const Any& from)
 inline void Any::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.type_url_) {}
-
-    , decltype(_impl_.value_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}
-    , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}
+      decltype(_impl_.type_url_){},
+      decltype(_impl_.value_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_._any_metadata_)*/ {&_impl_.type_url_,
+                                    &_impl_.value_},
   };
   _impl_.type_url_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -193,7 +194,6 @@ inline void Any::SharedCtor(::_pb::Arena* arena) {
         _impl_.value_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 Any::~Any() {
   // @@protoc_insertion_point(destructor:google.protobuf.Any)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {

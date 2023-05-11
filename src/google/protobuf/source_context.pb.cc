@@ -20,13 +20,14 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR SourceContext::SourceContext(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.file_name_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR SourceContext::SourceContext(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.file_name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct SourceContextDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SourceContextDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~SourceContextDefaultTypeInternal() {}
@@ -144,16 +145,14 @@ SourceContext::SourceContext(const SourceContext& from)
 inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.file_name_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.file_name_){},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
   _impl_.file_name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.file_name_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 SourceContext::~SourceContext() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceContext)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {

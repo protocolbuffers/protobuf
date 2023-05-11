@@ -20,13 +20,12 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR Timestamp::Timestamp(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.seconds_)*/ ::int64_t{0}
-
-  , /*decltype(_impl_.nanos_)*/ 0
-
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR Timestamp::Timestamp(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.seconds_)*/ ::int64_t{0},
+      /*decltype(_impl_.nanos_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct TimestampDefaultTypeInternal {
   PROTOBUF_CONSTEXPR TimestampDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~TimestampDefaultTypeInternal() {}
@@ -133,14 +132,11 @@ Timestamp::Timestamp(const Timestamp& from)
 inline void Timestamp::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.seconds_) { ::int64_t{0} }
-
-    , decltype(_impl_.nanos_) { 0 }
-
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.seconds_){::int64_t{0}},
+      decltype(_impl_.nanos_){0},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 Timestamp::~Timestamp() {
   // @@protoc_insertion_point(destructor:google.protobuf.Timestamp)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {

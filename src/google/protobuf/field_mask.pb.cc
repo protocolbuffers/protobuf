@@ -20,10 +20,11 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR FieldMask::FieldMask(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.paths_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+PROTOBUF_CONSTEXPR FieldMask::FieldMask(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.paths_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
 struct FieldMaskDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldMaskDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldMaskDefaultTypeInternal() {}
@@ -133,11 +134,10 @@ FieldMask::FieldMask(const FieldMask& from)
 inline void FieldMask::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.paths_){arena}
-    , /*decltype(_impl_._cached_size_)*/{}
+      decltype(_impl_.paths_){arena},
+      /*decltype(_impl_._cached_size_)*/ {},
   };
 }
-
 FieldMask::~FieldMask() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldMask)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
