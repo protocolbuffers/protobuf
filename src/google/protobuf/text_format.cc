@@ -2160,7 +2160,6 @@ bool TextFormat::Printer::Print(const Message& message,
                                 io::ZeroCopyOutputStream* output) const {
   TextGenerator generator(output, insert_silent_marker_, initial_indent_level_);
 
-
   Print(message, &generator);
 
   // Output false if the generator failed internally.
