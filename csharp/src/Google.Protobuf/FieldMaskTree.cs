@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -368,6 +369,37 @@ namespace Google.Protobuf
                     }
                 }
             }
+        }
+
+        /// <remarks>
+        /// Copied from <seealso cref="JsonFormatter.IsDefaultValue"/>
+        /// </remarks>
+        private static bool IsDefaultValue(FieldDescriptor descriptor, object value)
+        {
+            if (descriptor.IsMap)
+            {
+                IDictionary dictionary = (IDictionary) value;
+                return dictionary.Count == 0;
+            }
+            if (descriptor.IsRepeated)
+            {
+                IList list = (IList) value;
+                return list.Count == 0;
+            }
+            return descriptor.FieldType switch
+            {
+                FieldType.Bool => (bool) value == false,
+                FieldType.Bytes => (ByteString) value == ByteString.Empty,
+                FieldType.String => (string) value == "",
+                FieldType.Double => (double) value == 0.0,
+                FieldType.SInt32 or FieldType.Int32 or FieldType.SFixed32 or FieldType.Enum => (int) value == 0,
+                FieldType.Fixed32 or FieldType.UInt32 => (uint) value == 0,
+                FieldType.Fixed64 or FieldType.UInt64 => (ulong) value == 0,
+                FieldType.SFixed64 or FieldType.Int64 or FieldType.SInt64 => (long) value == 0,
+                FieldType.Float => (float) value == 0f,
+                FieldType.Message or FieldType.Group => value == null,
+                _ => throw new ArgumentException("Invalid field type"),
+            };
         }
     }
 }
