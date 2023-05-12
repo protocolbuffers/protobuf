@@ -535,11 +535,7 @@ inline void Type::SharedCtor(::_pb::Arena* arena) {
 }
 Type::~Type() {
   // @@protoc_insertion_point(destructor:google.protobuf.Type)
-  if (auto *arena = _internal_metadata_
-                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-    (void)arena;
-    return;
-  }
+  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void Type::SharedDtor() {
@@ -954,11 +950,7 @@ inline void Field::SharedCtor(::_pb::Arena* arena) {
 }
 Field::~Field() {
   // @@protoc_insertion_point(destructor:google.protobuf.Field)
-  if (auto *arena = _internal_metadata_
-                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-    (void)arena;
-    return;
-  }
+  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void Field::SharedDtor() {
@@ -1422,11 +1414,7 @@ inline void Enum::SharedCtor(::_pb::Arena* arena) {
 }
 Enum::~Enum() {
   // @@protoc_insertion_point(destructor:google.protobuf.Enum)
-  if (auto *arena = _internal_metadata_
-                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-    (void)arena;
-    return;
-  }
+  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void Enum::SharedDtor() {
@@ -1766,11 +1754,7 @@ inline void EnumValue::SharedCtor(::_pb::Arena* arena) {
 }
 EnumValue::~EnumValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValue)
-  if (auto *arena = _internal_metadata_
-                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-    (void)arena;
-    return;
-  }
+  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void EnumValue::SharedDtor() {
@@ -2031,11 +2015,7 @@ inline void Option::SharedCtor(::_pb::Arena* arena) {
 }
 Option::~Option() {
   // @@protoc_insertion_point(destructor:google.protobuf.Option)
-  if (auto *arena = _internal_metadata_
-                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-    (void)arena;
-    return;
-  }
+  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void Option::SharedDtor() {

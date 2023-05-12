@@ -143,11 +143,7 @@ inline void FieldMask::SharedCtor(::_pb::Arena* arena) {
 }
 FieldMask::~FieldMask() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldMask)
-  if (auto *arena = _internal_metadata_
-                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-    (void)arena;
-    return;
-  }
+  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FieldMask::SharedDtor() {

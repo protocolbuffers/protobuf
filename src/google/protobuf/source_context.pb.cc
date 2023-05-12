@@ -157,11 +157,7 @@ inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
 }
 SourceContext::~SourceContext() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceContext)
-  if (auto *arena = _internal_metadata_
-                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-    (void)arena;
-    return;
-  }
+  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void SourceContext::SharedDtor() {

@@ -140,11 +140,7 @@ inline void Timestamp::SharedCtor(::_pb::Arena* arena) {
 }
 Timestamp::~Timestamp() {
   // @@protoc_insertion_point(destructor:google.protobuf.Timestamp)
-  if (auto *arena = _internal_metadata_
-                        .DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-    (void)arena;
-    return;
-  }
+  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void Timestamp::SharedDtor() {
