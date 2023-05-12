@@ -446,6 +446,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     // Returns the ExtensionRangeOptions for this range.
     const ExtensionRangeOptions& options() const { return *options_; }
 
+
     // Returns the name of the containing type.
     const std::string& name() const { return containing_type_->name(); }
 
@@ -474,6 +475,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     // to this descriptor from the file root.
     void GetLocationPath(std::vector<int>* output) const;
 
+    friend class DescriptorPool;
     friend class DescriptorBuilder;
   };
 

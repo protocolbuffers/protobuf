@@ -6137,9 +6137,14 @@ void DescriptorBuilder::BuildExtensionRange(
              "Extension range end number must be greater than start number.");
   }
 
-  result->options_ = AllocateOptions<Descriptor::ExtensionRange>(
-      proto, result, DescriptorProto_ExtensionRange::kOptionsFieldNumber,
-      "google.protobuf.ExtensionRangeOptions", alloc);
+  // Copy options
+  {
+    ExtensionRangeOptions* options =
+        AllocateOptions<Descriptor::ExtensionRange>(
+            proto, result, DescriptorProto_ExtensionRange::kOptionsFieldNumber,
+            "google.protobuf.ExtensionRangeOptions", alloc);
+    result->options_ = options;
+  }
 }
 
 void DescriptorBuilder::BuildReservedRange(
