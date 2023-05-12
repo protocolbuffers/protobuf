@@ -1109,6 +1109,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
 
   const OneofOptions& options() const;
 
+
   // See Descriptor::CopyTo().
   void CopyTo(OneofDescriptorProto* proto) const;
 
