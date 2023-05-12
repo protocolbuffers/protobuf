@@ -159,10 +159,9 @@ message ExtensionRangeOptions {
     optional bool repeated = 6;
   }
 
-  // go/protobuf-stripping-extension-declarations
-  // Like Metadata, but we use a repeated field to hold all extension
-  // declarations. This should avoid the size increases of transforming a large
-  // extension range into small ranges in generated binaries.
+  // For external users: DO NOT USE. We are in the process of open sourcing
+  // extension declaration and executing internal cleanups before it can be
+  // used externally.
   repeated Declaration declaration = 2 [retention = RETENTION_SOURCE];
 
   // The verification state of the extension range.
