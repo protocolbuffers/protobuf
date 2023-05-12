@@ -582,6 +582,17 @@ message MessageOptions {
 }
 
 message FieldOptions {
+  // Legacy range that was using an unverified allocation scheme
+  extensions 1000 to 529999999;
+  // Current range that uses extension declarations.
+  extensions 530000000 to max
+  [declaration = {
+    number: 530000000,
+    full_name: "moneta.reporting.proto.annotation.field_meta",
+    type: "moneta.reporting.proto.annotation.FieldMeta"
+    is_repeated: true
+  }];
+
   // The ctype option instructs the C++ code generator to use a different
   // representation of the field than it normally would.  See the specific
   // options below.  This option is only implemented to support use of
