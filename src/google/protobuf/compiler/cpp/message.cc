@@ -2896,20 +2896,10 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
     // or extensions)
   } else {
     p->Emit(
-        {{"arena_dtor",
-          [&] {
-            if (NeedsArenaDestructor() == ArenaDtorNeeds::kNone) return;
-            p->Emit("ArenaDtor(this);");
-          }}},
         R"cc(
           $classname$::~$classname$() {
             // @@protoc_insertion_point(destructor:$full_name$)
-            if (auto *arena = _internal_metadata_
-                                  .DeleteReturnArena<$unknown_fields_type$>()) {
-              (void)arena;
-              $arena_dtor$;
-              return;
-            }
+            _internal_metadata_.DeleteReturnArena<$unknown_fields_type$>();
             SharedDtor();
           }
         )cc");
