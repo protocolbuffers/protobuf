@@ -51,6 +51,7 @@
 #endif
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/base/attributes.h"
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
 #include "absl/meta/type_traits.h"
@@ -1135,7 +1136,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
   }
 
-  Map& operator=(Map&& other) noexcept {
+  Map& operator=(Map&& other) noexcept ABSL_ATTRIBUTE_LIFETIME_BOUND {
     if (this != &other) {
       if (arena() != other.arena()) {
         *this = other;
@@ -1300,38 +1301,44 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     friend class Map;
   };
 
-  iterator begin() { return iterator(this); }
-  iterator end() { return iterator(); }
-  const_iterator begin() const { return const_iterator(this); }
-  const_iterator end() const { return const_iterator(); }
-  const_iterator cbegin() const { return begin(); }
-  const_iterator cend() const { return end(); }
+  iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND { return iterator(this); }
+  iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND { return iterator(); }
+  const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return const_iterator(this);
+  }
+  const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return const_iterator();
+  }
+  const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return begin();
+  }
+  const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND { return end(); }
 
   using Base::empty;
   using Base::size;
 
   // Element access
   template <typename K = key_type>
-  T& operator[](const key_arg<K>& key) {
+  T& operator[](const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return try_emplace(key).first->second;
   }
   template <
       typename K = key_type,
       // Disable for integral types to reduce code bloat.
       typename = typename std::enable_if<!std::is_integral<K>::value>::type>
-  T& operator[](key_arg<K>&& key) {
+  T& operator[](key_arg<K>&& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return try_emplace(std::forward<K>(key)).first->second;
   }
 
   template <typename K = key_type>
-  const T& at(const key_arg<K>& key) const {
+  const T& at(const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     const_iterator it = find(key);
     ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
   }
 
   template <typename K = key_type>
-  T& at(const key_arg<K>& key) {
+  T& at(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     iterator it = find(key);
     ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
@@ -1344,11 +1351,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   template <typename K = key_type>
-  const_iterator find(const key_arg<K>& key) const {
+  const_iterator find(const key_arg<K>& key) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_cast<Map*>(this)->find(key);
   }
   template <typename K = key_type>
-  iterator find(const key_arg<K>& key) {
+  iterator find(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     auto res = this->FindHelper(key);
     return iterator(static_cast<Node*>(res.node), this, res.bucket);
   }
@@ -1360,7 +1368,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   template <typename K = key_type>
   std::pair<const_iterator, const_iterator> equal_range(
-      const key_arg<K>& key) const {
+      const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     const_iterator it = find(key);
     if (it == end()) {
       return std::pair<const_iterator, const_iterator>(it, it);
@@ -1371,7 +1379,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   template <typename K = key_type>
-  std::pair<iterator, iterator> equal_range(const key_arg<K>& key) {
+  std::pair<iterator, iterator> equal_range(const key_arg<K>& key)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     iterator it = find(key);
     if (it == end()) {
       return std::pair<iterator, iterator>(it, it);
@@ -1383,7 +1392,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   // insert
   template <typename K, typename... Args>
-  std::pair<iterator, bool> try_emplace(K&& k, Args&&... args) {
+  std::pair<iterator, bool> try_emplace(K&& k, Args&&... args)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     // Inserts a new element into the container if there is no element with the
     // key in the container.
     // The new element is:
@@ -1395,16 +1405,18 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                                 std::forward<K>(k),
                                 std::forward<Args>(args)...);
   }
-  std::pair<iterator, bool> insert(init_type&& value) {
+  std::pair<iterator, bool> insert(init_type&& value)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return try_emplace(std::move(value.first), std::move(value.second));
   }
   template <typename P, RequiresInsertable<P> = 0>
-  std::pair<iterator, bool> insert(P&& value) {
+  std::pair<iterator, bool> insert(P&& value) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return try_emplace(std::forward<P>(value).first,
                        std::forward<P>(value).second);
   }
   template <typename... Args>
-  std::pair<iterator, bool> emplace(Args&&... args) {
+  std::pair<iterator, bool> emplace(Args&&... args)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return EmplaceInternal(Rank0{}, std::forward<Args>(args)...);
   }
   template <class InputIt>
@@ -1435,7 +1447,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
   }
 
-  iterator erase(iterator pos) {
+  iterator erase(iterator pos) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     auto next = std::next(pos);
     ABSL_DCHECK_EQ(pos.m_, static_cast<Base*>(this));
     auto* node = static_cast<Node*>(pos.node_);
@@ -1475,7 +1487,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   // Assign
-  Map& operator=(const Map& other) {
+  Map& operator=(const Map& other) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     if (this != &other) {
       clear();
       insert(other.begin(), other.end());
