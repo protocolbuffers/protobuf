@@ -71,27 +71,18 @@ class PROTOBUF_EXPORT InternalMetadata {
     ptr_ = reinterpret_cast<intptr_t>(arena);
   }
 
+  // Delete will delete the unknown fields only if they weren't allocated on an
+  // arena.  Then it updates the flags so that if you call
+  // have_unknown_fields(), it will return false.
+  //
+  // It is designed to be used as part of a Message class's destructor call, so
+  // that when control eventually gets to ~InternalMetadata(), we don't need to
+  // check for have_unknown_fields() again.
   template <typename T>
   void Delete() {
     // Note that Delete<> should be called not more than once.
     if (have_unknown_fields()) {
       DeleteOutOfLineHelper<T>();
-    }
-  }
-
-  // DeleteReturnArena will delete the unknown fields only if they weren't
-  // allocated on an arena.  Then it updates the flags so that if you call
-  // have_unknown_fields(), it will return false.  Finally, it returns the
-  // current value of arena().  It is designed to be used as part of a
-  // Message class's destructor call, so that when control eventually gets
-  // to ~InternalMetadata(), we don't need to check for have_unknown_fields()
-  // again.
-  template <typename T>
-  Arena* DeleteReturnArena() {
-    if (have_unknown_fields()) {
-      return DeleteOutOfLineHelper<T>();
-    } else {
-      return PtrValue<Arena>();
     }
   }
 
@@ -190,14 +181,11 @@ class PROTOBUF_EXPORT InternalMetadata {
   };
 
   template <typename T>
-  PROTOBUF_NOINLINE Arena* DeleteOutOfLineHelper() {
-    if (auto* a = arena()) {
-      ptr_ = reinterpret_cast<intptr_t>(a);
-      return a;
-    } else {
+  PROTOBUF_NOINLINE void DeleteOutOfLineHelper() {
+    // TODO(b/188560391): Determine if this branch is needed.
+    if (!arena()) {
       delete PtrValue<Container<T>>();
       ptr_ = 0;
-      return nullptr;
     }
   }
 
@@ -252,7 +240,7 @@ extern template PROTOBUF_EXPORT void
 InternalMetadata::DoMergeFrom<UnknownFieldSet>(const UnknownFieldSet& other);
 extern template PROTOBUF_EXPORT void
 InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
-extern template PROTOBUF_EXPORT Arena*
+extern template PROTOBUF_EXPORT void
 InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 extern template PROTOBUF_EXPORT UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
