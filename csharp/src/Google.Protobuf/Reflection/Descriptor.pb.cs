@@ -2192,10 +2192,9 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.Declaration.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.Declaration> declaration_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.Declaration>();
     /// <summary>
-    /// go/protobuf-stripping-extension-declarations
-    /// Like Metadata, but we use a repeated field to hold all extension
-    /// declarations. This should avoid the size increases of transforming a large
-    /// extension range into small ranges in generated binaries.
+    /// For external users: DO NOT USE. We are in the process of open sourcing
+    /// extension declaration and executing internal cleanups before it can be
+    /// used externally.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
