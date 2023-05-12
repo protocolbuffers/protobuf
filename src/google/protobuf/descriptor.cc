@@ -3940,14 +3940,14 @@ class DescriptorBuilder {
   // later. DescriptorT must be one of the Descriptor messages from
   // descriptor.proto.
   template <class DescriptorT>
-  typename DescriptorT::OptionsType* AllocateOptions(
-      const typename DescriptorT::Proto& proto, const DescriptorT* descriptor,
-      int options_field_tag, absl::string_view option_name,
-      internal::FlatAllocator& alloc);
+  void AllocateOptions(const typename DescriptorT::Proto& proto,
+                       DescriptorT* descriptor, int options_field_tag,
+                       absl::string_view option_name,
+                       internal::FlatAllocator& alloc);
   // Specialization for FileOptions.
-  FileOptions* AllocateOptions(const FileDescriptorProto& proto,
-                               const FileDescriptor* descriptor,
-                               internal::FlatAllocator& alloc);
+  void AllocateOptions(const FileDescriptorProto& proto,
+                       FileDescriptor* descriptor,
+                       internal::FlatAllocator& alloc);
 
   // Implementation for AllocateOptions(). Don't call this directly.
   template <class DescriptorT>
@@ -4869,28 +4869,30 @@ void DescriptorBuilder::ValidateSymbolName(const std::string& name,
 // This generic implementation is good for all descriptors except
 // FileDescriptor.
 template <class DescriptorT>
-typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptions(
-    const typename DescriptorT::Proto& proto, const DescriptorT* descriptor,
+void DescriptorBuilder::AllocateOptions(
+    const typename DescriptorT::Proto& proto, DescriptorT* descriptor,
     int options_field_tag, absl::string_view option_name,
     internal::FlatAllocator& alloc) {
   std::vector<int> options_path;
   descriptor->GetLocationPath(&options_path);
   options_path.push_back(options_field_tag);
-  return AllocateOptionsImpl<DescriptorT>(descriptor->full_name(),
-                                          descriptor->full_name(), proto,
-                                          options_path, option_name, alloc);
+  auto options = AllocateOptionsImpl<DescriptorT>(
+      descriptor->full_name(), descriptor->full_name(), proto, options_path,
+      option_name, alloc);
+  descriptor->options_ = options;
 }
 
 // We specialize for FileDescriptor.
-FileOptions* DescriptorBuilder::AllocateOptions(
-    const FileDescriptorProto& proto, const FileDescriptor* descriptor,
-    internal::FlatAllocator& alloc) {
+void DescriptorBuilder::AllocateOptions(const FileDescriptorProto& proto,
+                                        FileDescriptor* descriptor,
+                                        internal::FlatAllocator& alloc) {
   std::vector<int> options_path;
   options_path.push_back(FileDescriptorProto::kOptionsFieldNumber);
   // We add the dummy token so that LookupSymbol does the right thing.
-  return AllocateOptionsImpl<FileDescriptor>(
+  auto options = AllocateOptionsImpl<FileDescriptor>(
       absl::StrCat(descriptor->package(), ".dummy"), descriptor->name(), proto,
       options_path, "google.protobuf.FileOptions", alloc);
+  descriptor->options_ = options;
 }
 
 template <class DescriptorT>
@@ -5448,10 +5450,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   BUILD_ARRAY(proto, result, extension, BuildExtension, nullptr);
 
   // Copy options.
-  {
-    FileOptions* options = AllocateOptions(proto, result, alloc);
-    result->options_ = options;  // Set to default_instance later if necessary.
-  }
+  AllocateOptions(proto, result, alloc);
 
   // Note that the following steps must occur in exactly the specified order.
 
@@ -5607,12 +5606,8 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   }
 
   // Copy options.
-  {
-    MessageOptions* options =
-        AllocateOptions(proto, result, DescriptorProto::kOptionsFieldNumber,
-                        "google.protobuf.MessageOptions", alloc);
-    result->options_ = options;  // Set to default_instance later if necessary.
-  }
+  AllocateOptions(proto, result, DescriptorProto::kOptionsFieldNumber,
+                  "google.protobuf.MessageOptions", alloc);
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
@@ -6102,12 +6097,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   }
 
   // Copy options.
-  {
-    FieldOptions* options = AllocateOptions(
-        proto, result, FieldDescriptorProto::kOptionsFieldNumber,
-        "google.protobuf.FieldOptions", alloc);
-    result->options_ = options;  // Set to default_instance later if necessary.
-  }
+  AllocateOptions(proto, result, FieldDescriptorProto::kOptionsFieldNumber,
+                  "google.protobuf.FieldOptions", alloc);
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 }
@@ -6138,13 +6129,9 @@ void DescriptorBuilder::BuildExtensionRange(
   }
 
   // Copy options
-  {
-    ExtensionRangeOptions* options =
-        AllocateOptions<Descriptor::ExtensionRange>(
-            proto, result, DescriptorProto_ExtensionRange::kOptionsFieldNumber,
-            "google.protobuf.ExtensionRangeOptions", alloc);
-    result->options_ = options;
-  }
+  AllocateOptions(proto, result,
+                  DescriptorProto_ExtensionRange::kOptionsFieldNumber,
+                  "google.protobuf.ExtensionRangeOptions", alloc);
 }
 
 void DescriptorBuilder::BuildReservedRange(
@@ -6188,12 +6175,8 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
   result->fields_ = nullptr;
 
   // Copy options.
-  {
-    OneofOptions* options = AllocateOptions(
-        proto, result, OneofDescriptorProto::kOptionsFieldNumber,
-        "google.protobuf.OneofOptions", alloc);
-    result->options_ = options;  // Set to default_instance later if necessary.
-  }
+  AllocateOptions(proto, result, OneofDescriptorProto::kOptionsFieldNumber,
+                  "google.protobuf.OneofOptions", alloc);
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 }
@@ -6316,12 +6299,8 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   }
 
   // Copy options.
-  {
-    EnumOptions* options =
-        AllocateOptions(proto, result, EnumDescriptorProto::kOptionsFieldNumber,
-                        "google.protobuf.EnumOptions", alloc);
-    result->options_ = options;
-  }
+  AllocateOptions(proto, result, EnumDescriptorProto::kOptionsFieldNumber,
+                  "google.protobuf.EnumOptions", alloc);
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
@@ -6397,12 +6376,8 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   ValidateSymbolName(proto.name(), result->full_name(), proto);
 
   // Copy options.
-  {
-    EnumValueOptions* options = AllocateOptions(
-        proto, result, EnumValueDescriptorProto::kOptionsFieldNumber,
-        "google.protobuf.EnumValueOptions", alloc);
-    result->options_ = options;
-  }
+  AllocateOptions(proto, result, EnumValueDescriptorProto::kOptionsFieldNumber,
+                  "google.protobuf.EnumValueOptions", alloc);
 
   // Again, enum values are weird because we makes them appear as siblings
   // of the enum type instead of children of it.  So, we use
@@ -6464,12 +6439,8 @@ void DescriptorBuilder::BuildService(const ServiceDescriptorProto& proto,
   BUILD_ARRAY(proto, result, method, BuildMethod, result);
 
   // Copy options.
-  {
-    ServiceOptions* options = AllocateOptions(
-        proto, result, ServiceDescriptorProto::kOptionsFieldNumber,
-        "google.protobuf.ServiceOptions", alloc);
-    result->options_ = options;
-  }
+  AllocateOptions(proto, result, ServiceDescriptorProto::kOptionsFieldNumber,
+                  "google.protobuf.ServiceOptions", alloc);
 
   AddSymbol(result->full_name(), nullptr, result->name(), proto,
             Symbol(result));
@@ -6490,12 +6461,8 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
   result->output_type_.Init();
 
   // Copy options.
-  {
-    MethodOptions* options = AllocateOptions(
-        proto, result, MethodDescriptorProto::kOptionsFieldNumber,
-        "google.protobuf.MethodOptions", alloc);
-    result->options_ = options;
-  }
+  AllocateOptions(proto, result, MethodDescriptorProto::kOptionsFieldNumber,
+                  "google.protobuf.MethodOptions", alloc);
 
   result->client_streaming_ = proto.client_streaming();
   result->server_streaming_ = proto.server_streaming();
