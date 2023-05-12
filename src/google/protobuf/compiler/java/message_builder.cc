@@ -84,10 +84,13 @@ bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
   // Once all repeated fields are held in ProtobufLists, this method shouldn't
   // be needed.
   switch (descriptor->type()) {
-    case FieldDescriptor::TYPE_STRING:
-      return false;
-    default:
+    case FieldDescriptor::TYPE_GROUP:
+    case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_ENUM:
+    case FieldDescriptor::TYPE_BYTES:
       return true;
+    default:
+      return false;
   }
 }
 }  // namespace
