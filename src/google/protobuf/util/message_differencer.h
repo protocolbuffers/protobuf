@@ -655,6 +655,13 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // differences to any previously set reporters or output strings.
   void ReportDifferencesTo(Reporter* reporter);
 
+  // Returns the list of fields which was automatically added to the list of
+  // compared fields by calling set_force_compare_no_presence and caused the
+  // last call to Compare to fail.
+  const absl::flat_hash_set<std::string>& NoPresenceFieldsCausingFailure() {
+    return force_compare_failure_triggering_fields_;
+  }
+
  private:
   // Class for processing Any deserialization.  This logic is used by both the
   // MessageDifferencer and StreamReporter classes.
@@ -947,6 +954,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   MessageFieldComparison message_field_comparison_;
   Scope scope_;
   absl::flat_hash_set<const FieldDescriptor*> force_compare_no_presence_fields_;
+  absl::flat_hash_set<std::string> force_compare_failure_triggering_fields_;
   RepeatedFieldComparison repeated_field_comparison_;
 
   absl::flat_hash_map<const FieldDescriptor*, RepeatedFieldComparison>

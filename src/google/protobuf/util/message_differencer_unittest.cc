@@ -258,11 +258,18 @@ TEST(MessageDifferencerTest,
   // Clearing a no presence field inside a repeated field in a nested message.
   msg1.mutable_no_presence_repeated_nested(0)->clear_no_presence_bool();
   EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_THAT(force_compare_differencer.NoPresenceFieldsCausingFailure(),
+              testing::UnorderedElementsAre(
+                  "proto3_unittest.TestNoPresenceField.no_presence_bool"));
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
   force_compare_differencer.ReportDifferencesTo(nullptr);
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
 }
 
 TEST(MessageDifferencerTest,
@@ -284,7 +291,10 @@ TEST(MessageDifferencerTest,
 
   msg1.clear_no_presence_repeated_nested();
   EXPECT_TRUE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
@@ -308,9 +318,14 @@ TEST(MessageDifferencerTest,
 
   msg1.mutable_no_presence_nested()->clear_no_presence_bool();
   EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_THAT(force_compare_differencer.NoPresenceFieldsCausingFailure(),
+              testing::UnorderedElementsAre(
+                  "proto3_unittest.TestNoPresenceField.no_presence_bool"));
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
 }
 
@@ -332,18 +347,27 @@ TEST(MessageDifferencerTest,
 
   msg1.clear_no_presence_nested();
   EXPECT_TRUE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
 
   // Creating an instance of the nested field will cause the comparison to fail
   // since it contains a no presence singualr field.
   msg1.mutable_no_presence_nested();
   EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_THAT(force_compare_differencer.NoPresenceFieldsCausingFailure(),
+              testing::UnorderedElementsAre(
+                  "proto3_unittest.TestNoPresenceField.no_presence_bool"));
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
 }
 
@@ -365,9 +389,13 @@ TEST(MessageDifferencerTest,
 
   msg1.clear_no_presence_bool();
   EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(
+      !force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
 }
 
@@ -392,6 +420,8 @@ TEST(MessageDifferencerTest,
 
     msg1.mutable_no_presence_repeated_nested(0)->clear_no_presence_bool();
     EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+    EXPECT_TRUE(
+        !force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   }
   EXPECT_EQ(output,
             "added: no_presence_repeated_nested[0].no_presence_bool (added for "
