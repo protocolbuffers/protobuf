@@ -946,6 +946,12 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #undef STATUS_PENDING
 #pragma push_macro("STRICT")
 #undef STRICT
+#pragma push_macro("stderr")
+#undef stderr
+#pragma push_macro("stdin")
+#undef stdin
+#pragma push_macro("stdout")
+#undef stdout
 #pragma push_macro("timezone")
 #undef timezone
 #pragma push_macro("TRUE")
