@@ -95,7 +95,8 @@ option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 // 'type.googleapis.com/full.type.name' as the type URL and the unpack
 // methods only use the fully qualified type name after the last '/'
 // in the type URL, for example "foo.bar.com/x/y.z" will yield type
-// name "y.z".
+// name "y.z". See the documentation for the `type_url` field for details
+// on using type URLs in practice.
 //
 // JSON
 // ====
@@ -149,7 +150,8 @@ message Any {
   //
   // Note: this functionality is not currently available in the official
   // protobuf release, and it is not used for type URLs beginning with
-  // type.googleapis.com.
+  // type.googleapis.com. No widely-used type server currently exists,
+  // within Google or in open source.
   //
   // Schemes other than `http`, `https` (or the empty scheme) might be
   // used with implementation specific semantics.
