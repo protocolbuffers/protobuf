@@ -4405,7 +4405,6 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -7761,7 +7760,6 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -8133,7 +8131,6 @@ PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -8664,7 +8661,6 @@ PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -8865,7 +8861,6 @@ PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -9159,7 +9154,6 @@ PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -9396,7 +9390,6 @@ PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -9629,7 +9622,6 @@ PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -9902,7 +9894,6 @@ PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -10163,7 +10154,9 @@ void UninterpretedOption_NamePart::CopyFrom(const UninterpretedOption_NamePart& 
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
-  if (_Internal::MissingRequiredFields(_impl_._has_bits_)) return false;
+  if (_Internal::MissingRequiredFields(_impl_._has_bits_)) {
+    return false;
+  }
   return true;
 }
 
