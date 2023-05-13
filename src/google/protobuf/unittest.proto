@@ -1664,7 +1664,8 @@ message BadFieldNames{
 }
 
 message TestNestedMessageRedaction {
-  optional string optional_nested_string = 1;
+  optional string optional_unredacted_nested_string = 1;
+  optional string optional_redacted_nested_string = 2 [debug_redact = true];
 }
 
 message RedactedFields {
