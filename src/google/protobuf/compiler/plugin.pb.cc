@@ -827,14 +827,12 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
         _internal_file_to_generate().Get(i));
   }
-
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   total_size += 1UL * this->_internal_proto_file_size();
   for (const auto& msg : this->_internal_proto_file()) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional string parameter = 2;
@@ -1457,7 +1455,6 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional string error = 1;
