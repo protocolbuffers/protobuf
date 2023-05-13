@@ -160,7 +160,8 @@ TEST(RetentionTest, ExtensionRange) {
   CheckOptionsMessageIsStrippedCorrectly(
       protobuf_unittest::TopLevelMessage::descriptor()
           ->extension_range(0)
-          ->options_->GetExtension(protobuf_unittest::extension_range_option));
+          ->options()
+          .GetExtension(protobuf_unittest::extension_range_option));
 }
 
 TEST(RetentionTest, Service) {
