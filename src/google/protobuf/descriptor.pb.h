@@ -7502,9 +7502,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
  private:
   class _Internal;
 
-  // helper for ByteSizeLong()
-  ::size_t RequiredFieldsByteSizeFallback() const;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<1, 2, 0, 62, 2> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
