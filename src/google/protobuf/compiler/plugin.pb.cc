@@ -368,7 +368,6 @@ inline void Version::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.suffix_.Destroy();
 }
-
 void Version::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -495,13 +494,11 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
 }
 
 ::size_t Version::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.Version)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.Version)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     // optional string suffix = 4;
@@ -678,7 +675,6 @@ inline void CodeGeneratorRequest::SharedDtor() {
   _impl_.parameter_.Destroy();
   if (this != internal_default_instance()) delete _impl_.compiler_version_;
 }
-
 void CodeGeneratorRequest::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -816,13 +812,11 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
 }
 
 ::size_t CodeGeneratorRequest::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorRequest)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorRequest)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated string file_to_generate = 1;
   total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_file_to_generate().size());
   for (int i = 0, n = _internal_file_to_generate().size(); i < n; ++i) {
@@ -1027,7 +1021,6 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
   _impl_.content_.Destroy();
   if (this != internal_default_instance()) delete _impl_.generated_code_info_;
 }
-
 void CodeGeneratorResponse_File::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1165,13 +1158,11 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
 }
 
 ::size_t CodeGeneratorResponse_File::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     // optional string name = 1;
@@ -1335,7 +1326,6 @@ inline void CodeGeneratorResponse::SharedDtor() {
   _impl_.file_.~RepeatedPtrField();
   _impl_.error_.Destroy();
 }
-
 void CodeGeneratorResponse::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1448,13 +1438,11 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
 }
 
 ::size_t CodeGeneratorResponse::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   total_size += 1UL * this->_internal_file_size();
   for (const auto& msg : this->_internal_file()) {

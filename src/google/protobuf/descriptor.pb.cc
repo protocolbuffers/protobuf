@@ -2020,7 +2020,6 @@ inline void FileDescriptorSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_.~RepeatedPtrField();
 }
-
 void FileDescriptorSet::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -2094,13 +2093,11 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
 }
 
 ::size_t FileDescriptorSet::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorSet)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorSet)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.FileDescriptorProto file = 1;
   total_size += 1UL * this->_internal_file_size();
   for (const auto& msg : this->_internal_file()) {
@@ -2310,7 +2307,6 @@ inline void FileDescriptorProto::SharedDtor() {
   if (this != internal_default_instance()) delete _impl_.options_;
   if (this != internal_default_instance()) delete _impl_.source_code_info_;
 }
-
 void FileDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -2594,13 +2590,11 @@ constexpr ::_pbi::TcParseTable<4, 13, 6, 86, 2> FileDescriptorProto::_table_ = {
 }
 
 ::size_t FileDescriptorProto::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorProto)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorProto)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated string dependency = 3;
   total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_dependency().size());
   for (int i = 0, n = _internal_dependency().size(); i < n; ++i) {
@@ -2874,7 +2868,6 @@ inline void DescriptorProto_ExtensionRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void DescriptorProto_ExtensionRange::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -2985,13 +2978,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
 }
 
 ::size_t DescriptorProto_ExtensionRange::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ExtensionRange)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ExtensionRange)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     // optional .google.protobuf.ExtensionRangeOptions options = 3;
@@ -3123,7 +3114,6 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
 inline void DescriptorProto_ReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void DescriptorProto_ReservedRange::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -3216,13 +3206,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_ta
 }
 
 ::size_t DescriptorProto_ReservedRange::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ReservedRange)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ReservedRange)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional int32 start = 1;
@@ -3392,7 +3380,6 @@ inline void DescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void DescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -3627,13 +3614,11 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
 }
 
 ::size_t DescriptorProto::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
   total_size += 1UL * this->_internal_field_size();
   for (const auto& msg : this->_internal_field()) {
@@ -3894,7 +3879,6 @@ inline void ExtensionRangeOptions_Declaration::SharedDtor() {
   _impl_.full_name_.Destroy();
   _impl_.type_.Destroy();
 }
-
 void ExtensionRangeOptions_Declaration::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -4055,13 +4039,11 @@ constexpr ::_pbi::TcParseTable<3, 6, 0, 71, 2> ExtensionRangeOptions_Declaration
 }
 
 ::size_t ExtensionRangeOptions_Declaration::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.ExtensionRangeOptions.Declaration)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ExtensionRangeOptions.Declaration)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     // optional string full_name = 2;
@@ -4233,7 +4215,6 @@ inline void ExtensionRangeOptions::SharedDtor() {
   _impl_.declaration_.~RepeatedPtrField();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void ExtensionRangeOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -4344,15 +4325,12 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 7> ExtensionRangeOptions::_table_ = {
 }
 
 ::size_t ExtensionRangeOptions::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.ExtensionRangeOptions)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ExtensionRangeOptions)
   ::size_t total_size = 0;
-
   total_size += _impl_._extensions_.ByteSize();
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
   total_size += 1UL * this->_internal_declaration_size();
   for (const auto& msg : this->_internal_declaration()) {
@@ -4412,7 +4390,6 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -4600,7 +4577,6 @@ inline void FieldDescriptorProto::SharedDtor() {
   _impl_.json_name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void FieldDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -4853,13 +4829,11 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
 }
 
 ::size_t FieldDescriptorProto::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldDescriptorProto)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldDescriptorProto)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     // optional string name = 1;
@@ -5107,7 +5081,6 @@ inline void OneofDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void OneofDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -5208,13 +5181,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
 }
 
 ::size_t OneofDescriptorProto::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofDescriptorProto)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofDescriptorProto)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional string name = 1;
@@ -5335,7 +5306,6 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void EnumDescriptorProto_EnumReservedRange::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -5428,13 +5398,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRa
 }
 
 ::size_t EnumDescriptorProto_EnumReservedRange::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional int32 start = 1;
@@ -5589,7 +5557,6 @@ inline void EnumDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void EnumDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -5741,13 +5708,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
 }
 
 ::size_t EnumDescriptorProto::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
   total_size += 1UL * this->_internal_value_size();
   for (const auto& msg : this->_internal_value()) {
@@ -5932,7 +5897,6 @@ inline void EnumValueDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void EnumValueDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -6048,13 +6012,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
 }
 
 ::size_t EnumValueDescriptorProto::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueDescriptorProto)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueDescriptorProto)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     // optional string name = 1;
@@ -6221,7 +6183,6 @@ inline void ServiceDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void ServiceDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -6339,13 +6300,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
 }
 
 ::size_t ServiceDescriptorProto::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceDescriptorProto)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceDescriptorProto)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
   total_size += 1UL * this->_internal_method_size();
   for (const auto& msg : this->_internal_method()) {
@@ -6552,7 +6511,6 @@ inline void MethodDescriptorProto::SharedDtor() {
   _impl_.output_type_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void MethodDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -6720,13 +6678,11 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
 }
 
 ::size_t MethodDescriptorProto::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodDescriptorProto)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodDescriptorProto)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     // optional string name = 1;
@@ -7120,7 +7076,6 @@ inline void FileOptions::SharedDtor() {
   _impl_.php_metadata_namespace_.Destroy();
   _impl_.ruby_package_.Destroy();
 }
-
 void FileOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -7539,15 +7494,12 @@ constexpr ::_pbi::TcParseTable<5, 21, 2, 202, 12> FileOptions::_table_ = {
 }
 
 ::size_t FileOptions::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileOptions)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileOptions)
   ::size_t total_size = 0;
-
   total_size += _impl_._extensions_.ByteSize();
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -7776,7 +7728,6 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -7900,7 +7851,6 @@ inline void MessageOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void MessageOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -8052,15 +8002,12 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 0, 7> MessageOptions::_table_ = {
 }
 
 ::size_t MessageOptions::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.MessageOptions)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MessageOptions)
   ::size_t total_size = 0;
-
   total_size += _impl_._extensions_.ByteSize();
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -8149,7 +8096,6 @@ PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -8279,7 +8225,6 @@ inline void FieldOptions::SharedDtor() {
   _internal_mutable_targets()->~RepeatedField();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void FieldOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -8521,15 +8466,12 @@ constexpr ::_pbi::TcParseTable<4, 12, 6, 0, 7> FieldOptions::_table_ = {
 }
 
 ::size_t FieldOptions::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldOptions)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldOptions)
   ::size_t total_size = 0;
-
   total_size += _impl_._extensions_.ByteSize();
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
   {
     std::size_t data_size = 0;
@@ -8681,7 +8623,6 @@ PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -8752,7 +8693,6 @@ inline void OneofOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void OneofOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -8833,15 +8773,12 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 7> OneofOptions::_table_ = {
 }
 
 ::size_t OneofOptions::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofOptions)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofOptions)
   ::size_t total_size = 0;
-
   total_size += _impl_._extensions_.ByteSize();
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -8883,7 +8820,6 @@ PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -8968,7 +8904,6 @@ inline void EnumOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void EnumOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -9097,15 +9032,12 @@ constexpr ::_pbi::TcParseTable<3, 4, 1, 0, 7> EnumOptions::_table_ = {
 }
 
 ::size_t EnumOptions::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumOptions)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumOptions)
   ::size_t total_size = 0;
-
   total_size += _impl_._extensions_.ByteSize();
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -9178,7 +9110,6 @@ PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -9258,7 +9189,6 @@ inline void EnumValueOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void EnumValueOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -9357,15 +9287,12 @@ constexpr ::_pbi::TcParseTable<2, 2, 1, 0, 7> EnumValueOptions::_table_ = {
 }
 
 ::size_t EnumValueOptions::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueOptions)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueOptions)
   ::size_t total_size = 0;
-
   total_size += _impl_._extensions_.ByteSize();
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -9416,7 +9343,6 @@ PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -9491,7 +9417,6 @@ inline void ServiceOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void ServiceOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -9591,15 +9516,12 @@ constexpr ::_pbi::TcParseTable<2, 2, 1, 0, 12> ServiceOptions::_table_ = {
 }
 
 ::size_t ServiceOptions::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceOptions)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceOptions)
   ::size_t total_size = 0;
-
   total_size += _impl_._extensions_.ByteSize();
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -9650,7 +9572,6 @@ PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -9732,7 +9653,6 @@ inline void MethodOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void MethodOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -9850,15 +9770,12 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> MethodOptions::_table_ = {
 }
 
 ::size_t MethodOptions::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodOptions)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodOptions)
   ::size_t total_size = 0;
-
   total_size += _impl_._extensions_.ByteSize();
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -9924,7 +9841,6 @@ PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
@@ -10016,7 +9932,6 @@ inline void UninterpretedOption_NamePart::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_part_.Destroy();
 }
-
 void UninterpretedOption_NamePart::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -10111,42 +10026,21 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
   return target;
 }
 
-::size_t UninterpretedOption_NamePart::RequiredFieldsByteSizeFallback() const {
-// @@protoc_insertion_point(required_fields_byte_size_fallback_start:google.protobuf.UninterpretedOption.NamePart)
-  ::size_t total_size = 0;
-
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    // required string name_part = 1;
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_name_part());
-  }
-
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    // required bool is_extension = 2;
-    total_size += 2;
-  }
-
-  return total_size;
-}
 ::size_t UninterpretedOption_NamePart::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption.NamePart)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption.NamePart)
   ::size_t total_size = 0;
-
-  if (((_impl_._has_bits_[0] & 0x00000003) ^ 0x00000003) == 0) {  // All required fields are present.
-    // required string name_part = 1;
+  // required string name_part = 1;
+  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                     this->_internal_name_part());
-
-    // required bool is_extension = 2;
+  }
+  // required bool is_extension = 2;
+  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
     total_size += 2;
-
-  } else {
-    total_size += RequiredFieldsByteSizeFallback();
   }
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -10186,7 +10080,9 @@ void UninterpretedOption_NamePart::CopyFrom(const UninterpretedOption_NamePart& 
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
-  if (_Internal::MissingRequiredFields(_impl_._has_bits_)) return false;
+  if (_Internal::MissingRequiredFields(_impl_._has_bits_)) {
+    return false;
+  }
   return true;
 }
 
@@ -10319,7 +10215,6 @@ inline void UninterpretedOption::SharedDtor() {
   _impl_.string_value_.Destroy();
   _impl_.aggregate_value_.Destroy();
 }
-
 void UninterpretedOption::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -10496,13 +10391,11 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
 }
 
 ::size_t UninterpretedOption::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
   total_size += 1UL * this->_internal_name_size();
   for (const auto& msg : this->_internal_name()) {
@@ -10719,7 +10612,6 @@ inline void SourceCodeInfo_Location::SharedDtor() {
   _impl_.leading_comments_.Destroy();
   _impl_.trailing_comments_.Destroy();
 }
-
 void SourceCodeInfo_Location::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -10872,13 +10764,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
 }
 
 ::size_t SourceCodeInfo_Location::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo.Location)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo.Location)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated int32 path = 1 [packed = true];
   {
     std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
@@ -11033,7 +10923,6 @@ inline void SourceCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.location_.~RepeatedPtrField();
 }
-
 void SourceCodeInfo::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -11107,13 +10996,11 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
 }
 
 ::size_t SourceCodeInfo::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
   total_size += 1UL * this->_internal_location_size();
   for (const auto& msg : this->_internal_location()) {
@@ -11246,7 +11133,6 @@ inline void GeneratedCodeInfo_Annotation::SharedDtor() {
   _impl_.path_.~RepeatedField();
   _impl_.source_file_.Destroy();
 }
-
 void GeneratedCodeInfo_Annotation::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -11391,13 +11277,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
 }
 
 ::size_t GeneratedCodeInfo_Annotation::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo.Annotation)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo.Annotation)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated int32 path = 1 [packed = true];
   {
     std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
@@ -11549,7 +11433,6 @@ inline void GeneratedCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.annotation_.~RepeatedPtrField();
 }
-
 void GeneratedCodeInfo::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -11623,13 +11506,11 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
 }
 
 ::size_t GeneratedCodeInfo::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo)
   ::size_t total_size = 0;
-
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
+  (void)cached_has_bits;
   // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
   total_size += 1UL * this->_internal_annotation_size();
   for (const auto& msg : this->_internal_annotation()) {
