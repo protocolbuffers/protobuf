@@ -63,6 +63,7 @@
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/compiler/cpp/tracker.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -2397,7 +2398,7 @@ void MessageGenerator::GenerateInitDefaultSplitInstance(io::Printer* p) {
 
 void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  auto emit_fields_dtors = [&](bool split_fields) {
+  auto emit_field_dtors = [&](bool split_fields) {
     // Write the destructors for each field except oneof members.
     // optimized_order_ does not contain oneof fields.
     for (const auto* field : optimized_order_) {
@@ -2414,15 +2415,14 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
                $extensions$.~ExtensionSet();
              )cc");
            }},
-          {"field_dtors",
-           [&] { emit_fields_dtors(/* split_fields= */ false); }},
+          {"field_dtors", [&] { emit_field_dtors(/* split_fields= */ false); }},
           {"split_field_dtors",
            [&] {
              if (!ShouldSplit(descriptor_, options_)) return;
              p->Emit(
                  {
                      {"split_field_dtors_impl",
-                      [&] { emit_fields_dtors(/* split_fields= */ true); }},
+                      [&] { emit_field_dtors(/* split_fields= */ true); }},
                  },
                  R"cc(
                    if (!IsSplitMessageDefault()) {
@@ -2484,45 +2484,52 @@ ArenaDtorNeeds MessageGenerator::NeedsArenaDestructor() const {
 
 void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
   ABSL_CHECK(NeedsArenaDestructor() > ArenaDtorNeeds::kNone);
-
-  Formatter format(p);
-
-  // Generate the ArenaDtor() method. Track whether any fields actually produced
-  // code that needs to be called.
-  format("void $classname$::ArenaDtor(void* object) {\n");
-  format.Indent();
-
+  auto emit_field_dtors = [&](bool split_fields) {
+    // Write the destructors for each field except oneof members.
+    // optimized_order_ does not contain oneof fields.
+    for (const auto* field : optimized_order_) {
+      if (ShouldSplit(field, options_) != split_fields) continue;
+      field_generators_.get(field).GenerateArenaDestructorCode(p);
+    }
+  };
   // This code is placed inside a static method, rather than an ordinary one,
   // since that simplifies Arena's destructor list (ordinary function pointers
   // rather than member function pointers). _this is the object being
   // destructed.
-  format("$classname$* _this = reinterpret_cast< $classname$* >(object);\n");
-
-  // Process non-oneof fields first.
-  for (auto field : optimized_order_) {
-    if (ShouldSplit(field, options_)) continue;
-    field_generators_.get(field).GenerateArenaDestructorCode(p);
-  }
-  if (ShouldSplit(descriptor_, options_)) {
-    format("if (!_this->IsSplitMessageDefault()) {\n");
-    format.Indent();
-    for (auto field : optimized_order_) {
-      if (!ShouldSplit(field, options_)) continue;
-      field_generators_.get(field).GenerateArenaDestructorCode(p);
-    }
-    format.Outdent();
-    format("}\n");
-  }
-
-  // Process oneof fields.
-  for (auto oneof : OneOfRange(descriptor_)) {
-    for (auto field : FieldRange(oneof)) {
-      field_generators_.get(field).GenerateArenaDestructorCode(p);
-    }
-  }
-
-  format.Outdent();
-  format("}\n");
+  p->Emit(
+      {
+          {"field_dtors", [&] { emit_field_dtors(/* split_fields= */ false); }},
+          {"split_field_dtors",
+           [&] {
+             if (!ShouldSplit(descriptor_, options_)) return;
+             p->Emit(
+                 {
+                     {"split_field_dtors_impl",
+                      [&] { emit_field_dtors(/* split_fields= */ true); }},
+                 },
+                 R"cc(
+                   if (!_this->IsSplitMessageDefault()) {
+                     $split_field_dtors_impl$;
+                   }
+                 )cc");
+           }},
+          {"oneof_field_dtors",
+           [&] {
+             for (const auto* oneof : OneOfRange(descriptor_)) {
+               for (const auto* field : FieldRange(oneof)) {
+                 field_generators_.get(field).GenerateArenaDestructorCode(p);
+               }
+             }
+           }},
+      },
+      R"cc(
+        void $classname$::ArenaDtor(void* object) {
+          $classname$* _this = reinterpret_cast<$classname$*>(object);
+          $field_dtors$;
+          $split_field_dtors$;
+          $oneof_field_dtors$;
+        }
+      )cc");
 }
 
 void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
