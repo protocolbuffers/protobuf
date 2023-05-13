@@ -2020,7 +2020,6 @@ inline void FileDescriptorSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_.~RepeatedPtrField();
 }
-
 void FileDescriptorSet::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -2310,7 +2309,6 @@ inline void FileDescriptorProto::SharedDtor() {
   if (this != internal_default_instance()) delete _impl_.options_;
   if (this != internal_default_instance()) delete _impl_.source_code_info_;
 }
-
 void FileDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -2874,7 +2872,6 @@ inline void DescriptorProto_ExtensionRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void DescriptorProto_ExtensionRange::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -3123,7 +3120,6 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
 inline void DescriptorProto_ReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void DescriptorProto_ReservedRange::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -3392,7 +3388,6 @@ inline void DescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void DescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -3894,7 +3889,6 @@ inline void ExtensionRangeOptions_Declaration::SharedDtor() {
   _impl_.full_name_.Destroy();
   _impl_.type_.Destroy();
 }
-
 void ExtensionRangeOptions_Declaration::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -4233,7 +4227,6 @@ inline void ExtensionRangeOptions::SharedDtor() {
   _impl_.declaration_.~RepeatedPtrField();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void ExtensionRangeOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -4600,7 +4593,6 @@ inline void FieldDescriptorProto::SharedDtor() {
   _impl_.json_name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void FieldDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -5107,7 +5099,6 @@ inline void OneofDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void OneofDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -5335,7 +5326,6 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void EnumDescriptorProto_EnumReservedRange::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -5589,7 +5579,6 @@ inline void EnumDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void EnumDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -5932,7 +5921,6 @@ inline void EnumValueDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void EnumValueDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -6221,7 +6209,6 @@ inline void ServiceDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void ServiceDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -6552,7 +6539,6 @@ inline void MethodDescriptorProto::SharedDtor() {
   _impl_.output_type_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
-
 void MethodDescriptorProto::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -7120,7 +7106,6 @@ inline void FileOptions::SharedDtor() {
   _impl_.php_metadata_namespace_.Destroy();
   _impl_.ruby_package_.Destroy();
 }
-
 void FileOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -7900,7 +7885,6 @@ inline void MessageOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void MessageOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -8279,7 +8263,6 @@ inline void FieldOptions::SharedDtor() {
   _internal_mutable_targets()->~RepeatedField();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void FieldOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -8752,7 +8735,6 @@ inline void OneofOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void OneofOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -8968,7 +8950,6 @@ inline void EnumOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void EnumOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -9258,7 +9239,6 @@ inline void EnumValueOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void EnumValueOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -9491,7 +9471,6 @@ inline void ServiceOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void ServiceOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -9732,7 +9711,6 @@ inline void MethodOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
-
 void MethodOptions::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -10016,7 +9994,6 @@ inline void UninterpretedOption_NamePart::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_part_.Destroy();
 }
-
 void UninterpretedOption_NamePart::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -10319,7 +10296,6 @@ inline void UninterpretedOption::SharedDtor() {
   _impl_.string_value_.Destroy();
   _impl_.aggregate_value_.Destroy();
 }
-
 void UninterpretedOption::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -10719,7 +10695,6 @@ inline void SourceCodeInfo_Location::SharedDtor() {
   _impl_.leading_comments_.Destroy();
   _impl_.trailing_comments_.Destroy();
 }
-
 void SourceCodeInfo_Location::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -11033,7 +11008,6 @@ inline void SourceCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.location_.~RepeatedPtrField();
 }
-
 void SourceCodeInfo::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -11246,7 +11220,6 @@ inline void GeneratedCodeInfo_Annotation::SharedDtor() {
   _impl_.path_.~RepeatedField();
   _impl_.source_file_.Destroy();
 }
-
 void GeneratedCodeInfo_Annotation::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -11549,7 +11522,6 @@ inline void GeneratedCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.annotation_.~RepeatedPtrField();
 }
-
 void GeneratedCodeInfo::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
