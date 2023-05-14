@@ -145,13 +145,6 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
   }
 }
 
-void FieldGeneratorBase::GenerateIfHasField(io::Printer* p) const {
-  ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
-
-  Formatter format(p);
-  format("if (($has_hasbit$) != 0) {\n");
-}
-
 namespace {
 std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
                                                   const Options& options,

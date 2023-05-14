@@ -183,6 +183,8 @@ class MessageGenerator {
 
   size_t HasBitsSize() const;
   size_t InlinedStringDonatedSize() const;
+  absl::flat_hash_map<absl::string_view, std::string> HasBitVars(
+      const FieldDescriptor* field) const;
   int HasBitIndex(const FieldDescriptor* field) const;
   int HasByteIndex(const FieldDescriptor* field) const;
   int HasWordIndex(const FieldDescriptor* field) const;

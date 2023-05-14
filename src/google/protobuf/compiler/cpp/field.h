@@ -120,8 +120,6 @@ class FieldGeneratorBase {
 
   virtual void GenerateIsInitialized(io::Printer* p) const {}
 
-  virtual void GenerateIfHasField(io::Printer* p) const;
-
   virtual bool IsInlined() const { return false; }
 
   virtual ArenaDtorNeeds NeedsArenaDestructor() const {
@@ -357,12 +355,6 @@ class FieldGenerator {
   void GenerateIsInitialized(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateIsInitialized(p);
-  }
-
-  // TODO(b/245791219): Document this properly.
-  void GenerateIfHasField(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateIfHasField(p);
   }
 
   // TODO(b/245791219): Document this properly.

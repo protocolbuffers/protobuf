@@ -521,14 +521,6 @@ absl::flat_hash_map<absl::string_view, std::string> ClassVars(
   return vars;
 }
 
-absl::flat_hash_map<absl::string_view, std::string> HasbitVars(
-    int has_bit_index) {
-  return {
-      {"has_array_index", absl::StrCat(has_bit_index / 32)},
-      {"has_mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))},
-  };
-}
-
 }  // anonymous namespace
 
 // ===================================================================
@@ -603,6 +595,16 @@ size_t MessageGenerator::HasBitsSize() const {
 
 size_t MessageGenerator::InlinedStringDonatedSize() const {
   return (max_inlined_string_index_ + 31) / 32;
+}
+
+absl::flat_hash_map<absl::string_view, std::string>
+MessageGenerator::HasBitVars(const FieldDescriptor* field) const {
+  int has_bit_index = HasBitIndex(field);
+  ABSL_CHECK_NE(has_bit_index, kNoHasbit);
+  return {
+      {"has_array_index", absl::StrCat(has_bit_index / 32)},
+      {"has_mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))},
+  };
 }
 
 int MessageGenerator::HasBitIndex(const FieldDescriptor* field) const {
@@ -973,10 +975,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     return;
   }
   if (HasHasbit(field)) {
-    int has_bit_index = HasBitIndex(field);
-    ABSL_CHECK_NE(has_bit_index, kNoHasbit);
-
-    auto v = p->WithVars(HasbitVars(has_bit_index));
+    auto v = p->WithVars(HasBitVars(field));
     p->Emit(
         {Sub{"ASSUME",
              [&] {
@@ -1102,8 +1101,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                 }
                 field_generators_.get(field).GenerateClearingCode(p);
                 if (HasHasbit(field)) {
-                  int has_bit_index = HasBitIndex(field);
-                  auto v = p->WithVars(HasbitVars(has_bit_index));
+                  auto v = p->WithVars(HasBitVars(field));
                   p->Emit(R"cc(
                     $has_bits$[$has_array_index$] &= ~$has_mask$;
                   )cc");
@@ -3455,8 +3453,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       } else if (field->options().weak() ||
                  cached_has_word_index != HasWordIndex(field)) {
         // Check hasbit, not using cached bits.
-        ABSL_CHECK(HasHasbit(field));
-        auto v = p->WithVars(HasbitVars(HasBitIndex(field)));
+        auto v = p->WithVars(HasBitVars(field));
         format(
             "if ((from.$has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
         format.Indent();
@@ -3654,11 +3651,11 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
   } else if (HasHasbit(field)) {
     // Attempt to use the state of cached_has_bits, if possible.
     int has_bit_index = HasBitIndex(field);
-    auto v = p->WithVars(HasbitVars(has_bit_index));
+    auto v = p->WithVars(HasBitVars(field));
     if (cached_has_bits_index == has_bit_index / 32) {
       format("if (cached_has_bits & $has_mask$) {\n");
     } else {
-      field_generators_.get(field).GenerateIfHasField(p);
+      format("if (($has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
     }
 
     have_enclosing_if = true;
@@ -4089,7 +4086,8 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     for (auto field : optimized_order_) {
       if (field->is_required()) {
         format("\n");
-        field_generators_.get(field).GenerateIfHasField(p);
+        auto v = p->WithVars(HasBitVars(field));
+        format("if (($has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
         format.Indent();
         PrintFieldComment(format, field);
         field_generators_.get(field).GenerateByteSize(p);
@@ -4146,7 +4144,8 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     for (auto field : optimized_order_) {
       if (!field->is_required()) continue;
       PrintFieldComment(format, field);
-      field_generators_.get(field).GenerateIfHasField(p);
+      auto v = p->WithVars(HasBitVars(field));
+      format("if (($has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
       format.Indent();
       field_generators_.get(field).GenerateByteSize(p);
       format.Outdent();
