@@ -147,8 +147,7 @@ class MessageGenerator {
   // Or, if fields.size() == 1, just call GenerateSerializeOneField().
   void GenerateSerializeOneofFields(
       io::Printer* p, const std::vector<const FieldDescriptor*>& fields);
-  void GenerateSerializeOneExtensionRange(
-      io::Printer* p, const Descriptor::ExtensionRange* range);
+  void GenerateSerializeOneExtensionRange(io::Printer* p, int start, int end);
 
   // Generates has_foo() functions and variables for singular field has-bits.
   void GenerateSingularFieldHasBits(const FieldDescriptor* field,

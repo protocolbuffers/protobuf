@@ -156,7 +156,7 @@ std::vector<const FieldDescriptor*> SortFieldsByNumber(
 struct ExtensionRangeSorter {
   bool operator()(const Descriptor::ExtensionRange* left,
                   const Descriptor::ExtensionRange* right) const {
-    return left->start < right->start;
+    return left->start_number() < right->start_number();
   }
 };
 
@@ -3672,11 +3672,11 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
   format("\n");
 }
 
-void MessageGenerator::GenerateSerializeOneExtensionRange(
-    io::Printer* p, const Descriptor::ExtensionRange* range) {
+void MessageGenerator::GenerateSerializeOneExtensionRange(io::Printer* p,
+                                                          int start, int end) {
   absl::flat_hash_map<absl::string_view, std::string> vars = variables_;
-  vars["start"] = absl::StrCat(range->start);
-  vars["end"] = absl::StrCat(range->end);
+  vars["start"] = absl::StrCat(start);
+  vars["end"] = absl::StrCat(end);
   Formatter format(p, vars);
   format("// Extension range [$start$, $end$)\n");
   format(
@@ -3832,19 +3832,18 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
 
     void AddToRange(const Descriptor::ExtensionRange* range) {
       if (!has_current_range_) {
-        current_combined_range_ = *range;
+        min_start_ = range->start_number();
+        max_end_ = range->end_number();
         has_current_range_ = true;
       } else {
-        current_combined_range_.start =
-            std::min(current_combined_range_.start, range->start);
-        current_combined_range_.end =
-            std::max(current_combined_range_.end, range->end);
+        min_start_ = std::min(min_start_, range->start_number());
+        max_end_ = std::max(max_end_, range->end_number());
       }
     }
 
     void Flush() {
       if (has_current_range_) {
-        mg_->GenerateSerializeOneExtensionRange(p_, &current_combined_range_);
+        mg_->GenerateSerializeOneExtensionRange(p_, min_start_, max_end_);
       }
       has_current_range_ = false;
     }
@@ -3853,7 +3852,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     MessageGenerator* mg_;
     io::Printer* p_;
     bool has_current_range_ = false;
-    Descriptor::ExtensionRange current_combined_range_;
+    int min_start_ = 0;
+    int max_end_ = 0;
   };
 
   // We need to track the largest weak field, because weak fields are serialized
@@ -3909,7 +3909,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
          i < ordered_fields.size() || j < sorted_extensions.size();) {
       if ((j == sorted_extensions.size()) ||
           (i < descriptor_->field_count() &&
-           ordered_fields[i]->number() < sorted_extensions[j]->start)) {
+           ordered_fields[i]->number() <
+               sorted_extensions[j]->start_number())) {
         const FieldDescriptor* field = ordered_fields[i++];
         re.Flush();
         if (field->options().weak()) {
@@ -4001,7 +4002,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
     format("case $1$: {\n", index++);
     format.Indent();
 
-    GenerateSerializeOneExtensionRange(p, r);
+    GenerateSerializeOneExtensionRange(p, r->start_number(), r->end_number());
 
     format("break;\n");
     format.Outdent();

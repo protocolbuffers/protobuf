@@ -78,7 +78,7 @@ void GenerateSerializeFieldsAndExtensions(
     // number of extension ranges without fields in between them.
     const Descriptor::ExtensionRange* range = nullptr;
     while (range_idx < sorted_extensions.size() &&
-           sorted_extensions[range_idx]->end <= field->number()) {
+           sorted_extensions[range_idx]->end_number() <= field->number()) {
       range = sorted_extensions[range_idx++];
     }
 

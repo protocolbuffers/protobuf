@@ -150,7 +150,7 @@ struct FieldOrderingByStorageSize {
 struct ExtensionRangeOrdering {
   bool operator()(const Descriptor::ExtensionRange* a,
                   const Descriptor::ExtensionRange* b) const {
-    return a->start < b->start;
+    return a->start_number() < b->start_number();
   }
 };
 
@@ -177,10 +177,10 @@ struct SimpleExtensionRange {
     std::vector<SimpleExtensionRange> result;
     result.reserve(sorted_extensions.size());
     for (const auto ext : sorted_extensions) {
-      if (!result.empty() && result.back().end == ext->start) {
-        result.back().end = ext->end;
+      if (!result.empty() && result.back().end == ext->start_number()) {
+        result.back().end = ext->end_number();
       } else {
-        result.emplace_back(ext->start, ext->end);
+        result.emplace_back(ext->start_number(), ext->end_number());
       }
     }
     return result;
