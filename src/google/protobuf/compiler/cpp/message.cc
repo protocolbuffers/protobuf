@@ -4056,27 +4056,27 @@ std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
 
 void MessageGenerator::GenerateByteSize(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  Formatter format(p);
 
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
-    format(
-        "PROTOBUF_NOINLINE ::size_t $classname$::ByteSizeLong() const {\n"
-        "$annotate_bytesize$"
-        "// @@protoc_insertion_point(message_set_byte_size_start:$full_name$)\n"
-        "  ::size_t total_size = $extensions$.MessageSetByteSize();\n"
-        "  if ($have_unknown_fields$) {\n"
-        "    total_size += ::_pbi::\n"
-        "        ComputeUnknownMessageSetItemsSize($unknown_fields$);\n"
-        "  }\n"
-        "  int cached_size = "
-        "::_pbi::ToCachedSize(total_size);\n"
-        "  SetCachedSize(cached_size);\n"
-        "  return total_size;\n"
-        "}\n");
+    p->Emit(
+        R"cc(
+          PROTOBUF_NOINLINE ::size_t $classname$::ByteSizeLong() const {
+            $annotate_bytesize$;
+            // @@protoc_insertion_point(message_set_byte_size_start:$full_name$)
+            ::size_t total_size = $extensions$.MessageSetByteSize();
+            if ($have_unknown_fields$) {
+              total_size += ::_pbi::ComputeUnknownMessageSetItemsSize($unknown_fields$);
+            }
+            int cached_size = ::_pbi::ToCachedSize(total_size);
+            SetCachedSize(cached_size);
+            return total_size;
+          }
+        )cc");
     return;
   }
 
+  Formatter format(p);
   if (num_required_fields_ > 1) {
     // Emit a function (rarely used, we hope) that handles the required fields
     // by checking for each one individually.
