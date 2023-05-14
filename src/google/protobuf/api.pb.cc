@@ -337,7 +337,6 @@ inline void Api::SharedDtor() {
   _impl_.version_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
 }
-
 void Api::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -735,7 +734,6 @@ inline void Method::SharedDtor() {
   _impl_.request_type_url_.Destroy();
   _impl_.response_type_url_.Destroy();
 }
-
 void Method::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1091,7 +1089,6 @@ inline void Mixin::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.root_.Destroy();
 }
-
 void Mixin::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }

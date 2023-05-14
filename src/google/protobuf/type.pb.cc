@@ -547,7 +547,6 @@ inline void Type::SharedDtor() {
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
 }
-
 void Type::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -961,7 +960,6 @@ inline void Field::SharedDtor() {
   _impl_.json_name_.Destroy();
   _impl_.default_value_.Destroy();
 }
-
 void Field::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1425,7 +1423,6 @@ inline void Enum::SharedDtor() {
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
 }
-
 void Enum::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1762,7 +1759,6 @@ inline void EnumValue::SharedDtor() {
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
 }
-
 void EnumValue::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -2023,7 +2019,6 @@ inline void Option::SharedDtor() {
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.value_;
 }
-
 void Option::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }

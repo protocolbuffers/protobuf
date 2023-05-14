@@ -164,7 +164,6 @@ inline void SourceContext::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_name_.Destroy();
 }
-
 void SourceContext::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }

@@ -269,7 +269,6 @@ inline void Struct::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fields_.~MapField();
 }
-
 void Struct::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -536,7 +535,6 @@ inline void Value::SharedDtor() {
     clear_kind();
   }
 }
-
 void Value::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -861,7 +859,6 @@ inline void ListValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.values_.~RepeatedPtrField();
 }
-
 void ListValue::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }

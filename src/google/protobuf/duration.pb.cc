@@ -146,7 +146,6 @@ Duration::~Duration() {
 inline void Duration::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void Duration::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }

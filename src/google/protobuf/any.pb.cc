@@ -209,7 +209,6 @@ inline void Any::SharedDtor() {
   _impl_.value_.Destroy();
   _impl_._any_metadata_.~AnyMetadata();
 }
-
 void Any::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }

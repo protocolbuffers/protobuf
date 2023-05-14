@@ -146,7 +146,6 @@ Timestamp::~Timestamp() {
 inline void Timestamp::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void Timestamp::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }

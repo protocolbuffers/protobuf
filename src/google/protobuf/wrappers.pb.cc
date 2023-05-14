@@ -363,7 +363,6 @@ DoubleValue::~DoubleValue() {
 inline void DoubleValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void DoubleValue::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -542,7 +541,6 @@ FloatValue::~FloatValue() {
 inline void FloatValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void FloatValue::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -721,7 +719,6 @@ Int64Value::~Int64Value() {
 inline void Int64Value::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void Int64Value::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -886,7 +883,6 @@ UInt64Value::~UInt64Value() {
 inline void UInt64Value::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void UInt64Value::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1051,7 +1047,6 @@ Int32Value::~Int32Value() {
 inline void Int32Value::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void Int32Value::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1216,7 +1211,6 @@ UInt32Value::~UInt32Value() {
 inline void UInt32Value::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void UInt32Value::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1381,7 +1375,6 @@ BoolValue::~BoolValue() {
 inline void BoolValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-
 void BoolValue::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1563,7 +1556,6 @@ inline void StringValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.Destroy();
 }
-
 void StringValue::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1753,7 +1745,6 @@ inline void BytesValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.Destroy();
 }
-
 void BytesValue::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }

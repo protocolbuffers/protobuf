@@ -150,7 +150,6 @@ inline void FieldMask::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _internal_mutable_paths()->~RepeatedPtrField();
 }
-
 void FieldMask::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
