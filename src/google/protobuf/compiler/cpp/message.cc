@@ -3937,7 +3937,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
 
 void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
     io::Printer* p) {
-  Formatter format(p);
 
   std::vector<const FieldDescriptor*> ordered_fields =
       SortFieldsByNumber(descriptor_);
@@ -3961,67 +3960,80 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
   ABSL_CHECK_LT(num_fields, kLargePrime)
       << "Prime offset must be greater than the number of fields to ensure "
          "those are coprime.";
-
-  if (num_weak_fields_) {
-    format(
-        "::_pbi::WeakFieldMap::FieldWriter field_writer("
-        "$weak_field_map$);\n");
-  }
-
-  format("for (int i = $1$; i >= 0; i-- ) {\n", num_fields - 1);
-
-  format.Indent();
-  format("switch(i) {\n");
-  format.Indent();
-
-  int index = 0;
-  for (const auto* f : ordered_fields) {
-    format("case $1$: {\n", index++);
-    format.Indent();
-
-    GenerateSerializeOneField(p, f, -1);
-
-    format("break;\n");
-    format.Outdent();
-    format("}\n");
-  }
-
-  for (const auto* r : sorted_extensions) {
-    format("case $1$: {\n", index++);
-    format.Indent();
-
-    GenerateSerializeOneExtensionRange(p, r->start_number(), r->end_number());
-
-    format("break;\n");
-    format.Outdent();
-    format("}\n");
-  }
-
-  format(
-      "default: {\n"
-      "  $DCHK$(false) << \"Unexpected index: \" << i;\n"
-      "}\n");
-  format.Outdent();
-  format("}\n");
-
-  format.Outdent();
-  format("}\n");
-
-  format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
-  format.Indent();
-  if (UseUnknownFieldSet(descriptor_->file(), options_)) {
-    format(
-        "target = "
-        "::_pbi::WireFormat::"
-        "InternalSerializeUnknownFieldsToArray(\n"
-        "    $unknown_fields$, target, stream);\n");
-  } else {
-    format(
-        "target = stream->WriteRaw($unknown_fields$.data(),\n"
-        "    static_cast<int>($unknown_fields$.size()), target);\n");
-  }
-  format.Outdent();
-  format("}\n");
+  p->Emit(
+      {
+          {"last_field", num_fields - 1},
+          {"field_writer",
+           [&] {
+             if (num_weak_fields_ == 0) return;
+             p->Emit(R"cc(
+               ::_pbi::WeakFieldMap::FieldWriter field_writer($weak_field_map$);
+             )cc");
+           }},
+          {"ordered_cases",
+           [&] {
+             size_t index = 0;
+             for (const auto* f : ordered_fields) {
+               p->Emit({{"index", index++},
+                        {"body", [&] { GenerateSerializeOneField(p, f, -1); }}},
+                       R"cc(
+                         case $index$: {
+                           $body$;
+                           break;
+                         }
+                       )cc");
+             }
+           }},
+          {"extension_cases",
+           [&] {
+             size_t index = ordered_fields.size();
+             for (const auto* r : sorted_extensions) {
+               p->Emit({{"index", index++},
+                        {"body",
+                         [&] {
+                           GenerateSerializeOneExtensionRange(
+                               p, r->start_number(), r->end_number());
+                         }}},
+                       R"cc(
+                         case $index$: {
+                           $body$;
+                           break;
+                         }
+                       )cc");
+             }
+           }},
+          {"handle_unknown_fields",
+           [&] {
+             if (UseUnknownFieldSet(descriptor_->file(), options_)) {
+               p->Emit(R"cc(
+                 target =
+                     ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                         $unknown_fields$, target, stream);
+               )cc");
+             } else {
+               p->Emit(R"cc(
+                 target = stream->WriteRaw(
+                     $unknown_fields$.data(),
+                     static_cast<int>($unknown_fields$.size()), target);
+               )cc");
+             }
+           }},
+      },
+      R"cc(
+        $field_writer$;
+        for (int i = $last_field$; i >= 0; i--) {
+          switch (i) {
+            $ordered_cases$;
+            $extension_cases$;
+            default: {
+              $DCHK$(false) << "Unexpected index: " << i;
+            }
+          }
+        }
+        if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {
+          $handle_unknown_fields$;
+        }
+      )cc");
 }
 
 std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
@@ -4124,13 +4136,11 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     for (int j = 0; j < chunk.size(); j++) {
       const FieldDescriptor* field = chunk[j];
       bool have_enclosing_if = false;
-      bool need_extra_newline = false;
 
       PrintFieldComment(format, field);
 
       if (field->is_repeated()) {
         // No presence check is required.
-        need_extra_newline = true;
       } else if (HasHasbit(field)) {
         PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index);
         have_enclosing_if = true;
@@ -4149,9 +4159,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         format(
             "}\n"
             "\n");
-      }
-      if (need_extra_newline) {
-        format("\n");
       }
     }
 
