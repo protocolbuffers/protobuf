@@ -4305,71 +4305,96 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
 void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  Formatter format(p);
-  format("PROTOBUF_NOINLINE bool $classname$::IsInitialized() const {\n");
-  format.Indent();
 
-  if (descriptor_->extension_range_count() > 0) {
-    format(
-        "if (!$extensions$.IsInitialized(internal_default_instance())) {\n"
-        "  return false;\n"
-        "}\n\n");
-  }
-
-  if (num_required_fields_ > 0) {
-    format(
-        "if (_Internal::MissingRequiredFields($has_bits$))"
-        " return false;\n");
-  }
-
-  // Now check that all non-oneof embedded messages are initialized.
-  for (auto field : optimized_order_) {
-    field_generators_.get(field).GenerateIsInitialized(p);
-  }
-  if (num_weak_fields_) {
-    // For Weak fields.
-    format("if (!$weak_field_map$.IsInitialized()) return false;\n");
-  }
-  // Go through the oneof fields, emitting a switch if any might have required
-  // fields.
-  for (auto oneof : OneOfRange(descriptor_)) {
-    bool has_required_fields = false;
-    for (auto field : FieldRange(oneof)) {
+  auto has_required_field = [&](const auto* oneof) {
+    for (const auto* field : FieldRange(oneof)) {
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
           !ShouldIgnoreRequiredFieldCheck(field, options_) &&
           scc_analyzer_->HasRequiredFields(field->message_type())) {
-        has_required_fields = true;
-        break;
+        return true;
       }
     }
+    return false;
+  };
 
-    if (!has_required_fields) {
-      continue;
-    }
-
-    format("switch ($1$_case()) {\n", oneof->name());
-    format.Indent();
-    for (auto field : FieldRange(oneof)) {
-      format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-      format.Indent();
-      field_generators_.get(field).GenerateIsInitialized(p);
-      format("break;\n");
-      format.Outdent();
-      format("}\n");
-    }
-    format(
-        "case $1$_NOT_SET: {\n"
-        "  break;\n"
-        "}\n",
-        absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format("}\n");
-  }
-
-  format.Outdent();
-  format(
-      "  return true;\n"
-      "}\n");
+  p->Emit(
+      {
+          {"test_extensions",
+           [&] {
+             if (descriptor_->extension_range_count() == 0) return;
+             p->Emit(R"cc(
+               if (!$extensions$.IsInitialized(internal_default_instance())) {
+                 return false;
+               }
+             )cc");
+           }},
+          {"test_required_fields",
+           [&] {
+             if (num_required_fields_ == 0) return;
+             p->Emit(R"cc(
+               if (_Internal::MissingRequiredFields($has_bits$)) {
+                 return false;
+               }
+             )cc");
+           }},
+          {"test_ordinary_fields",
+           [&] {
+             for (const auto* field : optimized_order_) {
+               field_generators_.get(field).GenerateIsInitialized(p);
+             }
+           }},
+          {"test_weak_fields",
+           [&] {
+             if (num_weak_fields_ == 0) return;
+             p->Emit(R"cc(
+               if (!$weak_field_map$.IsInitialized()) return false;
+             )cc");
+           }},
+          {"test_oneof_fields",
+           [&] {
+             for (const auto* oneof : OneOfRange(descriptor_)) {
+               if (!has_required_field(oneof)) continue;
+               p->Emit({{"name", oneof->name()},
+                        {"NAME", absl::AsciiStrToUpper(oneof->name())},
+                        {"cases",
+                         [&] {
+                           for (const auto* field : FieldRange(oneof)) {
+                             p->Emit({{"Name", UnderscoresToCamelCase(
+                                                   field->name(), true)},
+                                      {"body",
+                                       [&] {
+                                         field_generators_.get(field)
+                                             .GenerateIsInitialized(p);
+                                       }}},
+                                     R"cc(
+                                       case k$Name$: {
+                                         $body$;
+                                         break;
+                                       }
+                                     )cc");
+                           }
+                         }}},
+                       R"cc(
+                         switch ($name$_case()) {
+                           $cases$;
+                           case $NAME$_NOT_SET: {
+                             break;
+                           }
+                         }
+                       )cc");
+             }
+           }},
+      },
+      R"cc(
+        PROTOBUF_NOINLINE bool $classname$::IsInitialized() const {
+          $test_extensions$;
+          $test_required_fields$;
+          $test_ordinary_fields$;
+          $test_weak_fields$;
+          $test_oneof_fields$;
+          return true;
+        }
+      )cc");
 }
 
 }  // namespace cpp
