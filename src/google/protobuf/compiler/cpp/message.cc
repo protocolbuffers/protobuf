@@ -2397,57 +2397,79 @@ void MessageGenerator::GenerateInitDefaultSplitInstance(io::Printer* p) {
 
 void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  Formatter format(p);
-
-  format("inline void $classname$::SharedDtor() {\n");
-  format.Indent();
-  format("$DCHK$(GetArenaForAllocation() == nullptr);\n");
-
-  if (descriptor_->extension_range_count() > 0) {
-    format("$extensions$.~ExtensionSet();\n");
-  }
-
-  // Write the destructors for each field except oneof members.
-  // optimized_order_ does not contain oneof fields.
-  for (auto field : optimized_order_) {
-    if (ShouldSplit(field, options_)) {
-      continue;
+  auto emit_fields_dtors = [&](bool split_fields) {
+    // Write the destructors for each field except oneof members.
+    // optimized_order_ does not contain oneof fields.
+    for (const auto* field : optimized_order_) {
+      if (ShouldSplit(field, options_) != split_fields) continue;
+      field_generators_.get(field).GenerateDestructorCode(p);
     }
-    field_generators_.get(field).GenerateDestructorCode(p);
-  }
-  if (ShouldSplit(descriptor_, options_)) {
-    format("if (!IsSplitMessageDefault()) {\n");
-    format.Indent();
-    format("auto* $cached_split_ptr$ = $split$;\n");
-    for (auto field : optimized_order_) {
-      if (ShouldSplit(field, options_)) {
-        field_generators_.get(field).GenerateDestructorCode(p);
-      }
-    }
-    format("delete $cached_split_ptr$;\n");
-    format.Outdent();
-    format("}\n");
-  }
-
-  // Generate code to destruct oneofs. Clearing should do the work.
-  for (auto oneof : OneOfRange(descriptor_)) {
-    format(
-        "if (has_$1$()) {\n"
-        "  clear_$1$();\n"
-        "}\n",
-        oneof->name());
-  }
-
-  if (num_weak_fields_) {
-    format("$weak_field_map$.ClearAll();\n");
-  }
-
-  if (IsAnyMessage(descriptor_, options_)) {
-    format("$any_metadata$.~AnyMetadata();\n");
-  }
-
-  format.Outdent();
-  format("}\n\n");
+  };
+  p->Emit(
+      {
+          {"extensions_dtor",
+           [&] {
+             if (descriptor_->extension_range_count() == 0) return;
+             p->Emit(R"cc(
+               $extensions$.~ExtensionSet();
+             )cc");
+           }},
+          {"field_dtors",
+           [&] { emit_fields_dtors(/* split_fields= */ false); }},
+          {"split_field_dtors",
+           [&] {
+             if (!ShouldSplit(descriptor_, options_)) return;
+             p->Emit(
+                 {
+                     {"split_field_dtors_impl",
+                      [&] { emit_fields_dtors(/* split_fields= */ true); }},
+                 },
+                 R"cc(
+                   if (!IsSplitMessageDefault()) {
+                     auto* $cached_split_ptr$ = $split$;
+                     $split_field_dtors_impl$;
+                     delete $cached_split_ptr$;
+                   }
+                 )cc");
+           }},
+          {"oneof_field_dtors",
+           [&] {
+             for (const auto* oneof : OneOfRange(descriptor_)) {
+               p->Emit({{"name", oneof->name()}},
+                       R"cc(
+                         if (has_$name$()) {
+                           clear_$name$();
+                         }
+                       )cc");
+             }
+           }},
+          {"weak_fields_dtor",
+           [&] {
+             if (num_weak_fields_ == 0) return;
+             // Generate code to destruct oneofs. Clearing should do the work.
+             p->Emit(R"cc(
+               $weak_field_map$.ClearAll();
+             )cc");
+           }},
+          {"any_metadata_dtor",
+           [&] {
+             if (!IsAnyMessage(descriptor_, options_)) return;
+             p->Emit(R"cc(
+               $any_metadata$.~AnyMetadata();
+             )cc");
+           }},
+      },
+      R"cc(
+        inline void $classname$::SharedDtor() {
+          $DCHK$(GetArenaForAllocation() == nullptr);
+          $extensions_dtor$;
+          $field_dtors$;
+          $split_field_dtors$;
+          $oneof_field_dtors$;
+          $weak_fields_dtor$;
+          $any_metadata_dtor$;
+        }
+      )cc");
 }
 
 ArenaDtorNeeds MessageGenerator::NeedsArenaDestructor() const {

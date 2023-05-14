@@ -368,7 +368,6 @@ inline void Version::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.suffix_.Destroy();
 }
-
 void Version::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -678,7 +677,6 @@ inline void CodeGeneratorRequest::SharedDtor() {
   _impl_.parameter_.Destroy();
   if (this != internal_default_instance()) delete _impl_.compiler_version_;
 }
-
 void CodeGeneratorRequest::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1027,7 +1025,6 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
   _impl_.content_.Destroy();
   if (this != internal_default_instance()) delete _impl_.generated_code_info_;
 }
-
 void CodeGeneratorResponse_File::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
@@ -1335,7 +1332,6 @@ inline void CodeGeneratorResponse::SharedDtor() {
   _impl_.file_.~RepeatedPtrField();
   _impl_.error_.Destroy();
 }
-
 void CodeGeneratorResponse::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
