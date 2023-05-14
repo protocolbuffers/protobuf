@@ -156,7 +156,7 @@ std::vector<const FieldDescriptor*> SortFieldsByNumber(
 struct ExtensionRangeSorter {
   bool operator()(const Descriptor::ExtensionRange* left,
                   const Descriptor::ExtensionRange* right) const {
-    return left->start < right->start;
+    return left->start_number() < right->start_number();
   }
 };
 
