@@ -234,7 +234,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:13.1-5.4.0-307caa02808127e49720f3e77d6a9f3b3ef5a915
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-5.4.0-307caa02808127e49720f3e77d6a9f3b3ef5a915
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >-
