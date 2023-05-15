@@ -2446,17 +2446,16 @@ bool DescriptorPool::TryFindFileInFallbackDatabase(
 }
 
 bool DescriptorPool::IsSubSymbolOfBuiltType(absl::string_view name) const {
-  auto prefix = std::string(name);
-  for (;;) {
-    std::string::size_type dot_pos = prefix.find_last_of('.');
-    if (dot_pos == std::string::npos) {
+  for (size_t pos = name.find('.'); pos != name.npos;
+       pos = name.find('.', pos + 1)) {
+    auto prefix = name.substr(0, pos);
+    Symbol symbol = tables_->FindSymbol(prefix);
+    if (symbol.IsNull()) {
       break;
     }
-    prefix = prefix.substr(0, dot_pos);
-    Symbol symbol = tables_->FindSymbol(prefix);
-    // If the symbol type is anything other than PACKAGE, then its complete
-    // definition is already known.
-    if (!symbol.IsNull() && !symbol.IsPackage()) {
+    if (!symbol.IsPackage()) {
+      // If the symbol type is anything other than PACKAGE, then its complete
+      // definition is already known.
       return true;
     }
   }
