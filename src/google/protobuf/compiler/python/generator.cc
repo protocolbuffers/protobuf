@@ -702,8 +702,9 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
   for (int i = 0; i < message_descriptor.extension_range_count(); ++i) {
     const Descriptor::ExtensionRange* range =
         message_descriptor.extension_range(i);
-    printer_->Print("($start$, $end$), ", "start", absl::StrCat(range->start),
-                    "end", absl::StrCat(range->end));
+    printer_->Print("($start$, $end$), ", "start",
+                    absl::StrCat(range->start_number()), "end",
+                    absl::StrCat(range->end_number()));
   }
   printer_->Print("],\n");
   printer_->Print("oneofs=[\n");

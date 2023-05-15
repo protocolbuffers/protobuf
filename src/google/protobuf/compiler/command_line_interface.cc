@@ -2937,8 +2937,8 @@ void GatherOccupiedFieldRanges(
     ranges->insert(FieldRange(fd->number(), fd->number() + 1));
   }
   for (int i = 0; i < descriptor->extension_range_count(); ++i) {
-    ranges->insert(FieldRange(descriptor->extension_range(i)->start,
-                              descriptor->extension_range(i)->end));
+    ranges->insert(FieldRange(descriptor->extension_range(i)->start_number(),
+                              descriptor->extension_range(i)->end_number()));
   }
   for (int i = 0; i < descriptor->reserved_range_count(); ++i) {
     ranges->insert(FieldRange(descriptor->reserved_range(i)->start,

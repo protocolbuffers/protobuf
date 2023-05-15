@@ -1281,11 +1281,11 @@ void ParseFunctionGenerator::GenerateParseIterationBody(
         if (i > 0) format(" ||\n    ");
 
         uint32_t start_tag = WireFormatLite::MakeTag(
-            range->start, static_cast<WireFormatLite::WireType>(0));
+            range->start_number(), static_cast<WireFormatLite::WireType>(0));
         uint32_t end_tag = WireFormatLite::MakeTag(
-            range->end, static_cast<WireFormatLite::WireType>(0));
+            range->end_number(), static_cast<WireFormatLite::WireType>(0));
 
-        if (range->end > FieldDescriptor::kMaxNumber) {
+        if (range->end_number() > FieldDescriptor::kMaxNumber) {
           format("($1$u <= tag)", start_tag);
         } else {
           format("($1$u <= tag && tag < $2$u)", start_tag, end_tag);

@@ -333,7 +333,7 @@ struct FieldOrderingByNumber {
 struct ExtensionRangeOrdering {
   bool operator()(const Descriptor::ExtensionRange* a,
                   const Descriptor::ExtensionRange* b) const {
-    return a->start < b->start;
+    return a->start_number() < b->start_number();
   }
 };
 
