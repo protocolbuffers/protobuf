@@ -408,7 +408,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       "private static $final$ com.google.protobuf.Descriptors.FileDescriptor\n"
       "    descriptor;\n"
       "static {\n",
-      // TODO(dweis): Mark this as final.
+      // TODO: Mark this as final.
       "final", options_.opensource_runtime ? "" : "final");
   printer->Indent();
 

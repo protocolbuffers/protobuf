@@ -1495,7 +1495,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     if (arena() == other.arena()) {
       InternalSwap(&other);
     } else {
-      // TODO(zuguang): optimize this. The temporary copy can be allocated
+      // TODO: optimize this. The temporary copy can be allocated
       // in the same arena as the other message, and the "other = copy" can
       // be replaced with the fast-path swap above.
       Map copy = *this;

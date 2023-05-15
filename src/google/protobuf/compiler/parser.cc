@@ -1207,7 +1207,7 @@ void Parser::GenerateMapEntry(const MapField& map_field,
   //     repeated ValueEntry value = 1 [enforce_utf8 = false];
   //  }
   //
-  // TODO(xiaofeng): Remove this when the "enforce_utf8" option is removed
+  // TODO: Remove this when the "enforce_utf8" option is removed
   // from protocol compiler.
   for (int i = 0; i < field->options().uninterpreted_option_size(); ++i) {
     const UninterpretedOption& option =
@@ -1472,7 +1472,7 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
         return true;
       }
     }
-    // TODO(sanjay): Interpret line/column numbers to preserve formatting
+    // TODO: Interpret line/column numbers to preserve formatting
     if (!value->empty()) value->push_back(' ');
     value->append(input_->current().text);
     input_->Next();

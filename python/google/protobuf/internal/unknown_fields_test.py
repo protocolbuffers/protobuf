@@ -182,7 +182,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
   # implementation because some protect members are called.
   # The test is added for historical reasons. It is not necessary as
   # serialized string is checked.
-  # TODO(jieluo): Remove message._unknown_fields.
+  # TODO: Remove message._unknown_fields.
   def InternalCheckUnknownField(self, name, expected_value):
     if api_implementation.Type() != 'python':
       return

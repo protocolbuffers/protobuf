@@ -1007,7 +1007,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
     if (current_size > 0) {
       Element* pnew = new_rep->elements();
       Element* pold = elements();
-      // TODO(b/263791665): add absl::is_trivially_relocatable<Element>
+      // TODO: add absl::is_trivially_relocatable<Element>
       if (std::is_trivial<Element>::value) {
         memcpy(static_cast<void*>(pnew), pold, current_size * sizeof(Element));
       } else {
@@ -1024,7 +1024,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
   arena_or_elements_ = new_rep->elements();
 }
 
-// TODO(b/266411038): we should really be able to make this:
+// TODO: we should really be able to make this:
 // template <bool annotate_size = true>
 // void Grow();
 template <typename Element>

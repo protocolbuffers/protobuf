@@ -784,7 +784,7 @@ final class ArrayDecoders {
       return decodeUnknownField(
           tag, data, position, limit, getMutableUnknownFields(message), registers);
     } else  {
-      // TODO(b/230609037): remove the unused variable
+      // TODO: remove the unused variable
       FieldSet<ExtensionDescriptor> unused =
           ((GeneratedMessageLite.ExtendableMessage<?, ?>) message).ensureExtensionsAreMutable();
       return decodeExtension(

@@ -157,7 +157,7 @@ std::string UnderscoresToPascalCase(absl::string_view input) {
   return UnderscoresToCamelCase(input, true);
 }
 
-// TODO(jtattermusch): can we reuse a utility function?
+// TODO: can we reuse a utility function?
 std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool cap_next_letter, bool preserve_period) {
   std::string result;

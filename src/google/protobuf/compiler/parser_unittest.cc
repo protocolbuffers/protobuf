@@ -147,7 +147,7 @@ class ParserTest : public testing::Test {
     ASSERT_TRUE(TextFormat::ParseFromString(output, &expected));
 
     // Compare by comparing debug strings.
-    // TODO(kenton):  Use differencer, once it is available.
+    // TODO:  Use differencer, once it is available.
     EXPECT_EQ(expected.DebugString(), actual.DebugString());
   }
 

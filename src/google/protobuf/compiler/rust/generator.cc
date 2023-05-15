@@ -108,7 +108,7 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
   )rs");
   EmitOpeningOfPackageModules(file);
 
-  // TODO(b/270124215): Delete the following "placeholder impl" of `import
+  // TODO: Delete the following "placeholder impl" of `import
   // public`. Also make sure to figure out how to map FileDescriptor#name to
   // Rust crate names (currently Bazel labels).
   for (int i = 0; i < file.desc().public_dependency_count(); ++i) {

@@ -652,7 +652,7 @@ namespace Google.Protobuf
 
             stream.Position = 0;
             var parsed = TestAllTypes.Parser.ParseFrom(stream);
-	    // TODO(jieluo): Add test back after DiscardUnknownFields is supported
+	    // TODO: Add test back after DiscardUnknownFields is supported
             // Assert.AreEqual(message, parsed);
         }
 
@@ -662,7 +662,7 @@ namespace Google.Protobuf
             // Simple way of ensuring we can skip all kinds of fields.
             var data = SampleMessages.CreateFullTestAllTypes().ToByteArray();
             var empty = Empty.Parser.ParseFrom(data);
-	    // TODO(jieluo): Add test back after DiscardUnknownField is supported.
+	    // TODO: Add test back after DiscardUnknownField is supported.
             // Assert.AreEqual(new Empty(), empty);
         }
 

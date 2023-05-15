@@ -76,7 +76,7 @@ def _test_upb_aspect():
     rust_upb_aspect_test(
         name = "rust_upb_aspect_test",
         target_under_test = ":child_proto_with_upb_aspect",
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        # TODO: Enable testing on arm once we have a Rust Arm toolchain.
         tags = ["not_build:arm"],
     )
 
@@ -107,7 +107,7 @@ def _test_cc_aspect():
     rust_cc_aspect_test(
         name = "rust_cc_aspect_test",
         target_under_test = ":child_proto_with_cc_aspect",
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        # TODO: Enable testing on arm once we have a Rust Arm toolchain.
         tags = ["not_build:arm"],
     )
 

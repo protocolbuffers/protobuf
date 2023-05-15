@@ -127,7 +127,7 @@ void SetPrimitiveVariables(
   } else {
     (*variables)["null_check"] = "";
   }
-  // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
+  // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
@@ -173,7 +173,7 @@ void SetPrimitiveVariables(
   }
   // For repeated bytes builders, one bit is used for whether the array is
   // mutable.
-  // TODO(b/255468704): migrate bytes field to ProtobufList so that we can
+  // TODO: migrate bytes field to ProtobufList so that we can
   // use the bit field to track their presence instead of mutability.
   (*variables)["get_mutable_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);

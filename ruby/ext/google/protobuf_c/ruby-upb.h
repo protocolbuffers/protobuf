@@ -367,7 +367,7 @@ typedef enum {
   kUpb_CType_Float = 2,
   kUpb_CType_Int32 = 3,
   kUpb_CType_UInt32 = 4,
-  kUpb_CType_Enum = 5,  // Enum values are int32. TODO(b/279178239): rename
+  kUpb_CType_Enum = 5,  // Enum values are int32. TODO: rename
   kUpb_CType_Message = 6,
   kUpb_CType_Double = 7,
   kUpb_CType_Int64 = 8,
@@ -1388,7 +1388,7 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(upb_Map* map, const void* key,
     return kUpb_MapInsertStatus_OutOfMemory;
   }
 
-  // TODO(haberman): add overwrite operation to minimize number of lookups.
+  // TODO: add overwrite operation to minimize number of lookups.
   bool removed =
       upb_strtable_remove2(&map->table, strkey.data, strkey.size, NULL);
   if (!upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a)) {
@@ -1981,7 +1981,7 @@ UPB_API bool upb_ExtensionRegistry_Add(upb_ExtensionRegistry* r,
 // registry. If there are any errors, the entire array is backed out.
 // The extensions must outlive the registry.
 // Possible errors include OOM or an extension number that already exists.
-// TODO(salo): There is currently no way to know the exact reason for failure.
+// TODO: There is currently no way to know the exact reason for failure.
 bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
                                     const upb_MiniTableExtension** e,
                                     size_t count);
@@ -10182,7 +10182,7 @@ extern "C" {
 #endif
 
 enum {
-  /* When set, emits 0/default values.  TODO(haberman): proto3 only? */
+  /* When set, emits 0/default values.  TODO: proto3 only? */
   upb_JsonEncode_EmitDefaults = 1 << 0,
 
   /* When set, use normal (snake_case) field names instead of JSON (camelCase)
@@ -11379,7 +11379,7 @@ upb_ServiceDef* _upb_ServiceDefs_New(
 // Must be last.
 
 // Manages the storage for mini descriptor strings as they are being encoded.
-// TODO(b/234740652): Move some of this state directly into the encoder, maybe.
+// TODO: Move some of this state directly into the encoder, maybe.
 typedef struct {
   upb_MtDataEncoder e;
   size_t bufsize;

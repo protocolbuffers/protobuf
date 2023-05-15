@@ -91,7 +91,7 @@ void SetPrimitiveVariables(
       absl::StrCat("com.google.protobuf.GeneratedMessage",
                    GeneratedCodeVersionSuffix(), ".computeStringSize");
 
-  // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
+  // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";

@@ -16,7 +16,7 @@ rust_test(
     name = "upb_test",
     crate = ":upb",
     tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        # TODO: Enable testing on arm once we have a Rust Arm toolchain.
         "not_build:arm",
     ],
 )

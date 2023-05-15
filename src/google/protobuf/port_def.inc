@@ -660,7 +660,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_THREAD_LOCAL __thread
 #endif
 
-// TODO(b/228173843): cleanup PROTOBUF_LITTLE_ENDIAN in various 3p forks.
+// TODO: cleanup PROTOBUF_LITTLE_ENDIAN in various 3p forks.
 #if (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && \
      __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 #define PROTOBUF_LITTLE_ENDIAN 1

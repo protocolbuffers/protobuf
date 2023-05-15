@@ -194,7 +194,7 @@ class FileGenerator {
 
   // This member is unused and should be deleted once all old-style variable
   // maps are gone.
-  // TODO(b/245791219)
+  // TODO
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 
   // Contains the post-order walk of all the messages (and child messages) in
