@@ -3674,40 +3674,35 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
 
 void MessageGenerator::GenerateSerializeOneExtensionRange(io::Printer* p,
                                                           int start, int end) {
-  absl::flat_hash_map<absl::string_view, std::string> vars = variables_;
-  vars["start"] = absl::StrCat(start);
-  vars["end"] = absl::StrCat(end);
-  Formatter format(p, vars);
-  format("// Extension range [$start$, $end$)\n");
-  format(
-      "target = $extensions$._InternalSerialize(\n"
-      "internal_default_instance(), $start$, $end$, target, stream);\n\n");
+  auto v = p->WithVars(variables_);
+  p->Emit({{"start", start}, {"end", end}},
+          R"cc(
+            // Extension range [$start$, $end$)
+            target = $extensions$._InternalSerialize(
+                internal_default_instance(), $start$, $end$, target, stream);
+          )cc");
 }
 
 void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  Formatter format(p);
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
-    format(
-        "$uint8$* $classname$::_InternalSerialize(\n"
-        "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
-        "const {\n"
-        "$annotate_serialize$"
-        "  target = $extensions$."
-        "InternalSerializeMessageSetWithCachedSizesToArray(\n"  //
-        "internal_default_instance(), target, stream);\n");
-
-    format(
-        "  target = ::_pbi::"
-        "InternalSerializeUnknownMessageSetItemsToArray(\n"
-        "               $unknown_fields$, target, stream);\n");
-    format(
-        "  return target;\n"
-        "}\n");
+    p->Emit(R"cc(
+      $uint8$* $classname$::_InternalSerialize(
+          $uint8$* target,
+          ::$proto_ns$::io::EpsCopyOutputStream* stream) const {
+        $annotate_serialize$ target =
+            $extensions$.InternalSerializeMessageSetWithCachedSizesToArray(
+                internal_default_instance(), target, stream);
+        target = ::_pbi::InternalSerializeUnknownMessageSetItemsToArray(
+            $unknown_fields$, target, stream);
+        return target;
+      }
+    )cc");
     return;
   }
 
+  Formatter format(p);
   format(
       "$uint8$* $classname$::_InternalSerialize(\n"
       "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
