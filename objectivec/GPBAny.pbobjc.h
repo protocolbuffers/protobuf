@@ -157,7 +157,8 @@ GPB_FINAL @interface GPBAny : GPBMessage
  *
  * Note: this functionality is not currently available in the official
  * protobuf release, and it is not used for type URLs beginning with
- * type.googleapis.com.
+ * type.googleapis.com. As of May 2023, there are no widely used type server
+ * implementations and no plans to implement one.
  *
  * Schemes other than `http`, `https` (or the empty scheme) might be
  * used with implementation specific semantics.
