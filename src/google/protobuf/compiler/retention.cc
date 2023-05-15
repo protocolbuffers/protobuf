@@ -299,8 +299,7 @@ MessageOptions StripLocalSourceRetentionOptions(const Descriptor& descriptor) {
 
 ExtensionRangeOptions StripLocalSourceRetentionOptions(
     const Descriptor& descriptor, const Descriptor::ExtensionRange& range) {
-  if (range.options_ == nullptr) return ExtensionRangeOptions{};
-  ExtensionRangeOptions options = *range.options_;
+  ExtensionRangeOptions options = range.options();
   ConvertToDynamicMessageAndStripOptions(options, GetPool(descriptor));
   return options;
 }
