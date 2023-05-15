@@ -526,21 +526,18 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // repeated .google.protobuf.Option options = 3;
   total_size += 1UL * this->_internal_options_size();
   for (const auto& msg : this->_internal_options()) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // repeated .google.protobuf.Mixin mixins = 6;
   total_size += 1UL * this->_internal_mixins_size();
   for (const auto& msg : this->_internal_mixins()) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // string name = 1;
   if (!this->_internal_name().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -914,7 +911,6 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // string name = 1;
   if (!this->_internal_name().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(

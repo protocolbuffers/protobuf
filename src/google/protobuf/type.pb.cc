@@ -736,21 +736,18 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // repeated string oneofs = 3;
   total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_oneofs().size());
   for (int i = 0, n = _internal_oneofs().size(); i < n; ++i) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
         _internal_oneofs().Get(i));
   }
-
   // repeated .google.protobuf.Option options = 4;
   total_size += 1UL * this->_internal_options_size();
   for (const auto& msg : this->_internal_options()) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // string name = 1;
   if (!this->_internal_name().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1187,7 +1184,6 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // string name = 4;
   if (!this->_internal_name().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1597,14 +1593,12 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // repeated .google.protobuf.Option options = 3;
   total_size += 1UL * this->_internal_options_size();
   for (const auto& msg : this->_internal_options()) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // string name = 1;
   if (!this->_internal_name().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1879,7 +1873,6 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   // string name = 1;
   if (!this->_internal_name().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(

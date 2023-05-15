@@ -374,7 +374,6 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
   for (const auto& entry : _internal_fields()) {
     total_size += Struct_FieldsEntry_DoNotUse::Funcs::ByteSizeLong(entry.first, entry.second);
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -946,7 +945,6 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 

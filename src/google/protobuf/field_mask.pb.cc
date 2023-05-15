@@ -240,7 +240,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
         _internal_paths().Get(i));
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
