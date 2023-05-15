@@ -477,7 +477,7 @@ class Struct(object):
   __slots__ = ()
 
   def __init__(self, dictionary=None):
-    if dictionary:
+    if isinstance(dictionary, dict):
       self.update(dictionary)
 
   def __getitem__(self, key):
