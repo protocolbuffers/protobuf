@@ -215,6 +215,7 @@ class PROTOBUF_EXPORT Type final :
  public:
   inline Type() : Type(nullptr) {}
   ~Type() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Type(::google::protobuf::internal::ConstantInitialized);
 
   Type(const Type& from);
@@ -495,6 +496,7 @@ class PROTOBUF_EXPORT Field final :
  public:
   inline Field() : Field(nullptr) {}
   ~Field() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Field(::google::protobuf::internal::ConstantInitialized);
 
   Field(const Field& from);
@@ -850,6 +852,7 @@ class PROTOBUF_EXPORT Enum final :
  public:
   inline Enum() : Enum(nullptr) {}
   ~Enum() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Enum(::google::protobuf::internal::ConstantInitialized);
 
   Enum(const Enum& from);
@@ -1100,6 +1103,7 @@ class PROTOBUF_EXPORT EnumValue final :
  public:
   inline EnumValue() : EnumValue(nullptr) {}
   ~EnumValue() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumValue(::google::protobuf::internal::ConstantInitialized);
 
   EnumValue(const EnumValue& from);
@@ -1294,6 +1298,7 @@ class PROTOBUF_EXPORT Option final :
  public:
   inline Option() : Option(nullptr) {}
   ~Option() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Option(::google::protobuf::internal::ConstantInitialized);
 
   Option(const Option& from);

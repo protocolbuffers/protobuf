@@ -26,6 +26,7 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 #endif  // __llvm__
 namespace google {
 namespace protobuf {
+        template <typename>
 PROTOBUF_CONSTEXPR Any::Any(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_.type_url_)*/ {

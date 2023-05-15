@@ -76,6 +76,7 @@ class PROTOBUF_EXPORT SourceContext final :
  public:
   inline SourceContext() : SourceContext(nullptr) {}
   ~SourceContext() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR SourceContext(::google::protobuf::internal::ConstantInitialized);
 
   SourceContext(const SourceContext& from);

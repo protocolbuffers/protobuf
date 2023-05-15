@@ -88,6 +88,7 @@ class PROTOBUF_EXPORT Api final :
  public:
   inline Api() : Api(nullptr) {}
   ~Api() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Api(::google::protobuf::internal::ConstantInitialized);
 
   Api(const Api& from);
@@ -358,6 +359,7 @@ class PROTOBUF_EXPORT Method final :
  public:
   inline Method() : Method(nullptr) {}
   ~Method() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Method(::google::protobuf::internal::ConstantInitialized);
 
   Method(const Method& from);
@@ -612,6 +614,7 @@ class PROTOBUF_EXPORT Mixin final :
  public:
   inline Mixin() : Mixin(nullptr) {}
   ~Mixin() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Mixin(::google::protobuf::internal::ConstantInitialized);
 
   Mixin(const Mixin& from);

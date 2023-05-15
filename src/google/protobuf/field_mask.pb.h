@@ -76,6 +76,7 @@ class PROTOBUF_EXPORT FieldMask final :
  public:
   inline FieldMask() : FieldMask(nullptr) {}
   ~FieldMask() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldMask(::google::protobuf::internal::ConstantInitialized);
 
   FieldMask(const FieldMask& from);

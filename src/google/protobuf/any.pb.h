@@ -76,6 +76,7 @@ class PROTOBUF_EXPORT Any final :
  public:
   inline Any() : Any(nullptr) {}
   ~Any() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Any(::google::protobuf::internal::ConstantInitialized);
 
   Any(const Any& from);

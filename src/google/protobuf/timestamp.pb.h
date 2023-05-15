@@ -76,6 +76,7 @@ class PROTOBUF_EXPORT Timestamp final :
  public:
   inline Timestamp() : Timestamp(nullptr) {}
   ~Timestamp() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Timestamp(::google::protobuf::internal::ConstantInitialized);
 
   Timestamp(const Timestamp& from);

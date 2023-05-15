@@ -76,6 +76,7 @@ class PROTOBUF_EXPORT Duration final :
  public:
   inline Duration() : Duration(nullptr) {}
   ~Duration() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Duration(::google::protobuf::internal::ConstantInitialized);
 
   Duration(const Duration& from);

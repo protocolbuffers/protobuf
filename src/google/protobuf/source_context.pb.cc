@@ -22,6 +22,7 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
+        template <typename>
 PROTOBUF_CONSTEXPR SourceContext::SourceContext(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_.file_name_)*/ {
