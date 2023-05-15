@@ -36,15 +36,15 @@ import collections.abc as collections_abc
 import datetime
 import unittest
 
-from google.protobuf import any_pb2
-from google.protobuf import duration_pb2
-from google.protobuf import struct_pb2
-from google.protobuf import timestamp_pb2
-from google.protobuf.internal import any_test_pb2
-from google.protobuf.internal import well_known_types
-from google.protobuf import text_format
-from google.protobuf.internal import _parameterized
-from google.protobuf import unittest_pb2
+from google.protobuf import (
+    any_pb2,
+    duration_pb2,
+    struct_pb2,
+    text_format,
+    timestamp_pb2,
+    unittest_pb2,
+)
+from google.protobuf.internal import _parameterized, any_test_pb2, well_known_types
 
 try:
   # New module in Python 3.9:
@@ -517,9 +517,6 @@ class StructTest(unittest.TestCase):
       self.assertEqual(s1['x'], s2['x'])
 
   def testMergeFrom(self):
-    struct = struct_pb2.Struct()
-    struct_class = struct.__class__
-
     dictionary = {
         'key1': 5,
         'key2': 'abc',
@@ -530,7 +527,9 @@ class StructTest(unittest.TestCase):
         'empty_struct': {},
         'empty_list': []
     }
-    struct.update(dictionary)
+    struct = struct_pb2.Struct(dictionary)
+    struct_class = struct.__class__
+
     self.assertEqual(5, struct['key1'])
     self.assertEqual('abc', struct['key2'])
     self.assertIs(True, struct['key3'])
@@ -559,6 +558,14 @@ class StructTest(unittest.TestCase):
     self.assertEqual(1, len(struct['key5'].values))
     self.assertEqual(False, struct['key5'][0][0])
     self.assertEqual(5, struct['key5'][0][1])
+  
+  def testConstructor(self):
+    struct_dict = {'key1': 'value-1', 'key2': 'value-2'}
+    struct = struct_pb2.Struct(struct_dict)
+
+    self.assertEqual(struct['key1'], 'value-1')
+    self.assertEqual(struct['key1'], 'value-2')
+
 
 
 class AnyTest(unittest.TestCase):
