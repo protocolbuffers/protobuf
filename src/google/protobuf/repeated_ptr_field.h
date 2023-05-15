@@ -58,6 +58,7 @@
 
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
@@ -931,22 +932,24 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   ~RepeatedPtrField();
 
-  RepeatedPtrField& operator=(const RepeatedPtrField& other);
+  RepeatedPtrField& operator=(const RepeatedPtrField& other)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   RepeatedPtrField(RepeatedPtrField&& other) noexcept;
-  RepeatedPtrField& operator=(RepeatedPtrField&& other) noexcept;
+  RepeatedPtrField& operator=(RepeatedPtrField&& other) noexcept
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   bool empty() const;
   int size() const;
 
-  const Element& Get(int index) const;
-  Element* Mutable(int index);
+  const Element& Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  Element* Mutable(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Unlike std::vector, adding an element to a RepeatedPtrField doesn't always
   // make a new element; it might re-use an element left over from when the
   // field was Clear()'d or reize()'d smaller.  For this reason, Add() is the
   // fastest API for adding a new element.
-  Element* Add();
+  Element* Add() ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // `Add(std::move(value));` is equivalent to `*Add() = std::move(value);`
   // It will either move-construct to the end of this field, or swap value
@@ -968,11 +971,15 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   template <typename Iter>
   void Add(Iter begin, Iter end);
 
-  const Element& operator[](int index) const { return Get(index); }
-  Element& operator[](int index) { return *Mutable(index); }
+  const Element& operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return Get(index);
+  }
+  Element& operator[](int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return *Mutable(index);
+  }
 
-  const Element& at(int index) const;
-  Element& at(int index);
+  const Element& at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  Element& at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Removes the last element in the array.
   // Ownership of the element is retained by the array.
@@ -1001,8 +1008,8 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
   Element**
-  mutable_data();
-  const Element* const* data() const;
+  mutable_data() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const Element* const* data() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Swaps entire contents with "other". If they are on separate arenas, then
   // copies data.
@@ -1028,22 +1035,26 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   typedef int size_type;
   typedef ptrdiff_t difference_type;
 
-  iterator begin();
-  const_iterator begin() const;
-  const_iterator cbegin() const;
-  iterator end();
-  const_iterator end() const;
-  const_iterator cend() const;
+  iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Reverse iterator support
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   typedef std::reverse_iterator<iterator> reverse_iterator;
-  reverse_iterator rbegin() { return reverse_iterator(end()); }
-  const_reverse_iterator rbegin() const {
+  reverse_iterator rbegin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return reverse_iterator(end());
+  }
+  const_reverse_iterator rbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(end());
   }
-  reverse_iterator rend() { return reverse_iterator(begin()); }
-  const_reverse_iterator rend() const {
+  reverse_iterator rend() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return reverse_iterator(begin());
+  }
+  const_reverse_iterator rend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(begin());
   }
 
@@ -1054,10 +1065,10 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   typedef internal::RepeatedPtrOverPtrsIterator<const Element* const,
                                                 const void* const>
       const_pointer_iterator;
-  pointer_iterator pointer_begin();
-  const_pointer_iterator pointer_begin() const;
-  pointer_iterator pointer_end();
-  const_pointer_iterator pointer_end() const;
+  pointer_iterator pointer_begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_pointer_iterator pointer_begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  pointer_iterator pointer_end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_pointer_iterator pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Returns (an estimate of) the number of bytes used by the repeated field,
   // excluding sizeof(*this).
@@ -1174,14 +1185,15 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // element.
   //
   // Invalidates all iterators at or after the removed element, including end().
-  iterator erase(const_iterator position);
+  iterator erase(const_iterator position) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Removes the elements in the range [first, last).
   //
   // Returns an iterator to the element immediately following the removed range.
   //
   // Invalidates all iterators at or after the removed range, including end().
-  iterator erase(const_iterator first, const_iterator last);
+  iterator erase(const_iterator first,
+                 const_iterator last) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Gets the arena on which this RepeatedPtrField stores its elements.
   inline Arena* GetArena();
@@ -1282,7 +1294,7 @@ RepeatedPtrField<Element>::~RepeatedPtrField() {
 
 template <typename Element>
 inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
-    const RepeatedPtrField& other) {
+    const RepeatedPtrField& other) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   if (this != &other) CopyFrom(other);
   return *this;
 }
@@ -1307,7 +1319,7 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
 
 template <typename Element>
 inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
-    RepeatedPtrField&& other) noexcept {
+    RepeatedPtrField&& other) noexcept ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
@@ -1335,28 +1347,33 @@ inline int RepeatedPtrField<Element>::size() const {
 }
 
 template <typename Element>
-inline const Element& RepeatedPtrField<Element>::Get(int index) const {
+inline const Element& RepeatedPtrField<Element>::Get(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::Get<TypeHandler>(index);
 }
 
 template <typename Element>
-inline const Element& RepeatedPtrField<Element>::at(int index) const {
+inline const Element& RepeatedPtrField<Element>::at(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::at<TypeHandler>(index);
 }
 
 template <typename Element>
-inline Element& RepeatedPtrField<Element>::at(int index) {
+inline Element& RepeatedPtrField<Element>::at(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::at<TypeHandler>(index);
 }
 
 
 template <typename Element>
-inline Element* RepeatedPtrField<Element>::Mutable(int index) {
+inline Element* RepeatedPtrField<Element>::Mutable(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::Mutable<TypeHandler>(index);
 }
 
 template <typename Element>
-PROTOBUF_NOINLINE Element* RepeatedPtrField<Element>::Add() {
+PROTOBUF_NOINLINE Element* RepeatedPtrField<Element>::Add()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::Add<TypeHandler>();
 }
 
@@ -1509,13 +1526,15 @@ inline void RepeatedPtrField<Element>::Assign(Iter begin, Iter end) {
 
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
-RepeatedPtrField<Element>::erase(const_iterator position) {
+RepeatedPtrField<Element>::erase(const_iterator position)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return erase(position, position + 1);
 }
 
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
-RepeatedPtrField<Element>::erase(const_iterator first, const_iterator last) {
+RepeatedPtrField<Element>::erase(const_iterator first, const_iterator last)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   size_type pos_offset = static_cast<size_type>(std::distance(cbegin(), first));
   size_type last_offset = static_cast<size_type>(std::distance(cbegin(), last));
   DeleteSubrange(pos_offset, last_offset - pos_offset);
@@ -1523,12 +1542,14 @@ RepeatedPtrField<Element>::erase(const_iterator first, const_iterator last) {
 }
 
 template <typename Element>
-inline Element** RepeatedPtrField<Element>::mutable_data() {
+inline Element** RepeatedPtrField<Element>::mutable_data()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::mutable_data<TypeHandler>();
 }
 
 template <typename Element>
-inline const Element* const* RepeatedPtrField<Element>::data() const {
+inline const Element* const* RepeatedPtrField<Element>::data() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::data<TypeHandler>();
 }
 
@@ -1843,53 +1864,53 @@ class RepeatedPtrOverPtrsIterator {
 
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
-RepeatedPtrField<Element>::begin() {
+RepeatedPtrField<Element>::begin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return iterator(raw_data());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
-RepeatedPtrField<Element>::begin() const {
+RepeatedPtrField<Element>::begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return iterator(raw_data());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
-RepeatedPtrField<Element>::cbegin() const {
+RepeatedPtrField<Element>::cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return begin();
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
-RepeatedPtrField<Element>::end() {
+RepeatedPtrField<Element>::end() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return iterator(raw_data() + size());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
-RepeatedPtrField<Element>::end() const {
+RepeatedPtrField<Element>::end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return iterator(raw_data() + size());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
-RepeatedPtrField<Element>::cend() const {
+RepeatedPtrField<Element>::cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return end();
 }
 
 template <typename Element>
 inline typename RepeatedPtrField<Element>::pointer_iterator
-RepeatedPtrField<Element>::pointer_begin() {
+RepeatedPtrField<Element>::pointer_begin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return pointer_iterator(raw_mutable_data());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_pointer_iterator
-RepeatedPtrField<Element>::pointer_begin() const {
+RepeatedPtrField<Element>::pointer_begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_pointer_iterator(const_cast<const void* const*>(raw_data()));
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::pointer_iterator
-RepeatedPtrField<Element>::pointer_end() {
+RepeatedPtrField<Element>::pointer_end() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return pointer_iterator(raw_mutable_data() + size());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_pointer_iterator
-RepeatedPtrField<Element>::pointer_end() const {
+RepeatedPtrField<Element>::pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_pointer_iterator(
       const_cast<const void* const*>(raw_data() + size()));
 }
