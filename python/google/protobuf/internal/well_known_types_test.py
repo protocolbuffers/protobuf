@@ -36,15 +36,15 @@ import collections.abc as collections_abc
 import datetime
 import unittest
 
-from google.protobuf import (
-    any_pb2,
-    duration_pb2,
-    struct_pb2,
-    text_format,
-    timestamp_pb2,
-    unittest_pb2,
-)
-from google.protobuf.internal import _parameterized, any_test_pb2, well_known_types
+from google.protobuf import any_pb2
+from google.protobuf import duration_pb2
+from google.protobuf import struct_pb2
+from google.protobuf import timestamp_pb2
+from google.protobuf.internal import any_test_pb2
+from google.protobuf.internal import well_known_types
+from google.protobuf import text_format
+from google.protobuf.internal import _parameterized
+from google.protobuf import unittest_pb2
 
 try:
   # New module in Python 3.9:
