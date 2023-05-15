@@ -4124,13 +4124,11 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     for (int j = 0; j < chunk.size(); j++) {
       const FieldDescriptor* field = chunk[j];
       bool have_enclosing_if = false;
-      bool need_extra_newline = false;
 
       PrintFieldComment(format, field);
 
       if (field->is_repeated()) {
         // No presence check is required.
-        need_extra_newline = true;
       } else if (HasHasbit(field)) {
         PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index);
         have_enclosing_if = true;
@@ -4149,9 +4147,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         format(
             "}\n"
             "\n");
-      }
-      if (need_extra_newline) {
-        format("\n");
       }
     }
 
