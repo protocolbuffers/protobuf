@@ -4344,8 +4344,7 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 7> ExtensionRangeOptions::_table_ = {
 
   // Extension range [1000, 536870912)
   target = _impl_._extensions_._InternalSerialize(
-  internal_default_instance(), 1000, 536870912, target, stream);
-
+      internal_default_instance(), 1000, 536870912, target, stream);
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -7532,8 +7531,7 @@ constexpr ::_pbi::TcParseTable<5, 21, 2, 202, 12> FileOptions::_table_ = {
 
   // Extension range [1000, 536870912)
   target = _impl_._extensions_._InternalSerialize(
-  internal_default_instance(), 1000, 536870912, target, stream);
-
+      internal_default_instance(), 1000, 536870912, target, stream);
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -8043,8 +8041,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 0, 7> MessageOptions::_table_ = {
 
   // Extension range [1000, 536870912)
   target = _impl_._extensions_._InternalSerialize(
-  internal_default_instance(), 1000, 536870912, target, stream);
-
+      internal_default_instance(), 1000, 536870912, target, stream);
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -8510,8 +8507,7 @@ constexpr ::_pbi::TcParseTable<4, 12, 6, 0, 7> FieldOptions::_table_ = {
 
   // Extension range [1000, 536870912)
   target = _impl_._extensions_._InternalSerialize(
-  internal_default_instance(), 1000, 536870912, target, stream);
-
+      internal_default_instance(), 1000, 536870912, target, stream);
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -8819,8 +8815,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 7> OneofOptions::_table_ = {
 
   // Extension range [1000, 536870912)
   target = _impl_._extensions_._InternalSerialize(
-  internal_default_instance(), 1000, 536870912, target, stream);
-
+      internal_default_instance(), 1000, 536870912, target, stream);
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -9081,8 +9076,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 1, 0, 7> EnumOptions::_table_ = {
 
   // Extension range [1000, 536870912)
   target = _impl_._extensions_._InternalSerialize(
-  internal_default_instance(), 1000, 536870912, target, stream);
-
+      internal_default_instance(), 1000, 536870912, target, stream);
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -9339,8 +9333,7 @@ constexpr ::_pbi::TcParseTable<2, 2, 1, 0, 7> EnumValueOptions::_table_ = {
 
   // Extension range [1000, 536870912)
   target = _impl_._extensions_._InternalSerialize(
-  internal_default_instance(), 1000, 536870912, target, stream);
-
+      internal_default_instance(), 1000, 536870912, target, stream);
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -9571,8 +9564,7 @@ constexpr ::_pbi::TcParseTable<2, 2, 1, 0, 12> ServiceOptions::_table_ = {
 
   // Extension range [1000, 536870912)
   target = _impl_._extensions_._InternalSerialize(
-  internal_default_instance(), 1000, 536870912, target, stream);
-
+      internal_default_instance(), 1000, 536870912, target, stream);
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -9828,8 +9820,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> MethodOptions::_table_ = {
 
   // Extension range [1000, 536870912)
   target = _impl_._extensions_._InternalSerialize(
-  internal_default_instance(), 1000, 536870912, target, stream);
-
+      internal_default_instance(), 1000, 536870912, target, stream);
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
