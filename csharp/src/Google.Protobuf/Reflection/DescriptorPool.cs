@@ -33,7 +33,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Google.Protobuf.Reflection
 {
@@ -176,8 +175,6 @@ namespace Google.Protobuf.Reflection
             descriptorsByName[fullName] = descriptor;
         }
 
-        private static readonly Regex ValidationRegex = new Regex("^[_A-Za-z][_A-Za-z0-9]*$", FrameworkPortability.CompiledRegexWhereAvailable);
-
         /// <summary>
         /// Verifies that the descriptor's name is valid (i.e. it contains
         /// only letters, digits and underscores, and does not start with a digit).
@@ -189,11 +186,24 @@ namespace Google.Protobuf.Reflection
             {
                 throw new DescriptorValidationException(descriptor, "Missing name.");
             }
-            if (!ValidationRegex.IsMatch(descriptor.Name))
-            {
-                throw new DescriptorValidationException(descriptor,
-                                                        "\"" + descriptor.Name + "\" is not a valid identifier.");
+
+            // Symbol name must start with a letter or underscore, and it can contain letters,
+            // numbers and underscores.
+            string name = descriptor.Name;
+            if (!IsAsciiLetter(name[0]) && name[0] != '_') {
+                ThrowInvalidSymbolNameException(descriptor);
             }
+            for (int i = 1; i < name.Length; i++) {
+                if (!IsAsciiLetter(name[i]) && !IsAsciiDigit(name[i]) && name[i] != '_') {
+                    ThrowInvalidSymbolNameException(descriptor);
+                }
+            }
+
+            static bool IsAsciiLetter(char c) => (uint)((c | 0x20) - 'a') <= 'z' - 'a';
+            static bool IsAsciiDigit(char c) => (uint)(c - '0') <= '9' - '0';
+            static void ThrowInvalidSymbolNameException(IDescriptor descriptor) =>
+                throw new DescriptorValidationException(
+                    descriptor, "\"" + descriptor.Name + "\" is not a valid identifier.");
         }
 
         /// <summary>
