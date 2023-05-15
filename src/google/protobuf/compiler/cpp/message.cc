@@ -320,10 +320,6 @@ bool IsCrossFileMaybeMap(const FieldDescriptor* field) {
   return IsCrossFileMessage(field);
 }
 
-bool IsRequired(const std::vector<const FieldDescriptor*>& v) {
-  return v.front()->is_required();
-}
-
 bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
   for (const auto* field : FieldRange(desc)) {
     if (IsString(field, options) && !field->is_repeated() &&
@@ -1688,14 +1684,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         "inline bool has_$1$() const;\n"
         "inline void clear_has_$1$();\n\n",
         oneof->name());
-  }
-
-  if (HasGeneratedMethods(descriptor_->file(), options_) &&
-      !descriptor_->options().message_set_wire_format() &&
-      num_required_fields_ > 1) {
-    format(
-        "// helper for ByteSizeLong()\n"
-        "::size_t RequiredFieldsByteSizeFallback() const;\n\n");
   }
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
@@ -4075,34 +4063,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   }
 
   Formatter format(p);
-  if (num_required_fields_ > 1) {
-    // Emit a function (rarely used, we hope) that handles the required fields
-    // by checking for each one individually.
-    format(
-        "::size_t $classname$::RequiredFieldsByteSizeFallback() const {\n"
-        "// @@protoc_insertion_point(required_fields_byte_size_fallback_start:"
-        "$full_name$)\n");
-    format.Indent();
-    format("::size_t total_size = 0;\n");
-    for (auto field : optimized_order_) {
-      if (field->is_required()) {
-        format("\n");
-        auto v = p->WithVars(HasBitVars(field));
-        format("if (($has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
-        format.Indent();
-        PrintFieldComment(format, field);
-        field_generators_.get(field).GenerateByteSize(p);
-        format.Outdent();
-        format("}\n");
-      }
-    }
-    format(
-        "\n"
-        "return total_size;\n");
-    format.Outdent();
-    format("}\n");
-  }
-
   format(
       "::size_t $classname$::ByteSizeLong() const {\n"
       "$annotate_bytesize$"
@@ -4118,52 +4078,12 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         "\n");
   }
 
-  // Handle required fields (if any).  We expect all of them to be
-  // present, so emit one conditional that checks for that.  If they are all
-  // present then the fast path executes; otherwise the slow path executes.
-  if (num_required_fields_ > 1) {
-    // The fast path works if all required fields are present.
-    const std::vector<uint32_t> masks_for_has_bits = RequiredFieldsBitMask();
-    format("if ($1$) {  // All required fields are present.\n",
-           ConditionalToCheckBitmasks(masks_for_has_bits));
-    format.Indent();
-    // Oneof fields cannot be required, so optimized_order_ contains all of the
-    // fields that we need to potentially emit.
-    for (auto field : optimized_order_) {
-      if (!field->is_required()) continue;
-      PrintFieldComment(format, field);
-      field_generators_.get(field).GenerateByteSize(p);
-      format("\n");
-    }
-    format.Outdent();
-    format(
-        "} else {\n"  // the slow path
-        "  total_size += RequiredFieldsByteSizeFallback();\n"
-        "}\n");
-  } else {
-    // num_required_fields_ <= 1: no need to be tricky
-    for (auto field : optimized_order_) {
-      if (!field->is_required()) continue;
-      PrintFieldComment(format, field);
-      auto v = p->WithVars(HasBitVars(field));
-      format("if (($has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
-      format.Indent();
-      field_generators_.get(field).GenerateByteSize(p);
-      format.Outdent();
-      format("}\n");
-    }
-  }
-
   std::vector<std::vector<const FieldDescriptor*>> chunks = CollectFields(
       optimized_order_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });
-
-  // Remove chunks with required fields.
-  chunks.erase(std::remove_if(chunks.begin(), chunks.end(), IsRequired),
-               chunks.end());
 
   ColdChunkSkipper cold_skipper(descriptor_, options_, chunks, has_bit_indices_,
                                 kColdRatio);

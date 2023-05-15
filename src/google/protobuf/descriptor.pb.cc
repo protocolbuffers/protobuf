@@ -10079,42 +10079,28 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
   return target;
 }
 
-::size_t UninterpretedOption_NamePart::RequiredFieldsByteSizeFallback() const {
-// @@protoc_insertion_point(required_fields_byte_size_fallback_start:google.protobuf.UninterpretedOption.NamePart)
-  ::size_t total_size = 0;
-
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    // required string name_part = 1;
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_name_part());
-  }
-
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    // required bool is_extension = 2;
-    total_size += 2;
-  }
-
-  return total_size;
-}
 ::size_t UninterpretedOption_NamePart::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption.NamePart)
   ::size_t total_size = 0;
 
-  if (((_impl_._has_bits_[0] & 0x00000003) ^ 0x00000003) == 0) {  // All required fields are present.
-    // required string name_part = 1;
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_name_part());
-
-    // required bool is_extension = 2;
-    total_size += 2;
-
-  } else {
-    total_size += RequiredFieldsByteSizeFallback();
-  }
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    // required string name_part = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_name_part());
+    }
+
+    // required bool is_extension = 2;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 2;
+    }
+
+  }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
