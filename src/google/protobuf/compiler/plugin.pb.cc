@@ -453,7 +453,7 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
     ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.Version)
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   // optional int32 major = 1;
@@ -486,8 +486,9 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.compiler.Version)
   return target;
@@ -771,7 +772,7 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
     ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorRequest)
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   // repeated string file_to_generate = 1;
   for (int i = 0, n = this->_internal_file_to_generate_size(); i < n; ++i) {
@@ -806,8 +807,9 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.compiler.CodeGeneratorRequest)
   return target;
@@ -827,14 +829,12 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
         _internal_file_to_generate().Get(i));
   }
-
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   total_size += 1UL * this->_internal_proto_file_size();
   for (const auto& msg : this->_internal_proto_file()) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional string parameter = 2;
@@ -1119,7 +1119,7 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
     ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   // optional string name = 1;
@@ -1154,8 +1154,9 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.compiler.CodeGeneratorResponse.File)
   return target;
@@ -1409,7 +1410,7 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse)
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   // optional string error = 1;
@@ -1436,8 +1437,9 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.compiler.CodeGeneratorResponse)
   return target;
@@ -1457,7 +1459,6 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
-
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional string error = 1;
