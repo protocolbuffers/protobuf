@@ -1299,6 +1299,7 @@ TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {
   unittest::TestAllTypes message;
+  unittest::ForeignMessage foreign;
   const Reflection* reflection = message.GetReflection();
   const Descriptor* descriptor = message.GetDescriptor();
 
@@ -1322,6 +1323,15 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
                "  Field       : protobuf_unittest.TestAllTypes.repeated_int32\n"
                "  Problem     : Field is repeated; the method requires a "
                "singular field.");
+  EXPECT_DEBUG_DEATH(
+      reflection->GetInt32(foreign,
+                           descriptor->FindFieldByName("optional_int32")),
+      "Protocol Buffer reflection usage error:\n"
+      "  Method       : google::protobuf::Reflection::GetInt32\n"
+      "  Expected type: protobuf_unittest.TestAllTypes\n"
+      "  Actual type  : protobuf_unittest.ForeignMessage\n"
+      "  Field        : protobuf_unittest.TestAllTypes.optional_int32\n"
+      "  Problem      : Message is not the right type for reflection");
   EXPECT_DEATH(
       reflection->GetInt32(
           message,
