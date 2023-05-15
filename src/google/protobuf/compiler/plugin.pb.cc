@@ -361,7 +361,7 @@ inline void Version::SharedCtor(::_pb::Arena* arena) {
 }
 Version::~Version() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.Version)
-  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void Version::SharedDtor() {
@@ -667,7 +667,7 @@ inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* arena) {
 }
 CodeGeneratorRequest::~CodeGeneratorRequest() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorRequest)
-  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void CodeGeneratorRequest::SharedDtor() {
@@ -1015,7 +1015,7 @@ inline void CodeGeneratorResponse_File::SharedCtor(::_pb::Arena* arena) {
 }
 CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse.File)
-  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void CodeGeneratorResponse_File::SharedDtor() {
@@ -1324,7 +1324,7 @@ inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* arena) {
 }
 CodeGeneratorResponse::~CodeGeneratorResponse() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse)
-  _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void CodeGeneratorResponse::SharedDtor() {
