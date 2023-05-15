@@ -44,6 +44,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 
@@ -71,6 +72,8 @@ void SetPrimitiveVariables(
   variables->insert({"field_type", (*variables)["type"]});
 
   std::string name = (*variables)["name"];
+  (*variables)["name_make_immutable"] = absl::StrCat(name, "_.makeImmutable()");
+  (*variables)["repeated_return_list"] = absl::StrCat("return ", name, "_");
   if (javaType == JAVATYPE_BOOLEAN || javaType == JAVATYPE_DOUBLE ||
       javaType == JAVATYPE_FLOAT || javaType == JAVATYPE_INT ||
       javaType == JAVATYPE_LONG) {
@@ -80,12 +83,8 @@ void SetPrimitiveVariables(
         absl::StrCat("com.google.protobuf.Internal.", capitalized_type, "List");
     (*variables)["empty_list"] =
         absl::StrCat("empty", capitalized_type, "List()");
-    (*variables)["create_list"] =
-        absl::StrCat("new", capitalized_type, "List()");
     (*variables)["mutable_copy_list"] =
         absl::StrCat("mutableCopy(", name, "_)");
-    (*variables)["name_make_immutable"] =
-        absl::StrCat(name, "_.makeImmutable()");
     (*variables)["repeated_get"] =
         absl::StrCat(name, "_.get", capitalized_type);
     (*variables)["repeated_add"] =
@@ -95,14 +94,13 @@ void SetPrimitiveVariables(
   } else {
     std::string boxed_type = (*variables)["boxed_type"];
     (*variables)["field_list_type"] =
-        absl::StrCat("java.util.List<", boxed_type, ">");
-    (*variables)["create_list"] =
-        absl::StrCat("new java.util.ArrayList<", boxed_type, ">()");
-    (*variables)["mutable_copy_list"] =
-        absl::StrCat("new java.util.ArrayList<", boxed_type, ">(", name, "_)");
-    (*variables)["empty_list"] = "java.util.Collections.emptyList()";
-    (*variables)["name_make_immutable"] = absl::StrCat(
-        name, "_ = java.util.Collections.unmodifiableList(", name, "_)");
+        "com.google.protobuf.LazyStringArrayList.ByteStringArrayList";
+    (*variables)["mutable_copy_list"] = absl::StrCat(
+        "new com.google.protobuf.LazyStringArrayList.ByteStringArrayList(",
+        name, "_)");
+    (*variables)["empty_list"] =
+        "com.google.protobuf.LazyStringArrayList.ByteStringArrayList.emptyList("
+        ")";
     (*variables)["repeated_get"] = absl::StrCat(name, "_.get");
     (*variables)["repeated_add"] = absl::StrCat(name, "_.add");
     (*variables)["repeated_set"] = absl::StrCat(name, "_.set");
@@ -171,13 +169,6 @@ void SetPrimitiveVariables(
         break;
     }
   }
-  // For repeated bytes builders, one bit is used for whether the array is
-  // mutable.
-  // TODO(b/255468704): migrate bytes field to ProtobufList so that we can
-  // use the bit field to track their presence instead of mutability.
-  (*variables)["get_mutable_bit_builder"] = GenerateGetBit(builderBitIndex);
-  (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
-  (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
 
   // Always track the presence of a field explicitly in the builder, regardless
   // of syntax.
@@ -705,7 +696,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateMembers(
                  "@java.lang.Override\n"
                  "$deprecation$public java.util.List<$boxed_type$>\n"
                  "    ${$get$capitalized_name$List$}$() {\n"
-                 "  return $name$_;\n"  // note:  unmodifiable list
+                 "  $repeated_return_list$;\n"  // note:  unmodifiable list
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
@@ -741,47 +732,25 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
   // just that the list cannot be modified via the reference but that the
   // list can never be modified.
   printer->Print(variables_,
-                 "private $field_list_type$ $name$_ = $empty_list$;\n");
-
-  if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
-    printer->Print(variables_,
-                   "private void ensure$capitalized_name$IsMutable() {\n"
-                   "  if (!$get_mutable_bit_builder$) {\n"
-                   "    $name$_ = $mutable_copy_list$;\n"
-                   "    $set_mutable_bit_builder$;\n"
-                   "  }\n"
-                   "}\n");
-  } else {
-    printer->Print(variables_,
-                   "private void ensure$capitalized_name$IsMutable() {\n"
-                   "  if (!$name$_.isModifiable()) {\n"
-                   "    $name$_ = $mutable_copy_list$;\n"
-                   "  }\n"
-                   "  $set_has_field_bit_builder$\n"
-                   "}\n");
-  }
+                 "private $field_list_type$ $name$_ = $empty_list$;\n"
+                 "private void ensure$capitalized_name$IsMutable() {\n"
+                 "  if (!$name$_.isModifiable()) {\n"
+                 "    $name$_ = $mutable_copy_list$;\n"
+                 "  }\n"
+                 "  $set_has_field_bit_builder$\n"
+                 "}\n");
 
   // Note:  We return an unmodifiable list because otherwise the caller
   //   could hold on to the returned list and modify it after the message
   //   has been built, thus mutating the message which is supposed to be
   //   immutable.
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
-  if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
-    printer->Print(variables_,
-                   "$deprecation$public java.util.List<$boxed_type$>\n"
-                   "    ${$get$capitalized_name$List$}$() {\n"
-                   "  return $get_mutable_bit_builder$ ?\n"
-                   "           java.util.Collections.unmodifiableList($name$_) "
-                   ": $name$_;\n"
-                   "}\n");
-  } else {
-    printer->Print(variables_,
-                   "$deprecation$public java.util.List<$boxed_type$>\n"
-                   "    ${$get$capitalized_name$List$}$() {\n"
-                   "  $name$_.makeImmutable();\n"
-                   "  return $name$_;\n"
-                   "}\n");
-  }
+  printer->Print(variables_,
+                 "$deprecation$public java.util.List<$boxed_type$>\n"
+                 "    ${$get$capitalized_name$List$}$() {\n"
+                 "  $name$_.makeImmutable();\n"
+                 "  $repeated_return_list$;\n"
+                 "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
   printer->Print(
@@ -804,15 +773,12 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "    int index, $type$ value) {\n"
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
-                 "  $repeated_set$(index, value);\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-  if (descriptor_->type() != FieldDescriptor::TYPE_BYTES) {
-    printer->Print(variables_, "  $set_has_field_bit_builder$\n");
-  }
-  printer->Print(variables_,
+                 "  $repeated_set$(index, value);\n"
+                 "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -820,15 +786,12 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "${$add$capitalized_name$$}$($type$ value) {\n"
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
-                 "  $repeated_add$(value);\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-  if (descriptor_->type() != FieldDescriptor::TYPE_BYTES) {
-    printer->Print(variables_, "  $set_has_field_bit_builder$\n");
-  }
-  printer->Print(variables_,
+                 "  $repeated_add$(value);\n"
+                 "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -836,22 +799,19 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
-                 "      values, $name$_);\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-  if (descriptor_->type() != FieldDescriptor::TYPE_BYTES) {
-    printer->Print(variables_, "  $set_has_field_bit_builder$\n");
-  }
-  printer->Print(variables_,
+                 "      values, $name$_);\n"
+                 "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  $name$_ = $empty_list$;\n"
-      "  $clear_mutable_bit_builder$;\n"
+      "  $clear_has_field_bit_builder$\n"
       "  $on_changed$\n"
       "  return this;\n"
       "}\n");
@@ -977,14 +937,9 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateMergingCode(
   printer->Print(variables_,
                  "if (!other.$name$_.isEmpty()) {\n"
                  "  if ($name$_.isEmpty()) {\n"
-                 "    $name$_ = other.$name$_;\n");
-  if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
-    printer->Print(variables_, "    $clear_mutable_bit_builder$;\n");
-  } else {
-    printer->Print(variables_,
-                   "    $name$_.makeImmutable();\n"
-                   "    $set_has_field_bit_builder$\n");
-  }
+                 "    $name$_ = other.$name$_;\n"
+                 "    $name$_.makeImmutable();\n"
+                 "    $set_has_field_bit_builder$\n");
   printer->Print(variables_,
                  "  } else {\n"
                  "    ensure$capitalized_name$IsMutable();\n"
@@ -998,20 +953,11 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   // The code below ensures that the result has an immutable list. If our
   // list is immutable, we can just reuse it. If not, we make it immutable.
-  if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
-    printer->Print(variables_,
-                   "if ($get_mutable_bit_builder$) {\n"
-                   "  $name_make_immutable$;\n"
-                   "  $clear_mutable_bit_builder$;\n"
-                   "}\n"
-                   "result.$name$_ = $name$_;\n");
-  } else {
     printer->Print(variables_,
                    "if ($get_has_field_bit_from_local$) {\n"
                    "  $name_make_immutable$;\n"
                    "  result.$name$_ = $name$_;\n"
                    "}\n");
-  }
 }
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(

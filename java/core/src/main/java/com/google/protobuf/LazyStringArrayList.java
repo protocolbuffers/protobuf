@@ -366,17 +366,50 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
       return asByteArray(o);
     }
   }
-
+  
+  
   @Override
   public List<byte[]> asByteArrayList() {
     return new ByteArrayListView(this);
   }
 
-  private static class ByteStringListView extends AbstractList<ByteString> implements RandomAccess {
+  /**
+   * A class that wraps a LazyStringArrayList and can be converted to {@code List<ByteString>} while
+   * also supporting mutability operations.
+   */
+  public static class ByteStringArrayList extends AbstractProtobufList<ByteString>
+      implements RandomAccess {
+
+    private static final ByteStringArrayList EMPTY_LIST =
+        new ByteStringArrayList(LazyStringArrayList.emptyList());
+
     private final LazyStringArrayList list;
 
-    ByteStringListView(LazyStringArrayList list) {
+    public ByteStringArrayList() {
+      list = new LazyStringArrayList();
+    }
+
+    /**
+     * Creates a {@code ByteStringArrayList} from a {@code LazyStringArrayList} and inherits its
+     * mutability.
+     */
+    public ByteStringArrayList(LazyStringArrayList list) {
+      super(list.isModifiable());
       this.list = list;
+    }
+
+    public ByteStringArrayList(ByteStringArrayList from) {
+      this.list = new LazyStringArrayList(from.list);
+    }
+
+    /** Returns an empty immutable {@code ByteStringArrayList} instance */
+    public static ByteStringArrayList emptyList() {
+      return EMPTY_LIST;
+    }
+
+    @Override
+    public ByteStringArrayList mutableCopyWithCapacity(int capacity) {
+      return new ByteStringArrayList(list.mutableCopyWithCapacity(capacity));
     }
 
     @Override
@@ -391,6 +424,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
 
     @Override
     public ByteString set(int index, ByteString s) {
+      ensureIsMutable();
       Object o = list.setAndReturn(index, s);
       modCount++;
       return asByteString(o);
@@ -398,12 +432,14 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
 
     @Override
     public void add(int index, ByteString s) {
+      ensureIsMutable();
       list.add(index, s);
       modCount++;
     }
 
     @Override
     public ByteString remove(int index) {
+      ensureIsMutable();
       Object o = list.remove(index);
       modCount++;
       return asByteString(o);
@@ -412,7 +448,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
 
   @Override
   public List<ByteString> asByteStringList() {
-    return new ByteStringListView(this);
+    return new ByteStringArrayList(this);
   }
 
   @Override
