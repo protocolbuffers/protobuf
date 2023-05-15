@@ -53,6 +53,7 @@ namespace java {
 
 using internal::WireFormat;
 using internal::WireFormatLite;
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 namespace {
 bool EnableExperimentalRuntimeForLite() {
@@ -323,7 +324,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.set$capitalized_name$(value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
@@ -334,7 +335,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void ImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
@@ -484,7 +485,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.set$capitalized_name$(value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
@@ -495,7 +496,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 // ===================================================================
@@ -649,7 +650,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.set$capitalized_name$(index, value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -659,7 +660,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.add$capitalized_name$(value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -669,7 +670,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.addAll$capitalized_name$(values);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
@@ -679,7 +680,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
