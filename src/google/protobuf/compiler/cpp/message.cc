@@ -3640,36 +3640,52 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
                                                  const FieldDescriptor* field,
                                                  int cached_has_bits_index) {
   auto v = p->WithVars(FieldVars(field, options_));
-  Formatter format(p);
-  if (!field->options().weak()) {
-    // For weakfields, PrintFieldComment is called during iteration.
-    PrintFieldComment(format, field);
-  }
+  auto emit_body = [&] {
+    field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
+  };
 
-  bool have_enclosing_if = false;
   if (field->options().weak()) {
-  } else if (HasHasbit(field)) {
-    // Attempt to use the state of cached_has_bits, if possible.
-    int has_bit_index = HasBitIndex(field);
-    auto v = p->WithVars(HasBitVars(field));
-    if (cached_has_bits_index == has_bit_index / 32) {
-      format("if (cached_has_bits & $has_mask$) {\n");
-    } else {
-      format("if (($has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
+    emit_body();
+    p->Emit("\n");
+    return;
+  }
+
+  PrintFieldComment(Formatter{p}, field);
+  if (HasHasbit(field)) {
+    p->Emit(
+        {
+            {"body", emit_body},
+            {"cond",
+             [&] {
+               int has_bit_index = HasBitIndex(field);
+               auto v = p->WithVars(HasBitVars(field));
+               // Attempt to use the state of cached_has_bits, if possible.
+               if (cached_has_bits_index == has_bit_index / 32) {
+                 p->Emit("cached_has_bits & $has_mask$");
+               } else {
+                 p->Emit("($has_bits$[$has_array_index$] & $has_mask$) != 0");
+               }
+             }},
+        },
+        R"cc(
+          if ($cond$) {
+            $body$;
+          }
+        )cc");
+  } else if (field->is_optional()) {
+    bool have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
+    if (have_enclosing_if) p->Indent();
+    emit_body();
+    if (have_enclosing_if) {
+      p->Outdent();
+      p->Emit(R"cc(
+        }
+      )cc");
     }
-
-    have_enclosing_if = true;
-  } else if (field->is_optional() && !HasHasbit(field)) {
-    have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
+  } else {
+    emit_body();
   }
-
-  if (have_enclosing_if) format.Indent();
-  field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
-  if (have_enclosing_if) {
-    format.Outdent();
-    format("}\n");
-  }
-  format("\n");
+  p->Emit("\n");
 }
 
 void MessageGenerator::GenerateSerializeOneExtensionRange(io::Printer* p,
@@ -3702,42 +3718,40 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
     return;
   }
 
-  Formatter format(p);
-  format(
-      "$uint8$* $classname$::_InternalSerialize(\n"
-      "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
-      "const {\n"
-      "$annotate_serialize$");
-  format.Indent();
-
-  format("// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n");
-
-  if (!ShouldSerializeInOrder(descriptor_, options_)) {
-    format.Outdent();
-    format("#ifdef NDEBUG\n");
-    format.Indent();
-  }
-
-  GenerateSerializeWithCachedSizesBody(p);
-
-  if (!ShouldSerializeInOrder(descriptor_, options_)) {
-    format.Outdent();
-    format("#else  // NDEBUG\n");
-    format.Indent();
-
-    GenerateSerializeWithCachedSizesBodyShuffled(p);
-
-    format.Outdent();
-    format("#endif  // !NDEBUG\n");
-    format.Indent();
-  }
-
-  format("// @@protoc_insertion_point(serialize_to_array_end:$full_name$)\n");
-
-  format.Outdent();
-  format(
-      "  return target;\n"
-      "}\n");
+  p->Emit(
+      {
+          {"debug_cond", ShouldSerializeInOrder(descriptor_, options_)
+                             ? "1"
+                             : "defined(NDEBUG)"},
+          {"ndebug", [&] { GenerateSerializeWithCachedSizesBody(p); }},
+          {"debug", [&] { GenerateSerializeWithCachedSizesBodyShuffled(p); }},
+          {"ifdef",
+           [&] {
+             if (ShouldSerializeInOrder(descriptor_, options_)) {
+               p->Emit("$ndebug$");
+             } else {
+               p->Emit(R"cc(
+                 //~ force indenting level
+#ifdef NDEBUG
+                 $ndebug$;
+#else   // NDEBUG
+                 $debug$;
+#endif  // !NDEBUG
+               )cc");
+             }
+           }},
+      },
+      R"cc(
+        $uint8$* $classname$::_InternalSerialize(
+            $uint8$* target,
+            ::$proto_ns$::io::EpsCopyOutputStream* stream) const {
+          $annotate_serialize$;
+          // @@protoc_insertion_point(serialize_to_array_start:$full_name$)
+          $ifdef$;
+          // @@protoc_insertion_point(serialize_to_array_end:$full_name$)
+          return target;
+        }
+      )cc");
 }
 
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
