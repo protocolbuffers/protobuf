@@ -395,6 +395,7 @@ upb_proto_library = rule(
             providers = [ProtoInfo],
         ),
     },
+    provides = [CcInfo],
 )
 
 # upb_proto_reflection_library() ###############################################
@@ -451,4 +452,5 @@ upb_proto_reflection_library = rule(
             providers = [ProtoInfo],
         ),
     },
+    provides = [CcInfo],
 )
