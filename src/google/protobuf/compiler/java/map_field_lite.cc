@@ -48,6 +48,7 @@ namespace compiler {
 namespace java {
 
 namespace {
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 std::string TypeName(const FieldDescriptor* field,
                      ClassNameResolver* name_resolver, bool boxed) {
@@ -602,7 +603,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.getMutable$capitalized_name$Map().clear();\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$\n"
@@ -613,7 +614,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.getMutable$capitalized_name$Map().remove(key);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
     if (context_->options().opensource_runtime) {
@@ -694,7 +695,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
         "  instance.getMutable$capitalized_name$Map().putAll(values);\n"
         "  return this;\n"
         "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
     if (SupportUnknownEnumValue(value)) {
       printer->Print(
           variables_,
@@ -771,7 +772,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
           "  instance.getMutable$capitalized_name$ValueMap().putAll(values);\n"
           "  return this;\n"
           "}\n");
-      printer->Annotate("{", "}", descriptor_);
+      printer->Annotate("{", "}", descriptor_, Semantic::kSet);
     }
   } else {
     if (context_->options().opensource_runtime) {
@@ -840,7 +841,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
         "  instance.getMutable$capitalized_name$Map().put(key, value);\n"
         "  return this;\n"
         "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
     WriteFieldDocComment(printer, descriptor_);
     printer->Print(
         variables_,
@@ -851,7 +852,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
         "  instance.getMutable$capitalized_name$Map().putAll(values);\n"
         "  return this;\n"
         "}\n");
-    printer->Annotate("{", "}", descriptor_);
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   }
 }
 
