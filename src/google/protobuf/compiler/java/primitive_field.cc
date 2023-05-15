@@ -53,6 +53,7 @@ namespace compiler {
 namespace java {
 
 using internal::WireFormat;
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 namespace {
 
@@ -290,7 +291,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
@@ -298,7 +299,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  $clear_has_field_bit_builder$\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   JavaType type = GetJavaType(descriptor_);
   if (type == JAVATYPE_STRING || type == JAVATYPE_BYTES) {
     // The default value is not a simple literal so we want to avoid executing
@@ -581,7 +582,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
@@ -595,7 +596,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderClearCode(
@@ -804,7 +805,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $repeated_set$(index, value);\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   if (descriptor_->type() != FieldDescriptor::TYPE_BYTES) {
     printer->Print(variables_, "  $set_has_field_bit_builder$\n");
   }
@@ -820,7 +821,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $repeated_add$(value);\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   if (descriptor_->type() != FieldDescriptor::TYPE_BYTES) {
     printer->Print(variables_, "  $set_has_field_bit_builder$\n");
   }
@@ -836,7 +837,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
                  "      values, $name$_);\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   if (descriptor_->type() != FieldDescriptor::TYPE_BYTES) {
     printer->Print(variables_, "  $set_has_field_bit_builder$\n");
   }
@@ -854,7 +855,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
       "  $on_changed$\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateKotlinDslMembers(

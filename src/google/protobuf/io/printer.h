@@ -646,21 +646,25 @@ class PROTOBUF_EXPORT Printer {
 
   // Link a substitution variable emitted by the last call to Print to the file
   // with path file_name.
-  void Annotate(absl::string_view varname, absl::string_view file_name) {
-    Annotate(varname, varname, file_name);
+  void Annotate(
+      absl::string_view varname, absl::string_view file_name,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt) {
+    Annotate(varname, varname, file_name, semantic);
   }
 
   // Link the output range defined by the substitution variables as emitted by
   // the last call to Print to the file with path file_name. The range begins
   // at begin_varname's value and ends after the last character of the value
   // substituted for end_varname.
-  void Annotate(absl::string_view begin_varname, absl::string_view end_varname,
-                absl::string_view file_name) {
+  void Annotate(
+      absl::string_view begin_varname, absl::string_view end_varname,
+      absl::string_view file_name,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt) {
     if (options_.annotation_collector == nullptr) {
       return;
     }
 
-    Annotate(begin_varname, end_varname, file_name, {}, absl::nullopt);
+    Annotate(begin_varname, end_varname, file_name, {}, semantic);
   }
 
   // Indent text by `options.spaces_per_indent`; undone by Outdent().
