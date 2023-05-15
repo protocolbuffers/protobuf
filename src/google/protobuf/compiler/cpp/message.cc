@@ -156,7 +156,7 @@ std::vector<const FieldDescriptor*> SortFieldsByNumber(
 struct ExtensionRangeSorter {
   bool operator()(const Descriptor::ExtensionRange* left,
                   const Descriptor::ExtensionRange* right) const {
-    return left->start_number() < right->start_number();
+    return left->start < right->start;
   }
 };
 
@@ -1180,6 +1180,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
         "SuperType;\n"
         "  $classname$();\n"
+        // Templatize constexpr constructor as a workaround for a bug in gcc 12
+        // (warning in gcc 13).
+        "  template <typename = void>\n"
         "  explicit PROTOBUF_CONSTEXPR $classname$(\n"
         "      ::$proto_ns$::internal::ConstantInitialized);\n"
         "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
@@ -1273,6 +1276,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     format("~$classname$() override;\n");
   }
   format(
+      // Templatize constexpr constructor as a workaround for a bug in gcc 12
+      // (warning in gcc 13).
+      "template<typename = void>\n"
       "explicit PROTOBUF_CONSTEXPR "
       "$classname$(::$proto_ns$::internal::ConstantInitialized);\n"
       "\n"
@@ -2538,6 +2544,9 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
 
   if (IsMapEntryMessage(descriptor_) || !HasImplData(descriptor_, options_)) {
     p->Emit(R"cc(
+      //~ Templatize constexpr constructor as a workaround for a bug in gcc 12
+      //~ (warning in gcc 13).
+      template <typename>
       $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized) {}
     )cc");
     return;
@@ -2616,6 +2625,9 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
            }},
       },
       R"cc(
+        //~ Templatize constexpr constructor as a workaround for a bug in gcc 12
+        //~ (warning in gcc 13).
+        template <typename>
         $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
             : _impl_{$init_body$} {}
       )cc");

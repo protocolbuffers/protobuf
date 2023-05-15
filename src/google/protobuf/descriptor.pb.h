@@ -528,6 +528,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
  public:
   inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
   ~FileDescriptorSet() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
 
   FileDescriptorSet(const FileDescriptorSet& from);
@@ -692,6 +693,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
  public:
   inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
   ~FileDescriptorProto() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   FileDescriptorProto(const FileDescriptorProto& from);
@@ -1097,6 +1099,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
  public:
   inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
   ~DescriptorProto_ExtensionRange() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
 
   DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from);
@@ -1285,6 +1288,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
  public:
   inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
   ~DescriptorProto_ReservedRange() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
 
   DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from);
@@ -1456,6 +1460,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
  public:
   inline DescriptorProto() : DescriptorProto(nullptr) {}
   ~DescriptorProto() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR DescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   DescriptorProto(const DescriptorProto& from);
@@ -1810,6 +1815,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
  public:
   inline ExtensionRangeOptions_Declaration() : ExtensionRangeOptions_Declaration(nullptr) {}
   ~ExtensionRangeOptions_Declaration() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
 
   ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from);
@@ -2045,6 +2051,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
  public:
   inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
   ~ExtensionRangeOptions() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
 
   ExtensionRangeOptions(const ExtensionRangeOptions& from);
@@ -2418,6 +2425,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
  public:
   inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
   ~FieldDescriptorProto() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   FieldDescriptorProto(const FieldDescriptorProto& from);
@@ -2797,6 +2805,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
  public:
   inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
   ~OneofDescriptorProto() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   OneofDescriptorProto(const OneofDescriptorProto& from);
@@ -2978,6 +2987,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
  public:
   inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
   ~EnumDescriptorProto_EnumReservedRange() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
 
   EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from);
@@ -3149,6 +3159,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
  public:
   inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
   ~EnumDescriptorProto() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   EnumDescriptorProto(const EnumDescriptorProto& from);
@@ -3402,6 +3413,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
  public:
   inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
   ~EnumValueDescriptorProto() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   EnumValueDescriptorProto(const EnumValueDescriptorProto& from);
@@ -3596,6 +3608,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
  public:
   inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
   ~ServiceDescriptorProto() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   ServiceDescriptorProto(const ServiceDescriptorProto& from);
@@ -3797,6 +3810,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
  public:
   inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
   ~MethodDescriptorProto() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   MethodDescriptorProto(const MethodDescriptorProto& from);
@@ -4042,6 +4056,7 @@ class PROTOBUF_EXPORT FileOptions final :
  public:
   inline FileOptions() : FileOptions(nullptr) {}
   ~FileOptions() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR FileOptions(::google::protobuf::internal::ConstantInitialized);
 
   FileOptions(const FileOptions& from);
@@ -4701,6 +4716,7 @@ class PROTOBUF_EXPORT MessageOptions final :
  public:
   inline MessageOptions() : MessageOptions(nullptr) {}
   ~MessageOptions() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR MessageOptions(::google::protobuf::internal::ConstantInitialized);
 
   MessageOptions(const MessageOptions& from);
@@ -5084,6 +5100,7 @@ class PROTOBUF_EXPORT FieldOptions final :
  public:
   inline FieldOptions() : FieldOptions(nullptr) {}
   ~FieldOptions() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldOptions(::google::protobuf::internal::ConstantInitialized);
 
   FieldOptions(const FieldOptions& from);
@@ -5644,6 +5661,7 @@ class PROTOBUF_EXPORT OneofOptions final :
  public:
   inline OneofOptions() : OneofOptions(nullptr) {}
   ~OneofOptions() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR OneofOptions(::google::protobuf::internal::ConstantInitialized);
 
   OneofOptions(const OneofOptions& from);
@@ -5961,6 +5979,7 @@ class PROTOBUF_EXPORT EnumOptions final :
  public:
   inline EnumOptions() : EnumOptions(nullptr) {}
   ~EnumOptions() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumOptions(::google::protobuf::internal::ConstantInitialized);
 
   EnumOptions(const EnumOptions& from);
@@ -6318,6 +6337,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
  public:
   inline EnumValueOptions() : EnumValueOptions(nullptr) {}
   ~EnumValueOptions() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
 
   EnumValueOptions(const EnumValueOptions& from);
@@ -6649,6 +6669,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
  public:
   inline ServiceOptions() : ServiceOptions(nullptr) {}
   ~ServiceOptions() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR ServiceOptions(::google::protobuf::internal::ConstantInitialized);
 
   ServiceOptions(const ServiceOptions& from);
@@ -6980,6 +7001,7 @@ class PROTOBUF_EXPORT MethodOptions final :
  public:
   inline MethodOptions() : MethodOptions(nullptr) {}
   ~MethodOptions() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR MethodOptions(::google::protobuf::internal::ConstantInitialized);
 
   MethodOptions(const MethodOptions& from);
@@ -7345,6 +7367,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
  public:
   inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
   ~UninterpretedOption_NamePart() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
 
   UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from);
@@ -7525,6 +7548,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
  public:
   inline UninterpretedOption() : UninterpretedOption(nullptr) {}
   ~UninterpretedOption() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
 
   UninterpretedOption(const UninterpretedOption& from);
@@ -7788,6 +7812,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
  public:
   inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
   ~SourceCodeInfo_Location() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
 
   SourceCodeInfo_Location(const SourceCodeInfo_Location& from);
@@ -8043,6 +8068,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
  public:
   inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
   ~SourceCodeInfo() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
   SourceCodeInfo(const SourceCodeInfo& from);
@@ -8209,6 +8235,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
  public:
   inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
   ~GeneratedCodeInfo_Annotation() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
 
   GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from);
@@ -8454,6 +8481,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
  public:
   inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
   ~GeneratedCodeInfo() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
   GeneratedCodeInfo(const GeneratedCodeInfo& from);
