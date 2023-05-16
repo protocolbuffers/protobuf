@@ -133,8 +133,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     if (count > 0) StreamBackUp(count);
   }
 
-#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || defined(ABSL_HAVE_MEMORY_SANITIZER)
-  // In sanitizer mode we use an optional<int> to guarantee that:
+  // Use an optional<int> to guarantee that:
   //  - We do not read an uninitialized token.
   //  - Every non-empty token is moved from and consumed.
   class LimitToken {
@@ -160,23 +159,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
    private:
     absl::optional<int> token_;
   };
-#else
-  class LimitToken {
-   public:
-    LimitToken() = default;
-    explicit LimitToken(int token) : token_(token) {}
-    LimitToken(LimitToken&&) = default;
-    LimitToken& operator=(LimitToken&&) = default;
-
-    LimitToken(const LimitToken&) = delete;
-    LimitToken& operator=(const LimitToken&) = delete;
-
-    int token() const { return token_; }
-
-   private:
-    int token_;
-  };
-#endif
 
   // If return value is negative it's an error
   PROTOBUF_NODISCARD LimitToken PushLimit(const char* ptr, int limit) {
