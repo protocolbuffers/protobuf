@@ -2099,7 +2099,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
 };
 
 ::uint8_t* FileDescriptorSet::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileDescriptorSet)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -2505,7 +2506,8 @@ constexpr ::_pbi::TcParseTable<4, 13, 6, 86, 2> FileDescriptorProto::_table_ = {
 };
 
 ::uint8_t* FileDescriptorProto::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -2968,7 +2970,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
 };
 
 ::uint8_t* DescriptorProto_ExtensionRange::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto.ExtensionRange)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -3206,7 +3209,8 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_ta
 };
 
 ::uint8_t* DescriptorProto_ReservedRange::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto.ReservedRange)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -3552,7 +3556,8 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
 };
 
 ::uint8_t* DescriptorProto::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -4007,7 +4012,8 @@ constexpr ::_pbi::TcParseTable<3, 6, 0, 71, 2> ExtensionRangeOptions_Declaration
 };
 
 ::uint8_t* ExtensionRangeOptions_Declaration::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ExtensionRangeOptions.Declaration)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -4313,7 +4319,8 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 7> ExtensionRangeOptions::_table_ = {
 };
 
 ::uint8_t* ExtensionRangeOptions::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ExtensionRangeOptions)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -4763,7 +4770,8 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
 };
 
 ::uint8_t* FieldDescriptorProto::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -5185,7 +5193,8 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
 };
 
 ::uint8_t* OneofDescriptorProto::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.OneofDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -5406,7 +5415,8 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRa
 };
 
 ::uint8_t* EnumDescriptorProto_EnumReservedRange::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -5694,7 +5704,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
 };
 
 ::uint8_t* EnumDescriptorProto::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -6015,7 +6026,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
 };
 
 ::uint8_t* EnumValueDescriptorProto::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValueDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -6305,7 +6317,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
 };
 
 ::uint8_t* ServiceDescriptorProto::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ServiceDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -6663,7 +6676,8 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
 };
 
 ::uint8_t* MethodDescriptorProto::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MethodDescriptorProto)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -7365,7 +7379,8 @@ constexpr ::_pbi::TcParseTable<5, 21, 2, 202, 12> FileOptions::_table_ = {
 };
 
 ::uint8_t* FileOptions::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileOptions)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -7990,7 +8005,8 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 0, 7> MessageOptions::_table_ = {
 };
 
 ::uint8_t* MessageOptions::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MessageOptions)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -8413,7 +8429,8 @@ constexpr ::_pbi::TcParseTable<4, 12, 6, 0, 7> FieldOptions::_table_ = {
 };
 
 ::uint8_t* FieldOptions::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldOptions)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -8800,7 +8817,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 7> OneofOptions::_table_ = {
 };
 
 ::uint8_t* OneofOptions::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.OneofOptions)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -9039,7 +9057,8 @@ constexpr ::_pbi::TcParseTable<3, 4, 1, 0, 7> EnumOptions::_table_ = {
 };
 
 ::uint8_t* EnumOptions::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumOptions)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -9310,7 +9329,8 @@ constexpr ::_pbi::TcParseTable<2, 2, 1, 0, 7> EnumValueOptions::_table_ = {
 };
 
 ::uint8_t* EnumValueOptions::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValueOptions)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -9541,7 +9561,8 @@ constexpr ::_pbi::TcParseTable<2, 2, 1, 0, 12> ServiceOptions::_table_ = {
 };
 
 ::uint8_t* ServiceOptions::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ServiceOptions)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -9790,7 +9811,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> MethodOptions::_table_ = {
 };
 
 ::uint8_t* MethodOptions::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MethodOptions)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -10060,7 +10082,8 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
 };
 
 ::uint8_t* UninterpretedOption_NamePart::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UninterpretedOption.NamePart)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -10396,7 +10419,8 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
 };
 
 ::uint8_t* UninterpretedOption::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UninterpretedOption)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -10780,7 +10804,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
 };
 
 ::uint8_t* SourceCodeInfo_Location::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceCodeInfo.Location)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -11047,7 +11072,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
 };
 
 ::uint8_t* SourceCodeInfo::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceCodeInfo)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -11299,7 +11325,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
 };
 
 ::uint8_t* GeneratedCodeInfo_Annotation::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.GeneratedCodeInfo.Annotation)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -11561,7 +11588,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
 };
 
 ::uint8_t* GeneratedCodeInfo::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.GeneratedCodeInfo)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;

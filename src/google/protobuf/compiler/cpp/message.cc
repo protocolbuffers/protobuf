@@ -3702,42 +3702,40 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
     return;
   }
 
-  Formatter format(p);
-  format(
-      "$uint8$* $classname$::_InternalSerialize(\n"
-      "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
-      "const {\n"
-      "$annotate_serialize$");
-  format.Indent();
-
-  format("// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n");
-
-  if (!ShouldSerializeInOrder(descriptor_, options_)) {
-    format.Outdent();
-    format("#ifdef NDEBUG\n");
-    format.Indent();
-  }
-
-  GenerateSerializeWithCachedSizesBody(p);
-
-  if (!ShouldSerializeInOrder(descriptor_, options_)) {
-    format.Outdent();
-    format("#else  // NDEBUG\n");
-    format.Indent();
-
-    GenerateSerializeWithCachedSizesBodyShuffled(p);
-
-    format.Outdent();
-    format("#endif  // !NDEBUG\n");
-    format.Indent();
-  }
-
-  format("// @@protoc_insertion_point(serialize_to_array_end:$full_name$)\n");
-
-  format.Outdent();
-  format(
-      "  return target;\n"
-      "}\n");
+  p->Emit(
+      {
+          {"debug_cond", ShouldSerializeInOrder(descriptor_, options_)
+                             ? "1"
+                             : "defined(NDEBUG)"},
+          {"ndebug", [&] { GenerateSerializeWithCachedSizesBody(p); }},
+          {"debug", [&] { GenerateSerializeWithCachedSizesBodyShuffled(p); }},
+          {"ifdef",
+           [&] {
+             if (ShouldSerializeInOrder(descriptor_, options_)) {
+               p->Emit("$ndebug$");
+             } else {
+               p->Emit(R"cc(
+                 //~ force indenting level
+#ifdef NDEBUG
+                 $ndebug$;
+#else   // NDEBUG
+                 $debug$;
+#endif  // !NDEBUG
+               )cc");
+             }
+           }},
+      },
+      R"cc(
+        $uint8$* $classname$::_InternalSerialize(
+            $uint8$* target,
+            ::$proto_ns$::io::EpsCopyOutputStream* stream) const {
+          $annotate_serialize$;
+          // @@protoc_insertion_point(serialize_to_array_start:$full_name$)
+          $ifdef$;
+          // @@protoc_insertion_point(serialize_to_array_end:$full_name$)
+          return target;
+        }
+      )cc");
 }
 
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
