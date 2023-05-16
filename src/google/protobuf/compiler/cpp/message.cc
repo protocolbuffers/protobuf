@@ -3674,14 +3674,13 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
 
 void MessageGenerator::GenerateSerializeOneExtensionRange(io::Printer* p,
                                                           int start, int end) {
-  absl::flat_hash_map<absl::string_view, std::string> vars = variables_;
-  vars["start"] = absl::StrCat(start);
-  vars["end"] = absl::StrCat(end);
-  Formatter format(p, vars);
-  format("// Extension range [$start$, $end$)\n");
-  format(
-      "target = $extensions$._InternalSerialize(\n"
-      "internal_default_instance(), $start$, $end$, target, stream);\n\n");
+  auto v = p->WithVars(variables_);
+  p->Emit({{"start", start}, {"end", end}},
+          R"cc(
+            // Extension range [$start$, $end$)
+            target = $extensions$._InternalSerialize(
+                internal_default_instance(), $start$, $end$, target, stream);
+          )cc");
 }
 
 void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
