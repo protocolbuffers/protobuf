@@ -85,6 +85,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
              : absl::Substitute("reinterpret_cast<$0*>($1)", type, field_name)},
       {"Weak", weak ? "Weak" : ""},
       {".weak", weak ? ".weak" : ""},
+      {"_weak", weak ? "_weak" : ""},
       Sub("StrongRef",
           !weak ? ""
                 : absl::Substitute("::google::protobuf::internal::StrongReference("
@@ -847,35 +848,19 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
-  if (weak_) {
-    p->Emit("$field_$.Clear();\n");
-  } else {
-    p->Emit("_internal_mutable_$name$()->Clear();\n");
-  }
+  p->Emit("_internal_mutable$_weak$_$name$()->Clear();\n");
 }
 
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
-  if (weak_) {
-    p->Emit(
-        "_this->_internal_mutable_weak_$name$()->MergeFrom(from._internal_weak_"
-        "$name$());\n");
-  } else {
-    p->Emit(
-        "_this->_internal_mutable_$name$()->MergeFrom("
-        "from._internal_$name$());\n");
-  }
+  p->Emit(
+      "_this->_internal_mutable$_weak$_$name$()->MergeFrom(from._internal"
+      "$_weak$_$name$());\n");
 }
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
-  if (weak_) {
-    p->Emit(
-        "_internal_mutable_weak_$name$()->InternalSwap(other->_internal_"
-        "mutable_weak_$name$());\n");
-  } else {
-    p->Emit(
-        "_internal_mutable_$name$()->InternalSwap(other->_internal_mutable_"
-        "$name$());\n");
-  }
+  p->Emit(
+      "_internal_mutable$_weak$_$name$()->InternalSwap(other->_internal_"
+      "mutable$_weak$_$name$());\n");
 }
 
 void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
@@ -929,13 +914,9 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 }
 
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
-  p->Emit("total_size += $tag_size$UL * this->_internal_$name$_size();\n");
-  if (weak_) {
-    p->Emit("for (const auto& msg : this->$field_$) {\n");
-  } else {
-    p->Emit("for (const auto& msg : this->_internal_$name$()) {\n");
-  }
   p->Emit(
+      "total_size += $tag_size$UL * this->_internal_$name$_size();\n"
+      "for (const auto& msg : this->_internal$_weak$_$name$()) {\n"
       "  total_size +=\n"
       "    $pbi$::WireFormatLite::$declared_type$Size(msg);\n"
       "}\n");
