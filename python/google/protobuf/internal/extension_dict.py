@@ -92,10 +92,9 @@ class _ExtensionDict(object):
         # pylint: disable=g-import-not-at-top
         from google.protobuf import message_factory
         message_factory.GetMessageClass(message_type)
-      assert getattr(extension_handle.message_type, '_concrete_class', None), (
-          'Uninitialized concrete class found for field %r (message type %r)'
-          % (extension_handle.full_name,
-             extension_handle.message_type.full_name))
+      if not hasattr(extension_handle.message_type, '_concrete_class'):
+        from google.protobuf import message_factory
+        message_factory.GetMessageClass(extension_handle.message_type)
       result = extension_handle.message_type._concrete_class()
       try:
         result._SetListener(self._extended_message._listener_for_children)

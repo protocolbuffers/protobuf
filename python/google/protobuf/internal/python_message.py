@@ -192,6 +192,11 @@ class GeneratedProtocolMessageType(type):
     for field in descriptor.fields:
       _AttachFieldHelpers(cls, field)
 
+    if descriptor.is_extendable and hasattr(descriptor.file, 'pool'):
+      extensions = descriptor.file.pool.FindAllExtensions(descriptor)
+      for ext in extensions:
+        _AttachFieldHelpers(cls, ext)
+
     descriptor._concrete_class = cls  # pylint: disable=protected-access
     _AddEnumValues(descriptor, cls)
     _AddInitMethod(descriptor, cls)
@@ -429,12 +434,12 @@ def _DefaultValueConstructorForField(field):
       return MakeRepeatedScalarDefault
 
   if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
-    # _concrete_class may not yet be initialized.
     message_type = field.message_type
     def MakeSubMessageDefault(message):
-      assert getattr(message_type, '_concrete_class', None), (
-          'Uninitialized concrete class found for field %r (message type %r)'
-          % (field.full_name, message_type.full_name))
+      # _concrete_class may not yet be initialized.
+      if not hasattr(message_type, '_concrete_class'):
+        from google.protobuf import message_factory
+        message_factory.GetMessageClass(message_type)
       result = message_type._concrete_class()
       result._SetListener(
           _OneofListener(message, field)

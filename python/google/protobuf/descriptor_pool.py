@@ -63,7 +63,7 @@ import warnings
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import text_encoding
-
+from google.protobuf.internal import python_message
 
 _USE_C_DESCRIPTORS = descriptor._USE_C_DESCRIPTORS  # pylint: disable=protected-access
 
@@ -352,6 +352,10 @@ class DescriptorPool(object):
     if _IsMessageSetExtension(extension):
       self._extensions_by_name[extension.containing_type][
           extension.message_type.full_name] = extension
+
+    if hasattr(extension.containing_type, '_concrete_class'):
+      python_message._AttachFieldHelpers(
+          extension.containing_type._concrete_class, extension)
 
   @_Deprecated
   def AddFileDescriptor(self, file_desc):

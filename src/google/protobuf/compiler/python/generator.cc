@@ -331,11 +331,6 @@ bool Generator::Generate(const FileDescriptor* file,
   printer.Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
   printer_->Indent();
 
-  // We have to fix up the extensions after the message classes themselves
-  if (HasExtensions()) {
-    printer.Print("_builder.AddHelpersToExtensions(DESCRIPTOR)\n");
-  }
-
   // Descriptor options may have custom extensions. These custom options
   // can only be successfully parsed after we register corresponding
   // extensions. Therefore we parse all options again here to recognize
@@ -1006,22 +1001,6 @@ void Generator::FixForeignFieldsInDescriptors() const {
   printer_->Print("_sym_db.RegisterFileDescriptor($name$)\n", "name",
                   kDescriptorKey);
   printer_->Print("\n");
-}
-
-bool Generator::HasExtensions() const {
-  if (file_->extension_count() > 0) return true;
-  for (int i = 0; i < file_->message_type_count(); ++i) {
-    if (HasExtensionsInMessage(*file_->message_type(i))) return true;
-  }
-  return false;
-}
-
-bool Generator::HasExtensionsInMessage(const Descriptor& descriptor) const {
-  if (descriptor.extension_count() > 0) return true;
-  for (int i = 0; i < descriptor.nested_type_count(); ++i) {
-    if (HasExtensionsInMessage(*descriptor.nested_type(i))) return true;
-  }
-  return false;
 }
 
 // Returns a Python expression that instantiates a Python EnumValueDescriptor
