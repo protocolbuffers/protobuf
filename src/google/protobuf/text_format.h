@@ -492,6 +492,13 @@ class PROTOBUF_EXPORT TextFormat {
 
     bool PrintAny(const Message& message, BaseTextGenerator* generator) const;
 
+    // Try to redact a field value based on the annotations associated with
+    // the field. This function returns true if it redacts the field value.
+    bool TryRedactFieldValue(const Message& message,
+                             const FieldDescriptor* field,
+                             BaseTextGenerator* generator,
+                             bool insert_value_separator) const;
+
     const FastFieldValuePrinter* GetFieldPrinter(
         const FieldDescriptor* field) const {
       auto it = custom_printers_.find(field);
