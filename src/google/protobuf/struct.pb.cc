@@ -692,7 +692,8 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
           _Internal::list_value(this).GetCachedSize(), target, stream);
       break;
     }
-    default: ;
+    default:
+      break;
   }
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
