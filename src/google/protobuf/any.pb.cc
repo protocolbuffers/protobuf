@@ -272,7 +272,8 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
 };
 
 ::uint8_t* Any::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;

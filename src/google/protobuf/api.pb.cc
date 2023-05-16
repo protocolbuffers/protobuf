@@ -447,7 +447,8 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
 };
 
 ::uint8_t* Api::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Api)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -835,7 +836,8 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
 };
 
 ::uint8_t* Method::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Method)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -1153,7 +1155,8 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
 };
 
 ::uint8_t* Mixin::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Mixin)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;

@@ -207,7 +207,8 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Duration::_table_ = {
 };
 
 ::uint8_t* Duration::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Duration)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
