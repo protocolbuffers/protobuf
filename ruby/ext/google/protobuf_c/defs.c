@@ -397,6 +397,29 @@ static VALUE Descriptor_msgclass(VALUE _self) {
   return self->klass;
 }
 
+/*
+ * call-seq:
+ *     Descriptor.serialized_options => options
+ *
+ * Returns a binary string containing the serialized options for this message.
+ */
+static VALUE Descriptor_serialized_options(VALUE _self) {
+  Descriptor* self = ruby_to_Descriptor(_self);
+  const google_protobuf_MessageOptions* opts = upb_MessageDef_Options(self->msgdef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_MessageOptions_serialize(opts, arena, &size);
+  if (serialized) {
+    VALUE ret = rb_str_new(serialized, size);
+    rb_enc_associate(ret, rb_ascii8bit_encoding());
+    upb_Arena_Free(arena);
+    return ret;
+  } else {
+    upb_Arena_Free(arena);
+    rb_raise(rb_eRuntimeError, "Error encoding");
+  }
+}
+
 static void Descriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
@@ -408,6 +431,7 @@ static void Descriptor_register(VALUE module) {
   rb_define_method(klass, "msgclass", Descriptor_msgclass, 0);
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "file_descriptor", Descriptor_file_descriptor, 0);
+  rb_define_method(klass, "serialized_options", Descriptor_serialized_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cDescriptor);
   cDescriptor = klass;
@@ -507,12 +531,36 @@ static VALUE FileDescriptor_syntax(VALUE _self) {
   }
 }
 
+/*
+ * call-seq:
+ *     FileDescriptor.serialized_options => options
+ *
+ * Returns a binary string containing the serialized options for this message.
+ */
+static VALUE FileDescriptor_serialized_options(VALUE _self) {
+  FileDescriptor* self = ruby_to_FileDescriptor(_self);
+  const google_protobuf_FileOptions* opts = upb_FileDef_Options(self->filedef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_FileOptions_serialize(opts, arena, &size);
+  if (serialized) {
+    VALUE ret = rb_str_new(serialized, size);
+    rb_enc_associate(ret, rb_ascii8bit_encoding());
+    upb_Arena_Free(arena);
+    return ret;
+  } else {
+    upb_Arena_Free(arena);
+    rb_raise(rb_eRuntimeError, "Error encoding");
+  }
+}
+
 static void FileDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "FileDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FileDescriptor_alloc);
   rb_define_method(klass, "initialize", FileDescriptor_initialize, 3);
   rb_define_method(klass, "name", FileDescriptor_name, 0);
   rb_define_method(klass, "syntax", FileDescriptor_syntax, 0);
+  rb_define_method(klass, "serialized_options", FileDescriptor_serialized_options, 0);
   rb_gc_register_address(&cFileDescriptor);
   cFileDescriptor = klass;
 }
@@ -563,7 +611,7 @@ static VALUE FieldDescriptor_alloc(VALUE klass) {
 
 /*
  * call-seq:
- *    EnumDescriptor.new(c_only_cookie, pool, ptr) => EnumDescriptor
+ *    FieldDescriptor.new(c_only_cookie, pool, ptr) => FieldDescriptor
  *
  * Creates a descriptor wrapper object.  May only be called from C.
  */
@@ -864,6 +912,29 @@ static VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   return Qnil;
 }
 
+/*
+ * call-seq:
+ *     FieldDescriptor.serialized_options => options
+ *
+ * Returns a binary string containing the serialized options for this message.
+ */
+static VALUE FieldDescriptor_serialized_options(VALUE _self) {
+  FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
+  const google_protobuf_FieldOptions* opts = upb_FieldDef_Options(self->fielddef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, &size);
+  if (serialized) {
+    VALUE ret = rb_str_new(serialized, size);
+    rb_enc_associate(ret, rb_ascii8bit_encoding());
+    upb_Arena_Free(arena);
+    return ret;
+  } else {
+    upb_Arena_Free(arena);
+    rb_raise(rb_eRuntimeError, "Error encoding");
+  }
+}
+
 static void FieldDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "FieldDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FieldDescriptor_alloc);
@@ -880,6 +951,7 @@ static void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "clear", FieldDescriptor_clear, 1);
   rb_define_method(klass, "get", FieldDescriptor_get, 1);
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
+  rb_define_method(klass, "serialized_options", FieldDescriptor_serialized_options, 0);
   rb_gc_register_address(&cFieldDescriptor);
   cFieldDescriptor = klass;
 }
@@ -979,12 +1051,36 @@ static VALUE OneofDescriptor_each(VALUE _self) {
   return Qnil;
 }
 
+/*
+ * call-seq:
+ *     OneofDescriptor.serialized_options => options
+ *
+ * Returns a binary string containing the serialized options for this message.
+ */
+static VALUE OneOfDescriptor_serialized_options(VALUE _self) {
+  OneofDescriptor* self = ruby_to_OneofDescriptor(_self);
+  const google_protobuf_OneofOptions* opts = upb_OneofDef_Options(self->oneofdef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_OneofOptions_serialize(opts, arena, &size);
+  if (serialized) {
+    VALUE ret = rb_str_new(serialized, size);
+    rb_enc_associate(ret, rb_ascii8bit_encoding());
+    upb_Arena_Free(arena);
+    return ret;
+  } else {
+    upb_Arena_Free(arena);
+    rb_raise(rb_eRuntimeError, "Error encoding");
+  }
+}
+
 static void OneofDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "OneofDescriptor", rb_cObject);
   rb_define_alloc_func(klass, OneofDescriptor_alloc);
   rb_define_method(klass, "initialize", OneofDescriptor_initialize, 3);
   rb_define_method(klass, "name", OneofDescriptor_name, 0);
   rb_define_method(klass, "each", OneofDescriptor_each, 0);
+  rb_define_method(klass, "serialized_options", OneOfDescriptor_serialized_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cOneofDescriptor);
   cOneofDescriptor = klass;
@@ -1153,6 +1249,29 @@ static VALUE EnumDescriptor_enummodule(VALUE _self) {
   return self->module;
 }
 
+/*
+ * call-seq:
+ *     EnumDescriptor.serialized_options => options
+ *
+ * Returns a binary string containing the serialized options for this message.
+ */
+static VALUE EnumDescriptor_serialized_options(VALUE _self) {
+  EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
+  const google_protobuf_EnumOptions* opts = upb_EnumDef_Options(self->enumdef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_EnumOptions_serialize(opts, arena, &size);
+  if (serialized) {
+    VALUE ret = rb_str_new(serialized, size);
+    rb_enc_associate(ret, rb_ascii8bit_encoding());
+    upb_Arena_Free(arena);
+    return ret;
+  } else {
+    upb_Arena_Free(arena);
+    rb_raise(rb_eRuntimeError, "Error encoding");
+  }
+}
+
 static void EnumDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
@@ -1163,6 +1282,7 @@ static void EnumDescriptor_register(VALUE module) {
   rb_define_method(klass, "each", EnumDescriptor_each, 0);
   rb_define_method(klass, "enummodule", EnumDescriptor_enummodule, 0);
   rb_define_method(klass, "file_descriptor", EnumDescriptor_file_descriptor, 0);
+  rb_define_method(klass, "serialized_options", EnumDescriptor_serialized_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cEnumDescriptor);
   cEnumDescriptor = klass;

@@ -711,6 +711,34 @@ module BasicTest
         msg.map_string_int32_as_value = :boom
       end
     end
+
+    def test_file_descriptor_options
+      file_descriptor = TestMessage.descriptor.file_descriptor
+
+      assert_equal file_descriptor.options.class, Google::Protobuf::FileOptions
+      assert file_descriptor.options.deprecated
+    end
+
+    def test_descriptor_options
+      descriptor = TestDeprecatedMessage.descriptor
+
+      assert_equal descriptor.options.class, Google::Protobuf::MessageOptions
+      assert descriptor.options.deprecated
+    end
+
+    def test_enum_descriptor_options
+      enum_descriptor = TestDeprecatedEnum.descriptor
+
+      assert_equal enum_descriptor.options.class, Google::Protobuf::EnumOptions
+      assert enum_descriptor.options.deprecated
+    end
+
+    def test_oneof_descriptor_options
+      descriptor = TestDeprecatedMessage.descriptor
+      oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
+
+      assert_equal oneof_descriptor.options.class, Google::Protobuf::OneofOptions
+    end
   end
 
   def test_oneof_fields_respond_to? # regression test for issue 9202

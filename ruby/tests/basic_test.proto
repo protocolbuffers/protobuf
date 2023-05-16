@@ -8,6 +8,8 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "test_import_proto2.proto";
 
+option deprecated = true;
+
 message Foo {
   Bar bar = 1;
   repeated Baz baz = 2;
@@ -68,12 +70,30 @@ message TestMessage2 {
   optional int32 foo = 1;
 }
 
+message TestDeprecatedMessage {
+  option deprecated = true;
+
+  optional int32 foo = 1;
+
+  oneof test_deprecated_message_oneof {
+    string a = 2;
+    int32 b = 3;
+  }
+}
+
 enum TestEnum {
   Default = 0;
   A = 1;
   B = 2;
   C = 3;
   v0 = 4;
+}
+
+enum TestDeprecatedEnum {
+  option deprecated = true;
+
+  DefaultA = 0;
+  AA = 1 [deprecated = true];
 }
 
 message TestEmbeddedMessageParent {
