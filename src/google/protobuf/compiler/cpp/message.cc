@@ -3611,7 +3611,6 @@ void MessageGenerator::GenerateVerify(io::Printer* p) {
 
 void MessageGenerator::GenerateSerializeOneofFields(
     io::Printer* p, const std::vector<const FieldDescriptor*>& fields) {
-  Formatter format(p);
   ABSL_CHECK(!fields.empty());
   if (fields.size() == 1) {
     GenerateSerializeOneField(p, fields[0], -1);
@@ -3619,21 +3618,31 @@ void MessageGenerator::GenerateSerializeOneofFields(
   }
   // We have multiple mutually exclusive choices.  Emit a switch statement.
   const OneofDescriptor* oneof = fields[0]->containing_oneof();
-  format("switch ($1$_case()) {\n", oneof->name());
-  format.Indent();
-  for (auto field : fields) {
-    format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-    format.Indent();
-    field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
-    format("break;\n");
-    format.Outdent();
-    format("}\n");
-  }
-  format.Outdent();
-  // Doing nothing is an option.
-  format(
-      "  default: ;\n"
-      "}\n");
+  p->Emit({{"name", oneof->name()},
+           {"cases",
+            [&] {
+              for (const auto* field : fields) {
+                p->Emit({{"Name", UnderscoresToCamelCase(field->name(), true)},
+                         {"body",
+                          [&] {
+                            field_generators_.get(field)
+                                .GenerateSerializeWithCachedSizesToArray(p);
+                          }}},
+                        R"cc(
+                          case k$Name$: {
+                            $body$;
+                            break;
+                          }
+                        )cc");
+              }
+            }}},
+          R"cc(
+            switch ($name$_case()) {
+              $cases$;
+              default:
+                break;
+            }
+          )cc");
 }
 
 void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
