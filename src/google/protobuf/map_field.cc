@@ -60,6 +60,7 @@ VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
       return VariantKey(static_cast<uint64_t>(value.GetBoolValue()));
     default:
       ABSL_ASSUME(false);
+      return VariantKey(uint64_t{});
   }
 }
 
