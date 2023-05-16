@@ -3685,28 +3685,24 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(io::Printer* p,
 
 void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  Formatter format(p);
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
-    format(
-        "$uint8$* $classname$::_InternalSerialize(\n"
-        "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
-        "const {\n"
-        "$annotate_serialize$"
-        "  target = $extensions$."
-        "InternalSerializeMessageSetWithCachedSizesToArray(\n"  //
-        "internal_default_instance(), target, stream);\n");
-
-    format(
-        "  target = ::_pbi::"
-        "InternalSerializeUnknownMessageSetItemsToArray(\n"
-        "               $unknown_fields$, target, stream);\n");
-    format(
-        "  return target;\n"
-        "}\n");
+    p->Emit(R"cc(
+      $uint8$* $classname$::_InternalSerialize(
+          $uint8$* target,
+          ::$proto_ns$::io::EpsCopyOutputStream* stream) const {
+        $annotate_serialize$ target =
+            $extensions$.InternalSerializeMessageSetWithCachedSizesToArray(
+                internal_default_instance(), target, stream);
+        target = ::_pbi::InternalSerializeUnknownMessageSetItemsToArray(
+            $unknown_fields$, target, stream);
+        return target;
+      }
+    )cc");
     return;
   }
 
+  Formatter format(p);
   format(
       "$uint8$* $classname$::_InternalSerialize(\n"
       "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
