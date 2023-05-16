@@ -48,14 +48,31 @@ this file*.
 __author__ = 'robinson@google.com (Will Robinson)'
 
 
+from google.protobuf import descriptor as _descriptor
 from google.protobuf import message_factory
 from google.protobuf import symbol_database
+from google.protobuf.internal import api_implementation as _api_implementation
+from google.protobuf.internal import builder as _builder
 
 # The type of all Message classes.
 # Part of the public interface, but normally only used by message factories.
 GeneratedProtocolMessageType = message_factory._GENERATED_PROTOCOL_MESSAGE_TYPE
 
 MESSAGE_CLASS_CACHE = {}
+
+
+def RegisterExtensionsIfNecessary(desc: _descriptor.FileDescriptor) -> None:
+  """Attach extensions to the corresponding message classes for serialization.
+
+  Args:
+    desc: Protobuf FileDescriptor containing the extensions to be registered.
+
+  IMPORTANT: This is safe to call on all runtimes (both C++ and Python), but is
+  only needed for the pure-Python implementation as C++ automatically registers
+  the extensions.
+  """
+  if _api_implementation.Type() == 'python':
+    _builder.AddHelpersToExtensions(desc)
 
 
 # Deprecated. Please NEVER use reflection.ParseMessage().
