@@ -332,7 +332,7 @@ namespace std {
 template <>  // NOLINT
 struct hash<google::protobuf::internal::MoveTestKey> {
   size_t operator()(const google::protobuf::internal::MoveTestKey& key) const {
-    return hash<int>{}(key.data);
+    return hash<uint64_t>{}(key.data);
   }
 };
 }  // namespace std
@@ -340,6 +340,14 @@ struct hash<google::protobuf::internal::MoveTestKey> {
 namespace google {
 namespace protobuf {
 namespace internal {
+
+template <>
+struct RealKeyToVariantKey<MoveTestKey> {
+  VariantKey operator()(const MoveTestKey& value) const {
+    return VariantKey(value.data);
+  }
+};
+
 namespace {
 
 TEST_F(MapImplTest, OperatorBracketRValue) {
