@@ -16,7 +16,7 @@ rust_test(
     name = "interop_test",
     srcs = ["main.rs"],
     tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        # TODO: Enable testing on arm once we have a Rust Arm toolchain.
         "not_build:arm",
     ],
     deps = [

@@ -641,7 +641,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     // For packed fields, the size of the packed data is recorded here when
     // ByteSize() is called then used during serialization.
-    // TODO(kenton):  Use atomic<int> when C++ supports it.
+    // TODO:  Use atomic<int> when C++ supports it.
     mutable int cached_size;
 
     // The descriptor for this extension, if one exists and is known.  May be

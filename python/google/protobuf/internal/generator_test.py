@@ -28,7 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# TODO(robinson): Flesh this out considerably.  We focused on reflection_test.py
+# TODO: Flesh this out considerably.  We focused on reflection_test.py
 # first, since it's testing the subtler code, and since it provides decent
 # indirect testing of the protocol compiler output.
 
@@ -67,7 +67,7 @@ class GeneratorTest(unittest.TestCase):
 
   def testEnums(self):
     # We test only module-level enums here.
-    # TODO(robinson): Examine descriptors directly to check
+    # TODO: Examine descriptors directly to check
     # enum descriptor output.
     self.assertEqual(4, unittest_pb2.FOREIGN_FOO)
     self.assertEqual(5, unittest_pb2.FOREIGN_BAR)
@@ -150,7 +150,7 @@ class GeneratorTest(unittest.TestCase):
     proto = unittest_custom_options_pb2.TestMessageWithCustomOptions()
     enum_options = proto.DESCRIPTOR.enum_types_by_name['AnEnum'].GetOptions()
     self.assertTrue(enum_options is not None)
-    # TODO(gps): We really should test for the presence of the enum_opt1
+    # TODO: We really should test for the presence of the enum_opt1
     # extension and for its value to be set to -789.
 
   # Options that are explicitly marked RETENTION_SOURCE should not be present

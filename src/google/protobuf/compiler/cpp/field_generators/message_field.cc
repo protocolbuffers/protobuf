@@ -263,7 +263,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           return $cast_field_$;
         }
         inline $Submsg$* $Msg$::mutable_$name$() {
-          //~ TODO(b/122856539): add tests to make sure all write accessors are
+          //~ TODO: add tests to make sure all write accessors are
           //~ able to prepare split message allocation.
           $PrepareSplitMessageForWrite$;
           $Submsg$* _msg = _internal_mutable_$name$();
@@ -430,7 +430,7 @@ void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
   if (opts_->opensource_runtime) {
-    // TODO(gerbens) Remove this when we don't need to destruct default
+    // TODO Remove this when we don't need to destruct default
     // instances.  In google3 a default instance will never get deleted so we
     // don't need to worry about that but in opensource protobuf default
     // instances are deleted in shutdown process and we need to take special
@@ -780,7 +780,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(
       "inline $Submsg$* $Msg$::mutable_$name$(int index) {\n"
       "$annotate_mutable$"
-      // TODO(dlj): move insertion points
+      // TODO: move insertion points
       "  // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)\n"
       "$StrongRef$;"
       "  return _internal_mutable_$name$()->Mutable(index);\n"

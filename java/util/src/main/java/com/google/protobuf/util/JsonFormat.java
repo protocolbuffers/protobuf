@@ -352,7 +352,7 @@ public class JsonFormat {
      * @throws IOException if writing to the output fails
      */
     public void appendTo(MessageOrBuilder message, Appendable output) throws IOException {
-      // TODO(xiaofeng): Investigate the allocation overhead and optimize for
+      // TODO: Investigate the allocation overhead and optimize for
       // mobile.
       new PrinterImpl(
               registry,
@@ -466,7 +466,7 @@ public class JsonFormat {
      *         proto3 format or there are unknown fields in the input.
      */
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
-      // TODO(xiaofeng): Investigate the allocation overhead and optimize for
+      // TODO: Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
           .merge(json, builder);
@@ -480,7 +480,7 @@ public class JsonFormat {
      * @throws IOException if reading from the input throws
      */
     public void merge(Reader json, Message.Builder builder) throws IOException {
-      // TODO(xiaofeng): Investigate the allocation overhead and optimize for
+      // TODO: Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
           .merge(json, builder);

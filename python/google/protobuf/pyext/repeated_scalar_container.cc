@@ -465,7 +465,7 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
 PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
   cmessage::AssureWritable(self->parent);
 
-  // TODO(ptucker): Deprecate this behavior. b/18413862
+  // TODO: Deprecate this behavior. b/18413862
   if (value == Py_None) {
     Py_RETURN_NONE;
   }

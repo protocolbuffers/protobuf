@@ -56,7 +56,7 @@ namespace cpp {
 // Customization points for each field codegen type. See FieldGenerator to
 // see how each of these functions is used.
 //
-// TODO(b/245791219): Make every function except the dtor in this generator
+// TODO: Make every function except the dtor in this generator
 // non-pure-virtual. A generator with no implementation should be able to
 // automatically not contribute any code to the message it is part of, as a
 // matter of clean composability.
@@ -127,7 +127,7 @@ class FieldGeneratorBase {
   }
 
  protected:
-  // TODO(b/245791219): Remove these members and make this a pure interface.
+  // TODO: Remove these members and make this a pure interface.
   const FieldDescriptor* descriptor_;
   const Options& options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
@@ -250,7 +250,7 @@ class FieldGenerator {
 
   // Generates a copy constructor
   //
-  // TODO(b/245791219): Document this properly.
+  // TODO: Document this properly.
   void GenerateCopyConstructorCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateCopyConstructorCode(p);
@@ -357,10 +357,10 @@ class FieldGenerator {
     impl_->GenerateIsInitialized(p);
   }
 
-  // TODO(b/245791219): Document this properly.
+  // TODO: Document this properly.
   bool IsInlined() const { return impl_->IsInlined(); }
 
-  // TODO(b/245791219): Document this properly.
+  // TODO: Document this properly.
   ArenaDtorNeeds NeedsArenaDestructor() const {
     return impl_->NeedsArenaDestructor();
   }
@@ -403,7 +403,7 @@ class FieldGeneratorTable {
 
 // Returns variables common to all fields.
 //
-// TODO(b/245791219): Make this function .cc-private.
+// TODO: Make this function .cc-private.
 std::vector<io::Printer::Sub> FieldVars(const FieldDescriptor* field,
                                         const Options& opts);
 }  // namespace cpp

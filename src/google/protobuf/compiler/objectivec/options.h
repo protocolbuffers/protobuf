@@ -43,7 +43,7 @@ struct GenerationOptions {
   std::string generate_for_named_framework;
   std::string named_framework_to_proto_path_mappings_path;
   std::string runtime_import_prefix;
-  // TODO(thomasvl): Eventually flip this default to false for better interop
+  // TODO: Eventually flip this default to false for better interop
   // with Swift if proto usages span modules made from ObjC sources.
   bool headers_use_forward_declarations = true;
   bool experimental_multi_source_generation = false;

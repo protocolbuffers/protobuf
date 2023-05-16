@@ -709,7 +709,7 @@ namespace Google.Protobuf
                 stream.ToArray(),
                 parsed =>
                 {
-                    // TODO(jieluo): Add test back when DiscardUnknownFields API is supported.
+                    // TODO: Add test back when DiscardUnknownFields API is supported.
                     // Assert.AreEqual(message, parsed);
                 });
         }
@@ -726,7 +726,7 @@ namespace Google.Protobuf
                 data,
                 parsed =>
                 {
-                    // TODO(jieluo): Add test back when DiscardUnknownFields API is supported.
+                    // TODO: Add test back when DiscardUnknownFields API is supported.
                     // Assert.AreNotEqual(new Empty(), empty);
                 });
         }

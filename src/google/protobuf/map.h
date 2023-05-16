@@ -828,7 +828,7 @@ class KeyMapBase : public UntypedMapBase {
     }
   }
 
-  // TODO(sbenza): We can reduce duplication by coercing `K` to a common type.
+  // TODO: We can reduce duplication by coercing `K` to a common type.
   // Eg, for string keys we can coerce to string_view. Otherwise, we instantiate
   // this with all the different `char[N]` of the caller.
   template <typename K>
@@ -1499,7 +1499,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     if (arena() == other.arena()) {
       InternalSwap(&other);
     } else {
-      // TODO(zuguang): optimize this. The temporary copy can be allocated
+      // TODO: optimize this. The temporary copy can be allocated
       // in the same arena as the other message, and the "other = copy" can
       // be replaced with the fast-path swap above.
       Map copy = *this;

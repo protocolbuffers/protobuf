@@ -42,7 +42,7 @@ Simple usage example::
 
 __author__ = 'kenton@google.com (Kenton Varda)'
 
-# TODO(b/129989314) Import thread contention leads to test failures.
+# TODO Import thread contention leads to test failures.
 import encodings.raw_unicode_escape  # pylint: disable=unused-import
 import encodings.unicode_escape  # pylint: disable=unused-import
 import io
@@ -464,7 +464,7 @@ class _Printer(object):
           # entire tree.  Unfortunately this would take significant refactoring
           # of this file to work around.
           #
-          # TODO(haberman): refactor and optimize if this becomes an issue.
+          # TODO: refactor and optimize if this becomes an issue.
           entry_submsg = value.GetEntryClass()(key=key, value=value[key])
           self.PrintField(field, entry_submsg)
       elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
@@ -1070,7 +1070,7 @@ class _Parser(object):
         sub_message = message.Extensions[field]
       else:
         # Also apply _allow_multiple_scalars to message field.
-        # TODO(jieluo): Change to _allow_singular_overwrites.
+        # TODO: Change to _allow_singular_overwrites.
         if (not self._allow_multiple_scalars and
             message.HasField(field.name)):
           raise tokenizer.ParseErrorPreviousToken(
@@ -1620,7 +1620,7 @@ class Tokenizer(object):
       self.token = self._current_line[self._column]
 
 # Aliased so it can still be accessed by current visibility violators.
-# TODO(dbarnett): Migrate violators to textformat_tokenizer.
+# TODO: Migrate violators to textformat_tokenizer.
 _Tokenizer = Tokenizer  # pylint: disable=invalid-name
 
 

@@ -155,7 +155,7 @@ final class MessageSchema<T> implements Schema<T> {
   private final boolean hasExtensions;
   private final boolean lite;
   private final boolean proto3;
-  // TODO(xiaofeng): Make both full-runtime and lite-runtime support cached field size.
+  // TODO: Make both full-runtime and lite-runtime support cached field size.
   private final boolean useCachedSizeField;
 
   /** Represents [checkInitialized positions, map field positions, repeated field offsets]. */
@@ -1909,7 +1909,7 @@ final class MessageSchema<T> implements Schema<T> {
                   getMessageFieldSchema(i));
           break;
         case 50: // MAP:
-          // TODO(dweis): Use schema cache.
+          // TODO: Use schema cache.
           size +=
               mapFieldSchema.getSerializedSize(
                   number, unsafe.getObject(message, offset), getMapFieldDefaultEntry(i));
@@ -2445,7 +2445,7 @@ final class MessageSchema<T> implements Schema<T> {
                   number, (List<MessageLite>) listAt(message, offset), getMessageFieldSchema(i));
           break;
         case 50: // MAP:
-          // TODO(dweis): Use schema cache.
+          // TODO: Use schema cache.
           size +=
               mapFieldSchema.getSerializedSize(
                   number, UnsafeUtil.getObject(message, offset), getMapFieldDefaultEntry(i));
@@ -2573,7 +2573,7 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   @Override
-  // TODO(nathanmittler): Consider serializing oneof fields last so that only one entry per
+  // TODO: Consider serializing oneof fields last so that only one entry per
   // oneof is actually serialized. This would mean that we would violate the serialization order
   // contract. It should also be noted that Go currently does this.
   public void writeTo(T message, Writer writer) throws IOException {
@@ -2792,7 +2792,7 @@ final class MessageSchema<T> implements Schema<T> {
               numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, false);
           break;
         case 35: // DOUBLE_LIST_PACKED:
-          // TODO(xiaofeng): Make use of cached field size to speed up serialization.
+          // TODO: Make use of cached field size to speed up serialization.
           SchemaUtil.writeDoubleList(
               numberAt(pos), (List<Double>) unsafe.getObject(message, offset), writer, true);
           break;
@@ -2857,7 +2857,7 @@ final class MessageSchema<T> implements Schema<T> {
               getMessageFieldSchema(pos));
           break;
         case 50: // MAP:
-          // TODO(dweis): Use schema cache.
+          // TODO: Use schema cache.
           writeMapHelper(writer, number, unsafe.getObject(message, offset), pos);
           break;
         case 51: // ONEOF_DOUBLE:
@@ -3200,7 +3200,7 @@ final class MessageSchema<T> implements Schema<T> {
               false);
           break;
         case 35: // DOUBLE_LIST_PACKED:
-          // TODO(xiaofeng): Make use of cached field size to speed up serialization.
+          // TODO: Make use of cached field size to speed up serialization.
           SchemaUtil.writeDoubleList(
               numberAt(pos),
               (List<Double>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
@@ -3307,7 +3307,7 @@ final class MessageSchema<T> implements Schema<T> {
               getMessageFieldSchema(pos));
           break;
         case 50: // MAP:
-          // TODO(dweis): Use schema cache.
+          // TODO: Use schema cache.
           writeMapHelper(writer, number, UnsafeUtil.getObject(message, offset(typeAndOffset)), pos);
           break;
         case 51: // ONEOF_DOUBLE:
@@ -3761,7 +3761,7 @@ final class MessageSchema<T> implements Schema<T> {
               getMessageFieldSchema(pos));
           break;
         case 50: // MAP:
-          // TODO(dweis): Use schema cache.
+          // TODO: Use schema cache.
           writeMapHelper(writer, number, UnsafeUtil.getObject(message, offset(typeAndOffset)), pos);
           break;
         case 51: // ONEOF_DOUBLE:
@@ -4357,7 +4357,7 @@ final class MessageSchema<T> implements Schema<T> {
 
   @SuppressWarnings("ReferenceEquality")
   static UnknownFieldSetLite getMutableUnknownFields(Object message) {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     UnknownFieldSetLite unknownFields = ((GeneratedMessageLite) message).unknownFields;
     if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
@@ -5490,7 +5490,7 @@ final class MessageSchema<T> implements Schema<T> {
       return;
     }
 
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (message instanceof GeneratedMessageLite) {
       GeneratedMessageLite<?, ?> generatedMessage = ((GeneratedMessageLite<?, ?>) message);
@@ -5576,7 +5576,7 @@ final class MessageSchema<T> implements Schema<T> {
       throws IOException {
     long offset = offset(typeAndOffsetAt(pos));
     Object mapField = UnsafeUtil.getObject(message, offset);
-    // TODO(xiaofeng): Consider creating separate implementations for full and lite. In lite
+    // TODO: Consider creating separate implementations for full and lite. In lite
     // runtime map field will never be null but here we still need to check null because the
     // code is shared by both full and lite. It might be better if full/lite uses different
     // schema implementations.
@@ -5761,7 +5761,7 @@ final class MessageSchema<T> implements Schema<T> {
     if (metadata.valueType.getJavaType() != WireFormat.JavaType.MESSAGE) {
       return true;
     }
-    // TODO(dweis): Use schema cache.
+    // TODO: Use schema cache.
     Schema schema = null;
     for (Object nested : map.values()) {
       if (schema == null) {
@@ -5862,7 +5862,7 @@ final class MessageSchema<T> implements Schema<T> {
       return false;
     }
 
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (message instanceof GeneratedMessageLite<?, ?>) {
       return ((GeneratedMessageLite<?, ?>) message).isMutable();

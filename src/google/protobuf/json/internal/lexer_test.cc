@@ -71,7 +71,7 @@ using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::VariantWith;
 
-// TODO(b/234474291): Use the gtest versions once that's available in OSS.
+// TODO: Use the gtest versions once that's available in OSS.
 MATCHER_P(IsOkAndHolds, inner,
           absl::StrCat("is OK and holds ", testing::PrintToString(inner))) {
   if (!arg.ok()) {
@@ -95,7 +95,7 @@ MATCHER_P(StatusIs, status,
 #define EXPECT_OK(x) EXPECT_THAT(x, StatusIs(absl::StatusCode::kOk))
 #define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk))
 
-// TODO(b/234868512): There are several tests that validate non-standard
+// TODO: There are several tests that validate non-standard
 // behavior that is assumed to be present in the wild due to Hyrum's Law. These
 // tests are grouped under the `NonStandard` suite. These tests ensure the
 // non-standard syntax is accepted, and that disabling legacy mode rejects them.

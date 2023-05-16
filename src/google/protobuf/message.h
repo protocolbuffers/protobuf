@@ -128,7 +128,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_util.h"
-#include "google/protobuf/map.h"  // TODO(b/211442718): cleanup
+#include "google/protobuf/map.h"  // TODO: cleanup
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 
@@ -404,7 +404,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // exists in global memory and is unique to each subclass.  This uniqueness
   // property is used in order to quickly determine whether two messages are
   // of the same type.
-  // TODO(jorg): change to pure virtual
+  // TODO: change to pure virtual
   virtual const ClassData* GetClassData() const { return nullptr; }
 
   // CopyWithSourceCheck calls Clear() and then MergeFrom(), and in debug

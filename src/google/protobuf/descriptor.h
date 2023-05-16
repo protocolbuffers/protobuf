@@ -462,7 +462,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     // Never nullptr.
     const Descriptor* containing_type() const { return containing_type_; }
 
-    // TODO(b/282012847) Make these private.
+    // TODO Make these private.
     int start;  // NOLINT(google3-readability-class-member-naming)
     int end;    // NOLINT(google3-readability-class-member-naming)
     const ExtensionRangeOptions* options_;

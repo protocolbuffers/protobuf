@@ -181,7 +181,7 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
   Arena arena(options);
 
   {
-    // TODO(liujisi): Re-write the test to ensure the memory for the map and
+    // TODO: Re-write the test to ensure the memory for the map and
     // repeated fields are allocated from arenas.
     // NoHeapChecker no_heap;
 
@@ -195,7 +195,7 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
   }
 
   {
-    // TODO(liujisi): Re-write the test to ensure the memory for the map and
+    // TODO: Re-write the test to ensure the memory for the map and
     // repeated fields are allocated from arenas.
     // NoHeapChecker no_heap;
 

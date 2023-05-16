@@ -44,6 +44,6 @@ import java.lang.annotation.Target;
  * annotated with {@code @CheckReturnValue} to exempt specific methods from the default.
  */
 @Documented
-@Target(METHOD) // TODO(kak): consider adding CONSTRUCTOR later if necessary
+@Target(METHOD) // TODO: consider adding CONSTRUCTOR later if necessary
 @Retention(CLASS)
 @interface CanIgnoreReturnValue {}

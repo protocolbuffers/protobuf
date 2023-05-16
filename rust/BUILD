@@ -20,7 +20,7 @@ package(
 #
 # WARNING: It's critical that users do not end up using Rust Protobufs with multiple kernels in
 # their binaries. Currently this is achieved by using bzl visibility on kernel specific rules.
-# TODO(b/149440343): Hide the kernel-specific targets once we can restrict a target visibility to a
+# TODO: Hide the kernel-specific targets once we can restrict a target visibility to a
 # rule.
 rust_library(
     name = "protobuf",
@@ -58,7 +58,7 @@ rust_test(
     crate = ":protobuf_upb",
     rustc_flags = ["--cfg=upb_kernel"],
     tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        # TODO: Enable testing on arm once we have a Rust Arm toolchain.
         "not_build:arm",
     ],
 )
@@ -82,7 +82,7 @@ rust_test(
     crate = ":protobuf_cpp",
     rustc_flags = ["--cfg=cpp_kernel"],
     tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
+        # TODO: Enable testing on arm once we have a Rust Arm toolchain.
         "not_build:arm",
     ],
 )

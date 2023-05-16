@@ -377,14 +377,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   typename TypeHandler::Type** mutable_data() {
-    // TODO(kenton):  Breaks C++ aliasing rules.  We should probably remove this
+    // TODO:  Breaks C++ aliasing rules.  We should probably remove this
     //   method entirely.
     return reinterpret_cast<typename TypeHandler::Type**>(raw_mutable_data());
   }
 
   template <typename TypeHandler>
   const typename TypeHandler::Type* const* data() const {
-    // TODO(kenton):  Breaks C++ aliasing rules.  We should probably remove this
+    // TODO:  Breaks C++ aliasing rules.  We should probably remove this
     //   method entirely.
     return reinterpret_cast<const typename TypeHandler::Type* const*>(
         raw_data());
@@ -789,7 +789,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   friend class AccessorHelper;
   template <typename T>
   friend struct google::protobuf::WeakRepeatedPtrField;
-  friend class internal::TcParser;  // TODO(jorg): Remove this friend.
+  friend class internal::TcParser;  // TODO: Remove this friend.
 };
 
 template <typename GenericType>
