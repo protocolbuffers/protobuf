@@ -124,6 +124,7 @@ class PROTOC_EXPORT Version final :
  public:
   inline Version() : Version(nullptr) {}
   ~Version() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Version(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Version(const Version& from);
@@ -329,6 +330,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
   ~CodeGeneratorRequest() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorRequest(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   CodeGeneratorRequest(const CodeGeneratorRequest& from);
@@ -565,6 +567,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
   ~CodeGeneratorResponse_File() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse_File(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from);
@@ -793,6 +796,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
   ~CodeGeneratorResponse() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   CodeGeneratorResponse(const CodeGeneratorResponse& from);

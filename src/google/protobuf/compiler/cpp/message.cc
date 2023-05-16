@@ -1155,6 +1155,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
         "SuperType;\n"
         "  $classname$();\n"
+        // Templatize constexpr constructor as a workaround for a bug in gcc 12
+        // (warning in gcc 13).
+        "  template <typename = void>\n"
         "  explicit PROTOBUF_CONSTEXPR $classname$(\n"
         "      ::$proto_ns$::internal::ConstantInitialized);\n"
         "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
@@ -1248,6 +1251,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     format("~$classname$() override;\n");
   }
   format(
+      // Templatize constexpr constructor as a workaround for a bug in gcc 12
+      // (warning in gcc 13).
+      "template<typename = void>\n"
       "explicit PROTOBUF_CONSTEXPR "
       "$classname$(::$proto_ns$::internal::ConstantInitialized);\n"
       "\n"
@@ -2449,13 +2455,19 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_) || !HasImplData(descriptor_, options_)) {
+    // Templatize constexpr constructor as a workaround for a bug in gcc 12
+    // (warning in gcc 13).
     format(
+        "template <typename>\n"
         "PROTOBUF_CONSTEXPR $classname$::$classname$(\n"
         "    ::_pbi::ConstantInitialized) {}\n");
     return;
   }
 
+  // Templatize constexpr constructor as a workaround for a bug in gcc 12
+  // (warning in gcc 13).
   format(
+      "template <typename>\n"
       "PROTOBUF_CONSTEXPR $classname$::$classname$(\n"
       "    ::_pbi::ConstantInitialized)");
 
