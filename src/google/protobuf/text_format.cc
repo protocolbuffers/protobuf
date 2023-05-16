@@ -2529,7 +2529,7 @@ void TextFormat::Printer::PrintField(const Message& message,
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       if (TryRedactFieldValue(message, field, generator,
                               /*insert_value_separator=*/true)) {
-        return;
+        break;
       }
       const FastFieldValuePrinter* printer = GetFieldPrinter(field);
       const Message& sub_message =
