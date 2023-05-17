@@ -40,6 +40,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/descriptor_visitor.h"
 
 #include "google/protobuf/stubs/platform_macros.h"
 
@@ -1025,100 +1026,6 @@ bool ContainsProto3Optional(const FileDescriptor* file) {
   return false;
 }
 
-template <typename Visitor>
-struct VisitImpl {
-  Visitor visitor;
-  void Visit(const FieldDescriptor* descriptor) { visitor(descriptor); }
-
-  void Visit(const EnumValueDescriptor* descriptor) { visitor(descriptor); }
-
-  void Visit(const EnumDescriptor* descriptor) {
-    visitor(descriptor);
-    for (int i = 0; i < descriptor->value_count(); i++) {
-      Visit(descriptor->value(i));
-    }
-  }
-
-  void Visit(const Descriptor::ExtensionRange* descriptor) {
-    visitor(descriptor);
-  }
-
-  void Visit(const OneofDescriptor* descriptor) { visitor(descriptor); }
-
-  void Visit(const Descriptor* descriptor) {
-    visitor(descriptor);
-
-    for (int i = 0; i < descriptor->enum_type_count(); i++) {
-      Visit(descriptor->enum_type(i));
-    }
-
-    for (int i = 0; i < descriptor->field_count(); i++) {
-      Visit(descriptor->field(i));
-    }
-
-    for (int i = 0; i < descriptor->nested_type_count(); i++) {
-      Visit(descriptor->nested_type(i));
-    }
-
-    for (int i = 0; i < descriptor->extension_count(); i++) {
-      Visit(descriptor->extension(i));
-    }
-
-    for (int i = 0; i < descriptor->extension_range_count(); i++) {
-      Visit(descriptor->extension_range(i));
-    }
-
-    for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
-      Visit(descriptor->oneof_decl(i));
-    }
-  }
-
-  void Visit(const MethodDescriptor* method) { visitor(method); }
-
-  void Visit(const ServiceDescriptor* descriptor) {
-    visitor(descriptor);
-    for (int i = 0; i < descriptor->method_count(); i++) {
-      Visit(descriptor->method(i));
-    }
-  }
-
-  void Visit(absl::Span<const FileDescriptor*> descriptors) {
-    for (const FileDescriptor* descriptor : descriptors) {
-      visitor(descriptor);
-      for (int i = 0; i < descriptor->message_type_count(); i++) {
-        Visit(descriptor->message_type(i));
-      }
-      for (int i = 0; i < descriptor->enum_type_count(); i++) {
-        Visit(descriptor->enum_type(i));
-      }
-      for (int i = 0; i < descriptor->extension_count(); i++) {
-        Visit(descriptor->extension(i));
-      }
-      for (int i = 0; i < descriptor->service_count(); i++) {
-        Visit(descriptor->service(i));
-      }
-    }
-  }
-};
-
-// Visit every node in the descriptors calling `visitor(node)`.
-// The visitor does not need to handle all possible node types. Types that are
-// not visitable via `visitor` will be ignored.
-template <typename Visitor>
-void VisitDescriptors(absl::Span<const FileDescriptor*> descriptors,
-                      Visitor visitor) {
-  // Provide a fallback to ignore all the nodes that are not interesting to the
-  // input visitor.
-  struct VisitorImpl : Visitor {
-    explicit VisitorImpl(Visitor visitor) : Visitor(visitor) {}
-    using Visitor::operator();
-    // Honeypot to ignore all inputs that Visitor does not take.
-    void operator()(const void*) const {}
-  };
-
-  VisitImpl<VisitorImpl>{VisitorImpl(visitor)}.Visit(descriptors);
-}
-
 bool HasReservedFieldNumber(const FieldDescriptor* field) {
   if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
       field->number() <= FieldDescriptor::kLastReservedNumber) {
@@ -1365,49 +1272,47 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   bool validation_error = false;  // Defer exiting so we log more warnings.
 
-  VisitDescriptors(
-      absl::Span<const FileDescriptor*>(parsed_files.data(),
-                                        parsed_files.size()),
-      [&](const FieldDescriptor* field) {
-        if (HasReservedFieldNumber(field)) {
-          const char* error_link = nullptr;
-          validation_error = true;
-          std::string error;
-          if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
-              field->number() <= FieldDescriptor::kLastReservedNumber) {
-            error = absl::Substitute(
-                "Field numbers $0 through $1 are reserved "
-                "for the protocol buffer library implementation.",
-                FieldDescriptor::kFirstReservedNumber,
-                FieldDescriptor::kLastReservedNumber);
-          } else {
-            error = absl::Substitute(
-                "Field number $0 is reserved for specific purposes.",
-                field->number());
+  for (auto& file : parsed_files) {
+    google::protobuf::internal::VisitDescriptors(
+        *file, [&](const FieldDescriptor& field) {
+          if (HasReservedFieldNumber(&field)) {
+            const char* error_link = nullptr;
+            validation_error = true;
+            std::string error;
+            if (field.number() >= FieldDescriptor::kFirstReservedNumber &&
+                field.number() <= FieldDescriptor::kLastReservedNumber) {
+              error = absl::Substitute(
+                  "Field numbers $0 through $1 are reserved "
+                  "for the protocol buffer library implementation.",
+                  FieldDescriptor::kFirstReservedNumber,
+                  FieldDescriptor::kLastReservedNumber);
+            } else {
+              error = absl::Substitute(
+                  "Field number $0 is reserved for specific purposes.",
+                  field.number());
+            }
+            if (error_link) {
+              absl::StrAppend(&error, "(See ", error_link, ")");
+            }
+            static_cast<DescriptorPool::ErrorCollector*>(error_collector.get())
+                ->RecordError(field.file()->name(), field.full_name(), nullptr,
+                              DescriptorPool::ErrorCollector::NUMBER, error);
           }
-          if (error_link) {
-            absl::StrAppend(&error, "(See ", error_link, ")");
-          }
-          static_cast<DescriptorPool::ErrorCollector*>(error_collector.get())
-              ->RecordError(field->file()->name(), field->full_name(), nullptr,
-                            DescriptorPool::ErrorCollector::NUMBER, error);
-        }
-      });
+        });
+  }
 
   // We visit one file at a time because we need to provide the file name for
   // error messages. Usually we can get the file name from any descriptor with
   // something like descriptor->file()->name(), but ExtensionRange does not
   // support this.
   for (const google::protobuf::FileDescriptor* file : parsed_files) {
-    VisitDescriptors(
-        absl::Span<const FileDescriptor*>(&file, 1),
-        [&](const auto* descriptor) {
-          if (!ValidateTargetConstraints(
-                  descriptor->options(), *descriptor_pool, *error_collector,
-                  file->name(), GetTargetType(descriptor))) {
-            validation_error = true;
-          }
-        });
+    google::protobuf::internal::VisitDescriptors(*file, [&](const auto& descriptor) {
+      if (!ValidateTargetConstraints(descriptor.options(), *descriptor_pool,
+                                     *error_collector, file->name(),
+                                     GetTargetType(&descriptor))) {
+        validation_error = true;
+      }
+    });
   }
 
 

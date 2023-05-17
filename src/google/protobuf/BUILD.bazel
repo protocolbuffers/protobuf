@@ -457,6 +457,7 @@ cc_library(
         "descriptor.pb.h",
         "descriptor_database.h",
         "descriptor_legacy.h",
+        "descriptor_visitor.h",
         "dynamic_message.h",
         "field_access_listener.h",
         "generated_enum_reflection.h",
@@ -547,6 +548,19 @@ cc_library(
         ":port_def",
         ":protobuf_nowkt",
         "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "descriptor_visitor",
+    hdrs = ["descriptor_visitor.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf",
+    linkopts = LINK_OPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":port_def",
+        ":protobuf_nowkt",
     ],
 )
 
@@ -1430,6 +1444,18 @@ cc_test(
     srcs = ["reflection_mode_test.cc"],
     deps = [
         ":protobuf_nowkt",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "descriptor_visitor_test",
+    srcs = ["descriptor_visitor_test.cc"],
+    deps = [
+        ":protobuf",
+        ":cc_test_protos",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

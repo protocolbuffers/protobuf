@@ -74,6 +74,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/strtod.h"
@@ -4208,20 +4209,21 @@ class DescriptorBuilder {
   // descriptors, which are the ones that have been interpreted. The const
   // proto references are passed in only so they can be provided to calls to
   // AddError(). Do not look at their options, which have not been interpreted.
-  void ValidateFileOptions(const FileDescriptor* file,
-                           const FileDescriptorProto& proto);
-  void ValidateMessageOptions(const Descriptor* message,
-                              const DescriptorProto& proto);
-  void ValidateOneofOptions(const OneofDescriptor* oneof,
-                            const OneofDescriptorProto& proto);
-  void ValidateFieldOptions(const FieldDescriptor* field,
-                            const FieldDescriptorProto& proto);
+  void ValidateOptions(const FileDescriptor* file,
+                       const FileDescriptorProto& proto);
+  void ValidateOptions(const Descriptor* message, const DescriptorProto& proto);
+  void ValidateOptions(const OneofDescriptor* oneof,
+                       const OneofDescriptorProto& proto);
+  void ValidateOptions(const FieldDescriptor* field,
+                       const FieldDescriptorProto& proto);
   void ValidateFieldFeatures(const FieldDescriptor* field,
                              const FieldDescriptorProto& proto);
-  void ValidateEnumOptions(const EnumDescriptor* enm,
-                           const EnumDescriptorProto& proto);
-  void ValidateEnumValueOptions(const EnumValueDescriptor* enum_value,
-                                const EnumValueDescriptorProto& proto);
+  void ValidateOptions(const EnumDescriptor* enm,
+                       const EnumDescriptorProto& proto);
+  void ValidateOptions(const EnumValueDescriptor* enum_value,
+                       const EnumValueDescriptorProto& proto);
+  void ValidateOptions(const Descriptor::ExtensionRange* range,
+                       const DescriptorProto::ExtensionRange& proto) {}
   void ValidateExtensionRangeOptions(const DescriptorProto& proto,
                                      const Descriptor& message);
   void ValidateExtensionDeclaration(
@@ -4229,10 +4231,10 @@ class DescriptorBuilder {
       const RepeatedPtrField<ExtensionRangeOptions_Declaration>& declarations,
       const DescriptorProto_ExtensionRange& proto,
       absl::flat_hash_set<absl::string_view>& full_name_set);
-  void ValidateServiceOptions(const ServiceDescriptor* service,
-                              const ServiceDescriptorProto& proto);
-  void ValidateMethodOptions(const MethodDescriptor* method,
-                             const MethodDescriptorProto& proto);
+  void ValidateOptions(const ServiceDescriptor* service,
+                       const ServiceDescriptorProto& proto);
+  void ValidateOptions(const MethodDescriptor* method,
+                       const MethodDescriptorProto& proto);
   void ValidateProto3(const FileDescriptor* file,
                       const FileDescriptorProto& proto);
   void ValidateProto3Message(const Descriptor* message,
@@ -5479,7 +5481,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   // Validate options. See comments at InternalSetLazilyBuildDependencies about
   // error checking and lazy import building.
   if (!had_errors_ && !pool_->lazily_build_dependencies_) {
-    ValidateFileOptions(result, proto);
+    internal::VisitDescriptors(*result, proto,
+                               [&](const auto& descriptor, const auto& proto) {
+                                 ValidateOptions(&descriptor, proto);
+                               });
   }
 
   // Additional naming conflict check for map entry types. Only need to check
@@ -7101,12 +7106,6 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
 
 // -------------------------------------------------------------------
 
-#define VALIDATE_OPTIONS_FROM_ARRAY(descriptor, array_name, type) \
-  for (int i = 0; i < descriptor->array_name##_count(); ++i) {    \
-    Validate##type##Options(descriptor->array_name##s_ + i,       \
-                            proto.array_name(i));                 \
-  }
-
 // Determine if the file uses optimize_for = LITE_RUNTIME, being careful to
 // avoid problems that exist at init time.
 static bool IsLite(const FileDescriptor* file) {
@@ -7117,13 +7116,8 @@ static bool IsLite(const FileDescriptor* file) {
          file->options().optimize_for() == FileOptions::LITE_RUNTIME;
 }
 
-void DescriptorBuilder::ValidateFileOptions(const FileDescriptor* file,
-                                            const FileDescriptorProto& proto) {
-  VALIDATE_OPTIONS_FROM_ARRAY(file, message_type, Message);
-  VALIDATE_OPTIONS_FROM_ARRAY(file, enum_type, Enum);
-  VALIDATE_OPTIONS_FROM_ARRAY(file, service, Service);
-  VALIDATE_OPTIONS_FROM_ARRAY(file, extension, Field);
-
+void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
+                                        const FileDescriptorProto& proto) {
   // Lite files can only be imported by other Lite files.
   if (!IsLite(file)) {
     for (int i = 0; i < file->dependency_count(); i++) {
@@ -7233,26 +7227,19 @@ void DescriptorBuilder::ValidateProto3Enum(const EnumDescriptor* enm,
   }
 }
 
-void DescriptorBuilder::ValidateMessageOptions(const Descriptor* message,
-                                               const DescriptorProto& proto) {
-  VALIDATE_OPTIONS_FROM_ARRAY(message, field, Field);
-  VALIDATE_OPTIONS_FROM_ARRAY(message, nested_type, Message);
-  VALIDATE_OPTIONS_FROM_ARRAY(message, enum_type, Enum);
-  VALIDATE_OPTIONS_FROM_ARRAY(message, extension, Field);
-
+void DescriptorBuilder::ValidateOptions(const Descriptor* message,
+                                        const DescriptorProto& proto) {
   CheckFieldJsonNameUniqueness(proto, message);
   ValidateExtensionRangeOptions(proto, *message);
-  for (int i = 0; i < message->real_oneof_decl_count(); ++i) {
-    ValidateOneofOptions(message->oneof_decl(i), proto.oneof_decl(i));
-  }
 }
 
-void DescriptorBuilder::ValidateOneofOptions(
-    const OneofDescriptor* /*oneof*/, const OneofDescriptorProto& /*proto*/) {}
+void DescriptorBuilder::ValidateOptions(const OneofDescriptor* /*oneof*/,
+                                        const OneofDescriptorProto& /*proto*/) {
+}
 
 
-void DescriptorBuilder::ValidateFieldOptions(
-    const FieldDescriptor* field, const FieldDescriptorProto& proto) {
+void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
+                                        const FieldDescriptorProto& proto) {
   if (pool_->lazily_build_dependencies_ && (!field || !field->message_type())) {
     return;
   }
@@ -7343,10 +7330,8 @@ void DescriptorBuilder::ValidateFieldFeatures(
     const FieldDescriptor* field, const FieldDescriptorProto& proto) {
 }
 
-void DescriptorBuilder::ValidateEnumOptions(const EnumDescriptor* enm,
-                                            const EnumDescriptorProto& proto) {
-  VALIDATE_OPTIONS_FROM_ARRAY(enm, value, EnumValue);
-
+void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
+                                        const EnumDescriptorProto& proto) {
   CheckEnumValueUniqueness(proto, enm);
 
   if (!enm->options().has_allow_alias() || !enm->options().allow_alias()) {
@@ -7388,7 +7373,7 @@ void DescriptorBuilder::ValidateEnumOptions(const EnumDescriptor* enm,
   }
 }
 
-void DescriptorBuilder::ValidateEnumValueOptions(
+void DescriptorBuilder::ValidateOptions(
     const EnumValueDescriptor* /* enum_value */,
     const EnumValueDescriptorProto& /* proto */) {
   // Nothing to do so far.
@@ -7529,8 +7514,8 @@ void DescriptorBuilder::ValidateExtensionRangeOptions(
   }
 }
 
-void DescriptorBuilder::ValidateServiceOptions(
-    const ServiceDescriptor* service, const ServiceDescriptorProto& proto) {
+void DescriptorBuilder::ValidateOptions(const ServiceDescriptor* service,
+                                        const ServiceDescriptorProto& proto) {
   if (IsLite(service->file()) &&
       (service->file()->options().cc_generic_services() ||
        service->file()->options().java_generic_services())) {
@@ -7539,11 +7524,9 @@ void DescriptorBuilder::ValidateServiceOptions(
              "unless you set both options cc_generic_services and "
              "java_generic_services to false.");
   }
-
-  VALIDATE_OPTIONS_FROM_ARRAY(service, method, Method);
 }
 
-void DescriptorBuilder::ValidateMethodOptions(
+void DescriptorBuilder::ValidateOptions(
     const MethodDescriptor* /* method */,
     const MethodDescriptorProto& /* proto */) {
   // Nothing to do so far.
@@ -7722,8 +7705,6 @@ void DescriptorBuilder::ValidateJSType(const FieldDescriptor* field,
       break;
   }
 }
-
-#undef VALIDATE_OPTIONS_FROM_ARRAY
 
 // -------------------------------------------------------------------
 
