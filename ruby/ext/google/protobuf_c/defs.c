@@ -46,6 +46,7 @@ static VALUE get_enumdef_obj(VALUE descriptor_pool, const upb_EnumDef* def);
 static VALUE get_fielddef_obj(VALUE descriptor_pool, const upb_FieldDef* def);
 static VALUE get_filedef_obj(VALUE descriptor_pool, const upb_FileDef* def);
 static VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_OneofDef* def);
+static VALUE get_serialized_options_obj(const char* serialized, size_t size, upb_Arena* arena);
 
 // A distinct object that is not accessible from Ruby.  We use this as a
 // constructor argument to enforce that certain objects cannot be created from
@@ -409,15 +410,8 @@ static VALUE Descriptor_serialized_options(VALUE _self) {
   upb_Arena* arena = upb_Arena_New();
   size_t size;
   char* serialized = google_protobuf_MessageOptions_serialize(opts, arena, &size);
-  if (serialized) {
-    VALUE ret = rb_str_new(serialized, size);
-    rb_enc_associate(ret, rb_ascii8bit_encoding());
-    upb_Arena_Free(arena);
-    return ret;
-  } else {
-    upb_Arena_Free(arena);
-    rb_raise(rb_eRuntimeError, "Error encoding");
-  }
+
+  return get_serialized_options_obj(serialized, size, arena);
 }
 
 static void Descriptor_register(VALUE module) {
@@ -543,15 +537,8 @@ static VALUE FileDescriptor_serialized_options(VALUE _self) {
   upb_Arena* arena = upb_Arena_New();
   size_t size;
   char* serialized = google_protobuf_FileOptions_serialize(opts, arena, &size);
-  if (serialized) {
-    VALUE ret = rb_str_new(serialized, size);
-    rb_enc_associate(ret, rb_ascii8bit_encoding());
-    upb_Arena_Free(arena);
-    return ret;
-  } else {
-    upb_Arena_Free(arena);
-    rb_raise(rb_eRuntimeError, "Error encoding");
-  }
+
+  return get_serialized_options_obj(serialized, size, arena);
 }
 
 static void FileDescriptor_register(VALUE module) {
@@ -924,15 +911,8 @@ static VALUE FieldDescriptor_serialized_options(VALUE _self) {
   upb_Arena* arena = upb_Arena_New();
   size_t size;
   char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, &size);
-  if (serialized) {
-    VALUE ret = rb_str_new(serialized, size);
-    rb_enc_associate(ret, rb_ascii8bit_encoding());
-    upb_Arena_Free(arena);
-    return ret;
-  } else {
-    upb_Arena_Free(arena);
-    rb_raise(rb_eRuntimeError, "Error encoding");
-  }
+
+  return get_serialized_options_obj(serialized, size, arena);
 }
 
 static void FieldDescriptor_register(VALUE module) {
@@ -1063,15 +1043,8 @@ static VALUE OneOfDescriptor_serialized_options(VALUE _self) {
   upb_Arena* arena = upb_Arena_New();
   size_t size;
   char* serialized = google_protobuf_OneofOptions_serialize(opts, arena, &size);
-  if (serialized) {
-    VALUE ret = rb_str_new(serialized, size);
-    rb_enc_associate(ret, rb_ascii8bit_encoding());
-    upb_Arena_Free(arena);
-    return ret;
-  } else {
-    upb_Arena_Free(arena);
-    rb_raise(rb_eRuntimeError, "Error encoding");
-  }
+
+  return get_serialized_options_obj(serialized, size, arena);
 }
 
 static void OneofDescriptor_register(VALUE module) {
@@ -1261,15 +1234,8 @@ static VALUE EnumDescriptor_serialized_options(VALUE _self) {
   upb_Arena* arena = upb_Arena_New();
   size_t size;
   char* serialized = google_protobuf_EnumOptions_serialize(opts, arena, &size);
-  if (serialized) {
-    VALUE ret = rb_str_new(serialized, size);
-    rb_enc_associate(ret, rb_ascii8bit_encoding());
-    upb_Arena_Free(arena);
-    return ret;
-  } else {
-    upb_Arena_Free(arena);
-    rb_raise(rb_eRuntimeError, "Error encoding");
-  }
+
+  return get_serialized_options_obj(serialized, size, arena);
 }
 
 static void EnumDescriptor_register(VALUE module) {
@@ -1327,6 +1293,18 @@ static VALUE get_filedef_obj(VALUE descriptor_pool, const upb_FileDef* def) {
 
 static VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_OneofDef* def) {
   return get_def_obj(descriptor_pool, def, cOneofDescriptor);
+}
+
+static VALUE get_serialized_options_obj(const char* serialized, size_t size, upb_Arena* arena) {
+  if (serialized) {
+    VALUE ret = rb_str_new(serialized, size);
+    rb_enc_associate(ret, rb_ascii8bit_encoding());
+    upb_Arena_Free(arena);
+    return ret;
+  } else {
+    upb_Arena_Free(arena);
+    rb_raise(rb_eRuntimeError, "Error encoding");
+  }
 }
 
 // -----------------------------------------------------------------------------
