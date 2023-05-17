@@ -304,7 +304,8 @@ class PROTOBUF_EXPORT Parser {
   // Parses the "syntax = \"proto2\";" line at the top of the file.  Returns
   // false if it failed to parse or if the syntax identifier was not
   // recognized.
-  bool ParseSyntaxIdentifier(const LocationRecorder& parent);
+  bool ParseSyntaxIdentifier(const FileDescriptorProto* file,
+                             const LocationRecorder& parent);
 
   // These methods parse various individual bits of code.  They return
   // false if they completely fail to parse the construct.  In this case,
