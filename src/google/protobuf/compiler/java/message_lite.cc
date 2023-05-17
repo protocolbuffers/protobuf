@@ -699,7 +699,7 @@ void ImmutableMessageLiteGenerator::GenerateBuilder(io::Printer* printer) {
       "  return (Builder) DEFAULT_INSTANCE.createBuilder();\n"
       "}\n"
       "public static Builder newBuilder($classname$ prototype) {\n"
-      "  return (Builder) DEFAULT_INSTANCE.createBuilder(prototype);\n"
+      "  return DEFAULT_INSTANCE.createBuilder(prototype);\n"
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
