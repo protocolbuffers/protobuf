@@ -133,31 +133,42 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     if (count > 0) StreamBackUp(count);
   }
 
-  // Use an optional<int> to guarantee that:
+  // In sanitizer mode we use memory poisoning to guarantee that:
   //  - We do not read an uninitialized token.
   //  - Every non-empty token is moved from and consumed.
   class LimitToken {
    public:
-    LimitToken() = default;
-    explicit LimitToken(int token) : token_(token) {}
+    LimitToken() { PROTOBUF_POISON_MEMORY_REGION(this, sizeof(LimitToken)); }
+    explicit LimitToken(int token) : token_(token) { PROTOBUF_UNPOISON_MEMORY_REGION(this, sizeof(LimitToken)); }
     LimitToken(LimitToken&& other) { *this = std::move(other); }
     LimitToken& operator=(LimitToken&& other) {
-      token_ = std::exchange(other.token_, absl::nullopt);
+      PROTOBUF_UNPOISON_MEMORY_REGION(this, sizeof(LimitToken));
+      token_ = other.token_;
+      PROTOBUF_POISON_MEMORY_REGION(&other, sizeof(LimitToken));
       return *this;
     }
 
-    ~LimitToken() { ABSL_CHECK(!token_.has_value()); }
+    ~LimitToken() {
+#ifdef ADDRESS_SANITIZER
+      ABSL_CHECK(__asan_address_is_poisoned(this));
+#endif
+    }
 
     LimitToken(const LimitToken&) = delete;
     LimitToken& operator=(const LimitToken&) = delete;
 
     int token() && {
-      ABSL_CHECK(token_.has_value());
-      return *std::exchange(token_, absl::nullopt);
+#ifdef ADDRESS_SANITIZER
+      int t = token_;
+      PROTOBUF_POISON_MEMORY_REGION(this, sizeof(LimitToken));
+      return t;
+#else
+      return token_;
+#endif
     }
 
    private:
-    absl::optional<int> token_;
+    int token_;
   };
 
   // If return value is negative it's an error
