@@ -1663,22 +1663,8 @@ message BadFieldNames{
   optional int32 for = 2;
 }
 
-message TestNestedMessageRedaction {
-  optional string optional_nested_string = 1;
-}
-
-message RedactedFields {
+message RedactedFields{
   optional string optional_redacted_string = 1 [debug_redact = true];
-  optional string optional_unredacted_string = 2;
-  repeated string repeated_redacted_string = 3 [debug_redact = true];
-  repeated string repeated_unredacted_string = 4;
-  optional TestNestedMessageRedaction optional_redacted_message = 5 [debug_redact = true];
-  optional TestNestedMessageRedaction optional_unredacted_message = 6;
-  repeated TestNestedMessageRedaction repeated_redacted_message = 7
-      [debug_redact = true];
-  repeated TestNestedMessageRedaction repeated_unredacted_message = 8;
-  map<string, string> map_redacted_string = 9 [debug_redact = true];
-  map<string, string> map_unredacted_string = 10;
 }
 
 message TestCord{
