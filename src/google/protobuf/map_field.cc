@@ -69,6 +69,42 @@ MapFieldBase::~MapFieldBase() {
   delete maybe_payload();
 }
 
+const UntypedMapBase& MapFieldBase::GetMapImpl(bool is_mutable) const {
+  SyncMapWithRepeatedField();
+  if (is_mutable) const_cast<MapFieldBase*>(this)->SetMapDirty();
+  return GetMapRaw();
+}
+
+void MapFieldBase::MapBegin(MapIterator* map_iter) const {
+  map_iter->iter_ = GetMap().begin();
+  SetMapIteratorValue(map_iter);
+}
+
+void MapFieldBase::MapEnd(MapIterator* map_iter) const {
+  map_iter->iter_ = UntypedMapBase::EndIterator();
+}
+
+bool MapFieldBase::EqualIterator(const MapIterator& a,
+                                 const MapIterator& b) const {
+  return a.iter_.Equals(b.iter_);
+}
+
+void MapFieldBase::IncreaseIterator(MapIterator* map_iter) const {
+  map_iter->iter_.PlusPlus();
+  SetMapIteratorValue(map_iter);
+}
+
+void MapFieldBase::CopyIterator(MapIterator* this_iter,
+                                const MapIterator& that_iter) const {
+  this_iter->iter_ = that_iter.iter_;
+  this_iter->key_.SetType(that_iter.key_.type());
+  // MapValueRef::type() fails when containing data is null. However, if
+  // this_iter points to MapEnd, data can be null.
+  this_iter->value_.SetType(
+      static_cast<FieldDescriptor::CppType>(that_iter.value_.type_));
+  SetMapIteratorValue(this_iter);
+}
+
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
   ConstAccess();
   SyncRepeatedFieldWithMap();
