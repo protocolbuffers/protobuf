@@ -421,9 +421,8 @@ class PROTOBUF_EXPORT TextFormat {
     friend std::string Message::DebugString() const;
     friend std::string Message::ShortDebugString() const;
     friend std::string Message::Utf8DebugString() const;
-    friend void internal::PerformAbslStringify(
-        const Message& message,
-        absl::FunctionRef<void(absl::string_view)> append);
+    friend std::string internal::StringifyMessage(const Message& message,
+                                                  internal::Option option);
 
     // Sets whether silent markers will be inserted.
     void SetInsertSilentMarker(bool v) { insert_silent_marker_ = v; }
