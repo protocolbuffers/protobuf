@@ -425,7 +425,7 @@ static void Descriptor_register(VALUE module) {
   rb_define_method(klass, "msgclass", Descriptor_msgclass, 0);
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "file_descriptor", Descriptor_file_descriptor, 0);
-  rb_define_method(klass, "serialized_options", Descriptor_serialized_options, 0);
+  rb_define_private_method(klass, "serialized_options", Descriptor_serialized_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cDescriptor);
   cDescriptor = klass;
@@ -547,7 +547,7 @@ static void FileDescriptor_register(VALUE module) {
   rb_define_method(klass, "initialize", FileDescriptor_initialize, 3);
   rb_define_method(klass, "name", FileDescriptor_name, 0);
   rb_define_method(klass, "syntax", FileDescriptor_syntax, 0);
-  rb_define_method(klass, "serialized_options", FileDescriptor_serialized_options, 0);
+  rb_define_private_method(klass, "serialized_options", FileDescriptor_serialized_options, 0);
   rb_gc_register_address(&cFileDescriptor);
   cFileDescriptor = klass;
 }
@@ -931,7 +931,7 @@ static void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "clear", FieldDescriptor_clear, 1);
   rb_define_method(klass, "get", FieldDescriptor_get, 1);
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
-  rb_define_method(klass, "serialized_options", FieldDescriptor_serialized_options, 0);
+  rb_define_private_method(klass, "serialized_options", FieldDescriptor_serialized_options, 0);
   rb_gc_register_address(&cFieldDescriptor);
   cFieldDescriptor = klass;
 }
@@ -1053,7 +1053,7 @@ static void OneofDescriptor_register(VALUE module) {
   rb_define_method(klass, "initialize", OneofDescriptor_initialize, 3);
   rb_define_method(klass, "name", OneofDescriptor_name, 0);
   rb_define_method(klass, "each", OneofDescriptor_each, 0);
-  rb_define_method(klass, "serialized_options", OneOfDescriptor_serialized_options, 0);
+  rb_define_private_method(klass, "serialized_options", OneOfDescriptor_serialized_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cOneofDescriptor);
   cOneofDescriptor = klass;
@@ -1248,7 +1248,7 @@ static void EnumDescriptor_register(VALUE module) {
   rb_define_method(klass, "each", EnumDescriptor_each, 0);
   rb_define_method(klass, "enummodule", EnumDescriptor_enummodule, 0);
   rb_define_method(klass, "file_descriptor", EnumDescriptor_file_descriptor, 0);
-  rb_define_method(klass, "serialized_options", EnumDescriptor_serialized_options, 0);
+  rb_define_private_method(klass, "serialized_options", EnumDescriptor_serialized_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cEnumDescriptor);
   cEnumDescriptor = klass;
