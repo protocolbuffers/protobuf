@@ -669,7 +669,7 @@ static size_t VarintSize(const T* data, const int n) {
     } else if (SignExtended) {
       msb_sum += x >> 31;
     }
-    // clang is so smart that it produces optimal SSE sequence unrolling
+    // clang is so smart that it produces optimal SIMD sequence unrolling
     // the loop 8 ints at a time. With a sequence of 4
     // cmpres = cmpgt x, sizeclass  ( -1 or 0)
     // sum = sum - cmpres
@@ -712,7 +712,7 @@ static size_t VarintSize64(const T* data, const int n) {
 // and other platforms are untested, in those cases using the optimized
 // varint size routine for each element is faster.
 // Hence we enable it only for clang
-#if defined(__SSE__) && defined(__clang__)
+#if (defined(__SSE__) || defined(__aarch64__)) && defined(__clang__)
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
   return VarintSize<false, true>(value.data(), value.size());
 }
@@ -730,7 +730,7 @@ size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
   return VarintSize<false, true>(value.data(), value.size());
 }
 
-#else  // !(defined(__SSE4_1__) && defined(__clang__))
+#else  // !((defined(__SSE__) || defined(__aarch64__) && defined(__clang__))
 
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
   size_t out = 0;
