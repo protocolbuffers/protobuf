@@ -99,13 +99,6 @@ inline void IncrementRedactedFieldCounter() {
   num_redacted_field.fetch_add(1, std::memory_order_relaxed);
 }
 
-inline void TrimTrailingSpace(std::string& debug_string) {
-  // Single line mode currently might have an extra space at the end.
-  if (!debug_string.empty() && debug_string.back() == ' ') {
-    debug_string.pop_back();
-  }
-}
-
 }  // namespace
 
 namespace internal {
@@ -147,7 +140,10 @@ std::string Message::ShortDebugString() const {
       std::memory_order_relaxed));
 
   printer.PrintToString(*this, &debug_string);
-  TrimTrailingSpace(debug_string);
+  // Single line mode currently might have an extra space at the end.
+  if (!debug_string.empty() && debug_string[debug_string.size() - 1] == ' ') {
+    debug_string.resize(debug_string.size() - 1);
+  }
 
   return debug_string;
 }
@@ -172,34 +168,20 @@ void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
 
 namespace internal {
 
-PROTOBUF_EXPORT std::string StringifyMessage(const Message& message,
-                                             Option option) {
+PROTOBUF_EXPORT void PerformAbslStringify(
+    const Message& message, absl::FunctionRef<void(absl::string_view)> append) {
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
 
+  // TODO(b/249835002): consider using the single line version for short
   TextFormat::Printer printer;
-  switch (option) {
-    case Option::Short:
-      printer.SetSingleLineMode(true);
-      break;
-    case Option::UTF8:
-      printer.SetUseUtf8StringEscaping(true);
-      break;
-    case Option::None:
-      break;
-  }
   printer.SetExpandAny(true);
   printer.SetRedactDebugString(true);
   printer.SetRandomizeDebugString(true);
   printer.SetRootMessageFullName(message.GetDescriptor()->full_name());
   std::string result;
   printer.PrintToString(message, &result);
-
-  if (option == Option::Short) {
-    TrimTrailingSpace(result);
-  }
-
-  return result;
+  append(result);
 }
 
 }  // namespace internal
