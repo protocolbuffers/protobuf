@@ -79,6 +79,9 @@ message TestDeprecatedMessage {
     string a = 2;
     int32 b = 3;
   }
+
+  map<string, TestMessage2> map_string_msg = 4;
+  repeated TestMessage2 repeated_msg = 5;
 }
 
 enum TestEnum {

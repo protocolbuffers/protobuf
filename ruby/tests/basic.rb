@@ -748,6 +748,25 @@ module BasicTest
           Google::Protobuf::UninterpretedOption.new
       end
     end
+
+    def test_message_deep_freeze
+      message = TestDeprecatedMessage.new
+
+      nested_message_2 = TestMessage2.new
+
+      message.map_string_msg["message"] = TestMessage2.new
+      message.repeated_msg.push(TestMessage2.new)
+
+      message.send(:internal_deep_freeze)
+
+      assert_raise FrozenError do
+        message.map_string_msg["message"].foo = "bar"
+      end
+
+      assert_raise FrozenError do
+        message.repeated_msg[0].foo = "bar"
+      end
+    end
   end
 
   def test_oneof_fields_respond_to? # regression test for issue 9202
