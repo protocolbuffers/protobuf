@@ -2064,11 +2064,11 @@ TEST_F(ExtensionDescriptorTest, ExtensionRanges) {
   EXPECT_EQ(0, bar_->extension_range_count());
   ASSERT_EQ(2, foo_->extension_range_count());
 
-  EXPECT_EQ(10, foo_->extension_range(0)->start);
-  EXPECT_EQ(30, foo_->extension_range(1)->start);
+  EXPECT_EQ(10, foo_->extension_range(0)->start_number());
+  EXPECT_EQ(30, foo_->extension_range(1)->start_number());
 
-  EXPECT_EQ(20, foo_->extension_range(0)->end);
-  EXPECT_EQ(40, foo_->extension_range(1)->end);
+  EXPECT_EQ(20, foo_->extension_range(0)->end_number());
+  EXPECT_EQ(40, foo_->extension_range(1)->end_number());
 }
 
 TEST_F(ExtensionDescriptorTest, Extensions) {
@@ -3107,8 +3107,9 @@ TEST_P(AllowUnknownDependenciesTest, UnknownExtendee) {
   EXPECT_EQ("UnknownType", extendee->name());
   EXPECT_TRUE(extendee->is_placeholder());
   ASSERT_EQ(1, extendee->extension_range_count());
-  EXPECT_EQ(1, extendee->extension_range(0)->start);
-  EXPECT_EQ(FieldDescriptor::kMaxNumber + 1, extendee->extension_range(0)->end);
+  EXPECT_EQ(1, extendee->extension_range(0)->start_number());
+  EXPECT_EQ(FieldDescriptor::kMaxNumber + 1,
+            extendee->extension_range(0)->end_number());
 }
 
 TEST_P(AllowUnknownDependenciesTest, CustomOption) {

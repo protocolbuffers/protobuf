@@ -2378,8 +2378,8 @@ const FieldDescriptor* FileDescriptor::FindExtensionByCamelcaseName(
 
 void Descriptor::ExtensionRange::CopyTo(
     DescriptorProto_ExtensionRange* proto) const {
-  proto->set_start(this->start);
-  proto->set_end(this->end);
+  proto->set_start(start_);
+  proto->set_end(end_);
   if (options_ != &ExtensionRangeOptions::default_instance()) {
     *proto->mutable_options() = *options_;
   }
@@ -2390,8 +2390,8 @@ Descriptor::FindExtensionRangeContainingNumber(int number) const {
   // Linear search should be fine because we don't expect a message to have
   // more than a couple extension ranges.
   for (int i = 0; i < extension_range_count(); i++) {
-    if (number >= extension_range(i)->start &&
-        number < extension_range(i)->end) {
+    if (number >= extension_range(i)->start_number() &&
+        number < extension_range(i)->end_number()) {
       return extension_range(i);
     }
   }
@@ -3172,25 +3172,24 @@ void Descriptor::DebugString(int depth, std::string* contents,
 
   for (int i = 0; i < extension_range_count(); i++) {
     absl::SubstituteAndAppend(contents, "$0  extensions $1", prefix,
-                              extension_range(i)->start);
-    if (extension_range(i)->end > extension_range(i)->start + 1) {
+                              extension_range(i)->start_number());
+    if (extension_range(i)->end_number() >
+        extension_range(i)->start_number() + 1) {
       absl::SubstituteAndAppend(contents, " to $0",
-                                extension_range(i)->end - 1);
+                                extension_range(i)->end_number() - 1);
     }
-    if (extension_range(i)->options_ != nullptr) {
-      if (extension_range(i)->options_->declaration_size() > 0) {
-        absl::StrAppend(contents, " [");
-        for (int j = 0; j < extension_range(i)->options_->declaration_size();
-             ++j) {
-          if (j > 0) {
-            absl::StrAppend(contents, ",");
-          }
-          absl::SubstituteAndAppend(
-              contents, " declaration = { $0 }",
-              extension_range(i)->options_->declaration(j).ShortDebugString());
+    if (extension_range(i)->options().declaration_size() > 0) {
+      absl::StrAppend(contents, " [");
+      for (int j = 0; j < extension_range(i)->options().declaration_size();
+           ++j) {
+        if (j > 0) {
+          absl::StrAppend(contents, ",");
         }
-        absl::StrAppend(contents, " ] ");
+        absl::SubstituteAndAppend(
+            contents, " declaration = { $0 }",
+            extension_range(i)->options().declaration(j).ShortDebugString());
       }
+      absl::StrAppend(contents, " ] ");
     }
     absl::StrAppend(contents, ";\n");
   }
@@ -4699,9 +4698,9 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
       placeholder_message->extension_range_count_ = 1;
       placeholder_message->extension_ranges_ =
           alloc.AllocateArray<Descriptor::ExtensionRange>(1);
-      placeholder_message->extension_ranges_[0].start = 1;
+      placeholder_message->extension_ranges_[0].start_ = 1;
       // kMaxNumber + 1 because ExtensionRange::end is exclusive.
-      placeholder_message->extension_ranges_[0].end =
+      placeholder_message->extension_ranges_[0].end_ =
           FieldDescriptor::kMaxNumber + 1;
       placeholder_message->extension_ranges_[0].options_ = nullptr;
     }
@@ -5642,15 +5641,16 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     const FieldDescriptor* field = result->field(i);
     for (int j = 0; j < result->extension_range_count(); j++) {
       const Descriptor::ExtensionRange* range = result->extension_range(j);
-      if (range->start <= field->number() && field->number() < range->end) {
+      if (range->start_number() <= field->number() &&
+          field->number() < range->end_number()) {
         message_hints_[result].RequestHintOnFieldNumbers(
             proto.extension_range(j), DescriptorPool::ErrorCollector::NUMBER);
         AddError(field->full_name(), proto.extension_range(j),
                  DescriptorPool::ErrorCollector::NUMBER, [&] {
                    return absl::Substitute(
                        "Extension range $0 to $1 includes field \"$2\" ($3).",
-                       range->start, range->end - 1, field->name(),
-                       field->number());
+                       range->start_number(), range->end_number() - 1,
+                       field->name(), field->number());
                  });
       }
     }
@@ -5682,27 +5682,29 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     const Descriptor::ExtensionRange* range1 = result->extension_range(i);
     for (int j = 0; j < result->reserved_range_count(); j++) {
       const Descriptor::ReservedRange* range2 = result->reserved_range(j);
-      if (range1->end > range2->start && range2->end > range1->start) {
+      if (range1->end_number() > range2->start &&
+          range2->end > range1->start_number()) {
         AddError(result->full_name(), proto.extension_range(i),
                  DescriptorPool::ErrorCollector::NUMBER, [&] {
                    return absl::Substitute(
                        "Extension range $0 to $1 overlaps with "
                        "reserved range $2 to $3.",
-                       range1->start, range1->end - 1, range2->start,
-                       range2->end - 1);
+                       range1->start_number(), range1->end_number() - 1,
+                       range2->start, range2->end - 1);
                  });
       }
     }
     for (int j = i + 1; j < result->extension_range_count(); j++) {
       const Descriptor::ExtensionRange* range2 = result->extension_range(j);
-      if (range1->end > range2->start && range2->end > range1->start) {
+      if (range1->end_number() > range2->start_number() &&
+          range2->end_number() > range1->start_number()) {
         AddError(result->full_name(), proto.extension_range(i),
                  DescriptorPool::ErrorCollector::NUMBER, [&] {
                    return absl::Substitute(
                        "Extension range $0 to $1 overlaps with "
                        "already-defined range $2 to $3.",
-                       range2->start, range2->end - 1, range1->start,
-                       range1->end - 1);
+                       range2->start_number(), range2->end_number() - 1,
+                       range1->start_number(), range1->end_number() - 1);
                  });
       }
     }
@@ -6105,11 +6107,11 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
 void DescriptorBuilder::BuildExtensionRange(
     const DescriptorProto::ExtensionRange& proto, const Descriptor* parent,
     Descriptor::ExtensionRange* result, internal::FlatAllocator& alloc) {
-  result->start = proto.start();
-  result->end = proto.end();
+  result->start_ = proto.start();
+  result->end_ = proto.end();
   result->containing_type_ = parent;
 
-  if (result->start <= 0) {
+  if (result->start_number() <= 0) {
     message_hints_[parent].RequestHintOnFieldNumbers(
         proto, DescriptorPool::ErrorCollector::NUMBER, result->start_number(),
         result->end_number());
@@ -7064,7 +7066,7 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
     }
     for (int i = 0; i < message->extension_range_count(); i++) {
       auto range = message->extension_range(i);
-      add_range(range->start, range->end);
+      add_range(range->start_number(), range->end_number());
     }
     used_ordinals.push_back(
         {FieldDescriptor::kMaxNumber, FieldDescriptor::kMaxNumber + 1});
@@ -7498,7 +7500,7 @@ void DescriptorBuilder::ValidateExtensionRangeOptions(
 
   for (int i = 0; i < message.extension_range_count(); i++) {
     const auto& range = *message.extension_range(i);
-    if (range.end > max_extension_range + 1) {
+    if (range.end_number() > max_extension_range + 1) {
       AddError(message.full_name(), proto,
                DescriptorPool::ErrorCollector::NUMBER, [&] {
                  return absl::Substitute(
