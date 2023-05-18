@@ -453,7 +453,7 @@ module Google
 
       def self.decode_options(klass, serialized_options)
         options = klass.decode(serialized_options)
-        options.freeze
+        options.send(:deep_freeze)
       end
     end
 

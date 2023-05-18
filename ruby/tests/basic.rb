@@ -739,6 +739,15 @@ module BasicTest
 
       assert_equal oneof_descriptor.options.class, Google::Protobuf::OneofOptions
     end
+
+    def test_options_deep_freeze
+      descriptor = TestDeprecatedMessage.descriptor
+
+      assert_raise FrozenError do
+        descriptor.options.uninterpreted_option.push \
+          Google::Protobuf::UninterpretedOption.new
+      end
+    end
   end
 
   def test_oneof_fields_respond_to? # regression test for issue 9202
