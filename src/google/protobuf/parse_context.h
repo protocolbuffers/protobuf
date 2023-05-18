@@ -138,19 +138,21 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   //  - Every non-empty token is moved from and consumed.
   class LimitToken {
    public:
-    LimitToken() { PROTOBUF_POISON_MEMORY_REGION(this, sizeof(LimitToken)); }
-    explicit LimitToken(int token) : token_(token) { PROTOBUF_UNPOISON_MEMORY_REGION(this, sizeof(LimitToken)); }
+    LimitToken() { PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_)); }
+    explicit LimitToken(int token) : token_(token) {
+      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
+    }
     LimitToken(LimitToken&& other) { *this = std::move(other); }
     LimitToken& operator=(LimitToken&& other) {
-      PROTOBUF_UNPOISON_MEMORY_REGION(this, sizeof(LimitToken));
+      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
       token_ = other.token_;
-      PROTOBUF_POISON_MEMORY_REGION(&other, sizeof(LimitToken));
+      PROTOBUF_POISON_MEMORY_REGION(&other.token_, sizeof(token_));
       return *this;
     }
 
     ~LimitToken() {
 #ifdef ADDRESS_SANITIZER
-      ABSL_CHECK(__asan_address_is_poisoned(this));
+      ABSL_CHECK(__asan_address_is_poisoned(&token_));
 #endif
     }
 
@@ -158,13 +160,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     LimitToken& operator=(const LimitToken&) = delete;
 
     int token() && {
-#ifdef ADDRESS_SANITIZER
       int t = token_;
-      PROTOBUF_POISON_MEMORY_REGION(this, sizeof(LimitToken));
+      PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_));
       return t;
-#else
-      return token_;
-#endif
     }
 
    private:
