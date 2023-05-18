@@ -6204,6 +6204,42 @@ TEST_F(ValidationErrorTest, UnusedImportWarning) {
       "forward.proto: bar.proto: IMPORT: Import bar.proto is unused.\n");
 }
 
+// Verifies that the dependency checker isn't fooled by package symbols,
+// which can be defined in multiple files.
+TEST_F(ValidationErrorTest, SamePackageUnusedImportError) {
+  BuildFile(R"pb(
+    name: "unused_dependency.proto"
+    package: "protobuf_unittest.subpackage"
+    message_type { name: "Foo" }
+  )pb");
+
+  BuildFile(R"pb(
+    name: "used_dependency.proto"
+    package: "protobuf_unittest.subpackage"
+    message_type { name: "Bar" }
+  )pb");
+
+  pool_.AddUnusedImportTrackFile("import.proto", true);
+  BuildFileWithErrors(R"pb(
+                        name: "import.proto"
+                        package: "protobuf_unittest"
+                        dependency: "unused_dependency.proto"
+                        dependency: "used_dependency.proto"
+                        message_type {
+                          name: "Baz"
+                          field {
+                            name: "bar"
+                            number: 1
+                            label: LABEL_OPTIONAL
+                            type: TYPE_MESSAGE
+                            type_name: "subpackage.Bar"
+                          }
+                        }
+                      )pb",
+                      "import.proto: unused_dependency.proto: "
+                      "IMPORT: Import unused_dependency.proto is unused.\n");
+}
+
 namespace {
 void FillValidMapEntry(FileDescriptorProto* file_proto) {
   ASSERT_TRUE(TextFormat::ParseFromString(
