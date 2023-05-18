@@ -574,6 +574,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
   size_type size() const { return num_elements_; }
   bool empty() const { return size() == 0; }
 
+  UntypedMapIterator begin() const { return UntypedMapIterator(this); }
+  // We make this a static function to reduce the cost in MapField.
+  // All the end iterators are singletons anyway.
+  static UntypedMapIterator EndIterator() { return {}; }
+
  protected:
   friend class TcParser;
   friend struct MapTestPeer;
@@ -824,10 +829,15 @@ inline void UntypedMapIterator::SearchFrom(size_t start_bucket) {
 // code, since that would bring in Message too.
 class MapFieldBaseForParse {
  public:
-  virtual UntypedMapBase* MutableMap() = 0;
+  const UntypedMapBase& GetMap() const { return GetMapImpl(false); }
+  UntypedMapBase* MutableMap() {
+    return &const_cast<UntypedMapBase&>(GetMapImpl(true));
+  }
 
  protected:
   ~MapFieldBaseForParse() = default;
+
+  virtual const UntypedMapBase& GetMapImpl(bool is_mutable) const = 0;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
@@ -1270,6 +1280,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     using BaseIt::BaseIt;
     explicit const_iterator(const BaseIt& base) : BaseIt(base) {}
     friend class Map;
+    friend class internal::TypeDefinedMapFieldBase<Key, T>;
   };
 
   class iterator : private internal::UntypedMapIterator {

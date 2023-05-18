@@ -109,62 +109,10 @@ inline void SetMapKey(MapKey* map_key, const MapKey& value) {
 
 // ------------------------TypeDefinedMapFieldBase---------------
 template <typename Key, typename T>
-auto TypeDefinedMapFieldBase<Key, T>::InternalGetIterator(
-    const MapIterator* map_iter) -> const Iter& {
-  static_assert(sizeof(Iter) == sizeof(map_iter->map_iter_buffer_), "");
-  static_assert(std::is_trivially_copy_constructible<Iter>::value, "");
-  static_assert(std::is_trivially_destructible<Iter>::value, "");
-  return reinterpret_cast<const Iter&>(map_iter->map_iter_buffer_);
-}
-
-template <typename Key, typename T>
-auto TypeDefinedMapFieldBase<Key, T>::InternalGetIterator(MapIterator* map_iter)
-    -> Iter& {
-  return reinterpret_cast<Iter&>(map_iter->map_iter_buffer_);
-}
-
-template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::MapBegin(MapIterator* map_iter) const {
-  InternalGetIterator(map_iter) = GetMap().begin();
-  SetMapIteratorValue(map_iter);
-}
-
-template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::MapEnd(MapIterator* map_iter) const {
-  InternalGetIterator(map_iter) = GetMap().end();
-}
-
-template <typename Key, typename T>
-bool TypeDefinedMapFieldBase<Key, T>::EqualIterator(
-    const MapIterator& a, const MapIterator& b) const {
-  return InternalGetIterator(&a) == InternalGetIterator(&b);
-}
-
-template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::IncreaseIterator(
-    MapIterator* map_iter) const {
-  ++InternalGetIterator(map_iter);
-  SetMapIteratorValue(map_iter);
-}
-
-template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::CopyIterator(
-    MapIterator* this_iter, const MapIterator& that_iter) const {
-  InternalGetIterator(this_iter) = InternalGetIterator(&that_iter);
-  this_iter->key_.SetType(that_iter.key_.type());
-  // MapValueRef::type() fails when containing data is null. However, if
-  // this_iter points to MapEnd, data can be null.
-  this_iter->value_.SetType(
-      static_cast<FieldDescriptor::CppType>(that_iter.value_.type_));
-  SetMapIteratorValue(this_iter);
-}
-
-template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::SetMapIteratorValue(
     MapIterator* map_iter) const {
-  const auto& map = GetMap();
-  auto iter = InternalGetIterator(map_iter);
-  if (iter == map.end()) return;
+  if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
+  auto iter = typename Map<Key, T>::const_iterator(map_iter->iter_);
   SetMapKey(&map_iter->key_, iter->first);
   map_iter->value_.SetValueOrCopy(&iter->second);
 }

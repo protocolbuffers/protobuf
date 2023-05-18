@@ -69,7 +69,6 @@ class MapFieldBaseStub : public MapFieldBase {
   }
   void SyncRepeatedFieldWithMapNoLock() const override {}
   void SyncMapWithRepeatedFieldNoLock() const override {}
-  UntypedMapBase* MutableMap() override { return nullptr; }
   bool ContainsMapKey(const MapKey& map_key) const override { return false; }
   bool InsertOrLookupMapValue(const MapKey& map_key,
                               MapValueRef* val) override {
@@ -80,19 +79,11 @@ class MapFieldBaseStub : public MapFieldBase {
     return false;
   }
   bool DeleteMapValue(const MapKey& map_key) override { return false; }
-  bool EqualIterator(const MapIterator& a,
-                     const MapIterator& b) const override {
-    return false;
-  }
   int size() const override { return 0; }
   void Clear() override {}
-  void MapBegin(MapIterator* map_iter) const override {}
-  void MapEnd(MapIterator* map_iter) const override {}
   void MergeFrom(const MapFieldBase& other) override {}
   void Swap(MapFieldBase* other) override {}
-  void CopyIterator(MapIterator* this_iterator,
-                    const MapIterator& other_iterator) const override {}
-  void IncreaseIterator(MapIterator* map_iter) const override {}
+  void SetMapIteratorValue(MapIterator* map_iter) const override {}
 
   Arena* GetArenaForInternalRepeatedField() {
     auto* repeated_field = MutableRepeatedField();
