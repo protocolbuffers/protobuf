@@ -38,6 +38,7 @@ in generated code.
 __author__ = 'jieluo@google.com (Jie Luo)'
 
 from google.protobuf.internal import enum_type_wrapper
+from google.protobuf.internal import python_message
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
@@ -106,6 +107,28 @@ def BuildTopDescriptorsAndMessages(file_des, module_name, module):
   # Build messages.
   for (name, msg_des) in file_des.message_types_by_name.items():
     module[name] = BuildMessage(msg_des)
+
+
+def AddHelpersToExtensions(file_des):
+  """Adds field helpers to extensions.
+
+  Args:
+    file_des: FileDescriptor of the .proto file
+  """
+  def AddHelpersToExtension(extension):
+    python_message._AttachFieldHelpers(
+        extension.containing_type._concrete_class, extension)
+
+  def AddHelpersToNestedExtensions(msg_des):
+    for nested_type in msg_des.nested_types:
+      AddHelpersToNestedExtensions(nested_type)
+    for extension in msg_des.extensions:
+      AddHelpersToExtension(extension)
+
+  for extension in file_des.extensions_by_name.values():
+    AddHelpersToExtension(extension)
+  for message_type in file_des.message_types_by_name.values():
+    AddHelpersToNestedExtensions(message_type)
 
 
 def BuildServices(file_des, module_name, module):

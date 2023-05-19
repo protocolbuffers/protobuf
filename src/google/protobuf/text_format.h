@@ -38,14 +38,14 @@
 #ifndef GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
-
 #include <atomic>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/port.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -67,9 +67,8 @@ namespace internal {
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarker[1];
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
 
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_redaction_marker;
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_random_marker;
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_format_marker;
+PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
 
 }  // namespace internal
 
@@ -142,7 +141,7 @@ class PROTOBUF_EXPORT TextFormat {
     // Print text to the output stream.
     virtual void Print(const char* text, size_t size) = 0;
 
-    void PrintString(const std::string& str) { Print(str.data(), str.size()); }
+    void PrintString(absl::string_view str) { Print(str.data(), str.size()); }
 
     template <size_t n>
     void PrintLiteral(const char (&text)[n]) {
@@ -345,8 +344,8 @@ class PROTOBUF_EXPORT TextFormat {
     // Takes ownership of the printer.
     void SetDefaultFieldValuePrinter(const FastFieldValuePrinter* printer);
 
-    PROTOBUF_DEPRECATED_MSG("Please use FastFieldValuePrinter")
-    void SetDefaultFieldValuePrinter(const FieldValuePrinter* printer);
+    [[deprecated("Please use FastFieldValuePrinter")]] void
+    SetDefaultFieldValuePrinter(const FieldValuePrinter* printer);
 
     // Sets whether we want to hide unknown fields or not.
     // Usually unknown fields are printed in a generic way that includes the
@@ -399,9 +398,9 @@ class PROTOBUF_EXPORT TextFormat {
     bool RegisterFieldValuePrinter(const FieldDescriptor* field,
                                    const FastFieldValuePrinter* printer);
 
-    PROTOBUF_DEPRECATED_MSG("Please use FastFieldValuePrinter")
-    bool RegisterFieldValuePrinter(const FieldDescriptor* field,
-                                   const FieldValuePrinter* printer);
+    [[deprecated("Please use FastFieldValuePrinter")]] bool
+    RegisterFieldValuePrinter(const FieldDescriptor* field,
+                              const FieldValuePrinter* printer);
 
     // Register a custom message-specific MessagePrinter for messages with a
     // particular Descriptor.
@@ -438,6 +437,11 @@ class PROTOBUF_EXPORT TextFormat {
       randomize_debug_string_ = randomize;
     }
 
+    // Sets the.
+    void SetRootMessageFullName(absl::string_view root_message_full_name) {
+      root_message_full_name_ = std::string(root_message_full_name);
+    }
+
     // Forward declaration of an internal class used to print the text
     // output to the OutputStream (see text_format.cc for implementation).
     class TextGenerator;
@@ -450,8 +454,6 @@ class PROTOBUF_EXPORT TextFormat {
     // Forward declaration of an internal class used to print UTF-8 escaped
     // strings (see text_format.cc for implementation).
     class FastFieldValuePrinterUtf8Escaping;
-
-    static const char* const kDoNotParse;
 
     // Internal Print method, used for writing to the OutputStream via
     // the TextGenerator class.
@@ -490,6 +492,13 @@ class PROTOBUF_EXPORT TextFormat {
 
     bool PrintAny(const Message& message, BaseTextGenerator* generator) const;
 
+    // Try to redact a field value based on the annotations associated with
+    // the field. This function returns true if it redacts the field value.
+    bool TryRedactFieldValue(const Message& message,
+                             const FieldDescriptor* field,
+                             BaseTextGenerator* generator,
+                             bool insert_value_separator) const;
+
     const FastFieldValuePrinter* GetFieldPrinter(
         const FieldDescriptor* field) const {
       auto it = custom_printers_.find(field);
@@ -510,16 +519,16 @@ class PROTOBUF_EXPORT TextFormat {
     int64_t truncate_string_field_longer_than_;
 
     std::unique_ptr<const FastFieldValuePrinter> default_field_value_printer_;
-    typedef std::map<const FieldDescriptor*,
-                     std::unique_ptr<const FastFieldValuePrinter>>
-        CustomPrinterMap;
-    CustomPrinterMap custom_printers_;
+    absl::flat_hash_map<const FieldDescriptor*,
+                        std::unique_ptr<const FastFieldValuePrinter>>
+        custom_printers_;
 
-    typedef std::map<const Descriptor*, std::unique_ptr<const MessagePrinter>>
-        CustomMessagePrinterMap;
-    CustomMessagePrinterMap custom_message_printers_;
+    absl::flat_hash_map<const Descriptor*,
+                        std::unique_ptr<const MessagePrinter>>
+        custom_message_printers_;
 
     const Finder* finder_;
+    std::string root_message_full_name_;
   };
 
   // Parses a text-format protocol message from the given input stream to
@@ -539,6 +548,8 @@ class PROTOBUF_EXPORT TextFormat {
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
   static bool ParseFromString(absl::string_view input, Message* output);
+  // Like Parse(), but reads directly from a Cord.
+  static bool ParseFromCord(const absl::Cord& input, Message* output);
 
   // Like Parse(), but the data is merged into the given message, as if
   // using Message::MergeFrom().
@@ -611,17 +622,13 @@ class PROTOBUF_EXPORT TextFormat {
     ParseInfoTree* CreateNested(const FieldDescriptor* field);
 
     // Defines the map from the index-th field descriptor to its parse location.
-    typedef std::map<const FieldDescriptor*, std::vector<ParseLocationRange>>
-        LocationMap;
-
+    absl::flat_hash_map<const FieldDescriptor*, std::vector<ParseLocationRange>>
+        locations_;
     // Defines the map from the index-th field descriptor to the nested parse
     // info tree.
-    typedef std::map<const FieldDescriptor*,
-                     std::vector<std::unique_ptr<ParseInfoTree>>>
-        NestedMap;
-
-    LocationMap locations_;
-    NestedMap nested_;
+    absl::flat_hash_map<const FieldDescriptor*,
+                        std::vector<std::unique_ptr<ParseInfoTree>>>
+        nested_;
   };
 
   // For more control over parsing, use this class.
@@ -634,6 +641,8 @@ class PROTOBUF_EXPORT TextFormat {
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::ParseFromString().
     bool ParseFromString(absl::string_view input, Message* output);
+    // Like TextFormat::ParseFromCord().
+    bool ParseFromCord(const absl::Cord& input, Message* output);
     // Like TextFormat::Merge().
     bool Merge(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::MergeFromString().
@@ -697,6 +706,13 @@ class PROTOBUF_EXPORT TextFormat {
     // the maximum allowed nesting of proto messages.
     void SetRecursionLimit(int limit) { recursion_limit_ = limit; }
 
+    // If called, the parser will report an error if a parsed field had no
+    // effect on the resulting proto (for example, fields with no presence that
+    // were set to their default value).
+    void ErrorOnNoOpFields(bool return_error) {
+      error_on_no_op_fields_ = return_error;
+    }
+
    private:
     // Forward declaration of an internal class used to parse text
     // representations (see text_format.cc for implementation).
@@ -719,6 +735,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool allow_relaxed_whitespace_;
     bool allow_singular_overwrites_;
     int recursion_limit_;
+    bool error_on_no_op_fields_ = false;
   };
 
 
@@ -732,6 +749,11 @@ class PROTOBUF_EXPORT TextFormat {
                                     ParseLocationRange location);
   static inline ParseInfoTree* CreateNested(ParseInfoTree* info_tree,
                                             const FieldDescriptor* field);
+  // To reduce stack frame bloat we use an out-of-line function to print
+  // strings. This avoid local std::string temporaries.
+  template <typename... T>
+  static void OutOfLinePrintString(BaseTextGenerator* generator,
+                                   const T&... values);
 };
 
 

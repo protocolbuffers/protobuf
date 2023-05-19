@@ -64,8 +64,12 @@ namespace Google.Protobuf.WellKnownTypes {
   ///     if (any.is(Foo.class)) {
   ///       foo = any.unpack(Foo.class);
   ///     }
+  ///     // or ...
+  ///     if (any.isSameTypeAs(Foo.getDefaultInstance())) {
+  ///       foo = any.unpack(Foo.getDefaultInstance());
+  ///     }
   ///
-  /// Example 3: Pack and unpack a message in Python.
+  ///  Example 3: Pack and unpack a message in Python.
   ///
   ///     foo = Foo(...)
   ///     any = Any()
@@ -75,7 +79,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///       any.Unpack(foo)
   ///       ...
   ///
-  /// Example 4: Pack and unpack a message in Go
+  ///  Example 4: Pack and unpack a message in Go
   ///
   ///      foo := &amp;pb.Foo{...}
   ///      any, err := anypb.New(foo)
@@ -95,7 +99,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// name "y.z".
   ///
   /// JSON
-  ///
+  /// ====
   /// The JSON representation of an `Any` value uses the regular
   /// representation of the deserialized, embedded message, with an
   /// additional field `@type` which contains the type URL. Example:
@@ -194,7 +198,8 @@ namespace Google.Protobuf.WellKnownTypes {
     ///
     /// Note: this functionality is not currently available in the official
     /// protobuf release, and it is not used for type URLs beginning with
-    /// type.googleapis.com.
+    /// type.googleapis.com. As of May 2023, there are no widely used type server
+    /// implementations and no plans to implement one.
     ///
     /// Schemes other than `http`, `https` (or the empty scheme) might be
     /// used with implementation specific semantics.

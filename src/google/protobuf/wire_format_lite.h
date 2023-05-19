@@ -40,14 +40,13 @@
 #ifndef GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_H__
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_H__
 
-
 #include <limits>
 #include <string>
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/port.h"
 #include "absl/base/casts.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
@@ -329,6 +328,9 @@ class PROTOBUF_EXPORT WireFormatLite {
   static bool ReadBytes(io::CodedInputStream* input, std::string* value);
   static bool ReadBytes(io::CodedInputStream* input, std::string** p);
 
+  static inline bool ReadBytes(io::CodedInputStream* input, absl::Cord* value);
+  static inline bool ReadBytes(io::CodedInputStream* input, absl::Cord** p);
+
   enum Operation {
     PARSE = 0,
     SERIALIZE = 1,
@@ -543,6 +545,29 @@ class PROTOBUF_EXPORT WireFormatLite {
       const RepeatedField<int>& value, uint8_t* output);
 
   // Write fields, including tags.
+  template <int field_number>
+  PROTOBUF_NOINLINE static uint8_t* WriteInt32ToArrayWithField(
+      ::google::protobuf::io::EpsCopyOutputStream* stream, int32_t value,
+      uint8_t* target) {
+    target = stream->EnsureSpace(target);
+    return WriteInt32ToArray(field_number, value, target);
+  }
+
+  template <int field_number>
+  PROTOBUF_NOINLINE static uint8_t* WriteInt64ToArrayWithField(
+      ::google::protobuf::io::EpsCopyOutputStream* stream, int64_t value,
+      uint8_t* target) {
+    target = stream->EnsureSpace(target);
+    return WriteInt64ToArray(field_number, value, target);
+  }
+
+  template <int field_number>
+  PROTOBUF_NOINLINE static uint8_t* WriteEnumToArrayWithField(
+      ::google::protobuf::io::EpsCopyOutputStream* stream, int value, uint8_t* target) {
+    target = stream->EnsureSpace(target);
+    return WriteEnumToArray(field_number, value, target);
+  }
+
   PROTOBUF_NDEBUG_INLINE static uint8_t* WriteInt32ToArray(int field_number,
                                                            int32_t value,
                                                            uint8_t* target);
@@ -710,7 +735,9 @@ class PROTOBUF_EXPORT WireFormatLite {
   static constexpr size_t kBoolSize = 1;
 
   static inline size_t StringSize(const std::string& value);
+  static inline size_t StringSize(const absl::Cord& value);
   static inline size_t BytesSize(const std::string& value);
+  static inline size_t BytesSize(const absl::Cord& value);
 
   template <typename MessageType>
   static inline size_t GroupSize(const MessageType& value);
@@ -1085,7 +1112,7 @@ template <typename CType, enum WireFormatLite::FieldType DeclaredType>
 inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     int tag_size, uint32_t tag, io::CodedInputStream* input,
     RepeatedField<CType>* values) {
-  GOOGLE_ABSL_DCHECK_EQ(UInt32Size(tag), static_cast<size_t>(tag_size));
+  ABSL_DCHECK_EQ(UInt32Size(tag), static_cast<size_t>(tag_size));
   CType value;
   if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
   values->Add(value);
@@ -1256,6 +1283,17 @@ template <typename CType, enum WireFormatLite::FieldType DeclaredType>
 bool WireFormatLite::ReadPackedPrimitiveNoInline(io::CodedInputStream* input,
                                                  RepeatedField<CType>* values) {
   return ReadPackedPrimitive<CType, DeclaredType>(input, values);
+}
+
+inline bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
+                                      absl::Cord* value) {
+  int length;
+  return input->ReadVarintSizeAsInt(&length) && input->ReadCord(value, length);
+}
+
+inline bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
+                                      absl::Cord** p) {
+  return ReadBytes(input, *p);
 }
 
 
@@ -1446,7 +1484,7 @@ inline uint8_t* WireFormatLite::WritePrimitiveNoTagToArray(
     const RepeatedField<T>& value, uint8_t* (*Writer)(T, uint8_t*),
     uint8_t* target) {
   const int n = value.size();
-  GOOGLE_ABSL_DCHECK_GT(n, 0);
+  ABSL_DCHECK_GT(n, 0);
 
   const T* ii = value.data();
   int i = 0;
@@ -1465,7 +1503,7 @@ inline uint8_t* WireFormatLite::WriteFixedNoTagToArray(
   (void)Writer;
 
   const int n = value.size();
-  GOOGLE_ABSL_DCHECK_GT(n, 0);
+  ABSL_DCHECK_GT(n, 0);
 
   const T* ii = value.data();
   const int bytes = n * static_cast<int>(sizeof(ii[0]));
@@ -1786,6 +1824,14 @@ inline size_t WireFormatLite::StringSize(const std::string& value) {
   return LengthDelimitedSize(value.size());
 }
 inline size_t WireFormatLite::BytesSize(const std::string& value) {
+  return LengthDelimitedSize(value.size());
+}
+
+inline size_t WireFormatLite::BytesSize(const absl::Cord& value) {
+  return LengthDelimitedSize(value.size());
+}
+
+inline size_t WireFormatLite::StringSize(const absl::Cord& value) {
   return LengthDelimitedSize(value.size());
 }
 

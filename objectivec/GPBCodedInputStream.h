@@ -83,6 +83,7 @@ CF_EXTERN_C_END
  *
  * @note Subclassing of @c GPBCodedInputStream is NOT supported.
  **/
+__attribute__((objc_subclassing_restricted))
 @interface GPBCodedInputStream : NSObject
 
 /**

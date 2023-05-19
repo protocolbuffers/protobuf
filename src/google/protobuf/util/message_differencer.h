@@ -43,13 +43,8 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 #define GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 
-#include "google/protobuf/stubs/logging.h"
-
-
 #include <functional>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -58,6 +53,9 @@
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/container/fixed_array.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
@@ -231,6 +229,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // reporting an addition or deletion.
     int unknown_field_index1 = -1;
     int unknown_field_index2 = -1;
+
+    // Was this field added to the diffing because set_force_compare_no_presence
+    // was called on the MessageDifferencer object.
+    bool forced_compare_no_presence_ = false;
   };
 
   // Abstract base class from which all MessageDifferencer
@@ -344,7 +346,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
     virtual bool IsMatch(const Message& message1, const Message& message2,
                          int /* unmapped_any */,
                          const std::vector<SpecificField>& fields) const {
-      GOOGLE_ABSL_CHECK(false) << "IsMatch() is not implemented.";
+      ABSL_CHECK(false) << "IsMatch() is not implemented.";
       return false;
     }
   };
@@ -555,9 +557,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // Note that this method must be called before Compare for the comparator to
   // be used.
   void set_field_comparator(FieldComparator* comparator);
-#ifdef PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR
   void set_field_comparator(DefaultFieldComparator* comparator);
-#endif  // PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR
 
   // DEPRECATED. Pass a DefaultFieldComparator instance instead.
   // Sets the fraction and margin for the float comparison of a given field.
@@ -604,6 +604,12 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // Returns the current scope used by this differencer.
   Scope scope() const;
 
+  // Only affects PARTIAL diffing. When set, all non-repeated no-presence fields
+  // which are set to their default value (which is the same as being unset) in
+  // message1 but are set to a non-default value in message2 will also be used
+  // in the comparison.
+  void set_force_compare_no_presence(bool value);
+
   // DEPRECATED. Pass a DefaultFieldComparator instance instead.
   // Sets the type of comparison (as defined in the FloatComparison enumeration
   // above) that is used by this differencer when comparing float (and double)
@@ -648,6 +654,13 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // If the provided pointer equals NULL, the MessageDifferencer stops reporting
   // differences to any previously set reporters or output strings.
   void ReportDifferencesTo(Reporter* reporter);
+
+  // Returns the list of fields which was automatically added to the list of
+  // compared fields by calling set_force_compare_no_presence and caused the
+  // last call to Compare to fail.
+  const absl::flat_hash_set<std::string>& NoPresenceFieldsCausingFailure() {
+    return force_compare_failure_triggering_fields_;
+  }
 
  private:
   // Class for processing Any deserialization.  This logic is used by both the
@@ -936,23 +949,16 @@ class PROTOBUF_EXPORT MessageDifferencer {
       const FieldDescriptor* field,
       const RepeatedFieldComparison& new_comparison);
 
-  // Defines a map between field descriptors and their MapKeyComparators.
-  // Used for repeated fields when they are configured as TreatAsMap.
-  typedef std::map<const FieldDescriptor*, const MapKeyComparator*>
-      FieldKeyComparatorMap;
-
-  // Defines a set to store field descriptors.  Used for repeated fields when
-  // they are configured as TreatAsSet.
-  typedef std::set<const FieldDescriptor*> FieldSet;
-  typedef std::map<const FieldDescriptor*, RepeatedFieldComparison> FieldMap;
-
   Reporter* reporter_;
   DefaultFieldComparator default_field_comparator_;
   MessageFieldComparison message_field_comparison_;
   Scope scope_;
+  absl::flat_hash_set<const FieldDescriptor*> force_compare_no_presence_fields_;
+  absl::flat_hash_set<std::string> force_compare_failure_triggering_fields_;
   RepeatedFieldComparison repeated_field_comparison_;
 
-  FieldMap repeated_field_comparisons_;
+  absl::flat_hash_map<const FieldDescriptor*, RepeatedFieldComparison>
+      repeated_field_comparisons_;
   // Keeps track of MapKeyComparators that are created within
   // MessageDifferencer. These MapKeyComparators should be deleted
   // before MessageDifferencer is destroyed.
@@ -960,13 +966,14 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // store the supplied FieldDescriptors directly. Instead, a new
   // MapKeyComparator is created for comparison purpose.
   std::vector<MapKeyComparator*> owned_key_comparators_;
-  FieldKeyComparatorMap map_field_key_comparator_;
+  absl::flat_hash_map<const FieldDescriptor*, const MapKeyComparator*>
+      map_field_key_comparator_;
   MapEntryKeyComparator map_entry_key_comparator_;
   std::vector<std::unique_ptr<IgnoreCriteria>> ignore_criteria_;
   // Reused multiple times in RetrieveFields to avoid extra allocations
   std::vector<const FieldDescriptor*> tmp_message_fields_;
 
-  FieldSet ignored_fields_;
+  absl::flat_hash_set<const FieldDescriptor*> ignored_fields_;
 
   union {
     DefaultFieldComparator* default_impl;
@@ -977,6 +984,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   bool report_matches_;
   bool report_moves_;
   bool report_ignores_;
+  bool force_compare_no_presence_ = false;
 
   std::string* output_string_;
 

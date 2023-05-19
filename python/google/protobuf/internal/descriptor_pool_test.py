@@ -925,10 +925,9 @@ class AddDescriptorTest(unittest.TestCase):
 
   def _TestEnum(self, prefix):
     pool = descriptor_pool.DescriptorPool()
-    if api_implementation.Type() == 'cpp':
-      pool.AddEnumDescriptor(unittest_pb2.ForeignEnum.DESCRIPTOR)
-    else:
-      pool._AddEnumDescriptor(unittest_pb2.ForeignEnum.DESCRIPTOR)
+    pool.AddSerializedFile(unittest_import_public_pb2.DESCRIPTOR.serialized_pb)
+    pool.AddSerializedFile(unittest_import_pb2.DESCRIPTOR.serialized_pb)
+    pool.AddSerializedFile(unittest_pb2.DESCRIPTOR.serialized_pb)
     self.assertEqual(
         'protobuf_unittest.ForeignEnum',
         pool.FindEnumTypeByName(
@@ -939,10 +938,6 @@ class AddDescriptorTest(unittest.TestCase):
       pool.FindEnumTypeByName(
           prefix + 'protobuf_unittest.ForeignEnum.NestedEnum')
 
-    if api_implementation.Type() == 'cpp':
-      pool.AddEnumDescriptor(unittest_pb2.TestAllTypes.NestedEnum.DESCRIPTOR)
-    else:
-      pool._AddEnumDescriptor(unittest_pb2.TestAllTypes.NestedEnum.DESCRIPTOR)
     self.assertEqual(
         'protobuf_unittest.TestAllTypes.NestedEnum',
         pool.FindEnumTypeByName(
@@ -1057,14 +1052,6 @@ class AddDescriptorTest(unittest.TestCase):
     if api_implementation.Type() != 'python':
       with self.assertRaises(TypeError):
         pool.AddDescriptor(0)
-      with self.assertRaises(TypeError):
-        pool.AddEnumDescriptor(0)
-      with self.assertRaises(TypeError):
-        pool.AddServiceDescriptor(0)
-      with self.assertRaises(TypeError):
-        pool.AddExtensionDescriptor(0)
-      with self.assertRaises(TypeError):
-        pool.AddFileDescriptor(0)
     else:
       with self.assertRaises(TypeError):
         pool._AddDescriptor(0)

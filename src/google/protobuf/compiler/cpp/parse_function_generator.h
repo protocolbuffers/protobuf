@@ -76,18 +76,8 @@ class ParseFunctionGenerator {
   // Returns true if tailcall table code should be generated.
   bool should_generate_tctable() const;
 
-  // Returns true if tailcall table code should be generated, but inside an
-  // #ifdef guard.
-  bool should_generate_guarded_tctable() const {
-    return should_generate_tctable() &&
-           options_.tctable_mode == Options::kTCTableGuarded;
-  }
-
   // Generates a tail-calling `_InternalParse` function.
   void GenerateTailcallParseFunction(Formatter& format);
-
-  // Generates a fallback function for tailcall table-based parsing.
-  void GenerateTailcallFallbackFunction(Formatter& format);
 
   // Generates a looping `_InternalParse` function.
   void GenerateLoopingParseFunction(Formatter& format);

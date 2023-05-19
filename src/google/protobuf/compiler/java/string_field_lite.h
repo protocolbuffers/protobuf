@@ -134,7 +134,6 @@ class RepeatedImmutableStringFieldLiteGenerator
   const FieldDescriptor* descriptor_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
   ClassNameResolver* name_resolver_;
-  Context* context_;
 };
 
 }  // namespace java

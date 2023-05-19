@@ -52,7 +52,12 @@ abstract class AbstractProtobufList<E> extends AbstractList<E> implements Protob
 
   /** Constructs a mutable list by default. */
   AbstractProtobufList() {
-    isMutable = true;
+    this(true);
+  }
+
+  /** Constructs an immutable list for EMPTY lists */
+  AbstractProtobufList(boolean isMutable) {
+    this.isMutable = isMutable;
   }
 
   @Override
@@ -130,7 +135,9 @@ abstract class AbstractProtobufList<E> extends AbstractList<E> implements Protob
 
   @Override
   public final void makeImmutable() {
-    isMutable = false;
+    if (isMutable) {
+      isMutable = false;
+    }
   }
 
   @Override

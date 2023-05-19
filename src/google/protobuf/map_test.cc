@@ -28,7 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <array>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
@@ -54,8 +61,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-namespace {
-
 
 struct AlignedAsDefault {
   int x;
@@ -63,6 +68,17 @@ struct AlignedAsDefault {
 struct alignas(8) AlignedAs8 {
   int x;
 };
+
+template <>
+struct is_internal_map_value_type<AlignedAsDefault> : std::true_type {};
+template <>
+struct is_internal_map_value_type<AlignedAs8> : std::true_type {};
+
+namespace {
+
+using ::testing::FieldsAre;
+using ::testing::UnorderedElementsAre;
+
 
 template <typename Aligned, bool on_arena = false>
 void MapTest_Aligned() {
@@ -80,6 +96,7 @@ TEST(MapTest, Aligned) { MapTest_Aligned<AlignedAsDefault>(); }
 TEST(MapTest, AlignedOnArena) { MapTest_Aligned<AlignedAsDefault, true>(); }
 TEST(MapTest, Aligned8) { MapTest_Aligned<AlignedAs8>(); }
 TEST(MapTest, Aligned8OnArena) { MapTest_Aligned<AlignedAs8, true>(); }
+
 
 
 }  // namespace

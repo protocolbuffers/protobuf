@@ -289,13 +289,6 @@ static void GPBUnknownFieldSetMergeUnknownFields(__unused const void *key, const
   }
 }
 
-- (void)mergeFromData:(NSData *)data {
-  GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
-  [self mergeFromCodedInputStream:input];
-  [input checkLastTagWas:0];
-  [input release];
-}
-
 - (void)mergeVarintField:(int32_t)number value:(int32_t)value {
   checkNumber(number);
   [[self mutableFieldForNumber:number create:YES] addVarint:value];
@@ -325,10 +318,12 @@ static void GPBUnknownFieldSetMergeUnknownFields(__unused const void *key, const
     }
     case GPBWireFormatStartGroup: {
       GPBUnknownFieldSet *unknownFieldSet = [[GPBUnknownFieldSet alloc] init];
-      [input readUnknownGroup:number message:unknownFieldSet];
       GPBUnknownField *field = [self mutableFieldForNumber:number create:YES];
       [field addGroup:unknownFieldSet];
+      // The field will now retain unknownFieldSet, so go ahead and release it in case
+      // -readUnknownGroup:message: throws so it won't be leaked.
       [unknownFieldSet release];
+      [input readUnknownGroup:number message:unknownFieldSet];
       return YES;
     }
     case GPBWireFormatEndGroup:

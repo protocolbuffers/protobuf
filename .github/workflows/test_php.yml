@@ -1,0 +1,194 @@
+name: PHP Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: 7.3 Debug
+            version: 7.3.28-dbg
+            command: composer test \&\& composer test_c
+          - name: 7.4 Debug
+            version: 7.4.18-dbg
+            command: composer test \&\& composer test_c
+          - name: 8.0 Optimized
+            version: 8.0.5
+            command: composer test \&\& composer test_c
+          - name: 8.0 Debug
+            version: 8.0.5-dbg
+            command: composer test \&\& composer test_c
+          - name: 8.0 Memory Leak
+            version: 8.0.5-dbg
+            # Run specialized memory leak & multirequest tests.
+            command: composer test_c \&\& tests/multirequest.sh \&\& tests/memory_leak_test.sh
+          - name: 8.0 Valgrind
+            version: 8.0.5-dbg
+            command: composer test_valgrind
+
+    name: Linux ${{ matrix.name}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Update submodules
+        run: git submodule update --init --remote --recursive
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-508417e5215994ade7585d28ba3aad681a25fa5d
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: ${{ matrix.command }}
+
+  linux-32bit:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ['7.4', '8.0']
+        suffix: [ '', '-zts']
+        test: ['test', 'test_c']
+        exclude:
+          - suffix: '-zts'
+            test: 'test'
+        include:
+          - suffix: '-zts'
+            suffix_name: ' Thread Safe'
+          - test: 'test_c'
+            test_name: ' Extension'
+
+    name: Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
+    runs-on: ubuntu-latest
+    env:
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:97f50ab24582380012d7ddef5f82f08e19b9dff55d09a4a8d90a87421ae66a45
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Update submodules
+        run: git submodule update --init --remote --recursive
+
+      - name: Cross compile protoc for i386
+        id: cross-compile
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-i386
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: ${{ env.image }}
+          skip-staleness-check: true
+          platform: linux/386
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -cex '
+            cd php && php -v && php -m;
+            composer update --ignore-platform-reqs;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            PATH="/usr/local/php-${{ matrix.version }}${{matrix.suffix}}/bin:$PATH"
+            composer ${{ matrix.test }}'
+
+  linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Cross compile protoc for aarch64
+        id: cross-compile
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-aarch64
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64:0cc100b6e03d14c1e8f71ae794dc162ed122fe31@sha256:77b70feba68dced1f0fd21b52a08d3d2e0c5c797bfe68435a0038ce87ecfd310
+          platform: linux/arm64
+          skip-staleness-check: true
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            -c '
+            cd php;
+            composer update --ignore-platform-reqs;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            composer test;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            composer test_c'
+
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ['7.4', '8.0']
+
+    name: MacOS PHP ${{ matrix.version }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      # Initialize/update the submodule from remote to validate a new fetch based on .gitmodules
+      # We have to do this separately since actions/checkout doesn't support the "--remote" flag
+      - name: Update submodules
+        run: git submodule update --init --remote --recursive
+
+      - name: Uninstall problematic libgd
+        run: brew uninstall --ignore-dependencies gd
+
+      - name: Install dependencies
+        run: brew install coreutils gd
+
+      - name: Pin PHP version
+        uses: shivammathur/setup-php@d30ad8b1843ace22e6698ab99bbafaa747b6bd0d # 2.24.0
+        with:
+          php-version: ${{ matrix.version }}
+      
+      - name: Check PHP version
+        run: php --version | grep ${{ matrix.version }} || (echo "Invalid PHP version - $(php --version)" && exit 1)
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v1
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: php_macos/${{ matrix.version }}
+          bash: |
+            pushd php
+            rm -rf vendor
+            php -v
+            php -m
+            composer update
+            composer test_c
+            popd
+
+      - name: Run conformance tests
+        uses: protocolbuffers/protobuf-ci/bazel@v1
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: php_macos/${{ matrix.version }}
+          bash: >-
+            bazelisk $BAZEL_STARTUP_FLAGS \
+              test $BAZEL_FLAGS \
+              --action_env=PATH --test_env=PATH \
+              //php:conformance_test_c

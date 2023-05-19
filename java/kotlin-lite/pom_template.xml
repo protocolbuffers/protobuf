@@ -15,6 +15,19 @@
     Kotlin lite Protocol Buffers library. Protocol Buffers are a way of encoding structured data in an
     efficient yet extensible format.
   </description>
+  <dependencies>
+    <dependency>
+      <groupId>{groupId}</groupId>
+      <artifactId>protobuf-javalite</artifactId>
+      <version>{version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+    {dependencies}
+  </dependencies>
 
   <properties>
     <kotlin.version>1.6.0</kotlin.version>

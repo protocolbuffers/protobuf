@@ -111,7 +111,7 @@ class PROTOBUF_EXPORT TimeUtil {
   // Example of accepted format:
   //   "1972-01-01T10:00:20.021-05:00"
   static std::string ToString(const Timestamp& timestamp);
-  static bool FromString(const std::string& value, Timestamp* timestamp);
+  static bool FromString(absl::string_view value, Timestamp* timestamp);
 
   // Converts Duration to/from string format. The string format will contains
   // 3, 6, or 9 fractional digits depending on the precision required to
@@ -120,7 +120,7 @@ class PROTOBUF_EXPORT TimeUtil {
   // The range that can be represented by Duration is from -315,576,000,000
   // to +315,576,000,000 inclusive (in seconds).
   static std::string ToString(const Duration& duration);
-  static bool FromString(const std::string& value, Duration* timestamp);
+  static bool FromString(absl::string_view value, Duration* duration);
 
   // Gets the current UTC time.
   static Timestamp GetCurrentTime();
@@ -270,7 +270,7 @@ inline Duration operator%(const Duration& d1, const Duration& d2) {
 }
 
 inline std::ostream& operator<<(std::ostream& out, const Duration& d) {
-  out << ::PROTOBUF_NAMESPACE_ID::util::TimeUtil::ToString(d);
+  out << google::protobuf::util::TimeUtil::ToString(d);
   return out;
 }
 
@@ -319,7 +319,7 @@ inline Timestamp operator-(const Timestamp& t, const Duration& d) {
 PROTOBUF_EXPORT Duration operator-(const Timestamp& t1, const Timestamp& t2);
 
 inline std::ostream& operator<<(std::ostream& out, const Timestamp& t) {
-  out << ::PROTOBUF_NAMESPACE_ID::util::TimeUtil::ToString(t);
+  out << google::protobuf::util::TimeUtil::ToString(t);
   return out;
 }
 

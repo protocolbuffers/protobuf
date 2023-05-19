@@ -37,9 +37,7 @@
 
 #include <algorithm>
 #include <iostream>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -47,37 +45,6 @@
 #include "google/protobuf/stubs/platform_macros.h"
 #include "google/protobuf/stubs/port.h"
 
-// Enforce C++14 as the minimum.
-#if defined(_MSVC_LANG)
-#if _MSVC_LANG < 201402L
-#error "C++ versions less than C++14 are not supported."
-#endif  // _MSVC_LANG < 201402L
-#elif defined(__cplusplus)
-// Special-case GCC < 5.0, as it has a strange __cplusplus value for C++14
-#if defined(__GNUC__) && __GNUC__ < 5
-#if __cplusplus < 201300L
-#error "C++ versions less than C++14 are not supported."
-#endif  // __cplusplus < 201300L
-#else // defined(__GNUC__) && __GNUC__ < 5
-#if __cplusplus < 201402L
-#error "C++ versions less than C++14 are not supported."
-#endif  // __cplusplus < 201402L
-#endif // defined(__GNUC__) && __GNUC__ < 5
-#endif
-
-#ifndef PROTOBUF_USE_EXCEPTIONS
-#if defined(_MSC_VER) && defined(_CPPUNWIND)
-  #define PROTOBUF_USE_EXCEPTIONS 1
-#elif defined(__EXCEPTIONS)
-  #define PROTOBUF_USE_EXCEPTIONS 1
-#else
-  #define PROTOBUF_USE_EXCEPTIONS 0
-#endif
-#endif
-
-#if PROTOBUF_USE_EXCEPTIONS
-#include <exception>
-#endif
 #if defined(__APPLE__)
 #include <TargetConditionals.h>  // for TARGET_OS_IPHONE
 #endif
@@ -99,7 +66,7 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3021010
+#define GOOGLE_PROTOBUF_VERSION 4023000
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
 #define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
@@ -107,15 +74,15 @@ namespace internal {
 // The minimum header version which works with the current version of
 // the library.  This constant should only be used by protoc's C++ code
 // generator.
-static const int kMinHeaderVersionForLibrary = 3021000;
+static const int kMinHeaderVersionForLibrary = 4023000;
 
 // The minimum protoc version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 3021000
+#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 4023000
 
 // The minimum header version which works with the current version of
 // protoc.  This constant should only be used in VerifyVersion().
-static const int kMinHeaderVersionForProtoc = 3021000;
+static const int kMinHeaderVersionForProtoc = 4023000;
 
 // Verifies that the headers and libraries are compatible.  Use the macro
 // below to call this.
@@ -157,27 +124,6 @@ void StrongReference(const T& var) {
 }
 
 }  // namespace internal
-
-#if PROTOBUF_USE_EXCEPTIONS
-class FatalException : public std::exception {
- public:
-  FatalException(const char* filename, int line, const std::string& message)
-      : filename_(filename), line_(line), message_(message) {}
-  virtual ~FatalException() throw();
-
-  const char* what() const throw() override;
-
-  const char* filename() const { return filename_; }
-  int line() const { return line_; }
-  const std::string& message() const { return message_; }
-
- private:
-  const char* filename_;
-  const int line_;
-  const std::string message_;
-};
-#endif
-
 }  // namespace protobuf
 }  // namespace google
 

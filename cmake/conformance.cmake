@@ -1,12 +1,15 @@
-
-if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/jsoncpp/CMakeLists.txt")
-  message(FATAL_ERROR
-          "Cannot find third_party/jsoncpp directory that's needed to "
-          "build conformance tests. If you use git, make sure you have cloned "
-          "submodules:\n"
-          "  git submodule update --init --recursive\n"
-          "If instead you want to skip them, run cmake with:\n"
-          "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
+if (protobuf_JSONCPP_PROVIDER STREQUAL "module")
+  if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/jsoncpp/CMakeLists.txt")
+    message(FATAL_ERROR
+            "Cannot find third_party/jsoncpp directory that's needed to "
+            "build conformance tests. If you use git, make sure you have cloned "
+            "submodules:\n"
+            "  git submodule update --init --recursive\n"
+            "If instead you want to skip them, run cmake with:\n"
+            "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
+  endif()
+elseif(protobuf_JSONCPP_PROVIDER STREQUAL "package")
+  find_package(jsoncpp REQUIRED)
 endif()
 
 add_custom_command(
@@ -84,6 +87,14 @@ add_test(NAME conformance_cpp_test
   DEPENDS conformance_test_runner conformance_cpp)
 
 set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Disable tests")
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp third_party/jsoncpp)
-target_include_directories(conformance_test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include)
-target_link_libraries(conformance_test_runner jsoncpp_lib)
+if(protobuf_JSONCPP_PROVIDER STREQUAL "module")
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp third_party/jsoncpp)
+  target_include_directories(conformance_test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include)
+  if(BUILD_SHARED_LIBS)
+    target_link_libraries(conformance_test_runner jsoncpp_lib)
+  else()
+    target_link_libraries(conformance_test_runner jsoncpp_static)
+  endif()
+else()
+  target_link_libraries(conformance_test_runner jsoncpp)
+endif()

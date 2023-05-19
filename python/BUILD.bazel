@@ -8,7 +8,6 @@
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
-load("@pip_deps//:requirements.bzl", "requirement")
 load("//:protobuf.bzl", "internal_py_proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
@@ -56,6 +55,7 @@ internal_copy_files(
     srcs = [
         "//:well_known_type_protos",
         "//src/google/protobuf:descriptor_proto_srcs",
+        "//src/google/protobuf/compiler:plugin.proto",
     ],
     strip_prefix = "src",
 )
@@ -113,6 +113,7 @@ cc_binary(
     deps = [
         ":proto_api",
         "//:protobuf",
+        "//src/google/protobuf:descriptor_legacy",
     ] + select({
         "//conditions:default": [],
         ":use_fast_cpp_protos": ["//external:python_headers"],
@@ -160,8 +161,10 @@ py_library(
     srcs = glob([
         "google/protobuf/internal/*_test.py",
     ]) + [
-        "google/protobuf/internal/test_util.py",
         "google/protobuf/internal/import_test_package/__init__.py",
+        "google/protobuf/internal/test_util.py",
+        "//python/google/protobuf/internal/numpy:__init__.py",
+        "//python/google/protobuf/internal/numpy:numpy_test.py",
     ],
     imports = ["python"],
     srcs_version = "PY3",
@@ -266,6 +269,7 @@ py_library(
     ],
     imports = ["python"],
     srcs_version = "PY2AND3",
+    visibility = ["//python:__subpackages__"],
     deps = [
         ":protobuf_python",
         ":python_common_test_protos",
@@ -321,17 +325,7 @@ internal_py_test(
 internal_py_test(
     name = "message_test",
     srcs = ["google/protobuf/internal/message_test.py"],
-    data = glob(["testdata/golden_pickle_*"]) + [
-        "//src/google/protobuf:testdata",
-    ],
-)
-
-internal_py_test(
-    name = "numpy_test",
-    srcs = ["google/protobuf/internal/numpy_test.py"],
-    deps = [
-        requirement("numpy"),
-    ],
+    data = ["//src/google/protobuf:testdata"],
 )
 
 internal_py_test(
@@ -424,6 +418,27 @@ conformance_test(
 ################################################################################
 # Distribution files
 ################################################################################
+
+pkg_files(
+    name = "python_source_files",
+    srcs = glob(
+        [
+            "google/protobuf/**/*.py",
+        ],
+        exclude = [
+            "google/protobuf/internal/*_test.py",
+            "google/protobuf/internal/test_util.py",
+            "google/protobuf/internal/import_test_package/__init__.py",
+        ],
+    ) + [
+        "README.md",
+        "google/__init__.py",
+        "setup.cfg",
+        "tox.ini",
+    ],
+    strip_prefix = "",
+    visibility = ["@upb//:__subpackages__"],
+)
 
 pkg_files(
     name = "dist_files",

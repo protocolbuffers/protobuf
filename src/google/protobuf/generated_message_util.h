@@ -97,6 +97,18 @@ PROTOBUF_EXPORT inline const std::string& GetEmptyString() {
   return GetEmptyStringAlreadyInited();
 }
 
+// Default empty Cord object. Don't use directly. Instead, call
+// GetEmptyCordAlreadyInited() to get the reference.
+union EmptyCord {
+  constexpr EmptyCord() : value() {}
+  ~EmptyCord() {}
+  ::absl::Cord value;
+};
+PROTOBUF_EXPORT extern const EmptyCord empty_cord_;
+
+constexpr const ::absl::Cord& GetEmptyCordAlreadyInited() {
+  return empty_cord_.value;
+}
 
 // True if IsInitialized() is true for all elements of t.  Type is expected
 // to be a RepeatedPtrField<some message type>.  It's useful to have this

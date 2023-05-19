@@ -34,7 +34,7 @@
 #include <string>
 #include <type_traits>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 
 
 #endif  // GOOGLE_PROTOBUF_STRING_MEMBER_ROBBER_H__

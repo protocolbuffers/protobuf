@@ -309,21 +309,6 @@ class PROTOC_EXPORT CommandLineInterface {
       const GeneratorContextMap& output_directories,
       DiskSourceTree* source_tree);
 
-  // Get all transitive dependencies of the given file (including the file
-  // itself), adding them to the given list of FileDescriptorProtos.  The
-  // protos will be ordered such that every file is listed before any file that
-  // depends on it, so that you can call DescriptorPool::BuildFile() on them
-  // in order.  Any files in *already_seen will not be added, and each file
-  // added will be inserted into *already_seen.  If include_source_code_info is
-  // true then include the source code information in the FileDescriptorProtos.
-  // If include_json_name is true, populate the json_name field of
-  // FieldDescriptorProto for all fields.
-  static void GetTransitiveDependencies(
-      const FileDescriptor* file, bool include_json_name,
-      bool include_source_code_info,
-      absl::flat_hash_set<const FileDescriptor*>* already_seen,
-      RepeatedPtrField<FileDescriptorProto>* output);
-
   // Implements the --print_free_field_numbers. This function prints free field
   // numbers into stdout for the message and it's nested message types in
   // post-order, i.e. nested types first. Printed range are left-right
@@ -451,6 +436,11 @@ class PROTOC_EXPORT CommandLineInterface {
   // True if --include_source_info was given, meaning that we should not strip
   // SourceCodeInfo from the DescriptorSet.
   bool source_info_in_descriptor_set_ = false;
+
+  // True if --retain_options was given, meaning that we shouldn't strip any
+  // options from the DescriptorSet, even if they have RETENTION_SOURCE
+  // specified.
+  bool retain_options_in_descriptor_set_ = false;
 
   // Was the --disallow_services flag used?
   bool disallow_services_ = false;

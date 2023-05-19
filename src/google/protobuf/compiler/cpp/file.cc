@@ -34,6 +34,7 @@
 
 #include "google/protobuf/compiler/cpp/file.h"
 
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -57,6 +58,7 @@
 #include "google/protobuf/compiler/cpp/message.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/service.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -168,7 +170,7 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* p) {
   // Only do this for protobuf's own types. There are some google3 protos using
   // macros as field names and the generated code compiles after the macro
   // expansion. Undefing these macros actually breaks such code.
-  if (file_->name() != "net/proto2/compiler/proto/plugin.proto" &&
+  if (file_->name() != "third_party/protobuf/compiler/plugin.proto" &&
       file_->name() != "google/protobuf/compiler/plugin.proto") {
     return;
   }
@@ -206,6 +208,15 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           {"undefs", [&] { GenerateMacroUndefs(p); }},
           {"global_state_decls",
            [&] { GenerateGlobalStateFunctionDeclarations(p); }},
+          {"any_metadata",
+           [&] {
+             NamespaceOpener ns(ProtobufNamespace(options_), p);
+             p->Emit(R"cc(
+               namespace internal {
+               class AnyMetadata;
+               }  // namespace internal
+             )cc");
+           }},
           {"fwd_decls", [&] { GenerateForwardDeclarations(p); }},
           {"proto2_ns_enums",
            [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
@@ -249,11 +260,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           #define $dllexport_macro$$ dllexport_decl$
           $undefs$
 
-          PROTOBUF_NAMESPACE_OPEN
-          namespace internal {
-          class AnyMetadata;
-          }  // namespace internal
-          PROTOBUF_NAMESPACE_CLOSE
+          $any_metadata$;
 
           $global_state_decls$;
           $fwd_decls$
@@ -375,7 +382,7 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
 void FileGenerator::DoIncludeFile(absl::string_view google3_name,
                                   bool do_export, io::Printer* p) {
   constexpr absl::string_view prefix = "third_party/protobuf/";
-  GOOGLE_ABSL_CHECK(absl::StartsWith(google3_name, prefix)) << google3_name;
+  ABSL_CHECK(absl::StartsWith(google3_name, prefix)) << google3_name;
 
   auto v = p->WithVars(
       {{"export_suffix", do_export ? "// IWYU pragma: export" : ""}});
@@ -491,7 +498,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
 
   if (HasCordFields(file_, options_)) {
     p->Emit(R"(
-      #include "third_party/absl/strings/internal/string_constant.h"
+      #include "absl/strings/internal/string_constant.h"
     )");
   }
 
@@ -562,25 +569,50 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
 
   generator->GenerateConstexprConstructor(p);
 
-  p->Emit(
-      {
-          {"type", DefaultInstanceType(generator->descriptor(), options_)},
-          {"name", DefaultInstanceName(generator->descriptor(), options_)},
-          {"default", [&] { generator->GenerateInitDefaultSplitInstance(p); }},
-          {"class", ClassName(generator->descriptor())},
-      },
-      R"cc(
-        struct $type$ {
-          PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
-          ~$type$() {}
-          union {
-            $class$ _instance;
+  if (IsFileDescriptorProto(file_, options_)) {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            $type$() {}
+            void Init() { ::new (&_instance) $class$(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            ~$type$() {}
+            union {
+              $class$ _instance;
+            };
           };
-        };
 
-        PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-      )cc");
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  } else {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            ~$type$() {}
+            union {
+              $class$ _instance;
+            };
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  }
 
   for (int i = 0; i < generator->descriptor()->field_count(); ++i) {
     const FieldDescriptor* field = generator->descriptor()->field(i);
@@ -962,8 +994,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // FileDescriptorProto/ and embed it as a string literal, which is parsed and
   // built into real descriptors at initialization time.
 
-  FileDescriptorProto file_proto;
-  file_->CopyTo(&file_proto);
+  FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
   std::string file_data;
   file_proto.SerializeToString(&file_data);
 
@@ -1104,15 +1135,43 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // because in some situations that would otherwise pull in a lot of
   // unnecessary code that can't be stripped by --gc-sections. Descriptor
   // initialization will still be performed lazily when it's needed.
-  if (file_->name() == "net/proto2/proto/descriptor.proto") {
-    return;
+  if (file_->name() != "net/proto2/proto/descriptor.proto") {
+    p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
+            R"cc(
+              // Force running AddDescriptors() at dynamic initialization time.
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+              static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
+            )cc");
   }
 
-  p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}}, R"cc(
-    // Force running AddDescriptors() at dynamic initialization time.
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-    static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
-  )cc");
+  // However, we must provide a way to force initialize the default instances
+  // of FileDescriptorProto which will be used during registration of other
+  // files.
+  if (IsFileDescriptorProto(file_, options_)) {
+    NamespaceOpener ns(p);
+    ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
+    p->Emit(
+        {{"dummy", UniqueName("dynamic_init_dummy", file_, options_)},
+         {"initializers", absl::StrJoin(message_generators_, "\n",
+                                        [&](std::string* out, const auto& gen) {
+                                          absl::StrAppend(
+                                              out,
+                                              DefaultInstanceName(
+                                                  gen->descriptor(), options_),
+                                              ".Init();");
+                                        })}},
+        R"cc(
+          //~ Emit wants an indented line, so give it a comment to strip.
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+          PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow() {
+            $initializers$;
+          }
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+          static std::true_type $dummy${
+              (InitializeFileDescriptorDefaultInstances(), std::true_type{})};
+#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+        )cc");
+  }
 }
 
 class FileGenerator::ForwardDeclarations {
@@ -1231,9 +1290,19 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
     decl.second.Print(p, options_);
   }
 
-  ns.ChangeTo("PROTOBUF_NAMESPACE_ID");
+  ns.ChangeTo(ProtobufNamespace(options_));
   for (const auto& decl : decls) {
     decl.second.PrintTopLevelDecl(p, options_);
+  }
+
+  if (IsFileDescriptorProto(file_, options_)) {
+    ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
+    p->Emit(R"cc(
+      //~ Emit wants an indented line, so give it a comment to strip.
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+      PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
+#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+    )cc");
   }
 }
 
@@ -1242,11 +1311,11 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/implicit_weak_message.h", p);
   }
   if (HasWeakFields(file_, options_)) {
-    GOOGLE_ABSL_CHECK(!options_.opensource_runtime);
+    ABSL_CHECK(!options_.opensource_runtime);
     IncludeFile("third_party/protobuf/weak_field_map.h", p);
   }
   if (HasLazyFields(file_, options_, &scc_analyzer_)) {
-    GOOGLE_ABSL_CHECK(!options_.opensource_runtime);
+    ABSL_CHECK(!options_.opensource_runtime);
     IncludeFile("third_party/protobuf/lazy_field.h", p);
   }
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {
@@ -1322,11 +1391,11 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     if (HasStringPieceFields(file_, options_)) {
       IncludeFile("third_party/protobuf/string_piece_field_support.h", p);
     }
-    if (HasCordFields(file_, options_)) {
-      p->Emit(R"(
-        #include "third_party/absl/strings/cord.h"
+  }
+  if (HasCordFields(file_, options_)) {
+    p->Emit(R"(
+      #include "absl/strings/cord.h"
       )");
-    }
   }
   if (HasMapFields(file_)) {
     IncludeFileAndExport("third_party/protobuf/map.h", p);

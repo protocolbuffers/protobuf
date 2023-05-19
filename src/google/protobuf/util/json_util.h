@@ -34,8 +34,6 @@
 #define GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 
 #include "absl/base/attributes.h"
-
-
 #include "google/protobuf/json/json.h"
 
 namespace google {

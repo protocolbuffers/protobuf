@@ -133,6 +133,49 @@ message ExtensionRangeOptions {
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
+  message Declaration {
+    // The extension number declared within the extension range.
+    optional int32 number = 1;
+
+    // The fully-qualified name of the extension field. There must be a leading
+    // dot in front of the full name.
+    optional string full_name = 2;
+
+    // The fully-qualified type name of the extension field. Unlike
+    // Metadata.type, Declaration.type must have a leading dot for messages
+    // and enums.
+    optional string type = 3;
+
+    // Deprecated. Please use "repeated".
+    optional bool is_repeated = 4 [deprecated = true];
+
+    // If true, indicates that the number is reserved in the extension range,
+    // and any extension field with the number will fail to compile. Set this
+    // when a declared extension field is deleted.
+    optional bool reserved = 5;
+
+    // If true, indicates that the extension must be defined as repeated.
+    // Otherwise the extension must be defined as optional.
+    optional bool repeated = 6;
+  }
+
+  // For external users: DO NOT USE. We are in the process of open sourcing
+  // extension declaration and executing internal cleanups before it can be
+  // used externally.
+  repeated Declaration declaration = 2 [retention = RETENTION_SOURCE];
+
+  // The verification state of the extension range.
+  enum VerificationState {
+    // All the extensions of the range must be declared.
+    DECLARATION = 0;
+    UNVERIFIED = 1;
+  }
+
+  // The verification state of the range.
+  // TODO(b/278783756): flip the default to DECLARATION once all empty ranges
+  // are marked as UNVERIFIED.
+  optional VerificationState verification = 3 [default = UNVERIFIED];
+
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
 }
@@ -540,13 +583,21 @@ message MessageOptions {
 message FieldOptions {
   // The ctype option instructs the C++ code generator to use a different
   // representation of the field than it normally would.  See the specific
-  // options below.  This option is not yet implemented in the open source
-  // release -- sorry, we'll try to include it in a future version!
+  // options below.  This option is only implemented to support use of
+  // [ctype=CORD] and [ctype=STRING] (the default) on non-repeated fields of
+  // type "bytes" in the open source release -- sorry, we'll try to include
+  // other types in a future version!
   optional CType ctype = 1 [default = STRING];
   enum CType {
     // Default mode.
     STRING = 0;
 
+    // The option [ctype=CORD] may be applied to a non-repeated field of type
+    // "bytes". It indicates that in C++, the data should be stored in a Cord
+    // instead of a string.  For very large strings, this may reduce memory
+    // fragmentation. It may also allow better performance when parsing from a
+    // Cord, or when parsing with aliasing enabled, as the parsed Cord may then
+    // alias the original buffer.
     CORD = 1;
 
     STRING_PIECE = 2;
@@ -627,6 +678,40 @@ message FieldOptions {
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default = false];
 
+  // Indicate that the field value should not be printed out when using debug
+  // formats, e.g. when the field contains sensitive credentials.
+  optional bool debug_redact = 16 [default = false];
+
+  // If set to RETENTION_SOURCE, the option will be omitted from the binary.
+  // Note: as of January 2023, support for this is in progress and does not yet
+  // have an effect (b/264593489).
+  enum OptionRetention {
+    RETENTION_UNKNOWN = 0;
+    RETENTION_RUNTIME = 1;
+    RETENTION_SOURCE = 2;
+  }
+
+  optional OptionRetention retention = 17;
+
+  // This indicates the types of entities that the field may apply to when used
+  // as an option. If it is unset, then the field may be freely used as an
+  // option on any kind of entity. Note: as of January 2023, support for this is
+  // in progress and does not yet have an effect (b/264593489).
+  enum OptionTargetType {
+    TARGET_TYPE_UNKNOWN = 0;
+    TARGET_TYPE_FILE = 1;
+    TARGET_TYPE_EXTENSION_RANGE = 2;
+    TARGET_TYPE_MESSAGE = 3;
+    TARGET_TYPE_FIELD = 4;
+    TARGET_TYPE_ONEOF = 5;
+    TARGET_TYPE_ENUM = 6;
+    TARGET_TYPE_ENUM_ENTRY = 7;
+    TARGET_TYPE_SERVICE = 8;
+    TARGET_TYPE_METHOD = 9;
+  }
+
+  repeated OptionTargetType targets = 19;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -634,9 +719,11 @@ message FieldOptions {
   extensions 1000 to max;
 
   reserved 4;  // removed jtype
+  optional OptionTargetType target_obsolete_do_not_use = 18 [deprecated = true];
 }
 
 message OneofOptions {
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 

@@ -1,51 +1,29 @@
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:internal_shell.bzl", "inline_sh_test")
-load("//:protobuf.bzl", "internal_ruby_proto_library")
-
-filegroup(
-  name = "tests",
-  srcs = glob(["tests/*.rb"]),
-)
-
-filegroup(
-  name = "test_protos",
-  srcs = glob(["tests/*.proto"]),
-)
-
-internal_ruby_proto_library(
-    name = "test_ruby_protos",
-    srcs = [":test_protos"],
-    includes = ["."],
-)
-
-inline_sh_test(
-    name = "test",
-    srcs = [
-        "Rakefile",
-    ],
-    deps = [
-        ":test_ruby_protos",
-        ":tests",
-        "//:well_known_ruby_protos",
-        "//ruby:protobuf",
-    ],
-    cmd = """
-        pushd `dirname $(location Rakefile)`
-        RUBYLIB=.:tests:../../lib:../../../src BAZEL=true rake test
-        popd
-    """,
-)
 
 ################################################################################
 # Distribution files
 ############################################################################
 
+genrule(
+    name = "protoc-compat-gen",
+    outs = ["protoc"],
+    cmd = """
+        PROTOC_BINARY_NAME="protoc-3.0.0-linux-x86_64.exe"
+        if [ `uname` = "Darwin" ]; then
+          PROTOC_BINARY_NAME="protoc-3.0.0-osx-x86_64.exe"
+        fi
+        wget https://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0/$${PROTOC_BINARY_NAME} -O protoc
+        chmod +x protoc
+        mv protoc $@
+    """,
+    executable = True,
+    visibility = ["//ruby/compatibility_tests/v3.0.0:__subpackages__"],
+)
+
 pkg_files(
     name = "dist_files",
-    srcs = glob([
-        "**/*.rb",
-        "**/*.proto"
-    ]) + [
+    srcs = [
+        "//ruby/compatibility_tests/v3.0.0/tests:dist_files",
         "BUILD.bazel",
         "Rakefile",
         "README.md",

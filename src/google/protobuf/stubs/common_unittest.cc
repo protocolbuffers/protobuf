@@ -36,10 +36,10 @@
 
 #include <vector>
 
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/stubs/callback.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/testing/googletest.h"
 
 namespace google {
@@ -76,88 +76,6 @@ TEST(CommonTest, IntMinMaxConstants) {
   EXPECT_EQ(static_cast<uint64>(kint64min), static_cast<uint64>(kint64max) + 1);
   EXPECT_EQ(0, kuint32max + 1);
   EXPECT_EQ(0, kuint64max + 1);
-}
-
-std::vector<std::string> captured_messages_;
-
-void CaptureLog(LogLevel level, const char* filename, int line,
-                const std::string& message) {
-  captured_messages_.push_back(absl::Substitute(
-      "$0 $1:$2: $3", static_cast<int>(level), filename, line, message));
-}
-
-TEST(LoggingTest, DefaultLogging) {
-  CaptureTestStderr();
-  int line = __LINE__;
-  GOOGLE_LOG(INFO   ) << "A message.";
-  GOOGLE_LOG(WARNING) << "A warning.";
-  GOOGLE_LOG(ERROR  ) << "An error.";
-
-  std::string text = GetCapturedTestStderr();
-  EXPECT_EQ(absl::StrCat("[libprotobuf INFO " __FILE__ ":", line + 1,
-                         "] A message.\n"
-                         "[libprotobuf WARNING " __FILE__ ":",
-                         line + 2,
-                         "] A warning.\n"
-                         "[libprotobuf ERROR " __FILE__ ":",
-                         line + 3, "] An error.\n"),
-            text);
-}
-
-TEST(LoggingTest, NullLogging) {
-  LogHandler* old_handler = SetLogHandler(nullptr);
-
-  CaptureTestStderr();
-  GOOGLE_LOG(INFO   ) << "A message.";
-  GOOGLE_LOG(WARNING) << "A warning.";
-  GOOGLE_LOG(ERROR  ) << "An error.";
-
-  EXPECT_TRUE(SetLogHandler(old_handler) == nullptr);
-
-  std::string text = GetCapturedTestStderr();
-  EXPECT_EQ("", text);
-}
-
-TEST(LoggingTest, CaptureLogging) {
-  captured_messages_.clear();
-
-  LogHandler* old_handler = SetLogHandler(&CaptureLog);
-
-  int start_line = __LINE__;
-  GOOGLE_LOG(ERROR) << "An error.";
-  GOOGLE_LOG(WARNING) << "A warning.";
-
-  EXPECT_TRUE(SetLogHandler(old_handler) == &CaptureLog);
-
-  ASSERT_EQ(2, captured_messages_.size());
-  EXPECT_EQ(absl::StrCat("2 " __FILE__ ":", start_line + 1, ": An error."),
-            captured_messages_[0]);
-  EXPECT_EQ(absl::StrCat("1 " __FILE__ ":", start_line + 2, ": A warning."),
-            captured_messages_[1]);
-}
-
-TEST(LoggingTest, SilenceLogging) {
-  captured_messages_.clear();
-
-  LogHandler* old_handler = SetLogHandler(&CaptureLog);
-
-  int line1 = __LINE__; GOOGLE_LOG(INFO) << "Visible1";
-  LogSilencer* silencer1 = new LogSilencer;
-  GOOGLE_LOG(INFO) << "Not visible.";
-  LogSilencer* silencer2 = new LogSilencer;
-  GOOGLE_LOG(INFO) << "Not visible.";
-  delete silencer1;
-  GOOGLE_LOG(INFO) << "Not visible.";
-  delete silencer2;
-  int line2 = __LINE__; GOOGLE_LOG(INFO) << "Visible2";
-
-  EXPECT_TRUE(SetLogHandler(old_handler) == &CaptureLog);
-
-  ASSERT_EQ(2, captured_messages_.size());
-  EXPECT_EQ(absl::StrCat("0 " __FILE__ ":", line1, ": Visible1"),
-            captured_messages_[0]);
-  EXPECT_EQ(absl::StrCat("0 " __FILE__ ":", line2, ": Visible2"),
-            captured_messages_[1]);
 }
 
 class ClosureTest : public testing::Test {

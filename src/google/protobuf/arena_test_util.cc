@@ -30,10 +30,10 @@
 
 #include "google/protobuf/arena_test_util.h"
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 
 
-#define EXPECT_EQ GOOGLE_ABSL_CHECK_EQ
+#define EXPECT_EQ ABSL_CHECK_EQ
 
 namespace google {
 namespace protobuf {

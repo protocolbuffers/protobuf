@@ -35,7 +35,7 @@ package com.google.protobuf.jruby;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
@@ -160,7 +160,7 @@ public class RubyEnumDescriptor extends RubyObject {
 
     RubyModule enumModule = RubyModule.newModule(runtime);
     boolean defaultValueRequiredButNotFound =
-        descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3;
+        LegacyFileDescriptor.getSyntax(descriptor.getFile()) == LegacyFileDescriptor.Syntax.PROTO3;
     for (EnumValueDescriptor value : descriptor.getValues()) {
       String name = fixEnumConstantName(value.getName());
       // Make sure it's a valid constant name before trying to create it

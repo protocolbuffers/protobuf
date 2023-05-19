@@ -48,19 +48,15 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-ExtensionGenerator::ExtensionGenerator(const std::string& root_class_name,
+ExtensionGenerator::ExtensionGenerator(absl::string_view root_class_name,
                                        const FieldDescriptor* descriptor)
     : method_name_(ExtensionMethodName(descriptor)),
-      root_class_and_method_name_(root_class_name + "_" + method_name_),
+      root_class_and_method_name_(
+          absl::StrCat(root_class_name, "_", method_name_)),
       descriptor_(descriptor) {
-  if (descriptor->is_map()) {
-    // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
-    // error cases, so it seems to be ok to use as a back door for errors.
-    std::cerr << "error: Extension is a map<>!"
-              << " That used to be blocked by the compiler." << std::endl;
-    std::cerr.flush();
-    abort();
-  }
+  ABSL_CHECK(!descriptor->is_map())
+      << "error: Extension is a map<>!"
+      << " That used to be blocked by the compiler.";
 }
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
@@ -120,11 +116,11 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
     vars["default"] = DefaultValue(descriptor_);
   }
   std::string type = GetCapitalizedType(descriptor_);
-  vars["extension_type"] = std::string("GPBDataType") + type;
+  vars["extension_type"] = absl::StrCat("GPBDataType", type);
 
   if (objc_type == OBJECTIVECTYPE_ENUM) {
     vars["enum_desc_func_name"] =
-        EnumName(descriptor_->enum_type()) + "_EnumDescriptor";
+        absl::StrCat(EnumName(descriptor_->enum_type()), "_EnumDescriptor");
   } else {
     vars["enum_desc_func_name"] = "NULL";
   }

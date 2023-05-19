@@ -1,5 +1,22 @@
 include(GNUInstallDirs)
 
+foreach(_target IN LISTS protobuf_ABSL_USED_TARGETS)
+  string(REPLACE :: _ _modified_target ${_target})
+  list(APPEND _pc_targets ${_modified_target})
+endforeach()
+list(APPEND _pc_targets "utf8_range")
+
+set(_protobuf_PC_REQUIRES "")
+set(_sep "")
+foreach (_target IN LISTS _pc_targets)
+  string(CONCAT _protobuf_PC_REQUIRES "${_protobuf_PC_REQUIRES}" "${_sep}" "${_target}")
+  set(_sep " ")
+endforeach ()
+set(_protobuf_PC_CFLAGS)
+if (protobuf_BUILD_SHARED_LIBS)
+  set(_protobuf_PC_CFLAGS -DPROTOBUF_USE_DLLS)
+endif ()
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
@@ -112,4 +129,11 @@ if(protobuf_INSTALL_EXAMPLES)
   install(DIRECTORY examples/
     DESTINATION "${CMAKE_INSTALL_EXAMPLEDIR}"
     COMPONENT protobuf-examples)
+endif()
+
+if (protobuf_INSTALL_TESTS)
+  install(TARGETS gmock EXPORT protobuf-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()

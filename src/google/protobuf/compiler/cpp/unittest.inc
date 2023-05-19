@@ -1,3 +1,4 @@
+// -*- c++ -*-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -69,6 +70,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/compiler/cpp/test_bad_identifiers.pb.h"
 #include "google/protobuf/compiler/importer.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -98,8 +100,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, int line, int column,
-                const std::string& message) override {
+  void RecordError(absl::string_view filename, int line, int column,
+                   absl::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
@@ -128,9 +130,10 @@ TEST(GENERATED_DESCRIPTOR_TEST_NAME, IdenticalDescriptors) {
 
   // Test that descriptors are generated correctly by converting them to
   // FileDescriptorProtos and comparing.
-  FileDescriptorProto generated_descriptor_proto, parsed_descriptor_proto;
+  FileDescriptorProto generated_descriptor_proto;
   generated_descriptor->CopyTo(&generated_descriptor_proto);
-  parsed_descriptor->CopyTo(&parsed_descriptor_proto);
+  FileDescriptorProto parsed_descriptor_proto =
+    compiler::StripSourceRetentionOptions(*parsed_descriptor);
 
   EXPECT_EQ(parsed_descriptor_proto.DebugString(),
             generated_descriptor_proto.DebugString());
@@ -1331,7 +1334,7 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethod) {
 TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
   // Verify death if we call Foo() with Bar's message types.
 
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if PROTOBUF_RTTI && GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
     mock_service_.CallMethod(foo_, &mock_controller_,
                              &foo_request_, &bar_response_, done_.get()),
@@ -1342,7 +1345,7 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
     mock_service_.CallMethod(foo_, &mock_controller_,
                              &bar_request_, &foo_response_, done_.get()),
     "dynamic_cast");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 }
 
 TEST_F(GENERATED_SERVICE_TEST_NAME, GetPrototypes) {
@@ -1450,6 +1453,9 @@ class OneofTest : public testing::Test {
         break;
       case UNITTEST::TestOneof2::kFooLazyMessage:
         EXPECT_TRUE(message.has_foo_lazy_message());
+        break;
+      case UNITTEST::TestOneof2::kFooBytesCord:
+        EXPECT_TRUE(message.has_foo_bytes_cord());
         break;
       case UNITTEST::TestOneof2::FOO_NOT_SET:
         break;
@@ -2107,10 +2113,11 @@ TEST(HELPERS_TEST_NAME, TestSCC) {
   std::string package = a.GetDescriptor()->file()->package();
   ASSERT_EQ(names.size(), 4);
   std::sort(names.begin(), names.end());
-  EXPECT_EQ(names[0], package + ".TestMutualRecursionA");
-  EXPECT_EQ(names[1], package + ".TestMutualRecursionA.SubGroup");
-  EXPECT_EQ(names[2], package + ".TestMutualRecursionA.SubMessage");
-  EXPECT_EQ(names[3], package + ".TestMutualRecursionB");
+  EXPECT_EQ(names[0], absl::StrCat(package, ".TestMutualRecursionA"));
+  EXPECT_EQ(names[1], absl::StrCat(package, ".TestMutualRecursionA.SubGroup"));
+  EXPECT_EQ(names[2],
+            absl::StrCat(package, ".TestMutualRecursionA.SubMessage"));
+  EXPECT_EQ(names[3], absl::StrCat(package, ".TestMutualRecursionB"));
 
   MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
   EXPECT_EQ(result.is_recursive, true);

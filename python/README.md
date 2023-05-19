@@ -1,130 +1,105 @@
-Protocol Buffers - Google's data interchange format
-===================================================
+# Protocol Buffers Python
 
-Copyright 2008 Google Inc.
+This directory contains the Protobuf library for Python.
 
-This directory contains the Python Protocol Buffers runtime library.
+In most cases you should install the library using `pip` or another package
+manager:
 
-Normally, this directory comes as part of the protobuf package, available
-from:
+```
+$ pip install protobuf
+```
 
-  https://developers.google.com/protocol-buffers/
+The packages released on https://pypi.org/project/protobuf/#files include both a
+source distribution and binary wheels.
 
-The complete package includes the C++ source code, which includes the
-Protocol Compiler (protoc).  If you downloaded this package from PyPI
-or some other Python-specific source, you may have received only the
-Python part of the code.  In this case, you will need to obtain the
-Protocol Compiler from some other source before you can use this
-package.
+For user documentation about how to use Protobuf Python, see
+https://protobuf.dev/getting-started/pythontutorial/
 
-Development Warning
-===================
+# Building packages from this repo
 
-The pure python performance is slow. For better performance please
-use python c++ implementation.
+If for some reason you wish to build the packages directly from this repo, you
+can use the following Bazel commands:
 
-Installation
-============
+```
+$ bazel build @upb//python/dist:source_wheel
+$ bazel build @upb//python/dist:binary_wheel
+```
 
-1) Make sure you have Python 3.7 or newer.  If in doubt, run:
+The binary wheel will build against whatever version of Python is installed on
+your system. The source package is always the same and does not depend on a
+local version of Python.
 
-       $ python -V
+# Implementation backends
 
-2) Make sure you have Bazel 0.5.4 or later (or CMake 3.5 or later).
+There are three separate implementations of Python Protobuf. All of them offer
+the same API and are thus functionally the same, though they have very different
+performance characteristics.
 
-3) If you do not have setuptools installed, note that it will be
-   downloaded and installed automatically as soon as you run `setup.py`.
-   If you would rather install it manually, you may do so by following
-   the instructions on [this page](https://packaging.python.org/en/latest/tutorials/installing-packages/).
+The runtime library contains a switching layer that can choose between these
+backends at runtime. Normally it will choose between them automatically, using
+priority-ordered list, and skipping any backends that are not available. However
+you can request a specific backend by setting the
+`PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION` environment variable to one of the
+following values:
 
-4) Build the C++ code, or install a binary distribution of `protoc`.  If
-   you install a binary distribution, make sure that it is the same
-   version as this package.  If in doubt, run:
+1.  **upb**: Built on the
+    [upb C library](https://github.com/protocolbuffers/upb), this is a new
+    extension module
+    [released in 4.21.0](https://protobuf.dev/news/2022-05-06/). It offers
+    better performance than any of the previous backends, and it is now the
+    default. It is distributed in our PyPI packages, and requires no special
+    installation. The code for this module lives in
+    [@upb/python](https://github.com/protocolbuffers/upb/tree/main/python).
+1.  **cpp**: This extension module wraps the C++ protobuf library. It is
+    deprecated and is no longer released in our PyPI packages, however it is
+    still used in some legacy cases where apps want to perform zero-copy message
+    sharing between Python and C++. It must be installed separately before it
+    can be used. The code for this module lives in
+    [google/protobuf/pyext](https://github.com/protocolbuffers/protobuf/tree/main/python/google/protobuf/pyext).
+1.  **python**: The pure-Python backend, this does not require any extension
+    module to be present on the system. The code for the pure-Python backend
+    lives in [google/protobuf/internal](google/protobuf/internal)
 
-       $ protoc --version
+The order given above is the general priority order, with `upb` being preferred
+the most and the `python` backend preferred the least. However this ordering can
+be overridden by the presence of a
+`google.protobuf.internal._api_implementation` module. See the logic in
+[api_implementation.py](https://github.com/protocolbuffers/protobuf/blob/main/python/google/protobuf/internal/api_implementation.py)
+for details.
 
-5) Build and run the tests:
+You can check which backend you are using with the following snippet:
 
-       $ python setup.py build
-       $ python setup.py test
+```
+$ python
+Python 3.10.9 (main, Dec  7 2022, 13:47:07) [GCC 12.2.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> from google.protobuf.internal import api_implementation
+>>> print(api_implementation.Type())
+upb
+```
 
-   To build, test, and use the C++ implementation, you must first compile
-   `libprotobuf.so` using either [Bazel](../README.md) or [CMake](../src/README.md):
+This is not an officially-supported or stable API, but it is useful for ad hoc
+diagnostics.
 
-   On OS X:
+More information about sharing messages between Python and C++ is available
+here: https://protobuf.dev/reference/python/python-generated/#sharing-messages
 
-   If you are running a Homebrew-provided Python, you must make sure another
-   version of protobuf is not already installed, as Homebrew's Python will
-   search `/usr/local/lib` for `libprotobuf.so` before it searches the compiled
-   binaries.
+# Code generator
 
-   You can either unlink Homebrew's protobuf or install the `libprotobuf` you
-   built earlier:
+The code for the Protobuf Python code generator lives in
+[//src/google/protobuf/compiler/python](https://github.com/protocolbuffers/protobuf/tree/main/src/google/protobuf/compiler/python).
+The code generator can output two different files for each proto `foo.proto`:
 
-       $ brew unlink protobuf
+*   **foo_pb2.py**: The module you import to actually use the protos.
+*   **foo_pb2.pyi**: A stub file that describes the interface of the protos.
 
-   or
+The `foo_pb2.pyi` file is useful for IDEs or for users who want to read the
+output file. The `foo_pb2.py` file is optimized for fast loading and is not
+readable at all.
 
-       $ (cd .. && cmake . && make install)
+Note that the pyi file is only generated if you pass the `pyi_out` option to
+`protoc`:
 
-    On other *nix:
-
-    You must make `libprotobuf.so` dynamically available. You can either
-    install libprotobuf you built earlier, or set `LD_LIBRARY_PATH`:
-
-       $ (cd .. && cmake . && make -j20 install)
-
-    or
-
-       $ export LD_LIBRARY_PATH=../bazel-bin
-
-   To build the C++ implementation run:
-
-       $ python setup.py build --cpp_implementation
-
-   Then run the tests like so:
-
-       $ python setup.py test --cpp_implementation
-
-   If some tests fail, this library may not work correctly on your
-   system.  Continue at your own risk.
-
-   Please note that there is a known problem with some versions of
-   Python on Cygwin which causes the tests to fail after printing the
-   error:  `sem_init: Resource temporarily unavailable`.  This appears
-   to be a [bug either in Cygwin or in
-   Python](http://www.cygwin.com/ml/cygwin/2005-07/msg01378.html).
-
-   We do not know if or when it might be fixed.  We also do not know
-   how likely it is that this bug will affect users in practice.
-
-6) Install:
-
-       $ python setup.py install
-
-   or:
-
-       $ (cd .. && make install)
-       $ python setup.py install --cpp_implementation
-
-   This step may require superuser privileges.
-   NOTE: To use C++ implementation, you need to export an environment
-   variable before running your program.  See the "C++ Implementation"
-   section below for more details.
-
-Usage
-=====
-
-The complete documentation for Protocol Buffers is available via the
-web at:
-
-  https://developers.google.com/protocol-buffers/
-
-C++ Implementation
-==================
-
-The C++ implementation for Python messages is built as a Python extension to
-improve the overall protobuf Python performance.
-
-To use the C++ implementation, you need to install the C++ protobuf runtime
-library, please see instructions in the parent directory.
+```
+$ protoc --python_out=pyi_out:output_dir
+```

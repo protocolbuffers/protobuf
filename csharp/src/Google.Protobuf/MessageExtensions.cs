@@ -89,6 +89,15 @@ namespace Google.Protobuf
             MergeFrom(message, span, false, null);
 
         /// <summary>
+        /// Merges data from the given sequence into an existing message.
+        /// </summary>
+        /// <param name="message">The message to merge the data into.</param>
+        /// <param name="sequence">Sequence from the specified data to merge, which must be protobuf-encoded binary data.</param>
+        [SecuritySafeCritical]
+        public static void MergeFrom(this IMessage message, ReadOnlySequence<byte> sequence) =>
+            MergeFrom(message, sequence, false, null);
+
+        /// <summary>
         /// Merges length-delimited data from the given stream into an existing message.
         /// </summary>
         /// <remarks>

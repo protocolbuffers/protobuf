@@ -161,11 +161,11 @@ bool Parser::Finish(std::string* out_error) {
 
 }  // namespace
 
-bool ParseSimpleFile(const std::string& path, LineConsumer* line_consumer,
+bool ParseSimpleFile(absl::string_view path, LineConsumer* line_consumer,
                      std::string* out_error) {
   int fd;
   do {
-    fd = posix::open(path.c_str(), O_RDONLY);
+    fd = posix::open(std::string(path).c_str(), O_RDONLY);
   } while (fd < 0 && errno == EINTR);
   if (fd < 0) {
     *out_error =
@@ -179,7 +179,7 @@ bool ParseSimpleFile(const std::string& path, LineConsumer* line_consumer,
 }
 
 bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
-                       const std::string& stream_name,
+                       absl::string_view stream_name,
                        LineConsumer* line_consumer, std::string* out_error) {
   std::string local_error;
   Parser parser(line_consumer);

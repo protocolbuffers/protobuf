@@ -50,8 +50,8 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
                                              const Options *options)
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
   if (!SupportsPresenceApi(descriptor_)) {
-    variables_["has_property_check"] = name() + "_ != null";
-    variables_["has_not_property_check"] = name() + "_ == null";
+    variables_["has_property_check"] = absl::StrCat(name(), "_ != null");
+    variables_["has_not_property_check"] = absl::StrCat(name(), "_ == null");
   }
 }
 

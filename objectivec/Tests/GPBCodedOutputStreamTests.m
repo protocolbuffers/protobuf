@@ -80,7 +80,9 @@
   NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
   GPBCodedOutputStream* output = [GPBCodedOutputStream streamWithOutputStream:rawOutput];
   [output writeRawLittleEndian32:(int32_t)value];
+  XCTAssertEqual(output.bytesWritten, data.length);
   [output flush];
+  XCTAssertEqual(output.bytesWritten, data.length);
 
   NSData* actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
   XCTAssertEqualObjects(data, actual);
@@ -90,7 +92,9 @@
     rawOutput = [NSOutputStream outputStreamToMemory];
     output = [GPBCodedOutputStream streamWithOutputStream:rawOutput bufferSize:blockSize];
     [output writeRawLittleEndian32:(int32_t)value];
+    XCTAssertEqual(output.bytesWritten, data.length);
     [output flush];
+    XCTAssertEqual(output.bytesWritten, data.length);
 
     actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
     XCTAssertEqualObjects(data, actual);
@@ -101,7 +105,9 @@
   NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
   GPBCodedOutputStream* output = [GPBCodedOutputStream streamWithOutputStream:rawOutput];
   [output writeRawLittleEndian64:value];
+  XCTAssertEqual(output.bytesWritten, data.length);
   [output flush];
+  XCTAssertEqual(output.bytesWritten, data.length);
 
   NSData* actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
   XCTAssertEqualObjects(data, actual);
@@ -111,7 +117,9 @@
     rawOutput = [NSOutputStream outputStreamToMemory];
     output = [GPBCodedOutputStream streamWithOutputStream:rawOutput bufferSize:blockSize];
     [output writeRawLittleEndian64:value];
+    XCTAssertEqual(output.bytesWritten, data.length);
     [output flush];
+    XCTAssertEqual(output.bytesWritten, data.length);
 
     actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
     XCTAssertEqualObjects(data, actual);
@@ -124,7 +132,9 @@
     NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
     GPBCodedOutputStream* output = [GPBCodedOutputStream streamWithOutputStream:rawOutput];
     [output writeRawVarint32:(int32_t)value];
+    XCTAssertEqual(output.bytesWritten, data.length);
     [output flush];
+    XCTAssertEqual(output.bytesWritten, data.length);
 
     NSData* actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
     XCTAssertEqualObjects(data, actual);
@@ -137,7 +147,9 @@
     NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
     GPBCodedOutputStream* output = [GPBCodedOutputStream streamWithOutputStream:rawOutput];
     [output writeRawVarint64:value];
+    XCTAssertEqual(output.bytesWritten, data.length);
     [output flush];
+    XCTAssertEqual(output.bytesWritten, data.length);
 
     NSData* actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
     XCTAssertEqualObjects(data, actual);
@@ -155,7 +167,9 @@
                                                                        bufferSize:blockSize];
 
       [output writeRawVarint32:(int32_t)value];
+      XCTAssertEqual(output.bytesWritten, data.length);
       [output flush];
+      XCTAssertEqual(output.bytesWritten, data.length);
 
       NSData* actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
       XCTAssertEqualObjects(data, actual);
@@ -167,7 +181,9 @@
                                                                        bufferSize:blockSize];
 
       [output writeRawVarint64:value];
+      XCTAssertEqual(output.bytesWritten, data.length);
       [output flush];
+      XCTAssertEqual(output.bytesWritten, data.length);
 
       NSData* actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
       XCTAssertEqualObjects(data, actual);
@@ -181,7 +197,9 @@
   NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
   GPBCodedOutputStream* output = [GPBCodedOutputStream streamWithOutputStream:rawOutput];
   [output writeStringNoTag:value];
+  XCTAssertEqual(output.bytesWritten, data.length);
   [output flush];
+  XCTAssertEqual(output.bytesWritten, data.length);
 
   NSData* actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
   XCTAssertEqualObjects(data, actual, @"%@", contextMessage);
@@ -191,7 +209,9 @@
     rawOutput = [NSOutputStream outputStreamToMemory];
     output = [GPBCodedOutputStream streamWithOutputStream:rawOutput bufferSize:blockSize];
     [output writeStringNoTag:value];
+    XCTAssertEqual(output.bytesWritten, data.length);
     [output flush];
+    XCTAssertEqual(output.bytesWritten, data.length);
 
     actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
     XCTAssertEqualObjects(data, actual, @"%@", contextMessage);

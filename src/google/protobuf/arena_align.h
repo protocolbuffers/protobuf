@@ -78,7 +78,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 
 // Must be included last.
@@ -99,7 +99,7 @@ struct ArenaAlignDefault {
   }
 
   static inline PROTOBUF_ALWAYS_INLINE constexpr size_t Ceil(size_t n) {
-    return (n + align - 1) & -align;
+    return (n + align - 1) & ~(align - 1);
   }
   static inline PROTOBUF_ALWAYS_INLINE constexpr size_t Floor(size_t n) {
     return (n & ~(align - 1));
@@ -113,7 +113,7 @@ struct ArenaAlignDefault {
   template <typename T>
   static inline PROTOBUF_ALWAYS_INLINE T* Ceil(T* ptr) {
     uintptr_t intptr = reinterpret_cast<uintptr_t>(ptr);
-    return reinterpret_cast<T*>((intptr + align - 1) & -align);
+    return reinterpret_cast<T*>((intptr + align - 1) & ~(align - 1));
   }
 
   template <typename T>
@@ -142,7 +142,9 @@ struct ArenaAlign {
     return (reinterpret_cast<uintptr_t>(ptr) & (align - 1)) == 0U;
   }
 
-  constexpr size_t Ceil(size_t n) const { return (n + align - 1) & -align; }
+  constexpr size_t Ceil(size_t n) const {
+    return (n + align - 1) & ~(align - 1);
+  }
   constexpr size_t Floor(size_t n) const { return (n & ~(align - 1)); }
 
   constexpr size_t Padded(size_t n) const {
@@ -156,7 +158,7 @@ struct ArenaAlign {
   template <typename T>
   T* Ceil(T* ptr) const {
     uintptr_t intptr = reinterpret_cast<uintptr_t>(ptr);
-    return reinterpret_cast<T*>((intptr + align - 1) & -align);
+    return reinterpret_cast<T*>((intptr + align - 1) & ~(align - 1));
   }
 
   template <typename T>
@@ -175,8 +177,8 @@ struct ArenaAlign {
 
 inline ArenaAlign ArenaAlignAs(size_t align) {
   // align must be a non zero power of 2 >= 8
-  GOOGLE_ABSL_DCHECK_NE(align, 0U);
-  GOOGLE_ABSL_DCHECK(absl::has_single_bit(align)) << "Invalid alignment " << align;
+  ABSL_DCHECK_NE(align, 0U);
+  ABSL_DCHECK(absl::has_single_bit(align)) << "Invalid alignment " << align;
   return ArenaAlign{align};
 }
 

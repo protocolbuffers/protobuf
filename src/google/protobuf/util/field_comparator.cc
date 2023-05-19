@@ -32,19 +32,46 @@
 
 #include "google/protobuf/util/field_comparator.h"
 
+#include <algorithm>
+#include <cfloat>
+#include <cmath>
 #include <limits>
 #include <string>
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/util/message_differencer.h"
-#include "google/protobuf/stubs/mathutil.h"
 
 namespace google {
 namespace protobuf {
 namespace util {
+namespace {
+template <typename T>
+struct Epsilon {};
+template <>
+struct Epsilon<float> {
+  constexpr static auto value = 32 * FLT_EPSILON;
+};
+template <>
+struct Epsilon<double> {
+  constexpr static auto value = 32 * DBL_EPSILON;
+};
+
+template <typename T>
+bool WithinFractionOrMargin(const T x, const T y, const T fraction,
+                            const T margin) {
+  ABSL_DCHECK(fraction >= T(0) && fraction < T(1) && margin >= T(0));
+
+  if (!std::isfinite(x) || !std::isfinite(y)) {
+    return false;
+  }
+  const T relative_margin = fraction * std::max(std::fabs(x), std::fabs(y));
+  return std::fabs(x - y) <= std::max(margin, relative_margin);
+}
+
+}  // namespace
 
 FieldComparator::FieldComparator() {}
 FieldComparator::~FieldComparator() {}
@@ -122,7 +149,7 @@ FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
       return RECURSE;
 
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "No comparison code for field " << field->full_name()
+      ABSL_LOG(FATAL) << "No comparison code for field " << field->full_name()
                       << " of CppType = " << field->cpp_type();
       return DIFFERENT;
   }
@@ -144,7 +171,7 @@ void SimpleFieldComparator::SetDefaultFractionAndMargin(double fraction,
 void SimpleFieldComparator::SetFractionAndMargin(const FieldDescriptor* field,
                                                  double fraction,
                                                  double margin) {
-  GOOGLE_ABSL_CHECK(FieldDescriptor::CPPTYPE_FLOAT == field->cpp_type() ||
+  ABSL_CHECK(FieldDescriptor::CPPTYPE_FLOAT == field->cpp_type() ||
              FieldDescriptor::CPPTYPE_DOUBLE == field->cpp_type())
       << "Field has to be float or double type. Field name is: "
       << field->full_name();
@@ -196,11 +223,16 @@ bool SimpleFieldComparator::CompareDoubleOrFloat(const FieldDescriptor& field,
       // Use user-provided fraction and margin. Since they are stored as
       // doubles, we explicitly cast them to types of values provided. This
       // is very likely to fail if provided values are not numeric.
-      return MathUtil::WithinFractionOrMargin(
-          value_1, value_2, static_cast<T>(tolerance->fraction),
-          static_cast<T>(tolerance->margin));
+      return WithinFractionOrMargin(value_1, value_2,
+                                    static_cast<T>(tolerance->fraction),
+                                    static_cast<T>(tolerance->margin));
     } else {
-      return MathUtil::AlmostEquals(value_1, value_2);
+      if (std::fabs(value_1) <= Epsilon<T>::value &&
+          std::fabs(value_2) <= Epsilon<T>::value) {
+        return true;
+      }
+      return WithinFractionOrMargin(value_1, value_2, Epsilon<T>::value,
+                                    Epsilon<T>::value);
     }
   }
 }

@@ -806,8 +806,7 @@ def MessageSetItemDecoder(descriptor):
       if value is None:
         message_type = extension.message_type
         if not hasattr(message_type, '_concrete_class'):
-          # pylint: disable=protected-access
-          message._FACTORY.GetPrototype(message_type)
+          message_factory.GetMessageClass(message_type)
         value = field_dict.setdefault(
             extension, message_type._concrete_class())
       if value._InternalParse(buffer, message_start,message_end) != message_end:

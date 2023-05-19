@@ -1,0 +1,27 @@
+name: Forked PR workflow check
+
+# This workflow prevents modifications to our workflow files in PRs from forked
+# repositories.  Since tests in these PRs always use the workflows in the
+# *target* branch, modifications to these files can't be properly tested.
+
+on:
+  # safe presubmit
+  pull_request:
+    branches:
+      - main
+      - '[0-9]+.x'
+      # The 21.x branch still uses Kokoro
+      - '!21.x'
+      # For testing purposes so we can stage this on the `gha` branch.
+      - gha
+    paths:
+      - '.github/workflows/**'
+
+jobs:
+  check:
+    name: Check PR source
+    runs-on: ubuntu-latest
+    steps:
+      - run: >
+          ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf' }} ||
+          (echo "This pull request is from an unsafe fork (${{ github.event.pull_request.head.repo.full_name }}) and isn't allowed to modify workflow files!" && exit 1)

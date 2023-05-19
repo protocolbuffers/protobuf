@@ -4,9 +4,6 @@ set -ex
 
 cd $(dirname $0)/..
 
-# Pull in dependencies.
-git submodule update --init --recursive
-
 # utf8_range has to live in the base third_party directory.
 # We copy it into the ext/google/protobuf directory for the build
 # (and for the release to PECL).
@@ -36,6 +33,6 @@ if [[ ! -f BUILD_STAMP ]] || [[ "$(cat BUILD_STAMP)" != "$FINGERPRINT" ]]; then
   echo "$FINGERPRINT" > BUILD_STAMP
 fi
 
-make
-TEST_PHP_ARGS="-q" make test
+make -j8
+TEST_PHP_ARGS="-q" make -j8 test
 popd > /dev/null

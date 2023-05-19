@@ -45,7 +45,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "absl/algorithm/container.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/match.h"
@@ -179,7 +179,7 @@ struct Proto2Descriptor {
                                  JsonLocation::SourceLocation::current()) {
     auto f = FieldByNumber(d, number);
     if (!f.has_value()) {
-      GOOGLE_ABSL_LOG(FATAL)
+      ABSL_LOG(FATAL)
           << absl::StrFormat(
                  "%s has, by definition, a field numbered %d, but it could not "
                  "be "
@@ -360,7 +360,7 @@ struct Proto3Type {
                                  JsonLocation::SourceLocation::current()) {
     auto f = FieldByNumber(d, number);
     if (!f.has_value()) {
-      GOOGLE_ABSL_LOG(FATAL)
+      ABSL_LOG(FATAL)
           << absl::StrFormat(
                  "%s has, by definition, a field numbered %d, but it could not "
                  "be "

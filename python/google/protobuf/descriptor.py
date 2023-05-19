@@ -739,13 +739,25 @@ class EnumDescriptor(_NestedDescriptorBase):
 
   @property
   def is_closed(self):
-    """If the enum is closed.
+    """Returns true whether this is a "closed" enum.
 
-    closed enum means:
-      - Has a fixed set of named values.
-      - Encountering values not in this set causes them to be treated as
-        unknown fields.
-      - The first value (i.e., the default) may be nonzero.
+    This means that it:
+    - Has a fixed set of values, rather than being equivalent to an int32.
+    - Encountering values not in this set causes them to be treated as unknown
+      fields.
+    - The first value (i.e., the default) may be nonzero.
+
+    WARNING: Some runtimes currently have a quirk where non-closed enums are
+    treated as closed when used as the type of fields defined in a
+    `syntax = proto2;` file. This quirk is not present in all runtimes; as of
+    writing, we know that:
+
+    - C++, Java, and C++-based Python share this quirk.
+    - UPB and UPB-based Python do not.
+    - PHP and Ruby treat all enums as open regardless of declaration.
+
+    Care should be taken when using this function to respect the target
+    runtime's enum handling quirks.
     """
     return self.file.syntax == 'proto2'
 

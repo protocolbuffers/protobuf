@@ -177,6 +177,9 @@ service TestConflictingMethodNames {
 }
 
 message TestConflictingFieldNames {
+  // TODO(b/261750190) Remove these tests once this behavior is removed.
+  option deprecated_legacy_json_field_conflicts = true;
+
   enum TestEnum {
     UNKNOWN = 0;
     FOO = 1;

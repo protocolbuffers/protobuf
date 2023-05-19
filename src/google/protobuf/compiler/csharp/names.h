@@ -40,6 +40,7 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
@@ -118,20 +119,21 @@ GetReflectionClassName(const FileDescriptor* descriptor);
 //    of failure, this function will return empty string and error parameter
 //    will contain the error message.
 std::string PROTOC_EXPORT GetOutputFile(const FileDescriptor* descriptor,
-                                        const std::string file_extension,
-                                        const bool generate_directories,
-                                        const std::string base_namespace,
+                                        absl::string_view file_extension,
+                                        bool generate_directories,
+                                        absl::string_view base_namespace,
                                         std::string* error);
 
-std::string UnderscoresToPascalCase(const std::string& input);
+std::string UnderscoresToPascalCase(absl::string_view input);
 
 // Note that we wouldn't normally want to export this (we're not expecting
 // it to be used outside libprotoc itself) but this exposes it for testing.
-std::string PROTOC_EXPORT UnderscoresToCamelCase(const std::string& input,
-                                   bool cap_next_letter,
-                                   bool preserve_period);
+std::string PROTOC_EXPORT UnderscoresToCamelCase(absl::string_view input,
+                                                 bool cap_next_letter,
+                                                 bool preserve_period);
 
-inline std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter) {
+inline std::string UnderscoresToCamelCase(absl::string_view input,
+                                          bool cap_next_letter) {
   return UnderscoresToCamelCase(input, cap_next_letter, false);
 }
 

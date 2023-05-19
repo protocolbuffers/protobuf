@@ -34,6 +34,7 @@
 #include <type_traits>
 
 #include "google/protobuf/port.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_entry_lite.h"
@@ -51,10 +52,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-#ifndef NDEBUG
-void MapFieldLiteNotDestructed(void* map_field_lite);
-#endif
-
 // This class provides access to map field using generated api. It is used for
 // internal generated message implementation only. Users should never use this
 // directly.
@@ -67,16 +64,18 @@ class MapFieldLite {
 
  public:
   typedef Map<Key, T> MapType;
+  static constexpr WireFormatLite::FieldType kKeyFieldType = key_wire_type;
+  static constexpr WireFormatLite::FieldType kValueFieldType = value_wire_type;
 
   constexpr MapFieldLite() : map_() {}
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
   MapFieldLite(ArenaInitialized, Arena* arena) : MapFieldLite(arena) {}
 
 #ifdef NDEBUG
-  void Destruct() { map_.~Map(); }
-  ~MapFieldLite() {}
+  ~MapFieldLite() { map_.~Map(); }
 #else
-  void Destruct() {
+  ~MapFieldLite() {
+    ABSL_DCHECK_EQ(map_.arena(), nullptr);
     // We want to destruct the map in such a way that we can verify
     // that we've done that, but also be sure that we've deallocated
     // everything (as opposed to leaving an allocation behind with no
@@ -84,11 +83,6 @@ class MapFieldLite {
     // Map::Swap with an empty map accomplishes that.
     decltype(map_) swapped_map(map_.arena());
     map_.InternalSwap(&swapped_map);
-  }
-  ~MapFieldLite() {
-    if (map_.arena() == nullptr && !map_.empty()) {
-      MapFieldLiteNotDestructed(this);
-    }
   }
 #endif
   // Accessors
@@ -133,7 +127,7 @@ class MapFieldLite {
     Map<Key, T> map_;
   };
 
-  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
+  friend class google::protobuf::Arena;
 };
 
 template <typename UnknownType, typename T>
@@ -189,13 +183,6 @@ struct MapEntryToMapField<
       kKeyFieldType, kValueFieldType>
       MapFieldType;
 };
-
-#ifndef NDEBUG
-inline PROTOBUF_NOINLINE void MapFieldLiteNotDestructed(void* map_field_lite) {
-  bool proper_destruct = false;
-  GOOGLE_ABSL_CHECK(proper_destruct) << map_field_lite;
-}
-#endif
 
 }  // namespace internal
 }  // namespace protobuf

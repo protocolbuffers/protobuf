@@ -55,6 +55,9 @@ class ImportWriter {
 
   void AddFile(const FileDescriptor* file, const std::string& header_extension);
   void AddRuntimeImport(const std::string& header_name);
+  // This can return an empty string if there is no module for the file. It also
+  // does not handle bundled proto files.
+  std::string ModuleForFile(const FileDescriptor* file);
 
   void PrintFileImports(io::Printer* p) const;
   void PrintRuntimeImports(io::Printer* p, bool default_cpp_symbol) const;

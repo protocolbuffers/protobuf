@@ -64,7 +64,7 @@ final class ManifestSchemaFactory implements SchemaFactory {
             messageInfo.getDefaultInstance());
       }
       return MessageSetSchema.newSchema(
-          SchemaUtil.proto2UnknownFieldSetSchema(),
+          SchemaUtil.unknownFieldSetFullSchema(),
           ExtensionSchemas.full(),
           messageInfo.getDefaultInstance());
     }
@@ -98,7 +98,7 @@ final class ManifestSchemaFactory implements SchemaFactory {
             messageInfo,
             NewInstanceSchemas.full(),
             ListFieldSchema.full(),
-            SchemaUtil.proto2UnknownFieldSetSchema(),
+            SchemaUtil.unknownFieldSetFullSchema(),
             ExtensionSchemas.full(),
             MapFieldSchemas.full())
         : MessageSchema.newSchema(
@@ -106,7 +106,7 @@ final class ManifestSchemaFactory implements SchemaFactory {
             messageInfo,
             NewInstanceSchemas.full(),
             ListFieldSchema.full(),
-            SchemaUtil.proto3UnknownFieldSetSchema(),
+            SchemaUtil.unknownFieldSetFullSchema(),
             /* extensionSchema= */ null,
             MapFieldSchemas.full());
   }

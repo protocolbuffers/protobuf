@@ -315,6 +315,28 @@ TEST_P(JsonTest, EvilString) {
   EXPECT_EQ(m->string_value(), "\n\r\b\f\1\2\3");
 }
 
+TEST_P(JsonTest, Unquoted64) {
+  TestMessage m;
+  m.add_repeated_int64_value(0);
+  m.add_repeated_int64_value(42);
+  m.add_repeated_int64_value(-((int64_t{1} << 60) + 1));
+  m.add_repeated_int64_value(INT64_MAX);
+  // This is a power of two and is therefore representable.
+  m.add_repeated_int64_value(INT64_MIN);
+  m.add_repeated_uint64_value(0);
+  m.add_repeated_uint64_value(42);
+  m.add_repeated_uint64_value((uint64_t{1} << 60) + 1);
+  // This will be UB without the min/max check in RoundTripsThroughDouble().
+  m.add_repeated_uint64_value(UINT64_MAX);
+
+  PrintOptions opts;
+  opts.unquote_int64_if_possible = true;
+  EXPECT_THAT(
+      ToJson(m, opts),
+      R"({"repeatedInt64Value":[0,42,"-1152921504606846977","9223372036854775807",-9223372036854775808],)"
+      R"("repeatedUint64Value":[0,42,"1152921504606846977","18446744073709551615"]})");
+}
+
 TEST_P(JsonTest, TestAlwaysPrintEnumsAsInts) {
   TestMessage orig;
   orig.set_enum_value(proto3::BAR);
@@ -704,24 +726,35 @@ TEST_P(JsonTest, TestParsingAny) {
           R"("int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}})"));
 }
 
-TEST_P(JsonTest, TestParsingAnyMiddleAtType) {
+TEST_P(JsonTest, TestParsingAnyWithRequiredFields) {
   auto m = ToProto<TestAny>(R"json(
     {
       "value": {
-        "int32_value": 5,
-        "string_value": "expected_value",
-        "@type": "type.googleapis.com/proto3.TestMessage",
-        "message_value": {"value": 1}
+        "@type": "type.googleapis.com/protobuf_unittest.TestRequired",
+        "a": 5,
+        "dummy2": 6,
+        "b": 7
       }
     }
   )json");
   ASSERT_OK(m);
 
-  TestMessage t;
-  ASSERT_TRUE(m->value().UnpackTo(&t));
-  EXPECT_EQ(t.int32_value(), 5);
-  EXPECT_EQ(t.string_value(), "expected_value");
-  EXPECT_EQ(t.message_value().value(), 1);
+  protobuf_unittest::TestRequired t;
+  // Can't use UnpackTo directly, since that checks IsInitialized.
+  ASSERT_FALSE(m->value().UnpackTo(&t));
+
+  t.Clear();
+  EXPECT_TRUE(t.ParsePartialFromString(m->value().value()));
+  EXPECT_EQ(t.a(), 5);
+  EXPECT_EQ(t.dummy2(), 6);
+  EXPECT_EQ(t.b(), 7);
+  EXPECT_FALSE(t.has_c());
+
+  EXPECT_THAT(
+      ToJson(*m),
+      IsOkAndHolds(
+          R"({"value":{"@type":"type.googleapis.com/protobuf_unittest.TestRequired",)"
+          R"("a":5,"dummy2":6,"b":7}})"));
 }
 
 TEST_P(JsonTest, TestParsingAnyEndAtType) {
@@ -1042,6 +1075,16 @@ TEST_P(JsonTest, Extensions) {
           R"("[protobuf_unittest.TestMixedFieldsAndExtensions.c]":42,)"
           R"("b":[1,2,3],)"
           R"("[protobuf_unittest.TestMixedFieldsAndExtensions.d]":[1,1,2,3,5,8,13]})"));
+
+  auto m2 = ToProto<protobuf_unittest::TestAllTypes>(R"json({
+    "[this.extension.does.not.exist]": 42
+  })json");
+  EXPECT_THAT(m2, StatusIs(absl::StatusCode::kInvalidArgument));
+
+  auto m3 = ToProto<protobuf_unittest::TestAllTypes>(R"json({
+    "[protobuf_unittest.TestMixedFieldsAndExtensions.c]": 42
+  })json");
+  EXPECT_THAT(m3, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 // Parsing does NOT work like MergeFrom: existing repeated field values are

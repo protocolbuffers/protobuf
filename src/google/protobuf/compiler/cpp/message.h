@@ -147,8 +147,7 @@ class MessageGenerator {
   // Or, if fields.size() == 1, just call GenerateSerializeOneField().
   void GenerateSerializeOneofFields(
       io::Printer* p, const std::vector<const FieldDescriptor*>& fields);
-  void GenerateSerializeOneExtensionRange(
-      io::Printer* p, const Descriptor::ExtensionRange* range);
+  void GenerateSerializeOneExtensionRange(io::Printer* p, int start, int end);
 
   // Generates has_foo() functions and variables for singular field has-bits.
   void GenerateSingularFieldHasBits(const FieldDescriptor* field,
@@ -161,8 +160,13 @@ class MessageGenerator {
   void GenerateFieldClear(const FieldDescriptor* field, bool is_inline,
                           io::Printer* p);
 
+  // Returns whether impl_ has a copy ctor.
+  bool ImplHasCopyCtor() const;
+
   // Generates the body of the message's copy constructor.
   void GenerateCopyConstructorBody(io::Printer* p) const;
+  void GenerateCopyConstructorBodyImpl(io::Printer* p) const;
+  void GenerateCopyConstructorBodyOneofs(io::Printer* p) const;
 
   // Returns the level that this message needs ArenaDtor. If the message has
   // a field that is not arena-exclusive, it needs an ArenaDtor
@@ -178,6 +182,8 @@ class MessageGenerator {
 
   size_t HasBitsSize() const;
   size_t InlinedStringDonatedSize() const;
+  absl::flat_hash_map<absl::string_view, std::string> HasBitVars(
+      const FieldDescriptor* field) const;
   int HasBitIndex(const FieldDescriptor* field) const;
   int HasByteIndex(const FieldDescriptor* field) const;
   int HasWordIndex(const FieldDescriptor* field) const;
@@ -186,7 +192,7 @@ class MessageGenerator {
   const Descriptor* descriptor_;
   int index_in_file_messages_;
   Options options_;
-  FieldGeneratorMap field_generators_;
+  FieldGeneratorTable field_generators_;
   // optimized_order_ is the order we layout the message's fields in the
   // class. This is reused to initialize the fields in-order for cache
   // efficiency.

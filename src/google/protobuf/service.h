@@ -100,7 +100,6 @@
 #ifndef GOOGLE_PROTOBUF_SERVICE_H__
 #define GOOGLE_PROTOBUF_SERVICE_H__
 
-
 #include <string>
 
 #include "google/protobuf/stubs/callback.h"

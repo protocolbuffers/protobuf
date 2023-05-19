@@ -40,7 +40,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -70,9 +71,9 @@ class DescriptorCapturingGenerator : public CodeGenerator {
 };
 }  // namespace
 
-void AddFile(const std::string& filename, const std::string& data) {
-  GOOGLE_ABSL_CHECK_OK(File::SetContents(TestTempDir() + "/" + filename, data,
-                                  true));
+void AddFile(absl::string_view filename, absl::string_view data) {
+  ABSL_CHECK_OK(File::SetContents(
+      absl::StrCat(TestTempDir(), "/", filename), data, true));
 }
 
 bool RunProtoCompiler(const std::string& filename,
@@ -83,8 +84,8 @@ bool RunProtoCompiler(const std::string& filename,
   DescriptorCapturingGenerator capturing_generator(file);
   cli->RegisterGenerator("--capture_out", &capturing_generator, "");
 
-  std::string proto_path = "-I" + TestTempDir();
-  std::string capture_out = "--capture_out=" + TestTempDir();
+  std::string proto_path = absl::StrCat("-I", TestTempDir());
+  std::string capture_out = absl::StrCat("--capture_out=", TestTempDir());
 
   const char* argv[] = {"protoc", proto_path.c_str(),
                         plugin_specific_args.c_str(), capture_out.c_str(),
@@ -95,7 +96,7 @@ bool RunProtoCompiler(const std::string& filename,
 
 bool DecodeMetadata(const std::string& path, GeneratedCodeInfo* info) {
   std::string data;
-  GOOGLE_ABSL_CHECK_OK(File::GetContents(path, &data, true));
+  ABSL_CHECK_OK(File::GetContents(path, &data, true));
   io::ArrayInputStream input(data.data(), data.size());
   return info->ParseFromZeroCopyStream(&input);
 }
@@ -136,7 +137,8 @@ const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
 bool AtLeastOneAnnotationMatchesSubstring(
     const std::string& file_content,
     const std::vector<const GeneratedCodeInfo::Annotation*>& annotations,
-    const std::string& expected_text) {
+    const std::string& expected_text,
+    absl::optional<GeneratedCodeInfo::Annotation::Semantic> semantic) {
   for (std::vector<const GeneratedCodeInfo::Annotation*>::const_iterator
            i = annotations.begin(),
            e = annotations.end();
@@ -148,7 +150,7 @@ bool AtLeastOneAnnotationMatchesSubstring(
       return false;
     }
     if (file_content.substr(begin, end - begin) == expected_text) {
-      return true;
+      return !semantic || annotation->semantic() == *semantic;
     }
   }
   return false;
@@ -161,6 +163,17 @@ bool AnnotationMatchesSubstring(const std::string& file_content,
   annotations.push_back(annotation);
   return AtLeastOneAnnotationMatchesSubstring(file_content, annotations,
                                               expected_text);
+}
+
+absl::optional<absl::string_view> GetAnnotationSubstring(
+    absl::string_view file_content,
+    const GeneratedCodeInfo::Annotation& annotation) {
+  auto begin = annotation.begin();
+  auto end = annotation.end();
+  if (begin < 0 || end < begin || end > file_content.size()) {
+    return absl::nullopt;
+  }
+  return file_content.substr(begin, end - begin);
 }
 }  // namespace annotation_test_util
 }  // namespace compiler

@@ -392,9 +392,9 @@ TEST(NoFieldPresenceTest, HasFieldOneofsTest) {
       desc->FindFieldByName("oneof_nested_message");
   const FieldDescriptor* desc_oneof_string =
       desc->FindFieldByName("oneof_string");
-  GOOGLE_ABSL_CHECK(desc_oneof_uint32 != nullptr);
-  GOOGLE_ABSL_CHECK(desc_oneof_nested_message != nullptr);
-  GOOGLE_ABSL_CHECK(desc_oneof_string != nullptr);
+  ABSL_CHECK(desc_oneof_uint32 != nullptr);
+  ABSL_CHECK(desc_oneof_nested_message != nullptr);
+  ABSL_CHECK(desc_oneof_string != nullptr);
 
   EXPECT_EQ(false, r->HasField(message, desc_oneof_uint32));
   EXPECT_EQ(false, r->HasField(message, desc_oneof_nested_message));
@@ -500,7 +500,7 @@ TEST(NoFieldPresenceTest, LazyMessageFieldHasBit) {
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
   const FieldDescriptor* field = desc->FindFieldByName("optional_lazy_message");
-  GOOGLE_ABSL_CHECK(field != nullptr);
+  ABSL_CHECK(field != nullptr);
 
   EXPECT_EQ(false, message.has_optional_lazy_message());
   EXPECT_EQ(false, r->HasField(message, field));

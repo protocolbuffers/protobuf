@@ -39,7 +39,6 @@
 #ifndef GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 
-
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/casts.h"
 #include "google/protobuf/descriptor.h"
@@ -130,7 +129,7 @@ class PROTOBUF_EXPORT WireFormat {
     int expected_endpoint = output->ByteCount() + size;
     output->SetCur(
         _InternalSerialize(message, output->Cur(), output->EpsCopy()));
-    GOOGLE_ABSL_CHECK_EQ(output->ByteCount(), expected_endpoint)
+    ABSL_CHECK_EQ(output->ByteCount(), expected_endpoint)
         << ": Protocol message serialized to a size different from what was "
            "originally expected.  Perhaps it was modified by another thread "
            "during serialization?";
@@ -358,8 +357,9 @@ inline size_t WireFormat::TagSize(int field_number,
 inline void WireFormat::VerifyUTF8String(const char* data, int size,
                                          WireFormat::Operation op) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  WireFormatLite::VerifyUtf8String(
-      data, size, static_cast<WireFormatLite::Operation>(op), nullptr);
+  WireFormatLite::VerifyUtf8String(data, size,
+                                   static_cast<WireFormatLite::Operation>(op),
+                                   /* field_name = */ "");
 #else
   // Avoid the compiler warning about unused variables.
   (void)data;

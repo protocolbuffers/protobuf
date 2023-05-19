@@ -17,13 +17,6 @@ build:msan --copt=-fsanitize-memory-use-after-dtor
 build:msan --action_env=MSAN_OPTIONS=poison_in_dtor=1
 build:msan --copt=-DMEMORY_SANITIZER=1
 
-# Use our instrumented LLVM libc++ in Kokoro.
-build:kokoro-msan --config=msan
-build:kokoro-msan --linkopt=-L/opt/libcxx_msan/lib
-build:kokoro-msan --linkopt=-Wl,-rpath,/opt/libcxx_msan/lib
-build:kokoro-msan --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++
-
-
 build:tsan --config=san-common --copt=-fsanitize=thread --linkopt=-fsanitize=thread
 build:tsan --copt=-DTHREAD_SANITIZER=1
 

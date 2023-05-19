@@ -50,11 +50,15 @@ class MapFieldIter implements \Iterator
     private $container;
 
     /**
+     * @ignore
+     */
+    private $key_type;
+
+    /**
      * Create iterator instance for MapField.
      *
-     * @param MapField The MapField instance for which this iterator is
-     * created.
-     * @param GPBType Map key type.
+     * @param array $container
+     * @param GPBType $key_type Map key type.
      * @ignore
      */
     public function __construct($container, $key_type)

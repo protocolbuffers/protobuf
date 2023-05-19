@@ -78,7 +78,7 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
     } else if (option.first == "annotation_list_file") {
       file_options.annotation_list_file = option.second;
     } else {
-      *error = "Unknown generator option: " + option.first;
+      *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
     }
   }
@@ -101,11 +101,10 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
     return std::unique_ptr<io::ZeroCopyOutputStream>(context->Open(filename));
   };
   std::string package_dir = JavaPackageToDir(file_generator->java_package());
-  std::string kotlin_filename = package_dir;
-  kotlin_filename += file_generator->GetKotlinClassname();
-  kotlin_filename += ".kt";
+  std::string kotlin_filename =
+      absl::StrCat(package_dir, file_generator->GetKotlinClassname(), ".kt");
   all_files.push_back(kotlin_filename);
-  std::string info_full_path = kotlin_filename + ".pb.meta";
+  std::string info_full_path = absl::StrCat(kotlin_filename, ".pb.meta");
   if (file_options.annotate_code) {
     all_annotations.push_back(info_full_path);
   }

@@ -30,7 +30,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -43,8 +43,8 @@ namespace cpp {
 namespace cpp_unittest {
 
 
-#if !defined(GOOGLE_ABSL_CHECK_MESSAGE_SIZE)
-#define GOOGLE_ABSL_CHECK_MESSAGE_SIZE(t, expected)
+#if !defined(ABSL_CHECK_MESSAGE_SIZE)
+#define ABSL_CHECK_MESSAGE_SIZE(t, expected)
 #endif
 
 // Mock structures to lock down the size of messages in a platform-independent
@@ -53,13 +53,13 @@ struct MockMessageBase {
   virtual ~MockMessageBase() = default;  // 8 bytes vtable
   void* internal_metadata;               // 8 bytes
 };
-GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockMessageBase, 16);
+ABSL_CHECK_MESSAGE_SIZE(MockMessageBase, 16);
 
 struct MockZeroFieldsBase : public MockMessageBase {
   int cached_size;  // 4 bytes
   // + 4 bytes padding
 };
-GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockZeroFieldsBase, 24);
+ABSL_CHECK_MESSAGE_SIZE(MockZeroFieldsBase, 24);
 
 struct MockExtensionSet {
   void* arena;       // 8 bytes
@@ -67,7 +67,7 @@ struct MockExtensionSet {
   int16_t size;      // 4 bytes
   void* data;        // 8 bytes
 };
-GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockExtensionSet, 24);
+ABSL_CHECK_MESSAGE_SIZE(MockExtensionSet, 24);
 
 struct MockRepeatedPtrField {
   void* arena;       // 8 bytes
@@ -75,24 +75,24 @@ struct MockRepeatedPtrField {
   int total_size;    // 4 bytes
   void* data;        // 8 bytes
 };
-GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockRepeatedPtrField, 24);
+ABSL_CHECK_MESSAGE_SIZE(MockRepeatedPtrField, 24);
 
 struct MockRepeatedField {
   int current_size;  // 4 bytes
   int total_size;    // 4 bytes
   void* data;        // 8 bytes
 };
-GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockRepeatedField, 16);
+ABSL_CHECK_MESSAGE_SIZE(MockRepeatedField, 16);
 
 TEST(GeneratedMessageTest, MockSizes) {
   // Consistency checks -- if these fail, the tests below will definitely fail.
-  GOOGLE_ABSL_CHECK_EQ(sizeof(MessageLite), sizeof(MockMessageBase));
-  GOOGLE_ABSL_CHECK_EQ(sizeof(Message), sizeof(MockMessageBase));
-  GOOGLE_ABSL_CHECK_EQ(sizeof(internal::ZeroFieldsBase), sizeof(MockZeroFieldsBase));
-  GOOGLE_ABSL_CHECK_EQ(sizeof(internal::ExtensionSet), sizeof(MockExtensionSet));
-  GOOGLE_ABSL_CHECK_EQ(sizeof(RepeatedPtrField<std::string>),
+  ABSL_CHECK_EQ(sizeof(MessageLite), sizeof(MockMessageBase));
+  ABSL_CHECK_EQ(sizeof(Message), sizeof(MockMessageBase));
+  ABSL_CHECK_EQ(sizeof(internal::ZeroFieldsBase), sizeof(MockZeroFieldsBase));
+  ABSL_CHECK_EQ(sizeof(internal::ExtensionSet), sizeof(MockExtensionSet));
+  ABSL_CHECK_EQ(sizeof(RepeatedPtrField<std::string>),
                 sizeof(MockRepeatedPtrField));
-  GOOGLE_ABSL_CHECK_EQ(sizeof(RepeatedField<int>), sizeof(MockRepeatedField));
+  ABSL_CHECK_EQ(sizeof(RepeatedField<int>), sizeof(MockRepeatedField));
 }
 
 TEST(GeneratedMessageTest, EmptyMessageSize) {
@@ -111,7 +111,7 @@ TEST(GeneratedMessageTest, EmptyMessageWithExtensionsSize) {
     int cached_size;                               // 4 bytes
     // + 4 bytes of padding
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
   EXPECT_EQ(sizeof(protobuf_unittest::TestEmptyMessageWithExtensions),
             sizeof(MockGenerated));
 }
@@ -124,7 +124,7 @@ TEST(GeneratedMessageTest, RecursiveMessageSize) {
     int32_t i;                                     // 4 bytes
     // + 4 bytes padding
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 40);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 40);
   EXPECT_EQ(sizeof(protobuf_unittest::TestRecursiveMessage),
             sizeof(MockGenerated));
 }
@@ -135,7 +135,7 @@ TEST(GeneratedMessageTest, OneStringSize) {
     int cached_size;                               // 4 bytes
     void* data;                                    // 8 bytes
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
   EXPECT_EQ(sizeof(protobuf_unittest::OneString), sizeof(MockGenerated));
 }
 
@@ -145,7 +145,7 @@ TEST(GeneratedMessageTest, MoreStringSize) {
     MockRepeatedPtrField data;                     // 24 bytes
     // + 4 bytes padding
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
   EXPECT_EQ(sizeof(protobuf_unittest::MoreString), sizeof(MockGenerated));
 }
 
@@ -156,7 +156,7 @@ TEST(GeneratedMessageTest, Int32MessageSize) {
     int32_t data;                                  // 4 bytes
     // + 4 bytes padding
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
   EXPECT_EQ(sizeof(protobuf_unittest::Int32Message), sizeof(MockGenerated));
 }
 
@@ -166,7 +166,7 @@ TEST(GeneratedMessageTest, Int64MessageSize) {
     int cached_size;                               // 4 bytes
     int64_t data;                                  // 8 bytes
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
   EXPECT_EQ(sizeof(protobuf_unittest::Int64Message), sizeof(MockGenerated));
 }
 
@@ -177,7 +177,7 @@ TEST(GeneratedMessageTest, BoolMessageSize) {
     bool data;                                     // 1 byte
     // + 3 bytes padding
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
   EXPECT_EQ(sizeof(protobuf_unittest::BoolMessage), sizeof(MockGenerated));
 }
 
@@ -187,7 +187,7 @@ TEST(GeneratedMessageTest, OneofSize) {
     int cached_size;                               // 4 bytes
     uint32_t oneof_case[1];                        // 4 bytes
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
   EXPECT_EQ(sizeof(protobuf_unittest::TestOneof), sizeof(MockGenerated));
 }
 
@@ -202,7 +202,7 @@ TEST(GeneratedMessageTest, Oneof2Size) {
     void* bar;                                     // 8 bytes
     uint32_t oneof_case[2];                        // 8 bytes
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 64);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 64);
   EXPECT_EQ(sizeof(protobuf_unittest::TestOneof2), sizeof(MockGenerated));
 }
 
@@ -217,7 +217,7 @@ TEST(GeneratedMessageTest, FieldOrderingsSize) {
     float my_float;                                // 4 bytes
     // + 4 bytes of padding
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 80);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 80);
   EXPECT_EQ(sizeof(protobuf_unittest::TestFieldOrderings), sizeof(MockGenerated));
 }
 
@@ -234,7 +234,7 @@ TEST(GeneratedMessageTest, TestMessageSize) {
     int m5;                                        // 4 bytes
     int64_t m6;                                    // 8 bytes
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
   EXPECT_EQ(sizeof(protobuf_unittest::TestMessageSize), sizeof(MockGenerated));
 }
 
@@ -263,7 +263,7 @@ TEST(GeneratedMessageTest, PackedTypesSize) {
     int packed_enum_cached_byte_size;              // 4 bytes
     int cached_size;                               // 4 bytes
   };
-  GOOGLE_ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 16 * 15 + 8 * 6 + 8);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 16 * 15 + 8 * 6 + 8);
   EXPECT_EQ(sizeof(protobuf_unittest::TestPackedTypes), sizeof(MockGenerated));
 }
 

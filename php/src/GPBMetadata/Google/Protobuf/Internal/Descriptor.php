@@ -177,6 +177,7 @@ class Descriptor
             ->optional('no_standard_descriptor_accessor', \Google\Protobuf\Internal\GPBType::BOOL, 2)
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 3)
             ->optional('map_entry', \Google\Protobuf\Internal\GPBType::BOOL, 7)
+            ->optional('deprecated_legacy_json_field_conflicts', \Google\Protobuf\Internal\GPBType::BOOL, 11)
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 
@@ -210,6 +211,7 @@ class Descriptor
         $pool->addMessage('google.protobuf.internal.EnumOptions', \Google\Protobuf\Internal\EnumOptions::class)
             ->optional('allow_alias', \Google\Protobuf\Internal\GPBType::BOOL, 2)
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 3)
+            ->optional('deprecated_legacy_json_field_conflicts', \Google\Protobuf\Internal\GPBType::BOOL, 6)
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 

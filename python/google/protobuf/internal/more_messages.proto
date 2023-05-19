@@ -358,3 +358,11 @@ message LotsNestedMessage {
   message B254 {}
   message B255 {}
 }
+
+message RequiredField {
+  required int32 id = 1;
+}
+
+message RequiredWrapper {
+  optional RequiredField request = 1;
+}

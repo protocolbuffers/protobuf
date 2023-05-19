@@ -32,6 +32,18 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      */
     protected $deprecated = null;
     /**
+     * Enable the legacy handling of JSON field name conflicts.  This lowercases
+     * and strips underscored from the fields before comparison in proto3 only.
+     * The new behavior takes `json_name` into account and applies to proto2 as
+     * well.
+     * TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     * had time to migrate.
+     *
+     * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];</code>
+     * @deprecated
+     */
+    protected $deprecated_legacy_json_field_conflicts = null;
+    /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
@@ -52,6 +64,13 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      *           Depending on the target platform, this can emit Deprecated annotations
      *           for the enum, or it will be completely ignored; in the very least, this
      *           is a formalization for deprecating enums.
+     *     @type bool $deprecated_legacy_json_field_conflicts
+     *           Enable the legacy handling of JSON field name conflicts.  This lowercases
+     *           and strips underscored from the fields before comparison in proto3 only.
+     *           The new behavior takes `json_name` into account and applies to proto2 as
+     *           well.
+     *           TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     *           had time to migrate.
      *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
      * }
@@ -137,6 +156,58 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
+
+        return $this;
+    }
+
+    /**
+     * Enable the legacy handling of JSON field name conflicts.  This lowercases
+     * and strips underscored from the fields before comparison in proto3 only.
+     * The new behavior takes `json_name` into account and applies to proto2 as
+     * well.
+     * TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     * had time to migrate.
+     *
+     * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];</code>
+     * @return bool
+     * @deprecated
+     */
+    public function getDeprecatedLegacyJsonFieldConflicts()
+    {
+        @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
+        return isset($this->deprecated_legacy_json_field_conflicts) ? $this->deprecated_legacy_json_field_conflicts : false;
+    }
+
+    public function hasDeprecatedLegacyJsonFieldConflicts()
+    {
+        @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
+        return isset($this->deprecated_legacy_json_field_conflicts);
+    }
+
+    public function clearDeprecatedLegacyJsonFieldConflicts()
+    {
+        @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
+        unset($this->deprecated_legacy_json_field_conflicts);
+    }
+
+    /**
+     * Enable the legacy handling of JSON field name conflicts.  This lowercases
+     * and strips underscored from the fields before comparison in proto3 only.
+     * The new behavior takes `json_name` into account and applies to proto2 as
+     * well.
+     * TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     * had time to migrate.
+     *
+     * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];</code>
+     * @param bool $var
+     * @return $this
+     * @deprecated
+     */
+    public function setDeprecatedLegacyJsonFieldConflicts($var)
+    {
+        @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
+        GPBUtil::checkBool($var);
+        $this->deprecated_legacy_json_field_conflicts = $var;
 
         return $this;
     }

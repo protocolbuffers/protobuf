@@ -47,6 +47,7 @@ message TestAllTypesLite {
   message NestedMessage {
     optional int32 bb = 1;
     optional int64 cc = 2;
+    repeated int32 dd = 3 [packed = true];
   }
 
   message NestedMessage2 {
@@ -454,7 +455,11 @@ message TestHugeFieldNumbersLite {
     bytes oneof_bytes = 536870014;
   }
 
-  extensions 536860000 to 536869999;
+  extensions 536860000 to 536869999 [declaration = {
+    number: 536860000
+    full_name: ".protobuf_unittest.test_all_types_lite"
+    type: ".protobuf_unittest.TestAllTypesLite"
+  }];
 }
 
 extend TestHugeFieldNumbersLite {

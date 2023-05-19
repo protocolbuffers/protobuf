@@ -31,7 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 
-#include "google/protobuf/stubs/logging.h"
+#include <cstddef>
+
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -70,7 +73,7 @@ void TestParseCorruptedString(const T& message) {
   }
   // This next line is a low bar.  But getting through the test without crashing
   // due to use-after-free or other bugs is a big part of what we're checking.
-  GOOGLE_ABSL_CHECK_GT(success_count, 0);
+  ABSL_CHECK_GT(success_count, 0);
 }
 
 namespace internal {
@@ -79,7 +82,29 @@ struct ArenaTestPeer {
   static void ReturnArrayMemory(Arena* arena, void* p, size_t size) {
     arena->ReturnArrayMemory(p, size);
   }
+  static auto PeekCleanupListForTesting(Arena* arena) {
+    return arena->PeekCleanupListForTesting();
+  }
 };
+
+struct CleanupGrowthInfo {
+  size_t space_used;
+  absl::flat_hash_set<void*> cleanups;
+};
+
+template <typename Func>
+CleanupGrowthInfo CleanupGrowth(Arena& arena, Func f) {
+  auto old_space_used = arena.SpaceUsed();
+  auto old_cleanups = ArenaTestPeer::PeekCleanupListForTesting(&arena);
+  f();
+  auto new_space_used = arena.SpaceUsed();
+  auto new_cleanups = ArenaTestPeer::PeekCleanupListForTesting(&arena);
+  CleanupGrowthInfo res;
+  res.space_used = new_space_used - old_space_used;
+  res.cleanups.insert(new_cleanups.begin(), new_cleanups.end());
+  for (auto p : old_cleanups) res.cleanups.erase(p);
+  return res;
+}
 
 class NoHeapChecker {
  public:
@@ -105,8 +130,8 @@ class ArenaHolder {
   explicit ArenaHolder(Arena* arena)
       : field_(Arena::CreateMessage<T>(arena)),
         owned_by_arena_(arena != nullptr) {
-    GOOGLE_ABSL_DCHECK(google::protobuf::Arena::is_arena_constructable<T>::value);
-    GOOGLE_ABSL_DCHECK(google::protobuf::Arena::is_destructor_skippable<T>::value);
+    ABSL_DCHECK(google::protobuf::Arena::is_arena_constructable<T>::value);
+    ABSL_DCHECK(google::protobuf::Arena::is_destructor_skippable<T>::value);
   }
 
   ~ArenaHolder() {

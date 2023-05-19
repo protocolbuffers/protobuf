@@ -91,11 +91,11 @@ namespace Google.Protobuf.Reflection
 
         private void TestFileDescriptor(FileDescriptor file, FileDescriptor importedFile, FileDescriptor importedPublicFile)
         {
-            Assert.AreEqual("unittest_proto3.proto", file.Name);
+            Assert.AreEqual("csharp/protos/unittest_proto3.proto", file.Name);
             Assert.AreEqual("protobuf_unittest3", file.Package);
 
             Assert.AreEqual("UnittestProto", file.Proto.Options.JavaOuterClassname);
-            Assert.AreEqual("unittest_proto3.proto", file.Proto.Name);
+            Assert.AreEqual("csharp/protos/unittest_proto3.proto", file.Proto.Name);
 
             // unittest_proto3.proto doesn't have any public imports, but unittest_import_proto3.proto does.
             Assert.AreEqual(0, file.PublicDependencies.Count);
@@ -124,16 +124,6 @@ namespace Google.Protobuf.Reflection
 
             Assert.AreEqual(10, file.SerializedData[0]);
             TestDescriptorToProto(file.ToProto, file.Proto);
-        }
-
-        [Test]
-        public void FileDescriptor_NonRootPath()
-        {
-            // unittest_proto3.proto used to be in google/protobuf. Now it's in the C#-specific location,
-            // let's test something that's still in a directory.
-            FileDescriptor file = UnittestWellKnownTypesReflection.Descriptor;
-            Assert.AreEqual("google/protobuf/unittest_well_known_types.proto", file.Name);
-            Assert.AreEqual("protobuf_unittest", file.Package);
         }
 
         [Test]
@@ -407,6 +397,11 @@ namespace Google.Protobuf.Reflection
         [Test]
         public void DescriptorImportingExtensionsFromOldCodeGen()
         {
+            if (MethodOptions.Descriptor.FullName != "google.protobuf.MethodOptions")
+            {
+                Assert.Ignore("Embedded descriptor for OldExtensions expects google.protobuf reflection package.");
+            }
+
             // The extension collection includes a null extension. There's not a lot we can do about that
             // in itself, as the old generator didn't provide us the extension information.
             var extensions = TestProtos.OldGenerator.OldExtensions2Reflection.Descriptor.Extensions;
@@ -445,10 +440,12 @@ namespace Google.Protobuf.Reflection
             }
 
             // Expect no oneof in the original proto3 unit test file to be synthetic.
+            // (This excludes oneofs with "lazy" in the name, due to internal differences.)
             foreach (var descriptor in ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.Descriptor.MessageTypes)
             {
-                Assert.AreEqual(descriptor.Oneofs.Count, descriptor.RealOneofCount);
-                foreach (var oneof in descriptor.Oneofs)
+                var nonLazyOneofs = descriptor.Oneofs.Where(d => !d.Name.Contains("lazy")).ToList();
+                Assert.AreEqual(nonLazyOneofs.Count, descriptor.RealOneofCount);
+                foreach (var oneof in nonLazyOneofs)
                 {
                     Assert.False(oneof.IsSynthetic);
                 }
@@ -463,6 +460,21 @@ namespace Google.Protobuf.Reflection
                     Assert.False(oneof.IsSynthetic);
                 }
             }
+        }
+
+        [Test]
+        public void OptionRetention()
+        {
+          var proto = UnittestRetentionReflection.Descriptor.Proto;
+          Assert.AreEqual(1, proto.Options.GetExtension(
+              UnittestRetentionExtensions.PlainOption));
+          Assert.AreEqual(2, proto.Options.GetExtension(
+              UnittestRetentionExtensions.RuntimeRetentionOption));
+          // This option has a value of 3 in the .proto file, but we expect it
+          // to be zeroed out in the generated descriptor since it has source
+          // retention.
+          Assert.AreEqual(0, proto.Options.GetExtension(
+              UnittestRetentionExtensions.SourceRetentionOption));
         }
 
         private static void TestDescriptorToProto(Func<IMessage> toProtoFunction, IMessage expectedProto)

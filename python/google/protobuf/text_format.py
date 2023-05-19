@@ -330,13 +330,12 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   if descriptor_pool is None:
     from google.protobuf import descriptor_pool as pool_mod
     descriptor_pool = pool_mod.Default()
-  from google.protobuf import symbol_database
-  database = symbol_database.Default()
+  from google.protobuf import message_factory
   try:
     message_descriptor = descriptor_pool.FindMessageTypeByName(type_name)
   except KeyError:
     return None
-  message_type = database.GetPrototype(message_descriptor)
+  message_type = message_factory.GetMessageClass(message_descriptor)
   return message_type()
 
 
@@ -859,9 +858,9 @@ class _Parser(object):
       str_lines = (
           line if isinstance(line, str) else line.decode('utf-8')
           for line in lines)
+      tokenizer = Tokenizer(str_lines)
     except UnicodeDecodeError as e:
-      raise self._StringParseError(e)
-    tokenizer = Tokenizer(str_lines)
+      raise ParseError from e
     if message:
       self.root_type = message.DESCRIPTOR.full_name
     while not tokenizer.AtEnd():
@@ -1255,15 +1254,10 @@ class _Parser(object):
     Raises:
       ParseError: In case an invalid field value is found.
     """
-    # String/bytes tokens can come in multiple adjacent string literals.
-    # If we can consume one, consume as many as we can.
-    if tokenizer.TryConsumeByteString():
-      while tokenizer.TryConsumeByteString():
-        pass
-      return
-
-    if (not tokenizer.TryConsumeIdentifier() and
-        not _TryConsumeInt64(tokenizer) and not _TryConsumeUint64(tokenizer) and
+    if (not tokenizer.TryConsumeByteString()and
+        not tokenizer.TryConsumeIdentifier() and
+        not _TryConsumeInt64(tokenizer) and
+        not _TryConsumeUint64(tokenizer) and
         not tokenizer.TryConsumeFloat()):
       raise ParseError('Invalid field value: ' + tokenizer.token)
 

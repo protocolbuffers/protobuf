@@ -37,7 +37,7 @@
 #include <cstring>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/cord_buffer.h"
 #include "absl/strings/string_view.h"
@@ -133,7 +133,7 @@ bool ZeroCopyOutputStream::WriteCord(const absl::Cord& cord) {
 
 bool ZeroCopyOutputStream::WriteAliasedRaw(const void* /* data */,
                                            int /* size */) {
-  GOOGLE_ABSL_LOG(FATAL) << "This ZeroCopyOutputStream doesn't support aliasing. "
+  ABSL_LOG(FATAL) << "This ZeroCopyOutputStream doesn't support aliasing. "
                      "Reaching here usually means a ZeroCopyOutputStream "
                      "implementation bug.";
   return false;

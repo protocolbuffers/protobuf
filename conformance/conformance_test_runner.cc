@@ -65,7 +65,7 @@
 #include <future>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
@@ -161,7 +161,7 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
 
   if (!TryRead(read_fd_, &len, sizeof(uint32_t))) {
     // We failed to read from the child, assume a crash and try to reap.
-    GOOGLE_ABSL_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
+    ABSL_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
 
     int status = 0;
     waitpid(child_pid_, &status, WEXITED);
@@ -183,7 +183,7 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
       absl::StrAppendFormat(&error_msg, "child killed by signal %d",
                             WTERMSIG(status));
     }
-    GOOGLE_ABSL_LOG(INFO) << error_msg;
+    ABSL_LOG(INFO) << error_msg;
     child_pid_ = -1;
 
     response_obj.SerializeToString(response);
@@ -312,10 +312,10 @@ void ForkPipeRunner::SpawnTestProgram() {
 
     std::vector<const char *> argv;
     argv.push_back(executable.get());
-    GOOGLE_ABSL_LOG(INFO) << argv[0];
+    ABSL_LOG(INFO) << argv[0];
     for (size_t i = 0; i < executable_args_.size(); ++i) {
       argv.push_back(executable_args_[i].c_str());
-      GOOGLE_ABSL_LOG(INFO) << executable_args_[i];
+      ABSL_LOG(INFO) << executable_args_[i];
     }
     argv.push_back(nullptr);
     // Never returns.
@@ -325,7 +325,7 @@ void ForkPipeRunner::SpawnTestProgram() {
 
 void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
   if (static_cast<size_t>(write(fd, buf, len)) != len) {
-    GOOGLE_ABSL_LOG(FATAL) << current_test_name_
+    ABSL_LOG(FATAL) << current_test_name_
                     << ": error writing to test program: " << strerror(errno);
   }
 }
@@ -343,7 +343,7 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
     if (performance_) {
       status = future.wait_for(std::chrono::seconds(5));
       if (status == std::future_status::timeout) {
-        GOOGLE_ABSL_LOG(ERROR) << current_test_name_ << ": timeout from test program";
+        ABSL_LOG(ERROR) << current_test_name_ << ": timeout from test program";
         kill(child_pid_, SIGQUIT);
         // TODO(sandyzhang): Only log in flag-guarded mode, since reading output
         // from SIGQUIT is slow and verbose.
@@ -356,7 +356,7 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
               read(fd, (void *)&err[err_ofs], err.size() - err_ofs);
           err_ofs += err_bytes_read;
         } while (err_bytes_read > 0 && err_ofs < err.size());
-        GOOGLE_ABSL_LOG(ERROR) << "child_pid_=" << child_pid_ << " SIGQUIT: \n"
+        ABSL_LOG(ERROR) << "child_pid_=" << child_pid_ << " SIGQUIT: \n"
                         << &err[0];
         return false;
       }
@@ -365,11 +365,11 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
     }
     ssize_t bytes_read = future.get();
     if (bytes_read == 0) {
-      GOOGLE_ABSL_LOG(ERROR) << current_test_name_
+      ABSL_LOG(ERROR) << current_test_name_
                       << ": unexpected EOF from test program";
       return false;
     } else if (bytes_read < 0) {
-      GOOGLE_ABSL_LOG(ERROR) << current_test_name_
+      ABSL_LOG(ERROR) << current_test_name_
                       << ": error reading from test program: "
                       << strerror(errno);
       return false;
@@ -384,7 +384,7 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
 
 void ForkPipeRunner::CheckedRead(int fd, void *buf, size_t len) {
   if (!TryRead(fd, buf, len)) {
-    GOOGLE_ABSL_LOG(FATAL) << current_test_name_
+    ABSL_LOG(FATAL) << current_test_name_
                     << ": error reading from test program: " << strerror(errno);
   }
 }

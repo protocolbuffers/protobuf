@@ -1098,7 +1098,11 @@ message TestHugeFieldNumbers {
     bytes oneof_bytes = 536870014;
   }
 
-  extensions  536860000 to 536869999;
+  extensions 530000000 to 536869999 [declaration = {
+    number: 536860000
+    full_name: ".objc.protobuf.tests.test_all_types"
+    type: ".objc.protobuf.tests.TestAllTypes"
+  }];
 }
 
 extend TestHugeFieldNumbers {

@@ -1,0 +1,86 @@
+name: C# Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+jobs:
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:3.1.415-6.0.100-508417e5215994ade7585d28ba3aad681a25fa5d
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: csharp_linux
+          bazel: test //csharp/... --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=/home/bazel
+
+  windows:
+    name: Windows
+    runs-on: windows-2019
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # v3.0.3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Build
+        run: dotnet build csharp/src/Google.Protobuf.sln
+
+      - name: Run Tests
+        run: dotnet test csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
+
+  linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Build protobuf C# tests under x86_64 docker image
+        # Tests are built "dotnet publish" because we want all the dependencies to the copied to the destination directory
+        # (we want to avoid references to ~/.nuget that won't be available in the subsequent docker run)
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -cex '
+            DOTNET_CLI_TELEMETRY_OPTOUT=true
+            DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+            dotnet publish -c Release -f net6.0 /workspace/csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj'
+
+      - name: Use an actual aarch64 docker image to run protobuf C# tests with an emulator
+        # "dotnet vstest" allows running tests from a pre-built project.
+        # * mount the protobuf root as /work to be able to access the crosscompiled files
+        # * to avoid running the process inside docker as root (which can pollute the workspace with files owned by root), we force
+        #   running under current user's UID and GID. To be able to do that, we need to provide a home directory for the user
+        #   otherwise the UID would be homeless under the docker container and pip install wouldn't work. For simplicity,
+        #   we just run map the user's home to a throwaway temporary directory
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim-arm64v8
+          skip-staleness-check: true
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -cex '
+            DOTNET_CLI_TELEMETRY_OPTOUT=true
+            DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+            dotnet vstest /workspace/csharp/src/Google.Protobuf.Test/bin/Release/net6.0/publish/Google.Protobuf.Test.dll'

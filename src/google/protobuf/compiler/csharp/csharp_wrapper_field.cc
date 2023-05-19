@@ -49,8 +49,8 @@ namespace csharp {
 WrapperFieldGenerator::WrapperFieldGenerator(const FieldDescriptor* descriptor,
                                        int presenceIndex, const Options *options)
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
-  variables_["has_property_check"] = name() + "_ != null";
-  variables_["has_not_property_check"] = name() + "_ == null";
+  variables_["has_property_check"] = absl::StrCat(name(), "_ != null");
+  variables_["has_not_property_check"] = absl::StrCat(name(), "_ == null");
   const FieldDescriptor* wrapped_field = descriptor->message_type()->field(0);
   is_value_type = wrapped_field->type() != FieldDescriptor::TYPE_STRING &&
       wrapped_field->type() != FieldDescriptor::TYPE_BYTES;

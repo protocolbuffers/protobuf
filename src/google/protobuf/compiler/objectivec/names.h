@@ -47,8 +47,8 @@ namespace compiler {
 namespace objectivec {
 
 // Get/Set the path to a file to load for objc class prefix lookups.
-PROTOC_EXPORT std::string GetPackageToPrefixMappingsPath();
-PROTOC_EXPORT void SetPackageToPrefixMappingsPath(const std::string& file_path);
+PROTOC_EXPORT absl::string_view GetPackageToPrefixMappingsPath();
+PROTOC_EXPORT void SetPackageToPrefixMappingsPath(absl::string_view file_path);
 // Get/Set if the proto package should be used to make the default prefix for
 // symbols. This will then impact most of the type naming apis below. It is done
 // as a global to not break any other generator reusing the methods since they
@@ -58,25 +58,25 @@ PROTOC_EXPORT void SetUseProtoPackageAsDefaultPrefix(bool on_or_off);
 // Get/Set the path to a file to load as exceptions when
 // `UseProtoPackageAsDefaultPrefix()` is `true`. An empty string means there
 // should be no exceptions.
-PROTOC_EXPORT std::string GetProtoPackagePrefixExceptionList();
+PROTOC_EXPORT absl::string_view GetProtoPackagePrefixExceptionList();
 PROTOC_EXPORT void SetProtoPackagePrefixExceptionList(
-    const std::string& file_path);
+    absl::string_view file_path);
 // Get/Set a prefix to add before the prefix generated from the package name.
 // This is only used when UseProtoPackageAsDefaultPrefix() is True.
-PROTOC_EXPORT std::string GetForcedPackagePrefix();
-PROTOC_EXPORT void SetForcedPackagePrefix(const std::string& prefix);
+PROTOC_EXPORT absl::string_view GetForcedPackagePrefix();
+PROTOC_EXPORT void SetForcedPackagePrefix(absl::string_view prefix);
 
 // Returns true if the name requires a ns_returns_not_retained attribute applied
 // to it.
-PROTOC_EXPORT bool IsRetainedName(const std::string& name);
+PROTOC_EXPORT bool IsRetainedName(absl::string_view name);
 
 // Returns true if the name starts with "init" and will need to have special
 // handling under ARC.
-PROTOC_EXPORT bool IsInitName(const std::string& name);
+PROTOC_EXPORT bool IsInitName(absl::string_view name);
 
 // Returns true if the name requires a cf_returns_not_retained attribute applied
 // to it.
-PROTOC_EXPORT bool IsCreateName(const std::string& name);
+PROTOC_EXPORT bool IsCreateName(absl::string_view name);
 
 // Gets the objc_class_prefix or the prefix made from the proto package.
 PROTOC_EXPORT std::string FileClassPrefix(const FileDescriptor* file);
@@ -110,7 +110,7 @@ PROTOC_EXPORT std::string EnumValueShortName(
     const EnumValueDescriptor* descriptor);
 
 // Reverse what an enum does.
-PROTOC_EXPORT std::string UnCamelCaseEnumShortName(const std::string& name);
+PROTOC_EXPORT std::string UnCamelCaseEnumShortName(absl::string_view name);
 
 // Returns the name to use for the extension (used as the method off the file's
 // Root class).
@@ -128,7 +128,7 @@ PROTOC_EXPORT std::string OneofNameCapitalized(
     const OneofDescriptor* descriptor);
 
 // Reverse of the above.
-PROTOC_EXPORT std::string UnCamelCaseFieldName(const std::string& name,
+PROTOC_EXPORT std::string UnCamelCaseFieldName(absl::string_view name,
                                                const FieldDescriptor* field);
 
 // The name the commonly used by the library when built as a framework.
@@ -137,7 +137,7 @@ extern PROTOC_EXPORT const char* const ProtobufLibraryFrameworkName;
 // Returns the CPP symbol name to use as the gate for framework style imports
 // for the given framework name to use.
 PROTOC_EXPORT std::string ProtobufFrameworkImportSymbol(
-    const std::string& framework_name);
+    absl::string_view framework_name);
 
 // ---------------------------------------------------------------------------
 

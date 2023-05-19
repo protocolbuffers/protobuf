@@ -1,0 +1,98 @@
+################################################################################
+# Protocol Buffers Compiler - Rust code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "rust",
+    srcs = ["generator.cc"],
+    hdrs = ["generator.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/rust",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        ":context",
+        ":message",
+        ":naming",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/cpp:names",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "message",
+    srcs = ["message.cc"],
+    hdrs = ["message.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/rust",
+    deps = [
+        ":accessors",
+        ":context",
+        ":naming",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler/cpp:names",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+    ],
+)
+
+cc_library(
+    name = "accessors",
+    srcs = [
+        "accessors/accessors.cc",
+        "accessors/singular_bytes.cc",
+        "accessors/singular_scalar.cc",
+    ],
+    hdrs = ["accessors/accessors.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/rust",
+    deps = [
+        ":context",
+        ":naming",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "context",
+    srcs = ["context.cc"],
+    hdrs = ["context.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/rust",
+    deps = [
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "naming",
+    srcs = ["naming.cc"],
+    hdrs = ["naming.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/rust",
+    deps = [
+        ":context",
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+    ],
+)

@@ -1,0 +1,139 @@
+name: Ruby Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Ruby 2.6, ruby: ruby-2.6.0, bazel: 5.1.1}
+          - { name: Ruby 2.7, ruby: ruby-2.7.0, bazel: 5.1.1}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, bazel: 5.1.1}
+          - { name: Ruby 3.1, ruby: ruby-3.1.0, bazel: 5.1.1}
+          - { name: Ruby 3.2, ruby: ruby-3.2.0, bazel: 5.1.1}
+          - { name: JRuby 9.2, ruby: jruby-9.2.20.1, bazel: 5.1.1}
+          - { name: JRuby 9.3, ruby: jruby-9.3.4.0, bazel: 5.1.1}
+          - { name: Ruby 2.6 (Bazel6), ruby: ruby-2.6.0, bazel: 6.0.0}
+          - { name: JRuby 9.2 (Bazel6), ruby: jruby-9.2.20.1, bazel: 6.0.0}
+
+    name: Linux ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        with:
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-{1}-508417e5215994ade7585d28ba3aad681a25fa5d', matrix.ruby, matrix.bazel) }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
+          bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION
+
+  linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Cross compile protoc for aarch64
+        id: cross-compile
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-aarch64
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v1
+        with:
+          image: arm64v8/ruby:2.7.3-buster
+          skip-staleness-check: true
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -cex '
+            gem install bundler;
+            cd /workspace/ruby;
+            bundle;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
+            rake clobber_package gem;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
+
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        # This is the full set of versions we support on MacOS.
+        version: [ "2.7", "3.0", "3.1", "3.2" ]
+
+    name: MacOS Ruby ${{ matrix.version }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Pin Ruby version
+        uses: ruby/setup-ruby@ee26e27437bde475b19a6bf8cb73c9fa658876a2 # v1.134.0
+        with:
+          ruby-version: ${{ matrix.version }}
+
+      - name: Validate version
+        run: ruby --version | grep ${{ matrix.version }} || (echo "Invalid Ruby version - $(ruby --version)" && exit 1)
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v1
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: ruby_macos/${{ matrix.version }}
+          bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }}
+
+  test_ruby_gems:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Ruby 2.6, ruby: ruby-2.6.0, bazel: 5.1.1}
+          - { name: Ruby 2.7, ruby: ruby-2.7.0, bazel: 5.1.1}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, bazel: 5.1.1}
+          - { name: Ruby 3.1, ruby: ruby-3.1.0, bazel: 5.1.1}
+          - { name: Ruby 3.2, ruby: ruby-3.2.0, bazel: 5.1.1}
+          - { name: JRuby 9.2, ruby: jruby-9.2.20.1, bazel: 5.1.1}
+          - { name: JRuby 9.3, ruby: jruby-9.3.4.0, bazel: 5.1.1}
+          - { name: Ruby 2.6 (Bazel6), ruby: ruby-2.6.0, bazel: 6.0.0}
+          - { name: JRuby 9.2 (Bazel6), ruby: jruby-9.2.20.1, bazel: 6.0.0}
+    name: Install ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-508417e5215994ade7585d28ba3aad681a25fa5d
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
+          bash: >
+            bazel --version;
+            ruby --version;
+            bazel build //ruby:release //:protoc $BAZEL_FLAGS;
+            gem install bazel-bin/ruby/google-protobuf-*;
+            bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto;
+            bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto;
+            ruby ruby/tests/basic.rb
+

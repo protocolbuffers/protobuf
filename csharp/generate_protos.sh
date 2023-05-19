@@ -50,7 +50,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # Note that this deliberately does *not* include old_extensions1.proto
 # and old_extensions2.proto, which are generated with an older version
 # of protoc.
-$PROTOC -Isrc -Icsharp/protos \
+$PROTOC -Isrc -I. \
     --experimental_allow_proto3_optional \
     --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \
     --csharp_opt=file_extension=.pb.cs \
@@ -73,9 +73,15 @@ $PROTOC -Isrc -Icsharp/protos \
     src/google/protobuf/unittest_well_known_types.proto \
     src/google/protobuf/test_messages_proto3.proto \
     src/google/protobuf/test_messages_proto2.proto \
-    src/google/protobuf/unittest_proto3_optional.proto
+    src/google/protobuf/unittest_proto3_optional.proto \
+    src/google/protobuf/unittest_retention.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
     --csharp_opt=file_extension=.pb.cs \
     examples/addressbook.proto
+
+# Conformance tests
+$PROTOC -I. --csharp_out=csharp/src/Google.Protobuf.Conformance \
+    --csharp_opt=file_extension=.pb.cs \
+    conformance/conformance.proto

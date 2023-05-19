@@ -56,8 +56,7 @@ class RepeatedFieldIter implements \Iterator
     /**
      * Create iterator instance for RepeatedField.
      *
-     * @param RepeatedField The RepeatedField instance for which this iterator
-     * is created.
+     * @param array $container
      * @ignore
      */
     public function __construct($container)

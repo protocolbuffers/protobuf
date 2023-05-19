@@ -2653,6 +2653,9 @@ public final class TestUtil {
       case FOO_LAZY_MESSAGE:
         Assert.assertTrue(message.hasFooLazyMessage());
         break;
+      case FOO_BYTES_CORD:
+        Assert.assertTrue(message.hasFooBytesCord());
+        break;
       case FOO_NOT_SET:
         break;
         // TODO(b/18683919): go/enum-switch-lsc

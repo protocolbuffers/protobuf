@@ -434,7 +434,7 @@ inline const char* ReadENUM(const char* ptr, E* value) {
   return ptr;
 }
 inline const char* ReadBOOL(const char* ptr, bool* value) {
-  *value = static_cast<bool>(ReadVarint32(&ptr));
+  *value = static_cast<bool>(ReadVarint64(&ptr));
   return ptr;
 }
 

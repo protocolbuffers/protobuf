@@ -33,7 +33,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/io/printer.h"
@@ -74,7 +74,7 @@ const char* PrimitiveTypeName(const FieldDescriptor* descriptor) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
@@ -108,7 +108,7 @@ const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
@@ -168,11 +168,12 @@ RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
 
   std::string base_name = PrimitiveArrayTypeName(descriptor);
   if (base_name.length()) {
-    variables_["array_storage_type"] = "GPB" + base_name + "Array";
+    variables_["array_storage_type"] = absl::StrCat("GPB", base_name, "Array");
   } else {
+    std::string storage_type = variables_["storage_type"];
     variables_["array_storage_type"] = "NSMutableArray";
     variables_["array_property_type"] =
-        "NSMutableArray<" + variables_["storage_type"] + "*>";
+        absl::StrCat("NSMutableArray<", storage_type, "*>");
   }
 }
 

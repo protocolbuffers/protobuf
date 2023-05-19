@@ -67,11 +67,7 @@ struct Options {
   std::string annotation_guard_name;
   FieldListenerOptions field_listener_options;
   EnforceOptimizeMode enforce_mode = EnforceOptimizeMode::kNoEnforcement;
-  enum {
-    kTCTableNever,
-    kTCTableGuarded,
-    kTCTableAlways
-  } tctable_mode = kTCTableNever;
+  enum { kTCTableNever, kTCTableAlways } tctable_mode = kTCTableAlways;
   int num_cc_files = 0;
   bool safe_boundary_check = false;
   bool proto_h = false;
@@ -81,7 +77,6 @@ struct Options {
   bool bootstrap = false;
   bool opensource_runtime = false;
   bool annotate_accessor = false;
-  bool unused_field_stripping = false;
   bool unverified_lazy_message_sets = false;
   bool profile_driven_inline_string = true;
   bool force_split = false;

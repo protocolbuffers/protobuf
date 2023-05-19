@@ -53,6 +53,7 @@ cmp = lambda x, y: (x > y) - (x < y)
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
 from google.protobuf.internal import encoder
 from google.protobuf.internal import more_extensions_pb2
+from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
@@ -495,6 +496,10 @@ class MessageTest(unittest.TestCase):
 
     msg.repeated_nested_message.MergeFrom(other_msg.repeated_nested_message)
     self.assertEqual([1, 2, 3, 4], [m.bb for m in msg.repeated_nested_message])
+
+  def testInternalMergeWithMissingRequiredField(self, message_module):
+    req = more_messages_pb2.RequiredField()
+    more_messages_pb2.RequiredWrapper(request=req)
 
   def testAddWrongRepeatedNestedField(self, message_module):
     msg = message_module.TestAllTypes()
@@ -1368,6 +1373,33 @@ class Proto2Test(unittest.TestCase):
         123,
         msg1.submessage.Extensions[more_extensions_pb2.optional_int_extension])
 
+  def testCopyFromAll(self):
+    message = unittest_pb2.TestAllTypes()
+    test_util.SetAllFields(message)
+    copy = unittest_pb2.TestAllTypes()
+    copy.CopyFrom(message)
+    self.assertEqual(message, copy)
+    message.repeated_nested_message.add().bb = 123
+    self.assertNotEqual(message, copy)
+
+  def testCopyFromAllExtensions(self):
+    all_set = unittest_pb2.TestAllExtensions()
+    test_util.SetAllExtensions(all_set)
+    copy =  unittest_pb2.TestAllExtensions()
+    copy.CopyFrom(all_set)
+    self.assertEqual(all_set, copy)
+    all_set.Extensions[unittest_pb2.repeatedgroup_extension].add().a = 321
+    self.assertNotEqual(all_set, copy)
+
+  def testCopyFromAllPackedExtensions(self):
+    all_set = unittest_pb2.TestPackedExtensions()
+    test_util.SetAllPackedExtensions(all_set)
+    copy =  unittest_pb2.TestPackedExtensions()
+    copy.CopyFrom(all_set)
+    self.assertEqual(all_set, copy)
+    all_set.Extensions[unittest_pb2.packed_float_extension].extend([61.0, 71.0])
+    self.assertNotEqual(all_set, copy)
+
   def testGoldenExtensions(self):
     golden_data = test_util.GoldenFileData('golden_message')
     golden_message = unittest_pb2.TestAllExtensions()
@@ -1377,7 +1409,11 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(all_set, golden_message)
     self.assertEqual(golden_data, golden_message.SerializeToString())
     golden_copy = copy.deepcopy(golden_message)
-    self.assertEqual(golden_data, golden_copy.SerializeToString())
+    self.assertEqual(golden_message, golden_copy)
+    # Depend on a specific serialization order for extensions is not
+    # reasonable to guarantee.
+    if api_implementation.Type() != 'upb':
+      self.assertEqual(golden_data, golden_copy.SerializeToString())
 
   def testGoldenPackedExtensions(self):
     golden_data = test_util.GoldenFileData('golden_packed_fields_message')
@@ -1388,7 +1424,11 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(all_set, golden_message)
     self.assertEqual(golden_data, all_set.SerializeToString())
     golden_copy = copy.deepcopy(golden_message)
-    self.assertEqual(golden_data, golden_copy.SerializeToString())
+    self.assertEqual(golden_message, golden_copy)
+    # Depend on a specific serialization order for extensions is not
+    # reasonable to guarantee.
+    if api_implementation.Type() != 'upb':
+      self.assertEqual(golden_data, golden_copy.SerializeToString())
 
   def testPickleIncompleteProto(self):
     golden_message = unittest_pb2.TestRequired(a=1)

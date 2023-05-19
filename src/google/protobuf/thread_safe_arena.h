@@ -55,13 +55,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// Tag type used to invoke the constructor of message-owned arena.
-// Only message-owned arenas use this constructor for creation.
-// Such constructors are internal implementation details of the library.
-struct MessageOwned {
-  explicit MessageOwned() = default;
-};
-
 // This class provides the core Arena memory allocation library. Different
 // implementations only need to implement the public interface below.
 // Arena is not a template type as that would only be useful if all protos
@@ -71,9 +64,6 @@ struct MessageOwned {
 class PROTOBUF_EXPORT ThreadSafeArena {
  public:
   ThreadSafeArena();
-
-  // Constructor solely used by message-owned arena.
-  explicit ThreadSafeArena(internal::MessageOwned);
 
   ThreadSafeArena(char* mem, size_t size);
 
@@ -134,10 +124,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
-  // Checks whether this arena is message-owned.
-  PROTOBUF_ALWAYS_INLINE bool IsMessageOwned() const {
-    return tag_and_id_ & kMessageOwnedArena;
-  }
+  void* AllocateFromStringBlock();
+
+  std::vector<void*> PeekCleanupListForTesting();
 
  private:
   friend class ArenaBenchmark;
@@ -183,9 +172,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // user-provided initial block.
   SerialArena first_arena_;
 
-  // The LSB of tag_and_id_ indicates if the arena is message-owned.
-  enum : uint64_t { kMessageOwnedArena = 1 };
-
   static_assert(std::is_trivially_destructible<SerialArena>{},
                 "SerialArena needs to be trivially destructible.");
 
@@ -200,10 +186,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   void CleanupList();
 
   inline void CacheSerialArena(SerialArena* serial) {
-    if (!IsMessageOwned()) {
-      thread_cache().last_serial_arena = serial;
-      thread_cache().last_lifecycle_id_seen = tag_and_id_;
-    }
+    thread_cache().last_serial_arena = serial;
+    thread_cache().last_lifecycle_id_seen = tag_and_id_;
   }
 
   PROTOBUF_NDEBUG_INLINE bool GetSerialArenaFast(SerialArena** arena) {
@@ -221,6 +205,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Finds SerialArena or creates one if not found. When creating a new one,
   // create a big enough block to accommodate n bytes.
   SerialArena* GetSerialArenaFallback(size_t n);
+
+  SerialArena* GetSerialArena();
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAlignedFallback(size_t n);
@@ -242,7 +228,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before
   // deleting.
-  SerialArena::Memory Free(size_t* space_allocated);
+  SizedPtr Free(size_t* space_allocated);
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4324)
@@ -269,8 +255,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #pragma warning(disable : 4324)
 #endif
   using LifecycleId = uint64_t;
-  ABSL_CONST_INIT alignas(
-      kCacheAlignment) static std::atomic<LifecycleId> lifecycle_id_;
+  alignas(kCacheAlignment) ABSL_CONST_INIT
+      static std::atomic<LifecycleId> lifecycle_id_;
 #if defined(PROTOBUF_NO_THREADLOCAL)
   // iOS does not support __thread keyword so we use a custom thread local
   // storage class we implemented.
@@ -280,7 +266,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // wrap them in static functions.
   static ThreadCache& thread_cache();
 #else
-  ABSL_CONST_INIT static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
+  PROTOBUF_CONSTINIT static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
   static ThreadCache& thread_cache() { return thread_cache_; }
 #endif
 

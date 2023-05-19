@@ -92,4 +92,4 @@ def MakeClass(descriptor):
   # Original implementation leads to duplicate message classes, which won't play
   # well with extensions. Message factory info is also missing.
   # Redirect to message_factory.
-  return symbol_database.Default().GetPrototype(descriptor)
+  return message_factory.GetMessageClass(descriptor)

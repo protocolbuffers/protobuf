@@ -1,0 +1,55 @@
+# Copyright 2022 Google LLC
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+exports_files(["LICENSE"])
+
+# TODO(b/252876197) Remove this once callers have been Bazelified.
+filegroup(
+    name = "utf8_range_srcs",
+    srcs = [
+        "naive.c",
+        "range2-neon.c",
+        "range2-sse.c",
+        "utf8_range.h",
+    ],
+    visibility = [
+        "@com_google_protobuf//:__subpackages__",
+        "@upb//:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "utf8_range",
+    srcs = [
+        "naive.c",
+        "range2-neon.c",
+        "range2-sse.c",
+    ],
+    hdrs = ["utf8_range.h"],
+)
+
+cc_library(
+    name = "utf8_validity",
+    srcs = ["utf8_validity.cc"],
+    hdrs = ["utf8_validity.h"],
+    deps = [
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "utf8_validity_test",
+    srcs = ["utf8_validity_test.cc"],
+    deps = [
+        ":utf8_validity",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

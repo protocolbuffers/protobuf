@@ -38,13 +38,14 @@
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/port.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/port_def.inc"
+#include "google/protobuf/stubs/common.h"
 
 namespace google {
 namespace protobuf {
@@ -85,11 +86,11 @@ int GetFixedSize(FieldDescriptor::Type type);
 
 // Note that we wouldn't normally want to export this (we're not expecting
 // it to be used outside libprotoc itself) but this exposes it for testing.
-std::string PROTOC_EXPORT GetEnumValueName(const std::string& enum_name,
-                                           const std::string& enum_value_name);
+std::string PROTOC_EXPORT GetEnumValueName(absl::string_view enum_name,
+                                           absl::string_view enum_value_name);
 
 // TODO(jtattermusch): perhaps we could move this to strutil
-std::string StringToBase64(const std::string& input);
+std::string StringToBase64(absl::string_view input);
 
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 
@@ -139,28 +140,16 @@ inline bool IsWrapperType(const FieldDescriptor* descriptor) {
       descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
 }
 
-inline bool IsProto2(const FileDescriptor* descriptor) {
-  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
-}
-
 inline bool SupportsPresenceApi(const FieldDescriptor* descriptor) {
   // Unlike most languages, we don't generate Has/Clear members for message
   // types, because they can always be set to null in C#. They're not really
   // needed for oneof fields in proto2 either, as everything can be done via
-  // oneof case, but we follow the convention from other languages. Proto3
-  // oneof fields never have Has/Clear members - but will also never have
-  // the explicit optional keyword either.
-  //
-  // None of the built-in helpers (descriptor->has_presence() etc) describe
-  // quite the behavior we want, so the rules are explicit below.
-
-  if (descriptor->is_repeated() ||
-      descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
+  // oneof case, but we follow the convention from other languages.
+  if (descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
     return false;
   }
-  // has_optional_keyword() has more complex rules for proto2, but that
-  // doesn't matter given the first part of this condition.
-  return IsProto2(descriptor->file()) || descriptor->has_optional_keyword();
+
+  return descriptor->has_presence();
 }
 
 inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {

@@ -43,7 +43,7 @@
 #include <utility>
 
 #include "absl/algorithm/container.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -184,7 +184,7 @@ absl::Status JsonLexer::SkipValue() {
   // Some compilers seem to fail to realize this is a basic block
   // terminator and incorrectly believe this function is missing
   // a return.
-  GOOGLE_ABSL_CHECK(false) << "unreachable";
+  ABSL_CHECK(false) << "unreachable";
   return absl::OkStatus();
 }
 

@@ -42,6 +42,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -192,10 +193,10 @@ typedef GeneratorContext OutputDirectory;
 // parses to the pairs:
 //   ("foo", "bar"), ("baz", ""), ("moo", "corge")
 PROTOC_EXPORT void ParseGeneratorParameter(
-    const std::string&, std::vector<std::pair<std::string, std::string> >*);
+    absl::string_view, std::vector<std::pair<std::string, std::string> >*);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
-PROTOC_EXPORT std::string StripProto(const std::string& filename);
+PROTOC_EXPORT std::string StripProto(absl::string_view filename);
 
 }  // namespace compiler
 }  // namespace protobuf

@@ -45,10 +45,7 @@ import java.util.RandomAccess;
 final class LongArrayList extends AbstractProtobufList<Long>
     implements LongList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final LongArrayList EMPTY_LIST = new LongArrayList(new long[0], 0);
-  static {
-    EMPTY_LIST.makeImmutable();
-  }
+  private static final LongArrayList EMPTY_LIST = new LongArrayList(new long[0], 0, false);
 
   public static LongArrayList emptyList() {
     return EMPTY_LIST;
@@ -65,14 +62,15 @@ final class LongArrayList extends AbstractProtobufList<Long>
 
   /** Constructs a new mutable {@code LongArrayList} with default capacity. */
   LongArrayList() {
-    this(new long[DEFAULT_CAPACITY], 0);
+    this(new long[DEFAULT_CAPACITY], 0, true);
   }
 
   /**
    * Constructs a new mutable {@code LongArrayList} containing the same elements as {@code other}.
    */
-  private LongArrayList(long[] other, int size) {
-    array = other;
+  private LongArrayList(long[] other, int size, boolean isMutable) {
+    super(isMutable);
+    this.array = other;
     this.size = size;
   }
 
@@ -125,7 +123,7 @@ final class LongArrayList extends AbstractProtobufList<Long>
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
-    return new LongArrayList(Arrays.copyOf(array, capacity), size);
+    return new LongArrayList(Arrays.copyOf(array, capacity), size, true);
   }
 
   @Override

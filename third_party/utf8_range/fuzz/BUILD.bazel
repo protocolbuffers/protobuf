@@ -1,0 +1,9 @@
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+
+cc_fuzz_test(
+    name = "utf8_validity_fuzzer",
+    testonly = 1,
+    srcs = ["utf8_validity_fuzzer.cc"],
+    dicts = ["utf8_fuzzer.dict"],
+    deps = ["//:utf8_validity"],
+)

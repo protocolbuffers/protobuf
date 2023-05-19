@@ -459,24 +459,17 @@ static VALUE Map_has_key(VALUE _self, VALUE key) {
  */
 static VALUE Map_delete(VALUE _self, VALUE key) {
   Map* self = ruby_to_Map(_self);
+  rb_check_frozen(_self);
+
   upb_MessageValue key_upb =
       Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
   upb_MessageValue val_upb;
-  VALUE ret;
 
-  rb_check_frozen(_self);
-
-  // TODO(haberman): make upb_Map_Delete() also capable of returning the deleted
-  // value.
-  if (upb_Map_Get(self->map, key_upb, &val_upb)) {
-    ret = Convert_UpbToRuby(val_upb, self->value_type_info, self->arena);
+  if (upb_Map_Delete(self->map, key_upb, &val_upb)) {
+    return Convert_UpbToRuby(val_upb, self->value_type_info, self->arena);
   } else {
-    ret = Qnil;
+    return Qnil;
   }
-
-  upb_Map_Delete(Map_GetMutable(_self), key_upb);
-
-  return ret;
 }
 
 /*

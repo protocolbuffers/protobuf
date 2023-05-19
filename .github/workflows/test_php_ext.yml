@@ -1,0 +1,73 @@
+name: PHP Extension Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
+jobs:
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Package extension
+        uses: protocolbuffers/protobuf-ci/bazel@v1
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: php_ext/${{ matrix.version }}
+          bash: >
+            bazel build //php:release $BAZEL_FLAGS;
+            cp bazel-bin/php/protobuf-*.tgz .
+
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        with:
+          name: protobuf-php-release
+          path: protobuf-*.tgz
+
+  build:
+    needs: [package]
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - php-image: php:7.4-cli
+            version: "7.4"
+          - php-image: php:8.1-cli
+            version: "8.1"
+          - php-image: php:8.2-cli
+            version: "8.2"
+    name: Build ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.php-image }}
+    steps:
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        with:
+          name: protobuf-php-release
+      - name: Compile extension
+        run: |
+          cd /tmp
+          MAKE="make -j$(nproc)" pecl install $GITHUB_WORKSPACE/protobuf-*.tgz
+      - name: Enable extension
+        run: docker-php-ext-enable protobuf
+      - name: Check for PHP startup warnings
+        run: |
+          php -d display_errors=stderr -d display_startup_errors=1 -d error_reporting=-1 -r ';' 2>/tmp/protobuf-warnings
+          if [ -s /tmp/protobuf-warnings ]; then
+            echo 'The PHP extension was successfully installed, but PHP raised these warnings:' >&2
+            cat /tmp/protobuf-warnings >&2
+            exit 1
+          fi
+          echo "PHP didn't raise any warnings at startup."
+      - name: Inspect extension
+        run: php --ri protobuf

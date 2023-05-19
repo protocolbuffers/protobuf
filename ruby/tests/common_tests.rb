@@ -701,6 +701,15 @@ module CommonTests
     assert m.repeated_msg[0].object_id != m2.repeated_msg[0].object_id
   end
 
+  def test_sub_message_deep_copy # regression test for issue 12505
+    m = proto_module::Foo.new(bar: proto_module::Bar.new(msg: "Hello World"))
+    m2 = Google::Protobuf.deep_copy(m)
+    assert_equal(m, m2)
+    assert_not_equal(m.object_id, m2.object_id)
+    assert_equal(m.bar, m2.bar)
+    assert_not_equal(m.bar.object_id, m2.bar.object_id)
+  end
+
   def test_message_eq
     m = proto_module::TestMessage.new(:optional_int32 => 42,
                                       :repeated_int32 => [1, 2, 3])
@@ -824,7 +833,7 @@ module CommonTests
                                       :repeated_enum => [:A, :B, :C],
                                       :repeated_msg => [proto_module::TestMessage2.new(:foo => 1),
                                                         proto_module::TestMessage2.new(:foo => 2)])
-    if proto_module == ::BasicTest
+    if proto_module.class.name == "BasicTest"
       # For proto3 we can add an unknown enum value safely.
       m.repeated_enum << 100
     end

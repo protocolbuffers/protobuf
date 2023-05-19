@@ -38,15 +38,14 @@
 
 #include <cstddef>
 #include <functional>
-#include <map>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -175,7 +174,12 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
   for (absl::string_view line_text : absl::StrSplit(format_string, '\n')) {
     if (format.is_raw_string) {
       size_t comment_index = line_text.find(options_.ignored_comment_start);
-      line_text = line_text.substr(0, comment_index);
+      if (comment_index != absl::string_view::npos) {
+        line_text = line_text.substr(0, comment_index);
+        if (absl::StripLeadingAsciiWhitespace(line_text).empty()) {
+          continue;
+        }
+      }
     }
 
     size_t line_indent = 0;
@@ -287,10 +291,10 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
 
 absl::string_view Printer::LookupVar(absl::string_view var) {
   auto result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
-  GOOGLE_ABSL_CHECK(result.has_value()) << "could not find " << var;
+  ABSL_CHECK(result.has_value()) << "could not find " << var;
 
   auto* view = result->AsString();
-  GOOGLE_ABSL_CHECK(view != nullptr)
+  ABSL_CHECK(view != nullptr)
       << "could not find " << var << "; found callback instead";
 
   return *view;
@@ -300,9 +304,9 @@ bool Printer::Validate(bool cond, Printer::PrintOptions opts,
                        absl::FunctionRef<std::string()> message) {
   if (!cond) {
     if (opts.checks_are_debug_only) {
-      GOOGLE_ABSL_LOG(DFATAL) << message();
+      ABSL_DLOG(FATAL) << message();
     } else {
-      GOOGLE_ABSL_LOG(FATAL) << message();
+      ABSL_LOG(FATAL) << message();
     }
   }
   return cond;
@@ -314,7 +318,7 @@ bool Printer::Validate(bool cond, Printer::PrintOptions opts,
 }
 
 // This function is outlined to isolate the use of
-// GOOGLE_ABSL_CHECK into the .cc file.
+// ABSL_CHECK into the .cc file.
 void Printer::Outdent() {
   PrintOptions opts;
   opts.checks_are_debug_only = true;
@@ -325,7 +329,7 @@ void Printer::Outdent() {
   indent_ -= options_.spaces_per_indent;
 }
 
-void Printer::Emit(std::initializer_list<Sub> vars, absl::string_view format,
+void Printer::Emit(absl::Span<const Sub> vars, absl::string_view format,
                    SourceLocation loc) {
   PrintOptions opts;
   opts.strip_raw_string_indentation = true;
@@ -338,7 +342,7 @@ void Printer::Emit(std::initializer_list<Sub> vars, absl::string_view format,
 
 absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
     absl::string_view varname, PrintOptions opts) {
-  auto it = substitutions_.find(std::string(varname));
+  auto it = substitutions_.find(varname);
   if (!Validate(it != substitutions_.end(), opts, [varname] {
         return absl::StrCat("undefined variable in annotation: ", varname);
       })) {
@@ -360,7 +364,8 @@ absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
 void Printer::Annotate(absl::string_view begin_varname,
                        absl::string_view end_varname,
                        absl::string_view file_path,
-                       const std::vector<int>& path) {
+                       const std::vector<int>& path,
+                       absl::optional<AnnotationCollector::Semantic> semantic) {
   if (options_.annotation_collector == nullptr) {
     return;
   }
@@ -373,12 +378,12 @@ void Printer::Annotate(absl::string_view begin_varname,
     return;
   }
   if (begin->first > end->second) {
-    GOOGLE_ABSL_LOG(DFATAL) << "annotation has negative length from " << begin_varname
+    ABSL_DLOG(FATAL) << "annotation has negative length from " << begin_varname
                      << " to " << end_varname;
     return;
   }
-  options_.annotation_collector->AddAnnotation(begin->first, end->second,
-                                               std::string(file_path), path);
+  options_.annotation_collector->AddAnnotation(
+      begin->first, end->second, std::string(file_path), path, semantic);
 }
 
 void Printer::WriteRaw(const char* data, size_t size) {
@@ -395,8 +400,9 @@ void Printer::WriteRaw(const char* data, size_t size) {
     // Fix up empty variables (e.g., "{") that should be annotated as
     // coming after the indent.
     for (const std::string& var : line_start_variables_) {
-      substitutions_[var].first += indent_;
-      substitutions_[var].second += indent_;
+      auto& pair = substitutions_[var];
+      pair.first += indent_;
+      pair.second += indent_;
     }
   }
 
@@ -631,7 +637,7 @@ void Printer::PrintImpl(absl::string_view format,
           if (options_.annotation_collector != nullptr) {
             options_.annotation_collector->AddAnnotation(
                 record_var.second, sink_.bytes_written(), record->file_path,
-                record->path);
+                record->path, record->semantic);
           }
         }
 
@@ -691,14 +697,14 @@ void Printer::PrintImpl(absl::string_view format,
         }
       } else {
         const ValueView::Callback* fnc = sub->AsCallback();
-        GOOGLE_ABSL_CHECK(fnc != nullptr);
+        ABSL_CHECK(fnc != nullptr);
 
         Validate(
             prefix.empty() && suffix.empty(), opts,
             "substitution that resolves to callback cannot contain whitespace");
 
         range_start = sink_.bytes_written();
-        GOOGLE_ABSL_CHECK((*fnc)())
+        ABSL_CHECK((*fnc)())
             << "recursive call encountered while evaluating \"" << var << "\"";
         range_end = sink_.bytes_written();
       }
@@ -743,12 +749,12 @@ void Printer::PrintImpl(absl::string_view format,
           options_.annotation_collector != nullptr) {
         options_.annotation_collector->AddAnnotation(
             range_start, range_end, same_name_record->file_path,
-            same_name_record->path);
+            same_name_record->path, same_name_record->semantic);
       }
 
       if (opts.use_substitution_map) {
-        auto insertion = substitutions_.emplace(
-            std::string(var), std::make_pair(range_start, range_end));
+        auto insertion =
+            substitutions_.emplace(var, std::make_pair(range_start, range_end));
 
         if (!insertion.second) {
           // This variable was used multiple times.

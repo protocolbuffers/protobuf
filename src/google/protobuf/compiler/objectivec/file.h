@@ -89,18 +89,23 @@ class FileGenerator {
 
   void GenerateGlobalSource(io::Printer* p) const;
   void GenerateSourceForMessage(int idx, io::Printer* p) const;
-  void GenerateSourceForEnum(int idx, io::Printer* p) const;
+  void GenerateSourceForEnums(io::Printer* p) const;
 
  private:
   enum class GeneratedFileType : int { kHeader, kSource };
+  struct GeneratedFileOptions {
+    std::vector<std::string> ignored_warnings;
+    std::vector<const FileDescriptor*> extra_files_to_import;
+    std::vector<std::string> extra_system_headers;
+  };
 
   void GenerateFile(io::Printer* p, GeneratedFileType file_type,
-                    const std::vector<std::string>& ignored_warnings,
-                    const std::vector<const FileDescriptor*>& extra_files,
+                    const GeneratedFileOptions& file_options,
                     std::function<void()> body) const;
   void GenerateFile(io::Printer* p, GeneratedFileType file_type,
                     std::function<void()> body) const {
-    GenerateFile(p, file_type, {}, {}, body);
+    GeneratedFileOptions file_options;
+    GenerateFile(p, file_type, file_options, body);
   }
 
   void PrintRootImplementation(
@@ -109,7 +114,7 @@ class FileGenerator {
   void PrintRootExtensionRegistryImplementation(
       io::Printer* p,
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
-  void PrintFileDescriptorImplementation(io::Printer* p) const;
+  void PrintFileDescription(io::Printer* p) const;
 
   bool HeadersUseForwardDeclarations() const {
     // The bundled protos (WKTs) don't make use of forward declarations.
@@ -121,6 +126,7 @@ class FileGenerator {
   const GenerationOptions& generation_options_;
   mutable CommonState* common_state_;
   const std::string root_class_name_;
+  const std::string file_description_name_;
   const bool is_bundled_proto_;
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;

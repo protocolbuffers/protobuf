@@ -44,11 +44,10 @@ package protobuf_unittest_import_proto2;
 
 option optimize_for = SPEED;
 option cc_enable_arenas = true;
-
 option csharp_namespace = "Google.Protobuf.TestProtos.Proto2";
 
 // Test public import
-import public "unittest_import_public.proto";
+import public "csharp/protos/unittest_import_public.proto";
 
 message ImportMessage {
   optional int32 d = 1;
@@ -59,7 +58,6 @@ enum ImportEnum {
   IMPORT_BAR = 8;
   IMPORT_BAZ = 9;
 }
-
 
 // To use an enum in a map, it must has the first value as 0.
 enum ImportEnumForMap {

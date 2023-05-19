@@ -55,11 +55,39 @@ enum Proto2MapEnumPlusExtra {
 message TestEnumMap {
   map<int32, Proto2MapEnum> known_map_field = 101;
   map<int32, Proto2MapEnum> unknown_map_field = 102;
+
+  // Other maps with all key types to test the unknown entry serialization
+  map<int64, Proto2MapEnum> unknown_map_field_int64 = 200;
+  map<uint64, Proto2MapEnum> unknown_map_field_uint64 = 201;
+  map<int32, Proto2MapEnum> unknown_map_field_int32 = 202;
+  map<uint32, Proto2MapEnum> unknown_map_field_uint32 = 203;
+  map<fixed32, Proto2MapEnum> unknown_map_field_fixed32 = 204;
+  map<fixed64, Proto2MapEnum> unknown_map_field_fixed64 = 205;
+  map<bool, Proto2MapEnum> unknown_map_field_bool = 206;
+  map<string, Proto2MapEnum> unknown_map_field_string = 207;
+  map<sint32, Proto2MapEnum> unknown_map_field_sint32 = 208;
+  map<sint64, Proto2MapEnum> unknown_map_field_sint64 = 209;
+  map<sfixed32, Proto2MapEnum> unknown_map_field_sfixed32 = 210;
+  map<sfixed64, Proto2MapEnum> unknown_map_field_sfixed64 = 211;
 }
 
 message TestEnumMapPlusExtra {
   map<int32, Proto2MapEnumPlusExtra> known_map_field = 101;
   map<int32, Proto2MapEnumPlusExtra> unknown_map_field = 102;
+
+  // Other maps with all key types to test the unknown entry serialization
+  map<int64, Proto2MapEnumPlusExtra> unknown_map_field_int64 = 200;
+  map<uint64, Proto2MapEnumPlusExtra> unknown_map_field_uint64 = 201;
+  map<int32, Proto2MapEnumPlusExtra> unknown_map_field_int32 = 202;
+  map<uint32, Proto2MapEnumPlusExtra> unknown_map_field_uint32 = 203;
+  map<fixed32, Proto2MapEnumPlusExtra> unknown_map_field_fixed32 = 204;
+  map<fixed64, Proto2MapEnumPlusExtra> unknown_map_field_fixed64 = 205;
+  map<bool, Proto2MapEnumPlusExtra> unknown_map_field_bool = 206;
+  map<string, Proto2MapEnumPlusExtra> unknown_map_field_string = 207;
+  map<sint32, Proto2MapEnumPlusExtra> unknown_map_field_sint32 = 208;
+  map<sint64, Proto2MapEnumPlusExtra> unknown_map_field_sint64 = 209;
+  map<sfixed32, Proto2MapEnumPlusExtra> unknown_map_field_sfixed32 = 210;
+  map<sfixed64, Proto2MapEnumPlusExtra> unknown_map_field_sfixed64 = 211;
 }
 
 message TestImportEnumMap {
@@ -89,4 +117,9 @@ message TestMaps {
 // Test maps in submessages.
 message TestSubmessageMaps {
   optional TestMaps m = 1;
+}
+
+message TestProto2BytesMap {
+  map<int32, bytes> map_bytes = 1;
+  map<int32, string> map_string = 2;
 }

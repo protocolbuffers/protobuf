@@ -608,6 +608,23 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse('{"value": null}', message)
     self.assertEqual(message.value.WhichOneof('kind'), 'null_value')
 
+  def testValueMessageErrors(self):
+    message = json_format_proto3_pb2.TestValue()
+    message.value.number_value = math.inf
+    with self.assertRaises(json_format.SerializeToJsonError) as cm:
+      json_format.MessageToJson(message)
+    self.assertEqual(
+        'Failed to serialize value field: Fail to serialize Infinity for '
+        'Value.number_value, which would parse as string_value.',
+        str(cm.exception))
+    message.value.number_value = math.nan
+    with self.assertRaises(json_format.SerializeToJsonError) as cm:
+      json_format.MessageToJson(message)
+    self.assertEqual(
+        'Failed to serialize value field: Fail to serialize NaN for '
+        'Value.number_value, which would parse as string_value.',
+        str(cm.exception))
+
   def testListValueMessage(self):
     message = json_format_proto3_pb2.TestListValue()
     message.value.values.add().number_value = 11.1
@@ -1043,7 +1060,7 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidTimestamp(self):
     message = json_format_proto3_pb2.TestTimestamp()
     text = '{"value": "10000-01-01T00:00:00.00Z"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError, 'Failed to parse value field: '
         'time data \'10000-01-01T00:00:00\' does not match'
         ' format \'%Y-%m-%dT%H:%M:%S\' at TestTimestamp.value.',
@@ -1080,7 +1097,7 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidOneof(self):
     message = json_format_proto3_pb2.TestOneof()
     text = '{"oneofInt32Value": 1, "oneofStringValue": "2"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError, 'Message type "proto3.TestOneof"'
         ' should not have multiple "oneof_value" oneof fields at "TestOneof".',
         json_format.Parse, text, message)

@@ -58,7 +58,7 @@ CF_EXTERN_C_BEGIN
 // These two are used to inject a runtime check for version mismatch into the
 // generated sources to make sure they are linked with a supporting runtime.
 void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion);
-GPB_INLINE void GPB_DEBUG_CHECK_RUNTIME_VERSIONS() {
+GPB_INLINE void GPB_DEBUG_CHECK_RUNTIME_VERSIONS(void) {
   // NOTE: By being inline here, this captures the value from the library's
   // headers at the time the generated code was compiled.
 #if defined(DEBUG) && DEBUG
@@ -66,10 +66,16 @@ GPB_INLINE void GPB_DEBUG_CHECK_RUNTIME_VERSIONS() {
 #endif
 }
 
+// Helper called within the library when the runtime detects something that
+// indicates a older runtime is being used with newer generated code. Normally
+// GPB_DEBUG_CHECK_RUNTIME_VERSIONS() gates this with a better message; this
+// is just a final safety net to prevent otherwise hard to diagnose errors.
+void GPBRuntimeMatchFailure(void);
+
 // Legacy version of the checks, remove when GOOGLE_PROTOBUF_OBJC_GEN_VERSION
 // goes away (see more info in GPBBootstrap.h).
 void GPBCheckRuntimeVersionInternal(int32_t version);
-GPB_INLINE void GPBDebugCheckRuntimeVersion() {
+GPB_INLINE void GPBDebugCheckRuntimeVersion(void) {
 #if defined(DEBUG) && DEBUG
   GPBCheckRuntimeVersionInternal(GOOGLE_PROTOBUF_OBJC_GEN_VERSION);
 #endif

@@ -219,13 +219,13 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     public function offsetUnset($offset)
     {
         $count = count($this->container);
-        if (!is_numeric($offset) || $count === 0 || $offset !== $count - 1) {
+        if (!is_numeric($offset) || $count === 0 || $offset < 0 || $offset >= $count) {
             trigger_error(
                 "Cannot remove element at the given index",
                 E_USER_ERROR);
             return;
         }
-        array_pop($this->container);
+        array_splice($this->container, $offset, 1);
     }
 
     /**

@@ -39,9 +39,9 @@ namespace Google.Protobuf.Compiler {
             "IAEoCRIPCgdjb250ZW50GA8gASgJEj8KE2dlbmVyYXRlZF9jb2RlX2luZm8Y",
             "ECABKAsyIi5nb29nbGUucHJvdG9idWYuR2VuZXJhdGVkQ29kZUluZm8iOAoH",
             "RmVhdHVyZRIQCgxGRUFUVVJFX05PTkUQABIbChdGRUFUVVJFX1BST1RPM19P",
-            "UFRJT05BTBABQlcKHGNvbS5nb29nbGUucHJvdG9idWYuY29tcGlsZXJCDFBs",
+            "UFRJT05BTBABQnIKHGNvbS5nb29nbGUucHJvdG9idWYuY29tcGlsZXJCDFBs",
             "dWdpblByb3Rvc1opZ29vZ2xlLmdvbGFuZy5vcmcvcHJvdG9idWYvdHlwZXMv",
-            "cGx1Z2lucGI="));
+            "cGx1Z2lucGKqAhhHb29nbGUuUHJvdG9idWYuQ29tcGlsZXI="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {

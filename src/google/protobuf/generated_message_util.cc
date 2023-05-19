@@ -69,6 +69,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
         fixed_address_empty_string{};  // NOLINT
 
 
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
+
 PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
   fixed_address_empty_string.DefaultConstruct();
@@ -317,7 +319,7 @@ class AccessorHelper {
 };
 
 void SerializeNotImplemented(int field) {
-  GOOGLE_ABSL_LOG(FATAL) << "Not implemented field number " << field;
+  ABSL_LOG(FATAL) << "Not implemented field number " << field;
 }
 
 // When switching to c++11 we should make these constexpr functions
@@ -389,9 +391,9 @@ void GenericSwap(MessageLite* m1, MessageLite* m2) {
 MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                      MessageLite* submessage,
                                      Arena* submessage_arena) {
-  GOOGLE_ABSL_DCHECK(Arena::InternalGetOwningArena(submessage) == submessage_arena);
-  GOOGLE_ABSL_DCHECK(message_arena != submessage_arena);
-  GOOGLE_ABSL_DCHECK_EQ(submessage_arena, nullptr);
+  ABSL_DCHECK(Arena::InternalGetOwningArena(submessage) == submessage_arena);
+  ABSL_DCHECK(message_arena != submessage_arena);
+  ABSL_DCHECK_EQ(submessage_arena, nullptr);
   if (message_arena != nullptr && submessage_arena == nullptr) {
     message_arena->Own(submessage);
     return submessage;

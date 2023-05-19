@@ -30,10 +30,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using Google.Protobuf.Compatibility;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using Google.Protobuf.Compatibility;
 
 namespace Google.Protobuf.Reflection
 {
@@ -117,6 +118,7 @@ namespace Google.Protobuf.Reflection
             GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageBool(method);
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
+        [UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode", Justification = "Type definition is explicitly specified and type argument is always a message type.")]
         internal static Func<IMessage, bool> CreateIsInitializedCaller([DynamicallyAccessedMembers(GeneratedClrTypeInfo.MessageAccessibility)]Type msg) =>
             ((IExtensionSetReflector)Activator.CreateInstance(typeof(ExtensionSetReflector<>).MakeGenericType(msg))).CreateIsInitializedCaller();
 
@@ -125,8 +127,22 @@ namespace Google.Protobuf.Reflection
         /// the type that declares the method, and the second argument to the first parameter type of the method.
         /// </summary>
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
-        internal static IExtensionReflectionHelper CreateExtensionHelper(Extension extension) =>
-            (IExtensionReflectionHelper)Activator.CreateInstance(typeof(ExtensionReflectionHelper<,>).MakeGenericType(extension.TargetType, extension.GetType().GenericTypeArguments[1]), extension);
+        internal static IExtensionReflectionHelper CreateExtensionHelper(Extension extension)
+        {
+#if NET5_0_OR_GREATER
+            if (!RuntimeFeature.IsDynamicCodeSupported)
+            {
+                // Using extensions with reflection is not supported with AOT.
+                // This helper is created when descriptors are populated. Delay throwing error until an app
+                // uses IFieldAccessor with an extension field.
+                return new AotExtensionReflectionHelper();
+            }
+#endif
+
+            var t1 = extension.TargetType;
+            var t3 = extension.GetType().GenericTypeArguments[1];
+            return (IExtensionReflectionHelper) Activator.CreateInstance(typeof(ExtensionReflectionHelper<,>).MakeGenericType(t1, t3), extension);
+        }
 
         /// <summary>
         /// Creates a reflection helper for the given type arguments. Currently these are created on demand
@@ -135,8 +151,17 @@ namespace Google.Protobuf.Reflection
         /// an object is pretty cheap.
         /// </summary>
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
-        private static IReflectionHelper GetReflectionHelper(Type t1, Type t2) =>
-            (IReflectionHelper) Activator.CreateInstance(typeof(ReflectionHelper<,>).MakeGenericType(t1, t2));
+        private static IReflectionHelper GetReflectionHelper(Type t1, Type t2)
+        {
+#if NET5_0_OR_GREATER
+            if (!RuntimeFeature.IsDynamicCodeSupported)
+            {
+                return new AotReflectionHelper();
+            }
+#endif
+
+            return (IReflectionHelper) Activator.CreateInstance(typeof(ReflectionHelper<,>).MakeGenericType(t1, t2));
+        }
 
         // Non-generic interface allowing us to use an instance of ReflectionHelper<T1, T2> without statically
         // knowing the types involved.
@@ -162,9 +187,8 @@ namespace Google.Protobuf.Reflection
             Func<IMessage, bool> CreateIsInitializedCaller();
         }
 
-        private class ReflectionHelper<T1, T2> : IReflectionHelper
+        private sealed class ReflectionHelper<T1, T2> : IReflectionHelper
         {
-
             public Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method)
             {
                 // On pleasant runtimes, we can create a Func<int> from a method returning
@@ -209,7 +233,7 @@ namespace Google.Protobuf.Reflection
             }
         }
 
-        private class ExtensionReflectionHelper<T1, T3> : IExtensionReflectionHelper
+        private sealed class ExtensionReflectionHelper<T1, T3> : IExtensionReflectionHelper
             where T1 : IExtendableMessage<T1>
         {
             private readonly Extension extension;
@@ -304,7 +328,39 @@ namespace Google.Protobuf.Reflection
             }
         }
 
-        private class ExtensionSetReflector<
+#if NET5_0_OR_GREATER
+        /// <summary>
+        /// This helper is compatible with .NET Native AOT.
+        /// MakeGenericType doesn't work when a type argument is a value type in AOT.
+        /// MethodInfo.Invoke is used instead of compiled expressions because it's faster in AOT.
+        /// </summary>
+        private sealed class AotReflectionHelper : IReflectionHelper
+        {
+            private static readonly object[] EmptyObjectArray = new object[0];
+            public Action<IMessage> CreateActionIMessage(MethodInfo method) => message => method.Invoke(message, EmptyObjectArray);
+            public Action<IMessage, object> CreateActionIMessageObject(MethodInfo method) => (message, arg) => method.Invoke(message, new object[] { arg });
+            public Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method) => message => (bool) method.Invoke(message, EmptyObjectArray);
+            public Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method) => message => (int) method.Invoke(message, EmptyObjectArray);
+            public Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method) => message => method.Invoke(message, EmptyObjectArray);
+        }
+
+        /// <summary>
+        /// Reflection with extensions isn't supported because IExtendableMessage members are used to get values.
+        /// Can't use reflection to invoke those methods because they have a generic argument.
+        /// MakeGenericMethod can't be used because it will break whenever the extension type is a value type.
+        /// This could be made to work if there were non-generic methods available for getting and setting extension values.
+        /// </summary>
+        private sealed class AotExtensionReflectionHelper : IExtensionReflectionHelper
+        {
+            private const string Message = "Extensions reflection is not supported with AOT.";
+            public object GetExtension(IMessage message) => throw new NotSupportedException(Message);
+            public bool HasExtension(IMessage message) => throw new NotSupportedException(Message);
+            public void SetExtension(IMessage message, object value) => throw new NotSupportedException(Message);
+            public void ClearExtension(IMessage message) => throw new NotSupportedException(Message);
+        }
+#endif
+
+        private sealed class ExtensionSetReflector<
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)]
             T1> : IExtensionSetReflector where T1 : IExtendableMessage<T1>
         {

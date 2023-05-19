@@ -1,0 +1,23 @@
+# Protobuf python numpy Tests
+# This is removed from other tests to keep numpy (and @pip_deps) as a test-only dependency
+
+load("@pip_deps//:requirements.bzl", "requirement")
+load("//python:internal.bzl", "internal_py_test")
+
+# TODO: b/278896688 - Remove this target and replace with py_library
+exports_files([
+  "__init__.py",
+  "numpy_test.py",
+])
+
+internal_py_test(
+    name = "numpy_test",
+    srcs = ["numpy_test.py"],
+    deps = [
+        requirement("numpy"),
+    ],
+    visibility = [
+      "//python:__pkg__",
+      "@upb//python/pb_unit_tests:__pkg__",
+    ]
+)

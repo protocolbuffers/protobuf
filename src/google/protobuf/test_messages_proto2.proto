@@ -301,3 +301,97 @@ message ProtoWithKeywords {
   optional string concept = 2;
   repeated string requires = 3;
 }
+
+message TestAllRequiredTypesProto2 {
+  message NestedMessage {
+    required int32 a = 1;
+    required TestAllRequiredTypesProto2 corecursive = 2;
+    optional TestAllRequiredTypesProto2 optional_corecursive = 3;
+  }
+
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+    NEG = -1;  // Intentionally negative.
+  }
+
+  // Singular
+  required int32 required_int32 = 1;
+  required int64 required_int64 = 2;
+  required uint32 required_uint32 = 3;
+  required uint64 required_uint64 = 4;
+  required sint32 required_sint32 = 5;
+  required sint64 required_sint64 = 6;
+  required fixed32 required_fixed32 = 7;
+  required fixed64 required_fixed64 = 8;
+  required sfixed32 required_sfixed32 = 9;
+  required sfixed64 required_sfixed64 = 10;
+  required float required_float = 11;
+  required double required_double = 12;
+  required bool required_bool = 13;
+  required string required_string = 14;
+  required bytes required_bytes = 15;
+
+  required NestedMessage required_nested_message = 18;
+  required ForeignMessageProto2 required_foreign_message = 19;
+
+  required NestedEnum required_nested_enum = 21;
+  required ForeignEnumProto2 required_foreign_enum = 22;
+
+  required string required_string_piece = 24 [ctype = STRING_PIECE];
+  required string required_cord = 25 [ctype = CORD];
+
+  required TestAllRequiredTypesProto2 recursive_message = 27;
+  optional TestAllRequiredTypesProto2 optional_recursive_message = 28;
+
+  // extensions
+  extensions 120 to 200;
+
+  // groups
+  required group Data = 201 {
+    required int32 group_int32 = 202;
+    required uint32 group_uint32 = 203;
+  }
+
+  // default values
+  required int32 default_int32 = 241 [default = -123456789];
+  required int64 default_int64 = 242 [default = -9123456789123456789];
+  required uint32 default_uint32 = 243 [default = 2123456789];
+  required uint64 default_uint64 = 244 [default = 10123456789123456789];
+  required sint32 default_sint32 = 245 [default = -123456789];
+  required sint64 default_sint64 = 246 [default = -9123456789123456789];
+  required fixed32 default_fixed32 = 247 [default = 2123456789];
+  required fixed64 default_fixed64 = 248 [default = 10123456789123456789];
+  required sfixed32 default_sfixed32 = 249 [default = -123456789];
+  required sfixed64 default_sfixed64 = 250 [default = -9123456789123456789];
+  required float default_float = 251 [default = 9e9];
+  required double default_double = 252 [default = 7e22];
+  required bool default_bool = 253 [default = true];
+  required string default_string = 254 [default = "Rosebud"];
+  required bytes default_bytes = 255 [default = "joshua"];
+
+  // Reserved for unknown fields test.
+  reserved 1000 to 9999;
+
+  // message_set test case.
+  message MessageSetCorrect {
+    option message_set_wire_format = true;
+
+    extensions 4 to max;
+  }
+
+  message MessageSetCorrectExtension1 {
+    extend MessageSetCorrect {
+      optional MessageSetCorrectExtension1 message_set_extension = 1547769;
+    }
+    required string str = 25;
+  }
+
+  message MessageSetCorrectExtension2 {
+    extend MessageSetCorrect {
+      optional MessageSetCorrectExtension2 message_set_extension = 4135312;
+    }
+    required int32 i = 9;
+  }
+}

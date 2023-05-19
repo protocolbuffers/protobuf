@@ -406,13 +406,13 @@ PHP_METHOD(RepeatedField, offsetUnset) {
     return;
   }
 
-  if (size == 0 || index != size - 1) {
+  if (size == 0 || index < 0 || index >= size) {
     php_error_docref(NULL, E_USER_ERROR, "Cannot remove element at %ld.\n",
                      index);
     return;
   }
 
-  upb_Array_Resize(intern->array, size - 1, Arena_Get(&intern->arena));
+  upb_Array_Delete(intern->array, index, 1);
 }
 
 /**

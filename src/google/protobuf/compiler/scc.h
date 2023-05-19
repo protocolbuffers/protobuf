@@ -35,7 +35,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "google/protobuf/descriptor.h"
 
@@ -99,7 +99,7 @@ class PROTOC_EXPORT SCCAnalyzer {
     // Mark visited by inserting in map.
     auto ins = cache_.try_emplace(descriptor, absl::make_unique<NodeData>());
     // Must not have visited already.
-    GOOGLE_ABSL_DCHECK(ins.second);
+    ABSL_DCHECK(ins.second);
     NodeData& result = *ins.first->second;
     // Initialize data structures.
     result.index = result.lowlink = index_++;
@@ -107,7 +107,7 @@ class PROTOC_EXPORT SCCAnalyzer {
 
     // Recurse the fields / nodes in graph
     for (const auto* dep : DepsGenerator()(descriptor)) {
-      GOOGLE_ABSL_CHECK(dep);
+      ABSL_CHECK(dep);
       auto it = cache_.find(dep);
       if (it == cache_.end()) {
         // unexplored node
@@ -150,7 +150,7 @@ class PROTOC_EXPORT SCCAnalyzer {
     absl::flat_hash_set<const SCC*> seen;
     for (auto descriptor : scc->descriptors) {
       for (auto child_msg : DepsGenerator()(descriptor)) {
-        GOOGLE_ABSL_CHECK(child_msg);
+        ABSL_CHECK(child_msg);
         const SCC* child = GetSCC(child_msg);
         if (child == scc) continue;
         if (seen.insert(child).second) {

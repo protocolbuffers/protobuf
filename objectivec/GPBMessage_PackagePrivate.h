@@ -80,25 +80,11 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input
                 extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry;
 
-// Parses the next delimited message of this type from the input and merges it
-// with this message.
-- (void)mergeDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
-                         extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry;
-
 - (void)addUnknownMapEntry:(int32_t)fieldNum value:(NSData *)data;
 
 @end
 
 CF_EXTERN_C_BEGIN
-
-// Call this before using the readOnlySemaphore_. This ensures it is created only once.
-void GPBPrepareReadOnlySemaphore(GPBMessage *self);
-
-// Returns a new instance that was automatically created by |autocreator| for
-// its field |field|.
-GPBMessage *GPBCreateMessageWithAutocreator(Class msgClass, GPBMessage *autocreator,
-                                            GPBFieldDescriptor *field)
-    __attribute__((ns_returns_retained));
 
 // Returns whether |message| autocreated this message. This is NO if the message
 // was not autocreated by |message| or if it has been mutated since

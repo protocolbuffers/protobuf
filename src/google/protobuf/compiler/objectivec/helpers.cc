@@ -33,13 +33,13 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/stubs/common.h"
@@ -67,7 +67,7 @@ std::string GetZeroEnumNameForFlagType(const FlagType flag_type) {
     case FLAGTYPE_FIELD:
       return "GPBFieldNone";
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+      ABSL_LOG(FATAL) << "Can't get here.";
       return "0";
   }
 }
@@ -81,7 +81,7 @@ std::string GetEnumNameForFlagType(const FlagType flag_type) {
     case FLAGTYPE_FIELD:
       return "GPBFieldFlags";
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+      ABSL_LOG(FATAL) << "Can't get here.";
       return std::string();
   }
 }
@@ -98,7 +98,7 @@ std::string HandleExtremeFloatingPoint(std::string val, bool add_float_suffix) {
     if (add_float_suffix &&
         (absl::StrContains(val, '.') || absl::StrContains(val, 'e') ||
          absl::StrContains(val, 'E'))) {
-      val += "f";
+      return absl::StrCat(val, "f");
     }
     return val;
   }
@@ -148,7 +148,7 @@ std::string GetCapitalizedType(const FieldDescriptor* field) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return std::string();
 }
 
@@ -197,7 +197,7 @@ ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return OBJECTIVECTYPE_INT32;
 }
 
@@ -236,7 +236,7 @@ std::string GPBGenericValueFieldName(const FieldDescriptor* field) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return std::string();
 }
 
@@ -256,15 +256,15 @@ std::string DefaultValue(const FieldDescriptor* field) {
       }
       return absl::StrCat(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return absl::StrCat(field->default_value_uint32()) + "U";
+      return absl::StrCat(field->default_value_uint32(), "U");
     case FieldDescriptor::CPPTYPE_INT64:
       // gcc and llvm reject the decimal form of kint32min and kint64min.
       if (field->default_value_int64() == LLONG_MIN) {
         return "-0x8000000000000000LL";
       }
-      return absl::StrCat(field->default_value_int64()) + "LL";
+      return absl::StrCat(field->default_value_int64(), "LL");
     case FieldDescriptor::CPPTYPE_UINT64:
-      return absl::StrCat(field->default_value_uint64()) + "ULL";
+      return absl::StrCat(field->default_value_uint64(), "ULL");
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return HandleExtremeFloatingPoint(
           io::SimpleDtoa(field->default_value_double()), false);
@@ -275,7 +275,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
       return field->default_value_bool() ? "YES" : "NO";
     case FieldDescriptor::CPPTYPE_STRING: {
       const bool has_default_value = field->has_default_value();
-      const std::string& default_string = field->default_value_string();
+      absl::string_view default_string = field->default_value_string();
       if (!has_default_value || default_string.length() == 0) {
         // If the field is defined as being the empty string,
         // then we will just assign to nil, as the empty string is the
@@ -293,10 +293,12 @@ std::string DefaultValue(const FieldDescriptor* field) {
         // a cstring.
         uint32_t length = ghtonl(default_string.length());
         std::string bytes((const char*)&length, sizeof(length));
-        bytes.append(default_string);
-        return "(NSData*)\"" + EscapeTrigraphs(absl::CEscape(bytes)) + "\"";
+        absl::StrAppend(&bytes, default_string);
+        return absl::StrCat("(NSData*)\"",
+                            EscapeTrigraphs(absl::CEscape(bytes)), "\"");
       } else {
-        return "@\"" + EscapeTrigraphs(absl::CEscape(default_string)) + "\"";
+        return absl::StrCat(
+            "@\"", EscapeTrigraphs(absl::CEscape(default_string)), "\"");
       }
     }
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -307,18 +309,19 @@ std::string DefaultValue(const FieldDescriptor* field) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
+  ABSL_LOG(FATAL) << "Can't get here.";
   return std::string();
 }
 
-std::string BuildFlagsString(const FlagType flag_type,
+std::string BuildFlagsString(FlagType flag_type,
                              const std::vector<std::string>& strings) {
   if (strings.empty()) {
     return GetZeroEnumNameForFlagType(flag_type);
   } else if (strings.size() == 1) {
     return strings[0];
   }
-  std::string string("(" + GetEnumNameForFlagType(flag_type) + ")(");
+  std::string string =
+      absl::StrCat("(", GetEnumNameForFlagType(flag_type), ")(");
   for (size_t i = 0; i != strings.size(); ++i) {
     if (i > 0) {
       string.append(" | ");
@@ -329,20 +332,20 @@ std::string BuildFlagsString(const FlagType flag_type,
   return string;
 }
 
-std::string ObjCClass(const std::string& class_name) {
-  return std::string("GPBObjCClass(") + class_name + ")";
+std::string ObjCClass(absl::string_view class_name) {
+  return absl::StrCat("GPBObjCClass(", class_name, ")");
 }
 
-std::string ObjCClassDeclaration(const std::string& class_name) {
-  return std::string("GPBObjCClassDeclaration(") + class_name + ");";
+std::string ObjCClassDeclaration(absl::string_view class_name) {
+  return absl::StrCat("GPBObjCClassDeclaration(", class_name, ");");
 }
 
 std::string BuildCommentsString(const SourceLocation& location,
                                 bool prefer_single_line) {
-  const std::string& comments = location.leading_comments.empty()
-                                    ? location.trailing_comments
-                                    : location.leading_comments;
-  std::vector<std::string> lines;
+  absl::string_view comments = location.leading_comments.empty()
+                                   ? location.trailing_comments
+                                   : location.leading_comments;
+  std::vector<absl::string_view> lines;
   lines = absl::StrSplit(comments, '\n', absl::AllowEmpty());
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
@@ -365,7 +368,7 @@ std::string BuildCommentsString(const SourceLocation& location,
   } else {
     prefix = "* ";
     suffix = "\n";
-    final_comments += "/**\n";
+    absl::StrAppend(&final_comments, "/**\n");
     epilogue = " **/\n";
     add_leading_space = true;
   }
@@ -383,11 +386,10 @@ std::string BuildCommentsString(const SourceLocation& location,
     absl::StripAsciiWhitespace(&line);
     // If not a one line, need to add the first space before *, as
     // absl::StripAsciiWhitespace would have removed it.
-    line = (add_leading_space ? " " : "") + line;
-    final_comments += line + suffix;
+    line = absl::StrCat(add_leading_space ? " " : "", line);
+    absl::StrAppend(&final_comments, line, suffix);
   }
-  final_comments += epilogue;
-  return final_comments;
+  return absl::StrCat(final_comments, epilogue);
 }
 
 }  // namespace objectivec

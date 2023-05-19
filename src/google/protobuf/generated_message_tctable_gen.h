@@ -64,6 +64,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     bool use_direct_tcparser_table;
     bool is_lite;
     bool should_split;
+    bool uses_codegen;
   };
   class OptionProvider {
    public:
@@ -112,6 +113,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     kEnumRange,
     kEnumValidator,
     kNumericOffset,
+    kMapAuxInfo,
+    kCreateInArena,
   };
   struct AuxEntry {
     AuxType type;
@@ -121,14 +124,12 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     };
     union {
       const FieldDescriptor* field;
+      const Descriptor* desc;
       uint32_t offset;
       EnumRange enum_range;
     };
   };
   std::vector<AuxEntry> aux_entries;
-
-  // Fields parsed by generated fallback function.
-  std::vector<const FieldDescriptor*> fallback_fields;
 
   struct SkipEntry16 {
     uint16_t skipmap;
@@ -157,8 +158,6 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
 
   // Table size.
   int table_size_log2;
-  // True if a generated fallback function is required instead of generic.
-  bool use_generated_fallback;
 };
 
 }  // namespace internal

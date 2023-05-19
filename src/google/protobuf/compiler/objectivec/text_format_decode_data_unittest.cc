@@ -119,30 +119,25 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_ByteCodes) {
 }
 
 // Death tests do not work on Windows as of yet.
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 TEST(ObjCHelperDeathTest, TextFormatDecodeData_DecodeDataForString_Failures) {
   // Empty inputs.
 
-  EXPECT_EXIT(TextFormatDecodeData::DecodeDataForString("", ""),
-              ::testing::KilledBySignal(SIGABRT),
-              "error: got empty string for making TextFormat data, input:");
-  EXPECT_EXIT(TextFormatDecodeData::DecodeDataForString("a", ""),
-              ::testing::KilledBySignal(SIGABRT),
-              "error: got empty string for making TextFormat data, input:");
-  EXPECT_EXIT(TextFormatDecodeData::DecodeDataForString("", "a"),
-              ::testing::KilledBySignal(SIGABRT),
-              "error: got empty string for making TextFormat data, input:");
+  EXPECT_DEATH(TextFormatDecodeData::DecodeDataForString("", ""),
+               "error: got empty string for making TextFormat data, input:");
+  EXPECT_DEATH(TextFormatDecodeData::DecodeDataForString("a", ""),
+               "error: got empty string for making TextFormat data, input:");
+  EXPECT_DEATH(TextFormatDecodeData::DecodeDataForString("", "a"),
+               "error: got empty string for making TextFormat data, input:");
 
   // Null char in the string.
 
   std::string str_with_null_char("ab\0c", 4);
-  EXPECT_EXIT(
+  EXPECT_DEATH(
       TextFormatDecodeData::DecodeDataForString(str_with_null_char, "def"),
-      ::testing::KilledBySignal(SIGABRT),
       "error: got a null char in a string for making TextFormat data, input:");
-  EXPECT_EXIT(
+  EXPECT_DEATH(
       TextFormatDecodeData::DecodeDataForString("def", str_with_null_char),
-      ::testing::KilledBySignal(SIGABRT),
       "error: got a null char in a string for making TextFormat data, input:");
 }
 #endif  // PROTOBUF_HAS_DEATH_TEST
@@ -214,33 +209,27 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
   EXPECT_EQ(expected, decode_data.Data());
 }
 
-// Death tests do not work on Windows as of yet.
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
 TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
   TextFormatDecodeData decode_data;
 
   // Empty inputs.
 
-  EXPECT_EXIT(decode_data.AddString(1, "", ""),
-              ::testing::KilledBySignal(SIGABRT),
-              "error: got empty string for making TextFormat data, input:");
-  EXPECT_EXIT(decode_data.AddString(1, "a", ""),
-              ::testing::KilledBySignal(SIGABRT),
-              "error: got empty string for making TextFormat data, input:");
-  EXPECT_EXIT(decode_data.AddString(1, "", "a"),
-              ::testing::KilledBySignal(SIGABRT),
-              "error: got empty string for making TextFormat data, input:");
+  EXPECT_DEATH(decode_data.AddString(1, "", ""),
+               "error: got empty string for making TextFormat data, input:");
+  EXPECT_DEATH(decode_data.AddString(1, "a", ""),
+               "error: got empty string for making TextFormat data, input:");
+  EXPECT_DEATH(decode_data.AddString(1, "", "a"),
+               "error: got empty string for making TextFormat data, input:");
 
   // Null char in the string.
 
   std::string str_with_null_char("ab\0c", 4);
-  EXPECT_EXIT(
+  EXPECT_DEATH(
       decode_data.AddString(1, str_with_null_char, "def"),
-      ::testing::KilledBySignal(SIGABRT),
       "error: got a null char in a string for making TextFormat data, input:");
-  EXPECT_EXIT(
+  EXPECT_DEATH(
       decode_data.AddString(1, "def", str_with_null_char),
-      ::testing::KilledBySignal(SIGABRT),
       "error: got a null char in a string for making TextFormat data, input:");
 
   // Duplicate keys
@@ -248,9 +237,8 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
   decode_data.AddString(1, "abcdefghIJ", "abcdefghIJ");
   decode_data.AddString(3, "abcdefghIJ", "_AbcdefghIJ");
   decode_data.AddString(2, "abcdefghIJ", "Abcd_EfghIJ");
-  EXPECT_EXIT(decode_data.AddString(2, "xyz", "x_yz"),
-              ::testing::KilledBySignal(SIGABRT),
-              "error: duplicate key \\(2\\) making TextFormat data, input:");
+  EXPECT_DEATH(decode_data.AddString(2, "xyz", "x_yz"),
+               "error: duplicate key \\(2\\) making TextFormat data, input:");
 }
 #endif  // PROTOBUF_HAS_DEATH_TEST
 

@@ -1,0 +1,43 @@
+load("@rules_java//java:defs.bzl", "java_library", "java_lite_proto_library", "java_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
+java_library(
+    name = "protobuf_java",
+    srcs = glob([
+        "com/google/protobuf/jruby/*.java"
+    ]) + [
+        "google/ProtobufJavaService.java"
+    ],
+    deps = [
+        "@rules_ruby//ruby/runtime:jars",
+        "//java/core",
+        "//java/util",
+    ],
+    target_compatible_with = select({
+        "@rules_ruby//ruby/runtime:config_jruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    visibility = ["//ruby:__subpackages__"],
+)
+
+proto_library(
+    name = "sentinel_proto",
+    srcs = ["sentinel.proto"],
+)
+
+java_proto_library(
+    name = "sentinel_java_proto",
+    deps = [":sentinel_proto"],
+)
+
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "**/*.java",
+        "**/*.proto",
+    ]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//ruby:__pkg__"],
+)

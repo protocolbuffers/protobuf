@@ -46,8 +46,10 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/functional/bind_front.h"
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/any_test.pb.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
@@ -56,7 +58,9 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/message_differencer_unittest.pb.h"
+#include "google/protobuf/util/message_differencer_unittest_proto3.pb.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 namespace google {
@@ -64,6 +68,15 @@ namespace protobuf {
 
 namespace {
 
+
+proto3_unittest::TestNoPresenceField MakeTestNoPresenceField() {
+  proto3_unittest::TestNoPresenceField msg1, msg2;
+  msg1.set_no_presence_bool(true);
+  msg2 = msg1;
+  *msg1.mutable_no_presence_nested() = msg2;
+  *msg1.add_no_presence_repeated_nested() = msg2;
+  return msg1;
+}
 
 const FieldDescriptor* GetFieldDescriptor(const Message& message,
                                           const std::string& field_name) {
@@ -199,6 +212,17 @@ TEST(MessageDifferencerTest, BasicPartialEqualityTest) {
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
 }
 
+TEST(MessageDifferencerTest, BasicPartialEqualityTestNoPresenceForceCompare) {
+  util::MessageDifferencer differencer;
+  differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  differencer.set_force_compare_no_presence(true);
+
+  // Create the testing protos
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+}
+
 TEST(MessageDifferencerTest, PartialEqualityTestExtraField) {
   // Create the testing protos
   unittest::TestAllTypes msg1;
@@ -213,6 +237,195 @@ TEST(MessageDifferencerTest, PartialEqualityTestExtraField) {
   util::MessageDifferencer differencer;
   differencer.set_scope(util::MessageDifferencer::PARTIAL);
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestExtraFieldNoPresenceForceCompare) {
+  util::MessageDifferencer force_compare_differencer;
+  force_compare_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  force_compare_differencer.set_force_compare_no_presence(true);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+
+  // Create the testing protos
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  // Clearing a no presence field inside a repeated field in a nested message.
+  msg1.mutable_no_presence_repeated_nested(0)->clear_no_presence_bool();
+  EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_THAT(force_compare_differencer.NoPresenceFieldsCausingFailure(),
+              testing::UnorderedElementsAre(
+                  "proto3_unittest.TestNoPresenceField.no_presence_bool"));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
+  force_compare_differencer.ReportDifferencesTo(nullptr);
+
+  EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
+  EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestForceCompareWorksForRepeatedField) {
+  util::MessageDifferencer force_compare_differencer;
+  force_compare_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  force_compare_differencer.set_force_compare_no_presence(true);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+  // Repeated fields always have presence, so clearing them would remove them
+  // from the comparison.
+  // Create the testing protos
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  msg1.clear_no_presence_repeated_nested();
+  EXPECT_TRUE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
+
+  EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestForceCompareWorksForRepeatedFieldInstance) {
+  util::MessageDifferencer force_compare_differencer;
+  force_compare_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  force_compare_differencer.set_force_compare_no_presence(true);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+  // Clearing a field inside a repeated field will trigger a failure when
+  // forcing comparison for no presence fields.
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  msg1.mutable_no_presence_nested()->clear_no_presence_bool();
+  EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_THAT(force_compare_differencer.NoPresenceFieldsCausingFailure(),
+              testing::UnorderedElementsAre(
+                  "proto3_unittest.TestNoPresenceField.no_presence_bool"));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
+  EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestForceCompareIsNoOptForNestedMessages) {
+  util::MessageDifferencer force_compare_differencer;
+  force_compare_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  force_compare_differencer.set_force_compare_no_presence(true);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+  // Nested fields always have presence, so clearing them would remove them
+  // from the comparison.
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  msg1.clear_no_presence_nested();
+  EXPECT_TRUE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
+  EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
+
+  // Creating an instance of the nested field will cause the comparison to fail
+  // since it contains a no presence singualr field.
+  msg1.mutable_no_presence_nested();
+  EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_THAT(force_compare_differencer.NoPresenceFieldsCausingFailure(),
+              testing::UnorderedElementsAre(
+                  "proto3_unittest.TestNoPresenceField.no_presence_bool"));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
+  EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestSingularNoPresenceFieldMissing) {
+  util::MessageDifferencer force_compare_differencer;
+  force_compare_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  force_compare_differencer.set_force_compare_no_presence(true);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+  // When clearing a singular no presence field, it will be included in the
+  // comparison.
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  msg1.clear_no_presence_bool();
+  EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(
+      !force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
+  EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestExtraFieldNoPresenceForceCompareReporterAware) {
+  std::string output;
+  // Before we can check the output string, we must make sure the
+  // StreamReporter is destroyed because its destructor will
+  // flush the stream.
+  {
+    io::StringOutputStream output_stream(&output);
+    util::MessageDifferencer::StreamReporter reporter(&output_stream);
+
+    util::MessageDifferencer force_compare_differencer;
+    force_compare_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+    force_compare_differencer.set_force_compare_no_presence(true);
+    force_compare_differencer.ReportDifferencesTo(&reporter);
+
+    // Clearing a no presence field inside a repeated field.
+    proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+    proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+    msg1.mutable_no_presence_repeated_nested(0)->clear_no_presence_bool();
+    EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+    EXPECT_TRUE(
+        !force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
+  }
+  EXPECT_EQ(output,
+            "added: no_presence_repeated_nested[0].no_presence_bool (added for "
+            "better PARTIAL comparison): true\n");
 }
 
 TEST(MessageDifferencerTest, PartialEqualityTestSkipRequiredField) {
@@ -1856,7 +2069,7 @@ TEST(MessageDifferencerTest, PrintMapKeysTest) {
       diff_with_any);
 }
 
-static const char* const kIgnoredFields[] = {"rm.b", "rm.m.b"};
+static constexpr absl::string_view kIgnoredFields[] = {"rm.b", "rm.m.b"};
 
 class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
  public:
@@ -1865,12 +2078,12 @@ class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
                  const std::vector<util::MessageDifferencer::SpecificField>&
                      parent_fields) override {
     std::string name = "";
-    for (int i = 0; i < parent_fields.size(); ++i) {
-      name += parent_fields[i].field->name() + ".";
+    for (size_t i = 0; i < parent_fields.size(); ++i) {
+      absl::StrAppend(&name, parent_fields[i].field->name(), ".");
     }
-    name += field->name();
-    for (int i = 0; i < ABSL_ARRAYSIZE(kIgnoredFields); ++i) {
-      if (name.compare(kIgnoredFields[i]) == 0) {
+    absl::StrAppend(&name, field->name());
+    for (size_t i = 0; i < ABSL_ARRAYSIZE(kIgnoredFields); ++i) {
+      if (name == kIgnoredFields[i]) {
         return true;
       }
     }
@@ -2440,8 +2653,9 @@ class ComparisonTest : public testing::Test {
     }
 
     if (!map_field_.empty() && !map_key_.empty()) {
-      d->TreatAsMap(GetFieldDescriptor(message, map_field_),
-                    GetFieldDescriptor(message, map_field_ + "." + map_key_));
+      d->TreatAsMap(
+          GetFieldDescriptor(message, map_field_),
+          GetFieldDescriptor(message, absl::StrCat(map_field_, ".", map_key_)));
     }
   }
 

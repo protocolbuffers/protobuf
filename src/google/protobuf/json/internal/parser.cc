@@ -45,6 +45,8 @@
 #include "google/protobuf/message.h"
 #include "absl/base/attributes.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
@@ -419,7 +421,7 @@ absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
               field, msg,
               [&](const Desc<Traits>& type, Msg<Traits>& msg) -> absl::Status {
                 auto field = Traits::FieldByNumber(type, 1);
-                GOOGLE_ABSL_DCHECK(field.has_value());
+                ABSL_DCHECK(field.has_value());
                 RETURN_IF_ERROR(lex.Expect("null"));
                 Traits::SetEnum(Traits::MustHaveField(type, 1), msg, 0);
                 return absl::OkStatus();
@@ -744,7 +746,7 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
 
 absl::optional<uint32_t> TakeTimeDigitsWithSuffixAndAdvance(
     absl::string_view& data, int max_digits, absl::string_view end) {
-  GOOGLE_ABSL_DCHECK_LE(max_digits, 9);
+  ABSL_DCHECK_LE(max_digits, 9);
 
   uint32_t val = 0;
   int limit = max_digits;
@@ -1040,7 +1042,7 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
         });
   } else {
     // Empty {} is accepted in legacy mode.
-    GOOGLE_ABSL_DCHECK(lex.options().allow_legacy_syntax);
+    ABSL_DCHECK(lex.options().allow_legacy_syntax);
     RETURN_IF_ERROR(any_lex.VisitObject([&](auto&) {
       return mark.loc.Invalid(
           "in legacy mode, missing @type in Any is only allowed for an empty "
@@ -1181,6 +1183,19 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
   if (absl::StartsWith(name, "[") && absl::EndsWith(name, "]")) {
     absl::string_view extn_name = name.substr(1, name.size() - 2);
     field = Traits::ExtensionByName(desc, extn_name);
+
+    if (field.has_value()) {
+      // The check for whether this is an invalid field occurs below, since it
+      // is combined for both extension and non-extension fields.
+      auto correct_type_name = Traits::TypeName(desc);
+      if (Traits::TypeName(Traits::ContainingType(*field)) !=
+          correct_type_name) {
+        return lex.Invalid(absl::StrFormat(
+            "'%s' is a known extension name, but is not an extension "
+            "of '%s' as expected",
+            extn_name, correct_type_name));
+      }
+    }
   } else {
     field = Traits::FieldByName(desc, name);
   }
@@ -1289,7 +1304,9 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
 absl::Status JsonStringToMessage(absl::string_view input, Message* message,
                                  json_internal::ParseOptions options) {
   MessagePath path(message->GetDescriptor()->full_name());
-  PROTOBUF_DLOG(INFO) << "json2/input: " << absl::CHexEscape(input);
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/input: " << absl::CHexEscape(input);
+  }
   io::ArrayInputStream in(input.data(), input.size());
   JsonLexer lex(&in, options, &path);
 
@@ -1302,9 +1319,10 @@ absl::Status JsonStringToMessage(absl::string_view input, Message* message,
         "extraneous characters after end of JSON object");
   }
 
-  PROTOBUF_DLOG(INFO) << "json2/status: " << s;
-  PROTOBUF_DLOG(INFO) << "json2/output: " << message->DebugString();
-
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/status: " << s;
+    ABSL_DLOG(INFO) << "json2/output: " << message->DebugString();
+  }
   return s;
 }
 
@@ -1314,11 +1332,11 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
                                 io::ZeroCopyOutputStream* binary_output,
                                 json_internal::ParseOptions options) {
   // NOTE: Most of the contortions in this function are to allow for capture of
-  // input and output of the parser in GOOGLE_ABSL_DLOG mode. Destruction order is very
+  // input and output of the parser in ABSL_DLOG mode. Destruction order is very
   // critical in this function, because io::ZeroCopy*Stream types usually only
   // flush on destruction.
 
-  // For GOOGLE_ABSL_DLOG, we would like to print out the input and output, which
+  // For ABSL_DLOG, we would like to print out the input and output, which
   // requires buffering both instead of doing "zero copy". This block, and the
   // one at the end of the function, set up and tear down interception of the
   // input and output streams.
@@ -1335,9 +1353,8 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
     }
     tee_input.emplace(copy.data(), copy.size());
     tee_output.emplace(&out);
+    ABSL_DLOG(INFO) << "json2/input: " << absl::CHexEscape(copy);
   }
-
-  PROTOBUF_DLOG(INFO) << "json2/input: " << absl::CHexEscape(copy);
 
   // This scope forces the CodedOutputStream inside of `msg` to flush before we
   // possibly handle logging the binary protobuf output.
@@ -1364,10 +1381,10 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
     tee_output.reset();  // Flush the output stream.
     io::zc_sink_internal::ZeroCopyStreamByteSink(binary_output)
         .Append(out.data(), out.size());
+    ABSL_DLOG(INFO) << "json2/status: " << s;
+    ABSL_DLOG(INFO) << "json2/output: " << absl::BytesToHexString(out);
   }
 
-  PROTOBUF_DLOG(INFO) << "json2/status: " << s;
-  PROTOBUF_DLOG(INFO) << "json2/output: " << absl::BytesToHexString(out);
   return s;
 }
 }  // namespace json_internal

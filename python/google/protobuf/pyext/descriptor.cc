@@ -32,7 +32,8 @@
 
 #include "google/protobuf/pyext/descriptor.h"
 
-#include "google/protobuf/stubs/logging.h"
+#include "absl/log/absl_check.h"
+#include "google/protobuf/descriptor_legacy.h"
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -125,7 +126,9 @@ PyObject* PyString_FromCppString(const std::string& str) {
 // TODO(amauryfa): Change the proto2 compiler to remove the assignments, and
 // remove this hack.
 bool _CalledFromGeneratedFile(int stacklevel) {
-#ifndef PYPY_VERSION
+#ifdef PYPY_VERSION
+  return true;
+#else
   // This check is not critical and is somewhat difficult to implement correctly
   // in PyPy.
   PyFrameObject* frame = PyEval_GetFrame();
@@ -181,7 +184,6 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     // Not at global module scope
     goto exit;
   }
-#endif
   result = true;
 exit:
   Py_XDECREF(frame_globals);
@@ -189,6 +191,7 @@ exit:
   Py_XDECREF(frame_code);
   Py_XDECREF(frame);
   return result;
+#endif
 }
 
 // If the calling code is not a _pb2.py file, raise AttributeError.
@@ -406,7 +409,7 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
   std::unordered_map<const void*, PyObject*>::iterator it =
       interned_descriptors->find(descriptor);
   if (it != interned_descriptors->end()) {
-    GOOGLE_ABSL_DCHECK(Py_TYPE(it->second) == type);
+    ABSL_DCHECK(Py_TYPE(it->second) == type);
     Py_INCREF(it->second);
     return it->second;
   }
@@ -618,8 +621,8 @@ static PyObject* GetExtensionRanges(PyBaseDescriptor *self, void *closure) {
 
   for (int i = 0; i < descriptor->extension_range_count(); i++) {
     const Descriptor::ExtensionRange* range = descriptor->extension_range(i);
-    PyObject* start = PyLong_FromLong(range->start);
-    PyObject* end = PyLong_FromLong(range->end);
+    PyObject* start = PyLong_FromLong(range->start_number());
+    PyObject* end = PyLong_FromLong(range->end_number());
     PyList_SetItem(range_list, i, PyTuple_Pack(2, start, end));
   }
 
@@ -692,8 +695,9 @@ static PyObject* EnumValueName(PyBaseDescriptor *self, PyObject *args) {
 }
 
 static PyObject* GetSyntax(PyBaseDescriptor *self, void *closure) {
-  return PyUnicode_InternFromString(
-      FileDescriptor::SyntaxName(_GetDescriptor(self)->file()->syntax()));
+  std::string syntax(FileDescriptorLegacy::SyntaxName(
+      FileDescriptorLegacy(_GetDescriptor(self)->file()).syntax()));
+  return PyUnicode_InternFromString(syntax.c_str());
 }
 
 static PyGetSetDef Getters[] = {
@@ -1512,8 +1516,9 @@ static int SetSerializedOptions(PyFileDescriptor *self, PyObject *value,
 }
 
 static PyObject* GetSyntax(PyFileDescriptor *self, void *closure) {
-  return PyUnicode_InternFromString(
-      FileDescriptor::SyntaxName(_GetDescriptor(self)->syntax()));
+  std::string syntax(FileDescriptorLegacy::SyntaxName(
+      FileDescriptorLegacy(_GetDescriptor(self)).syntax()));
+  return PyUnicode_InternFromString(syntax.c_str());
 }
 
 static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {

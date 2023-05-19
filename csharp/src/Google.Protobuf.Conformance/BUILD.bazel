@@ -37,9 +37,8 @@ CONFORMANCE_DEPS = [
 filegroup(
     name = "srcs",
     srcs = [
-        "Conformance.cs",
-        "Program.cs",
         "Google.Protobuf.Conformance.csproj",
+        "Program.cs",
     ],
     visibility = [
         "//csharp:__subpackages__",
@@ -54,15 +53,15 @@ genrule(
         "//conformance:conformance_csharp_proto",
         "//csharp:srcs",
     ],
-    visibility = ["//visibility:private"],
-    tools = [":build_conformance_test"],
     outs = CONFORMANCE_DEPS + ["Google.Protobuf.Conformance.dll"],
     cmd = """
         SRCDIR=$$(dirname $(location :Program.cs))
         cp $(location //conformance:conformance_csharp_proto) $$SRCDIR
         DOTNET_CLI_HOME=/tmp ./$(location :build_conformance_test)
-        cp -r $$SRCDIR/bin/Release/netcoreapp3.1/* $(RULEDIR)
+        cp -r $$SRCDIR/bin/Release/net6.0/* $(RULEDIR)
     """,
+    tools = [":build_conformance_test"],
+    visibility = ["//visibility:private"],
 )
 
 filegroup(
@@ -88,10 +87,8 @@ pkg_files(
     srcs = [
         "BUILD.bazel",
         "Google.Protobuf.Conformance.csproj",
-        "Conformance.cs",
         "Program.cs",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//csharp:__pkg__"],
 )
-

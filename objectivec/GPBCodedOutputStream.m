@@ -48,6 +48,7 @@ typedef struct GPBOutputBufferState {
   uint8_t *bytes;
   size_t size;
   size_t position;
+  size_t bytesFlushed;
   NSOutputStream *output;
 } GPBOutputBufferState;
 
@@ -71,6 +72,7 @@ static void GPBRefreshBuffer(GPBOutputBufferState *state) {
     if (written != (NSInteger)state->position) {
       [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
     }
+    state->bytesFlushed += written;
     state->position = 0;
   }
 }
@@ -191,6 +193,13 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
 // protos can turn on -Wdirect-ivar-access without issues.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
+- (size_t)bytesWritten {
+  // Could use NSStreamFileCurrentOffsetKey on state_.output if there is a stream, that could be
+  // expensive, manually tracking what is flush keeps things faster so message serialization can
+  // check it.
+  return state_.bytesFlushed + state_.position;
+}
 
 - (void)writeDoubleNoTag:(double)value {
   GPBWriteRawLittleEndian64(&state_, GPBConvertDoubleToInt64(value));
@@ -886,6 +895,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
       if (written != (NSInteger)length) {
         [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
       }
+      state_.bytesFlushed += written;
     }
   }
 }

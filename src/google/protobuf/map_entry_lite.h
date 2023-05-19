@@ -424,19 +424,19 @@ class MapEntryImpl : public Base {
   uint32_t _has_bits_[1];
 
  private:
-  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
+  friend class google::protobuf::Arena;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   template <typename C, typename K, typename V, WireFormatLite::FieldType,
             WireFormatLite::FieldType>
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::MapEntry;
+  friend class google::protobuf::internal::MapEntry;
   template <typename C, typename K, typename V, WireFormatLite::FieldType,
             WireFormatLite::FieldType>
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::MapFieldLite;
+  friend class google::protobuf::internal::MapFieldLite;
 
   template <typename DerivedT, typename KeyT, typename TT,
             WireFormatLite::FieldType, WireFormatLite::FieldType>
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::MapField;
+  friend class google::protobuf::internal::MapField;
 };
 
 template <typename T, typename Key, typename Value,
