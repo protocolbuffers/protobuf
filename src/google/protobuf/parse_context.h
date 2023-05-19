@@ -245,7 +245,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   PROTOBUF_NODISCARD const char* ReadPackedFixed(const char* ptr, int size,
                                                  RepeatedField<T>* out);
   template <typename Add>
-  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add);
+  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add) {
+    return ReadPackedVarint(ptr, add, [](int) {});
+  }
+  template <typename Add, typename SizeCb>
+  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add,
+                                                  SizeCb size_callback);
 
   uint32_t LastTag() const { return last_tag_minus_1_ + 1; }
   bool ConsumeEndGroup(uint32_t start_tag) {
@@ -1235,9 +1240,12 @@ const char* ReadPackedVarintArray(const char* ptr, const char* end, Add add) {
   return ptr;
 }
 
-template <typename Add>
-const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
+template <typename Add, typename SizeCb>
+const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add,
+                                                 SizeCb size_callback) {
   int size = ReadSize(&ptr);
+  size_callback(size);
+
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int chunk_size = static_cast<int>(buffer_end_ - ptr);
   while (size > chunk_size) {

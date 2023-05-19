@@ -1389,13 +1389,23 @@ const char* TcParser::PackedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
   auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
   const uint8_t max = data.aux_idx();
 
-  return ctx->ReadPackedVarint(ptr, [=](int32_t v) {
-    if (PROTOBUF_PREDICT_FALSE(min > v || v > max)) {
-      AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
-    } else {
-      field->Add(v);
-    }
-  });
+  return ctx->ReadPackedVarint(
+      ptr,
+      [=](int32_t v) {
+        if (PROTOBUF_PREDICT_FALSE(min > v || v > max)) {
+          AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
+        } else {
+          // The size_callback below ensures that we have enough capacity.
+          field->AddAlreadyReserved(v);
+        }
+      },
+      /*size_callback=*/
+      [=](int32_t size_bytes) {
+        // For enums that fit in one varint byte, optimistically assume that all
+        // the values are one byte long (i.e. no large unknown values).  If so,
+        // we know exactly how many values we're going to get.
+        field->Reserve(field->size() + size_bytes);
+      });
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0P1(PROTOBUF_TC_PARAM_DECL) {
