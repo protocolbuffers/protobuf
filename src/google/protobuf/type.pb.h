@@ -242,10 +242,12 @@ class PROTOBUF_EXPORT Type final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -353,17 +355,17 @@ class PROTOBUF_EXPORT Type final :
 
   public:
   void clear_fields() ;
-  ::google::protobuf::Field* mutable_fields(int index);
+  ::google::protobuf::Field* mutable_fields(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >*
-      mutable_fields();
+      mutable_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& _internal_fields() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* _internal_mutable_fields();
   public:
-  const ::google::protobuf::Field& fields(int index) const;
-  ::google::protobuf::Field* add_fields();
+  const ::google::protobuf::Field& fields(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Field* add_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >&
-      fields() const;
+      fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   // repeated string oneofs = 3;
   int oneofs_size() const;
   private:
@@ -371,21 +373,25 @@ class PROTOBUF_EXPORT Type final :
 
   public:
   void clear_oneofs() ;
-  const std::string& oneofs(int index) const;
-  std::string* mutable_oneofs(int index);
+  const std::string& oneofs(int index) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_oneofs(int index)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   void set_oneofs(int index, const std::string& value);
   void set_oneofs(int index, std::string&& value);
   void set_oneofs(int index, const char* value);
   void set_oneofs(int index, const char* value, std::size_t size);
   void set_oneofs(int index, absl::string_view value);
-  std::string* add_oneofs();
+  std::string* add_oneofs() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   void add_oneofs(const std::string& value);
   void add_oneofs(std::string&& value);
   void add_oneofs(const char* value);
   void add_oneofs(const char* value, std::size_t size);
   void add_oneofs(absl::string_view value);
-  const ::google::protobuf::RepeatedPtrField<std::string>& oneofs() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* mutable_oneofs();
+  const ::google::protobuf::RepeatedPtrField<std::string>& oneofs() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::RepeatedPtrField<std::string>* mutable_oneofs()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   private:
   const ::google::protobuf::RepeatedPtrField<std::string>& _internal_oneofs() const;
@@ -399,23 +405,24 @@ class PROTOBUF_EXPORT Type final :
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* mutable_options(int index);
+  ::google::protobuf::Option* mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+      mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* _internal_mutable_options();
   public:
-  const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* add_options();
+  const ::google::protobuf::Option& options(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Option* add_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-      options() const;
+      options() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   // string name = 1;
   void clear_name() ;
-  const std::string& name() const;
+  const std::string& name() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
+  std::string* mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* ptr);
 
@@ -428,10 +435,11 @@ class PROTOBUF_EXPORT Type final :
   public:
   // string edition = 7;
   void clear_edition() ;
-  const std::string& edition() const;
+  const std::string& edition() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_edition(Arg_&& arg, Args_... args);
-  std::string* mutable_edition();
+  std::string* mutable_edition() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_edition();
   void set_allocated_edition(std::string* ptr);
 
@@ -445,9 +453,9 @@ class PROTOBUF_EXPORT Type final :
   // .google.protobuf.SourceContext source_context = 5;
   bool has_source_context() const;
   void clear_source_context() ;
-  const ::google::protobuf::SourceContext& source_context() const;
+  const ::google::protobuf::SourceContext& source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD ::google::protobuf::SourceContext* release_source_context();
-  ::google::protobuf::SourceContext* mutable_source_context();
+  ::google::protobuf::SourceContext* mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   void set_allocated_source_context(::google::protobuf::SourceContext* value);
   void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value);
   ::google::protobuf::SourceContext* unsafe_arena_release_source_context();
@@ -523,10 +531,12 @@ class PROTOBUF_EXPORT Field final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -696,23 +706,24 @@ class PROTOBUF_EXPORT Field final :
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* mutable_options(int index);
+  ::google::protobuf::Option* mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+      mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* _internal_mutable_options();
   public:
-  const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* add_options();
+  const ::google::protobuf::Option& options(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Option* add_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-      options() const;
+      options() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   // string name = 4;
   void clear_name() ;
-  const std::string& name() const;
+  const std::string& name() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
+  std::string* mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* ptr);
 
@@ -725,10 +736,11 @@ class PROTOBUF_EXPORT Field final :
   public:
   // string type_url = 6;
   void clear_type_url() ;
-  const std::string& type_url() const;
+  const std::string& type_url() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_type_url(Arg_&& arg, Args_... args);
-  std::string* mutable_type_url();
+  std::string* mutable_type_url() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_type_url();
   void set_allocated_type_url(std::string* ptr);
 
@@ -741,10 +753,11 @@ class PROTOBUF_EXPORT Field final :
   public:
   // string json_name = 10;
   void clear_json_name() ;
-  const std::string& json_name() const;
+  const std::string& json_name() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_json_name(Arg_&& arg, Args_... args);
-  std::string* mutable_json_name();
+  std::string* mutable_json_name() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_json_name();
   void set_allocated_json_name(std::string* ptr);
 
@@ -757,10 +770,11 @@ class PROTOBUF_EXPORT Field final :
   public:
   // string default_value = 11;
   void clear_default_value() ;
-  const std::string& default_value() const;
+  const std::string& default_value() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_default_value(Arg_&& arg, Args_... args);
-  std::string* mutable_default_value();
+  std::string* mutable_default_value() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_default_value();
   void set_allocated_default_value(std::string* ptr);
 
@@ -879,10 +893,12 @@ class PROTOBUF_EXPORT Enum final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -989,17 +1005,17 @@ class PROTOBUF_EXPORT Enum final :
 
   public:
   void clear_enumvalue() ;
-  ::google::protobuf::EnumValue* mutable_enumvalue(int index);
+  ::google::protobuf::EnumValue* mutable_enumvalue(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >*
-      mutable_enumvalue();
+      mutable_enumvalue() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>& _internal_enumvalue() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* _internal_mutable_enumvalue();
   public:
-  const ::google::protobuf::EnumValue& enumvalue(int index) const;
-  ::google::protobuf::EnumValue* add_enumvalue();
+  const ::google::protobuf::EnumValue& enumvalue(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::EnumValue* add_enumvalue() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >&
-      enumvalue() const;
+      enumvalue() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   // repeated .google.protobuf.Option options = 3;
   int options_size() const;
   private:
@@ -1007,23 +1023,24 @@ class PROTOBUF_EXPORT Enum final :
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* mutable_options(int index);
+  ::google::protobuf::Option* mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+      mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* _internal_mutable_options();
   public:
-  const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* add_options();
+  const ::google::protobuf::Option& options(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Option* add_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-      options() const;
+      options() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   // string name = 1;
   void clear_name() ;
-  const std::string& name() const;
+  const std::string& name() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
+  std::string* mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* ptr);
 
@@ -1036,10 +1053,11 @@ class PROTOBUF_EXPORT Enum final :
   public:
   // string edition = 6;
   void clear_edition() ;
-  const std::string& edition() const;
+  const std::string& edition() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_edition(Arg_&& arg, Args_... args);
-  std::string* mutable_edition();
+  std::string* mutable_edition() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_edition();
   void set_allocated_edition(std::string* ptr);
 
@@ -1053,9 +1071,9 @@ class PROTOBUF_EXPORT Enum final :
   // .google.protobuf.SourceContext source_context = 4;
   bool has_source_context() const;
   void clear_source_context() ;
-  const ::google::protobuf::SourceContext& source_context() const;
+  const ::google::protobuf::SourceContext& source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD ::google::protobuf::SourceContext* release_source_context();
-  ::google::protobuf::SourceContext* mutable_source_context();
+  ::google::protobuf::SourceContext* mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   void set_allocated_source_context(::google::protobuf::SourceContext* value);
   void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value);
   ::google::protobuf::SourceContext* unsafe_arena_release_source_context();
@@ -1130,10 +1148,12 @@ class PROTOBUF_EXPORT EnumValue final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -1237,23 +1257,24 @@ class PROTOBUF_EXPORT EnumValue final :
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* mutable_options(int index);
+  ::google::protobuf::Option* mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+      mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* _internal_mutable_options();
   public:
-  const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* add_options();
+  const ::google::protobuf::Option& options(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Option* add_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-      options() const;
+      options() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   // string name = 1;
   void clear_name() ;
-  const std::string& name() const;
+  const std::string& name() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
+  std::string* mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* ptr);
 
@@ -1325,10 +1346,12 @@ class PROTOBUF_EXPORT Option final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -1426,10 +1449,11 @@ class PROTOBUF_EXPORT Option final :
   };
   // string name = 1;
   void clear_name() ;
-  const std::string& name() const;
+  const std::string& name() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
+  std::string* mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* ptr);
 
@@ -1443,9 +1467,9 @@ class PROTOBUF_EXPORT Option final :
   // .google.protobuf.Any value = 2;
   bool has_value() const;
   void clear_value() ;
-  const ::google::protobuf::Any& value() const;
+  const ::google::protobuf::Any& value() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD ::google::protobuf::Any* release_value();
-  ::google::protobuf::Any* mutable_value();
+  ::google::protobuf::Any* mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   void set_allocated_value(::google::protobuf::Any* value);
   void unsafe_arena_set_allocated_value(::google::protobuf::Any* value);
   ::google::protobuf::Any* unsafe_arena_release_value();
@@ -1494,7 +1518,8 @@ class PROTOBUF_EXPORT Option final :
 inline void Type::clear_name() {
   _impl_.name_.ClearToEmpty();
 }
-inline const std::string& Type::name() const {
+inline const std::string& Type::name() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.name)
   return _internal_name();
 }
@@ -1505,7 +1530,7 @@ inline PROTOBUF_ALWAYS_INLINE void Type::set_name(Arg_&& arg,
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Type.name)
 }
-inline std::string* Type::mutable_name() {
+inline std::string* Type::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.name)
   return _s;
@@ -1545,26 +1570,26 @@ inline int Type::fields_size() const {
 inline void Type::clear_fields() {
   _internal_mutable_fields()->Clear();
 }
-inline ::google::protobuf::Field* Type::mutable_fields(int index) {
+inline ::google::protobuf::Field* Type::mutable_fields(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.fields)
   return _internal_mutable_fields()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >*
-Type::mutable_fields() {
+Type::mutable_fields()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.fields)
   return _internal_mutable_fields();
 }
-inline const ::google::protobuf::Field& Type::fields(int index) const {
+inline const ::google::protobuf::Field& Type::fields(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_get:google.protobuf.Type.fields)
     return _internal_fields().Get(index);
 }
-inline ::google::protobuf::Field* Type::add_fields() {
+inline ::google::protobuf::Field* Type::add_fields()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   ::google::protobuf::Field* _add = _internal_mutable_fields()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Type.fields)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >&
-Type::fields() const {
+Type::fields() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_list:google.protobuf.Type.fields)
   return _internal_fields();
 }
@@ -1587,16 +1612,19 @@ inline int Type::oneofs_size() const {
 inline void Type::clear_oneofs() {
   _internal_mutable_oneofs()->Clear();
 }
-inline std::string* Type::add_oneofs() {
+inline std::string* Type::add_oneofs()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_oneofs()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.Type.oneofs)
   return _s;
 }
-inline const std::string& Type::oneofs(int index) const {
+inline const std::string& Type::oneofs(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.oneofs)
   return _internal_oneofs().Get(index);
 }
-inline std::string* Type::mutable_oneofs(int index) {
+inline std::string* Type::mutable_oneofs(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.oneofs)
   return _internal_mutable_oneofs()->Mutable(index);
 }
@@ -1647,11 +1675,12 @@ inline void Type::add_oneofs(absl::string_view value) {
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.Type.oneofs)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
-Type::oneofs() const {
+Type::oneofs() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Type.oneofs)
   return _internal_oneofs();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* Type::mutable_oneofs() {
+inline ::google::protobuf::RepeatedPtrField<std::string>*
+Type::mutable_oneofs() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.oneofs)
   return _internal_mutable_oneofs();
 }
@@ -1674,26 +1703,26 @@ inline int Type::options_size() const {
 inline void Type::clear_options() {
   _internal_mutable_options()->Clear();
 }
-inline ::google::protobuf::Option* Type::mutable_options(int index) {
+inline ::google::protobuf::Option* Type::mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.options)
   return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Type::mutable_options() {
+Type::mutable_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.options)
   return _internal_mutable_options();
 }
-inline const ::google::protobuf::Option& Type::options(int index) const {
+inline const ::google::protobuf::Option& Type::options(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_get:google.protobuf.Type.options)
     return _internal_options().Get(index);
 }
-inline ::google::protobuf::Option* Type::add_options() {
+inline ::google::protobuf::Option* Type::add_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Type.options)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-Type::options() const {
+Type::options() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_list:google.protobuf.Type.options)
   return _internal_options();
 }
@@ -1716,7 +1745,7 @@ inline const ::google::protobuf::SourceContext& Type::_internal_source_context()
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceContext&>(::google::protobuf::_SourceContext_default_instance_);
 }
-inline const ::google::protobuf::SourceContext& Type::source_context() const {
+inline const ::google::protobuf::SourceContext& Type::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.source_context)
   return _internal_source_context();
 }
@@ -1766,7 +1795,7 @@ inline ::google::protobuf::SourceContext* Type::_internal_mutable_source_context
   }
   return _impl_.source_context_;
 }
-inline ::google::protobuf::SourceContext* Type::mutable_source_context() {
+inline ::google::protobuf::SourceContext* Type::mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::SourceContext* _msg = _internal_mutable_source_context();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.source_context)
   return _msg;
@@ -1816,7 +1845,8 @@ inline void Type::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Type::clear_edition() {
   _impl_.edition_.ClearToEmpty();
 }
-inline const std::string& Type::edition() const {
+inline const std::string& Type::edition() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.edition)
   return _internal_edition();
 }
@@ -1827,7 +1857,7 @@ inline PROTOBUF_ALWAYS_INLINE void Type::set_edition(Arg_&& arg,
   _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Type.edition)
 }
-inline std::string* Type::mutable_edition() {
+inline std::string* Type::mutable_edition() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_edition();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.edition)
   return _s;
@@ -1925,7 +1955,8 @@ inline void Field::_internal_set_number(::int32_t value) {
 inline void Field::clear_name() {
   _impl_.name_.ClearToEmpty();
 }
-inline const std::string& Field::name() const {
+inline const std::string& Field::name() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.name)
   return _internal_name();
 }
@@ -1936,7 +1967,7 @@ inline PROTOBUF_ALWAYS_INLINE void Field::set_name(Arg_&& arg,
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.name)
 }
-inline std::string* Field::mutable_name() {
+inline std::string* Field::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Field.name)
   return _s;
@@ -1970,7 +2001,8 @@ inline void Field::set_allocated_name(std::string* value) {
 inline void Field::clear_type_url() {
   _impl_.type_url_.ClearToEmpty();
 }
-inline const std::string& Field::type_url() const {
+inline const std::string& Field::type_url() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.type_url)
   return _internal_type_url();
 }
@@ -1981,7 +2013,7 @@ inline PROTOBUF_ALWAYS_INLINE void Field::set_type_url(Arg_&& arg,
   _impl_.type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.type_url)
 }
-inline std::string* Field::mutable_type_url() {
+inline std::string* Field::mutable_type_url() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_type_url();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Field.type_url)
   return _s;
@@ -2061,26 +2093,26 @@ inline int Field::options_size() const {
 inline void Field::clear_options() {
   _internal_mutable_options()->Clear();
 }
-inline ::google::protobuf::Option* Field::mutable_options(int index) {
+inline ::google::protobuf::Option* Field::mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Field.options)
   return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Field::mutable_options() {
+Field::mutable_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Field.options)
   return _internal_mutable_options();
 }
-inline const ::google::protobuf::Option& Field::options(int index) const {
+inline const ::google::protobuf::Option& Field::options(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_get:google.protobuf.Field.options)
     return _internal_options().Get(index);
 }
-inline ::google::protobuf::Option* Field::add_options() {
+inline ::google::protobuf::Option* Field::add_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Field.options)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-Field::options() const {
+Field::options() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_list:google.protobuf.Field.options)
   return _internal_options();
 }
@@ -2097,7 +2129,8 @@ Field::_internal_mutable_options() {
 inline void Field::clear_json_name() {
   _impl_.json_name_.ClearToEmpty();
 }
-inline const std::string& Field::json_name() const {
+inline const std::string& Field::json_name() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.json_name)
   return _internal_json_name();
 }
@@ -2108,7 +2141,7 @@ inline PROTOBUF_ALWAYS_INLINE void Field::set_json_name(Arg_&& arg,
   _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.json_name)
 }
-inline std::string* Field::mutable_json_name() {
+inline std::string* Field::mutable_json_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_json_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Field.json_name)
   return _s;
@@ -2142,7 +2175,8 @@ inline void Field::set_allocated_json_name(std::string* value) {
 inline void Field::clear_default_value() {
   _impl_.default_value_.ClearToEmpty();
 }
-inline const std::string& Field::default_value() const {
+inline const std::string& Field::default_value() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.default_value)
   return _internal_default_value();
 }
@@ -2153,7 +2187,7 @@ inline PROTOBUF_ALWAYS_INLINE void Field::set_default_value(Arg_&& arg,
   _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.default_value)
 }
-inline std::string* Field::mutable_default_value() {
+inline std::string* Field::mutable_default_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_default_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Field.default_value)
   return _s;
@@ -2191,7 +2225,8 @@ inline void Field::set_allocated_default_value(std::string* value) {
 inline void Enum::clear_name() {
   _impl_.name_.ClearToEmpty();
 }
-inline const std::string& Enum::name() const {
+inline const std::string& Enum::name() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.name)
   return _internal_name();
 }
@@ -2202,7 +2237,7 @@ inline PROTOBUF_ALWAYS_INLINE void Enum::set_name(Arg_&& arg,
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.name)
 }
-inline std::string* Enum::mutable_name() {
+inline std::string* Enum::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.name)
   return _s;
@@ -2242,26 +2277,26 @@ inline int Enum::enumvalue_size() const {
 inline void Enum::clear_enumvalue() {
   _internal_mutable_enumvalue()->Clear();
 }
-inline ::google::protobuf::EnumValue* Enum::mutable_enumvalue(int index) {
+inline ::google::protobuf::EnumValue* Enum::mutable_enumvalue(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.enumvalue)
   return _internal_mutable_enumvalue()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >*
-Enum::mutable_enumvalue() {
+Enum::mutable_enumvalue()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.enumvalue)
   return _internal_mutable_enumvalue();
 }
-inline const ::google::protobuf::EnumValue& Enum::enumvalue(int index) const {
+inline const ::google::protobuf::EnumValue& Enum::enumvalue(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.enumvalue)
     return _internal_enumvalue().Get(index);
 }
-inline ::google::protobuf::EnumValue* Enum::add_enumvalue() {
+inline ::google::protobuf::EnumValue* Enum::add_enumvalue()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   ::google::protobuf::EnumValue* _add = _internal_mutable_enumvalue()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Enum.enumvalue)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >&
-Enum::enumvalue() const {
+Enum::enumvalue() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_list:google.protobuf.Enum.enumvalue)
   return _internal_enumvalue();
 }
@@ -2284,26 +2319,26 @@ inline int Enum::options_size() const {
 inline void Enum::clear_options() {
   _internal_mutable_options()->Clear();
 }
-inline ::google::protobuf::Option* Enum::mutable_options(int index) {
+inline ::google::protobuf::Option* Enum::mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.options)
   return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Enum::mutable_options() {
+Enum::mutable_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.options)
   return _internal_mutable_options();
 }
-inline const ::google::protobuf::Option& Enum::options(int index) const {
+inline const ::google::protobuf::Option& Enum::options(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.options)
     return _internal_options().Get(index);
 }
-inline ::google::protobuf::Option* Enum::add_options() {
+inline ::google::protobuf::Option* Enum::add_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Enum.options)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-Enum::options() const {
+Enum::options() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_list:google.protobuf.Enum.options)
   return _internal_options();
 }
@@ -2326,7 +2361,7 @@ inline const ::google::protobuf::SourceContext& Enum::_internal_source_context()
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceContext&>(::google::protobuf::_SourceContext_default_instance_);
 }
-inline const ::google::protobuf::SourceContext& Enum::source_context() const {
+inline const ::google::protobuf::SourceContext& Enum::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.source_context)
   return _internal_source_context();
 }
@@ -2376,7 +2411,7 @@ inline ::google::protobuf::SourceContext* Enum::_internal_mutable_source_context
   }
   return _impl_.source_context_;
 }
-inline ::google::protobuf::SourceContext* Enum::mutable_source_context() {
+inline ::google::protobuf::SourceContext* Enum::mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::SourceContext* _msg = _internal_mutable_source_context();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.source_context)
   return _msg;
@@ -2426,7 +2461,8 @@ inline void Enum::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Enum::clear_edition() {
   _impl_.edition_.ClearToEmpty();
 }
-inline const std::string& Enum::edition() const {
+inline const std::string& Enum::edition() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.edition)
   return _internal_edition();
 }
@@ -2437,7 +2473,7 @@ inline PROTOBUF_ALWAYS_INLINE void Enum::set_edition(Arg_&& arg,
   _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.edition)
 }
-inline std::string* Enum::mutable_edition() {
+inline std::string* Enum::mutable_edition() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_edition();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.edition)
   return _s;
@@ -2475,7 +2511,8 @@ inline void Enum::set_allocated_edition(std::string* value) {
 inline void EnumValue::clear_name() {
   _impl_.name_.ClearToEmpty();
 }
-inline const std::string& EnumValue::name() const {
+inline const std::string& EnumValue::name() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.name)
   return _internal_name();
 }
@@ -2486,7 +2523,7 @@ inline PROTOBUF_ALWAYS_INLINE void EnumValue::set_name(Arg_&& arg,
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValue.name)
 }
-inline std::string* EnumValue::mutable_name() {
+inline std::string* EnumValue::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValue.name)
   return _s;
@@ -2546,26 +2583,26 @@ inline int EnumValue::options_size() const {
 inline void EnumValue::clear_options() {
   _internal_mutable_options()->Clear();
 }
-inline ::google::protobuf::Option* EnumValue::mutable_options(int index) {
+inline ::google::protobuf::Option* EnumValue::mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValue.options)
   return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-EnumValue::mutable_options() {
+EnumValue::mutable_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValue.options)
   return _internal_mutable_options();
 }
-inline const ::google::protobuf::Option& EnumValue::options(int index) const {
+inline const ::google::protobuf::Option& EnumValue::options(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.options)
     return _internal_options().Get(index);
 }
-inline ::google::protobuf::Option* EnumValue::add_options() {
+inline ::google::protobuf::Option* EnumValue::add_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumValue.options)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-EnumValue::options() const {
+EnumValue::options() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_list:google.protobuf.EnumValue.options)
   return _internal_options();
 }
@@ -2586,7 +2623,8 @@ EnumValue::_internal_mutable_options() {
 inline void Option::clear_name() {
   _impl_.name_.ClearToEmpty();
 }
-inline const std::string& Option::name() const {
+inline const std::string& Option::name() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Option.name)
   return _internal_name();
 }
@@ -2597,7 +2635,7 @@ inline PROTOBUF_ALWAYS_INLINE void Option::set_name(Arg_&& arg,
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Option.name)
 }
-inline std::string* Option::mutable_name() {
+inline std::string* Option::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Option.name)
   return _s;
@@ -2637,7 +2675,7 @@ inline const ::google::protobuf::Any& Option::_internal_value() const {
   const ::google::protobuf::Any* p = _impl_.value_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::Any&>(::google::protobuf::_Any_default_instance_);
 }
-inline const ::google::protobuf::Any& Option::value() const {
+inline const ::google::protobuf::Any& Option::value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Option.value)
   return _internal_value();
 }
@@ -2687,7 +2725,7 @@ inline ::google::protobuf::Any* Option::_internal_mutable_value() {
   }
   return _impl_.value_;
 }
-inline ::google::protobuf::Any* Option::mutable_value() {
+inline ::google::protobuf::Any* Option::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::Any* _msg = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Option.value)
   return _msg;

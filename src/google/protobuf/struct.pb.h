@@ -179,10 +179,12 @@ class PROTOBUF_EXPORT Struct final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -285,8 +287,8 @@ class PROTOBUF_EXPORT Struct final :
 
   public:
   void clear_fields() ;
-  const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& fields() const;
-  ::google::protobuf::Map<std::string, ::google::protobuf::Value>* mutable_fields();
+  const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Map<std::string, ::google::protobuf::Value>* mutable_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   private:
   const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& _internal_fields() const;
@@ -345,10 +347,12 @@ class PROTOBUF_EXPORT Value final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -483,10 +487,11 @@ class PROTOBUF_EXPORT Value final :
   // string string_value = 3;
   bool has_string_value() const;
   void clear_string_value() ;
-  const std::string& string_value() const;
+  const std::string& string_value() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
-  std::string* mutable_string_value();
+  std::string* mutable_string_value() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_string_value();
   void set_allocated_string_value(std::string* ptr);
 
@@ -515,9 +520,9 @@ class PROTOBUF_EXPORT Value final :
 
   public:
   void clear_struct_value() ;
-  const ::google::protobuf::Struct& struct_value() const;
+  const ::google::protobuf::Struct& struct_value() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD ::google::protobuf::Struct* release_struct_value();
-  ::google::protobuf::Struct* mutable_struct_value();
+  ::google::protobuf::Struct* mutable_struct_value() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   void set_allocated_struct_value(::google::protobuf::Struct* value);
   void unsafe_arena_set_allocated_struct_value(::google::protobuf::Struct* value);
   ::google::protobuf::Struct* unsafe_arena_release_struct_value();
@@ -534,9 +539,9 @@ class PROTOBUF_EXPORT Value final :
 
   public:
   void clear_list_value() ;
-  const ::google::protobuf::ListValue& list_value() const;
+  const ::google::protobuf::ListValue& list_value() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD ::google::protobuf::ListValue* release_list_value();
-  ::google::protobuf::ListValue* mutable_list_value();
+  ::google::protobuf::ListValue* mutable_list_value() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   void set_allocated_list_value(::google::protobuf::ListValue* value);
   void unsafe_arena_set_allocated_list_value(::google::protobuf::ListValue* value);
   ::google::protobuf::ListValue* unsafe_arena_release_list_value();
@@ -617,10 +622,12 @@ class PROTOBUF_EXPORT ListValue final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -722,17 +729,17 @@ class PROTOBUF_EXPORT ListValue final :
 
   public:
   void clear_values() ;
-  ::google::protobuf::Value* mutable_values(int index);
+  ::google::protobuf::Value* mutable_values(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >*
-      mutable_values();
+      mutable_values() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& _internal_values() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* _internal_mutable_values();
   public:
-  const ::google::protobuf::Value& values(int index) const;
-  ::google::protobuf::Value* add_values();
+  const ::google::protobuf::Value& values(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Value* add_values() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >&
-      values() const;
+      values() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   // @@protoc_insertion_point(class_scope:google.protobuf.ListValue)
  private:
   class _Internal;
@@ -781,14 +788,14 @@ inline void Struct::clear_fields() {
 inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::_internal_fields() const {
   return _impl_.fields_.GetMap();
 }
-inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::fields() const {
+inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_map:google.protobuf.Struct.fields)
   return _internal_fields();
 }
 inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::_internal_mutable_fields() {
   return _impl_.fields_.MutableMap();
 }
-inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::mutable_fields() {
+inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::mutable_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_map:google.protobuf.Struct.fields)
   return _internal_mutable_fields();
 }
@@ -880,7 +887,8 @@ inline void Value::clear_string_value() {
     clear_has_kind();
   }
 }
-inline const std::string& Value::string_value() const {
+inline const std::string& Value::string_value() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.string_value)
   return _internal_string_value();
 }
@@ -896,7 +904,7 @@ inline PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
   _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
-inline std::string* Value::mutable_string_value() {
+inline std::string* Value::mutable_string_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.string_value)
   return _s;
@@ -1016,7 +1024,7 @@ inline const ::google::protobuf::Struct& Value::_internal_struct_value() const {
       ? *_impl_.kind_.struct_value_
       : reinterpret_cast<::google::protobuf::Struct&>(::google::protobuf::_Struct_default_instance_);
 }
-inline const ::google::protobuf::Struct& Value::struct_value() const {
+inline const ::google::protobuf::Struct& Value::struct_value() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_get:google.protobuf.Value.struct_value)
   return _internal_struct_value();
 }
@@ -1047,7 +1055,7 @@ inline ::google::protobuf::Struct* Value::_internal_mutable_struct_value() {
   }
   return _impl_.kind_.struct_value_;
 }
-inline ::google::protobuf::Struct* Value::mutable_struct_value() {
+inline ::google::protobuf::Struct* Value::mutable_struct_value()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   ::google::protobuf::Struct* _msg = _internal_mutable_struct_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.struct_value)
   return _msg;
@@ -1090,7 +1098,7 @@ inline const ::google::protobuf::ListValue& Value::_internal_list_value() const 
       ? *_impl_.kind_.list_value_
       : reinterpret_cast<::google::protobuf::ListValue&>(::google::protobuf::_ListValue_default_instance_);
 }
-inline const ::google::protobuf::ListValue& Value::list_value() const {
+inline const ::google::protobuf::ListValue& Value::list_value() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_get:google.protobuf.Value.list_value)
   return _internal_list_value();
 }
@@ -1121,7 +1129,7 @@ inline ::google::protobuf::ListValue* Value::_internal_mutable_list_value() {
   }
   return _impl_.kind_.list_value_;
 }
-inline ::google::protobuf::ListValue* Value::mutable_list_value() {
+inline ::google::protobuf::ListValue* Value::mutable_list_value()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   ::google::protobuf::ListValue* _msg = _internal_mutable_list_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.list_value)
   return _msg;
@@ -1150,26 +1158,26 @@ inline int ListValue::values_size() const {
 inline void ListValue::clear_values() {
   _internal_mutable_values()->Clear();
 }
-inline ::google::protobuf::Value* ListValue::mutable_values(int index) {
+inline ::google::protobuf::Value* ListValue::mutable_values(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ListValue.values)
   return _internal_mutable_values()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >*
-ListValue::mutable_values() {
+ListValue::mutable_values()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
   return _internal_mutable_values();
 }
-inline const ::google::protobuf::Value& ListValue::values(int index) const {
+inline const ::google::protobuf::Value& ListValue::values(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_get:google.protobuf.ListValue.values)
     return _internal_values().Get(index);
 }
-inline ::google::protobuf::Value* ListValue::add_values() {
+inline ::google::protobuf::Value* ListValue::add_values()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   ::google::protobuf::Value* _add = _internal_mutable_values()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >&
-ListValue::values() const {
+ListValue::values() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
   // @@protoc_insertion_point(field_list:google.protobuf.ListValue.values)
   return _internal_values();
 }

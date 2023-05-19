@@ -143,10 +143,12 @@ class PROTOBUF_EXPORT DoubleValue final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -300,10 +302,12 @@ class PROTOBUF_EXPORT FloatValue final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -457,10 +461,12 @@ class PROTOBUF_EXPORT Int64Value final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -614,10 +620,12 @@ class PROTOBUF_EXPORT UInt64Value final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -771,10 +779,12 @@ class PROTOBUF_EXPORT Int32Value final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -928,10 +938,12 @@ class PROTOBUF_EXPORT UInt32Value final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -1085,10 +1097,12 @@ class PROTOBUF_EXPORT BoolValue final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -1242,10 +1256,12 @@ class PROTOBUF_EXPORT StringValue final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -1342,10 +1358,11 @@ class PROTOBUF_EXPORT StringValue final :
   };
   // string value = 1;
   void clear_value() ;
-  const std::string& value() const;
+  const std::string& value() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
-  std::string* mutable_value();
+  std::string* mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_value();
   void set_allocated_value(std::string* ptr);
 
@@ -1405,10 +1422,12 @@ class PROTOBUF_EXPORT BytesValue final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -1505,10 +1524,11 @@ class PROTOBUF_EXPORT BytesValue final :
   };
   // bytes value = 1;
   void clear_value() ;
-  const std::string& value() const;
+  const std::string& value() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
-  std::string* mutable_value();
+  std::string* mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_NODISCARD std::string* release_value();
   void set_allocated_value(std::string* ptr);
 
@@ -1724,7 +1744,8 @@ inline void BoolValue::_internal_set_value(bool value) {
 inline void StringValue::clear_value() {
   _impl_.value_.ClearToEmpty();
 }
-inline const std::string& StringValue::value() const {
+inline const std::string& StringValue::value() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.StringValue.value)
   return _internal_value();
 }
@@ -1735,7 +1756,7 @@ inline PROTOBUF_ALWAYS_INLINE void StringValue::set_value(Arg_&& arg,
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.StringValue.value)
 }
-inline std::string* StringValue::mutable_value() {
+inline std::string* StringValue::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.StringValue.value)
   return _s;
@@ -1773,7 +1794,8 @@ inline void StringValue::set_allocated_value(std::string* value) {
 inline void BytesValue::clear_value() {
   _impl_.value_.ClearToEmpty();
 }
-inline const std::string& BytesValue::value() const {
+inline const std::string& BytesValue::value() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.BytesValue.value)
   return _internal_value();
 }
@@ -1784,7 +1806,7 @@ inline PROTOBUF_ALWAYS_INLINE void BytesValue::set_value(Arg_&& arg,
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.BytesValue.value)
 }
-inline std::string* BytesValue::mutable_value() {
+inline std::string* BytesValue::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.BytesValue.value)
   return _s;
