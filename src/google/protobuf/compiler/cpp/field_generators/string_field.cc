@@ -237,15 +237,14 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
           )cc");
         }}},
       R"cc(
-        $DEPRECATED$ const std::string& $name$() const
-            ABSL_ATTRIBUTE_LIFETIME_BOUND;
+        $DEPRECATED$ const std::string& $name$() const;
         //~ Using `Arg_ = const std::string&` will make the type of `arg`
         //~ default to `const std::string&`, due to reference collapse. This is
         //~ necessary because there are a handful of users that rely on this
         //~ default.
         template <typename Arg_ = const std::string&, typename... Args_>
         $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
-        $DEPRECATED$ std::string* $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+        $DEPRECATED$ std::string* $mutable_name$();
         $DEPRECATED$ PROTOBUF_NODISCARD std::string* $release_name$();
         $DEPRECATED$ void $set_allocated_name$(std::string* ptr);
 
@@ -418,8 +417,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           {"set_allocated_impl", [&] { SetAllocatedImpl(p); }},
       },
       R"cc(
-        inline const std::string& $Msg$::$name$() const
-            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        inline const std::string& $Msg$::$name$() const {
           $annotate_get$;
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
           $if_IsDefault$;
@@ -434,7 +432,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
-        inline std::string* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        inline std::string* $Msg$::mutable_$name$() {
           $PrepareSplitMessageForWrite$;
           std::string* _s = _internal_mutable_$name$();
           $annotate_mutable$;
@@ -777,25 +775,21 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ const std::string& $name$(int index) const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND;
-    $DEPRECATED$ std::string* $mutable_name$(int index)
-        ABSL_ATTRIBUTE_LIFETIME_BOUND;
+    $DEPRECATED$ const std::string& $name$(int index) const;
+    $DEPRECATED$ std::string* $mutable_name$(int index);
     $DEPRECATED$ void $set_name$(int index, const std::string& value);
     $DEPRECATED$ void $set_name$(int index, std::string&& value);
     $DEPRECATED$ void $set_name$(int index, const char* value);
     $DEPRECATED$ void $set_name$(int index, const $byte$* value, std::size_t size);
     $DEPRECATED$ void $set_name$(int index, absl::string_view value);
-    $DEPRECATED$ std::string* $add_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+    $DEPRECATED$ std::string* $add_name$();
     $DEPRECATED$ void $add_name$(const std::string& value);
     $DEPRECATED$ void $add_name$(std::string&& value);
     $DEPRECATED$ void $add_name$(const char* value);
     $DEPRECATED$ void $add_name$(const $byte$* value, std::size_t size);
     $DEPRECATED$ void $add_name$(absl::string_view value);
-    $DEPRECATED$ const $pb$::RepeatedPtrField<std::string>& $name$() const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND;
-    $DEPRECATED$ $pb$::RepeatedPtrField<std::string>* $mutable_name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND;
+    $DEPRECATED$ const $pb$::RepeatedPtrField<std::string>& $name$() const;
+    $DEPRECATED$ $pb$::RepeatedPtrField<std::string>* $mutable_name$();
 
     private:
     const $pb$::RepeatedPtrField<std::string>& _internal_$name$() const;
@@ -814,21 +808,18 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
                           : "");
             }}},
           R"cc(
-            inline std::string* $Msg$::add_$name$()
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
+            inline std::string* $Msg$::add_$name$() {
               std::string* _s = _internal_mutable_$name$()->Add();
               $annotate_add_mutable$;
               // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
               return _s;
             }
-            inline const std::string& $Msg$::$name$(int index) const
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
+            inline const std::string& $Msg$::$name$(int index) const {
               $annotate_get$;
               // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
               return _internal_$name$().$Get$(index$GetExtraArg$);
             }
-            inline std::string* $Msg$::mutable_$name$(int index)
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
+            inline std::string* $Msg$::mutable_$name$(int index) {
               $annotate_mutable$;
               // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
               return _internal_mutable_$name$()->Mutable(index);
@@ -890,13 +881,12 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
               // @@protoc_insertion_point(field_add_string_piece:$pkg.Msg.field$)
             }
             inline const ::$proto_ns$::RepeatedPtrField<std::string>&
-            $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+            $Msg$::$name$() const {
               $annotate_list$;
               // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
               return _internal_$name$();
             }
-            inline ::$proto_ns$::RepeatedPtrField<std::string>*
-            $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+            inline ::$proto_ns$::RepeatedPtrField<std::string>* $Msg$::mutable_$name$() {
               $annotate_mutable_list$;
               // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
               return _internal_mutable_$name$();
