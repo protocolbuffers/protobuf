@@ -133,41 +133,50 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     if (count > 0) StreamBackUp(count);
   }
 
-  // In sanitizer mode we use memory poisoning to guarantee that:
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || defined(ABSL_HAVE_MEMORY_SANITIZER)
+  // In sanitizer mode we use an optional<int> to guarantee that:
   //  - We do not read an uninitialized token.
   //  - Every non-empty token is moved from and consumed.
   class LimitToken {
    public:
-    LimitToken() { PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_)); }
-    explicit LimitToken(int token) : token_(token) {
-      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
-    }
+    LimitToken() = default;
+    explicit LimitToken(int token) : token_(token) {}
     LimitToken(LimitToken&& other) { *this = std::move(other); }
     LimitToken& operator=(LimitToken&& other) {
-      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
-      token_ = other.token_;
-      PROTOBUF_POISON_MEMORY_REGION(&other.token_, sizeof(token_));
+      token_ = std::exchange(other.token_, absl::nullopt);
       return *this;
     }
 
-    ~LimitToken() {
-#ifdef ADDRESS_SANITIZER
-      ABSL_CHECK(__asan_address_is_poisoned(&token_));
-#endif
-    }
+    ~LimitToken() { ABSL_CHECK(!token_.has_value()); }
 
     LimitToken(const LimitToken&) = delete;
     LimitToken& operator=(const LimitToken&) = delete;
 
     int token() && {
-      int t = token_;
-      PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_));
-      return t;
+      ABSL_CHECK(token_.has_value());
+      return *std::exchange(token_, absl::nullopt);
     }
+
+   private:
+    absl::optional<int> token_;
+  };
+#else
+  class LimitToken {
+   public:
+    LimitToken() = default;
+    explicit LimitToken(int token) : token_(token) {}
+    LimitToken(LimitToken&&) = default;
+    LimitToken& operator=(LimitToken&&) = default;
+
+    LimitToken(const LimitToken&) = delete;
+    LimitToken& operator=(const LimitToken&) = delete;
+
+    int token() const { return token_; }
 
    private:
     int token_;
   };
+#endif
 
   // If return value is negative it's an error
   PROTOBUF_NODISCARD LimitToken PushLimit(const char* ptr, int limit) {
