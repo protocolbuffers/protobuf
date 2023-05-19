@@ -617,6 +617,10 @@ T* OnShutdownDelete(T* p) {
 }
 
 }  // namespace internal
+
+std::string ShortFormat(const MessageLite& message_lite);
+std::string Utf8Format(const MessageLite& message_lite);
+
 }  // namespace protobuf
 }  // namespace google
 

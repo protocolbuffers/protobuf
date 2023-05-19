@@ -657,6 +657,14 @@ void InternalMetadata::DoSwap<std::string>(std::string* other) {
 
 }  // namespace internal
 
+std::string ShortFormat(const MessageLite& message_lite) {
+  return message_lite.DebugString();
+}
+
+std::string Utf8Format(const MessageLite& message_lite) {
+  return message_lite.DebugString();
+}
+
 
 // ===================================================================
 // Shutdown support.

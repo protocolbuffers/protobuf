@@ -182,10 +182,13 @@ class CelMapReflectionFriend;  // field_backed_map_impl.cc
 
 namespace internal {
 class MapFieldPrinterHelper;  // text_format.cc
-PROTOBUF_EXPORT void PerformAbslStringify(
-    const Message& message,
-    absl::FunctionRef<void(absl::string_view)> append);  // text_format.cc
+PROTOBUF_EXPORT std::string StringifyMessage(
+    const Message& message);  // text_format.cc
 }  // namespace internal
+PROTOBUF_EXPORT std::string ShortFormat(
+    const Message& message);  // text_format.cc
+PROTOBUF_EXPORT std::string Utf8Format(
+    const Message& message);  // text_format.cc
 namespace util {
 class MessageDifferencer;
 }
@@ -340,8 +343,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Do not rely on exact format.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const google::protobuf::Message& message) {
-    internal::PerformAbslStringify(
-        message, [&](absl::string_view content) { sink.Append(content); });
+    sink.Append(internal::StringifyMessage(message));
   }
 
   // Reflection-based methods ----------------------------------------

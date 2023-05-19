@@ -76,6 +76,15 @@ namespace io {
 class ErrorCollector;  // tokenizer.h
 }
 
+namespace internal {
+// Enum used to set printing options for StringifyMessage.
+PROTOBUF_EXPORT enum class Option;
+
+// Converts a protobuf message to a string with redaction enabled.
+PROTOBUF_EXPORT std::string StringifyMessage(const Message& message,
+                                             Option option);
+}  // namespace internal
+
 // This class implements protocol buffer text format, colloquially known as text
 // proto.  Printing and parsing protocol messages in text format is useful for
 // debugging and human editing of messages.
@@ -421,9 +430,8 @@ class PROTOBUF_EXPORT TextFormat {
     friend std::string Message::DebugString() const;
     friend std::string Message::ShortDebugString() const;
     friend std::string Message::Utf8DebugString() const;
-    friend void internal::PerformAbslStringify(
-        const Message& message,
-        absl::FunctionRef<void(absl::string_view)> append);
+    friend std::string internal::StringifyMessage(const Message& message,
+                                                  internal::Option option);
 
     // Sets whether silent markers will be inserted.
     void SetInsertSilentMarker(bool v) { insert_silent_marker_ = v; }
