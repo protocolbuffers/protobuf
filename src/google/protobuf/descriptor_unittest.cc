@@ -34,6 +34,7 @@
 //
 // This file makes extensive use of RFC 3092.  :)
 
+#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <vector>
