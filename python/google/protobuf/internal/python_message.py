@@ -765,7 +765,6 @@ def _AddPropertiesForExtensions(descriptor, cls):
     # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
     pool = descriptor.file.pool
     cls._extensions_by_number = pool._extensions_by_number[descriptor]
-    cls._extensions_by_name = pool._extensions_by_name[descriptor]
 
 def _AddStaticMethods(cls):
   # TODO(robinson): This probably needs to be thread-safe(?)

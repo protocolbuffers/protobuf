@@ -179,7 +179,9 @@ class _ExtensionDict(object):
     Returns:
       Extension field descriptor.
     """
-    return self._extended_message._extensions_by_name.get(name, None)
+    descriptor = self._extended_message.DESCRIPTOR
+    extensions = descriptor.file.pool._extensions_by_name[descriptor]
+    return extensions.get(name, None)
 
   def _FindExtensionByNumber(self, number):
     """Tries to find a known extension with the field number.
