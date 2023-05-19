@@ -414,10 +414,8 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ $Type$ $name$(int index) const;
     $DEPRECATED$ void $set_name$(int index, $Type$ value);
     $DEPRECATED$ void $add_name$($Type$ value);
-    $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$() const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND;
-    $DEPRECATED$ $pb$::RepeatedField<$Type$>* $mutable_name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND;
+    $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$() const;
+    $DEPRECATED$ $pb$::RepeatedField<$Type$>* $mutable_name$();
 
     private:
     const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
@@ -445,14 +443,12 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       $annotate_add$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
-    inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const {
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
       return _internal_$name$();
     }
-    inline $pb$::RepeatedField<$Type$>* $Msg$::mutable_$name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline $pb$::RepeatedField<$Type$>* $Msg$::mutable_$name$() {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       return _internal_mutable_$name$();

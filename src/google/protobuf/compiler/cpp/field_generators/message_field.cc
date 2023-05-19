@@ -166,9 +166,9 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ const $Submsg$& $name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+    $DEPRECATED$ const $Submsg$& $name$() const;
     $DEPRECATED$ PROTOBUF_NODISCARD $Submsg$* $release_name$();
-    $DEPRECATED$ $Submsg$* $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+    $DEPRECATED$ $Submsg$* $mutable_name$();
     $DEPRECATED$ void $set_allocated_name$($Submsg$* value);
     $DEPRECATED$ void $unsafe_arena_set_allocated_name$($Submsg$* value);
     $DEPRECATED$ $Submsg$* $unsafe_arena_release_name$();
@@ -205,7 +205,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           const $Submsg$* p = $cast_field_$;
           return p != nullptr ? *p : reinterpret_cast<const $Submsg$&>($kDefault$);
         }
-        inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        inline const $Submsg$& $Msg$::$name$() const {
           $annotate_get$;
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
           return _internal_$name$();
@@ -263,7 +263,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           }
           return $cast_field_$;
         }
-        inline $Submsg$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        inline $Submsg$* $Msg$::mutable_$name$() {
           //~ TODO(b/122856539): add tests to make sure all write accessors are
           //~ able to prepare split message allocation.
           $PrepareSplitMessageForWrite$;
@@ -605,8 +605,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "      ? *$cast_field_$\n"
       "      : reinterpret_cast<$Submsg$&>($kDefault$);\n"
       "}\n"
-      "inline const $Submsg$& $Msg$::$name$() const  "
-      "ABSL_ATTRIBUTE_LIFETIME_BOUND{\n"
+      "inline const $Submsg$& $Msg$::$name$() const {\n"
       "$annotate_get$"
       "  // @@protoc_insertion_point(field_get:$pkg.Msg.field$)\n"
       "  return _internal_$name$();\n"
@@ -665,8 +664,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "  }\n"
       "  return $cast_field_$;\n"
       "}\n"
-      "inline $Submsg$* $Msg$::mutable_$name$()  "
-      "ABSL_ATTRIBUTE_LIFETIME_BOUND{\n"
+      "inline $Submsg$* $Msg$::mutable_$name$() {\n"
       "  $Submsg$* _msg = _internal_mutable_$name$();\n"
       "$annotate_mutable$"
       "  // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)\n"
@@ -750,13 +748,11 @@ void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
 
 void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   Formatter format(p);
-  format(
-      "$DEPRECATED$ $Submsg$* ${1$mutable_$name$$}$(int index) "
-      "ABSL_ATTRIBUTE_LIFETIME_BOUND;\n",
-      std::make_tuple(field_, GeneratedCodeInfo::Annotation::ALIAS));
+  format("$DEPRECATED$ $Submsg$* ${1$mutable_$name$$}$(int index);\n",
+         std::make_tuple(field_, GeneratedCodeInfo::Annotation::ALIAS));
   format(
       "$DEPRECATED$ $pb$::RepeatedPtrField< $Submsg$ >*\n"
-      "    ${1$mutable_$name$$}$() ABSL_ATTRIBUTE_LIFETIME_BOUND;\n",
+      "    ${1$mutable_$name$$}$();\n",
       std::make_tuple(field_, GeneratedCodeInfo::Annotation::ALIAS));
   format(
       "private:\n"
@@ -771,23 +767,19 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   }
   format(
       "public:\n"
-      "$DEPRECATED$ const $Submsg$& ${1$$name$$}$(int index) const "
-      "ABSL_ATTRIBUTE_LIFETIME_BOUND;\n",
+      "$DEPRECATED$ const $Submsg$& ${1$$name$$}$(int index) const;\n",
       field_);
-  format(
-      "$DEPRECATED$ $Submsg$* ${1$add_$name$$}$() "
-      "ABSL_ATTRIBUTE_LIFETIME_BOUND;\n",
-      std::make_tuple(field_, GeneratedCodeInfo::Annotation::SET));
+  format("$DEPRECATED$ $Submsg$* ${1$add_$name$$}$();\n",
+         std::make_tuple(field_, GeneratedCodeInfo::Annotation::SET));
   format(
       "$DEPRECATED$ const $pb$::RepeatedPtrField< $Submsg$ >&\n"
-      "    ${1$$name$$}$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;\n",
+      "    ${1$$name$$}$() const;\n",
       field_);
 }
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(
-      "inline $Submsg$* $Msg$::mutable_$name$(int index) "
-      "ABSL_ATTRIBUTE_LIFETIME_BOUND {\n"
+      "inline $Submsg$* $Msg$::mutable_$name$(int index) {\n"
       "$annotate_mutable$"
       // TODO(dlj): move insertion points
       "  // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)\n"
@@ -795,38 +787,36 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "  return _internal_mutable_$name$()->Mutable(index);\n"
       "}\n"
       "inline $pb$::RepeatedPtrField< $Submsg$ >*\n"
-      "$Msg$::mutable_$name$()  ABSL_ATTRIBUTE_LIFETIME_BOUND{\n"
+      "$Msg$::mutable_$name$() {\n"
       "$annotate_mutable_list$"
       "  // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)\n"
       "$StrongRef$;"
       "  return _internal_mutable_$name$();\n"
       "}\n");
 
-  p->Emit(
-      {{"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
-       {"GetExtraArg",
-        [&] {
-          p->Emit(opts_->safe_boundary_check
-                      ? ", reinterpret_cast<const $Submsg$&>($kDefault$)"
-                      : "");
-        }}},
-      "inline const $Submsg$& $Msg$::$name$(int index) const  "
-      "ABSL_ATTRIBUTE_LIFETIME_BOUND{\n"
-      "$annotate_get$"
-      "  // @@protoc_insertion_point(field_get:$pkg.Msg.field$)\n"
-      "  $StrongRef$;"
-      "  return _internal_$name$().$Get$(index$GetExtraArg$);\n"
-      "}\n"
-      "inline $Submsg$* $Msg$::add_$name$()  ABSL_ATTRIBUTE_LIFETIME_BOUND{\n"
-      "  $Submsg$* _add = _internal_mutable_$name$()->Add();\n"
-      "$annotate_add_mutable$"
-      "  // @@protoc_insertion_point(field_add:$pkg.Msg.field$)\n"
-      "  return _add;\n"
-      "}\n");
+  p->Emit({{"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
+           {"GetExtraArg",
+            [&] {
+              p->Emit(opts_->safe_boundary_check
+                          ? ", reinterpret_cast<const $Submsg$&>($kDefault$)"
+                          : "");
+            }}},
+          "inline const $Submsg$& $Msg$::$name$(int index) const {\n"
+          "$annotate_get$"
+          "  // @@protoc_insertion_point(field_get:$pkg.Msg.field$)\n"
+          "  $StrongRef$;"
+          "  return _internal_$name$().$Get$(index$GetExtraArg$);\n"
+          "}\n"
+          "inline $Submsg$* $Msg$::add_$name$() {\n"
+          "  $Submsg$* _add = _internal_mutable_$name$()->Add();\n"
+          "$annotate_add_mutable$"
+          "  // @@protoc_insertion_point(field_add:$pkg.Msg.field$)\n"
+          "  return _add;\n"
+          "}\n");
 
   p->Emit(
       "inline const $pb$::RepeatedPtrField< $Submsg$ >&\n"
-      "$Msg$::$name$() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{\n"
+      "$Msg$::$name$() const {\n"
       "$annotate_list$"
       "  // @@protoc_insertion_point(field_list:$pkg.Msg.field$)\n"
       "$StrongRef$;"

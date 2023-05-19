@@ -377,14 +377,12 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
-    inline const $pb$::RepeatedField<int>& $Msg$::$name$() const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline const $pb$::RepeatedField<int>& $Msg$::$name$() const {
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
       return _internal_$name$();
     }
-    inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$() {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       return _internal_mutable_$name$();
