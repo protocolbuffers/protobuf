@@ -115,12 +115,10 @@ class PROTOBUF_EXPORT Api final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -228,17 +226,17 @@ class PROTOBUF_EXPORT Api final :
 
   public:
   void clear_methods() ;
-  ::google::protobuf::Method* mutable_methods(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Method* mutable_methods(int index);
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
-      mutable_methods() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+      mutable_methods();
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& _internal_methods() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* _internal_mutable_methods();
   public:
-  const ::google::protobuf::Method& methods(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  ::google::protobuf::Method* add_methods() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const ::google::protobuf::Method& methods(int index) const;
+  ::google::protobuf::Method* add_methods();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >&
-      methods() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+      methods() const;
   // repeated .google.protobuf.Option options = 3;
   int options_size() const;
   private:
@@ -246,17 +244,17 @@ class PROTOBUF_EXPORT Api final :
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Option* mutable_options(int index);
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+      mutable_options();
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* _internal_mutable_options();
   public:
-  const ::google::protobuf::Option& options(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  ::google::protobuf::Option* add_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const ::google::protobuf::Option& options(int index) const;
+  ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-      options() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+      options() const;
   // repeated .google.protobuf.Mixin mixins = 6;
   int mixins_size() const;
   private:
@@ -264,24 +262,23 @@ class PROTOBUF_EXPORT Api final :
 
   public:
   void clear_mixins() ;
-  ::google::protobuf::Mixin* mutable_mixins(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Mixin* mutable_mixins(int index);
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
-      mutable_mixins() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+      mutable_mixins();
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& _internal_mixins() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* _internal_mutable_mixins();
   public:
-  const ::google::protobuf::Mixin& mixins(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  ::google::protobuf::Mixin* add_mixins() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const ::google::protobuf::Mixin& mixins(int index) const;
+  ::google::protobuf::Mixin* add_mixins();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
-      mixins() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+      mixins() const;
   // string name = 1;
   void clear_name() ;
-  const std::string& name() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const std::string& name() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* ptr);
 
@@ -294,11 +291,10 @@ class PROTOBUF_EXPORT Api final :
   public:
   // string version = 4;
   void clear_version() ;
-  const std::string& version() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const std::string& version() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_version(Arg_&& arg, Args_... args);
-  std::string* mutable_version() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_version();
   PROTOBUF_NODISCARD std::string* release_version();
   void set_allocated_version(std::string* ptr);
 
@@ -312,9 +308,9 @@ class PROTOBUF_EXPORT Api final :
   // .google.protobuf.SourceContext source_context = 5;
   bool has_source_context() const;
   void clear_source_context() ;
-  const ::google::protobuf::SourceContext& source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const ::google::protobuf::SourceContext& source_context() const;
   PROTOBUF_NODISCARD ::google::protobuf::SourceContext* release_source_context();
-  ::google::protobuf::SourceContext* mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::SourceContext* mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* value);
   void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value);
   ::google::protobuf::SourceContext* unsafe_arena_release_source_context();
@@ -390,12 +386,10 @@ class PROTOBUF_EXPORT Method final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -503,24 +497,23 @@ class PROTOBUF_EXPORT Method final :
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  ::google::protobuf::Option* mutable_options(int index);
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+      mutable_options();
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* _internal_mutable_options();
   public:
-  const ::google::protobuf::Option& options(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  ::google::protobuf::Option* add_options() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const ::google::protobuf::Option& options(int index) const;
+  ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-      options() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+      options() const;
   // string name = 1;
   void clear_name() ;
-  const std::string& name() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const std::string& name() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* ptr);
 
@@ -533,11 +526,10 @@ class PROTOBUF_EXPORT Method final :
   public:
   // string request_type_url = 2;
   void clear_request_type_url() ;
-  const std::string& request_type_url() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const std::string& request_type_url() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_request_type_url(Arg_&& arg, Args_... args);
-  std::string* mutable_request_type_url() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_request_type_url();
   PROTOBUF_NODISCARD std::string* release_request_type_url();
   void set_allocated_request_type_url(std::string* ptr);
 
@@ -550,11 +542,10 @@ class PROTOBUF_EXPORT Method final :
   public:
   // string response_type_url = 4;
   void clear_response_type_url() ;
-  const std::string& response_type_url() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const std::string& response_type_url() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_response_type_url(Arg_&& arg, Args_... args);
-  std::string* mutable_response_type_url() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_response_type_url();
   PROTOBUF_NODISCARD std::string* release_response_type_url();
   void set_allocated_response_type_url(std::string* ptr);
 
@@ -650,12 +641,10 @@ class PROTOBUF_EXPORT Mixin final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -753,11 +742,10 @@ class PROTOBUF_EXPORT Mixin final :
   };
   // string name = 1;
   void clear_name() ;
-  const std::string& name() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const std::string& name() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* ptr);
 
@@ -770,11 +758,10 @@ class PROTOBUF_EXPORT Mixin final :
   public:
   // string root = 2;
   void clear_root() ;
-  const std::string& root() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const std::string& root() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_root(Arg_&& arg, Args_... args);
-  std::string* mutable_root() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_root();
   PROTOBUF_NODISCARD std::string* release_root();
   void set_allocated_root(std::string* ptr);
 
@@ -823,8 +810,7 @@ class PROTOBUF_EXPORT Mixin final :
 inline void Api::clear_name() {
   _impl_.name_.ClearToEmpty();
 }
-inline const std::string& Api::name() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const std::string& Api::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.name)
   return _internal_name();
 }
@@ -835,7 +821,7 @@ inline PROTOBUF_ALWAYS_INLINE void Api::set_name(Arg_&& arg,
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.name)
 }
-inline std::string* Api::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* Api::mutable_name() {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.name)
   return _s;
@@ -875,26 +861,26 @@ inline int Api::methods_size() const {
 inline void Api::clear_methods() {
   _internal_mutable_methods()->Clear();
 }
-inline ::google::protobuf::Method* Api::mutable_methods(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::Method* Api::mutable_methods(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.methods)
   return _internal_mutable_methods()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
-Api::mutable_methods()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+Api::mutable_methods() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
   return _internal_mutable_methods();
 }
-inline const ::google::protobuf::Method& Api::methods(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+inline const ::google::protobuf::Method& Api::methods(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.methods)
     return _internal_methods().Get(index);
 }
-inline ::google::protobuf::Method* Api::add_methods()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+inline ::google::protobuf::Method* Api::add_methods() {
   ::google::protobuf::Method* _add = _internal_mutable_methods()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.methods)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >&
-Api::methods() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+Api::methods() const {
   // @@protoc_insertion_point(field_list:google.protobuf.Api.methods)
   return _internal_methods();
 }
@@ -914,26 +900,26 @@ inline int Api::_internal_options_size() const {
 inline int Api::options_size() const {
   return _internal_options_size();
 }
-inline ::google::protobuf::Option* Api::mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::Option* Api::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.options)
   return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Api::mutable_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+Api::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
   return _internal_mutable_options();
 }
-inline const ::google::protobuf::Option& Api::options(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+inline const ::google::protobuf::Option& Api::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.options)
     return _internal_options().Get(index);
 }
-inline ::google::protobuf::Option* Api::add_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+inline ::google::protobuf::Option* Api::add_options() {
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.options)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-Api::options() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+Api::options() const {
   // @@protoc_insertion_point(field_list:google.protobuf.Api.options)
   return _internal_options();
 }
@@ -950,8 +936,7 @@ Api::_internal_mutable_options() {
 inline void Api::clear_version() {
   _impl_.version_.ClearToEmpty();
 }
-inline const std::string& Api::version() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const std::string& Api::version() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.version)
   return _internal_version();
 }
@@ -962,7 +947,7 @@ inline PROTOBUF_ALWAYS_INLINE void Api::set_version(Arg_&& arg,
   _impl_.version_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.version)
 }
-inline std::string* Api::mutable_version() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* Api::mutable_version() {
   std::string* _s = _internal_mutable_version();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.version)
   return _s;
@@ -1002,7 +987,7 @@ inline const ::google::protobuf::SourceContext& Api::_internal_source_context() 
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceContext&>(::google::protobuf::_SourceContext_default_instance_);
 }
-inline const ::google::protobuf::SourceContext& Api::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const ::google::protobuf::SourceContext& Api::source_context() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)
   return _internal_source_context();
 }
@@ -1052,7 +1037,7 @@ inline ::google::protobuf::SourceContext* Api::_internal_mutable_source_context(
   }
   return _impl_.source_context_;
 }
-inline ::google::protobuf::SourceContext* Api::mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
   ::google::protobuf::SourceContext* _msg = _internal_mutable_source_context();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
   return _msg;
@@ -1088,26 +1073,26 @@ inline int Api::mixins_size() const {
 inline void Api::clear_mixins() {
   _internal_mutable_mixins()->Clear();
 }
-inline ::google::protobuf::Mixin* Api::mutable_mixins(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::Mixin* Api::mutable_mixins(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.mixins)
   return _internal_mutable_mixins()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
-Api::mutable_mixins()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+Api::mutable_mixins() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
   return _internal_mutable_mixins();
 }
-inline const ::google::protobuf::Mixin& Api::mixins(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+inline const ::google::protobuf::Mixin& Api::mixins(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.mixins)
     return _internal_mixins().Get(index);
 }
-inline ::google::protobuf::Mixin* Api::add_mixins()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+inline ::google::protobuf::Mixin* Api::add_mixins() {
   ::google::protobuf::Mixin* _add = _internal_mutable_mixins()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.mixins)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
-Api::mixins() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+Api::mixins() const {
   // @@protoc_insertion_point(field_list:google.protobuf.Api.mixins)
   return _internal_mixins();
 }
@@ -1148,8 +1133,7 @@ inline void Api::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Method::clear_name() {
   _impl_.name_.ClearToEmpty();
 }
-inline const std::string& Method::name() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const std::string& Method::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.name)
   return _internal_name();
 }
@@ -1160,7 +1144,7 @@ inline PROTOBUF_ALWAYS_INLINE void Method::set_name(Arg_&& arg,
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.name)
 }
-inline std::string* Method::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* Method::mutable_name() {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.name)
   return _s;
@@ -1194,8 +1178,7 @@ inline void Method::set_allocated_name(std::string* value) {
 inline void Method::clear_request_type_url() {
   _impl_.request_type_url_.ClearToEmpty();
 }
-inline const std::string& Method::request_type_url() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const std::string& Method::request_type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.request_type_url)
   return _internal_request_type_url();
 }
@@ -1206,7 +1189,7 @@ inline PROTOBUF_ALWAYS_INLINE void Method::set_request_type_url(Arg_&& arg,
   _impl_.request_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_type_url)
 }
-inline std::string* Method::mutable_request_type_url() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* Method::mutable_request_type_url() {
   std::string* _s = _internal_mutable_request_type_url();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.request_type_url)
   return _s;
@@ -1260,8 +1243,7 @@ inline void Method::_internal_set_request_streaming(bool value) {
 inline void Method::clear_response_type_url() {
   _impl_.response_type_url_.ClearToEmpty();
 }
-inline const std::string& Method::response_type_url() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const std::string& Method::response_type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.response_type_url)
   return _internal_response_type_url();
 }
@@ -1272,7 +1254,7 @@ inline PROTOBUF_ALWAYS_INLINE void Method::set_response_type_url(Arg_&& arg,
   _impl_.response_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_type_url)
 }
-inline std::string* Method::mutable_response_type_url() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* Method::mutable_response_type_url() {
   std::string* _s = _internal_mutable_response_type_url();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.response_type_url)
   return _s;
@@ -1329,26 +1311,26 @@ inline int Method::_internal_options_size() const {
 inline int Method::options_size() const {
   return _internal_options_size();
 }
-inline ::google::protobuf::Option* Method::mutable_options(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::Option* Method::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.options)
   return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Method::mutable_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+Method::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
   return _internal_mutable_options();
 }
-inline const ::google::protobuf::Option& Method::options(int index) const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+inline const ::google::protobuf::Option& Method::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.options)
     return _internal_options().Get(index);
 }
-inline ::google::protobuf::Option* Method::add_options()  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+inline ::google::protobuf::Option* Method::add_options() {
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Method.options)
   return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-Method::options() const  ABSL_ATTRIBUTE_LIFETIME_BOUND{
+Method::options() const {
   // @@protoc_insertion_point(field_list:google.protobuf.Method.options)
   return _internal_options();
 }
@@ -1389,8 +1371,7 @@ inline void Method::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Mixin::clear_name() {
   _impl_.name_.ClearToEmpty();
 }
-inline const std::string& Mixin::name() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const std::string& Mixin::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Mixin.name)
   return _internal_name();
 }
@@ -1401,7 +1382,7 @@ inline PROTOBUF_ALWAYS_INLINE void Mixin::set_name(Arg_&& arg,
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.name)
 }
-inline std::string* Mixin::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* Mixin::mutable_name() {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Mixin.name)
   return _s;
@@ -1435,8 +1416,7 @@ inline void Mixin::set_allocated_name(std::string* value) {
 inline void Mixin::clear_root() {
   _impl_.root_.ClearToEmpty();
 }
-inline const std::string& Mixin::root() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const std::string& Mixin::root() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Mixin.root)
   return _internal_root();
 }
@@ -1447,7 +1427,7 @@ inline PROTOBUF_ALWAYS_INLINE void Mixin::set_root(Arg_&& arg,
   _impl_.root_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.root)
 }
-inline std::string* Mixin::mutable_root() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* Mixin::mutable_root() {
   std::string* _s = _internal_mutable_root();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Mixin.root)
   return _s;

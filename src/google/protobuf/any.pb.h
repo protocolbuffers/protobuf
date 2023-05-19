@@ -103,12 +103,10 @@ class PROTOBUF_EXPORT Any final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -241,11 +239,10 @@ class PROTOBUF_EXPORT Any final :
   };
   // string type_url = 1;
   void clear_type_url() ;
-  const std::string& type_url() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const std::string& type_url() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_type_url(Arg_&& arg, Args_... args);
-  std::string* mutable_type_url() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_type_url();
   PROTOBUF_NODISCARD std::string* release_type_url();
   void set_allocated_type_url(std::string* ptr);
 
@@ -258,11 +255,10 @@ class PROTOBUF_EXPORT Any final :
   public:
   // bytes value = 2;
   void clear_value() ;
-  const std::string& value() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const std::string& value() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
-  std::string* mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  std::string* mutable_value();
   PROTOBUF_NODISCARD std::string* release_value();
   void set_allocated_value(std::string* ptr);
 
@@ -312,8 +308,7 @@ class PROTOBUF_EXPORT Any final :
 inline void Any::clear_type_url() {
   _impl_.type_url_.ClearToEmpty();
 }
-inline const std::string& Any::type_url() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const std::string& Any::type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.type_url)
   return _internal_type_url();
 }
@@ -324,7 +319,7 @@ inline PROTOBUF_ALWAYS_INLINE void Any::set_type_url(Arg_&& arg,
   _impl_.type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
 }
-inline std::string* Any::mutable_type_url() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* Any::mutable_type_url() {
   std::string* _s = _internal_mutable_type_url();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Any.type_url)
   return _s;
@@ -358,8 +353,7 @@ inline void Any::set_allocated_type_url(std::string* value) {
 inline void Any::clear_value() {
   _impl_.value_.ClearToEmpty();
 }
-inline const std::string& Any::value() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const std::string& Any::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.value)
   return _internal_value();
 }
@@ -370,7 +364,7 @@ inline PROTOBUF_ALWAYS_INLINE void Any::set_value(Arg_&& arg,
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
 }
-inline std::string* Any::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* Any::mutable_value() {
   std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Any.value)
   return _s;
