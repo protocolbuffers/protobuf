@@ -5477,6 +5477,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     }
   }
 
+
   // Validate options. See comments at InternalSetLazilyBuildDependencies about
   // error checking and lazy import building.
   if (!had_errors_ && !pool_->lazily_build_dependencies_) {
