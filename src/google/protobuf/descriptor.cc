@@ -2579,6 +2579,21 @@ std::string FieldDescriptor::DefaultValueAsString(
   return "";
 }
 
+// Out-of-line constructor definitions ==============================
+// When using constructor type homing in Clang, debug info for a type
+// is only emitted when a constructor definition is emitted, as an
+// optimization. These constructors are never called, so we define them
+// out of line to make sure the debug info is emitted somewhere.
+
+Descriptor::Descriptor() {}
+FieldDescriptor::FieldDescriptor() {}
+OneofDescriptor::OneofDescriptor() {}
+EnumDescriptor::EnumDescriptor() {}
+EnumValueDescriptor::EnumValueDescriptor() {}
+ServiceDescriptor::ServiceDescriptor() {}
+MethodDescriptor::MethodDescriptor() {}
+FileDescriptor::FileDescriptor() {}
+
 // CopyTo methods ====================================================
 
 void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
