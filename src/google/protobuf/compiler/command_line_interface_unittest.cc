@@ -1419,6 +1419,7 @@ TEST_F(CommandLineInterfaceTest, AllowServicesHasService) {
 }
 
 
+
 TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing_EmptyList) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"

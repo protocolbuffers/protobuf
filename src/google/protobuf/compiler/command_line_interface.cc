@@ -1306,13 +1306,16 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // something like descriptor->file()->name(), but ExtensionRange does not
   // support this.
   for (const google::protobuf::FileDescriptor* file : parsed_files) {
-    google::protobuf::internal::VisitDescriptors(*file, [&](const auto& descriptor) {
-      if (!ValidateTargetConstraints(descriptor.options(), *descriptor_pool,
-                                     *error_collector, file->name(),
-                                     GetTargetType(&descriptor))) {
-        validation_error = true;
-      }
-    });
+    FileDescriptorProto proto;
+    file->CopyTo(&proto);
+    google::protobuf::internal::VisitDescriptors(
+        *file, proto, [&](const auto& descriptor, const auto& proto) {
+          if (!ValidateTargetConstraints(proto.options(), *descriptor_pool,
+                                         *error_collector, file->name(),
+                                         GetTargetType(&descriptor))) {
+            validation_error = true;
+          }
+        });
   }
 
 
