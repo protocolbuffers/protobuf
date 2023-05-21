@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Internal.ProtobufList;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +74,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
    *
    * <p>TODO(b/258340024) Remove this in a breaking release.
    *
-   * @deprecated use {@link emptyList()} instead
+   * @deprecated use {@link #emptyList()} instead
    */
   @Deprecated public static final LazyStringList EMPTY = EMPTY_LIST;
 
@@ -193,6 +194,13 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   public boolean addAllByteString(Collection<? extends ByteString> values) {
     ensureIsMutable();
     boolean ret = list.addAll(values);
+    modCount++;
+    return ret;
+  }
+
+  public boolean addAllByteString(int index, Collection<? extends ByteString> values) {
+    ensureIsMutable();
+    boolean ret = list.addAll(index, values);
     modCount++;
     return ret;
   }
@@ -372,8 +380,29 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     return new ByteArrayListView(this);
   }
 
-  private static class ByteStringListView extends AbstractList<ByteString> implements RandomAccess {
+  /** A class that adapts a LazyStringArrayList to {@code List<ByteString>}. */
+  public static class ByteStringListView extends AbstractList<ByteString>
+      implements RandomAccess, ProtobufList<ByteString> {
+
+    private static final ByteStringListView EMPTY_LIST =
+        new ByteStringListView(LazyStringArrayList.emptyList());
+
+    /** Returns an empty immutable {@code ByteStringListView} instance */
+    public static ByteStringListView emptyList() {
+      return EMPTY_LIST;
+    }
+
     private final LazyStringArrayList list;
+
+    /** Construct a new mutable ByteStringListView with default capacity. */
+    public ByteStringListView() {
+      this.list = new LazyStringArrayList();
+    }
+
+    public ByteStringListView(ByteStringListView from) {
+      // If from is mutable, make a safety copy. If immutable, it is safe to share.
+      this(from.isModifiable() ? new LazyStringArrayList(from.list) : from.list);
+    }
 
     ByteStringListView(LazyStringArrayList list) {
       this.list = list;
@@ -390,7 +419,49 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     }
 
     @Override
+    public boolean isEmpty() {
+      return list.isEmpty();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+      return list.contains(o);
+    }
+
+    @Override
+    public Object[] toArray() {
+      return list.toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+      return list.toArray(a);
+    }
+
+    @CanIgnoreReturnValue
+    @Override
+    public boolean add(ByteString bytes) {
+      list.ensureIsMutable();
+      int before = list.size();
+      list.add(bytes);
+      if (list.size() > before) {
+        modCount++;
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public void clear() {
+      list.ensureIsMutable();
+      list.clear();
+      modCount++;
+    }
+
+    @CanIgnoreReturnValue
+    @Override
     public ByteString set(int index, ByteString s) {
+      list.ensureIsMutable();
       Object o = list.setAndReturn(index, s);
       modCount++;
       return asByteString(o);
@@ -398,15 +469,110 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
 
     @Override
     public void add(int index, ByteString s) {
+      list.ensureIsMutable();
       list.add(index, s);
       modCount++;
     }
 
+    @CanIgnoreReturnValue
     @Override
     public ByteString remove(int index) {
-      Object o = list.remove(index);
+      list.ensureIsMutable();
+      ByteString result = list.getByteString(index);
+      list.remove(index);
       modCount++;
-      return asByteString(o);
+      return result;
+    }
+
+    @Override
+    public int indexOf(Object o) {
+      return list.indexOf(o);
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+      return list.lastIndexOf(o);
+    }
+
+    @Override
+    public List<ByteString> subList(int fromIndex, int toIndex) {
+      return new ByteStringListView(
+          new LazyStringArrayList(new ArrayList<>(list.list.subList(fromIndex, toIndex))));
+    }
+
+    @CanIgnoreReturnValue
+    @Override
+    public boolean remove(Object o) {
+      list.ensureIsMutable();
+      if (list.remove(o)) {
+        modCount++;
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+      return list.containsAll(c);
+    }
+
+    @CanIgnoreReturnValue
+    @Override
+    public boolean addAll(Collection<? extends ByteString> c) {
+      list.ensureIsMutable();
+      if (list.addAllByteString(c)) {
+        modCount++;
+        return true;
+      }
+      return false;
+    }
+
+    @CanIgnoreReturnValue
+    @Override
+    public boolean addAll(int index, Collection<? extends ByteString> c) {
+      list.ensureIsMutable();
+      if (list.addAllByteString(index, c)) {
+        modCount++;
+        return true;
+      }
+      return false;
+    }
+
+    @CanIgnoreReturnValue
+    @Override
+    public boolean removeAll(Collection<?> c) {
+      list.ensureIsMutable();
+      if (list.removeAll(c)) {
+        modCount++;
+        return true;
+      }
+      return false;
+    }
+
+    @CanIgnoreReturnValue
+    @Override
+    public boolean retainAll(Collection<?> c) {
+      list.ensureIsMutable();
+      if (list.retainAll(c)) {
+        modCount++;
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public void makeImmutable() {
+      list.makeImmutable();
+    }
+
+    @Override
+    public boolean isModifiable() {
+      return list.isModifiable();
+    }
+
+    @Override
+    public ByteStringListView mutableCopyWithCapacity(int capacity) {
+      return new ByteStringListView(list.mutableCopyWithCapacity(capacity));
     }
   }
 

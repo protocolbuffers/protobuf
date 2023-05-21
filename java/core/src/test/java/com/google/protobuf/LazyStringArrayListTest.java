@@ -291,6 +291,63 @@ public class LazyStringArrayListTest {
     assertGenericListImmutable(byteArrayList, byteArrayList.get(0));
   }
 
+  @Test
+  public void byteStringListViewAccessors() {
+    LazyStringArrayList.ByteStringListView list = new LazyStringArrayList.ByteStringListView();
+    list.add(BYTE_STRING_A);
+    list.add(BYTE_STRING_B);
+    list.add(BYTE_STRING_C);
+
+    assertThat(list).hasSize(3);
+    assertThat(list.get(0)).isSameInstanceAs(BYTE_STRING_A);
+    assertThat(list.get(1)).isSameInstanceAs(BYTE_STRING_B);
+    assertThat(list.get(2)).isSameInstanceAs(BYTE_STRING_C);
+
+    ByteString unused = list.remove(1);
+    assertThat(list.get(0)).isSameInstanceAs(BYTE_STRING_A);
+    assertThat(list.get(1)).isSameInstanceAs(BYTE_STRING_C);
+
+    unused = list.set(0, BYTE_STRING_C);
+    assertThat(list.get(0)).isSameInstanceAs(BYTE_STRING_C);
+  }
+
+  @Test
+  public void byteStringListViewCopyConstructorCopiesByReference() {
+    LazyStringArrayList.ByteStringListView list1 = new LazyStringArrayList.ByteStringListView();
+    list1.add(BYTE_STRING_A);
+    list1.add(BYTE_STRING_B);
+    list1.add(BYTE_STRING_C);
+
+    LazyStringArrayList.ByteStringListView list2 =
+        new LazyStringArrayList.ByteStringListView(list1);
+    assertThat(list2).hasSize(3);
+    assertThat(list2.get(0)).isSameInstanceAs(BYTE_STRING_A);
+    assertThat(list2.get(1)).isSameInstanceAs(BYTE_STRING_B);
+    assertThat(list2.get(2)).isSameInstanceAs(BYTE_STRING_C);
+  }
+
+  @Test
+  public void byteStringListViewMutableCopy() {
+    LazyStringArrayList.ByteStringListView list1 = new LazyStringArrayList.ByteStringListView();
+    list1.add(BYTE_STRING_A);
+    list1.add(BYTE_STRING_B);
+    list1.add(BYTE_STRING_C);
+    list1.makeImmutable();
+
+    LazyStringArrayList.ByteStringListView list2 = list1.mutableCopyWithCapacity(list1.size());
+    assertThat(list1).isEqualTo(list2);
+    assertThat(list1).isNotSameInstanceAs(list2);
+    assertThat(list2.isModifiable()).isEqualTo(true);
+  }
+
+  @Test
+  public void byteStringListViewImmutabilityPropagation() {
+    LazyStringArrayList.ByteStringListView list = new LazyStringArrayList.ByteStringListView();
+    list.makeImmutable();
+
+    assertGenericListImmutable(list, BYTE_STRING_A);
+  }
+
   private static <T> void assertGenericListImmutable(List<T> list, T value) {
     try {
       list.add(value);
