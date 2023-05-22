@@ -579,6 +579,31 @@ TEST(WireFormatTest, ParseMessageSet) {
   EXPECT_EQ(message_set.DebugString(), dynamic_message_set.DebugString());
 }
 
+TEST(WireFormatTest, MessageSetUnknownButValidTypeId) {
+  const char encoded[] = {
+      013,     // 1: SGROUP
+      032, 2,  // 3:LEN 2
+      010, 0,  // 1:0
+      020, 4,  // 2:4
+      014      // 1: EGROUP
+  };
+  PROTO2_WIREFORMAT_UNITTEST::TestMessageSet message;
+  EXPECT_TRUE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
+TEST(WireFormatTest, MessageSetInvalidTypeId) {
+  // "type_id" is 0 and should fail to parse.
+  const char encoded[] = {
+      013,     // 1: SGROUP
+      032, 2,  // 3:LEN 2
+      010, 0,  // 1:0
+      020, 0,  // 2:0
+      014      // 1: EGROUP
+  };
+  PROTO2_WIREFORMAT_UNITTEST::TestMessageSet message;
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
 namespace {
 std::string BuildMessageSetItemStart() {
   std::string data;

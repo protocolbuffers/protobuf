@@ -215,7 +215,8 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
     if (tag == WireFormatLite::kMessageSetTypeIdTag) {
       uint64_t tmp;
       ptr = ParseBigVarint(ptr, &tmp);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      // We should fail parsing if type id is 0.
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr && tmp != 0);
       if (state == State::kNoTag) {
         type_id = tmp;
         state = State::kHasType;
