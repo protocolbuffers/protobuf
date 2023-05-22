@@ -35,10 +35,14 @@
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
+#include "absl/synchronization/barrier.h"
+#include "absl/synchronization/blocking_counter.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
@@ -54,41 +58,26 @@ namespace internal {
 
 using unittest::TestAllTypes;
 
-class MapFieldBaseStub : public MapFieldBase {
+class MapFieldBaseStub : public TypeDefinedMapFieldBase<int32_t, int32_t> {
  public:
   using InternalArenaConstructable_ = void;
   typedef void DestructorSkippable_;
   MapFieldBaseStub() {}
   virtual ~MapFieldBaseStub() {}
-  explicit MapFieldBaseStub(Arena* arena) : MapFieldBase(arena) {}
-  void SetMapDirty() {
-    payload().state.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
+  explicit MapFieldBaseStub(Arena* arena)
+      : MapFieldBaseStub::TypeDefinedMapFieldBase(arena) {}
+
+  const Message* GetPrototype() const override {
+    return unittest::TestMap_MapInt32Int32Entry_DoNotUse::
+        internal_default_instance();
   }
-  void SetRepeatedDirty() {
-    payload().state.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
-  }
-  void SyncRepeatedFieldWithMapNoLock() const override {}
-  void SyncMapWithRepeatedFieldNoLock() const override {}
-  bool ContainsMapKey(const MapKey& map_key) const override { return false; }
-  bool InsertOrLookupMapValue(const MapKey& map_key,
-                              MapValueRef* val) override {
-    return false;
-  }
-  bool LookupMapValue(const MapKey& map_key,
-                      MapValueConstRef* val) const override {
-    return false;
-  }
-  bool DeleteMapValue(const MapKey& map_key) override { return false; }
-  int size() const override { return 0; }
-  void Clear() override {}
-  void MergeFrom(const MapFieldBase& other) override {}
-  void Swap(MapFieldBase* other) override {}
-  void SetMapIteratorValue(MapIterator* map_iter) const override {}
 
   Arena* GetArenaForInternalRepeatedField() {
     auto* repeated_field = MutableRepeatedField();
     return repeated_field->GetArena();
   }
+
+  using MapFieldBaseStub::TypeDefinedMapFieldBase::map_;
 };
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
