@@ -512,7 +512,7 @@ static VALUE RepeatedField_freeze(VALUE _self) {
  * call-seq:
  *     RepeatedField.internal_deep_freeze => self
  *
- * Deeep freezes the repeated field and values recursively.
+ * Deep freezes the repeated field and values recursively.
  * Internal use only.
  */
 static VALUE RepeatedField_internal_deep_freeze(VALUE _self) {

@@ -909,7 +909,7 @@ static VALUE Message_freeze(VALUE _self) {
  * call-seq:
  *     Message.internal_deep_freeze => self
  *
- * Deeep freezes the message object recursively.
+ * Deep freezes the message object recursively.
  * Internal use only.
  */
 static VALUE Message_internal_deep_freeze(VALUE _self) {

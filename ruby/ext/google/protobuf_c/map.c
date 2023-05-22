@@ -597,7 +597,7 @@ static VALUE Map_freeze(VALUE _self) {
  * call-seq:
  *     Map.internal_deep_freeze => self
  *
- * Deeep freezes the map and values recursively.
+ * Deep freezes the map and values recursively.
  * Internal use only.
  */
 static VALUE Map_internal_deep_freeze(VALUE _self) {
