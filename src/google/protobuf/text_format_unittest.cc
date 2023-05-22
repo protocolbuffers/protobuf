@@ -60,6 +60,7 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
@@ -162,6 +163,105 @@ TEST_F(TextFormatTest, ShortDebugString) {
                          "optional_foreign_message { }"));
 }
 
+
+TEST_F(TextFormatTest, ShortFormat) {
+  unittest::RedactedFields proto;
+  unittest::TestNestedMessageRedaction redacted_nested_proto;
+  unittest::TestNestedMessageRedaction unredacted_nested_proto;
+  redacted_nested_proto.set_optional_nested_string("hello");
+  unredacted_nested_proto.set_optional_nested_string("world");
+  proto.set_optional_redacted_string("foo");
+  proto.set_optional_unredacted_string("bar");
+  proto.add_repeated_redacted_string("1");
+  proto.add_repeated_redacted_string("2");
+  proto.add_repeated_unredacted_string("3");
+  proto.add_repeated_unredacted_string("4");
+  *proto.mutable_optional_redacted_message() = redacted_nested_proto;
+  *proto.mutable_optional_unredacted_message() = unredacted_nested_proto;
+  unittest::TestNestedMessageRedaction* redacted_message_1 =
+      proto.add_repeated_redacted_message();
+  unittest::TestNestedMessageRedaction* redacted_message_2 =
+      proto.add_repeated_redacted_message();
+  unittest::TestNestedMessageRedaction* unredacted_message_1 =
+      proto.add_repeated_unredacted_message();
+  unittest::TestNestedMessageRedaction* unredacted_message_2 =
+      proto.add_repeated_unredacted_message();
+  redacted_message_1->set_optional_nested_string("5");
+  redacted_message_2->set_optional_nested_string("6");
+  unredacted_message_1->set_optional_nested_string("7");
+  unredacted_message_2->set_optional_nested_string("8");
+  (*proto.mutable_map_redacted_string())["abc"] = "def";
+  (*proto.mutable_map_unredacted_string())["ghi"] = "jkl";
+
+  EXPECT_THAT(
+      google::protobuf::ShortFormat(proto),
+      testing::MatchesRegex(
+          "optional_redacted_string: \\[REDACTED\\] "
+          "optional_unredacted_string: \"bar\" "
+          "repeated_redacted_string: \\[REDACTED\\] "
+          "repeated_redacted_string: \\[REDACTED\\] "
+          "repeated_unredacted_string: \"3\" "
+          "repeated_unredacted_string: \"4\" "
+          "optional_redacted_message: \\[REDACTED\\] "
+          "optional_unredacted_message \\{ "
+          "optional_nested_string: \"world\" \\} "
+          "repeated_redacted_message: \\[REDACTED\\] "
+          "repeated_unredacted_message \\{ optional_nested_string: \"7\" \\} "
+          "repeated_unredacted_message \\{ optional_nested_string: \"8\" \\} "
+          "map_redacted_string: \\[REDACTED\\] "
+          "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}"));
+}
+
+TEST_F(TextFormatTest, Utf8Format) {
+  unittest::RedactedFields proto;
+  unittest::TestNestedMessageRedaction redacted_nested_proto;
+  unittest::TestNestedMessageRedaction unredacted_nested_proto;
+  redacted_nested_proto.set_optional_nested_string("\350\260\267\346\255\214");
+  unredacted_nested_proto.set_optional_nested_string(
+      "\350\260\267\346\255\214");
+  proto.set_optional_redacted_string("foo");
+  proto.set_optional_unredacted_string("bar");
+  proto.add_repeated_redacted_string("1");
+  proto.add_repeated_redacted_string("2");
+  proto.add_repeated_unredacted_string("3");
+  proto.add_repeated_unredacted_string("4");
+  *proto.mutable_optional_redacted_message() = redacted_nested_proto;
+  *proto.mutable_optional_unredacted_message() = unredacted_nested_proto;
+  unittest::TestNestedMessageRedaction* redacted_message_1 =
+      proto.add_repeated_redacted_message();
+  unittest::TestNestedMessageRedaction* redacted_message_2 =
+      proto.add_repeated_redacted_message();
+  unittest::TestNestedMessageRedaction* unredacted_message_1 =
+      proto.add_repeated_unredacted_message();
+  unittest::TestNestedMessageRedaction* unredacted_message_2 =
+      proto.add_repeated_unredacted_message();
+  redacted_message_1->set_optional_nested_string("5");
+  redacted_message_2->set_optional_nested_string("6");
+  unredacted_message_1->set_optional_nested_string("7");
+  unredacted_message_2->set_optional_nested_string("8");
+  (*proto.mutable_map_redacted_string())["abc"] = "def";
+  (*proto.mutable_map_unredacted_string())["ghi"] = "jkl";
+
+  EXPECT_THAT(google::protobuf::Utf8Format(proto),
+              testing::MatchesRegex(
+                  "optional_redacted_string: \\[REDACTED\\]\n"
+                  "optional_unredacted_string: \"bar\"\n"
+                  "repeated_redacted_string: \\[REDACTED\\]\n"
+                  "repeated_redacted_string: \\[REDACTED\\]\n"
+                  "repeated_unredacted_string: \"3\"\n"
+                  "repeated_unredacted_string: \"4\"\n"
+                  "optional_redacted_message: \\[REDACTED\\]\n"
+                  "optional_unredacted_message \\{\n  "
+                  "optional_nested_string: \"\xE8\xB0\xB7\xE6\xAD\x8C\"\n\\}\n"
+                  "repeated_redacted_message: \\[REDACTED\\]\n"
+                  "repeated_unredacted_message \\{\n  "
+                  "optional_nested_string: \"7\"\n\\}\n"
+                  "repeated_unredacted_message \\{\n  "
+                  "optional_nested_string: \"8\"\n\\}\n"
+                  "map_redacted_string: \\[REDACTED\\]\n"
+                  "map_unredacted_string \\{\n  "
+                  "key: \"ghi\"\n  value: \"jkl\"\n\\}\n"));
+}
 
 TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
   proto_.set_optional_int32(123);

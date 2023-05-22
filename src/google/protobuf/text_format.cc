@@ -99,6 +99,13 @@ inline void IncrementRedactedFieldCounter() {
   num_redacted_field.fetch_add(1, std::memory_order_relaxed);
 }
 
+inline void TrimTrailingSpace(std::string& debug_string) {
+  // Single line mode currently might have an extra space at the end.
+  if (!debug_string.empty() && debug_string.back() == ' ') {
+    debug_string.pop_back();
+  }
+}
+
 }  // namespace
 
 namespace internal {
@@ -140,10 +147,7 @@ std::string Message::ShortDebugString() const {
       std::memory_order_relaxed));
 
   printer.PrintToString(*this, &debug_string);
-  // Single line mode currently might have an extra space at the end.
-  if (!debug_string.empty() && debug_string[debug_string.size() - 1] == ' ') {
-    debug_string.resize(debug_string.size() - 1);
-  }
+  TrimTrailingSpace(debug_string);
 
   return debug_string;
 }
@@ -168,23 +172,50 @@ void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
 
 namespace internal {
 
-PROTOBUF_EXPORT void PerformAbslStringify(
-    const Message& message, absl::FunctionRef<void(absl::string_view)> append) {
+enum class Option { kNone, kShort, kUTF8 };
+
+std::string StringifyMessage(const Message& message, Option option) {
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
 
-  // TODO(b/249835002): consider using the single line version for short
   TextFormat::Printer printer;
+  switch (option) {
+    case Option::kShort:
+      printer.SetSingleLineMode(true);
+      break;
+    case Option::kUTF8:
+      printer.SetUseUtf8StringEscaping(true);
+      break;
+    case Option::kNone:
+      break;
+  }
   printer.SetExpandAny(true);
   printer.SetRedactDebugString(true);
   printer.SetRandomizeDebugString(true);
   printer.SetRootMessageFullName(message.GetDescriptor()->full_name());
   std::string result;
   printer.PrintToString(message, &result);
-  append(result);
+
+  if (option == Option::kShort) {
+    TrimTrailingSpace(result);
+  }
+
+  return result;
+}
+
+PROTOBUF_EXPORT std::string StringifyMessage(const Message& message) {
+  return StringifyMessage(message, Option::kNone);
 }
 
 }  // namespace internal
+
+PROTOBUF_EXPORT std::string ShortFormat(const Message& message) {
+  return internal::StringifyMessage(message, internal::Option::kShort);
+}
+
+PROTOBUF_EXPORT std::string Utf8Format(const Message& message) {
+  return internal::StringifyMessage(message, internal::Option::kUTF8);
+}
 
 
 // ===========================================================================
