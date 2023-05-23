@@ -3761,7 +3761,7 @@ class DescriptorBuilder {
 
   ~DescriptorBuilder();
 
-  const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
+  const FileDescriptor* BuildFile(const FileDescriptorProto& original_proto);
 
  private:
   DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
@@ -5168,8 +5168,10 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
 }
 
 const FileDescriptor* DescriptorBuilder::BuildFile(
-    const FileDescriptorProto& proto) {
-  filename_ = proto.name();
+    const FileDescriptorProto& original_proto) {
+  filename_ = original_proto.name();
+
+  const FileDescriptorProto& proto = original_proto;
 
   // Check if the file already exists and is identical to the one being built.
   // Note:  This only works if the input is canonical -- that is, it
