@@ -28,7 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <algorithm>
 #include <cstdint>
+#include <limits>
 #include <numeric>
 #include <string>
 #include <type_traits>
@@ -1404,7 +1406,10 @@ const char* TcParser::PackedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
         // For enums that fit in one varint byte, optimistically assume that all
         // the values are one byte long (i.e. no large unknown values).  If so,
         // we know exactly how many values we're going to get.
-        field->Reserve(field->size() + size_bytes);
+        int64_t new_size =
+            std::min(int64_t{field->size()} + size_bytes,
+                     int64_t{std::numeric_limits<int32_t>::max()});
+        field->Reserve(static_cast<int32_t>(new_size));
       });
 }
 

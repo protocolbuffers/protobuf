@@ -1685,3 +1685,13 @@ message TestCord{
   optional bytes optional_bytes_cord = 1 [ctype=CORD];
   optional bytes optional_bytes_cord_default = 2 [ctype=CORD, default = "hello"];
 }
+
+message TestPackedEnumSmallRange {
+  enum NestedEnum {
+    UNSPECIFIED = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+  }
+  repeated NestedEnum vals = 1 [packed = true];
+}
