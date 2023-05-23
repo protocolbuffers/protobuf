@@ -192,7 +192,9 @@ class _ExtensionDict(object):
     Returns:
       Extension field descriptor.
     """
-    return self._extended_message._extensions_by_number.get(number, None)
+    descriptor = self._extended_message.DESCRIPTOR
+    extensions = descriptor.file.pool._extensions_by_number[descriptor]
+    return extensions.get(number, None)
 
   def __iter__(self):
     # Return a generator over the populated extension fields
