@@ -1890,7 +1890,8 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
     switch (tag) {
       case WireFormatLite::kMessageSetTypeIdTag: {
         uint32_t type_id;
-        if (!input->ReadVarint32(&type_id)) return false;
+        // We should fail parsing if type id is 0.
+        if (!input->ReadVarint32(&type_id) || type_id == 0) return false;
         if (state == State::kNoTag) {
           last_type_id = type_id;
           state = State::kHasType;
