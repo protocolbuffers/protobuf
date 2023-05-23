@@ -73,6 +73,8 @@ static VALUE rb_str_maybe_null(const char* s) {
 // -----------------------------------------------------------------------------
 
 typedef struct {
+  // IMPORTANT: WB_PROTECTED objects must only use the RB_OBJ_WRITE()
+  // macro to update VALUE references, as to trigger write barriers.
   VALUE def_to_descriptor;  // Hash table of def* -> Ruby descriptor.
   upb_DefPool* symtab;
 } DescriptorPool;
@@ -97,7 +99,7 @@ static void DescriptorPool_free(void* _self) {
 static const rb_data_type_t DescriptorPool_type = {
     "Google::Protobuf::DescriptorPool",
     {DescriptorPool_mark, DescriptorPool_free, NULL},
-    .flags = RUBY_TYPED_FREE_IMMEDIATELY,
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
 static DescriptorPool* ruby_to_DescriptorPool(VALUE val) {
@@ -125,7 +127,7 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
   self->def_to_descriptor = Qnil;
   ret = TypedData_Wrap_Struct(klass, &DescriptorPool_type, self);
 
-  self->def_to_descriptor = rb_hash_new();
+  RB_OBJ_WRITE(ret, &self->def_to_descriptor, rb_hash_new());
   self->symtab = upb_DefPool_New();
   ObjectCache_Add(self->symtab, ret);
 
