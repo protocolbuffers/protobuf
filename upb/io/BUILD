@@ -1,3 +1,7 @@
+# begin:google_only
+# package(default_applicable_licenses = ["//:license"])
+# end:google_only
+
 cc_library(
     name = "string",
     hdrs = ["string.h"],

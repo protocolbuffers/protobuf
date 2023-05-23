@@ -32,6 +32,10 @@ load(
     "upb_cc_proto_library_copts",
 )
 
+# begin:google_only
+# package(default_applicable_licenses = ["//:license"])
+# end:google_only
+
 licenses(["notice"])
 
 cc_library(

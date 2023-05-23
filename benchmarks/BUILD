@@ -40,6 +40,10 @@ load(
     "tmpl_cc_binary",
 )
 
+# begin:google_only
+# package(default_applicable_licenses = ["//:license"])
+# end:google_only
+
 licenses(["notice"])
 
 proto_library(

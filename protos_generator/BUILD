@@ -28,6 +28,10 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 
+# begin:google_only
+# package(default_applicable_licenses = ["//:license"])
+# end:google_only
+
 licenses(["notice"])
 
 cc_binary(

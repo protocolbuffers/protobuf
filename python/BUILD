@@ -38,6 +38,9 @@ load("@rules_pkg//:mappings.bzl", "pkg_files")
 licenses(["notice"])
 
 package(
+    # begin:google_only
+#     default_applicable_licenses = ["//:license"],
+    # end:google_only
     default_visibility = ["//python/dist:__pkg__"],
 )
 

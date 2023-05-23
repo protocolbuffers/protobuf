@@ -46,6 +46,7 @@ load(
 #     "//third_party/bazel_rules/rules_kotlin/kotlin/native:native_interop_hint.bzl",
 #     "kt_native_interop_hint",
 # )
+# load("//tools/build_defs/license:license.bzl", "license")
 # end:google_only
 
 # begin:github_only
@@ -55,6 +56,15 @@ load(
 )
 load("@rules_pkg//:mappings.bzl", "pkg_files")
 # end:github_only
+
+# begin:google_only
+# package(default_applicable_licenses = ["//:license"])
+#
+# license(
+#     name = "license",
+#     package_name = "upb",
+# )
+# end:google_only
 
 licenses(["notice"])
 

@@ -28,6 +28,10 @@ load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
 load("@pip_deps//:requirements.bzl", "requirement")
 # end:github_only
 
+# begin:google_only
+# package(default_applicable_licenses = ["//:license"])
+# end:google_only
+
 licenses(["notice"])
 
 pyproto_test_wrapper(name = "descriptor_database_test")

@@ -25,6 +25,10 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
+# begin:google_only
+# package(default_applicable_licenses = ["//:license"])
+# end:google_only
+
 licenses(["notice"])
 
 bzl_library(

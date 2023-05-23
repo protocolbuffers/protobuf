@@ -40,6 +40,10 @@ load(
     "bootstrap_upb_proto_library",
 )
 
+# begin:google_only
+# package(default_applicable_licenses = ["//:license"])
+# end:google_only
+
 licenses(["notice"])
 
 proto_library(

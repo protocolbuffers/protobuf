@@ -8,6 +8,10 @@ load(
 load("@rules_pkg//:mappings.bzl", "pkg_files")
 # end:github_only
 
+# begin:google_only
+# package(default_applicable_licenses = ["//:license"])
+# end:google_only
+
 licenses(["notice"])
 
 # Def to Proto
