@@ -46,6 +46,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
@@ -201,6 +202,22 @@ void ReportReflectionUsageError(const Descriptor* descriptor,
                   << description;
 }
 
+#ifndef NDEBUG
+void ReportReflectionUsageMessageError(const Descriptor* expected,
+                                       const Descriptor* actual,
+                                       const FieldDescriptor* field,
+                                       const char* method) {
+  ABSL_LOG(FATAL) << absl::StrFormat(
+      "Protocol Buffer reflection usage error:\n"
+      "  Method       : google::protobuf::Reflection::%s\n"
+      "  Expected type: %s\n"
+      "  Actual type  : %s\n"
+      "  Field        : %s\n"
+      "  Problem      : Message is not the right type for reflection",
+      method, expected->full_name(), actual->full_name(), field->full_name());
+}
+#endif
+
 const char* cpptype_names_[FieldDescriptor::MAX_CPPTYPE + 1] = {
     "INVALID_CPPTYPE", "CPPTYPE_INT32",  "CPPTYPE_INT64",  "CPPTYPE_UINT32",
     "CPPTYPE_UINT64",  "CPPTYPE_DOUBLE", "CPPTYPE_FLOAT",  "CPPTYPE_BOOL",
@@ -266,6 +283,16 @@ static void ReportReflectionUsageEnumTypeError(
   if (value->type() != field->enum_type()) \
   ReportReflectionUsageEnumTypeError(descriptor_, field, #METHOD, value)
 
+#ifdef NDEBUG
+// Avoid a virtual method call in optimized builds.
+#define USAGE_CHECK_MESSAGE(METHOD, MESSAGE)
+#else
+#define USAGE_CHECK_MESSAGE(METHOD, MESSAGE)                                 \
+  if (descriptor_ != (MESSAGE)->GetDescriptor())                             \
+  ReportReflectionUsageMessageError(descriptor_, (MESSAGE)->GetDescriptor(), \
+                                    field, #METHOD)
+#endif
+
 #define USAGE_CHECK_MESSAGE_TYPE(METHOD)                        \
   USAGE_CHECK_EQ(field->containing_type(), descriptor_, METHOD, \
                  "Field does not match message type.");
@@ -277,8 +304,15 @@ static void ReportReflectionUsageEnumTypeError(
                  "Field is singular; the method requires a repeated field.")
 
 #define USAGE_CHECK_ALL(METHOD, LABEL, CPPTYPE) \
+  USAGE_CHECK_MESSAGE(METHOD, &message);        \
   USAGE_CHECK_MESSAGE_TYPE(METHOD);             \
   USAGE_CHECK_##LABEL(METHOD);                  \
+  USAGE_CHECK_TYPE(METHOD, CPPTYPE)
+
+#define USAGE_MUTABLE_CHECK_ALL(METHOD, LABEL, CPPTYPE) \
+  USAGE_CHECK_MESSAGE(METHOD, message);                 \
+  USAGE_CHECK_MESSAGE_TYPE(METHOD);                     \
+  USAGE_CHECK_##LABEL(METHOD);                          \
   USAGE_CHECK_TYPE(METHOD, CPPTYPE)
 
 }  // namespace
@@ -1175,6 +1209,7 @@ void Reflection::UnsafeArenaSwapFields(
 
 bool Reflection::HasField(const Message& message,
                           const FieldDescriptor* field) const {
+  USAGE_CHECK_MESSAGE(HasField, &message);
   USAGE_CHECK_MESSAGE_TYPE(HasField);
   USAGE_CHECK_SINGULAR(HasField);
 
@@ -1273,6 +1308,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
 
 int Reflection::FieldSize(const Message& message,
                           const FieldDescriptor* field) const {
+  USAGE_CHECK_MESSAGE(FieldSize, &message);
   USAGE_CHECK_MESSAGE_TYPE(FieldSize);
   USAGE_CHECK_REPEATED(FieldSize);
 
@@ -1318,6 +1354,7 @@ int Reflection::FieldSize(const Message& message,
 
 void Reflection::ClearField(Message* message,
                             const FieldDescriptor* field) const {
+  USAGE_CHECK_MESSAGE(ClearField, message);
   USAGE_CHECK_MESSAGE_TYPE(ClearField);
 
   if (field->is_extension()) {
@@ -1435,6 +1472,7 @@ void Reflection::ClearField(Message* message,
 
 void Reflection::RemoveLast(Message* message,
                             const FieldDescriptor* field) const {
+  USAGE_CHECK_MESSAGE(RemoveLast, message);
   USAGE_CHECK_MESSAGE_TYPE(RemoveLast);
   USAGE_CHECK_REPEATED(RemoveLast);
 
@@ -1483,7 +1521,7 @@ void Reflection::RemoveLast(Message* message,
 
 Message* Reflection::ReleaseLast(Message* message,
                                  const FieldDescriptor* field) const {
-  USAGE_CHECK_ALL(ReleaseLast, REPEATED, MESSAGE);
+  USAGE_MUTABLE_CHECK_ALL(ReleaseLast, REPEATED, MESSAGE);
 
   Message* released;
   if (field->is_extension()) {
@@ -1508,7 +1546,7 @@ Message* Reflection::ReleaseLast(Message* message,
 
 Message* Reflection::UnsafeArenaReleaseLast(
     Message* message, const FieldDescriptor* field) const {
-  USAGE_CHECK_ALL(UnsafeArenaReleaseLast, REPEATED, MESSAGE);
+  USAGE_MUTABLE_CHECK_ALL(UnsafeArenaReleaseLast, REPEATED, MESSAGE);
 
   if (field->is_extension()) {
     return static_cast<Message*>(
@@ -1527,6 +1565,7 @@ Message* Reflection::UnsafeArenaReleaseLast(
 
 void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
                               int index1, int index2) const {
+  USAGE_CHECK_MESSAGE(Swap, message);
   USAGE_CHECK_MESSAGE_TYPE(Swap);
   USAGE_CHECK_REPEATED(Swap);
 
@@ -1692,7 +1731,7 @@ void Reflection::ListFields(const Message& message,
                                                                                \
   void Reflection::Set##TYPENAME(                                              \
       Message* message, const FieldDescriptor* field, PASSTYPE value) const {  \
-    USAGE_CHECK_ALL(Set##TYPENAME, SINGULAR, CPPTYPE);                         \
+    USAGE_MUTABLE_CHECK_ALL(Set##TYPENAME, SINGULAR, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
       return MutableExtensionSet(message)->Set##TYPENAME(                      \
           field->number(), field->type(), value, field);                       \
@@ -1715,7 +1754,7 @@ void Reflection::ListFields(const Message& message,
   void Reflection::SetRepeated##TYPENAME(Message* message,                     \
                                          const FieldDescriptor* field,         \
                                          int index, PASSTYPE value) const {    \
-    USAGE_CHECK_ALL(SetRepeated##TYPENAME, REPEATED, CPPTYPE);                 \
+    USAGE_MUTABLE_CHECK_ALL(SetRepeated##TYPENAME, REPEATED, CPPTYPE);         \
     if (field->is_extension()) {                                               \
       MutableExtensionSet(message)->SetRepeated##TYPENAME(field->number(),     \
                                                           index, value);       \
@@ -1726,7 +1765,7 @@ void Reflection::ListFields(const Message& message,
                                                                                \
   void Reflection::Add##TYPENAME(                                              \
       Message* message, const FieldDescriptor* field, PASSTYPE value) const {  \
-    USAGE_CHECK_ALL(Add##TYPENAME, REPEATED, CPPTYPE);                         \
+    USAGE_MUTABLE_CHECK_ALL(Add##TYPENAME, REPEATED, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
       MutableExtensionSet(message)->Add##TYPENAME(                             \
           field->number(), field->type(), field->options().packed(), value,    \
@@ -1846,7 +1885,7 @@ absl::Cord Reflection::GetCord(const Message& message,
 
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
-  USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
+  USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
   if (field->is_extension()) {
     return MutableExtensionSet(message)->SetString(
         field->number(), field->type(), std::move(value), field);
@@ -1897,7 +1936,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
 
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            const absl::Cord& value) const {
-  USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
+  USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
   if (field->is_extension()) {
     return absl::CopyCordToString(value,
                                   MutableExtensionSet(message)->MutableString(
@@ -1981,7 +2020,7 @@ const std::string& Reflection::GetRepeatedStringReference(
 void Reflection::SetRepeatedString(Message* message,
                                    const FieldDescriptor* field, int index,
                                    std::string value) const {
-  USAGE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
+  USAGE_MUTABLE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->SetRepeatedString(field->number(), index,
                                                     std::move(value));
@@ -1999,7 +2038,7 @@ void Reflection::SetRepeatedString(Message* message,
 
 void Reflection::AddString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
-  USAGE_CHECK_ALL(AddString, REPEATED, STRING);
+  USAGE_MUTABLE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddString(field->number(), field->type(),
                                             std::move(value), field);
@@ -2048,7 +2087,7 @@ void Reflection::SetEnum(Message* message, const FieldDescriptor* field,
 
 void Reflection::SetEnumValue(Message* message, const FieldDescriptor* field,
                               int value) const {
-  USAGE_CHECK_ALL(SetEnumValue, SINGULAR, ENUM);
+  USAGE_MUTABLE_CHECK_ALL(SetEnumValue, SINGULAR, ENUM);
   if (!CreateUnknownEnumValues(field)) {
     // Check that the value is valid if we don't support direct storage of
     // unknown enum values.
@@ -2105,7 +2144,7 @@ void Reflection::SetRepeatedEnum(Message* message, const FieldDescriptor* field,
 void Reflection::SetRepeatedEnumValue(Message* message,
                                       const FieldDescriptor* field, int index,
                                       int value) const {
-  USAGE_CHECK_ALL(SetRepeatedEnum, REPEATED, ENUM);
+  USAGE_MUTABLE_CHECK_ALL(SetRepeatedEnum, REPEATED, ENUM);
   if (!CreateUnknownEnumValues(field)) {
     // Check that the value is valid if we don't support direct storage of
     // unknown enum values.
@@ -2139,7 +2178,7 @@ void Reflection::AddEnum(Message* message, const FieldDescriptor* field,
 
 void Reflection::AddEnumValue(Message* message, const FieldDescriptor* field,
                               int value) const {
-  USAGE_CHECK_ALL(AddEnum, REPEATED, ENUM);
+  USAGE_MUTABLE_CHECK_ALL(AddEnum, REPEATED, ENUM);
   if (!CreateUnknownEnumValues(field)) {
     // Check that the value is valid if we don't support direct storage of
     // unknown enum values.
@@ -2226,7 +2265,7 @@ const Message& Reflection::GetMessage(const Message& message,
 Message* Reflection::MutableMessage(Message* message,
                                     const FieldDescriptor* field,
                                     MessageFactory* factory) const {
-  USAGE_CHECK_ALL(MutableMessage, SINGULAR, MESSAGE);
+  USAGE_MUTABLE_CHECK_ALL(MutableMessage, SINGULAR, MESSAGE);
 
   if (factory == nullptr) factory = message_factory_;
 
@@ -2261,7 +2300,7 @@ Message* Reflection::MutableMessage(Message* message,
 void Reflection::UnsafeArenaSetAllocatedMessage(
     Message* message, Message* sub_message,
     const FieldDescriptor* field) const {
-  USAGE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
+  USAGE_MUTABLE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
 
 
   if (field->is_extension()) {
@@ -2326,7 +2365,7 @@ void Reflection::SetAllocatedMessage(Message* message, Message* sub_message,
 Message* Reflection::UnsafeArenaReleaseMessage(Message* message,
                                                const FieldDescriptor* field,
                                                MessageFactory* factory) const {
-  USAGE_CHECK_ALL(ReleaseMessage, SINGULAR, MESSAGE);
+  USAGE_MUTABLE_CHECK_ALL(ReleaseMessage, SINGULAR, MESSAGE);
 
   if (factory == nullptr) factory = message_factory_;
 
@@ -2390,7 +2429,7 @@ const Message& Reflection::GetRepeatedMessage(const Message& message,
 Message* Reflection::MutableRepeatedMessage(Message* message,
                                             const FieldDescriptor* field,
                                             int index) const {
-  USAGE_CHECK_ALL(MutableRepeatedMessage, REPEATED, MESSAGE);
+  USAGE_MUTABLE_CHECK_ALL(MutableRepeatedMessage, REPEATED, MESSAGE);
 
   if (field->is_extension()) {
     return static_cast<Message*>(
@@ -2410,7 +2449,7 @@ Message* Reflection::MutableRepeatedMessage(Message* message,
 
 Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
                                 MessageFactory* factory) const {
-  USAGE_CHECK_ALL(AddMessage, REPEATED, MESSAGE);
+  USAGE_MUTABLE_CHECK_ALL(AddMessage, REPEATED, MESSAGE);
 
   if (factory == nullptr) factory = message_factory_;
 
@@ -2452,7 +2491,7 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
 void Reflection::AddAllocatedMessage(Message* message,
                                      const FieldDescriptor* field,
                                      Message* new_entry) const {
-  USAGE_CHECK_ALL(AddAllocatedMessage, REPEATED, MESSAGE);
+  USAGE_MUTABLE_CHECK_ALL(AddAllocatedMessage, REPEATED, MESSAGE);
 
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddAllocatedMessage(field, new_entry);
@@ -2471,7 +2510,7 @@ void Reflection::AddAllocatedMessage(Message* message,
 void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
                                                 const FieldDescriptor* field,
                                                 Message* new_entry) const {
-  USAGE_CHECK_ALL(UnsafeArenaAddAllocatedMessage, REPEATED, MESSAGE);
+  USAGE_MUTABLE_CHECK_ALL(UnsafeArenaAddAllocatedMessage, REPEATED, MESSAGE);
 
   if (field->is_extension()) {
     MutableExtensionSet(message)->UnsafeArenaAddAllocatedMessage(field,
