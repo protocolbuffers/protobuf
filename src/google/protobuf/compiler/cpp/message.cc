@@ -1926,24 +1926,19 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         "  MergeFromInternal(other);\n"
         "}\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      if (!descriptor_->options().map_entry()) {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "$annotate_reflection$"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      } else {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      }
+      p->Emit(
+          {
+              {"index_in_file_messages", index_in_file_messages_},
+              {"default_name", DefaultInstanceName(descriptor_, options_)},
+          },
+          R"cc(
+            ::$proto_ns$::Metadata $classname$::GetMetadata() const {
+              return ::_pbi::AssignDescriptors(
+                  &$desc_table$_getter, &$desc_table$_once,
+                  $file_level_metadata$[$index_in_file_messages$],
+                  &$default_name$);
+            }
+          )cc");
     }
     return;
   }
@@ -2080,23 +2075,54 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   format("\n");
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    if (!descriptor_->options().map_entry()) {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "$annotate_reflection$"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
+    if (HasGeneratedMethods(descriptor_->file(), options_)) {
+      p->Emit(
+          {
+              {"index_in_file_messages", index_in_file_messages_},
+              {"default_name", DefaultInstanceName(descriptor_, options_)},
+          },
+          R"cc(
+            ::$proto_ns$::Metadata $classname$::GetMetadata() const {
+              $annotate_reflection$;
+              return ::_pbi::AssignDescriptors(
+                  &$desc_table$_getter, &$desc_table$_once,
+                  $file_level_metadata$[$index_in_file_messages$],
+                  &$default_name$);
+            }
+          )cc");
     } else {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
+      // For normal types we use the _table_ as a dependency graph on default
+      // instances. CODE_SIZE types do not have that, so we have to add an
+      // explicit dependency here to allow gc to work correctly.
+      p->Emit(
+          {
+              {"index_in_file_messages", index_in_file_messages_},
+              {"default_name", DefaultInstanceName(descriptor_, options_)},
+              {"odr_use_deps",
+               [&] {
+                 for (int i = 0; i < descriptor_->field_count(); ++i) {
+                   auto* field = descriptor_->field(i);
+                   if (field->type() == field->TYPE_MESSAGE) {
+                     p->Emit(
+                         {
+                             {"sub_default_name",
+                              QualifiedDefaultInstanceName(
+                                  field->message_type(), options_)},
+                         },
+                         "&$sub_default_name$, ");
+                   }
+                 }
+               }},
+          },
+          R"cc(
+            ::$proto_ns$::Metadata $classname$::GetMetadata() const {
+              $annotate_reflection$;
+              return ::_pbi::AssignDescriptors(
+                  &$desc_table$_getter, &$desc_table$_once,
+                  $file_level_metadata$[$index_in_file_messages$],
+                  $odr_use_deps$, &$default_name$);
+            }
+          )cc");
     }
   } else {
     format(

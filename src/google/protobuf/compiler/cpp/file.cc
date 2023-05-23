@@ -61,6 +61,7 @@
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
 
 // Must be last.
@@ -574,6 +575,8 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
         {
             {"type", DefaultInstanceType(generator->descriptor(), options_)},
             {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"section",
+             DefaultInstanceSection(generator->descriptor(), options_)},
             {"class", ClassName(generator->descriptor())},
         },
         R"cc(
@@ -591,13 +594,16 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
           };
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
+                  PROTOBUF_DEFAULT_INSTANCE_SECTION($section$);
         )cc");
   } else {
     p->Emit(
         {
             {"type", DefaultInstanceType(generator->descriptor(), options_)},
             {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"section",
+             DefaultInstanceSection(generator->descriptor(), options_)},
             {"class", ClassName(generator->descriptor())},
         },
         R"cc(
@@ -610,7 +616,8 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
           };
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
+                  PROTOBUF_DEFAULT_INSTANCE_SECTION($section$);
         )cc");
   }
 
@@ -897,6 +904,69 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   IncludeFile("third_party/protobuf/port_undef.inc", p);
 }
 
+static std::vector<const Descriptor*> GatherRequiredExtensionsForOptions(
+    const FileDescriptor* file) {
+  FileDescriptorProto linkedin_fd_proto;
+  const DescriptorPool* pool = file->pool();
+  const Descriptor* fd_proto_descriptor =
+      pool->FindMessageTypeByName(linkedin_fd_proto.GetTypeName());
+  // Not all pools have descriptor.proto in them. In these cases there for sure
+  // are no custom options.
+  if (fd_proto_descriptor == nullptr) {
+    return {};
+  }
+
+  // It's easier to inspect file as a proto, because we can use reflection on
+  // the proto to iterate over all content.
+  file->CopyTo(&linkedin_fd_proto);
+
+  // linkedin_fd_proto is a generated proto linked in the proto compiler. As
+  // such it doesn't know the extensions that are potentially present in the
+  // descriptor pool constructed from the protos that are being compiled. These
+  // custom options are therefore in the unknown fields.
+  // By building the corresponding FileDescriptorProto in the pool constructed
+  // by the protos that are being compiled, ie. file's pool, the unknown fields
+  // are converted to extensions.
+  DynamicMessageFactory factory(pool);
+  std::unique_ptr<Message> fd_proto(
+      factory.GetPrototype(fd_proto_descriptor)->New());
+  fd_proto->ParseFromString(linkedin_fd_proto.SerializeAsString());
+
+  std::vector<const Message*> to_process = {fd_proto.get()};
+  absl::btree_set<const Descriptor*> messages_to_force_link;
+  while (!to_process.empty()) {
+    const Message& msg = *to_process.back();
+    to_process.pop_back();
+
+    std::vector<const FieldDescriptor*> fields;
+    const Reflection& reflection = *msg.GetReflection();
+    reflection.ListFields(msg, &fields);
+
+    for (auto field : fields) {
+      const auto* field_msg = field->message_type();
+      if (field_msg == nullptr) continue;
+      if (field->is_extension()) {
+        messages_to_force_link.insert(field->message_type());
+      }
+      if (field->is_repeated()) {
+        for (int i = 0; i < reflection.FieldSize(msg, field); i++) {
+          to_process.push_back(&reflection.GetRepeatedMessage(msg, field, i));
+        }
+      } else {
+        to_process.push_back(&reflection.GetMessage(msg, field));
+      }
+    }
+  }
+
+  std::vector<const Descriptor*> out(messages_to_force_link.begin(),
+                                     messages_to_force_link.end());
+  // Sort to make sure the output is deterministic.
+  std::sort(out.begin(), out.end(), [](const auto* a, const auto* b) {
+    return a->full_name() < b->full_name();
+  });
+  return out;
+}
+
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   if (!message_generators_.empty()) {
     p->Emit({{"len", message_generators_.size()}}, R"cc(
@@ -948,6 +1018,29 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                  offset += offsets[i].first;
                }
              }},
+            {"section_starts",
+             [&] {
+               p->Emit("extern \"C\" {\n");
+               for (auto& gen : message_generators_) {
+                 p->Emit({{"declaration", DefaultInstanceSectionDeclaration(
+                                              gen->descriptor(), options_)}},
+                         R"cc($declaration$;)cc");
+               }
+               p->Emit("}\n");
+             }},
+            {"weak_defaults",
+             [&] {
+               for (auto& gen : message_generators_) {
+                 p->Emit(
+                     {
+                         {"section",
+                          DefaultInstanceSection(gen->descriptor(), options_)},
+                     },
+                     R"cc(
+                       &__start_$section$,
+                     )cc");
+               }
+             }},
             {"defaults",
              [&] {
                for (auto& gen : message_generators_) {
@@ -973,8 +1066,16 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                   $schemas$,
           };
 
-          static const ::_pb::Message* const file_default_instances[] = {
+#if defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
+          $section_starts$;
+#endif  // defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
+
+          static const ::_pb::Message* file_default_instances[] = {
+#if defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
+              $weak_defaults$,
+#else   // defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
               $defaults$,
+#endif  // defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
           };
         )cc");
   } else {
@@ -1136,12 +1237,33 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // unnecessary code that can't be stripped by --gc-sections. Descriptor
   // initialization will still be performed lazily when it's needed.
   if (file_->name() != "net/proto2/proto/descriptor.proto") {
-    p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
-            R"cc(
-              // Force running AddDescriptors() at dynamic initialization time.
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-              static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
-            )cc");
+    p->Emit(
+        {
+            {"dummy", UniqueName("dynamic_init_dummy", file_, options_)},
+            // All extensions used in options in the descriptor must be forced
+            // link, otherwise we have reentrancy while trying to parse
+            // descriptors.
+            {"messages_to_force_link",
+             [&] {
+               const auto messages_to_force_link =
+                   GatherRequiredExtensionsForOptions(file_);
+               for (auto* desc : messages_to_force_link) {
+                 p->Emit(
+                     {
+                         {"default",
+                          QualifiedDefaultInstanceName(desc, options_)},
+                     },
+                     ", &$default$");
+               }
+               if (messages_to_force_link.empty()) return;
+             }},
+        },
+        R"cc(
+          // Force running AddDescriptors() at dynamic initialization time.
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+          static ::_pbi::AddDescriptorsRunner $dummy$(
+              &$desc_table$ $messages_to_force_link$);
+        )cc");
   }
 
   // However, we must provide a way to force initialize the default instances

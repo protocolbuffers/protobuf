@@ -880,6 +880,19 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
+#ifdef PROTOBUF_DEFAULT_INSTANCE_SECTION
+#error PROTOBUF_DEFAULT_INSTANCE_SECTION was previously defined
+#endif
+#ifdef PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS
+#error PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS was previously defined
+#endif
+#if defined(__clang__) && defined(__x86_64__) && defined(__linux__)
+#define PROTOBUF_DEFAULT_INSTANCE_SECTION(s) __attribute__((section(#s)))
+#define PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS
+#else
+#define PROTOBUF_DEFAULT_INSTANCE_SECTION(s)
+#endif
+
 // autoheader defines this in some circumstances
 #ifdef PACKAGE
 #define PROTOBUF_DID_UNDEF_PACKAGE

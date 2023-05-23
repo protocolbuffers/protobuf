@@ -484,6 +484,40 @@ std::string DefaultInstanceName(const Descriptor* descriptor,
                       (split ? "__Impl_Split" : ""), "_default_instance_");
 }
 
+std::string DefaultInstanceSection(const Descriptor* descriptor,
+                                   const Options& options, bool split) {
+  const auto* file = descriptor->file();
+
+  // To make a compact name we use the index of the object in its parent instead
+  // of its name, recursively until we reach the root.
+  // So the name could be `pb_def_1_2_1_0_HASH` instead of
+  // `pd_def_VeryLongClassName_WithNesting_AndMoreNames_HASH`
+  std::string prefix = "pb_def";
+  do {
+    absl::StrAppend(&prefix, "_", descriptor->index());
+    descriptor = descriptor->containing_type();
+  } while (descriptor != nullptr);
+
+  return UniqueName(prefix, file, options);
+}
+
+std::string DefaultInstanceSectionDeclaration(const Descriptor* descriptor,
+                                              const Options& options,
+                                              bool split) {
+  if (descriptor == nullptr) return "";
+  return absl::StrCat("extern __attribute__((weak)) const ",
+                      Namespace(descriptor, options),
+                      "::", ClassName(descriptor), " __start_",
+                      DefaultInstanceSection(descriptor, options, split), ";");
+}
+
+std::string DefaultInstanceSectionReference(const Descriptor* descriptor,
+                                            const Options& options,
+                                            bool split) {
+  return absl::StrCat("__start_",
+                      DefaultInstanceSection(descriptor, options, split));
+}
+
 std::string DefaultInstancePtr(const Descriptor* descriptor,
                                const Options& options, bool split) {
   return absl::StrCat(DefaultInstanceName(descriptor, options, split), "ptr_");

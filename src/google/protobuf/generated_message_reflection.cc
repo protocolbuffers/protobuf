@@ -3449,6 +3449,7 @@ ReflectionSchema MigrationToReflectionSchema(
     MigrationSchema migration_schema) {
   ReflectionSchema result;
   result.default_instance_ = *default_instance;
+  ABSL_CHECK(result.default_instance_ != nullptr);
   // First 9 offsets are offsets to the special fields. The following offsets
   // are the proto fields.
   //
@@ -3493,12 +3494,15 @@ class AssignDescriptorsHelper {
     }
 
     file_level_metadata_->descriptor = descriptor;
-
-    file_level_metadata_->reflection =
-        new Reflection(descriptor,
-                       MigrationToReflectionSchema(default_instance_data_,
-                                                   offsets_, *schemas_),
-                       DescriptorPool::internal_generated_pool(), factory_);
+    if (*default_instance_data_ != nullptr) {
+      file_level_metadata_->reflection =
+          new Reflection(descriptor,
+                         MigrationToReflectionSchema(default_instance_data_,
+                                                     offsets_, *schemas_),
+                         DescriptorPool::internal_generated_pool(), factory_);
+    } else {
+      file_level_metadata_->reflection = nullptr;
+    }
     for (int i = 0; i < descriptor->enum_type_count(); i++) {
       AssignEnumDescriptor(descriptor->enum_type(i));
     }
@@ -3651,14 +3655,15 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
     const Reflection* reflection = file_level_metadata[i].reflection;
     MessageFactory::InternalRegisterGeneratedMessage(
         file_level_metadata[i].descriptor,
-        reflection->schema_.default_instance_);
+        reflection ? reflection->schema_.default_instance_ : nullptr);
   }
 }
 
 namespace internal {
 
 Metadata AssignDescriptors(const DescriptorTable* (*table)(),
-                           absl::once_flag* once, const Metadata& metadata) {
+                           absl::once_flag* once, const Metadata& metadata,
+                           ...) {
   absl::call_once(*once, [=] {
     auto* t = table();
     AssignDescriptorsImpl(t, t->is_eager);
@@ -3672,7 +3677,7 @@ void AssignDescriptors(const DescriptorTable* table, bool eager) {
   absl::call_once(*table->once, AssignDescriptorsImpl, table, eager);
 }
 
-AddDescriptorsRunner::AddDescriptorsRunner(const DescriptorTable* table) {
+AddDescriptorsRunner::AddDescriptorsRunner(const DescriptorTable* table, ...) {
   AddDescriptors(table);
 }
 

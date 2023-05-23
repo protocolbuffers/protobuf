@@ -184,6 +184,18 @@ std::string DefaultInstanceType(const Descriptor* descriptor,
 std::string DefaultInstanceName(const Descriptor* descriptor,
                                 const Options& options, bool split = false);
 
+// XXX
+std::string DefaultInstanceSection(const Descriptor* descriptor,
+                                   const Options& options, bool split = false);
+
+std::string DefaultInstanceSectionDeclaration(const Descriptor* descriptor,
+                                              const Options& options,
+                                              bool split = false);
+
+std::string DefaultInstanceSectionReference(const Descriptor* descriptor,
+                                            const Options& options,
+                                            bool split = false);
+
 // Non-qualified name of the default instance pointer. This is used only for
 // implicit weak fields, where we need an extra indirection.
 std::string DefaultInstancePtr(const Descriptor* descriptor,

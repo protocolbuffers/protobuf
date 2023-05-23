@@ -1508,6 +1508,7 @@ class ExtensionIdentifier {
       : number_(number), default_value_(default_value) {
     Register(number, verify_func);
   }
+
   inline int number() const { return number_; }
   typename TypeTraits::ConstType default_value() const {
     return default_value_;
@@ -1527,6 +1528,80 @@ class ExtensionIdentifier {
   typename TypeTraits::ConstType default_value_;
 };
 
+template <typename ExtendeeType, typename TypeTraitsType, bool is_packed>
+class ExtensionIdentifier<ExtendeeType, TypeTraitsType, 10, is_packed> {
+ public:
+  typedef TypeTraitsType TypeTraits;
+  typedef ExtendeeType Extendee;
+
+  ExtensionIdentifier(int number, typename TypeTraits::ConstType default_value,
+                      LazyEagerVerifyFnType verify_func = nullptr)
+      : number_(number), default_value_(&default_value) {
+    Register(number, verify_func);
+  }
+
+  constexpr ExtensionIdentifier(int number, const void* default_value,
+                                LazyEagerVerifyFnType verify_func = nullptr)
+      : number_(number), default_value_(default_value) {}
+
+  inline int number() const { return number_; }
+  typename TypeTraits::ConstType default_value() const {
+    return default_value_ref();
+  }
+
+  static void Register(int number, LazyEagerVerifyFnType verify_func) {
+    TypeTraits::template Register<ExtendeeType>(number, 10, is_packed,
+                                                verify_func);
+  }
+
+  typename TypeTraits::ConstType const& default_value_ref() const {
+    return *reinterpret_cast<
+        const std::remove_reference_t<typename TypeTraits::ConstType>*>(
+        default_value_);
+  }
+
+ private:
+  const int number_;
+  const void* default_value_;
+};
+
+template <typename ExtendeeType, typename TypeTraitsType, bool is_packed>
+class ExtensionIdentifier<ExtendeeType, TypeTraitsType, 11, is_packed> {
+ public:
+  typedef TypeTraitsType TypeTraits;
+  typedef ExtendeeType Extendee;
+
+  ExtensionIdentifier(int number, typename TypeTraits::ConstType default_value,
+                      LazyEagerVerifyFnType verify_func = nullptr)
+      : number_(number), default_value_(&default_value) {
+    Register(number, verify_func);
+  }
+
+  constexpr ExtensionIdentifier(int number, const void* default_value,
+                                LazyEagerVerifyFnType verify_func = nullptr)
+      : number_(number), default_value_(default_value) {}
+
+  inline int number() const { return number_; }
+  typename TypeTraits::ConstType default_value() const {
+    return default_value_ref();
+  }
+
+  static void Register(int number, LazyEagerVerifyFnType verify_func) {
+    TypeTraits::template Register<ExtendeeType>(number, 11, is_packed,
+                                                verify_func);
+  }
+
+  typename TypeTraits::ConstType const& default_value_ref() const {
+    return *reinterpret_cast<
+        const std::remove_reference_t<typename TypeTraits::ConstType>*>(
+        default_value_);
+  }
+
+ private:
+  const int number_;
+  const void* default_value_;
+};
+
 // -------------------------------------------------------------------
 // Generated accessors
 
@@ -1534,6 +1609,26 @@ class ExtensionIdentifier {
 // Used to retrieve a lazy extension, may return nullptr in some environments.
 extern PROTOBUF_ATTRIBUTE_WEAK ExtensionSet::LazyMessageExtension*
 MaybeCreateLazyExtension(Arena* arena);
+
+struct ExtensionRegisterer {
+  template <typename ExtendeeType, typename TypeTraitsType,
+            FieldType field_type, bool is_packed, typename... Args>
+  ExtensionRegisterer(const ExtensionIdentifier<ExtendeeType, TypeTraitsType,
+                                                field_type, is_packed>* id,
+                      Args... args) {
+    id->Register(args...);
+  }
+
+  template <typename ExtendeeT, typename ExtenderT>
+  ExtensionRegisterer(const ExtendeeT* default_extendee, int number, int type,
+                      bool is_repeated, bool is_packed,
+                      const ExtenderT* default_extender,
+                      LazyEagerVerifyFnType fn) {
+    ExtensionSet::RegisterMessageExtension(default_extendee, number, type,
+                                           is_repeated, is_packed,
+                                           default_extender, fn);
+  }
+};
 
 }  // namespace internal
 

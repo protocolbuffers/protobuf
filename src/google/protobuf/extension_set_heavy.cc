@@ -314,6 +314,17 @@ bool ExtensionSet::FindExtension(int wire_type, uint32_t field,
                                           was_packed_on_wire)) {
       return false;
     }
+    if ((extension->type == FieldDescriptor::TYPE_MESSAGE ||
+         extension->type == FieldDescriptor::TYPE_GROUP) &&
+        extension->message_info.prototype == nullptr) {
+      // We need to load from the factory.
+      extension->message_info.prototype =
+          MessageFactory::generated_factory()->GetPrototype(
+              DescriptorPool::internal_generated_pool()
+                  ->FindExtensionByNumber(extendee->GetDescriptor(),
+                                          extension->number)
+                  ->message_type());
+    }
   } else {
     DescriptorPoolExtensionFinder finder(ctx->data().pool, ctx->data().factory,
                                          extendee->GetDescriptor());

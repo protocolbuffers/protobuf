@@ -141,8 +141,8 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) const {
       qualifier, descriptor_);
 }
 
-void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
-  Formatter format(printer, variables_);
+void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
+  Formatter format(p, variables_);
   std::string default_str;
   // If this is a class member, it needs to be declared in its class scope.
   if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
@@ -172,12 +172,54 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
         "#endif\n");
   }
 
-  format(
-      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
-      "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
-      "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
-      "  $scoped_name$($constant_name$, $1$, $verify_fn$);\n",
-      default_str);
+  auto vars = p->WithVars(variables_);
+  if (descriptor_->message_type() == nullptr ||
+      !HasDescriptorMethods(descriptor_->file(), options_)) {
+    p->Emit(
+        {
+            {"default", default_str},
+            {"reg_name", UniqueName("pb_ext_reg_", descriptor_->full_name())},
+        },
+        R"cc(
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+          ::$proto_ns$::internal::ExtensionIdentifier<
+              $extendee$, ::$proto_ns$::internal::$type_traits$, $field_type$,
+              $packed$>
+              $scoped_name$($constant_name$, $default$, $verify_fn$);
+        )cc");
+  } else {
+    p->Emit(
+        {
+            {"default", QualifiedDefaultInstanceName(
+                            descriptor_->message_type(), options_)},
+            {"is_repeated", descriptor_->is_repeated()},
+            {"reg_name", UniqueName("pb_ext_reg_", descriptor_->full_name())},
+            {"extender_weak_decl", DefaultInstanceSectionDeclaration(
+                                       descriptor_->message_type(), options_)},
+            {"extender_weak_ref", DefaultInstanceSectionReference(
+                                      descriptor_->message_type(), options_)},
+        },
+        R"cc(
+          PROTOBUF_CONSTINIT
+          ::$proto_ns$::internal::ExtensionIdentifier<
+              $extendee$, ::$proto_ns$::internal::$type_traits$, $field_type$,
+              $packed$>
+              $scoped_name$($constant_name$, &$default$, $verify_fn$);
+#if defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
+          extern "C" {
+          $extender_weak_decl$;
+          }
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+          static ::_pbi::ExtensionRegisterer $reg_name$(
+              &$extendee$::default_instance(), $number$, $field_type$,
+              $is_repeated$, $packed$, &$extender_weak_ref$, $verify_fn$);
+#else   // defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+          static ::_pbi::ExtensionRegisterer $reg_name$(&$scoped_name$,
+                                                        $number$, $verify_fn$);
+#endif  // defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
+        )cc");
+  }
 }
 
 }  // namespace cpp

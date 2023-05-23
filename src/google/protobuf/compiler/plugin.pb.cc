@@ -45,7 +45,8 @@ struct VersionDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_
+        PROTOBUF_DEFAULT_INSTANCE_SECTION(pb_def_0_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
         template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized)
     : _impl_{
@@ -68,7 +69,8 @@ struct CodeGeneratorRequestDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_
+        PROTOBUF_DEFAULT_INSTANCE_SECTION(pb_def_1_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
         template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi::ConstantInitialized)
     : _impl_{
@@ -97,7 +99,8 @@ struct CodeGeneratorResponse_FileDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_
+        PROTOBUF_DEFAULT_INSTANCE_SECTION(pb_def_0_2_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
         template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::ConstantInitialized)
     : _impl_{
@@ -119,7 +122,8 @@ struct CodeGeneratorResponseDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_
+        PROTOBUF_DEFAULT_INSTANCE_SECTION(pb_def_2_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
@@ -201,11 +205,23 @@ static const ::_pbi::MigrationSchema
         {48, 59, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
 };
 
-static const ::_pb::Message* const file_default_instances[] = {
+#if defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
+extern "C" {
+extern __attribute__((weak)) const ::google::protobuf::compiler::Version __start_pb_def_0_google_2fprotobuf_2fcompiler_2fplugin_2eproto;;extern __attribute__((weak)) const ::google::protobuf::compiler::CodeGeneratorRequest __start_pb_def_1_google_2fprotobuf_2fcompiler_2fplugin_2eproto;;extern __attribute__((weak)) const ::google::protobuf::compiler::CodeGeneratorResponse_File __start_pb_def_0_2_google_2fprotobuf_2fcompiler_2fplugin_2eproto;;extern __attribute__((weak)) const ::google::protobuf::compiler::CodeGeneratorResponse __start_pb_def_2_google_2fprotobuf_2fcompiler_2fplugin_2eproto;;}
+#endif  // defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
+
+static const ::_pb::Message* file_default_instances[] = {
+#if defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
+    &__start_pb_def_0_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+    &__start_pb_def_1_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+    &__start_pb_def_0_2_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+    &__start_pb_def_2_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+#else   // defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
     &::google::protobuf::compiler::_Version_default_instance_._instance,
     &::google::protobuf::compiler::_CodeGeneratorRequest_default_instance_._instance,
     &::google::protobuf::compiler::_CodeGeneratorResponse_File_default_instance_._instance,
     &::google::protobuf::compiler::_CodeGeneratorResponse_default_instance_._instance,
+#endif  // defined(PROTOBUF_ENABLE_WEAK_DEFAULT_SECTIONS)
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
     "\n%google/protobuf/compiler/plugin.proto\022"
@@ -268,7 +284,8 @@ PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2
 }
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fcompiler_2fplugin_2eproto(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
+static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fcompiler_2fplugin_2eproto(
+    &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto );
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -601,7 +618,8 @@ void Version::InternalSwap(Version* other) {
 ::google::protobuf::Metadata Version::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[0]);
+      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[0],
+      &_Version_default_instance_);
 }
 // ===================================================================
 
@@ -920,7 +938,8 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
 ::google::protobuf::Metadata CodeGeneratorRequest::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[1]);
+      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[1],
+      &_CodeGeneratorRequest_default_instance_);
 }
 // ===================================================================
 
@@ -1271,7 +1290,8 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other)
 ::google::protobuf::Metadata CodeGeneratorResponse_File::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[2]);
+      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[2],
+      &_CodeGeneratorResponse_File_default_instance_);
 }
 // ===================================================================
 
@@ -1540,7 +1560,8 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
 ::google::protobuf::Metadata CodeGeneratorResponse::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[3]);
+      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[3],
+      &_CodeGeneratorResponse_default_instance_);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace compiler
