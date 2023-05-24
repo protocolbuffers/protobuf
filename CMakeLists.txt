@@ -2,6 +2,11 @@
 # to 3.26.
 cmake_minimum_required(VERSION 3.10...3.26)
 
+# Revert to old behavior for MSVC debug symbols.
+if(POLICY CMP0141)
+  cmake_policy(SET CMP0141 OLD)
+endif()
+
 if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Configuring...")
 endif()
@@ -282,10 +287,14 @@ if (MSVC)
     # pdb file, which isn't currently supported by ccache.  However, this bloats
     # the ccache size by about a factor of 2x, making it very expensive in CI.
     # Instead, we strip debug symbols to reduce this overhead.
-    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    foreach(v
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELWITHDEBINFO
+        CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        )
+      string(REGEX REPLACE "[-/]Z[iI7]" "/DEBUG:NONE" ${v} "${${v}}")
+    endforeach()
   endif()
 
   # Suppress linker warnings about files with no symbols defined.
