@@ -277,6 +277,8 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
 
 constexpr absl::string_view Printer::kProtocCodegenTrace;
 
+Printer::Printer(ZeroCopyOutputStream* output) : Printer(output, Options{}) {}
+
 Printer::Printer(ZeroCopyOutputStream* output, Options options)
     : sink_(output), options_(options) {
   if (!options_.enable_codegen_trace.has_value()) {
@@ -288,6 +290,10 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
     options_.enable_codegen_trace = kEnableCodegenTrace;
   }
 }
+
+Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter,
+                 AnnotationCollector* annotation_collector)
+    : Printer(output, Options{variable_delimiter, annotation_collector}) {}
 
 absl::string_view Printer::LookupVar(absl::string_view var) {
   auto result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));

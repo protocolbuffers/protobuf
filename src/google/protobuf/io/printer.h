@@ -518,7 +518,7 @@ class PROTOBUF_EXPORT Printer {
 
   // Constructs a new Printer with the default options to output to
   // `output`.
-  explicit Printer(ZeroCopyOutputStream* output) : Printer(output, Options{}) {}
+  explicit Printer(ZeroCopyOutputStream* output);
 
   // Constructs a new printer with the given set of options to output to
   // `output`.
@@ -528,8 +528,7 @@ class PROTOBUF_EXPORT Printer {
   //
   // Will eventually be marked as deprecated.
   Printer(ZeroCopyOutputStream* output, char variable_delimiter,
-          AnnotationCollector* annotation_collector = nullptr)
-      : Printer(output, Options{variable_delimiter, annotation_collector}) {}
+          AnnotationCollector* annotation_collector = nullptr);
 
   Printer(const Printer&) = delete;
   Printer& operator=(const Printer&) = delete;
