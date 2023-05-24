@@ -663,7 +663,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
 
     if (require_syntax_identifier_ || LookingAt("syntax")
     ) {
-      if (!ParseSyntaxIdentifier(root_location)) {
+      if (!ParseSyntaxIdentifier(file, root_location)) {
         // Don't attempt to parse the file if we didn't recognize the syntax
         // identifier.
         return false;
@@ -706,7 +706,8 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
   return !had_errors_;
 }
 
-bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
+bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
+                                   const LocationRecorder& parent) {
   LocationRecorder syntax_location(parent,
                                    FileDescriptorProto::kSyntaxFieldNumber);
     DO(Consume("syntax",
