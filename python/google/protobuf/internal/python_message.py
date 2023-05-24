@@ -1035,6 +1035,8 @@ def _AddByteSizeMethod(message_descriptor, cls):
       size += descriptor.fields_by_name['value']._sizer(self.value)
     else:
       for field_descriptor, field_value in self.ListFields():
+        if not hasattr(field_descriptor, '_sizer'):
+          _AttachFieldHelpers(cls, field_descriptor)
         size += field_descriptor._sizer(field_value)
       for tag_bytes, value_bytes in self._unknown_fields:
         size += len(tag_bytes) + len(value_bytes)
@@ -1085,6 +1087,8 @@ def _AddSerializePartialToStringMethod(message_descriptor, cls):
           write_bytes, self.value, deterministic)
     else:
       for field_descriptor, field_value in self.ListFields():
+        if not hasattr(field_descriptor, '_encoder'):
+          _AttachFieldHelpers(cls, field_descriptor)
         field_descriptor._encoder(write_bytes, field_value, deterministic)
       for tag_bytes, value_bytes in self._unknown_fields:
         write_bytes(tag_bytes)
@@ -1304,6 +1308,8 @@ def _AddMergeFromMethod(cls):
           field_value = fields.get(field)
           if field_value is None:
             # Construct a new object to represent this field.
+            if not hasattr(field, '_default_constructor'):
+              _AttachFieldHelpers(cls, field)
             field_value = field._default_constructor(self)
             fields[field] = field_value
           field_value.MergeFrom(value)

@@ -56,6 +56,10 @@ def _VerifyExtensionHandle(message, extension_handle):
                     extension_handle.containing_type.full_name,
                     message.DESCRIPTOR.full_name))
 
+  if not hasattr(extension_handle, '_default_constructor'):
+    from google.protobuf.internal import python_message
+    python_message._AttachFieldHelpers(message, extension_handle)
+
 
 # TODO(robinson): Unify error handling of "unknown extension" crap.
 # TODO(robinson): Support iteritems()-style iteration over all
