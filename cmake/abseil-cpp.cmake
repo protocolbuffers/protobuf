@@ -39,7 +39,7 @@ set(_protobuf_FIND_ABSL "if(NOT TARGET absl::strings)\n  find_package(absl CONFI
 
 if (BUILD_SHARED_LIBS AND MSVC)
   # On MSVC Abseil is bundled into a single DLL.
-  set(protobuf_ABSL_USED_TARGETS abseil_dll)
+  set(protobuf_ABSL_USED_TARGETS absl::abseil_dll)
 
   set(protobuf_ABSL_USED_TEST_TARGETS abseil_test_dll)
 else()
