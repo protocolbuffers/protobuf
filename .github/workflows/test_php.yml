@@ -58,6 +58,7 @@ jobs:
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-508417e5215994ade7585d28ba3aad681a25fa5d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          extra-flags: -e COMPOSER_HOME=/workspace/composer-cache
           command: ${{ matrix.command }}
 
   linux-32bit:
@@ -108,11 +109,11 @@ jobs:
           skip-staleness-check: true
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
           command: >-
             /bin/bash -cex '
             cd php && php -v && php -m;
             composer update --ignore-platform-reqs;
-            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
             PATH="/usr/local/php-${{ matrix.version }}${{matrix.suffix}}/bin:$PATH"
             composer ${{ matrix.test }}'
 
@@ -146,13 +147,12 @@ jobs:
           platform: linux/arm64
           skip-staleness-check: true
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
           command: >-
             -c '
             cd php;
             composer update --ignore-platform-reqs;
-            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
             composer test;
-            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
             composer test_c'
 
   macos:
