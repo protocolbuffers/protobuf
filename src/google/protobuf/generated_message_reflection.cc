@@ -213,7 +213,7 @@ void ReportReflectionUsageMessageError(const Descriptor* expected,
       "  Expected type: %s\n"
       "  Actual type  : %s\n"
       "  Field        : %s\n"
-      "  Problem      : Message is not the right type for reflection",
+      "  Problem      : Message is not the right object for reflection",
       method, expected->full_name(), actual->full_name(), field->full_name());
 }
 #endif
@@ -288,7 +288,7 @@ static void ReportReflectionUsageEnumTypeError(
 #define USAGE_CHECK_MESSAGE(METHOD, MESSAGE)
 #else
 #define USAGE_CHECK_MESSAGE(METHOD, MESSAGE)                                 \
-  if (descriptor_ != (MESSAGE)->GetDescriptor())                             \
+  if (this != (MESSAGE)->GetReflection())                                    \
   ReportReflectionUsageMessageError(descriptor_, (MESSAGE)->GetDescriptor(), \
                                     field, #METHOD)
 #endif

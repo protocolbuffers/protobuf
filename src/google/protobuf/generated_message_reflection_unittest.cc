@@ -1331,7 +1331,7 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Expected type: protobuf_unittest.TestAllTypes\n"
       "  Actual type  : protobuf_unittest.ForeignMessage\n"
       "  Field        : protobuf_unittest.TestAllTypes.optional_int32\n"
-      "  Problem      : Message is not the right type for reflection");
+      "  Problem      : Message is not the right object for reflection");
   EXPECT_DEATH(
       reflection->GetInt32(
           message,
