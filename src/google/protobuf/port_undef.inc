@@ -131,6 +131,11 @@
 #undef PROTOBUF_DID_UNDEF_PACKED
 #endif
 
+#ifdef PROTOBUF_DID_UNDEF_DOMAIN
+#pragma pop_macro("DOMAIN")
+#undef PROTOBUF_DID_UNDEF_DOMAIN
+#endif
+
 #ifdef PROTOBUF_DID_UNDEF_LINUX
 #pragma pop_macro("linux")
 #endif
@@ -138,7 +143,6 @@
 #ifdef _WIN32
 #pragma pop_macro("CREATE_NEW")
 #pragma pop_macro("DELETE")
-#pragma pop_macro("DOMAIN")
 #pragma pop_macro("DOUBLE_CLICK")
 #pragma pop_macro("ERROR")
 #pragma pop_macro("ERROR_BUSY")
@@ -169,7 +173,6 @@
 #endif
 
 #ifdef __APPLE__
-#pragma pop_macro("DOMAIN")
 #pragma pop_macro("TRUE")
 #pragma pop_macro("FALSE")
 #pragma pop_macro("UID_MAX")

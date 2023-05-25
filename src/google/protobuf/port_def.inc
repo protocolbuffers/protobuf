@@ -887,18 +887,18 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef PACKAGE
 #endif
 
-// autoheader defines this in some circumstances
-#ifdef PACKAGE
-#define PROTOBUF_DID_UNDEF_PACKAGE
-#pragma push_macro("PACKAGE")
-#undef PACKAGE
-#endif
-
 // a few common headers define this
 #ifdef PACKED
 #define PROTOBUF_DID_UNDEF_PACKED
 #pragma push_macro("PACKED")
 #undef PACKED
+#endif
+
+// This is a macro on Windows, macOS, and some variants of GCC.
+#ifdef DOMAIN
+#define PROTOBUF_DID_UNDEF_DOMAIN
+#pragma push_macro("DOMAIN")
+#undef DOMAIN
 #endif
 
 // linux is a legacy MACRO defined in most popular C++ standards.
@@ -915,8 +915,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef CREATE_NEW
 #pragma push_macro("DELETE")
 #undef DELETE
-#pragma push_macro("DOMAIN")
-#undef DOMAIN
 #pragma push_macro("DOUBLE_CLICK")
 #undef DOUBLE_CLICK
 #pragma push_macro("ERROR")
@@ -974,9 +972,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif  // _WIN32
 
 #ifdef __APPLE__
-// Inconvenient macro names from usr/include/math.h in some macOS SDKs.
-#pragma push_macro("DOMAIN")
-#undef DOMAIN
 // Inconvenient macro names from /usr/include/mach/boolean.h in some macOS SDKs.
 #pragma push_macro("TRUE")
 #undef TRUE

@@ -671,6 +671,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_arena.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_arena_lite.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_bad_macros.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_optional.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_retention.proto
