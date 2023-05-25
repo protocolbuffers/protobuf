@@ -27,6 +27,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "protos_generator/gen_utils.h"
+#include "protos_generator/names.h"
 
 namespace protos_generator {
 

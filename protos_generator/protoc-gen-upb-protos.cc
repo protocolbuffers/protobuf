@@ -33,6 +33,7 @@
 #include "protos_generator/gen_extensions.h"
 #include "protos_generator/gen_messages.h"
 #include "protos_generator/gen_utils.h"
+#include "protos_generator/names.h"
 #include "protos_generator/output.h"
 #include "upbc/file_layout.h"
 

@@ -25,41 +25,46 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_PROTOS_GENERATOR_GEN_UTILS_H_
-#define UPB_PROTOS_GENERATOR_GEN_UTILS_H_
+#ifndef UPB_PROTOS_GENERATOR_NAMES_H_
+#define UPB_PROTOS_GENERATOR_NAMES_H_
 
 #include <string>
-#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/descriptor.h"
+#include "protos_generator/output.h"
 
 namespace protos_generator {
 
 namespace protobuf = ::google::protobuf;
 
-enum class MessageClassType {
-  kMessage,
-  kMessageCProxy,
-  kMessageProxy,
-  kMessageAccess,
-};
+inline constexpr absl::string_view kNoPackageNamePrefix = "protos_";
 
-inline bool IsMapEntryMessage(const protobuf::Descriptor* descriptor) {
-  return descriptor->options().map_entry();
-}
-std::vector<const protobuf::EnumDescriptor*> SortedEnums(
-    const protobuf::FileDescriptor* file);
-std::vector<const protobuf::Descriptor*> SortedMessages(
-    const protobuf::FileDescriptor* file);
-std::vector<const protobuf::FieldDescriptor*> SortedExtensions(
-    const protobuf::FileDescriptor* file);
-std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
-    const protobuf::Descriptor* message);
+std::string ClassName(const protobuf::Descriptor* descriptor);
+std::string QualifiedClassName(const protobuf::Descriptor* descriptor);
+std::string QualifiedInternalClassName(const protobuf::Descriptor* descriptor);
 
-std::string ToCamelCase(const std::string& input, bool lower_first);
+std::string CppSourceFilename(const google::protobuf::FileDescriptor* file);
+std::string ForwardingHeaderFilename(const google::protobuf::FileDescriptor* file);
+std::string UpbCFilename(const google::protobuf::FileDescriptor* file);
+std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file);
+
+void WriteStartNamespace(const protobuf::FileDescriptor* file, Output& output);
+void WriteEndNamespace(const protobuf::FileDescriptor* file, Output& output);
+
+std::string CppConstType(const protobuf::FieldDescriptor* field);
+std::string CppTypeParameterName(const protobuf::FieldDescriptor* field);
+
+std::string MessageBaseType(const protobuf::FieldDescriptor* field,
+                            bool is_const);
+// Generate protos::Ptr<const Model> to be used in accessors as public
+// signatures.
+std::string MessagePtrConstType(const protobuf::FieldDescriptor* field,
+                                bool is_const);
+std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
+                              bool is_const);
+std::string MessageProxyType(const protobuf::FieldDescriptor* field,
+                             bool is_const);
 
 }  // namespace protos_generator
 
-#endif  // UPB_PROTOS_GENERATOR_GEN_UTILS_H_
+#endif  // UPB_PROTOS_GENERATOR_NAMES_H_

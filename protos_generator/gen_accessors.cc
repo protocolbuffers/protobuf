@@ -34,6 +34,7 @@
 #include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_repeated_fields.h"
 #include "protos_generator/gen_utils.h"
+#include "protos_generator/names.h"
 #include "protos_generator/output.h"
 #include "upbc/common.h"
 #include "upbc/keywords.h"

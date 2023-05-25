@@ -25,6 +25,8 @@
 
 #include "protos_generator/output.h"
 
+#include <string>
+
 #include "absl/strings/str_replace.h"
 
 namespace protos_generator {

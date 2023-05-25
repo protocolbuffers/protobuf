@@ -42,7 +42,10 @@ cc_binary(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":gen_utils",
         ":generator",
+        ":names",
+        ":output",
         "//upbc:file_layout",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
@@ -57,8 +60,6 @@ cc_library(
         "gen_extensions.cc",
         "gen_messages.cc",
         "gen_repeated_fields.cc",
-        "gen_utils.cc",
-        "output.cc",
     ],
     hdrs = [
         "gen_accessors.h",
@@ -66,22 +67,53 @@ cc_library(
         "gen_extensions.h",
         "gen_messages.h",
         "gen_repeated_fields.h",
-        "gen_utils.h",
-        "output.h",
     ],
     visibility = ["//visibility:private"],
     deps = [
-        "//:message_copy",
+        ":gen_utils",
+        ":names",
+        ":output",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/strings",
         "//upbc:common",
         "//upbc:file_layout",
         "//upbc:keywords",
         "//upbc:names",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_library(
+    name = "output",
+    srcs = ["output.cc"],
+    hdrs = ["output.h"],
+    visibility = ["//visibility:private"],
+    deps = [
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_library(
+    name = "gen_utils",
+    srcs = ["gen_utils.cc"],
+    hdrs = ["gen_utils.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_absl//absl/strings",
+        "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
+cc_library(
+    name = "names",
+    srcs = ["names.cc"],
+    hdrs = ["names.h"],
+    visibility = ["//visibility:private"],
+    deps = [
+        ":output",
+        "//upbc:keywords",
     ],
 )
