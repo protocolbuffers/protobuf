@@ -31,8 +31,6 @@
 #ifndef RUBY_PROTOBUF_DEFS_H_
 #define RUBY_PROTOBUF_DEFS_H_
 
-#include <ruby/ruby.h>
-
 #include "protobuf.h"
 #include "ruby-upb.h"
 

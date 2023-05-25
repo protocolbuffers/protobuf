@@ -124,6 +124,15 @@ ruby_test(
     srcs = ["type_errors.rb"],
 )
 
+ruby_test(
+    name = "repeated_crash_test",
+    deps = [
+        "//ruby:protobuf",
+        "//ruby:test_ruby_protos",
+    ],
+    srcs = ["repeated_crash_test.rb"],
+)
+
 pkg_files(
     name = "dist_files",
     srcs = glob([
