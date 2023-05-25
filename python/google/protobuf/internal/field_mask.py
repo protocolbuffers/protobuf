@@ -33,7 +33,7 @@
 from google.protobuf.descriptor import FieldDescriptor
 
 
-class FieldMask(object):
+class FieldMask:
   """Class for FieldMask message type."""
 
   __slots__ = ()
@@ -48,7 +48,7 @@ class FieldMask(object):
   def FromJsonString(self, value):
     """Converts string to FieldMask according to proto3 JSON spec."""
     if not isinstance(value, str):
-      raise ValueError('FieldMask JSON value not a string: {!r}'.format(value))
+      raise ValueError(f'FieldMask JSON value not a string: {value!r}')
     self.Clear()
     if value:
       for path in value.split(','):
@@ -135,7 +135,7 @@ def _CheckFieldMaskMessage(message):
   message_descriptor = message.DESCRIPTOR
   if (message_descriptor.name != 'FieldMask' or
       message_descriptor.file.name != 'google/protobuf/field_mask.proto'):
-    raise ValueError('Message {0} is not a FieldMask.'.format(
+    raise ValueError('Message {} is not a FieldMask.'.format(
         message_descriptor.full_name))
 
 
@@ -147,7 +147,7 @@ def _SnakeCaseToCamelCase(path_name):
     if c.isupper():
       raise ValueError(
           'Fail to print FieldMask to Json string: Path name '
-          '{0} must not contain uppercase letters.'.format(path_name))
+          '{} must not contain uppercase letters.'.format(path_name))
     if after_underscore:
       if c.islower():
         result.append(c.upper())
@@ -156,7 +156,7 @@ def _SnakeCaseToCamelCase(path_name):
         raise ValueError(
             'Fail to print FieldMask to Json string: The '
             'character after a "_" must be a lowercase letter '
-            'in path name {0}.'.format(path_name))
+            'in path name {}.'.format(path_name))
     elif c == '_':
       after_underscore = True
     else:
@@ -164,7 +164,7 @@ def _SnakeCaseToCamelCase(path_name):
 
   if after_underscore:
     raise ValueError('Fail to print FieldMask to Json string: Trailing "_" '
-                     'in path name {0}.'.format(path_name))
+                     'in path name {}.'.format(path_name))
   return ''.join(result)
 
 
@@ -174,7 +174,7 @@ def _CamelCaseToSnakeCase(path_name):
   for c in path_name:
     if c == '_':
       raise ValueError('Fail to parse FieldMask: Path name '
-                       '{0} must not contain "_"s.'.format(path_name))
+                       '{} must not contain "_"s.'.format(path_name))
     if c.isupper():
       result += '_'
       result += c.lower()
@@ -183,7 +183,7 @@ def _CamelCaseToSnakeCase(path_name):
   return ''.join(result)
 
 
-class _FieldMaskTree(object):
+class _FieldMaskTree:
   """Represents a FieldMask in a tree structure.
 
   For example, given a FieldMask "foo.bar,foo.baz,bar.baz",
@@ -290,13 +290,13 @@ def _MergeMessage(
     child = node[name]
     field = source_descriptor.fields_by_name[name]
     if field is None:
-      raise ValueError('Error: Can\'t find field {0} in message {1}.'.format(
+      raise ValueError('Error: Can\'t find field {} in message {}.'.format(
           name, source_descriptor.full_name))
     if child:
       # Sub-paths are only allowed for singular message fields.
       if (field.label == FieldDescriptor.LABEL_REPEATED or
           field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE):
-        raise ValueError('Error: Field {0} in message {1} is not a singular '
+        raise ValueError('Error: Field {} in message {} is not a singular '
                          'message field and cannot have sub-fields.'.format(
                              name, source_descriptor.full_name))
       if source.HasField(name):

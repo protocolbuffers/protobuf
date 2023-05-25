@@ -37,7 +37,7 @@ Also defines a null implementation of this interface.
 __author__ = 'robinson@google.com (Will Robinson)'
 
 
-class MessageListener(object):
+class MessageListener:
 
   """Listens for modifications made to a message.  Meant to be registered via
   Message._SetListener().
@@ -70,7 +70,7 @@ class MessageListener(object):
     raise NotImplementedError
 
 
-class NullMessageListener(object):
+class NullMessageListener:
 
   """No-op MessageListener implementation."""
 

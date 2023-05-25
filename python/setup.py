@@ -242,7 +242,7 @@ class TestConformanceCmd(_build_py):
     # Python 2.6 dodges these extra failures.
     os.environ['CONFORMANCE_PYTHON_EXTRA_FAILURES'] = (
         '--failure_list failure_list_python-post26.txt')
-    cmd = 'bazel test %s' % (TestConformanceCmd.target,)
+    cmd = f'bazel test {TestConformanceCmd.target}'
     subprocess.check_call(cmd, shell=True)
 
 
@@ -260,7 +260,7 @@ def _GetFlagValues(flag_long, flag_short):
   flag_res = [re.compile(r'--?%s(=(.*))?' %
                          (flag_long[:-1] if expect_value else flag_long))]
   if flag_short:
-    flag_res.append(re.compile(r'-%s(.*)?' % (flag_short,)))
+    flag_res.append(re.compile(fr'-{flag_short}(.*)?'))
 
   flag_match = None
   for arg in sys.argv:

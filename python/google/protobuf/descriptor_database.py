@@ -43,7 +43,7 @@ class DescriptorDatabaseConflictingDefinitionError(Error):
   """Raised when a proto is added with the same name & different descriptor."""
 
 
-class DescriptorDatabase(object):
+class DescriptorDatabase:
   """A container accepting FileDescriptorProtos and maps DescriptorProtos."""
 
   def __init__(self):
@@ -171,7 +171,6 @@ def _ExtractSymbols(desc_proto, package):
   message_name = package + '.' + desc_proto.name if package else desc_proto.name
   yield message_name
   for nested_type in desc_proto.nested_type:
-    for symbol in _ExtractSymbols(nested_type, message_name):
-      yield symbol
+    yield from _ExtractSymbols(nested_type, message_name)
   for enum_type in desc_proto.enum_type:
     yield '.'.join((message_name, enum_type.name))

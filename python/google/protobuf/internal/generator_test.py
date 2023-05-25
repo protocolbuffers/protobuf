@@ -116,10 +116,10 @@ class GeneratorTest(unittest.TestCase):
         'default_int32': True,
     }
 
-    has_default_by_name = dict(
-        [(f.name, f.has_default_value)
+    has_default_by_name = {
+        f.name: f.has_default_value
          for f in desc.fields
-         if f.name in expected_has_default_by_name])
+         if f.name in expected_has_default_by_name}
     self.assertEqual(expected_has_default_by_name, has_default_by_name)
 
   def testContainingTypeBehaviorForExtensions(self):
@@ -232,11 +232,11 @@ class GeneratorTest(unittest.TestCase):
   def testNestedTypes(self):
     self.assertEqual(
         set(unittest_pb2.TestAllTypes.DESCRIPTOR.nested_types),
-        set([
+        {
             unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR,
             unittest_pb2.TestAllTypes.OptionalGroup.DESCRIPTOR,
             unittest_pb2.TestAllTypes.RepeatedGroup.DESCRIPTOR,
-        ]))
+        })
     self.assertEqual(unittest_pb2.TestEmptyMessage.DESCRIPTOR.nested_types, [])
     self.assertEqual(
         unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR.nested_types, [])
@@ -367,11 +367,11 @@ class GeneratorTest(unittest.TestCase):
     self.assertEqual(0, desc.oneofs[0].index)
     self.assertIs(desc, desc.oneofs[0].containing_type)
     self.assertIs(desc.oneofs[0], desc.oneofs_by_name['oneof_field'])
-    nested_names = set(['oneof_uint32', 'oneof_nested_message',
-                        'oneof_string', 'oneof_bytes'])
+    nested_names = {'oneof_uint32', 'oneof_nested_message',
+                        'oneof_string', 'oneof_bytes'}
     self.assertEqual(
         nested_names,
-        set([field.name for field in desc.oneofs[0].fields]))
+        {field.name for field in desc.oneofs[0].fields})
     for field_name, field_desc in desc.fields_by_name.items():
       if field_name in nested_names:
         self.assertIs(desc.oneofs[0], field_desc.containing_oneof)

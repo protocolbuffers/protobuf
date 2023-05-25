@@ -34,7 +34,7 @@
 import sys
 import os
 
-class Language(object):
+class Language:
   def __init__(self, name, pathspec):
     self.name = name
     self.pathspec = pathspec

@@ -45,7 +45,7 @@ class PythonVersionTest(unittest.TestCase):
       return
     self.assertTrue(
         sys.version.startswith(exp),
-        'Expected Python %s but found Python %s' % (exp, sys.version))
+        f'Expected Python {exp} but found Python {sys.version}')
 
 
 if __name__ == '__main__':

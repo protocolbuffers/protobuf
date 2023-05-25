@@ -40,7 +40,7 @@ from google.protobuf import descriptor_pool
 class KeywordsConflictTest(unittest.TestCase):
 
   def setUp(self):
-    super(KeywordsConflictTest, self).setUp()
+    super().setUp()
     self.pool = descriptor_pool.Default()
 
   def testMessage(self):

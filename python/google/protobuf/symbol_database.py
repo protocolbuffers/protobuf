@@ -196,8 +196,7 @@ class SymbolDatabase():
       """Walk a message Descriptor and recursively yields all message names."""
       yield desc
       for msg_desc in desc.nested_types:
-        for nested_desc in _GetAllMessages(msg_desc):
-          yield nested_desc
+        yield from _GetAllMessages(msg_desc)
 
     result = {}
     for file_name in files:

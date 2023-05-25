@@ -81,12 +81,12 @@ class ParseError(Error):
     if message is not None and line is not None:
       loc = str(line)
       if column is not None:
-        loc += ':{0}'.format(column)
-      message = '{0} : {1}'.format(loc, message)
+        loc += f':{column}'
+      message = f'{loc} : {message}'
     if message is not None:
-      super(ParseError, self).__init__(message)
+      super().__init__(message)
     else:
-      super(ParseError, self).__init__()
+      super().__init__()
     self._line = line
     self._column = column
 
@@ -97,7 +97,7 @@ class ParseError(Error):
     return self._column
 
 
-class TextWriter(object):
+class TextWriter:
 
   def __init__(self, as_utf8):
     self._writer = io.StringIO()
@@ -344,7 +344,7 @@ WIRETYPE_LENGTH_DELIMITED = 2
 WIRETYPE_START_GROUP = 3
 
 
-class _Printer(object):
+class _Printer:
   """Text format printer for protocol message."""
 
   def __init__(
@@ -424,7 +424,7 @@ class _Printer(object):
     if packed_message:
       packed_message.MergeFromString(message.value)
       colon = ':' if self.force_colon else ''
-      self.out.write('%s[%s]%s ' % (self.indent * ' ', message.type_url, colon))
+      self.out.write('{}[{}]{} '.format(self.indent * ' ', message.type_url, colon))
       self._PrintMessageFieldValue(packed_message)
       self.out.write(' ' if self.as_one_line else '\n')
       return True
@@ -704,7 +704,7 @@ def Parse(text,
   Raises:
     ParseError: On text parsing problems.
   """
-  return ParseLines(text.split(b'\n' if isinstance(text, bytes) else u'\n'),
+  return ParseLines(text.split(b'\n' if isinstance(text, bytes) else '\n'),
                     message,
                     allow_unknown_extension,
                     allow_field_number,
@@ -742,7 +742,7 @@ def Merge(text,
     ParseError: On text parsing problems.
   """
   return MergeLines(
-      text.split(b'\n' if isinstance(text, bytes) else u'\n'),
+      text.split(b'\n' if isinstance(text, bytes) else '\n'),
       message,
       allow_unknown_extension,
       allow_field_number,
@@ -818,7 +818,7 @@ def MergeLines(lines,
   return parser.MergeLines(lines, message)
 
 
-class _Parser(object):
+class _Parser:
   """Text format parser for protocol message."""
 
   def __init__(self,
@@ -1081,7 +1081,7 @@ class _Parser(object):
 
     while not tokenizer.TryConsume(end_token):
       if tokenizer.AtEnd():
-        raise tokenizer.ParseErrorPreviousToken('Expected "%s".' % (end_token,))
+        raise tokenizer.ParseErrorPreviousToken(f'Expected "{end_token}".')
       self._MergeField(tokenizer, sub_message)
 
     if is_map_entry:
@@ -1275,7 +1275,7 @@ class _Parser(object):
     tokenizer.Consume(']')
 
 
-class Tokenizer(object):
+class Tokenizer:
   """Protocol buffer text representation tokenizer.
 
   This class handles the lower level string parsing by splitting it into
@@ -1557,10 +1557,10 @@ class Tokenizer(object):
     """
     text = self.token
     if len(text) < 1 or text[0] not in _QUOTES:
-      raise self.ParseError('Expected string but found: %r' % (text,))
+      raise self.ParseError(f'Expected string but found: {text!r}')
 
     if len(text) < 2 or text[-1] != text[0]:
-      raise self.ParseError('String missing ending quote: %r' % (text,))
+      raise self.ParseError(f'String missing ending quote: {text!r}')
 
     try:
       result = text_encoding.CUnescape(text[1:-1])

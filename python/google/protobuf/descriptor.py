@@ -68,7 +68,7 @@ if _USE_C_DESCRIPTORS:
   class DescriptorMetaclass(type):
 
     def __instancecheck__(cls, obj):
-      if super(DescriptorMetaclass, cls).__instancecheck__(obj):
+      if super().__instancecheck__(obj):
         return True
       if isinstance(obj, cls._C_DESCRIPTOR_CLASS):
         return True
@@ -78,7 +78,7 @@ else:
   DescriptorMetaclass = type
 
 
-class _Lock(object):
+class _Lock:
   """Wrapper class of threading.Lock(), which is allowed by 'with'."""
 
   def __new__(cls):
@@ -211,7 +211,7 @@ class _NestedDescriptorBase(DescriptorBase):
         file.serialized_pb that describes this descriptor.
       serialized_options: Protocol message serialized options or None.
     """
-    super(_NestedDescriptorBase, self).__init__(
+    super().__init__(
         options, serialized_options, options_class_name)
 
     self.name = name
@@ -332,7 +332,7 @@ class Descriptor(_NestedDescriptorBase):
     if create_key is not _internal_create_key:
       _Deprecated('Descriptor')
 
-    super(Descriptor, self).__init__(
+    super().__init__(
         options, 'MessageOptions', name, full_name, file,
         containing_type, serialized_start=serialized_start,
         serialized_end=serialized_end, serialized_options=serialized_options)
@@ -345,30 +345,30 @@ class Descriptor(_NestedDescriptorBase):
     self.fields = fields
     for field in self.fields:
       field.containing_type = self
-    self.fields_by_number = dict((f.number, f) for f in fields)
-    self.fields_by_name = dict((f.name, f) for f in fields)
+    self.fields_by_number = {f.number: f for f in fields}
+    self.fields_by_name = {f.name: f for f in fields}
     self._fields_by_camelcase_name = None
 
     self.nested_types = nested_types
     for nested_type in nested_types:
       nested_type.containing_type = self
-    self.nested_types_by_name = dict((t.name, t) for t in nested_types)
+    self.nested_types_by_name = {t.name: t for t in nested_types}
 
     self.enum_types = enum_types
     for enum_type in self.enum_types:
       enum_type.containing_type = self
-    self.enum_types_by_name = dict((t.name, t) for t in enum_types)
-    self.enum_values_by_name = dict(
-        (v.name, v) for t in enum_types for v in t.values)
+    self.enum_types_by_name = {t.name: t for t in enum_types}
+    self.enum_values_by_name = {
+        v.name: v for t in enum_types for v in t.values}
 
     self.extensions = extensions
     for extension in self.extensions:
       extension.extension_scope = self
-    self.extensions_by_name = dict((f.name, f) for f in extensions)
+    self.extensions_by_name = {f.name: f for f in extensions}
     self.is_extendable = is_extendable
     self.extension_ranges = extension_ranges
     self.oneofs = oneofs if oneofs is not None else []
-    self.oneofs_by_name = dict((o.name, o) for o in self.oneofs)
+    self.oneofs_by_name = {o.name: o for o in self.oneofs}
     for oneof in self.oneofs:
       oneof.containing_type = self
     self.syntax = syntax or "proto2"
@@ -379,8 +379,8 @@ class Descriptor(_NestedDescriptorBase):
     :attr:`FieldDescriptor.camelcase_name`.
     """
     if self._fields_by_camelcase_name is None:
-      self._fields_by_camelcase_name = dict(
-          (f.camelcase_name, f) for f in self.fields)
+      self._fields_by_camelcase_name = {
+          f.camelcase_name: f for f in self.fields}
     return self._fields_by_camelcase_name
 
   def EnumValueName(self, enum, value):
@@ -408,7 +408,7 @@ class Descriptor(_NestedDescriptorBase):
       proto: An empty descriptor_pb2.DescriptorProto.
     """
     # This function is overridden to give a better doc comment.
-    super(Descriptor, self).CopyToProto(proto)
+    super().CopyToProto(proto)
 
 
 # TODO(robinson): We should have aggressive checking here,
@@ -580,7 +580,7 @@ class FieldDescriptor(DescriptorBase):
     if create_key is not _internal_create_key:
       _Deprecated('FieldDescriptor')
 
-    super(FieldDescriptor, self).__init__(
+    super().__init__(
         options, serialized_options, 'FieldOptions')
     self.name = name
     self.full_name = full_name
@@ -725,7 +725,7 @@ class EnumDescriptor(_NestedDescriptorBase):
     if create_key is not _internal_create_key:
       _Deprecated('EnumDescriptor')
 
-    super(EnumDescriptor, self).__init__(
+    super().__init__(
         options, 'EnumOptions', name, full_name, file,
         containing_type, serialized_start=serialized_start,
         serialized_end=serialized_end, serialized_options=serialized_options)
@@ -733,9 +733,9 @@ class EnumDescriptor(_NestedDescriptorBase):
     self.values = values
     for value in self.values:
       value.type = self
-    self.values_by_name = dict((v.name, v) for v in values)
+    self.values_by_name = {v.name: v for v in values}
     # Values are reversed to ensure that the first alias is retained.
-    self.values_by_number = dict((v.number, v) for v in reversed(values))
+    self.values_by_number = {v.number: v for v in reversed(values)}
 
   @property
   def is_closed(self):
@@ -768,7 +768,7 @@ class EnumDescriptor(_NestedDescriptorBase):
       proto (descriptor_pb2.EnumDescriptorProto): An empty descriptor proto.
     """
     # This function is overridden to give a better doc comment.
-    super(EnumDescriptor, self).CopyToProto(proto)
+    super().CopyToProto(proto)
 
 
 class EnumValueDescriptor(DescriptorBase):
@@ -807,7 +807,7 @@ class EnumValueDescriptor(DescriptorBase):
     if create_key is not _internal_create_key:
       _Deprecated('EnumValueDescriptor')
 
-    super(EnumValueDescriptor, self).__init__(
+    super().__init__(
         options, serialized_options, 'EnumValueOptions')
     self.name = name
     self.index = index
@@ -846,7 +846,7 @@ class OneofDescriptor(DescriptorBase):
     if create_key is not _internal_create_key:
       _Deprecated('OneofDescriptor')
 
-    super(OneofDescriptor, self).__init__(
+    super().__init__(
         options, serialized_options, 'OneofOptions')
     self.name = name
     self.full_name = full_name
@@ -898,13 +898,13 @@ class ServiceDescriptor(_NestedDescriptorBase):
     if create_key is not _internal_create_key:
       _Deprecated('ServiceDescriptor')
 
-    super(ServiceDescriptor, self).__init__(
+    super().__init__(
         options, 'ServiceOptions', name, full_name, file,
         None, serialized_start=serialized_start,
         serialized_end=serialized_end, serialized_options=serialized_options)
     self.index = index
     self.methods = methods
-    self.methods_by_name = dict((m.name, m) for m in methods)
+    self.methods_by_name = {m.name: m for m in methods}
     # Set the containing service for each method in this service.
     for method in self.methods:
       method.containing_service = self
@@ -930,7 +930,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
       proto (descriptor_pb2.ServiceDescriptorProto): An empty descriptor proto.
     """
     # This function is overridden to give a better doc comment.
-    super(ServiceDescriptor, self).CopyToProto(proto)
+    super().CopyToProto(proto)
 
 
 class MethodDescriptor(DescriptorBase):
@@ -991,7 +991,7 @@ class MethodDescriptor(DescriptorBase):
     if create_key is not _internal_create_key:
       _Deprecated('MethodDescriptor')
 
-    super(MethodDescriptor, self).__init__(
+    super().__init__(
         options, serialized_options, 'MethodOptions')
     self.name = name
     self.full_name = full_name
@@ -1065,7 +1065,7 @@ class FileDescriptor(DescriptorBase):
       if serialized_pb:
         return _message.default_pool.AddSerializedFile(serialized_pb)
       else:
-        return super(FileDescriptor, cls).__new__(cls)
+        return super().__new__(cls)
 
   def __init__(self, name, package, options=None,
                serialized_options=None, serialized_pb=None,
@@ -1075,7 +1075,7 @@ class FileDescriptor(DescriptorBase):
     if create_key is not _internal_create_key:
       _Deprecated('FileDescriptor')
 
-    super(FileDescriptor, self).__init__(
+    super().__init__(
         options, serialized_options, 'FileOptions')
 
     if pool is None:

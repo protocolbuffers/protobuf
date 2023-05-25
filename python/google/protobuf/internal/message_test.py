@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -158,7 +157,7 @@ class MessageTest(unittest.TestCase):
     class BadArgError(Exception):
       pass
 
-    class BadArg(object):
+    class BadArg:
 
       def __nonzero__(self):
         raise BadArgError()
@@ -579,7 +578,7 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(message.repeated_string[0], 'a')
     self.assertEqual(message.repeated_string[1], 'b')
     self.assertEqual(message.repeated_string[2], 'c')
-    self.assertEqual(str(message.repeated_string), str([u'a', u'b', u'c']))
+    self.assertEqual(str(message.repeated_string), str(['a', 'b', 'c']))
 
     message.repeated_bytes.append(b'a')
     message.repeated_bytes.append(b'c')
@@ -838,7 +837,7 @@ class MessageTest(unittest.TestCase):
     self.assertEqual('oneof_uint32', m.WhichOneof('oneof_field'))
     self.assertTrue(m.HasField('oneof_uint32'))
 
-    m.oneof_string = u'foo'
+    m.oneof_string = 'foo'
     self.assertEqual('oneof_string', m.WhichOneof('oneof_field'))
     self.assertFalse(m.HasField('oneof_uint32'))
     self.assertTrue(m.HasField('oneof_string'))
@@ -977,7 +976,7 @@ class MessageTest(unittest.TestCase):
     in the value being converted to a Unicode string.
     """
     m = message_module.TestAllTypes()
-    m.optional_string = str('')
+    m.optional_string = ''
     self.assertIsInstance(m.optional_string, str)
 
   def testLongValuedSlice(self, message_module):
@@ -1005,7 +1004,7 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(NameError) as _:
       m.repeated_nested_enum.extend(a for i in range(10))  # pylint: disable=undefined-variable
 
-  FALSY_VALUES = [None, False, 0, 0.0, b'', u'', bytearray(), [], {}, set()]
+  FALSY_VALUES = [None, False, 0, 0.0, b'', '', bytearray(), [], {}, set()]
 
   def testExtendInt32WithNothing(self, message_module):
     """Test no-ops extending repeated int32 fields."""
@@ -1086,7 +1085,7 @@ class MessageTest(unittest.TestCase):
     m.repeated_string.extend('abc')
     self.assertSequenceEqual(['a', 'b', 'c'], m.repeated_string)
 
-  class TestIterable(object):
+  class TestIterable:
     """This iterable object mimics the behavior of numpy.array.
 
     __nonzero__ fails for length > 1, and returns bool(item[0]) for length == 1.
@@ -1149,7 +1148,7 @@ class MessageTest(unittest.TestCase):
     m.repeated_string.extend(MessageTest.TestIterable(['3', '4']))
     self.assertSequenceEqual(['', '1', '2', '3', '4'], m.repeated_string)
 
-  class TestIndex(object):
+  class TestIndex:
     """This index object mimics the behavior of numpy.int64 and other types."""
 
     def __init__(self, value=None):
@@ -1300,13 +1299,13 @@ class Proto2Test(unittest.TestCase):
     message.optional_bool = True
     message.optional_nested_message.bb = 15
 
-    self.assertTrue(message.HasField(u'optional_int32'))
+    self.assertTrue(message.HasField('optional_int32'))
     self.assertTrue(message.HasField('optional_bool'))
     self.assertTrue(message.HasField('optional_nested_message'))
 
     # Clearing the fields unsets them and resets their value to default.
     message.ClearField('optional_int32')
-    message.ClearField(u'optional_bool')
+    message.ClearField('optional_bool')
     message.ClearField('optional_nested_message')
 
     self.assertFalse(message.HasField('optional_int32'))
@@ -1542,7 +1541,7 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(0, len(message.repeated_float))
     self.assertEqual(42, message.default_int64)
 
-    message = unittest_pb2.TestAllTypes(optional_nested_enum=u'BAZ')
+    message = unittest_pb2.TestAllTypes(optional_nested_enum='BAZ')
     self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
                      message.optional_nested_enum)
 
@@ -1564,7 +1563,7 @@ class Proto2Test(unittest.TestCase):
     # Both string/unicode field name keys should work.
     kwargs = {
         'optional_int32': 100,
-        u'optional_fixed32': 200,
+        'optional_fixed32': 200,
     }
     msg = unittest_pb2.TestAllTypes(**kwargs)
     self.assertEqual(100, msg.optional_int32)
@@ -1915,7 +1914,7 @@ class Proto3Test(unittest.TestCase):
   def testStringUnicodeConversionInMap(self):
     msg = map_unittest_pb2.TestMap()
 
-    unicode_obj = u'\u1234'
+    unicode_obj = '\u1234'
     bytes_obj = unicode_obj.encode('utf8')
 
     msg.map_string_string[bytes_obj] = bytes_obj
@@ -2489,24 +2488,24 @@ class Proto3Test(unittest.TestCase):
 
     # Test optional_string=u'😍' is accepted.
     serialized = unittest_proto3_arena_pb2.TestAllTypes(
-        optional_string=u'😍').SerializeToString()
+        optional_string='😍').SerializeToString()
     msg2 = unittest_proto3_arena_pb2.TestAllTypes()
     msg2.MergeFromString(serialized)
-    self.assertEqual(msg2.optional_string, u'😍')
+    self.assertEqual(msg2.optional_string, '😍')
 
-    msg = unittest_proto3_arena_pb2.TestAllTypes(optional_string=u'\ud001')
-    self.assertEqual(msg.optional_string, u'\ud001')
+    msg = unittest_proto3_arena_pb2.TestAllTypes(optional_string='\ud001')
+    self.assertEqual(msg.optional_string, '\ud001')
 
   def testSurrogatesInPython3(self):
     # Surrogates are rejected at setters in Python3.
     with self.assertRaises(ValueError):
-      unittest_proto3_arena_pb2.TestAllTypes(optional_string=u'\ud801\udc01')
+      unittest_proto3_arena_pb2.TestAllTypes(optional_string='\ud801\udc01')
     with self.assertRaises(ValueError):
       unittest_proto3_arena_pb2.TestAllTypes(optional_string=b'\xed\xa0\x81')
     with self.assertRaises(ValueError):
-      unittest_proto3_arena_pb2.TestAllTypes(optional_string=u'\ud801')
+      unittest_proto3_arena_pb2.TestAllTypes(optional_string='\ud801')
     with self.assertRaises(ValueError):
-      unittest_proto3_arena_pb2.TestAllTypes(optional_string=u'\ud801\ud801')
+      unittest_proto3_arena_pb2.TestAllTypes(optional_string='\ud801\ud801')
 
   def testCrashNullAA(self):
     self.assertEqual(
@@ -2539,7 +2538,7 @@ class ValidTypeNamesTest(unittest.TestCase):
                    'Repeated%sFieldContainer' % base_name)
     self.assertTrue(
         any(tp_name.endswith(v) for v in valid_names),
-        '%r does end with any of %r' % (tp_name, valid_names))
+        f'{tp_name!r} does end with any of {valid_names!r}')
 
     parts = tp_name.split('.')
     class_name = parts[-1]

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -108,7 +107,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     message.repeated_double.append(1.23e22)
     message.repeated_double.append(1.23e-18)
     message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
-    message.repeated_string.append(u'\u00fc\ua71f')
+    message.repeated_string.append('\u00fc\ua71f')
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_format.MessageToString(message)),
         'repeated_int64: -9223372036854775808\n'
@@ -226,7 +225,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
       pass
 
     message = message_module.TestAllTypes()
-    message.repeated_string.append(UnicodeSub(u'\u00fc\ua71f'))
+    message.repeated_string.append(UnicodeSub('\u00fc\ua71f'))
     self.CompareToGoldenText(
         text_format.MessageToString(message),
         'repeated_string: "\\303\\274\\352\\234\\237"\n')
@@ -303,7 +302,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     message.repeated_double.append(1.23e22)
     message.repeated_double.append(1.23e-18)
     message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
-    message.repeated_string.append(u'\u00fc\ua71f')
+    message.repeated_string.append('\u00fc\ua71f')
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_format.MessageToString(
             message, as_one_line=True)),
@@ -324,7 +323,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     message.repeated_double.append(1.23e22)
     message.repeated_double.append(1.23e-18)
     message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
-    message.repeated_string.append(u'\u00fc\ua71f')
+    message.repeated_string.append('\u00fc\ua71f')
 
     # Test as_utf8 = False.
     wire_text = text_format.MessageToString(message,
@@ -343,13 +342,13 @@ class TextFormatMessageToStringTests(TextFormatBase):
     r = text_format.Parse(wire_text, parsed_message)
     self.assertIs(r, parsed_message)
     self.assertEqual(message, parsed_message,
-                     '\n%s != %s' % (message, parsed_message))
+                     f'\n{message} != {parsed_message}')
 
   def testPrintRawUtf8String(self, message_module):
     message = message_module.TestAllTypes()
-    message.repeated_string.append(u'\u00fc\t\ua71f')
+    message.repeated_string.append('\u00fc\t\ua71f')
     text = text_format.MessageToString(message, as_utf8=True)
-    golden_unicode = u'repeated_string: "\u00fc\\t\ua71f"\n'
+    golden_unicode = 'repeated_string: "\u00fc\\t\ua71f"\n'
     golden_text = golden_unicode
     # MessageToString always returns a native str.
     self.CompareToGoldenText(text, golden_text)
@@ -439,7 +438,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     self.assertEqual('c: 123\n', str(message))
 
   def testMessageToStringUnicode(self, message_module):
-    golden_unicode = u'Á short desçription and a 🍌.'
+    golden_unicode = 'Á short desçription and a 🍌.'
     golden_bytes = golden_unicode.encode('utf-8')
     message = message_module.TestAllTypes()
     message.optional_string = golden_unicode
@@ -453,7 +452,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     self.CompareToGoldenText(text, golden_message)
 
   def testMessageToStringASCII(self, message_module):
-    golden_unicode = u'Á short desçription and a 🍌.'
+    golden_unicode = 'Á short desçription and a 🍌.'
     golden_bytes = golden_unicode.encode('utf-8')
     message = message_module.TestAllTypes()
     message.optional_string = golden_unicode
@@ -592,7 +591,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     inner_msg = message_module.TestAllTypes()
     inner_msg.optional_int32 = 101
     inner_msg.optional_double = 102.0
-    inner_msg.optional_string = u'hello'
+    inner_msg.optional_string = 'hello'
     inner_msg.optional_bytes = b'103'
     inner_msg.optional_nested_message.bb = 105
     inner_data = inner_msg.SerializeToString()
@@ -639,7 +638,7 @@ class TextFormatMessageToTextBytesTests(TextFormatBase):
 
   def testRawUtf8RoundTrip(self, message_module):
     message = message_module.TestAllTypes()
-    message.repeated_string.append(u'\u00fc\t\ua71f')
+    message.repeated_string.append('\u00fc\t\ua71f')
     utf8_text = text_format.MessageToBytes(message, as_utf8=True)
     golden_bytes = b'repeated_string: "\xc3\xbc\\t\xea\x9c\x9f"\n'
     self.CompareToGoldenText(utf8_text, golden_bytes)
@@ -652,7 +651,7 @@ class TextFormatMessageToTextBytesTests(TextFormatBase):
 
   def testEscapedUtf8ASCIIRoundTrip(self, message_module):
     message = message_module.TestAllTypes()
-    message.repeated_string.append(u'\u00fc\t\ua71f')
+    message.repeated_string.append('\u00fc\t\ua71f')
     ascii_text = text_format.MessageToBytes(message)  # as_utf8=False default
     golden_bytes = b'repeated_string: "\\303\\274\\t\\352\\234\\237"\n'
     self.CompareToGoldenText(ascii_text, golden_bytes)
@@ -697,13 +696,13 @@ class TextFormatParserTests(TextFormatBase):
       test_util.ExpectAllFieldsSet(self, message)
 
     msg2 = message_module.TestAllTypes()
-    text = (u'optional_string: "café"')
+    text = ('optional_string: "café"')
     text_format.Merge(text, msg2)
-    self.assertEqual(msg2.optional_string, u'café')
+    self.assertEqual(msg2.optional_string, 'café')
     msg2.Clear()
-    self.assertEqual(msg2.optional_string, u'')
+    self.assertEqual(msg2.optional_string, '')
     text_format.Parse(text, msg2)
-    self.assertEqual(msg2.optional_string, u'café')
+    self.assertEqual(msg2.optional_string, 'café')
 
   def testParseDoubleToFloat(self, message_module):
     message = message_module.TestAllTypes()
@@ -735,8 +734,8 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(1.23e-18, message.repeated_double[2])
     self.assertEqual('\000\001\a\b\f\n\r\t\v\\\'"', message.repeated_string[0])
     self.assertEqual('foocorgegrault', message.repeated_string[1])
-    self.assertEqual(u'\u00fc\ua71f', message.repeated_string[2])
-    self.assertEqual(u'\u00fc', message.repeated_string[3])
+    self.assertEqual('\u00fc\ua71f', message.repeated_string[2])
+    self.assertEqual('\u00fc', message.repeated_string[3])
 
   def testParseTrailingCommas(self, message_module):
     message = message_module.TestAllTypes()
@@ -750,8 +749,8 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(100, message.repeated_int64[0])
     self.assertEqual(200, message.repeated_int64[1])
     self.assertEqual(300, message.repeated_int64[2])
-    self.assertEqual(u'one', message.repeated_string[0])
-    self.assertEqual(u'two', message.repeated_string[1])
+    self.assertEqual('one', message.repeated_string[0])
+    self.assertEqual('two', message.repeated_string[1])
 
   def testParseRepeatedScalarShortFormat(self, message_module):
     message = message_module.TestAllTypes()
@@ -764,8 +763,8 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(100, message.repeated_int64[0])
     self.assertEqual(200, message.repeated_int64[1])
     self.assertEqual(300, message.repeated_int64[2])
-    self.assertEqual(u'one', message.repeated_string[0])
-    self.assertEqual(u'two', message.repeated_string[1])
+    self.assertEqual('one', message.repeated_string[0])
+    self.assertEqual('two', message.repeated_string[1])
 
   def testParseRepeatedMessageShortFormat(self, message_module):
     message = message_module.TestAllTypes()
@@ -878,7 +877,7 @@ class TextFormatParserTests(TextFormatBase):
   # itself for string fields.  It also demonstrates escaped binary data.
   # The ur"" string prefix is unfortunately missing from Python 3
   # so we resort to double escaping our \s so that they come through.
-  _UNICODE_SAMPLE = u"""
+  _UNICODE_SAMPLE = """
       optional_bytes: 'Á short desçription'
       optional_string: 'Á short desçription'
       repeated_bytes: '\\303\\201 short des\\303\\247ription'
@@ -886,10 +885,10 @@ class TextFormatParserTests(TextFormatBase):
       repeated_string: '\\xd0\\x9f\\xd1\\x80\\xd0\\xb8\\xd0\\xb2\\xd0\\xb5\\xd1\\x82'
       """
   _BYTES_SAMPLE = _UNICODE_SAMPLE.encode('utf-8')
-  _GOLDEN_UNICODE = u'Á short desçription'
+  _GOLDEN_UNICODE = 'Á short desçription'
   _GOLDEN_BYTES = _GOLDEN_UNICODE.encode('utf-8')
   _GOLDEN_BYTES_1 = b'\x12\x34\x56\x78\x90\xab\xcd\xef'
-  _GOLDEN_STR_0 = u'Привет'
+  _GOLDEN_STR_0 = 'Привет'
 
   def testParseUnicode(self, message_module):
     m = message_module.TestAllTypes()
@@ -940,7 +939,7 @@ class TextFormatParserTests(TextFormatBase):
 
   def testFromUnicodeLines(self, message_module):
     m = message_module.TestAllTypes()
-    text_format.ParseLines(self._UNICODE_SAMPLE.split(u'\n'), m)
+    text_format.ParseLines(self._UNICODE_SAMPLE.split('\n'), m)
     self.assertEqual(m.optional_bytes, self._GOLDEN_BYTES)
     self.assertEqual(m.optional_string, self._GOLDEN_UNICODE)
     self.assertEqual(m.repeated_bytes[0], self._GOLDEN_BYTES)
@@ -1049,7 +1048,7 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     message = unittest_pb2.TestAllTypes()
     message.optional_int32 = 101
     message.optional_double = 102.0
-    message.optional_string = u'hello'
+    message.optional_string = 'hello'
     message.optional_bytes = b'103'
     message.optionalgroup.a = 104
     message.optional_nested_message.bb = 105
@@ -1281,8 +1280,8 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
       message.map_string_string[letter] = 'dummy'
     for letter in reversed(string.ascii_uppercase[0:13]):
       message.map_string_string[letter] = 'dummy'
-    golden = ''.join(('map_string_string {\n  key: "%c"\n  value: "dummy"\n}\n'
-                      % (letter,) for letter in string.ascii_uppercase))
+    golden = ''.join('map_string_string {\n  key: "%c"\n  value: "dummy"\n}\n'
+                      % (letter,) for letter in string.ascii_uppercase)
     self.CompareToGoldenText(text_format.MessageToString(message), golden)
 
   # TODO(teboring): In c/137553523, not serializing default value for map entry
@@ -2325,7 +2324,7 @@ class PrettyPrinterTest(TextFormatBase):
     def printer(m, indent, as_one_line):
       if m.DESCRIPTOR == message_module.TestAllTypes.NestedMessage.DESCRIPTOR:
         line_deliminator = (' ' if as_one_line else '\n') + ' ' * indent
-        return 'My lucky number is:%s%s' % (line_deliminator, m.bb)
+        return f'My lucky number is:{line_deliminator}{m.bb}'
       return None
 
     message = message_module.TestAllTypes()

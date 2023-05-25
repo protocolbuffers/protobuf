@@ -140,7 +140,7 @@ class PDDMError(Exception):
     super().__init__(self.message)
 
 
-class MacroCollection(object):
+class MacroCollection:
   """Hold a set of macros and can resolve/expand them."""
 
   def __init__(self, a_file=None):
@@ -156,7 +156,7 @@ class MacroCollection(object):
     if a_file:
       self.ParseInput(a_file)
 
-  class MacroDefinition(object):
+  class MacroDefinition:
     """Holds a macro definition."""
 
     def __init__(self, name, arg_names):
@@ -361,7 +361,7 @@ class MacroCollection(object):
     return macro_ref_re.sub(_resolveMacro, text)
 
 
-class SourceFile(object):
+class SourceFile:
   """Represents a source file with PDDM directives in it."""
 
   def __init__(self, a_file, import_resolver=None):
@@ -380,7 +380,7 @@ class SourceFile(object):
     self._import_resolver = import_resolver
     self._processed_content = None
 
-  class SectionBase(object):
+  class SectionBase:
 
     def __init__(self, first_line_num):
       self._lines = []
@@ -661,9 +661,9 @@ def main(args):
       import_path = os.path.join(a_dir, name)
       if not os.path.exists(import_path):
         return None
-      return open(import_path, 'r')
+      return open(import_path)
 
-    with open(a_path, 'r') as f:
+    with open(a_path) as f:
       src_file = SourceFile(f, _ImportResolver)
 
     try:

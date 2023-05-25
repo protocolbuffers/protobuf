@@ -48,7 +48,7 @@ class RpcException(Exception):
   pass
 
 
-class Service(object):
+class Service:
 
   """Abstract base interface for protocol-buffer-based RPC services.
 
@@ -117,7 +117,7 @@ class Service(object):
     raise NotImplementedError
 
 
-class RpcController(object):
+class RpcController:
 
   """An RpcController mediates a single method call.
 
@@ -200,7 +200,7 @@ class RpcController(object):
     raise NotImplementedError
 
 
-class RpcChannel(object):
+class RpcChannel:
 
   """Abstract interface for an RPC channel.
 

@@ -236,7 +236,7 @@ class JsonFormatTest(JsonFormatBase):
             },
             '[protobuf_unittest.'
             'TestMessageSetExtension2.message_set_extension]': {
-                'str': u'foo',
+                'str': 'foo',
             },
         },
     }
@@ -256,7 +256,7 @@ class JsonFormatTest(JsonFormatBase):
     )
     expected_dict = {
         '[protobuf_unittest.TestExtension.ext]': {
-            'value': u'stuff',
+            'value': 'stuff',
         },
     }
     self.assertEqual(expected_dict, message_dict)
@@ -296,7 +296,7 @@ class JsonFormatTest(JsonFormatBase):
         '"&\\n<\\\"\\r>\\b\\t\\f\\\\\\u0001/\\u2028\\u2029"\n}')
     parsed_message = json_format_proto3_pb2.TestMessage()
     self.CheckParseBack(message, parsed_message)
-    text = u'{"int32Value": "\u0031"}'
+    text = '{"int32Value": "\u0031"}'
     json_format.Parse(text, message)
     self.assertEqual(message.int32_value, 1)
 
@@ -1110,7 +1110,7 @@ class JsonFormatTest(JsonFormatBase):
         r'Failed to parse value field: ListValue must be in \[\] which is '
         '1234 at TestListValue.value.', json_format.Parse, text, message)
 
-    class UnknownClass(object):
+    class UnknownClass:
 
       def __str__(self):
         return 'v'
@@ -1244,7 +1244,7 @@ class JsonFormatTest(JsonFormatBase):
     )
 
   def testParseDictUnknownValueType(self):
-    class UnknownClass(object):
+    class UnknownClass:
 
       def __repr__(self):
         return 'v'

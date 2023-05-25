@@ -103,7 +103,7 @@ class GeneratedServiceStubType(GeneratedServiceType):
         dictionary[_DESCRIPTOR_KEY] must contain a ServiceDescriptor object
         describing this protocol service type.
     """
-    super(GeneratedServiceStubType, cls).__init__(name, bases, dictionary)
+    super().__init__(name, bases, dictionary)
     # Don't do anything if this class doesn't have a descriptor. This happens
     # when a service stub is subclassed.
     if GeneratedServiceStubType._DESCRIPTOR_KEY not in dictionary:
@@ -114,7 +114,7 @@ class GeneratedServiceStubType(GeneratedServiceType):
     service_stub_builder.BuildServiceStub(cls)
 
 
-class _ServiceBuilder(object):
+class _ServiceBuilder:
 
   """This class constructs a protocol service class using a service descriptor.
 
@@ -238,7 +238,7 @@ class _ServiceBuilder(object):
     callback(None)
 
 
-class _ServiceStubBuilder(object):
+class _ServiceStubBuilder:
 
   """Constructs a protocol service stub class using a service descriptor.
 

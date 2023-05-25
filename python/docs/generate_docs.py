@@ -170,7 +170,7 @@ def write_automodule(module):
 
 def replace_toc(modules):
   toctree = [module.replace(".", "/") for module in modules]
-  with open(DOCS_DIR / "index.rst", "r") as index_file:
+  with open(DOCS_DIR / "index.rst") as index_file:
     index_contents = index_file.read()
   toc = TOC_TEMPLATE.format(
     toctree="\n   ".join(toctree)
@@ -183,7 +183,7 @@ def replace_toc(modules):
 def main():
   modules = list(sorted(find_modules()))
   for module in modules:
-    print("Generating reference for {}".format(module))
+    print(f"Generating reference for {module}")
     write_automodule(module)
   print("Generating index.rst")
   replace_toc(modules)

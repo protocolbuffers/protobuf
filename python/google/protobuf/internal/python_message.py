@@ -150,7 +150,7 @@ class GeneratedProtocolMessageType(type):
     _AddClassAttributesForNestedExtensions(descriptor, dictionary)
     _AddSlots(descriptor, dictionary)
 
-    superclass = super(GeneratedProtocolMessageType, cls)
+    superclass = super()
     new_class = superclass.__new__(cls, name, bases, dictionary)
     return new_class
 
@@ -201,7 +201,7 @@ class GeneratedProtocolMessageType(type):
     _AddMessageMethods(descriptor, cls)
     _AddPrivateHelperMethods(descriptor, cls)
 
-    superclass = super(GeneratedProtocolMessageType, cls)
+    superclass = super()
     superclass.__init__(name, bases, dictionary)
 
 
@@ -455,7 +455,7 @@ def _ReraiseTypeErrorWithFieldName(message_name, field_name):
   exc = sys.exc_info()[1]
   if len(exc.args) == 1 and type(exc) is TypeError:
     # simple TypeError; add field name to exception message
-    exc = TypeError('%s for field %s.%s' % (str(exc), message_name, field_name))
+    exc = TypeError(f'{str(exc)} for field {message_name}.{field_name}')
 
   # re-raise possibly-amended exception with original traceback:
   raise exc.with_traceback(sys.exc_info()[2])
@@ -475,7 +475,7 @@ def _AddInitMethod(message_descriptor, cls):
       try:
         return enum_type.values_by_name[value].number
       except KeyError:
-        raise ValueError('Enum type %s: unknown label "%s"' % (
+        raise ValueError('Enum type {}: unknown label "{}"'.format(
             enum_type.full_name, value))
     return value
 
@@ -1054,7 +1054,7 @@ def _AddSerializeToStringMethod(message_descriptor, cls):
     # Check if the message has all of its required fields set.
     if not self.IsInitialized():
       raise message_mod.EncodeError(
-          'Message %s is missing required fields: %s' % (
+          'Message {} is missing required fields: {}'.format(
           self.DESCRIPTOR.full_name, ','.join(self.FindInitializationErrors())))
     return self.SerializePartialToString(**kwargs)
   cls.SerializeToString = SerializeToString
@@ -1245,7 +1245,7 @@ def _AddIsInitializedMethod(message_descriptor, cls):
           if _IsMessageMapField(field):
             for key in value:
               element = value[key]
-              prefix = '%s[%s].' % (name, key)
+              prefix = f'{name}[{key}].'
               sub_errors = element.FindInitializationErrors()
               errors += [prefix + error for error in sub_errors]
           else:
@@ -1445,7 +1445,7 @@ def _AddPrivateHelperMethods(message_descriptor, cls):
   cls._UpdateOneofState = _UpdateOneofState
 
 
-class _Listener(object):
+class _Listener:
 
   """MessageListener implementation that a parent message registers with its
   child message.
@@ -1500,13 +1500,13 @@ class _OneofListener(_Listener):
         we receive Modified() messages.
       field: The descriptor of the field being set in the parent message.
     """
-    super(_OneofListener, self).__init__(parent_message)
+    super().__init__(parent_message)
     self._field = field
 
   def Modified(self):
     """Also updates the state of the containing oneof in the parent message."""
     try:
       self._parent_message_weakref._UpdateOneofState(self._field)
-      super(_OneofListener, self).Modified()
+      super().Modified()
     except ReferenceError:
       pass

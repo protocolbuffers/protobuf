@@ -59,7 +59,7 @@ from google.protobuf import unittest_pb2
 warnings.simplefilter('error', DeprecationWarning)
 
 
-class DescriptorPoolTestBase(object):
+class DescriptorPoolTestBase:
 
   def testFindFileByName(self):
     name1 = 'google/protobuf/internal/factory_test1.proto'
@@ -338,7 +338,7 @@ class DescriptorPoolTestBase(object):
     another_field = factory_test2.extensions_by_name['another_field']
 
     extensions = self.pool.FindAllExtensions(factory1_message)
-    expected_extension_numbers = set([one_more_field, another_field])
+    expected_extension_numbers = {one_more_field, another_field}
     self.assertEqual(expected_extension_numbers, set(extensions))
     # Verify that mutating the returned list does not affect the pool.
     extensions.append('unexpected_element')
@@ -479,7 +479,7 @@ class DescriptorPoolTestBase(object):
       _CheckValueAndType(msg.optional_float, 0, (float, int))
       _CheckValueAndType(msg.optional_double, 0, (float, int))
       _CheckValueAndType(msg.optional_bool, False, bool)
-      _CheckValueAndType(msg.optional_string, u'', unicode_type)
+      _CheckValueAndType(msg.optional_string, '', unicode_type)
       _CheckValueAndType(msg.optional_bytes, b'', bytes)
       _CheckValueAndType(msg.optional_nested_enum, msg.FOO, int)
     # First for the generated message
@@ -713,7 +713,7 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
                        ' collector.ErrorMessage.MyOneof\\n' + error_msg)
 
 
-class ProtoFile(object):
+class ProtoFile:
 
   def __init__(self, name, package, messages, dependencies=None,
                public_dependencies=None):
@@ -735,7 +735,7 @@ class ProtoFile(object):
       msg_type.CheckType(test, None, name, file_desc)
 
 
-class EnumType(object):
+class EnumType:
 
   def __init__(self, values):
     self.values = values
@@ -756,7 +756,7 @@ class EnumType(object):
       test.assertIn(value, msg_desc.enum_values_by_name)
 
 
-class MessageType(object):
+class MessageType:
 
   def __init__(self, type_dict, field_list, is_extendable=False,
                extensions=None):
@@ -788,7 +788,7 @@ class MessageType(object):
       field.CheckField(test, desc, name, index, file_desc)
 
 
-class EnumField(object):
+class EnumField:
 
   def __init__(self, number, type_name, default_value):
     self.number = number
@@ -815,7 +815,7 @@ class EnumField(object):
     test.assertEqual(file_desc, enum_desc.file)
 
 
-class MessageField(object):
+class MessageField:
 
   def __init__(self, number, type_name):
     self.number = number
@@ -839,7 +839,7 @@ class MessageField(object):
     test.assertEqual(field_desc.default_value, None)
 
 
-class StringField(object):
+class StringField:
 
   def __init__(self, number, default_value):
     self.number = number
@@ -860,7 +860,7 @@ class StringField(object):
     test.assertEqual(file_desc, field_desc.file)
 
 
-class ExtensionField(object):
+class ExtensionField:
 
   def __init__(self, number, extended_type):
     self.number = number

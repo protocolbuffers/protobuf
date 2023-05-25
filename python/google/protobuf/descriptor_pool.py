@@ -115,7 +115,7 @@ def _IsMessageSetExtension(field):
           field.label == descriptor.FieldDescriptor.LABEL_OPTIONAL)
 
 
-class DescriptorPool(object):
+class DescriptorPool:
   """A collection of protobufs dynamically constructed by descriptor protos."""
 
   if _USE_C_DESCRIPTORS:
@@ -1108,7 +1108,7 @@ class DescriptorPool(object):
           field_proto.type == descriptor.FieldDescriptor.TYPE_FLOAT):
         field_desc.default_value = 0.0
       elif field_proto.type == descriptor.FieldDescriptor.TYPE_STRING:
-        field_desc.default_value = u''
+        field_desc.default_value = ''
       elif field_proto.type == descriptor.FieldDescriptor.TYPE_BOOL:
         field_desc.default_value = False
       elif field_proto.type == descriptor.FieldDescriptor.TYPE_ENUM:
@@ -1224,8 +1224,7 @@ class DescriptorPool(object):
 
     for desc in descriptors:
       yield (_PrefixWithDot(desc.full_name), desc)
-      for symbol in self._ExtractSymbols(desc.nested_types):
-        yield symbol
+      yield from self._ExtractSymbols(desc.nested_types)
       for enum in desc.enum_types:
         yield (_PrefixWithDot(enum.full_name), enum)
 

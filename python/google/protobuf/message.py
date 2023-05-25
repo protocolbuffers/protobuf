@@ -51,7 +51,7 @@ class EncodeError(Error):
   pass
 
 
-class Message(object):
+class Message:
 
   """Abstract base class for protocol messages.
 

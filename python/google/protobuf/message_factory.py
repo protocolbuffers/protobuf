@@ -144,7 +144,7 @@ def _InternalCreateMessageClass(descriptor):
 
 # Deprecated. Please use GetMessageClass() or GetMessageClassesForFiles()
 # method above instead.
-class MessageFactory(object):
+class MessageFactory:
   """Factory for creating Proto2 messages from descriptors in a pool."""
 
   def __init__(self, pool=None):

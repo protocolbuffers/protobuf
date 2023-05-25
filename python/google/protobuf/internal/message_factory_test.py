@@ -63,8 +63,8 @@ class MessageFactoryTest(unittest.TestCase):
     msg.factory_1_message.nested_factory_1_message.value = (
         'nested message value')
     msg.factory_1_message.scalar_value = 22
-    msg.factory_1_message.list_value.extend([u'one', u'two', u'three'])
-    msg.factory_1_message.list_value.append(u'four')
+    msg.factory_1_message.list_value.extend(['one', 'two', 'three'])
+    msg.factory_1_message.list_value.append('four')
     msg.factory_1_enum = 1
     msg.nested_factory_1_enum = 0
     msg.nested_factory_1_message.value = 'nested message value'
@@ -72,8 +72,8 @@ class MessageFactoryTest(unittest.TestCase):
     msg.circular_message.circular_message.mandatory = 2
     msg.circular_message.scalar_value = 'one deep'
     msg.scalar_value = 'zero deep'
-    msg.list_value.extend([u'four', u'three', u'two'])
-    msg.list_value.append(u'one')
+    msg.list_value.extend(['four', 'three', 'two'])
+    msg.list_value.append('one')
     msg.grouped.add()
     msg.grouped[0].part_1 = 'hello'
     msg.grouped[0].part_2 = 'world'
@@ -124,18 +124,18 @@ class MessageFactoryTest(unittest.TestCase):
       messages = message_factory.GetMessages([self.factory_test2_fd,
                                               self.factory_test1_fd])
       self.assertTrue(
-          set(['google.protobuf.python.internal.Factory2Message',
-               'google.protobuf.python.internal.Factory1Message'],
-             ).issubset(set(messages.keys())))
+          {'google.protobuf.python.internal.Factory2Message',
+               'google.protobuf.python.internal.Factory1Message'
+             }.issubset(set(messages.keys())))
       self._ExerciseDynamicClass(
           messages['google.protobuf.python.internal.Factory2Message'])
       factory_msg1 = messages['google.protobuf.python.internal.Factory1Message']
-      self.assertTrue(set(
-          ['google.protobuf.python.internal.Factory2Message.one_more_field',
-           'google.protobuf.python.internal.another_field'],).issubset(set(
+      self.assertTrue({
+          'google.protobuf.python.internal.Factory2Message.one_more_field',
+           'google.protobuf.python.internal.another_field'}.issubset({
                ext.full_name
                for ext in factory_msg1.DESCRIPTOR.file.pool.FindAllExtensions(
-                   factory_msg1.DESCRIPTOR))))
+                   factory_msg1.DESCRIPTOR)}))
       msg1 = messages['google.protobuf.python.internal.Factory1Message']()
       ext1 = msg1.Extensions._FindExtensionByName(
           'google.protobuf.python.internal.Factory2Message.one_more_field')

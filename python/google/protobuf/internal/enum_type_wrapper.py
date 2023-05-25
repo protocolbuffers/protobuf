@@ -38,7 +38,7 @@ on proto classes.  For usage, see:
 __author__ = 'rabsatt@google.com (Kevin Rabsatt)'
 
 
-class EnumTypeWrapper(object):
+class EnumTypeWrapper:
   """A utility for finding the names of enum values."""
 
   DESCRIPTOR = None
@@ -115,9 +115,7 @@ class EnumTypeWrapper(object):
   def __getattr__(self, name):
     """Returns the value corresponding to the given enum name."""
     try:
-      return super(
-          EnumTypeWrapper,
-          self).__getattribute__('_enum_type').values_by_name[name].number
+      return super().__getattribute__('_enum_type').values_by_name[name].number
     except KeyError:
       pass  # fall out to break exception chaining
     raise AttributeError('Enum {} has no value defined for name {!r}'.format(

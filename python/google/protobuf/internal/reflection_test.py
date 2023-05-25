@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -64,7 +63,7 @@ from google.protobuf import unittest_proto3_arena_pb2
 warnings.simplefilter('error', DeprecationWarning)
 
 
-class _MiniDecoder(object):
+class _MiniDecoder:
   """Decodes a stream of values from a string.
 
   Once upon a time we actually had a class called decoder.Decoder.  Then we
@@ -840,32 +839,32 @@ class ReflectionTest(unittest.TestCase):
 
     # Assignment of a unicode object to a field of type 'bytes' is not allowed.
     self.assertRaises(TypeError,
-                      setattr, proto, 'optional_bytes', u'unicode object')
+                      setattr, proto, 'optional_bytes', 'unicode object')
 
     # Check that the default value is of python's 'unicode' type.
     self.assertEqual(type(proto.optional_string), str)
 
-    proto.optional_string = str('Testing')
-    self.assertEqual(proto.optional_string, str('Testing'))
+    proto.optional_string = 'Testing'
+    self.assertEqual(proto.optional_string, 'Testing')
 
     # Assign a value of type 'str' which can be encoded in UTF-8.
-    proto.optional_string = str('Testing')
-    self.assertEqual(proto.optional_string, str('Testing'))
+    proto.optional_string = 'Testing'
+    self.assertEqual(proto.optional_string, 'Testing')
 
     # Try to assign a 'bytes' object which contains non-UTF-8.
     self.assertRaises(ValueError,
                       setattr, proto, 'optional_string', b'a\x80a')
     # No exception: Assign already encoded UTF-8 bytes to a string field.
-    utf8_bytes = u'Тест'.encode('utf-8')
+    utf8_bytes = 'Тест'.encode()
     proto.optional_string = utf8_bytes
     # No exception: Assign the a non-ascii unicode object.
-    proto.optional_string = u'Тест'
+    proto.optional_string = 'Тест'
     # No exception thrown (normal str assignment containing ASCII).
     proto.optional_string = 'abc'
 
   def testBytesInTextFormat(self, message_module):
     proto = message_module.TestAllTypes(optional_bytes=b'\x00\x7f\x80\xff')
-    self.assertEqual(u'optional_bytes: "\\000\\177\\200\\377"\n', str(proto))
+    self.assertEqual('optional_bytes: "\\000\\177\\200\\377"\n', str(proto))
 
   def testEmptyNestedMessage(self, message_module):
     proto = message_module.TestAllTypes()
@@ -1154,7 +1153,7 @@ class Proto2ReflectionTest(unittest.TestCase):
                      proto.default_import_enum)
 
     proto = unittest_pb2.TestExtremeDefaultValues()
-    self.assertEqual(u'\u1234', proto.utf8_string)
+    self.assertEqual('\u1234', proto.utf8_string)
 
   def testHasFieldWithUnknownFieldName(self):
     proto = unittest_pb2.TestAllTypes()
@@ -2058,7 +2057,7 @@ class Proto2ReflectionTest(unittest.TestCase):
     extension_message = message_set_extensions_pb2.TestMessageSetExtension2
     extension = extension_message.message_set_extension
 
-    test_utf8 = u'Тест'
+    test_utf8 = 'Тест'
     test_utf8_bytes = test_utf8.encode('utf-8')
 
     # 'Test' in another language, using UTF-8 charset.

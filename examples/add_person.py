@@ -52,7 +52,7 @@ address_book = addressbook_pb2.AddressBook()
 try:
   with open(sys.argv[1], "rb") as f:
     address_book.ParseFromString(f.read())
-except IOError:
+except OSError:
   print(sys.argv[1] + ": File not found.  Creating a new file.")
 
 # Add an address.

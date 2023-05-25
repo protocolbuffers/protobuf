@@ -71,7 +71,7 @@ _NEG_INFINITY = '-Infinity'
 _NAN = 'NaN'
 
 _UNPAIRED_SURROGATE_PATTERN = re.compile(
-    u'[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]')
+    '[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]')
 
 _VALID_EXTENSION_NAME = re.compile(r'\[[a-zA-Z0-9\._]*\]$')
 
@@ -176,7 +176,7 @@ def _IsMapEntry(field):
           field.message_type.GetOptions().map_entry)
 
 
-class _Printer(object):
+class _Printer:
   """JSON format printer for protocol message."""
 
   def __init__(
@@ -191,7 +191,7 @@ class _Printer(object):
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
     if float_precision:
-      self.float_format = '.{}g'.format(float_precision)
+      self.float_format = f'.{float_precision}g'
     else:
       self.float_format = None
 
@@ -271,7 +271,7 @@ class _Printer(object):
 
     except ValueError as e:
       raise SerializeToJsonError(
-          'Failed to serialize {0} field: {1}.'.format(field.name, e)) from e
+          f'Failed to serialize {field.name} field: {e}.') from e
 
     return js
 
@@ -394,7 +394,7 @@ def _DuplicateChecker(js):
   result = {}
   for name, value in js:
     if name in result:
-      raise ParseError('Failed to load JSON: duplicate key {0}.'.format(name))
+      raise ParseError(f'Failed to load JSON: duplicate key {name}.')
     result[name] = value
   return result
 
@@ -408,7 +408,7 @@ def _CreateMessageFromTypeUrl(type_url, descriptor_pool):
     message_descriptor = pool.FindMessageTypeByName(type_name)
   except KeyError as e:
     raise TypeError(
-        'Can not find message descriptor by type_url: {0}'.format(type_url)
+        f'Can not find message descriptor by type_url: {type_url}'
       ) from e
   message_class = message_factory.GetMessageClass(message_descriptor)
   return message_class()
@@ -442,7 +442,7 @@ def Parse(text,
   try:
     js = json.loads(text, object_pairs_hook=_DuplicateChecker)
   except ValueError as e:
-    raise ParseError('Failed to load JSON: {0}.'.format(str(e))) from e
+    raise ParseError(f'Failed to load JSON: {str(e)}.') from e
   return ParseDict(js, message, ignore_unknown_fields, descriptor_pool,
                    max_recursion_depth)
 
@@ -475,7 +475,7 @@ def ParseDict(js_dict,
 _INT_OR_FLOAT = (int, float)
 
 
-class _Parser(object):
+class _Parser:
   """JSON format parser for protocol message."""
 
   def __init__(self, ignore_unknown_fields, descriptor_pool,
@@ -498,7 +498,7 @@ class _Parser(object):
     """
     self.recursion_depth += 1
     if self.recursion_depth > self.max_recursion_depth:
-      raise ParseError('Message too deep. Max recursion depth is {0}'.format(
+      raise ParseError('Message too deep. Max recursion depth is {}'.format(
           self.max_recursion_depth))
     message_descriptor = message.DESCRIPTOR
     full_name = message_descriptor.full_name
@@ -525,8 +525,8 @@ class _Parser(object):
     """
     names = []
     message_descriptor = message.DESCRIPTOR
-    fields_by_json_name = dict((f.json_name, f)
-                               for f in message_descriptor.fields)
+    fields_by_json_name = {f.json_name: f
+                               for f in message_descriptor.fields}
     for name in js:
       try:
         field = fields_by_json_name.get(name, None)
@@ -535,7 +535,7 @@ class _Parser(object):
         if not field and _VALID_EXTENSION_NAME.match(name):
           if not message_descriptor.is_extendable:
             raise ParseError(
-                'Message type {0} does not have extensions at {1}'.format(
+                'Message type {} does not have extensions at {}'.format(
                     message_descriptor.full_name, path))
           identifier = name[1:-1]  # strip [] brackets
           # pylint: disable=protected-access
@@ -552,13 +552,13 @@ class _Parser(object):
           if self.ignore_unknown_fields:
             continue
           raise ParseError(
-              ('Message type "{0}" has no field named "{1}" at "{2}".\n'
-               ' Available Fields(except extensions): "{3}"').format(
+              ('Message type "{}" has no field named "{}" at "{}".\n'
+               ' Available Fields(except extensions): "{}"').format(
                    message_descriptor.full_name, name, path,
                    [f.json_name for f in message_descriptor.fields]))
         if name in names:
-          raise ParseError('Message type "{0}" should not have multiple '
-                           '"{1}" fields at "{2}".'.format(
+          raise ParseError('Message type "{}" should not have multiple '
+                           '"{}" fields at "{}".'.format(
                                message.DESCRIPTOR.full_name, name, path))
         names.append(name)
         value = js[name]
@@ -566,8 +566,8 @@ class _Parser(object):
         if field.containing_oneof is not None and value is not None:
           oneof_name = field.containing_oneof.name
           if oneof_name in names:
-            raise ParseError('Message type "{0}" should not have multiple '
-                             '"{1}" oneof fields at "{2}".'.format(
+            raise ParseError('Message type "{}" should not have multiple '
+                             '"{}" oneof fields at "{}".'.format(
                                  message.DESCRIPTOR.full_name, oneof_name,
                                  path))
           names.append(oneof_name)
@@ -588,12 +588,12 @@ class _Parser(object):
         if _IsMapEntry(field):
           message.ClearField(field.name)
           self._ConvertMapFieldValue(value, message, field,
-                                     '{0}.{1}'.format(path, name))
+                                     f'{path}.{name}')
         elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
           message.ClearField(field.name)
           if not isinstance(value, list):
-            raise ParseError('repeated field {0} must be in [] which is '
-                             '{1} at {2}'.format(name, value, path))
+            raise ParseError('repeated field {} must be in [] which is '
+                             '{} at {}'.format(name, value, path))
           if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
             # Repeated message field.
             for index, item in enumerate(value):
@@ -602,50 +602,50 @@ class _Parser(object):
               if (item is None and
                   sub_message.DESCRIPTOR.full_name != 'google.protobuf.Value'):
                 raise ParseError('null is not allowed to be used as an element'
-                                 ' in a repeated field at {0}.{1}[{2}]'.format(
+                                 ' in a repeated field at {}.{}[{}]'.format(
                                      path, name, index))
               self.ConvertMessage(item, sub_message,
-                                  '{0}.{1}[{2}]'.format(path, name, index))
+                                  f'{path}.{name}[{index}]')
           else:
             # Repeated scalar field.
             for index, item in enumerate(value):
               if item is None:
                 raise ParseError('null is not allowed to be used as an element'
-                                 ' in a repeated field at {0}.{1}[{2}]'.format(
+                                 ' in a repeated field at {}.{}[{}]'.format(
                                      path, name, index))
               getattr(message, field.name).append(
                   _ConvertScalarFieldValue(
-                      item, field, '{0}.{1}[{2}]'.format(path, name, index)))
+                      item, field, f'{path}.{name}[{index}]'))
         elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
           if field.is_extension:
             sub_message = message.Extensions[field]
           else:
             sub_message = getattr(message, field.name)
           sub_message.SetInParent()
-          self.ConvertMessage(value, sub_message, '{0}.{1}'.format(path, name))
+          self.ConvertMessage(value, sub_message, f'{path}.{name}')
         else:
           if field.is_extension:
             message.Extensions[field] = _ConvertScalarFieldValue(
-                value, field, '{0}.{1}'.format(path, name))
+                value, field, f'{path}.{name}')
           else:
             setattr(
                 message, field.name,
                 _ConvertScalarFieldValue(value, field,
-                                         '{0}.{1}'.format(path, name)))
+                                         f'{path}.{name}'))
       except ParseError as e:
         if field and field.containing_oneof is None:
           raise ParseError(
-            'Failed to parse {0} field: {1}.'.format(name, e)
+            f'Failed to parse {name} field: {e}.'
           ) from e
         else:
           raise ParseError(str(e)) from e
       except ValueError as e:
         raise ParseError(
-          'Failed to parse {0} field: {1}.'.format(name, e)
+          f'Failed to parse {name} field: {e}.'
         ) from e
       except TypeError as e:
         raise ParseError(
-          'Failed to parse {0} field: {1}.'.format(name, e)
+          f'Failed to parse {name} field: {e}.'
         ) from e
 
   def _ConvertAnyMessage(self, value, message, path):
@@ -656,21 +656,21 @@ class _Parser(object):
       type_url = value['@type']
     except KeyError as e:
       raise ParseError(
-        '@type is missing when parsing any message at {0}'.format(path)
+        f'@type is missing when parsing any message at {path}'
       ) from e
 
     try:
       sub_message = _CreateMessageFromTypeUrl(type_url, self.descriptor_pool)
     except TypeError as e:
-      raise ParseError('{0} at {1}'.format(e, path)) from e
+      raise ParseError(f'{e} at {path}') from e
     message_descriptor = sub_message.DESCRIPTOR
     full_name = message_descriptor.full_name
     if _IsWrapperMessage(message_descriptor):
       self._ConvertWrapperMessage(value['value'], sub_message,
-                                  '{0}.value'.format(path))
+                                  f'{path}.value')
     elif full_name in _WKTJSONMETHODS:
       methodcaller(_WKTJSONMETHODS[full_name][1], value['value'], sub_message,
-                   '{0}.value'.format(path))(
+                   f'{path}.value')(
                        self)
     else:
       del value['@type']
@@ -687,7 +687,7 @@ class _Parser(object):
     try:
       message.FromJsonString(value)
     except ValueError as e:
-      raise ParseError('{0} at {1}'.format(e, path)) from e
+      raise ParseError(f'{e} at {path}') from e
 
   def _ConvertValueMessage(self, value, message, path):
     """Convert a JSON representation into Value message."""
@@ -704,30 +704,30 @@ class _Parser(object):
     elif isinstance(value, _INT_OR_FLOAT):
       message.number_value = value
     else:
-      raise ParseError('Value {0} has unexpected type {1} at {2}'.format(
+      raise ParseError('Value {} has unexpected type {} at {}'.format(
           value, type(value), path))
 
   def _ConvertListValueMessage(self, value, message, path):
     """Convert a JSON representation into ListValue message."""
     if not isinstance(value, list):
-      raise ParseError('ListValue must be in [] which is {0} at {1}'.format(
+      raise ParseError('ListValue must be in [] which is {} at {}'.format(
           value, path))
     message.ClearField('values')
     for index, item in enumerate(value):
       self._ConvertValueMessage(item, message.values.add(),
-                                '{0}[{1}]'.format(path, index))
+                                f'{path}[{index}]')
 
   def _ConvertStructMessage(self, value, message, path):
     """Convert a JSON representation into Struct message."""
     if not isinstance(value, dict):
-      raise ParseError('Struct must be in a dict which is {0} at {1}'.format(
+      raise ParseError('Struct must be in a dict which is {} at {}'.format(
           value, path))
     # Clear will mark the struct as modified so it will be created even if
     # there are no values.
     message.Clear()
     for key in value:
       self._ConvertValueMessage(value[key], message.fields[key],
-                                '{0}.{1}'.format(path, key))
+                                f'{path}.{key}')
     return
 
   def _ConvertWrapperMessage(self, value, message, path):
@@ -735,7 +735,7 @@ class _Parser(object):
     field = message.DESCRIPTOR.fields_by_name['value']
     setattr(
         message, 'value',
-        _ConvertScalarFieldValue(value, field, path='{0}.value'.format(path)))
+        _ConvertScalarFieldValue(value, field, path=f'{path}.value'))
 
   def _ConvertMapFieldValue(self, value, message, field, path):
     """Convert map field value for a message map field.
@@ -751,20 +751,20 @@ class _Parser(object):
     """
     if not isinstance(value, dict):
       raise ParseError(
-          'Map field {0} must be in a dict which is {1} at {2}'.format(
+          'Map field {} must be in a dict which is {} at {}'.format(
               field.name, value, path))
     key_field = field.message_type.fields_by_name['key']
     value_field = field.message_type.fields_by_name['value']
     for key in value:
       key_value = _ConvertScalarFieldValue(key, key_field,
-                                           '{0}.key'.format(path), True)
+                                           f'{path}.key', True)
       if value_field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
         self.ConvertMessage(value[key],
                             getattr(message, field.name)[key_value],
-                            '{0}[{1}]'.format(path, key_value))
+                            f'{path}[{key_value}]')
       else:
         getattr(message, field.name)[key_value] = _ConvertScalarFieldValue(
-            value[key], value_field, path='{0}[{1}]'.format(path, key_value))
+            value[key], value_field, path=f'{path}[{key_value}]')
 
 
 def _ConvertScalarFieldValue(value, field, path, require_str=False):
@@ -812,17 +812,17 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
           number = int(value)
           enum_value = field.enum_type.values_by_number.get(number, None)
         except ValueError as e:
-          raise ParseError('Invalid enum value {0} for enum type {1}'.format(
+          raise ParseError('Invalid enum value {} for enum type {}'.format(
               value, field.enum_type.full_name)) from e
         if enum_value is None:
           if field.enum_type.is_closed:
-            raise ParseError('Invalid enum value {0} for enum type {1}'.format(
+            raise ParseError('Invalid enum value {} for enum type {}'.format(
                 value, field.enum_type.full_name))
           else:
             return number
       return enum_value.number
   except ParseError as e:
-    raise ParseError('{0} at {1}'.format(e, path)) from e
+    raise ParseError(f'{e} at {path}') from e
 
 
 def _ConvertInteger(value):
@@ -838,13 +838,13 @@ def _ConvertInteger(value):
     ParseError: If an integer couldn't be consumed.
   """
   if isinstance(value, float) and not value.is_integer():
-    raise ParseError('Couldn\'t parse integer: {0}'.format(value))
+    raise ParseError(f'Couldn\'t parse integer: {value}')
 
   if isinstance(value, str) and value.find(' ') != -1:
-    raise ParseError('Couldn\'t parse integer: "{0}"'.format(value))
+    raise ParseError(f'Couldn\'t parse integer: "{value}"')
 
   if isinstance(value, bool):
-    raise ParseError('Bool value {0} is not acceptable for '
+    raise ParseError('Bool value {} is not acceptable for '
                      'integer field'.format(value))
 
   return int(value)
@@ -883,7 +883,7 @@ def _ConvertFloat(value, field):
     elif value == _NAN:
       return float('nan')
     else:
-      raise ParseError('Couldn\'t parse float: {0}'.format(value)) from e
+      raise ParseError(f'Couldn\'t parse float: {value}') from e
 
 
 def _ConvertBool(value, require_str):
@@ -905,7 +905,7 @@ def _ConvertBool(value, require_str):
     elif value == 'false':
       return False
     else:
-      raise ParseError('Expected "true" or "false", not {0}'.format(value))
+      raise ParseError(f'Expected "true" or "false", not {value}')
 
   if not isinstance(value, bool):
     raise ParseError('Expected true or false without quotes')

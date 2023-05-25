@@ -60,7 +60,7 @@ def _VerifyExtensionHandle(message, extension_handle):
 # TODO(robinson): Unify error handling of "unknown extension" crap.
 # TODO(robinson): Support iteritems()-style iteration over all
 # extensions with the "has" bits turned on?
-class _ExtensionDict(object):
+class _ExtensionDict:
 
   """Dict-like container for Extension fields on proto instances.
 

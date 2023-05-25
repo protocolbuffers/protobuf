@@ -569,7 +569,7 @@ class AnyTest(unittest.TestCase):
     msg_descriptor = msg.DESCRIPTOR
     all_types = unittest_pb2.TestAllTypes()
     all_descriptor = all_types.DESCRIPTOR
-    all_types.repeated_string.append(u'\u00fc\ua71f')
+    all_types.repeated_string.append('\u00fc\ua71f')
     # Packs to Any.
     msg.value.Pack(all_types)
     self.assertEqual(msg.value.type_url,

@@ -101,7 +101,7 @@ def GetTypeChecker(field):
 # subclassing builtin types and doing weird things.  We're not trying to
 # protect against malicious clients here, just people accidentally shooting
 # themselves in the foot in obvious ways.
-class TypeChecker(object):
+class TypeChecker:
 
   """Type checker used to catch type errors as early as possible
   when the client is setting scalar fields in protocol messages.
@@ -132,7 +132,7 @@ class TypeCheckerWithDefault(TypeChecker):
     return self._default_value
 
 
-class BoolValueChecker(object):
+class BoolValueChecker:
   """Type checker used for bool fields."""
 
   def CheckValue(self, proposed_value):
@@ -150,7 +150,7 @@ class BoolValueChecker(object):
 
 # IntValueChecker and its subclasses perform integer type-checks
 # and bounds-checks.
-class IntValueChecker(object):
+class IntValueChecker:
 
   """Checker used for integer fields.  Performs type-check and range check."""
 
@@ -173,7 +173,7 @@ class IntValueChecker(object):
     return 0
 
 
-class EnumValueChecker(object):
+class EnumValueChecker:
 
   """Checker used for enum fields.  Performs type-check and range check."""
 
@@ -193,7 +193,7 @@ class EnumValueChecker(object):
     return self._enum_type.values[0].number
 
 
-class UnicodeValueChecker(object):
+class UnicodeValueChecker:
 
   """Checker used for string fields.
 
@@ -226,7 +226,7 @@ class UnicodeValueChecker(object):
     return proposed_value
 
   def DefaultValue(self):
-    return u""
+    return ""
 
 
 class Int32ValueChecker(IntValueChecker):
@@ -258,7 +258,7 @@ _INF = float('inf')
 _NEG_INF = float('-inf')
 
 
-class DoubleValueChecker(object):
+class DoubleValueChecker:
   """Checker used for double fields.
 
   Performs type-check and range check.

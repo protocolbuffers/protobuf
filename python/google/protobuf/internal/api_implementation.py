@@ -87,7 +87,7 @@ _implementation_type = os.getenv('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION',
                                  _implementation_type)
 
 if _implementation_type not in ('python', 'cpp', 'upb'):
-  raise ValueError('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION {0} is not '
+  raise ValueError('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION {} is not '
                    'supported. Please set to \'python\', \'cpp\' or '
                    '\'upb\'.'.format(_implementation_type))
 

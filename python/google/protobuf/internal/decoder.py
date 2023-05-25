@@ -553,7 +553,7 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
       value = str(byte_str, 'utf-8')
     except UnicodeDecodeError as e:
       # add more information to the error message and re-raise it.
-      e.reason = '%s in field: %s' % (e, key.full_name)
+      e.reason = f'{e} in field: {key.full_name}'
       raise
 
     return value

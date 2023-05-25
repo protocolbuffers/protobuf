@@ -58,7 +58,7 @@ _SECONDS_PER_DAY = 24 * 3600
 _DURATION_SECONDS_MAX = 315576000000
 
 
-class Any(object):
+class Any:
   """Class for Any Message type."""
 
   __slots__ = ()
@@ -67,9 +67,9 @@ class Any(object):
            deterministic=None):
     """Packs the specified message into current Any message."""
     if len(type_url_prefix) < 1 or type_url_prefix[-1] != '/':
-      self.type_url = '%s/%s' % (type_url_prefix, msg.DESCRIPTOR.full_name)
+      self.type_url = f'{type_url_prefix}/{msg.DESCRIPTOR.full_name}'
     else:
-      self.type_url = '%s%s' % (type_url_prefix, msg.DESCRIPTOR.full_name)
+      self.type_url = f'{type_url_prefix}{msg.DESCRIPTOR.full_name}'
     self.value = msg.SerializeToString(deterministic=deterministic)
 
   def Unpack(self, msg):
@@ -95,7 +95,7 @@ _EPOCH_DATETIME_AWARE = datetime.datetime.fromtimestamp(
     0, tz=datetime.timezone.utc)
 
 
-class Timestamp(object):
+class Timestamp:
   """Class for Timestamp message type."""
 
   __slots__ = ()
@@ -140,7 +140,7 @@ class Timestamp(object):
       ValueError: On parsing problems.
     """
     if not isinstance(value, str):
-      raise ValueError('Timestamp JSON value not a string: {!r}'.format(value))
+      raise ValueError(f'Timestamp JSON value not a string: {value!r}')
     timezone_offset = value.find('Z')
     if timezone_offset == -1:
       timezone_offset = value.find('+')
@@ -160,14 +160,14 @@ class Timestamp(object):
       nano_value = time_value[point_position + 1:]
     if 't' in second_value:
       raise ValueError(
-          'time data \'{0}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
+          'time data \'{}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
           'lowercase \'t\' is not accepted'.format(second_value))
     date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFOMAT)
     td = date_object - datetime.datetime(1970, 1, 1)
     seconds = td.seconds + td.days * _SECONDS_PER_DAY
     if len(nano_value) > 9:
       raise ValueError(
-          'Failed to parse Timestamp: nanos {0} more than '
+          'Failed to parse Timestamp: nanos {} more than '
           '9 fractional digits.'.format(nano_value))
     if nano_value:
       nanos = round(float('0.' + nano_value) * 1e9)
@@ -177,13 +177,13 @@ class Timestamp(object):
     if value[timezone_offset] == 'Z':
       if len(value) != timezone_offset + 1:
         raise ValueError('Failed to parse timestamp: invalid trailing'
-                         ' data {0}.'.format(value))
+                         ' data {}.'.format(value))
     else:
       timezone = value[timezone_offset:]
       pos = timezone.find(':')
       if pos == -1:
         raise ValueError(
-            'Invalid timezone offset value: {0}.'.format(timezone))
+            f'Invalid timezone offset value: {timezone}.')
       if timezone[0] == '+':
         seconds -= (int(timezone[1:pos])*60+int(timezone[pos+1:]))*60
       else:
@@ -271,7 +271,7 @@ class Timestamp(object):
     self.nanos = dt.microsecond * _NANOS_PER_MICROSECOND
 
 
-class Duration(object):
+class Duration:
   """Class for Duration message type."""
 
   __slots__ = ()
@@ -320,10 +320,10 @@ class Duration(object):
       ValueError: On parsing problems.
     """
     if not isinstance(value, str):
-      raise ValueError('Duration JSON value not a string: {!r}'.format(value))
+      raise ValueError(f'Duration JSON value not a string: {value!r}')
     if len(value) < 1 or value[-1] != 's':
       raise ValueError(
-          'Duration must end with letter "s": {0}.'.format(value))
+          f'Duration must end with letter "s": {value}.')
     try:
       pos = value.find('.')
       if pos == -1:
@@ -332,15 +332,15 @@ class Duration(object):
       else:
         seconds = int(value[:pos])
         if value[0] == '-':
-          nanos = int(round(float('-0{0}'.format(value[pos: -1])) *1e9))
+          nanos = int(round(float(f'-0{value[pos: -1]}') *1e9))
         else:
-          nanos = int(round(float('0{0}'.format(value[pos: -1])) *1e9))
+          nanos = int(round(float(f'0{value[pos: -1]}') *1e9))
       _CheckDurationValid(seconds, nanos)
       self.seconds = seconds
       self.nanos = nanos
     except ValueError as e:
       raise ValueError(
-          'Couldn\'t parse duration: {0} : {1}.'.format(value, e))
+          f'Couldn\'t parse duration: {value} : {e}.')
 
   def ToNanoseconds(self):
     """Converts a Duration to nanoseconds."""
@@ -406,11 +406,11 @@ class Duration(object):
 def _CheckDurationValid(seconds, nanos):
   if seconds < -_DURATION_SECONDS_MAX or seconds > _DURATION_SECONDS_MAX:
     raise ValueError(
-        'Duration is not valid: Seconds {0} must be in range '
+        'Duration is not valid: Seconds {} must be in range '
         '[-315576000000, 315576000000].'.format(seconds))
   if nanos <= -_NANOS_PER_SECOND or nanos >= _NANOS_PER_SECOND:
     raise ValueError(
-        'Duration is not valid: Nanos {0} must be in range '
+        'Duration is not valid: Nanos {} must be in range '
         '[-999999999, 999999999].'.format(nanos))
   if (nanos < 0 and seconds > 0) or (nanos > 0 and seconds < 0):
     raise ValueError(
@@ -471,7 +471,7 @@ def _GetStructValue(struct_value):
     raise ValueError('Value not set')
 
 
-class Struct(object):
+class Struct:
   """Class for Struct message type."""
 
   __slots__ = ()
@@ -524,7 +524,7 @@ class Struct(object):
 collections.abc.MutableMapping.register(Struct)
 
 
-class ListValue(object):
+class ListValue:
   """Class for ListValue message type."""
 
   __slots__ = ()

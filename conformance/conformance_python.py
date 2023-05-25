@@ -175,12 +175,12 @@ def do_test_io():
   if len(length_bytes) == 0:
     return False   # EOF
   elif len(length_bytes) != 4:
-    raise IOError("I/O error")
+    raise OSError("I/O error")
 
   length = struct.unpack("<I", length_bytes)[0]
   serialized_request = sys.stdin.buffer.read(length)
   if len(serialized_request) != length:
-    raise IOError("I/O error")
+    raise OSError("I/O error")
 
   request = conformance_pb2.ConformanceRequest()
   request.ParseFromString(serialized_request)
@@ -193,7 +193,7 @@ def do_test_io():
   sys.stdout.buffer.flush()
 
   if verbose:
-    sys.stderr.write("conformance_python: request=%s, response=%s\n" % (
+    sys.stderr.write("conformance_python: request={}, response={}\n".format(
                        request.ShortDebugString().c_str(),
                        response.ShortDebugString().c_str()))
 

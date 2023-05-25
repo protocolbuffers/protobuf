@@ -61,7 +61,7 @@ class LocalTestResult(unittest.TestResult):
     pass
 
 
-class ReferenceLeakCheckerMixin(object):
+class ReferenceLeakCheckerMixin:
   """A mixin class for TestCase, which checks reference counts."""
 
   NB_RUNS = 3
@@ -79,8 +79,8 @@ class ReferenceLeakCheckerMixin(object):
     self._saved_pickle_registry = copyreg.dispatch_table.copy()
 
     # Run the test twice, to warm up the instance attributes.
-    super(ReferenceLeakCheckerMixin, self).run(result=result)
-    super(ReferenceLeakCheckerMixin, self).run(result=result)
+    super().run(result=result)
+    super().run(result=result)
 
     oldrefcount = 0
     local_result = LocalTestResult(result)
@@ -89,7 +89,7 @@ class ReferenceLeakCheckerMixin(object):
     refcount_deltas = []
     while len(refcount_deltas) < self.NB_RUNS:
       oldrefcount = self._getRefcounts()
-      super(ReferenceLeakCheckerMixin, self).run(result=local_result)
+      super().run(result=local_result)
       newrefcount = self._getRefcounts()
       # If the GC was able to collect some objects after the call to run() that
       # it could not collect before the call, then the counts won't match.
