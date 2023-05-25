@@ -31,8 +31,16 @@
 #ifndef __GOOGLE_PROTOBUF_RUBY_PROTOBUF_H__
 #define __GOOGLE_PROTOBUF_RUBY_PROTOBUF_H__
 
+// Ruby 3+ defines NDEBUG itself, see: https://bugs.ruby-lang.org/issues/18777
+#ifdef NDEBUG
+#include <ruby.h>
+#else
+#include <ruby.h>
+#undef NDEBUG
+#endif
+
+#include <assert.h>  // Must be included after the NDEBUG logic above.
 #include <ruby/encoding.h>
-#include <ruby/ruby.h>
 #include <ruby/vm.h>
 
 #include "defs.h"
@@ -110,7 +118,9 @@ extern VALUE cTypeError;
   do {                      \
   } while (false && (expr))
 #else
-#define PBRUBY_ASSERT(expr) assert(expr)
+#define PBRUBY_ASSERT(expr) \
+  if (!(expr))              \
+  rb_bug("Assertion failed at %s:%d, expr: %s", __FILE__, __LINE__, #expr)
 #endif
 
 #define PBRUBY_MAX(x, y) (((x) > (y)) ? (x) : (y))

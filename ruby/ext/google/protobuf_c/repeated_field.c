@@ -100,6 +100,8 @@ VALUE RepeatedField_GetRubyWrapper(upb_Array* array, TypeInfo type_info,
   PBRUBY_ASSERT(ruby_to_RepeatedField(val)->type_info.type == type_info.type);
   PBRUBY_ASSERT(ruby_to_RepeatedField(val)->type_info.def.msgdef ==
                 type_info.def.msgdef);
+  PBRUBY_ASSERT(ruby_to_RepeatedField(val)->array == array);
+
   return val;
 }
 
