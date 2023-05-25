@@ -61,6 +61,7 @@ set(tests_files
 )
 
 if(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
+  add_compile_options(-DGOOGLE_PROTOBUF_FAKE_PLUGIN_PATH="$<TARGET_FILE:fake_plugin>")
   add_compile_options(-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH="$<TARGET_FILE:test_plugin>")
 endif()
 
@@ -102,10 +103,25 @@ target_link_libraries(tests
   GTest::gmock_main
 )
 
+set(fake_plugin_files
+  ${fake_plugin_files}
+  ${common_test_hdrs}
+  ${common_test_srcs}
+)
 set(test_plugin_files
   ${test_plugin_files}
   ${common_test_hdrs}
   ${common_test_srcs}
+)
+
+add_executable(fake_plugin ${fake_plugin_files})
+target_include_directories(fake_plugin PRIVATE ${ABSL_ROOT_DIR})
+target_link_libraries(fake_plugin
+  ${protobuf_LIB_PROTOC}
+  ${protobuf_LIB_PROTOBUF}
+  ${protobuf_ABSL_USED_TARGETS}
+  ${protobuf_ABSL_USED_TEST_TARGETS}
+  GTest::gmock
 )
 
 add_executable(test_plugin ${test_plugin_files})
@@ -136,7 +152,7 @@ add_test(NAME lite-test
 
 add_custom_target(full-test
   COMMAND tests
-  DEPENDS tests lite-test test_plugin
+  DEPENDS tests lite-test fake_plugin test_plugin
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
 add_test(NAME full-test

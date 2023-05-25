@@ -53,6 +53,7 @@ PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantIn
       /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.file_to_generate_)*/ {},
       /*decltype(_impl_.proto_file_)*/ {},
+      /*decltype(_impl_.source_file_descriptors_)*/ {},
       /*decltype(_impl_.parameter_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
@@ -156,9 +157,11 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offs
     PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_),
     PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.parameter_),
     PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_),
     PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.compiler_version_),
     ~0u,
     0,
+    ~0u,
     ~0u,
     1,
     PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_._has_bits_),
@@ -196,9 +199,9 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offs
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
         {0, 12, -1, sizeof(::google::protobuf::compiler::Version)},
-        {16, 28, -1, sizeof(::google::protobuf::compiler::CodeGeneratorRequest)},
-        {32, 44, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
-        {48, 59, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
+        {16, 29, -1, sizeof(::google::protobuf::compiler::CodeGeneratorRequest)},
+        {34, 46, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
+        {50, 61, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -212,22 +215,24 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2epro
     "\030google.protobuf.compiler\032 google/protob"
     "uf/descriptor.proto\"F\n\007Version\022\r\n\005major\030"
     "\001 \001(\005\022\r\n\005minor\030\002 \001(\005\022\r\n\005patch\030\003 \001(\005\022\016\n\006s"
-    "uffix\030\004 \001(\t\"\272\001\n\024CodeGeneratorRequest\022\030\n\020"
+    "uffix\030\004 \001(\t\"\201\002\n\024CodeGeneratorRequest\022\030\n\020"
     "file_to_generate\030\001 \003(\t\022\021\n\tparameter\030\002 \001("
     "\t\0228\n\nproto_file\030\017 \003(\0132$.google.protobuf."
-    "FileDescriptorProto\022;\n\020compiler_version\030"
-    "\003 \001(\0132!.google.protobuf.compiler.Version"
-    "\"\301\002\n\025CodeGeneratorResponse\022\r\n\005error\030\001 \001("
-    "\t\022\032\n\022supported_features\030\002 \001(\004\022B\n\004file\030\017 "
-    "\003(\01324.google.protobuf.compiler.CodeGener"
-    "atorResponse.File\032\177\n\004File\022\014\n\004name\030\001 \001(\t\022"
-    "\027\n\017insertion_point\030\002 \001(\t\022\017\n\007content\030\017 \001("
-    "\t\022\?\n\023generated_code_info\030\020 \001(\0132\".google."
-    "protobuf.GeneratedCodeInfo\"8\n\007Feature\022\020\n"
-    "\014FEATURE_NONE\020\000\022\033\n\027FEATURE_PROTO3_OPTION"
-    "AL\020\001Br\n\034com.google.protobuf.compilerB\014Pl"
-    "uginProtosZ)google.golang.org/protobuf/t"
-    "ypes/pluginpb\252\002\030Google.Protobuf.Compiler"
+    "FileDescriptorProto\022E\n\027source_file_descr"
+    "iptors\030\021 \003(\0132$.google.protobuf.FileDescr"
+    "iptorProto\022;\n\020compiler_version\030\003 \001(\0132!.g"
+    "oogle.protobuf.compiler.Version\"\301\002\n\025Code"
+    "GeneratorResponse\022\r\n\005error\030\001 \001(\t\022\032\n\022supp"
+    "orted_features\030\002 \001(\004\022B\n\004file\030\017 \003(\01324.goo"
+    "gle.protobuf.compiler.CodeGeneratorRespo"
+    "nse.File\032\177\n\004File\022\014\n\004name\030\001 \001(\t\022\027\n\017insert"
+    "ion_point\030\002 \001(\t\022\017\n\007content\030\017 \001(\t\022\?\n\023gene"
+    "rated_code_info\030\020 \001(\0132\".google.protobuf."
+    "GeneratedCodeInfo\"8\n\007Feature\022\020\n\014FEATURE_"
+    "NONE\020\000\022\033\n\027FEATURE_PROTO3_OPTIONAL\020\001Br\n\034c"
+    "om.google.protobuf.compilerB\014PluginProto"
+    "sZ)google.golang.org/protobuf/types/plug"
+    "inpb\252\002\030Google.Protobuf.Compiler"
 };
 static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_deps[1] =
     {
@@ -237,7 +242,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
     false,
     false,
-    800,
+    871,
     descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
     "google/protobuf/compiler/plugin.proto",
     &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
@@ -625,6 +630,9 @@ const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_Internal::co
 void CodeGeneratorRequest::clear_proto_file() {
   _internal_mutable_proto_file()->Clear();
 }
+void CodeGeneratorRequest::clear_source_file_descriptors() {
+  _internal_mutable_source_file_descriptors()->Clear();
+}
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -638,6 +646,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from) : :
       /*decltype(_impl_._cached_size_)*/ {},
       decltype(_impl_.file_to_generate_){from._impl_.file_to_generate_},
       decltype(_impl_.proto_file_){from._impl_.proto_file_},
+      decltype(_impl_.source_file_descriptors_){from._impl_.source_file_descriptors_},
       decltype(_impl_.parameter_){},
       decltype(_impl_.compiler_version_){nullptr},
   };
@@ -663,6 +672,7 @@ inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* arena) {
       /*decltype(_impl_._cached_size_)*/ {},
       decltype(_impl_.file_to_generate_){arena},
       decltype(_impl_.proto_file_){arena},
+      decltype(_impl_.source_file_descriptors_){arena},
       decltype(_impl_.parameter_){},
       decltype(_impl_.compiler_version_){nullptr},
   };
@@ -680,6 +690,7 @@ inline void CodeGeneratorRequest::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _internal_mutable_file_to_generate()->~RepeatedPtrField();
   _impl_.proto_file_.~RepeatedPtrField();
+  _impl_.source_file_descriptors_.~RepeatedPtrField();
   _impl_.parameter_.Destroy();
   if (this != internal_default_instance()) delete _impl_.compiler_version_;
 }
@@ -695,6 +706,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 
   _internal_mutable_file_to_generate()->Clear();
   _internal_mutable_proto_file()->Clear();
+  _internal_mutable_source_file_descriptors()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -717,16 +729,16 @@ const char* CodeGeneratorRequest::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
+const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_),
     0, // no _extensions_
-    15, 56,  // max_field_number, fast_idx_mask
+    17, 56,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294950904,  // skipmap
+    4294885368,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    4,  // num_field_entries
-    2,  // num_aux_entries
+    5,  // num_field_entries
+    3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     &_CodeGeneratorRequest_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
@@ -762,8 +774,12 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
     {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+    // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), -1, 2,
+    (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
     {::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>()},
+    {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
     {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
   }}, {{
     "\55\20\11\0\0\0\0\0"
@@ -812,6 +828,14 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
         InternalWriteMessage(15, repfield, repfield.GetCachedSize(), target, stream);
   }
 
+  // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_source_file_descriptors_size()); i < n; i++) {
+    const auto& repfield = this->_internal_source_file_descriptors().Get(i);
+    target = ::google::protobuf::internal::WireFormatLite::
+        InternalWriteMessage(17, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -838,6 +862,12 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   total_size += 1UL * this->_internal_proto_file_size();
   for (const auto& msg : this->_internal_proto_file()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+  }
+  // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+  total_size += 2UL * this->_internal_source_file_descriptors_size();
+  for (const auto& msg : this->_internal_source_file_descriptors()) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -877,6 +907,7 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
 
   _this->_internal_mutable_file_to_generate()->MergeFrom(from._internal_file_to_generate());
   _this->_internal_mutable_proto_file()->MergeFrom(from._internal_proto_file());
+  _this->_internal_mutable_source_file_descriptors()->MergeFrom(from._internal_source_file_descriptors());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -900,6 +931,8 @@ void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
 PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_proto_file()))
     return false;
+  if (!::google::protobuf::internal::AllAreInitialized(_internal_source_file_descriptors()))
+    return false;
   return true;
 }
 
@@ -912,6 +945,7 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
   _internal_mutable_file_to_generate()->InternalSwap(
       other->_internal_mutable_file_to_generate());
   _internal_mutable_proto_file()->InternalSwap(other->_internal_mutable_proto_file());
+  _internal_mutable_source_file_descriptors()->InternalSwap(other->_internal_mutable_source_file_descriptors());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, lhs_arena,
                                        &other->_impl_.parameter_, rhs_arena);
   swap(_impl_.compiler_version_, other->_impl_.compiler_version_);

@@ -2,7 +2,7 @@
 # Protocol Buffers Compiler
 ################################################################################
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "cc_test")
 load(
     "@rules_pkg//:mappings.bzl",
     "pkg_attributes",
@@ -22,6 +22,12 @@ proto_library(
         "//pkg:__pkg__",
     ],
     deps = ["//:descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "plugin_cc_proto",
+    visibility = ["//visibility:public"],
+    deps = [":plugin_proto"],
 )
 
 cc_library(
@@ -63,6 +69,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/io:io_win32",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
@@ -230,6 +237,17 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "fake_plugin",
+    testonly = True,
+    srcs = ["fake_plugin.cc"],
+    deps = [
+        ":plugin_cc_proto",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
 cc_test(
     name = "command_line_interface_unittest",
     srcs = ["command_line_interface_unittest.cc"],
@@ -241,9 +259,11 @@ cc_test(
         ],
     }) + [
         # Note: This only works on Windows with symlinks and runfiles enabled.
+        "-DGOOGLE_PROTOBUF_FAKE_PLUGIN_PATH=\\\"$(rootpath :fake_plugin)\\\"",
         "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"$(rootpath :test_plugin)\\\"",
     ],
     data = [
+        ":fake_plugin",
         ":test_plugin",
         "//:test_proto_srcs",
         "//src/google/protobuf:descriptor_proto_srcs",
@@ -419,6 +439,12 @@ filegroup(
         "//src/google/protobuf/compiler/python:test_srcs",
         "//src/google/protobuf/compiler/ruby:test_srcs",
     ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "fake_plugin_srcs",
+    srcs = ["fake_plugin.cc"],
     visibility = ["//pkg:__pkg__"],
 )
 

@@ -152,7 +152,10 @@ cc_library(
     hdrs = ["io_win32.h"],
     copts = COPTS,
     include_prefix = "google/protobuf/io",
-    visibility = ["//pkg:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
     deps = [
         "//src/google/protobuf:arena",
         "//src/google/protobuf/stubs:lite",

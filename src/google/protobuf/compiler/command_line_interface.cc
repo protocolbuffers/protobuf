@@ -2582,13 +2582,28 @@ bool CommandLineInterface::GeneratePluginOutput(
 
 
   absl::flat_hash_set<const FileDescriptor*> already_seen;
-  for (int i = 0; i < parsed_files.size(); i++) {
-    request.add_file_to_generate(parsed_files[i]->name());
-    GetTransitiveDependencies(parsed_files[i], &already_seen,
-                              request.mutable_proto_file(),
+  for (const FileDescriptor* file : parsed_files) {
+    request.add_file_to_generate(file->name());
+    GetTransitiveDependencies(file, &already_seen, request.mutable_proto_file(),
                               {/*.include_json_name =*/true,
                                /*.include_source_code_info =*/true,
                                /*.retain_options =*/true});
+  }
+
+  // Populate source_file_descriptors and remove source-retention options from
+  // proto_file.
+  ABSL_CHECK(!parsed_files.empty());
+  const DescriptorPool* pool = parsed_files[0]->pool();
+  absl::flat_hash_set<std::string> files_to_generate(input_files_.begin(),
+                                                     input_files_.end());
+  for (FileDescriptorProto& file_proto : *request.mutable_proto_file()) {
+    if (files_to_generate.contains(file_proto.name())) {
+      const FileDescriptor* file = pool->FindFileByName(file_proto.name());
+      *request.add_source_file_descriptors() = std::move(file_proto);
+      file_proto = StripSourceRetentionOptions(*file);
+      file->CopySourceCodeInfoTo(&file_proto);
+      file->CopyJsonNameTo(&file_proto);
+    }
   }
 
   google::protobuf::compiler::Version* version =
