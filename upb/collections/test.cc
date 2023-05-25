@@ -27,7 +27,9 @@
 
 #include "gtest/gtest.h"
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/collections/array.h"
+#include "upb/collections/map.h"
 #include "upb/upb.hpp"
 
 TEST(CollectionsTest, Arrays) {
@@ -57,4 +59,21 @@ TEST(CollectionsTest, Arrays) {
   EXPECT_EQ(upb_Array_Get(array, 3).int32_val, 9);
   EXPECT_EQ(upb_Array_Get(array, 4).int32_val, 0);
   EXPECT_EQ(upb_Array_Get(array, 5).int32_val, 0);
+}
+
+TEST(CollectionsTest, MapDeleteRegression) {
+  upb::Arena arena;
+  upb_Map* map = upb_Map_New(arena.ptr(), kUpb_CType_Int32, kUpb_CType_String);
+  upb_MessageValue key = {.int32_val = 0};
+  const char str[] = "abcde";
+  upb_MessageValue insert_value = {.str_val = upb_StringView_FromString(str)};
+  upb_MapInsertStatus st = upb_Map_Insert(map, key, insert_value, arena.ptr());
+  EXPECT_EQ(kUpb_MapInsertStatus_Inserted, st);
+
+  upb_MessageValue delete_value;
+  bool removed = upb_Map_Delete(map, key, &delete_value);
+  EXPECT_TRUE(removed);
+
+  EXPECT_TRUE(
+      upb_StringView_IsEqual(insert_value.str_val, delete_value.str_val));
 }
