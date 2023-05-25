@@ -447,7 +447,7 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
   upb_MtDecoder_CheckOutOfMemory(d, subs);
   uint32_t i = 0;
   for (; i < sub_counts.submsg_count; i++) {
-    subs[i].submsg = NULL;  // &kUpb_MiniTable_Empty;
+    subs[i].submsg = &_kUpb_MiniTable_Empty;
   }
   if (sub_counts.subenum_count) {
     upb_MiniTableField* f = d->fields;
@@ -1062,6 +1062,9 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
 
   upb_MiniTableSub* table_sub =
       (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
+  // TODO(haberman): Add this assert back once YouTube is updated to not call
+  // this function repeatedly.
+  // UPB_ASSERT(table_sub->submsg == &_kUpb_MiniTable_Empty);
   table_sub->submsg = sub;
   return true;
 }

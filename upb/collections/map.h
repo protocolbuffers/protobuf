@@ -103,6 +103,11 @@ UPB_INLINE bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key,
 UPB_API bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
                           upb_MessageValue* val, size_t* iter);
 
+// Sets the value for the entry pointed to by iter.
+// WARNING: this does not currently work for string values!
+UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
+                                   upb_MessageValue val);
+
 // DEPRECATED iterator, slated for removal.
 
 /* Map iteration:

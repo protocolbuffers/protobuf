@@ -100,6 +100,7 @@ bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a);
 bool upb_strtable_next2(const upb_strtable* t, upb_StringView* key,
                         upb_value* val, intptr_t* iter);
 void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter);
+void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v);
 
 /* DEPRECATED iterators, slated for removal.
  *

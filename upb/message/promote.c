@@ -121,37 +121,6 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   return kUpb_GetExtension_Ok;
 }
 
-upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
-    const upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int encode_options, upb_Arena* arena, const char** extension_data,
-    size_t* len) {
-  const upb_Message_Extension* msg_ext = _upb_Message_Getext(msg, ext_table);
-  UPB_ASSERT(upb_MiniTableField_CType(&ext_table->field) == kUpb_CType_Message);
-  if (msg_ext) {
-    upb_EncodeStatus status =
-        upb_Encode(msg_ext->data.ptr, msg_ext->ext->sub.submsg, encode_options,
-                   arena, (char**)extension_data, len);
-    if (status != kUpb_EncodeStatus_Ok) {
-      return kUpb_GetExtensionAsBytes_EncodeError;
-    }
-    return kUpb_GetExtensionAsBytes_Ok;
-  }
-  int field_number = ext_table->field.number;
-  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(
-      msg, field_number, upb_DecodeOptions_GetMaxDepth(encode_options));
-  if (result.status != kUpb_FindUnknown_Ok) {
-    return kUpb_GetExtensionAsBytes_NotPresent;
-  }
-  const char* data = result.ptr;
-  uint32_t tag;
-  uint64_t message_len = 0;
-  data = upb_WireReader_ReadTag(data, &tag);
-  data = upb_WireReader_ReadVarint(data, &message_len);
-  *extension_data = data;
-  *len = message_len;
-  return kUpb_GetExtensionAsBytes_Ok;
-}
-
 static upb_FindUnknownRet upb_FindUnknownRet_ParseError(void) {
   return (upb_FindUnknownRet){.status = kUpb_FindUnknown_ParseError};
 }
@@ -189,6 +158,80 @@ upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
   ret.len = 0;
   return ret;
 }
+
+static upb_DecodeStatus upb_Message_PromoteOne(upb_TaggedMessagePtr* tagged,
+                                               const upb_MiniTable* mini_table,
+                                               int decode_options,
+                                               upb_Arena* arena) {
+  upb_Message* empty = _upb_TaggedMessagePtr_GetEmptyMessage(*tagged);
+  size_t unknown_size;
+  const char* unknown_data = upb_Message_GetUnknown(empty, &unknown_size);
+  upb_Message* promoted = upb_Message_New(mini_table, arena);
+  if (!promoted) return kUpb_DecodeStatus_OutOfMemory;
+  upb_DecodeStatus status = upb_Decode(unknown_data, unknown_size, promoted,
+                                       mini_table, NULL, decode_options, arena);
+  if (status == kUpb_DecodeStatus_Ok) {
+    *tagged = _upb_TaggedMessagePtr_Pack(promoted, false);
+  }
+  return status;
+}
+
+upb_DecodeStatus upb_Message_PromoteMessage(upb_Message* parent,
+                                            const upb_MiniTable* mini_table,
+                                            const upb_MiniTableField* field,
+                                            int decode_options,
+                                            upb_Arena* arena,
+                                            upb_Message** promoted) {
+  const upb_MiniTable* sub_table =
+      upb_MiniTable_GetSubMessageTable(mini_table, field);
+  UPB_ASSERT(sub_table);
+  upb_TaggedMessagePtr tagged =
+      upb_Message_GetTaggedMessagePtr(parent, field, NULL);
+  upb_DecodeStatus ret =
+      upb_Message_PromoteOne(&tagged, sub_table, decode_options, arena);
+  if (ret == kUpb_DecodeStatus_Ok) {
+    *promoted = upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
+    upb_Message_SetMessage(parent, mini_table, field, *promoted);
+  }
+  return ret;
+}
+
+upb_DecodeStatus upb_Array_PromoteMessages(upb_Array* arr,
+                                           const upb_MiniTable* mini_table,
+                                           int decode_options,
+                                           upb_Arena* arena) {
+  void** data = _upb_array_ptr(arr);
+  size_t size = arr->size;
+  for (size_t i = 0; i < size; i++) {
+    upb_TaggedMessagePtr tagged;
+    memcpy(&tagged, &data[i], sizeof(tagged));
+    if (!upb_TaggedMessagePtr_IsEmpty(tagged)) continue;
+    upb_DecodeStatus status =
+        upb_Message_PromoteOne(&tagged, mini_table, decode_options, arena);
+    if (status != kUpb_DecodeStatus_Ok) return status;
+    memcpy(&data[i], &tagged, sizeof(tagged));
+  }
+  return kUpb_DecodeStatus_Ok;
+}
+
+upb_DecodeStatus upb_Map_PromoteMessages(upb_Map* map,
+                                         const upb_MiniTable* mini_table,
+                                         int decode_options, upb_Arena* arena) {
+  size_t iter = kUpb_Map_Begin;
+  upb_MessageValue key, val;
+  while (upb_Map_Next(map, &key, &val, &iter)) {
+    if (!upb_TaggedMessagePtr_IsEmpty(val.tagged_msg_val)) continue;
+    upb_DecodeStatus status = upb_Message_PromoteOne(
+        &val.tagged_msg_val, mini_table, decode_options, arena);
+    if (status != kUpb_DecodeStatus_Ok) return status;
+    upb_Map_SetEntryValue(map, iter, val);
+  }
+  return kUpb_DecodeStatus_Ok;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OLD promotion functions, will be removed!
+////////////////////////////////////////////////////////////////////////////////
 
 // Warning: See TODO(b/267655898)
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(

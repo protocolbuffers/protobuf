@@ -254,28 +254,46 @@ UPB_API_INLINE bool upb_Message_SetString(upb_Message* msg,
   return _upb_Message_SetField(msg, field, &value, a);
 }
 
-UPB_API_INLINE const upb_Message* upb_Message_GetMessage(
+UPB_API_INLINE upb_TaggedMessagePtr upb_Message_GetTaggedMessagePtr(
     const upb_Message* msg, const upb_MiniTableField* field,
     upb_Message* default_val) {
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) ==
              UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
   UPB_ASSUME(!upb_IsRepeatedOrMap(field));
-  upb_Message* ret;
-  _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
-  return ret;
+  upb_TaggedMessagePtr tagged;
+  _upb_Message_GetNonExtensionField(msg, field, &default_val, &tagged);
+  return tagged;
 }
 
-UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
-                                           const upb_MiniTable* mini_table,
-                                           const upb_MiniTableField* field,
-                                           upb_Message* sub_message) {
+UPB_API_INLINE const upb_Message* upb_Message_GetMessage(
+    const upb_Message* msg, const upb_MiniTableField* field,
+    upb_Message* default_val) {
+  upb_TaggedMessagePtr tagged =
+      upb_Message_GetTaggedMessagePtr(msg, field, default_val);
+  return upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
+}
+
+// For internal use only; users cannot set tagged messages because only the
+// parser and the message copier are allowed to directly create an empty
+// message.
+UPB_API_INLINE void _upb_Message_SetTaggedMessagePtr(
+    upb_Message* msg, const upb_MiniTable* mini_table,
+    const upb_MiniTableField* field, upb_TaggedMessagePtr sub_message) {
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) ==
              UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
   UPB_ASSUME(!upb_IsRepeatedOrMap(field));
   UPB_ASSERT(mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg);
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
+}
+
+UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
+                                           const upb_MiniTable* mini_table,
+                                           const upb_MiniTableField* field,
+                                           upb_Message* sub_message) {
+  _upb_Message_SetTaggedMessagePtr(
+      msg, mini_table, field, _upb_TaggedMessagePtr_Pack(sub_message, false));
 }
 
 UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
@@ -336,10 +354,16 @@ UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
 UPB_API_INLINE const upb_Map* upb_Message_GetMap(
     const upb_Message* msg, const upb_MiniTableField* field) {
   _upb_MiniTableField_CheckIsMap(field);
+  _upb_Message_AssertMapIsUntagged(msg, field);
   upb_Map* ret;
   const upb_Map* default_val = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
   return ret;
+}
+
+UPB_API_INLINE upb_Map* upb_Message_GetMutableMap(
+    upb_Message* msg, const upb_MiniTableField* field) {
+  return (upb_Map*)upb_Message_GetMap(msg, field);
 }
 
 UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(

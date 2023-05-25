@@ -77,11 +77,14 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
       return true;
     } break;
     case kUpb_CType_Message: {
-      UPB_ASSERT(sub);
-      const upb_Message* source = *(upb_Message**)value;
+      const upb_TaggedMessagePtr source = *(upb_TaggedMessagePtr*)value;
+      bool is_empty = upb_TaggedMessagePtr_IsEmpty(source);
+      if (is_empty) sub = &_kUpb_MiniTable_Empty;
       UPB_ASSERT(source);
-      upb_Message* clone = upb_Message_DeepClone(source, sub, arena);
-      *(upb_Message**)value = clone;
+      upb_Message* clone = upb_Message_DeepClone(
+          _upb_TaggedMessagePtr_GetMessage(source), sub, arena);
+      *(upb_TaggedMessagePtr*)value =
+          _upb_TaggedMessagePtr_Pack(clone, is_empty);
       return clone != NULL;
     } break;
   }
@@ -198,17 +201,26 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
     if (!upb_IsRepeatedOrMap(field)) {
       switch (upb_MiniTableField_CType(field)) {
         case kUpb_CType_Message: {
+          upb_TaggedMessagePtr tagged =
+              upb_Message_GetTaggedMessagePtr(src, field, NULL);
           const upb_Message* sub_message =
-              upb_Message_GetMessage(src, field, NULL);
+              _upb_TaggedMessagePtr_GetMessage(tagged);
           if (sub_message != NULL) {
+            // If the message is currently in an unlinked, "empty" state we keep
+            // it that way, because we don't want to deal with decode options,
+            // decode status, or possible parse failure here.
+            bool is_empty = upb_TaggedMessagePtr_IsEmpty(tagged);
             const upb_MiniTable* sub_message_table =
-                upb_MiniTable_GetSubMessageTable(mini_table, field);
+                is_empty ? &_kUpb_MiniTable_Empty
+                         : upb_MiniTable_GetSubMessageTable(mini_table, field);
             upb_Message* dst_sub_message =
                 upb_Message_DeepClone(sub_message, sub_message_table, arena);
             if (dst_sub_message == NULL) {
               return NULL;
             }
-            upb_Message_SetMessage(dst, mini_table, field, dst_sub_message);
+            _upb_Message_SetTaggedMessagePtr(
+                dst, mini_table, field,
+                _upb_TaggedMessagePtr_Pack(dst_sub_message, is_empty));
           }
         } break;
         case kUpb_CType_String:

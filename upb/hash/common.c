@@ -866,3 +866,8 @@ void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
   ent->key = 0;
   ent->next = NULL;
 }
+
+void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
+  upb_tabent* ent = &t->t.entries[iter];
+  ent->val.val = v.val;
+}

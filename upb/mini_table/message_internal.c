@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2021, Google LLC
+ * Copyright (c) 2023, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,49 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Users should include array.h or map.h instead.
-// IWYU pragma: private, include "upb/collections/array.h"
+#include "upb/mini_table/message_internal.h"
 
-#ifndef UPB_MESSAGE_VALUE_H_
-#define UPB_MESSAGE_VALUE_H_
-
-#include "upb/base/string_view.h"
-#include "upb/mini_table/types.h"
-
-// Must be last.
-#include "upb/port/def.inc"
-
-typedef struct upb_Array upb_Array;
-typedef struct upb_Map upb_Map;
-
-typedef uintptr_t upb_TaggedMessagePtr;
-
-typedef union {
-  bool bool_val;
-  float float_val;
-  double double_val;
-  int32_t int32_val;
-  int64_t int64_val;
-  uint32_t uint32_val;
-  uint64_t uint64_val;
-  const upb_Array* array_val;
-  const upb_Map* map_val;
-  const upb_Message* msg_val;
-  upb_StringView str_val;
-
-  // EXPERIMENTAL: A tagged upb_Message*.  Users must use this instead of
-  // msg_val if unlinked sub-messages may possibly be in use.  See the
-  // documentation in kUpb_DecodeOption_ExperimentalAllowUnlinked for more
-  // information.
-  upb_TaggedMessagePtr tagged_msg_val;
-} upb_MessageValue;
-
-typedef union {
-  upb_Array* array;
-  upb_Map* map;
-  upb_Message* msg;
-} upb_MutableMessageValue;
-
-#include "upb/port/undef.inc"
-
-#endif /* UPB_MESSAGE_VALUE_H_ */
+const upb_MiniTable _kUpb_MiniTable_Empty = {
+    .subs = NULL,
+    .fields = NULL,
+    .size = 0,
+    .field_count = 0,
+    .ext = kUpb_ExtMode_NonExtendable,
+    .dense_below = 0,
+    .table_mask = -1,
+    .required_count = 0,
+};

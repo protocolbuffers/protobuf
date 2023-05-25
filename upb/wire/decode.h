@@ -64,6 +64,41 @@ enum {
    *    implemting ParseFromString() semantics.  For MergeFromString(), a
    *    post-parse validation step will always be necessary. */
   kUpb_DecodeOption_CheckRequired = 2,
+
+  /* EXPERIMENTAL:
+   *
+   * If set, the parser will allow parsing of sub-message fields that were not
+   * previously linked using upb_MiniTable_SetSubMessage().  The data will be
+   * parsed into an internal "empty" message type that cannot be accessed
+   * directly, but can be later promoted into the true message type if the
+   * sub-message fields are linked at a later time.
+   *
+   * Users should set this option if they intend to perform dynamic tree shaking
+   * and promoting using the interfaces in message/promote.h.  If this option is
+   * enabled, it is important that the resulting messages are only accessed by
+   * code that is aware of promotion rules:
+   *
+   * 1. Message pointers in upb_Message, upb_Array, and upb_Map are represented
+   *    by a tagged pointer upb_TaggedMessagePointer.  The tag indicates whether
+   *    the message uses the internal "empty" type.
+   *
+   * 2. Any code *reading* these message pointers must test whether the "empty"
+   *    tag bit is set, using the interfaces in mini_table/types.h.  However
+   *    writing of message pointers should always use plain upb_Message*, since
+   *    users are not allowed to create "empty" messages.
+   *
+   * 3. It is always safe to test whether a field is present or test the array
+   *    length; these interfaces will reflect that empty messages are present,
+   *    even though their data cannot be accessed without promoting first.
+   *
+   * 4. If a message pointer is indeed tagged as empty, the message may not be
+   *    accessed directly, only promoted through the interfaces in
+   *    message/promote.h.
+   *
+   * 5. Tagged/empty messages may never be created by the user.  They may only
+   *    be created by the parser or the message-copying logic in message/copy.h.
+   */
+  kUpb_DecodeOption_ExperimentalAllowUnlinked = 4,
 };
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
@@ -92,6 +127,11 @@ typedef enum {
   // kUpb_DecodeOption_CheckRequired failed (see above), but the parse otherwise
   // succeeded.
   kUpb_DecodeStatus_MissingRequired = 5,
+
+  // Unlinked sub-message field was present, but
+  // kUpb_DecodeOptions_ExperimentalAllowUnlinked was not specified in the list
+  // of options.
+  kUpb_DecodeStatus_UnlinkedSubMessage = 6,
 } upb_DecodeStatus;
 
 UPB_API upb_DecodeStatus upb_Decode(const char* buf, size_t size,

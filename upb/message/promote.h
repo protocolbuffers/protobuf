@@ -28,7 +28,9 @@
 #ifndef UPB_MESSAGE_PROMOTE_H_
 #define UPB_MESSAGE_PROMOTE_H_
 
+#include "upb/collections/array.h"
 #include "upb/message/extension_internal.h"
+#include "upb/wire/decode.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -90,6 +92,53 @@ typedef struct {
   upb_UnknownToMessage_Status status;
   upb_Message* message;
 } upb_UnknownToMessageRet;
+
+// Promotes an "empty" non-repeated message field in `parent` to a message of
+// the correct type.
+//
+// Preconditions:
+//
+// 1. The message field must currently be in the "empty" state (this must have
+//    been previously verified by the caller by calling
+//    `upb_Message_GetTaggedMessagePtr()` and observing that the message is
+//    indeed empty).
+//
+// 2. This `field` must have previously been linked.
+//
+// If the promotion succeeds, `parent` will have its data for `field` replaced
+// by the promoted message, which is also returned in `*promoted`.  If the
+// return value indicates an error status, `parent` and `promoted` are
+// unchanged.
+upb_DecodeStatus upb_Message_PromoteMessage(upb_Message* parent,
+                                            const upb_MiniTable* mini_table,
+                                            const upb_MiniTableField* field,
+                                            int decode_options,
+                                            upb_Arena* arena,
+                                            upb_Message** promoted);
+
+// Promotes any "empty" messages in this array to a message of the correct type
+// `mini_table`.  This function should only be called for arrays of messages.
+//
+// If the return value indicates an error status, some but not all elements may
+// have been promoted, but the array itself will not be corrupted.
+upb_DecodeStatus upb_Array_PromoteMessages(upb_Array* arr,
+                                           const upb_MiniTable* mini_table,
+                                           int decode_options,
+                                           upb_Arena* arena);
+
+// Promotes any "empty" entries in this map to a message of the correct type
+// `mini_table`.  This function should only be called for maps that have a
+// message type as the map value.
+//
+// If the return value indicates an error status, some but not all elements may
+// have been promoted, but the map itself will not be corrupted.
+upb_DecodeStatus upb_Map_PromoteMessages(upb_Map* map,
+                                         const upb_MiniTable* mini_table,
+                                         int decode_options, upb_Arena* arena);
+
+////////////////////////////////////////////////////////////////////////////////
+// OLD promotion interfaces, will be removed!
+////////////////////////////////////////////////////////////////////////////////
 
 // Promotes unknown data inside message to a upb_Message parsing the unknown.
 //

@@ -55,6 +55,7 @@ message EmptyMessageWithExtensions {
 message ModelWithExtensions {
   optional int32 random_int32 = 3;
   optional string random_name = 4;
+  repeated int32 repeated_int32 = 5;
   // Reserved for unknown fields/extensions test.
   extensions 1000 to max;
 }
@@ -87,6 +88,7 @@ message ModelWithMaps {
   optional int32 id = 1;
   map<string, string> map_ss = 3;
   map<int32, int32> map_ii = 4;
+  map<int32, ModelWithExtensions> map_im = 5;
 }
 
 message ExtremeDefaults {

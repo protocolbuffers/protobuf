@@ -210,6 +210,7 @@ cc_library(
         "upb/mini_table/decode.c",
         "upb/mini_table/encode.c",
         "upb/mini_table/extension_registry.c",
+        "upb/mini_table/message_internal.c",
     ],
     hdrs = [
         "upb/mini_table/common.h",
@@ -266,6 +267,21 @@ cc_library(
         ":base",
         ":hash",
         ":mem",
+        ":mini_table_internal",
+        ":port",
+    ],
+)
+
+cc_library(
+    name = "message_accessors_internal",
+    hdrs = [
+        "upb/message/accessors_internal.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:friends"],
+    deps = [
+        ":collections_internal",
+        ":message_internal",
         ":mini_table_internal",
         ":port",
     ],
@@ -394,6 +410,7 @@ cc_test(
     deps = [
         ":collections",
         ":message_accessors",
+        ":message_copy",
         ":message_promote",
         ":mini_table_internal",
         ":port",
@@ -978,6 +995,7 @@ cc_library(
         ":eps_copy_input_stream",
         ":hash",
         ":mem_internal",
+        ":message_accessors_internal",
         ":message_internal",
         ":mini_table_internal",
         ":port",

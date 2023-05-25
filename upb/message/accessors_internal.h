@@ -28,7 +28,6 @@
 #ifndef UPB_MESSAGE_ACCESSORS_INTERNAL_H_
 #define UPB_MESSAGE_ACCESSORS_INTERNAL_H_
 
-#include "upb/collections/array.h"
 #include "upb/collections/map_internal.h"
 #include "upb/message/extension_internal.h"
 #include "upb/message/internal.h"
@@ -296,10 +295,22 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
                                field);
 }
 
+UPB_INLINE void _upb_Message_AssertMapIsUntagged(
+    const upb_Message* msg, const upb_MiniTableField* field) {
+  _upb_MiniTableField_CheckIsMap(field);
+#ifndef NDEBUG
+  upb_TaggedMessagePtr default_val = 0;
+  upb_TaggedMessagePtr tagged;
+  _upb_Message_GetNonExtensionField(msg, field, &default_val, &tagged);
+  UPB_ASSERT(!upb_TaggedMessagePtr_IsEmpty(tagged));
+#endif
+}
+
 UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
     upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
   _upb_MiniTableField_CheckIsMap(field);
+  _upb_Message_AssertMapIsUntagged(msg, field);
   upb_Map* map = NULL;
   upb_Map* default_map_value = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
