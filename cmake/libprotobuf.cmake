@@ -27,6 +27,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 endif()
 target_include_directories(libprotobuf PUBLIC ${protobuf_SOURCE_DIR}/src)
 target_link_libraries(libprotobuf PUBLIC ${protobuf_ABSL_USED_TARGETS})
+target_compile_features(libprotobuf PUBLIC cxx_std_14)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf
     PUBLIC  PROTOBUF_USE_DLLS

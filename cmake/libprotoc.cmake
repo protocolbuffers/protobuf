@@ -17,6 +17,7 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
 endif()
 target_link_libraries(libprotoc PRIVATE libprotobuf)
 target_link_libraries(libprotoc PUBLIC ${protobuf_ABSL_USED_TARGETS})
+target_compile_features(libprotoc PUBLIC cxx_std_14)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
     PUBLIC  PROTOBUF_USE_DLLS
