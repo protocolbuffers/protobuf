@@ -244,6 +244,47 @@ TEST(RetentionTest, StripSourceRetentionOptionsWithSourceCodeInfo) {
   EXPECT_EQ(stripped_file.source_code_info().location_size(), 63);
 }
 
+TEST(RetentionTest, RemoveEmptyOptions) {
+  // If an options message is completely empty after stripping, that message
+  // should be removed.
+  std::string proto_file =
+      absl::Substitute(R"(
+      syntax = "proto2";
+
+      package google.protobuf.internal;
+
+      import "$0";
+
+      message Extendee {
+        extensions 1 to max [declaration = {
+          number: 1,
+          full_name: ".my.ext",
+          type: ".my.Message",
+        }];
+      })",
+                       FileDescriptorSet::descriptor()->file()->name());
+  io::ArrayInputStream input_stream(proto_file.data(),
+                                    static_cast<int>(proto_file.size()));
+  io::ErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  FileDescriptorProto file_descriptor;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &file_descriptor));
+  file_descriptor.set_name("retention.proto");
+
+  DescriptorPool pool;
+  FileDescriptorProto descriptor_proto_descriptor;
+  FileDescriptorSet::descriptor()->file()->CopyTo(&descriptor_proto_descriptor);
+  pool.BuildFile(descriptor_proto_descriptor);
+  pool.BuildFile(file_descriptor);
+
+  FileDescriptorProto stripped_file = compiler::StripSourceRetentionOptions(
+      *pool.FindFileByName("retention.proto"));
+  ASSERT_EQ(stripped_file.message_type_size(), 1);
+  ASSERT_EQ(stripped_file.message_type(0).extension_range_size(), 1);
+  EXPECT_FALSE(stripped_file.message_type(0).extension_range(0).has_options());
+}
+
 TEST(RetentionTest, InvalidDescriptor) {
   // This test creates an invalid descriptor and makes sure we can strip its
   // options without crashing.

@@ -37,6 +37,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/match.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -46,6 +47,15 @@ namespace protobuf {
 namespace compiler {
 
 namespace {
+
+bool IsOptionsProto(const Message& m) {
+  const Descriptor* descriptor = m.GetDescriptor();
+  return descriptor->file()->name() ==
+             DescriptorProto::descriptor()->file()->name() &&
+         absl::EndsWith(descriptor->name(), "Options");
+}
+
+bool IsEmpty(const Message& m) { return m.ByteSizeLong() == 0; }
 
 // Recursively strips any options with source retention from the message. If
 // stripped_paths is not null, then this function will populate it with the
@@ -74,8 +84,18 @@ void StripMessage(Message& m, std::vector<int>& path,
           path.pop_back();
         }
       } else {
-        StripMessage(*reflection->MutableMessage(&m, field), path,
-                     stripped_paths);
+        Message* child = reflection->MutableMessage(&m, field);
+        bool was_nonempty_options_proto =
+            IsOptionsProto(*child) && !IsEmpty(*child);
+        StripMessage(*child, path, stripped_paths);
+        // If this is an options message that became empty due to retention
+        // stripping, remove it.
+        if (was_nonempty_options_proto && IsEmpty(*child)) {
+          reflection->ClearField(&m, field);
+          if (stripped_paths != nullptr) {
+            stripped_paths->push_back(path);
+          }
+        }
       }
     }
     path.pop_back();
