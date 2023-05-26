@@ -389,7 +389,7 @@ namespace Google.Protobuf
                     SingleUint32 = 2000
                 }
             };
-            Merge(new FieldMaskTree().AddFieldPath("payload.singleint32").AddFieldPath("payload.singleuint32"),
+            Merge(new FieldMaskTree().AddFieldPath("payload.single_int32").AddFieldPath("payload.single_uint32"),
                     clearedSource, destination, options, useDynamicMessage);
             Assert.AreEqual(1000, destination.Payload.SingleInt32);
             Assert.AreEqual(2000, destination.Payload.SingleUint32);
