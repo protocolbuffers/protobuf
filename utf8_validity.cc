@@ -133,6 +133,7 @@ size_t ValidUTF8Span(const char* data, const char* end) {
   return err_pos + (1 - ReturnPosition);
 }
 
+#ifdef __SSE4_1__
 /* Returns the number of bytes needed to skip backwards to get to the first
    byte of codepoint.
  */
@@ -148,6 +149,7 @@ inline int CodepointSkipBackwards(int32_t codepoint_word) {
   }
   return 0;
 }
+#endif  // __SSE4_1__
 
 /* Skipping over ASCII as much as possible, per 8 bytes. It is intentional
    as most strings to check for validity consist only of 1 byte codepoints.

@@ -29,8 +29,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Bazel
+        run: |
+          echo "BAZEL=bazel" >> $GITHUB_ENV
+          echo "USE_BAZEL_VERSION=5.1.1" >> $GITHUB_ENV
+      - name: Setup Bazel (macOS)
+        if: runner.os == 'macOS'
+        run: echo "BAZEL=bazelisk" >> $GITHUB_ENV
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y ${{ matrix.install }}
         if: matrix.install != ''
       - name: Run tests
-        run: cd ${{ github.workspace }} && CC=${{ matrix.CC }} bazel test --test_output=errors ... ${{ matrix.flags }}
+        run: cd ${{ github.workspace }} && CC=${{ matrix.CC }} ${{ env.BAZEL }} test --test_output=errors ... ${{ matrix.flags }}
