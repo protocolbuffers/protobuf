@@ -36,6 +36,7 @@ package com.google.protobuf;
  */
 @CheckReturnValue
 final class RawMessageInfo implements MessageInfo {
+  private static final int IS_PROTO2_BIT = 0x1;
 
   private final MessageLite defaultInstance;
 
@@ -60,7 +61,7 @@ final class RawMessageInfo implements MessageInfo {
    * <p>The integer sequence encoded in the String object has the following layout:
    *
    * <ul>
-   *   <li>[0]: flags, flags & 0x1 = is proto2?, flags & 0x2 = is message?.
+   *   <li>[0]: flags, flags & 0x1 = is proto2?, flags & 0x2 = is message?
    *   <li>[1]: field count, if 0, this is the end of the integer sequence and the corresponding
    *       Object[] array should be null.
    *   <li>[2]: oneof count
@@ -84,7 +85,7 @@ final class RawMessageInfo implements MessageInfo {
    *         <li>v & 0x0100 = is required?
    *         <li>v & 0x0200 = is checkUtf8?
    *         <li>v & 0x0400 = needs isInitialized check?
-   *         <li>v & 0x0800 = is map field with proto2 enum value?
+   *         <li>v & 0x0800 = is enum field or map field enum value with legacy closedness?
    *         <li>v & 0x1000 = supports presence checking?
    *       </ul>
    * </ul>
@@ -212,7 +213,11 @@ final class RawMessageInfo implements MessageInfo {
 
   @Override
   public ProtoSyntax getSyntax() {
-    return (flags & 0x1) == 0x1 ? ProtoSyntax.PROTO2 : ProtoSyntax.PROTO3;
+    if ((flags & IS_PROTO2_BIT) != 0) {
+      return ProtoSyntax.PROTO2;
+    } else {
+      return ProtoSyntax.PROTO3;
+    }
   }
 
   @Override
