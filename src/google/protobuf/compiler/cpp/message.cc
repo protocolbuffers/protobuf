@@ -330,12 +330,15 @@ bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
   return false;
 }
 
-// Collects neighboring fields based on a given criteria (equivalent predicate).
+using FieldChunk = std::vector<const FieldDescriptor*>;
+using ChunkRun = std::vector<FieldChunk>;
+
+// Breaks down a single chunk of fields into a few chunks that share attributes
+// controlled by "equivalent" predicate. Returns an array of chunks.
 template <typename Predicate>
-std::vector<std::vector<const FieldDescriptor*>> CollectFields(
-    const std::vector<const FieldDescriptor*>& fields,
-    const Predicate& equivalent) {
-  std::vector<std::vector<const FieldDescriptor*>> chunks;
+std::vector<FieldChunk> CollectFields(const FieldChunk& fields,
+                                      const Predicate& equivalent) {
+  std::vector<FieldChunk> chunks;
   for (auto field : fields) {
     if (chunks.empty() || !equivalent(chunks.back().back(), field)) {
       chunks.emplace_back();
@@ -343,6 +346,21 @@ std::vector<std::vector<const FieldDescriptor*>> CollectFields(
     chunks.back().push_back(field);
   }
   return chunks;
+}
+
+// Breaks down a single run of chunks into a few runs that share attributes
+// controlled by "equivalent" predicate. Returns an array of runs.
+template <typename Predicate>
+std::vector<ChunkRun> CollectChunks(const ChunkRun& chunks,
+                                    const Predicate& equivalent) {
+  std::vector<ChunkRun> runs;
+  for (const auto& chunk : chunks) {
+    if (runs.empty() || !equivalent(runs.back().back(), chunk)) {
+      runs.emplace_back();
+    }
+    runs.back().push_back(chunk);
+  }
+  return runs;
 }
 
 // Returns a bit mask based on has_bit index of "fields" that are typically on
@@ -2993,7 +3011,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   bool merge_zero_init = zero_init_bytes > kMaxUnconditionalPrimitiveBytesClear;
   int chunk_count = 0;
 
-  std::vector<std::vector<const FieldDescriptor*>> chunks = CollectFields(
+  std::vector<FieldChunk> chunks = CollectFields(
       optimized_order_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         chunk_count++;
@@ -3009,124 +3027,139 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         return same;
       });
 
-  ColdChunkSkipper cold_skipper(descriptor_, options_, chunks, has_bit_indices_,
-                                kColdRatio);
+  // This guarantees that all chunks in a run share the same split and has_bit
+  // attributes.
+  std::vector<ChunkRun> runs = CollectChunks(
+      chunks, [&](const FieldChunk& a, const FieldChunk& b) -> bool {
+        const FieldDescriptor* fa = a.front();
+        const FieldDescriptor* fb = b.front();
+        return (HasBitIndex(fa) != kNoHasbit) ==
+                   (HasBitIndex(fb) != kNoHasbit) &&
+               ShouldSplit(fa, options_) == ShouldSplit(fb, options_);
+      });
+
   int cached_has_word_index = -1;
-  bool first_split_chunk_processed = false;
-  for (size_t chunk_index = 0; chunk_index < chunks.size(); chunk_index++) {
-    std::vector<const FieldDescriptor*>& chunk = chunks[chunk_index];
-    cold_skipper.OnStartChunk(chunk_index, cached_has_word_index, "", p);
+  for (auto& run : runs) {
+    ColdChunkSkipper cold_skipper(descriptor_, options_, run, has_bit_indices_,
+                                  kColdRatio);
+    bool first_split_chunk_processed = false;
+    for (int chunk_index = 0, run_size = static_cast<int>(run.size());
+         chunk_index < run_size; chunk_index++) {
+      std::vector<const FieldDescriptor*>& chunk = run[chunk_index];
+      cold_skipper.OnStartChunk(chunk_index, cached_has_word_index, "", p);
 
-    const FieldDescriptor* memset_start = nullptr;
-    const FieldDescriptor* memset_end = nullptr;
-    bool saw_non_zero_init = false;
-    bool chunk_is_split =
-        !chunk.empty() && ShouldSplit(chunk.front(), options_);
-    // All chunks after the first split chunk should also be split.
-    ABSL_CHECK(!first_split_chunk_processed || chunk_is_split);
-    if (chunk_is_split && !first_split_chunk_processed) {
-      // Some fields are cleared without checking has_bit. So we add the
-      // condition here to avoid writing to the default split instance.
-      format("if (!IsSplitMessageDefault()) {\n");
-      format.Indent();
-      first_split_chunk_processed = true;
-    }
-
-    for (const auto& field : chunk) {
-      if (CanClearByZeroing(field)) {
-        ABSL_CHECK(!saw_non_zero_init);
-        if (!memset_start) memset_start = field;
-        memset_end = field;
-      } else {
-        saw_non_zero_init = true;
+      const FieldDescriptor* memset_start = nullptr;
+      const FieldDescriptor* memset_end = nullptr;
+      bool saw_non_zero_init = false;
+      bool chunk_is_split =
+          !chunk.empty() && ShouldSplit(chunk.front(), options_);
+      // All or none of the cunks in a run are split.
+      ABSL_CHECK(!first_split_chunk_processed || chunk_is_split);
+      if (chunk_is_split && !first_split_chunk_processed) {
+        // Some fields are cleared without checking has_bit. So we add the
+        // condition here to avoid writing to the default split instance.
+        format("if (!IsSplitMessageDefault()) {\n");
+        format.Indent();
+        first_split_chunk_processed = true;
       }
-    }
 
-    // Whether we wrap this chunk in:
-    //   if (cached_has_bits & <chunk hasbits) { /* chunk. */ }
-    // We can omit the if() for chunk size 1, or if our fields do not have
-    // hasbits. I don't understand the rationale for the last part of the
-    // condition, but it matches the old logic.
-    const bool have_outer_if = HasBitIndex(chunk.front()) != kNoHasbit &&
-                               chunk.size() > 1 &&
-                               (memset_end != chunk.back() || merge_zero_init);
-
-    if (have_outer_if) {
-      // Emit an if() that will let us skip the whole chunk if none are set.
-      uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
-      std::string chunk_mask_str =
-          absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
-
-      // Check (up to) 8 has_bits at a time if we have more than one field in
-      // this chunk.  Due to field layout ordering, we may check
-      // _has_bits_[last_chunk * 8 / 32] multiple times.
-      ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-      ABSL_DCHECK_GE(8, popcnt(chunk_mask));
-
-      if (cached_has_word_index != HasWordIndex(chunk.front())) {
-        cached_has_word_index = HasWordIndex(chunk.front());
-        format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
+      for (const auto& field : chunk) {
+        if (CanClearByZeroing(field)) {
+          ABSL_CHECK(!saw_non_zero_init);
+          if (!memset_start) memset_start = field;
+          memset_end = field;
+        } else {
+          saw_non_zero_init = true;
+        }
       }
-      format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
-      format.Indent();
-    }
 
-    if (memset_start) {
-      if (memset_start == memset_end) {
-        // For clarity, do not memset a single field.
-        field_generators_.get(memset_start).GenerateMessageClearingCode(p);
-      } else {
-        ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
-        ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
-        format(
-            "::memset(&$1$, 0, static_cast<::size_t>(\n"
-            "    reinterpret_cast<char*>(&$2$) -\n"
-            "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
-            FieldMemberName(memset_start, chunk_is_split),
-            FieldMemberName(memset_end, chunk_is_split));
-      }
-    }
+      // Whether we wrap this chunk in:
+      //   if (cached_has_bits & <chunk hasbits) { /* chunk. */ }
+      // We can omit the if() for chunk size 1, or if our fields do not have
+      // hasbits. I don't understand the rationale for the last part of the
+      // condition, but it matches the old logic.
+      const bool have_outer_if =
+          HasBitIndex(chunk.front()) != kNoHasbit && chunk.size() > 1 &&
+          (memset_end != chunk.back() || merge_zero_init);
 
-    // Clear all non-zero-initializable fields in the chunk.
-    for (const auto& field : chunk) {
-      if (CanClearByZeroing(field)) continue;
-      // It's faster to just overwrite primitive types, but we should only
-      // clear strings and messages if they were set.
-      //
-      // TODO(kenton):  Let the CppFieldGenerator decide this somehow.
-      bool have_enclosing_if =
-          HasBitIndex(field) != kNoHasbit &&
-          (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-           field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+      if (have_outer_if) {
+        // Emit an if() that will let us skip the whole chunk if none are set.
+        uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
+        std::string chunk_mask_str =
+            absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
-      if (have_enclosing_if) {
-        PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index);
+        // Check (up to) 8 has_bits at a time if we have more than one field in
+        // this chunk.  Due to field layout ordering, we may check
+        // _has_bits_[last_chunk * 8 / 32] multiple times.
+        ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+        ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+
+        if (cached_has_word_index != HasWordIndex(chunk.front())) {
+          cached_has_word_index = HasWordIndex(chunk.front());
+          format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
+        }
+        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
         format.Indent();
       }
 
-      field_generators_.get(field).GenerateMessageClearingCode(p);
+      if (memset_start) {
+        if (memset_start == memset_end) {
+          // For clarity, do not memset a single field.
+          field_generators_.get(memset_start).GenerateMessageClearingCode(p);
+        } else {
+          ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
+          ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
+          format(
+              "::memset(&$1$, 0, static_cast<::size_t>(\n"
+              "    reinterpret_cast<char*>(&$2$) -\n"
+              "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
+              FieldMemberName(memset_start, chunk_is_split),
+              FieldMemberName(memset_end, chunk_is_split));
+        }
+      }
 
-      if (have_enclosing_if) {
+      // Clear all non-zero-initializable fields in the chunk.
+      for (const auto& field : chunk) {
+        if (CanClearByZeroing(field)) continue;
+        // It's faster to just overwrite primitive types, but we should only
+        // clear strings and messages if they were set.
+        //
+        // TODO(kenton):  Let the CppFieldGenerator decide this somehow.
+        bool have_enclosing_if =
+            HasBitIndex(field) != kNoHasbit &&
+            (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+             field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+
+        if (have_enclosing_if) {
+          PrintPresenceCheck(field, has_bit_indices_, p,
+                             &cached_has_word_index);
+          format.Indent();
+        }
+
+        field_generators_.get(field).GenerateMessageClearingCode(p);
+
+        if (have_enclosing_if) {
+          format.Outdent();
+          format("}\n");
+        }
+      }
+
+      if (have_outer_if) {
         format.Outdent();
         format("}\n");
       }
-    }
 
-    if (have_outer_if) {
-      format.Outdent();
-      format("}\n");
-    }
-
-    if (chunk_index == chunks.size() - 1) {
-      if (first_split_chunk_processed) {
-        format.Outdent();
-        format("}\n");
+      if (chunk_index == static_cast<int>(run.size()) - 1) {
+        if (first_split_chunk_processed) {
+          format.Outdent();
+          format("}\n");
+        }
       }
-    }
 
-    if (cold_skipper.OnEndChunk(chunk_index, p)) {
-      // Reset here as it may have been updated in just closed if statement.
-      cached_has_word_index = -1;
+      if (cold_skipper.OnEndChunk(chunk_index, p)) {
+        // Reset here as it may have been updated in just closed if statement.
+        cached_has_word_index = -1;
+      }
     }
   }
 
@@ -3385,7 +3418,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         "}\n");
   }
 
-  std::vector<std::vector<const FieldDescriptor*>> chunks = CollectFields(
+  std::vector<FieldChunk> chunks = CollectFields(
       optimized_order_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         return HasByteIndex(a) == HasByteIndex(b) &&
@@ -4124,7 +4157,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         "\n");
   }
 
-  std::vector<std::vector<const FieldDescriptor*>> chunks = CollectFields(
+  std::vector<FieldChunk> chunks = CollectFields(
       optimized_order_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
