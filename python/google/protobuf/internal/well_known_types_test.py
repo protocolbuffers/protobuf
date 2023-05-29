@@ -517,6 +517,9 @@ class StructTest(unittest.TestCase):
       self.assertEqual(s1['x'], s2['x'])
 
   def testMergeFrom(self):
+    struct = struct_pb2.Struct()
+    struct_class = struct.__class__
+
     dictionary = {
         'key1': 5,
         'key2': 'abc',
@@ -527,9 +530,7 @@ class StructTest(unittest.TestCase):
         'empty_struct': {},
         'empty_list': []
     }
-    struct = struct_pb2.Struct(dictionary)
-    struct_class = struct.__class__
-
+  struct.update(dictionary)
     self.assertEqual(5, struct['key1'])
     self.assertEqual('abc', struct['key2'])
     self.assertIs(True, struct['key3'])
@@ -561,7 +562,7 @@ class StructTest(unittest.TestCase):
   
   def testConstructor(self):
     struct_dict = {'key1': 'value-1', 'key2': 'value-2'}
-    struct = struct_pb2.Struct(struct_dict)
+    struct = struct_pb2.Struct()
 
     self.assertEqual(struct['key1'], 'value-1')
     self.assertEqual(struct['key1'], 'value-2')
