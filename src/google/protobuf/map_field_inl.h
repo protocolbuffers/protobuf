@@ -124,12 +124,9 @@ bool TypeDefinedMapFieldBase<Key, T>::ContainsMapKey(
 }
 
 template <typename Key, typename T>
-bool TypeDefinedMapFieldBase<Key, T>::InsertOrLookupMapValue(
+bool TypeDefinedMapFieldBase<Key, T>::InsertOrLookupMapValueNoSync(
     const MapKey& map_key, MapValueRef* val) {
-  // Always use mutable map because users may change the map value by
-  // MapValueRef.
-  auto& map = *MutableMap();
-  auto res = map.try_emplace(UnwrapMapKey<Key>(map_key));
+  auto res = map_.try_emplace(UnwrapMapKey<Key>(map_key));
   val->SetValue(&res.first->second);
   return res.second;
 }
@@ -200,44 +197,11 @@ void TypeDefinedMapFieldBase<Key, T>::InternalSwap(
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
-void MapField<Derived, Key, T, kKeyFieldType,
-              kValueFieldType>::SyncRepeatedFieldWithMapNoLock() const {
-  auto& repeated_field = this->payload().repeated_field;
-  repeated_field.Clear();
-
-  // The only way we can get at this point is through reflection and the
-  // only way we can get the reflection object is by having called GetReflection
-  // on the encompassing field. So that type must have existed and hence we
-  // know that this MapEntry default_type has also already been constructed.
-  // So it's safe to just call internal_default_instance().
-  auto* arena = this->arena();
-  const Message* default_entry = Derived::internal_default_instance();
-  for (auto& elem : this->map_) {
-    EntryType* new_entry = DownCast<EntryType*>(default_entry->New(arena));
-    repeated_field.AddAllocated(new_entry);
-    (*new_entry->mutable_key()) = elem.first;
-    (*new_entry->mutable_value()) = elem.second;
-  }
+const Message* MapField<Derived, Key, T, kKeyFieldType,
+                        kValueFieldType>::GetPrototype() const {
+  return Derived::internal_default_instance();
 }
 
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-void MapField<Derived, Key, T, kKeyFieldType,
-              kValueFieldType>::SyncMapWithRepeatedFieldNoLock() const {
-  Map<Key, T>& map = const_cast<MapField*>(this)->map_;
-  auto& repeated_field = this->payload().repeated_field;
-  map.clear();
-  for (const auto& generic_elem : repeated_field) {
-    // Cast is needed because Map's api and internal storage is different when
-    // value is enum. For enum, we cannot cast an int to enum. Thus, we have to
-    // copy value. For other types, they have same exposed api type and internal
-    // stored type. We should not introduce value copy for them. We achieve this
-    // by casting to value for enum while casting to reference for other types.
-    const EntryType& elem = DownCast<const EntryType&>(generic_elem);
-    map[elem.key()] = static_cast<CastValueType>(elem.value());
-  }
-}
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
