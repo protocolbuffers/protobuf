@@ -6462,6 +6462,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kDeprecatedFieldNumber = 1,
+    kDebugRedactFieldNumber = 3,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
@@ -6490,6 +6491,17 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
+
+  public:
+  // optional bool debug_redact = 3 [default = false];
+  bool has_debug_redact() const;
+  void clear_debug_redact() ;
+  bool debug_redact() const;
+  void set_debug_redact(bool value);
+
+  private:
+  bool _internal_debug_redact() const;
+  void _internal_set_debug_redact(bool value);
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6648,7 +6660,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 2, 1, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<2, 3, 1, 0, 7> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -6659,6 +6671,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     bool deprecated_;
+    bool debug_redact_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -13965,6 +13978,31 @@ inline bool EnumValueOptions::_internal_deprecated() const {
 inline void EnumValueOptions::_internal_set_deprecated(bool value) {
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.deprecated_ = value;
+}
+
+// optional bool debug_redact = 3 [default = false];
+inline bool EnumValueOptions::has_debug_redact() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline void EnumValueOptions::clear_debug_redact() {
+  _impl_.debug_redact_ = false;
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline bool EnumValueOptions::debug_redact() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.EnumValueOptions.debug_redact)
+  return _internal_debug_redact();
+}
+inline void EnumValueOptions::set_debug_redact(bool value) {
+  _internal_set_debug_redact(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.EnumValueOptions.debug_redact)
+}
+inline bool EnumValueOptions::_internal_debug_redact() const {
+  return _impl_.debug_redact_;
+}
+inline void EnumValueOptions::_internal_set_debug_redact(bool value) {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_.debug_redact_ = value;
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
