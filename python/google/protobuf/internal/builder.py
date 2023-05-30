@@ -109,6 +109,16 @@ def BuildTopDescriptorsAndMessages(file_des, module_name, module):
     module[name] = BuildMessage(msg_des)
 
 
+def AddHelpersToExtensions(file_des):
+  """no-op to keep old generated code work with new runtime.
+
+  Args:
+    file_des: FileDescriptor of the .proto file
+  """
+  # TODO(b/279930766): Remove this on-op
+  return
+
+
 def BuildServices(file_des, module_name, module):
   """Builds services classes and services stub class.
 
