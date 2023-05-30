@@ -1003,6 +1003,11 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
       {{"desc_name", desc_name},
        {"encoded_file_proto",
         [&] {
+          if (options_.strip_nonfunctional_codegen) {
+            p->Emit(R"cc("")cc");
+            return;
+          }
+
           absl::string_view data = file_data;
           if (data.size() <= 65535) {
             static constexpr size_t kBytesPerLine = 40;
@@ -1084,7 +1089,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   p->Emit(
       {
           {"eager", eager ? "true" : "false"},
-          {"file_proto_len", file_data.size()},
+          {"file_proto_len",
+           options_.strip_nonfunctional_codegen ? 0 : file_data.size()},
           {"proto_name", desc_name},
           {"deps_ptr", num_deps == 0
                            ? "nullptr"

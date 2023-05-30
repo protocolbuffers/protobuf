@@ -613,7 +613,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
 void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
     if (info.field != nullptr) {
-      PrintFieldComment(format, info.field);
+        PrintFieldComment(format, info.field, options_);
     }
     if (info.func_name.empty()) {
       format("{::_pbi::TcParser::MiniParse, {}},\n");
@@ -794,7 +794,7 @@ static void FormatFieldKind(Formatter& format,
 void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
   for (const auto& entry : tc_table_info_->field_entries) {
     const FieldDescriptor* field = entry.field;
-    PrintFieldComment(format, field);
+    PrintFieldComment(format, field, options_);
     format("{");
     if (IsWeak(field, options_)) {
       // Weak fields are handled by the generated fallback function.
@@ -1317,7 +1317,7 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
   for (const auto* field : fields) {
     bool cold = ShouldSplit(field, options_);
     format.Set("field", FieldMemberName(field, cold));
-    PrintFieldComment(format, field);
+    PrintFieldComment(format, field, options_);
     format("case $1$:\n", field->number());
     format.Indent();
     uint32_t fallback_tag = 0;
