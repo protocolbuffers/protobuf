@@ -122,3 +122,63 @@ jobs:
       uses: googleapis/java-cloud-bom/tests/validate-bom@v26.13.0
       with:
         bom-path: java/bom/pom.xml
+
+  binary-compatibility:
+    name: Showcase Client Binary Compatibility
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        cache: 'maven'
+    - name: Checkout sdk-platform-java @ main
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      with:
+        path: sdk-platform-java
+        repository: 'googleapis/sdk-platform-java'
+        ref: ${{ inputs.protobuf-ref }}
+    - name: Install sdk-platform-java to local maven repository
+      working-directory: sdk-platform-java
+      run: mvn install -B -ntp -T 1C -DskipTests
+    - name: Install current showcase to local maven repository
+      working-directory: sdk-platform-java/showcase
+      run: mvn install -B -ntp -T 1C -DskipTests
+    - name: Checkout protobuf pending changes
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      with:
+        ref: ${{ inputs.safe-checkout }}
+        path: protobuf
+#    - name: Regenerate Showcase based on local Protobuf
+#      uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+#      with:
+#        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-03a376b5d6ef66f827fc307716e3b841cc26b709
+#        credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+#        bazel-cache: java_linux/17
+#        bash: |
+#          bazelisk run //showcase:update_proto --verbose_failures \
+#            --override_repository=com_google_protobuf=${GITHUB_WORKSPACE}/protobuf
+#          bazelisk run //showcase:update_grpc --verbose_failures \
+#            --override_repository=com_google_protobuf=${GITHUB_WORKSPACE}/protobuf
+#          bazelisk run //showcase:update_gapic --verbose_failures \
+#            --override_repository=com_google_protobuf=${GITHUB_WORKSPACE}/protobuf
+    - uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
+      with:
+        path: ~/.cache/bazel
+        key: ${{ runner.os }}-bazel-${{ hashFiles('sdk-platform-java/WORKSPACE', 'protobuf/WORKSPACE') }}
+    - name: Regenerate Showcase based on local Protobuf
+      working-directory: sdk-platform-java/showcase
+      run: |
+        bazelisk run //showcase:update_proto --verbose_failures \
+          --override_repository=com_google_protobuf=${GITHUB_WORKSPACE}/protobuf
+        bazelisk run //showcase:update_grpc --verbose_failures \
+          --override_repository=com_google_protobuf=${GITHUB_WORKSPACE}/protobuf
+        bazelisk run //showcase:update_gapic --verbose_failures \
+          --override_repository=com_google_protobuf=${GITHUB_WORKSPACE}/protobuf
+    - working-directory: sdk-platform-java/showcase
+      run: git diff
+    - name: Clirr Check
+      working-directory: sdk-platform-java/showcase
+      run: |
+        mvn versions:set -B -ntp -DnewVersion=0.0.2-SNAPSHOT
+        mvn clirr:check -B -ntp -Dclirr.skip=false -DcomparisonVersion=0.0.1-SNAPSHOT
