@@ -23,14 +23,6 @@ if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
   get_filename_component(protobuf_SOURCE_DIR ${protobuf_SOURCE_DIR} DIRECTORY)
 endif()
 
-# The Intel compiler isn't able to deal with noinline member functions of
-# template classes defined in headers.  As such it spams the output with
-#   warning #2196: routine is both "inline" and "noinline"
-# This silences that warning.
-if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-  string(APPEND CMAKE_CXX_FLAGS " -diag-disable=2196")
-endif()
-
 # Options
 option(protobuf_INSTALL "Install protobuf binaries and files" ON)
 option(protobuf_BUILD_TESTS "Build tests" ON)
@@ -130,12 +122,6 @@ if(protobuf_VERBOSE)
   message(STATUS "]")
 endif()
 
-add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
-
-if (protobuf_DISABLE_RTTI)
-  add_definitions(-DGOOGLE_PROTOBUF_NO_RTTI=1)
-endif()
-
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map
 "{
   global:
@@ -192,10 +178,6 @@ if (protobuf_WITH_ZLIB)
   endif (ZLIB_FOUND)
 endif (protobuf_WITH_ZLIB)
 
-if (HAVE_ZLIB)
-  add_definitions(-DHAVE_ZLIB)
-endif (HAVE_ZLIB)
-
 # We need to link with libatomic on systems that do not have builtin atomics, or
 # don't have builtin support for 8 byte atomics
 set(protobuf_LINK_LIBATOMIC false)
@@ -251,30 +233,6 @@ endif (protobuf_BUILD_SHARED_LIBS)
 SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 if (MSVC)
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # Build with multiple processes
-    add_compile_options(/MP)
-  endif()
-  # Set source file and execution character sets to UTF-8
-  add_compile_options(/utf-8)
-  # MSVC warning suppressions
-  add_compile_options(
-    /wd4065 # switch statement contains 'default' but no 'case' labels
-    /wd4146 # unary minus operator applied to unsigned type
-    /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
-    /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
-    /wd4267 # 'var' : conversion from 'size_t' to 'type', possible loss of data
-    /wd4305 # 'identifier' : truncation from 'type1' to 'type2'
-    /wd4307 # 'operator' : integral constant overflow
-    /wd4309 # 'conversion' : truncation of constant value
-    /wd4334 # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
-    /wd4355 # 'this' : used in base member initializer list
-    /wd4506 # no definition for inline function 'function'
-    /wd4800 # 'type' : forcing value to bool 'true' or 'false' (performance warning)
-    /wd4996 # The compiler encountered a deprecated declaration.
-  )
-  # Allow big object
-  add_compile_options(/bigobj)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
@@ -322,10 +280,6 @@ include_directories(
   ${ZLIB_INCLUDE_DIRECTORIES}
   ${protobuf_BINARY_DIR}
   ${protobuf_SOURCE_DIR}/src)
-
-if (protobuf_UNICODE)
-  add_definitions(-DUNICODE -D_UNICODE)
-endif (protobuf_UNICODE)
 
 set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
 set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
