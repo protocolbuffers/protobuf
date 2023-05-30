@@ -141,9 +141,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const DescriptorT& descriptor,
       const Descriptor* containing_descriptor) const;
 
-  bool HasExtensions() const;
-  bool HasExtensionsInMessage(const Descriptor& descriptor) const;
-
   void PrintTopBoilerplate() const;
   void PrintServices() const;
   void PrintServiceDescriptors() const;
