@@ -270,11 +270,13 @@ void Arena_register(VALUE module) {
 // on which pointers are 64 bits but longs are 32 bits. In this case, we enable
 // the secondary Hash to hold the keys and prevent them from being collected.
 
+#ifndef USE_SECONDARY_MAP
 #if RUBY_API_VERSION_CODE >= 20700 && SIZEOF_LONG >= SIZEOF_VALUE
 #define USE_SECONDARY_MAP 0
 #else
 #define USE_SECONDARY_MAP 1
 #endif
+#endif // USE_SECONDARY_MAP
 
 #if USE_SECONDARY_MAP
 
