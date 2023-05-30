@@ -257,6 +257,7 @@ constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
       return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kMessage,
               false, false};
 
+    case WireFormatLite::TYPE_GROUP:
     default:
       PROTOBUF_ASSUME(false);
   }

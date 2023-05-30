@@ -105,6 +105,8 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
         memcpy(pos, &n, sizeof(n));
         return;
       }
+
+      case Tag::kDynamic:
       default:
         break;
     }
@@ -150,6 +152,9 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t DestroyNode(const void* pos) {
         reinterpret_cast<T*>(elem - static_cast<uintptr_t>(Tag::kCord))->~T();
         return sizeof(TaggedNode);
       }
+
+      case Tag::kDynamic:
+
       default:
         break;
     }
@@ -171,6 +176,8 @@ inline size_t PeekNode(const void* pos, std::vector<void*>& out) {
       case Tag::kString:
       case Tag::kCord:
         return sizeof(TaggedNode);
+
+      case Tag::kDynamic:
       default:
         break;
     }
