@@ -137,7 +137,7 @@ jobs:
       with:
         path: sdk-platform-java
         repository: 'googleapis/sdk-platform-java'
-        ref: ${{ inputs.protobuf-ref }}
+        ref: 'main'
     - name: Install sdk-platform-java to local maven repository
       working-directory: sdk-platform-java
       run: mvn install -B -ntp -T 1C -DskipTests
