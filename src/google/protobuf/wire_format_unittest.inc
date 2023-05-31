@@ -604,6 +604,19 @@ TEST(WireFormatTest, MessageSetInvalidTypeId) {
   EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
 }
 
+TEST(WireFormatTest, MessageSetNonCanonInvalidTypeId) {
+  // "type_id" is 0 and should fail to parse. uint8_t is used to silence
+  // complaints about narrowing conversion.
+  const uint8_t encoded[] = {
+      013,                               // 1: SGROUP
+      032, 0,                            // 3:LEN 0
+      020, 0x80, 0x80, 0x80, 0x80, 020,  // 2: long-form:2 0
+      014                                // 1: EGROUP
+  };
+  PROTO2_WIREFORMAT_UNITTEST::TestMessageSet message;
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
 namespace {
 std::string BuildMessageSetItemStart() {
   std::string data;
