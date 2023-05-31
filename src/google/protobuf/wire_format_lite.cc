@@ -645,6 +645,27 @@ bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
   return true;
 }
 
+PROTOBUF_NOINLINE uint8_t* WireFormatLite::WriteInt32ToArrayWithFieldSlow(
+    ::google::protobuf::io::EpsCopyOutputStream* stream, int32_t value, uint8_t* target,
+    int field_number) {
+  target = stream->EnsureSpace(target);
+  return WriteInt32ToArray(field_number, value, target);
+}
+
+PROTOBUF_NOINLINE uint8_t* WireFormatLite::WriteInt64ToArrayWithFieldSlow(
+    ::google::protobuf::io::EpsCopyOutputStream* stream, int64_t value, uint8_t* target,
+    int field_number) {
+  target = stream->EnsureSpace(target);
+  return WriteInt64ToArray(field_number, value, target);
+}
+
+PROTOBUF_NOINLINE uint8_t* WireFormatLite::WriteEnumToArrayWithFieldSlow(
+    ::google::protobuf::io::EpsCopyOutputStream* stream, int value, uint8_t* target,
+    int field_number) {
+  target = stream->EnsureSpace(target);
+  return WriteEnumToArray(field_number, value, target);
+}
+
 // this code is deliberately written such that clang makes it into really
 // efficient SSE code.
 template <bool ZigZag, bool SignExtended, typename T>

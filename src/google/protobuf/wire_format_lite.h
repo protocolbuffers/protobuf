@@ -545,11 +545,31 @@ class PROTOBUF_EXPORT WireFormatLite {
       const RepeatedField<int>& value, uint8_t* output);
 
   // Write fields, including tags.
+
+  // The slow paths that need to call EnsureSpace.
+  // `field_number` must be last so that the first 3 arguments match the fast
+  // path. That way the tail call only has to add one more arg, instead of
+  // rearranging arguments.
+  PROTOBUF_NOINLINE static uint8_t* WriteInt32ToArrayWithFieldSlow(
+      ::google::protobuf::io::EpsCopyOutputStream* stream, int32_t value, uint8_t* target,
+      int field_number);
+  PROTOBUF_NOINLINE static uint8_t* WriteInt64ToArrayWithFieldSlow(
+      ::google::protobuf::io::EpsCopyOutputStream* stream, int64_t value, uint8_t* target,
+      int field_number);
+  PROTOBUF_NOINLINE static uint8_t* WriteEnumToArrayWithFieldSlow(
+      ::google::protobuf::io::EpsCopyOutputStream* stream, int value, uint8_t* target,
+      int field_number);
+
+  // We do the fallback as a tail call. This avoids spilling registers in
+  // the fast path.
   template <int field_number>
   PROTOBUF_NOINLINE static uint8_t* WriteInt32ToArrayWithField(
       ::google::protobuf::io::EpsCopyOutputStream* stream, int32_t value,
       uint8_t* target) {
-    target = stream->EnsureSpace(target);
+    if (PROTOBUF_PREDICT_FALSE(!stream->HasSpace(target))) {
+      return WriteInt32ToArrayWithFieldSlow(stream, value, target,
+                                            field_number);
+    }
     return WriteInt32ToArray(field_number, value, target);
   }
 
@@ -557,14 +577,19 @@ class PROTOBUF_EXPORT WireFormatLite {
   PROTOBUF_NOINLINE static uint8_t* WriteInt64ToArrayWithField(
       ::google::protobuf::io::EpsCopyOutputStream* stream, int64_t value,
       uint8_t* target) {
-    target = stream->EnsureSpace(target);
+    if (PROTOBUF_PREDICT_FALSE(!stream->HasSpace(target))) {
+      return WriteInt64ToArrayWithFieldSlow(stream, value, target,
+                                            field_number);
+    }
     return WriteInt64ToArray(field_number, value, target);
   }
 
   template <int field_number>
   PROTOBUF_NOINLINE static uint8_t* WriteEnumToArrayWithField(
       ::google::protobuf::io::EpsCopyOutputStream* stream, int value, uint8_t* target) {
-    target = stream->EnsureSpace(target);
+    if (PROTOBUF_PREDICT_FALSE(!stream->HasSpace(target))) {
+      return WriteEnumToArrayWithFieldSlow(stream, value, target, field_number);
+    }
     return WriteEnumToArray(field_number, value, target);
   }
 

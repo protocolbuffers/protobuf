@@ -681,6 +681,11 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     return ptr;
   }
 
+  // Like `EnsureSpace`, but does not go to the fallback.
+  // If this returns false, the caller must call `EnsureSpace` before the space
+  // is guaranteed.
+  PROTOBUF_NODISCARD bool HasSpace(uint8_t* ptr) { return ptr < end_; }
+
   uint8_t* WriteRaw(const void* data, int size, uint8_t* ptr) {
     if (PROTOBUF_PREDICT_FALSE(end_ - ptr < size)) {
       return WriteRawFallback(data, size, ptr);
