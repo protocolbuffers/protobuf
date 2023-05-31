@@ -122,3 +122,39 @@ jobs:
       uses: googleapis/java-cloud-bom/tests/validate-bom@v26.13.0
       with:
         bom-path: java/bom/pom.xml
+
+  binary-compatibility:
+    name: Binary Compatibility
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout protobuf pending changes
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      with:
+        ref: ${{ inputs.safe-checkout }}
+    - name: Checkout sdk-platform-java @ main
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      with:
+        path: sdk-platform-java
+        repository: 'googleapis/sdk-platform-java'
+        ref: 'main'
+    - name: Regenerate showcase client based on local Protobuf
+      uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+      with:
+        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-03a376b5d6ef66f827fc307716e3b841cc26b709
+        credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+        bazel-cache: java_linux/17
+        bash: |
+          cd sdk-platform-java
+          mvn install -B -T 1C -DskipTests
+          cd showcase
+          mvn install -B -T 1C -DskipTests
+          cd ..
+          bazel run //showcase:update_proto --verbose_failures \
+            --override_repository=com_google_protobuf=/workspace
+          bazel run //showcase:update_grpc --verbose_failures \
+            --override_repository=com_google_protobuf=/workspace
+          bazel run //showcase:update_gapic --verbose_failures \
+            --override_repository=com_google_protobuf=/workspace
+          git diff
+          mvn versions:set -B -DnewVersion=0.0.2-SNAPSHOT
+          mvn clirr:check -B -Dclirr.skip=false -DcomparisonVersion=0.0.1-SNAPSHOT
