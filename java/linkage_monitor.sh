@@ -2,9 +2,6 @@
 
 set -e
 
-echo "Argument1 $1"
-echo "Argument2 $2"
-
 cd java
 
 echo "list of files here:"
@@ -15,9 +12,11 @@ echo "list of files in core:"
 
 ls -alt core/
 
-echo "Maven command; $(which mvn)"
+echo "Maven command: $(which mvn)"
 
-mvn --projects "bom,core,util" -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
+echo "protoc command:$(which protoc); $(protoc --version)"
+
+mvn --projects "bom,core,util" -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true -Dprotoc=protoc
 
 curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
 
