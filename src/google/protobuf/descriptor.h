@@ -800,10 +800,13 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   bool is_repeated() const;  // shorthand for label() == LABEL_REPEATED
   bool is_packable() const;  // shorthand for is_repeated() &&
                              //               IsTypePackable(type())
-  bool is_packed() const;    // shorthand for is_packable() &&
-                             //               options().packed()
   bool is_map() const;       // shorthand for type() == TYPE_MESSAGE &&
                              // message_type()->options().map_entry()
+
+  // Whether or not this field is packable and packed.  In proto2, packable
+  // fields must have `packed = true` specified.  In proto3, all packable fields
+  // are packed by default unless `packed = false` is specified.
+  bool is_packed() const;
 
   // Returns true if this field tracks presence, ie. does the field
   // distinguish between "unset" and "present with default value."
