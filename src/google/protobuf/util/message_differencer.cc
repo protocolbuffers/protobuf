@@ -686,13 +686,9 @@ std::vector<const FieldDescriptor*> MessageDifferencer::RetrieveFields(
 
   const Reflection* reflection = message.GetReflection();
   if (descriptor->options().map_entry()) {
-    if (this->scope_ == PARTIAL && base_message) {
-      reflection->ListFields(message, &tmp_message_fields_);
-    } else {
-      // Map entry fields are always considered present.
-      for (int i = 0; i < descriptor->field_count(); i++) {
-        tmp_message_fields_.push_back(descriptor->field(i));
-      }
+    // Map entry fields are always considered present.
+    for (int i = 0; i < descriptor->field_count(); i++) {
+      tmp_message_fields_.push_back(descriptor->field(i));
     }
   } else {
     reflection->ListFields(message, &tmp_message_fields_);

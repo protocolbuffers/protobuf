@@ -2368,25 +2368,6 @@ TEST_F(MapFieldReflectionTest, UninitializedEntry) {
   EXPECT_FALSE(message.IsInitialized());
 }
 
-class MyMapEntry
-    : public internal::MapEntry<MyMapEntry, ::int32_t, ::int32_t,
-                                internal::WireFormatLite::TYPE_INT32,
-                                internal::WireFormatLite::TYPE_INT32> {
- public:
-  constexpr MyMapEntry() {}
-  MyMapEntry(Arena*) { ABSL_CHECK(false); }
-  Metadata GetMetadata() const override { ABSL_CHECK(false); }
-  static bool ValidateKey(void*) { return true; }
-  static bool ValidateValue(void*) { return true; }
-};
-
-TEST(MapEntryTest, ConstInit) {
-  // This verifies that `MapEntry`, `MapEntryLite` and `MapEntryImpl` can be
-  // constant initialized.
-  PROTOBUF_CONSTINIT static MyMapEntry entry{};
-  EXPECT_NE(entry.SpaceUsed(), 0);
-}
-
 // Generated Message Test ===========================================
 
 TEST(GeneratedMapFieldTest, Accessors) {

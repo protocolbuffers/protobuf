@@ -30,10 +30,12 @@
 
 #include "google/protobuf/map_field.h"
 
+#include <atomic>
 #include <utility>
 #include <vector>
 
 #include "google/protobuf/port.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/map_field_inl.h"
 
 // Must be included last.
@@ -609,6 +611,14 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
     }
   }
   return size;
+}
+
+const Message* LoadMapEntryPrototype(absl::string_view name,
+                                     std::atomic<const Message*>& cache) {
+  auto* result = MessageFactory::generated_factory()->GetPrototype(
+      DescriptorPool::generated_pool()->FindMessageTypeByName(name));
+  cache.store(result, std::memory_order_release);
+  return result;
 }
 
 }  // namespace internal

@@ -405,6 +405,12 @@ void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
     return;
   }
 
+  /*
+  if (!cpp::ShouldGenerateClass(&msg.desc())) {
+    return;
+  }
+  */
+
   msg.Emit(
       {
           {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.

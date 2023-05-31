@@ -3553,13 +3553,18 @@ class AssignDescriptorsHelper {
 
     file_level_metadata_->descriptor = descriptor;
 
-    file_level_metadata_->reflection =
-        new Reflection(descriptor,
-                       MigrationToReflectionSchema(default_instance_data_,
-                                                   offsets_, *schemas_),
-                       DescriptorPool::internal_generated_pool(), factory_);
-    for (int i = 0; i < descriptor->enum_type_count(); i++) {
-      AssignEnumDescriptor(descriptor->enum_type(i));
+    if (*default_instance_data_ == nullptr) {
+      file_level_metadata_->reflection = nullptr;
+    } else {
+      file_level_metadata_->reflection =
+          new Reflection(descriptor,
+                         MigrationToReflectionSchema(default_instance_data_,
+                                                     offsets_, *schemas_),
+                         DescriptorPool::internal_generated_pool(), factory_);
+
+      for (int i = 0; i < descriptor->enum_type_count(); i++) {
+        AssignEnumDescriptor(descriptor->enum_type(i));
+      }
     }
     schemas_++;
     default_instance_data_++;
@@ -3721,7 +3726,8 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
     const Reflection* reflection = file_level_metadata[i].reflection;
     MessageFactory::InternalRegisterGeneratedMessage(
         file_level_metadata[i].descriptor,
-        reflection->schema_.default_instance_);
+        reflection != nullptr ? reflection->schema_.default_instance_
+                              : nullptr);
   }
 }
 

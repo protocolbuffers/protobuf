@@ -68,8 +68,9 @@ class MapFieldBaseStub : public TypeDefinedMapFieldBase<int32_t, int32_t> {
       : MapFieldBaseStub::TypeDefinedMapFieldBase(arena) {}
 
   const Message* GetPrototype() const override {
-    return unittest::TestMap_MapInt32Int32Entry_DoNotUse::
-        internal_default_instance();
+    return MessageFactory::generated_factory()->GetPrototype(
+        DescriptorPool::generated_pool()->FindMessageTypeByName(
+            unittest::TestMap_MapInt32Int32Entry_DoNotUse::TypeName()));
   }
 
   Arena* GetArenaForInternalRepeatedField() {

@@ -42,7 +42,6 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/internal_visibility.h"
-#include "google/protobuf/map_entry.h"
 #include "google/protobuf/map_field_lite.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/message.h"
@@ -587,6 +586,9 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
                                     MapValueRef* val) override;
 };
 
+const Message* LoadMapEntryPrototype(absl::string_view name,
+                                     std::atomic<const Message*>& cache);
+
 // This class provides access to map field using generated api. It is used for
 // internal generated message implementation only. Users should never use this
 // directly.
@@ -622,12 +624,6 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
     TypeDefinedMapFieldBase<Key, T>::MergeFrom(from);
   }
 
-  // Used in the implementation of parsing. Caller should take the ownership iff
-  // arena_ is nullptr.
-  EntryType* NewEntry() const {
-    return Arena::CreateMessage<EntryType>(this->arena());
-  }
-
  private:
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -646,14 +642,6 @@ bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {
   }
   return true;
 }
-
-template <typename T, typename Key, typename Value,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-struct MapEntryToMapField<
-    MapEntry<T, Key, Value, kKeyFieldType, kValueFieldType>> {
-  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType> MapFieldType;
-};
 
 class PROTOBUF_EXPORT DynamicMapField final
     : public TypeDefinedMapFieldBase<MapKey, MapValueRef> {

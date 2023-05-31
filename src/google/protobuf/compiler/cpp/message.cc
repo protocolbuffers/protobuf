@@ -266,31 +266,6 @@ bool HasInternalHasMethod(const FieldDescriptor* field) {
          field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
 }
 
-// Collects map entry message type information.
-void CollectMapInfo(
-    const Options& options, const Descriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
-  ABSL_CHECK(IsMapEntryMessage(descriptor));
-  absl::flat_hash_map<absl::string_view, std::string>& vars = *variables;
-  const FieldDescriptor* key = descriptor->map_key();
-  const FieldDescriptor* val = descriptor->map_value();
-  vars["key_cpp"] = PrimitiveTypeName(options, key->cpp_type());
-  switch (val->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      vars["val_cpp"] = FieldMessageTypeName(val, options);
-      break;
-    case FieldDescriptor::CPPTYPE_ENUM:
-      vars["val_cpp"] = ClassName(val->enum_type(), true);
-      break;
-    default:
-      vars["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
-  }
-  vars["key_wire_type"] = absl::StrCat(
-      "TYPE_", absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type())));
-  vars["val_wire_type"] = absl::StrCat(
-      "TYPE_", absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type())));
-}
-
 
 // Returns true to make the message serialize in order, decided by the following
 // factors in the order of precedence.
@@ -1151,111 +1126,26 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
-  if (!ShouldGenerateClass(descriptor_, options_)) return;
-
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
 
-  if (IsMapEntryMessage(descriptor_)) {
-    absl::flat_hash_map<absl::string_view, std::string> vars;
-    CollectMapInfo(options_, descriptor_, &vars);
-    vars["lite"] =
-        HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite";
-    auto v = p->WithVars(std::move(vars));
-    format(
-        "class $classname$ final : public "
-        "::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {\n"
-        "public:\n"
-        "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
-        "SuperType;\n"
-        "  $classname$();\n"
-        // Templatize constexpr constructor as a workaround for a bug in gcc 12
-        // (warning in gcc 13).
-        "  template <typename = void>\n"
-        "  explicit PROTOBUF_CONSTEXPR $classname$(\n"
-        "      ::$proto_ns$::internal::ConstantInitialized);\n"
-        "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
-        "  void MergeFrom(const $classname$& other);\n"
-        "  static const $classname$* internal_default_instance() { return "
-        "reinterpret_cast<const "
-        "$classname$*>(&_$classname$_default_instance_); }\n");
-    auto utf8_check = internal::cpp::GetUtf8CheckMode(
-        descriptor_->field(0), GetOptimizeFor(descriptor_->file(), options_) ==
-                                   FileOptions::LITE_RUNTIME);
-    if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
-        utf8_check != Utf8CheckMode::kNone) {
-      if (utf8_check == Utf8CheckMode::kStrict) {
-        format(
-            "  static bool ValidateKey(std::string* s) {\n"
-            "    return ::$proto_ns$::internal::WireFormatLite::"
-            "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
-            "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
-            " }\n",
-            descriptor_->field(0)->full_name());
-      } else {
-        ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
-        format(
-            "  static bool ValidateKey(std::string* s) {\n"
-            "#ifndef NDEBUG\n"
-            "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-            "       s->data(), static_cast<int>(s->size()), "
-            "::$proto_ns$::internal::"
-            "WireFormatLite::PARSE, \"$1$\");\n"
-            "#else\n"
-            "    (void) s;\n"
-            "#endif\n"
-            "    return true;\n"
-            " }\n",
-            descriptor_->field(0)->full_name());
-      }
-    } else {
-      format("  static bool ValidateKey(void*) { return true; }\n");
+  if (!ShouldGenerateClass(descriptor_, options_)) {
+    if (IsMapEntryMessage(descriptor_) &&
+        HasDescriptorMethods(descriptor_->file(), options_)) {
+      p->Emit(
+          {{"verify",
+            [&] {
+            }}},
+          R"cc(
+            class $classname$ final {
+             public:
+              static absl::string_view TypeName() { return "$full_name$"; }
+              static std::atomic<const ::$proto_ns$::Message*> prototype;
+              $verify$;
+            };
+          )cc");
     }
-    if (descriptor_->field(1)->type() == FieldDescriptor::TYPE_STRING &&
-        utf8_check != Utf8CheckMode::kNone) {
-      if (utf8_check == Utf8CheckMode::kStrict) {
-        format(
-            "  static bool ValidateValue(std::string* s) {\n"
-            "    return ::$proto_ns$::internal::WireFormatLite::"
-            "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
-            "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
-            " }\n",
-            descriptor_->field(1)->full_name());
-      } else {
-        ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
-        format(
-            "  static bool ValidateValue(std::string* s) {\n"
-            "#ifndef NDEBUG\n"
-            "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-            "       s->data(), static_cast<int>(s->size()), "
-            "::$proto_ns$::internal::"
-            "WireFormatLite::PARSE, \"$1$\");\n"
-            "#else\n"
-            "    (void) s;\n"
-            "#endif\n"
-            "    return true;\n"
-            " }\n",
-            descriptor_->field(1)->full_name());
-      }
-    } else {
-      format("  static bool ValidateValue(void*) { return true; }\n");
-    }
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "  using ::$proto_ns$::Message::MergeFrom;\n"
-          ""
-          "  ::$proto_ns$::Metadata GetMetadata() const final;\n");
-    }
-    format(
-        "  friend struct ::$tablename$;\n"
-        "};\n");
     return;
   }
 
@@ -1885,15 +1775,19 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
 
 void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
                                       int has_offset) {
-  has_offset = !has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)
-                   ? offset + has_offset
-                   : -1;
+  if (!ShouldGenerateClass(descriptor_, options_)) {
+    p->Emit(R"cc(
+      {},
+    )cc");
+    return;
+  }
+  ABSL_DCHECK(!IsMapEntryMessage(descriptor_));
+  has_offset = !has_bit_indices_.empty() ? offset + has_offset : -1;
   int inlined_string_indices_offset;
   if (inlined_string_indices_.empty()) {
     inlined_string_indices_offset = -1;
   } else {
     ABSL_DCHECK_NE(has_offset, -1);
-    ABSL_DCHECK(!IsMapEntryMessage(descriptor_));
     inlined_string_indices_offset = has_offset + has_bit_indices_.size();
   }
 
@@ -1910,38 +1804,17 @@ void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
 }
 
 void MessageGenerator::GenerateClassMethods(io::Printer* p) {
-  if (!ShouldGenerateClass(descriptor_, options_)) return;
-
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
-  if (IsMapEntryMessage(descriptor_)) {
-    format(
-        "$classname$::$classname$() {}\n"
-        "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
-        "    : SuperType(arena) {}\n"
-        "void $classname$::MergeFrom(const $classname$& other) {\n"
-        "  MergeFromInternal(other);\n"
-        "}\n");
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      if (!descriptor_->options().map_entry()) {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "$annotate_reflection$"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      } else {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      }
+
+  if (!ShouldGenerateClass(descriptor_, options_)) {
+    if (IsMapEntryMessage(descriptor_) &&
+        HasDescriptorMethods(descriptor_->file(), options_)) {
+      p->Emit(
+          R"cc(
+            std::atomic<const ::$proto_ns$::Message*> $classname$::prototype;
+          )cc");
     }
     return;
   }
@@ -2078,24 +1951,14 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   format("\n");
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    if (!descriptor_->options().map_entry()) {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "$annotate_reflection$"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
-    } else {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
-    }
+    format(
+        "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+        "$annotate_reflection$"
+        "  return ::_pbi::AssignDescriptors(\n"
+        "      &$desc_table$_getter, &$desc_table$_once,\n"
+        "      $file_level_metadata$[$1$]);\n"
+        "}\n",
+        index_in_file_messages_);
   } else {
     format(
         "std::string $classname$::GetTypeName() const {\n"
@@ -2113,11 +1976,13 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 }
 
 std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
+  if (!ShouldGenerateClass(descriptor_, options_)) return {};
+
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
 
-  if (!has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)) {
+  if (!has_bit_indices_.empty()) {
     format("PROTOBUF_FIELD_OFFSET($classtype$, $has_bits$),\n");
   } else {
     format("~0u,  // no _has_bits_\n");
@@ -2200,12 +2065,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
   }
   ABSL_CHECK_EQ(count, descriptor_->real_oneof_decl_count());
 
-  if (IsMapEntryMessage(descriptor_)) {
-    entries += 2;
-    format(
-        "0,\n"
-        "1,\n");
-  } else if (!has_bit_indices_.empty()) {
+  if (!has_bit_indices_.empty()) {
     entries += has_bit_indices_.size();
     for (int i = 0; i < has_bit_indices_.size(); i++) {
       const std::string index =
@@ -2544,7 +2404,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   auto c = p->WithVars({{"constexpr", "PROTOBUF_CONSTEXPR"}});
   Formatter format(p);
 
-  if (IsMapEntryMessage(descriptor_) || !HasImplData(descriptor_, options_)) {
+  if (!HasImplData(descriptor_, options_)) {
     p->Emit(R"cc(
       //~ Templatize constexpr constructor as a workaround for a bug in gcc 12
       //~ (warning in gcc 13).
@@ -2965,6 +2825,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
+  if (!ShouldGenerateClass(descriptor_, options_)) return;
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);

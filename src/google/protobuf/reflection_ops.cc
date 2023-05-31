@@ -281,6 +281,16 @@ bool ReflectionOps::IsInitialized(const Message& message) {
     }
   }
 
+  // For maps, the mapped field is not marked `required` but it is effetively
+  // always present. If that points to a message with required fields we need to
+  // check.
+  if (descriptor->options().map_entry() &&
+      descriptor->map_value()->type() == FieldDescriptor::TYPE_MESSAGE &&
+      !reflection->GetMessage(message, descriptor->map_value())
+           .IsInitialized()) {
+    return false;
+  }
+
   // Check that sub-messages are initialized.
   std::vector<const FieldDescriptor*> fields;
   // Should be safe to skip stripped fields because required fields are not

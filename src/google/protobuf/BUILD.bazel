@@ -488,7 +488,6 @@ cc_library(
         "generated_message_reflection.h",
         "generated_message_tctable_gen.h",
         "internal_message_util.h",
-        "map_entry.h",
         "map_field.h",
         "map_field_inl.h",
         "message.h",

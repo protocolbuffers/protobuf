@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_FIELD_INL_H__
 #define GOOGLE_PROTOBUF_MAP_FIELD_INL_H__
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -199,7 +200,11 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kValueFieldType>
 const Message* MapField<Derived, Key, T, kKeyFieldType,
                         kValueFieldType>::GetPrototype() const {
-  return Derived::internal_default_instance();
+  auto* prototype = Derived::prototype.load(std::memory_order_acquire);
+  if (prototype == nullptr) {
+    prototype = LoadMapEntryPrototype(Derived::TypeName(), Derived::prototype);
+  }
+  return prototype;
 }
 
 }  // namespace internal

@@ -1134,14 +1134,20 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
             {"defaults",
              [&] {
                for (auto& gen : message_generators_) {
-                 p->Emit(
-                     {
-                         {"ns", Namespace(gen->descriptor(), options_)},
-                         {"class", ClassName(gen->descriptor())},
-                     },
-                     R"cc(
-                       &$ns$::_$class$_default_instance_._instance,
-                     )cc");
+                 if (ShouldGenerateClass(gen->descriptor(), options_)) {
+                   p->Emit(
+                       {
+                           {"ns", Namespace(gen->descriptor(), options_)},
+                           {"class", ClassName(gen->descriptor())},
+                       },
+                       R"cc(
+                         &$ns$::_$class$_default_instance_._instance,
+                       )cc");
+                 } else {
+                   p->Emit(R"cc(
+                     nullptr,
+                   )cc");
+                 }
                }
              }},
         },
@@ -1467,8 +1473,7 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
 
   absl::btree_map<std::string, ForwardDeclarations> decls;
   for (const auto* d : classes) {
-    if (d != nullptr && !public_set.contains(d->file()) &&
-        ShouldGenerateClass(d, options_))
+    if (d != nullptr && !public_set.contains(d->file()))
       decls[Namespace(d, options_)].AddMessage(d);
   }
   for (const auto* e : enums) {
@@ -1597,7 +1602,6 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (HasMapFields(file_)) {
     IncludeFileAndExport("third_party/protobuf/map.h", p);
     if (HasDescriptorMethods(file_, options_)) {
-      IncludeFile("third_party/protobuf/map_entry.h", p);
       IncludeFile("third_party/protobuf/map_field_inl.h", p);
     } else {
       IncludeFile("third_party/protobuf/map_field_lite.h", p);
