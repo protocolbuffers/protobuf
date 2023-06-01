@@ -2,6 +2,11 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
+# Represents Rust Protobuf runtime using the cpp kernel.
+#
+# `rust_cpp_proto_library` implicitly depends on this target. This target cannot depend on
+# `:rust_proto_library_kernel` build setting; it has to be fully functional under any value of that
+# setting.
 rust_library(
     name = "cpp",
     srcs = ["cpp.rs"],
@@ -9,6 +14,7 @@ rust_library(
         "//src/google/protobuf:__subpackages__",
         "//rust:__subpackages__",
     ],
+    deps = ["//rust:common"],
 )
 
 rust_test(

@@ -1,6 +1,6 @@
 # Protobuf Rust runtime packages.
 
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
@@ -30,68 +30,22 @@ rust_library(
         "//conditions:default": ["--cfg=cpp_kernel"],
     }),
     deps = select({
-        ":use_upb_kernel": [":protobuf_upb"],
-        "//conditions:default": [":protobuf_cpp"],
+        ":use_upb_kernel": ["//rust/upb_kernel:upb"],
+        "//conditions:default": ["//rust/cpp_kernel:cpp"],
     }),
 )
 
-# Represents Rust Protobuf runtime using the upb kernel.
-#
-# `rust_upb_proto_library` implicitly depends on this target. This target cannot depend on
-# `:rust_proto_library_kernel` build setting; it has to be fully functional under any value of that
-# setting.
-#
-# `shared.rs` contains kernel-agnostic logic and simple kernel-specific logic controlled by
-# `#[cfg(...)]` attributes. That forces us to compile this file twice, once for each kernel. As a
-# result this file is declared in both `:protobuf_upb` and `:protobuf_cpp`. This is in principle
-# identical to how we compile regular Rust source files twice (once for production, and once for
-# unittesting).
 rust_library(
-    name = "protobuf_upb",
-    srcs = ["shared.rs"],
-    rustc_flags = ["--cfg=upb_kernel"],
-    deps = ["//rust/upb_kernel:upb"],
-)
-
-rust_test(
-    name = "protobuf_upb_test",
-    crate = ":protobuf_upb",
-    rustc_flags = ["--cfg=upb_kernel"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
-)
-
-# Represents Rust Protobuf runtime using the cpp kernel.
-#
-# `rust_cpp_proto_library` implicitly depends on this target. This target cannot depend on
-# `:rust_proto_library_kernel` build setting; it has to be fully functional under any value of that
-# setting.
-#
-# See the comment for `:protobuf` for discussion of `shared.rs` file.
-rust_library(
-    name = "protobuf_cpp",
-    srcs = ["shared.rs"],
-    rustc_flags = ["--cfg=cpp_kernel"],
-    deps = ["//rust/cpp_kernel:cpp"],
-)
-
-rust_test(
-    name = "protobuf_cpp_test",
-    crate = ":protobuf_cpp",
-    rustc_flags = ["--cfg=cpp_kernel"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
+    name = "common",
+    srcs = ["common.rs"],
+    visibility = ["//rust:__subpackages__"],
 )
 
 proto_lang_toolchain(
     name = "proto_rust_upb_toolchain",
     command_line = "--rust_out=experimental-codegen=enabled,kernel=upb:$(OUT)",
     progress_message = "Generating Rust proto_library %{label}",
-    runtime = ":protobuf_upb",
+    runtime = "//rust/upb_kernel:upb",
     visibility = ["//visibility:public"],
 )
 
@@ -99,7 +53,7 @@ proto_lang_toolchain(
     name = "proto_rust_cpp_toolchain",
     command_line = "--rust_out=experimental-codegen=enabled,kernel=cpp:$(OUT)",
     progress_message = "Generating Rust proto_library %{label}",
-    runtime = ":protobuf_cpp",
+    runtime = "//rust/cpp_kernel:cpp",
     visibility = ["//visibility:public"],
 )
 

@@ -30,79 +30,24 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use std::alloc;
-use std::alloc::Layout;
-use std::boxed::Box;
-use std::cell::UnsafeCell;
+pub use common::ParseError;
+pub use common::PtrAndLen;
 use std::fmt;
-use std::marker::PhantomData;
-use std::mem::MaybeUninit;
 use std::ops::Deref;
 use std::ptr::NonNull;
 use std::slice;
 
-/// A wrapper over a `proto2::Arena`.
+use std::alloc;
+use std::alloc::Layout;
+use std::cell::UnsafeCell;
+use std::marker::PhantomData;
+use std::mem::MaybeUninit;
+
+/// Represents serialized Protobuf wire format data. It's typically produced
+/// by `<Message>.serialize()`.
 ///
-/// This is not a safe wrapper per se, because the allocation functions still
-/// have sharp edges (see their safety docs for more info).
-///
-/// This is an owning type and will automatically free the arena when
-/// dropped.
-///
-/// Note that this type is neither `Sync` nor `Send`.
-pub struct Arena {
-    ptr: NonNull<u8>,
-    _not_sync: PhantomData<UnsafeCell<()>>,
-}
-
-impl Arena {
-    /// Allocates a fresh arena.
-    #[inline]
-    pub fn new() -> Self {
-        Self { ptr: NonNull::dangling(), _not_sync: PhantomData }
-    }
-
-    /// Returns the raw, C++-managed pointer to the arena.
-    #[inline]
-    pub fn raw(&self) -> ! {
-        unimplemented!()
-    }
-
-    /// Allocates some memory on the arena.
-    ///
-    /// # Safety
-    ///
-    /// `layout`'s alignment must be less than `UPB_MALLOC_ALIGN`.
-    #[inline]
-    pub unsafe fn alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
-        unimplemented!()
-    }
-
-    /// Resizes some memory on the arena.
-    ///
-    /// # Safety
-    ///
-    /// After calling this function, `ptr` is essentially zapped. `old` must
-    /// be the layout `ptr` was allocated with via [`Arena::alloc()`]. `new`'s
-    /// alignment must be less than `UPB_MALLOC_ALIGN`.
-    #[inline]
-    pub unsafe fn resize(&self, ptr: *mut u8, old: Layout, new: Layout) -> &[MaybeUninit<u8>] {
-        unimplemented!()
-    }
-}
-
-impl Drop for Arena {
-    #[inline]
-    fn drop(&mut self) {
-        // unimplemented
-    }
-}
-
-/// Represents serialized Protobuf wire format data. It's typically produced by
-/// `<Message>.serialize()`.
-///
-/// This struct is ABI compatible with the equivalent struct on the C++ side. It
-/// owns (and drops) its data.
+/// This struct is ABI compatible with the equivalent struct on the C++
+/// side. It owns (and drops) its data.
 // copybara:strip_begin
 // LINT.IfChange
 // copybara:strip_end
@@ -143,9 +88,76 @@ impl fmt::Debug for SerializedData {
     }
 }
 
+pub mod __runtime {
+    use super::*;
+
+    /// A wrapper over a `proto2::Arena`.
+    ///
+    /// This is not a safe wrapper per se, because the allocation functions
+    /// still have sharp edges (see their safety docs for more info).
+    ///
+    /// This is an owning type and will automatically free the arena when
+    /// dropped.
+    ///
+    /// Note that this type is neither `Sync` nor `Send`.
+    pub struct Arena {
+        _ptr: NonNull<u8>,
+        _not_sync: PhantomData<UnsafeCell<()>>,
+    }
+
+    impl Arena {
+        /// Allocates a fresh arena.
+        #[inline]
+        pub fn new() -> Self {
+            Self { _ptr: NonNull::dangling(), _not_sync: PhantomData }
+        }
+
+        /// Returns the raw, C++-managed pointer to the arena.
+        #[inline]
+        pub fn raw(&self) -> ! {
+            unimplemented!()
+        }
+
+        /// Allocates some memory on the arena.
+        ///
+        /// # Safety
+        ///
+        /// `layout`'s alignment must be less than `UPB_MALLOC_ALIGN`.
+        #[inline]
+        pub unsafe fn alloc(&self, _layout: Layout) -> &mut [MaybeUninit<u8>] {
+            unimplemented!()
+        }
+
+        /// Resizes some memory on the arena.
+        ///
+        /// # Safety
+        ///
+        /// After calling this function, `ptr` is essentially zapped. `old` must
+        /// be the layout `ptr` was allocated with via [`Arena::alloc()`].
+        /// `new`'s alignment must be less than `UPB_MALLOC_ALIGN`.
+        #[inline]
+        pub unsafe fn resize(
+            &self,
+            _ptr: *mut u8,
+            _old: Layout,
+            _new: Layout,
+        ) -> &[MaybeUninit<u8>] {
+            unimplemented!()
+        }
+    }
+
+    impl Drop for Arena {
+        #[inline]
+        fn drop(&mut self) {
+            // unimplemented
+        }
+    }
+} // mod __runtime
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::boxed::Box;
 
     // We need to allocate the byte array so SerializedData can own it and
     // deallocate it in its drop. This function makes it easier to do so for our

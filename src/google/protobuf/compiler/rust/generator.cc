@@ -102,7 +102,7 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
   });
 
   file.Emit({{"kernel", KernelRsName(file.opts().kernel)}}, R"rs(
-    extern crate protobuf_$kernel$ as __pb;
+    extern crate $kernel$ as __pb;
     extern crate std as __std;
 
   )rs");
