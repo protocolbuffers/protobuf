@@ -597,9 +597,9 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   }
   // clang-format off
   printer->Print(
-      "    #if defined(DEBUG) && DEBUG\n"
+      "#if defined(DEBUG) && DEBUG\n"
       "      NSAssert(descriptor == nil, @\"Startup recursed!\");\n"
-      "    #endif  // DEBUG\n"
+      "#endif  // DEBUG\n"
       "    descriptor = localDescriptor;\n"
       "  }\n"
       "  return descriptor;\n"
