@@ -4023,6 +4023,7 @@ class DescriptorBuilder {
                                     const Descriptor* result);
   void CheckFieldJsonNameUniqueness(const std::string& message_name,
                                     const DescriptorProto& message,
+                                    const Descriptor* descriptor,
                                     FileDescriptorLegacy::Syntax syntax,
                                     bool use_custom_names);
   void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
@@ -5744,13 +5745,13 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     if (syntax == FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
       // Only check default JSON names for conflicts in proto3.  This is legacy
       // behavior that will be removed in a later version.
-      CheckFieldJsonNameUniqueness(message_name, proto, syntax, false);
+      CheckFieldJsonNameUniqueness(message_name, proto, result, syntax, false);
     }
   } else {
     // Check both with and without taking json_name into consideration.  This is
     // needed for field masks, which don't use json_name.
-    CheckFieldJsonNameUniqueness(message_name, proto, syntax, false);
-    CheckFieldJsonNameUniqueness(message_name, proto, syntax, true);
+    CheckFieldJsonNameUniqueness(message_name, proto, result, syntax, false);
+    CheckFieldJsonNameUniqueness(message_name, proto, result, syntax, true);
   }
 }
 
@@ -5781,7 +5782,8 @@ bool JsonNameLooksLikeExtension(std::string name) {
 
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const std::string& message_name, const DescriptorProto& message,
-    FileDescriptorLegacy::Syntax syntax, bool use_custom_names) {
+    const Descriptor* descriptor, FileDescriptorLegacy::Syntax syntax,
+    bool use_custom_names) {
   absl::flat_hash_map<std::string, JsonNameDetails> name_to_field;
   for (const FieldDescriptorProto& field : message.field()) {
     JsonNameDetails details = GetJsonNameDetails(&field, use_custom_names);
