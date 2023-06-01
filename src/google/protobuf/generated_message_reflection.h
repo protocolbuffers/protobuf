@@ -342,7 +342,7 @@ void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table,
                                        bool eager = false);
 
 // Overload used to implement GetMetadataStatic in the generated code.
-// See comments in compiler/cpp/internal/file.cc as to why.
+// See comments in compiler/cpp/file.cc as to why.
 // It takes a `Metadata` and returns it to allow for tail calls and reduce
 // binary size.
 Metadata PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* (*table)(),
