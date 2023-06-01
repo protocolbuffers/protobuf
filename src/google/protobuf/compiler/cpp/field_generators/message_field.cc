@@ -62,7 +62,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   bool split = ShouldSplit(field, opts);
   bool is_foreign = IsCrossFileMessage(field);
   std::string field_name = FieldMemberName(field, split);
-  std::string type = FieldMessageTypeName(field, opts);
+  std::string qualified_type = FieldMessageTypeName(field, opts);
   std::string default_ref =
       QualifiedDefaultInstanceName(field->message_type(), opts);
   std::string default_ptr =
@@ -70,19 +70,20 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   absl::string_view base = "::google::protobuf::MessageLite";
 
   return {
-      {"Submsg", type},
-      {"MemberType", !weak ? type : base},
-      {"CompleteType", !is_foreign ? type : base},
+      {"Submsg", qualified_type},
+      {"MemberType", !weak ? qualified_type : base},
+      {"CompleteType", !is_foreign ? qualified_type : base},
       {"kDefault", default_ref},
       {"kDefaultPtr", !weak
                           ? default_ptr
                           : absl::Substitute("reinterpret_cast<const $0*>($1)",
                                              base, default_ptr)},
-      {"base_cast", absl::Substitute("reinterpret_cast<$0*>",
-                                     !is_foreign && !weak ? type : base)},
-      {"cast_field_",
-       !weak ? field_name
-             : absl::Substitute("reinterpret_cast<$0*>($1)", type, field_name)},
+      {"base_cast",
+       absl::Substitute("reinterpret_cast<$0*>",
+                        !is_foreign && !weak ? qualified_type : base)},
+      {"cast_field_", !weak ? field_name
+                            : absl::Substitute("reinterpret_cast<$0*>($1)",
+                                               qualified_type, field_name)},
       {"Weak", weak ? "Weak" : ""},
       {".weak", weak ? ".weak" : ""},
       {"_weak", weak ? "_weak" : ""},
@@ -90,7 +91,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
           !weak ? ""
                 : absl::Substitute("::google::protobuf::internal::StrongReference("
                                    "reinterpret_cast<const $0&>($1));\n",
-                                   type, default_ref))
+                                   qualified_type, default_ref))
           .WithSuffix(";"),
   };
 }
