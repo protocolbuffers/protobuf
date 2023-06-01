@@ -507,6 +507,10 @@ TEST(MessageTest, MapField) {
 // static void DecodeEncodeArbitrarySchemaAndPayload(
 //     const upb::fuzz::MiniTableFuzzInput& input, std::string_view proto_payload,
 //     int decode_options, int encode_options) {
+// // Lexan does not have setenv
+// #ifndef _MSC_VER
+//   setenv("FUZZTEST_STACK_LIMIT", "262144", 1);
+// #endif
 //   // The value of 80 used here is empirical and intended to roughly represent
 //   // the tiny 64K stack size used by the test framework. We still see the
 //   // occasional stack overflow at 90, so far 80 has worked 100% of the time.
