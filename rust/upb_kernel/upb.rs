@@ -30,105 +30,18 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use std::alloc;
-use std::alloc::Layout;
-use std::cell::UnsafeCell;
+pub use common::ParseError;
+pub use common::PtrAndLen;
 use std::fmt;
-use std::marker::PhantomData;
-use std::mem::MaybeUninit;
 use std::ops::Deref;
 use std::ptr::NonNull;
 use std::slice;
 
-/// See `upb/port/def.inc`.
-const UPB_MALLOC_ALIGN: usize = 8;
-
-/// A UPB-managed pointer to a raw arena.
-pub type RawArena = NonNull<RawArenaData>;
-
-/// The data behind a [`RawArena`]. Do not use this type.
-#[repr(C)]
-pub struct RawArenaData {
-    _data: [u8; 0],
-}
-
-/// A wrapper over a `upb_Arena`.
-///
-/// This is not a safe wrapper per se, because the allocation functions still
-/// have sharp edges (see their safety docs for more info).
-///
-/// This is an owning type and will automatically free the arena when
-/// dropped.
-///
-/// Note that this type is neither `Sync` nor `Send`.
-pub struct Arena {
-    raw: RawArena,
-    _not_sync: PhantomData<UnsafeCell<()>>,
-}
-
-extern "C" {
-    fn upb_Arena_New() -> RawArena;
-    fn upb_Arena_Free(arena: RawArena);
-    fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
-    fn upb_Arena_Realloc(arena: RawArena, ptr: *mut u8, old: usize, new: usize) -> *mut u8;
-}
-
-impl Arena {
-    /// Allocates a fresh arena.
-    #[inline]
-    pub fn new() -> Self {
-        Self { raw: unsafe { upb_Arena_New() }, _not_sync: PhantomData }
-    }
-
-    /// Returns the raw, UPB-managed pointer to the arena.
-    #[inline]
-    pub fn raw(&self) -> RawArena {
-        self.raw
-    }
-
-    /// Allocates some memory on the arena.
-    ///
-    /// # Safety
-    ///
-    /// `layout`'s alignment must be less than `UPB_MALLOC_ALIGN`.
-    #[inline]
-    pub unsafe fn alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
-        debug_assert!(layout.align() <= UPB_MALLOC_ALIGN);
-        let ptr = upb_Arena_Malloc(self.raw, layout.size());
-        if ptr.is_null() {
-            alloc::handle_alloc_error(layout);
-        }
-
-        slice::from_raw_parts_mut(ptr.cast(), layout.size())
-    }
-
-    /// Resizes some memory on the arena.
-    ///
-    /// # Safety
-    ///
-    /// After calling this function, `ptr` is essentially zapped. `old` must
-    /// be the layout `ptr` was allocated with via [`Arena::alloc()`]. `new`'s
-    /// alignment must be less than `UPB_MALLOC_ALIGN`.
-    #[inline]
-    pub unsafe fn resize(&self, ptr: *mut u8, old: Layout, new: Layout) -> &[MaybeUninit<u8>] {
-        debug_assert!(new.align() <= UPB_MALLOC_ALIGN);
-        let ptr = upb_Arena_Realloc(self.raw, ptr, old.size(), new.size());
-        if ptr.is_null() {
-            alloc::handle_alloc_error(new);
-        }
-
-        slice::from_raw_parts_mut(ptr.cast(), new.size())
-    }
-}
-
-impl Drop for Arena {
-    #[inline]
-    fn drop(&mut self) {
-        unsafe {
-            upb_Arena_Free(self.raw);
-        }
-    }
-}
+use std::alloc;
+use std::alloc::Layout;
+use std::cell::UnsafeCell;
+use std::marker::PhantomData;
+use std::mem::MaybeUninit;
 
 /// Represents serialized Protobuf wire format data.
 ///
@@ -138,11 +51,11 @@ pub struct SerializedData {
     len: usize,
 
     // The arena that owns `data`.
-    _arena: Arena,
+    _arena: __runtime::Arena,
 }
 
 impl SerializedData {
-    pub unsafe fn from_raw_parts(arena: Arena, data: NonNull<u8>, len: usize) -> Self {
+    pub unsafe fn from_raw_parts(arena: __runtime::Arena, data: NonNull<u8>, len: usize) -> Self {
         SerializedData { _arena: arena, data, len }
     }
 }
@@ -160,8 +73,104 @@ impl fmt::Debug for SerializedData {
     }
 }
 
+pub mod __runtime {
+
+    use super::*;
+
+    /// See `upb/port/def.inc`.
+    const UPB_MALLOC_ALIGN: usize = 8;
+
+    /// A UPB-managed pointer to a raw arena.
+    pub type RawArena = NonNull<RawArenaData>;
+
+    /// The data behind a [`RawArena`]. Do not use this type.
+    #[repr(C)]
+    pub struct RawArenaData {
+        _data: [u8; 0],
+    }
+
+    /// A wrapper over a `upb_Arena`.
+    ///
+    /// This is not a safe wrapper per se, because the allocation functions
+    /// still have sharp edges (see their safety docs for more info).
+    ///
+    /// This is an owning type and will automatically free the arena when
+    /// dropped.
+    ///
+    /// Note that this type is neither `Sync` nor `Send`.
+    pub struct Arena {
+        raw: RawArena,
+        _not_sync: PhantomData<UnsafeCell<()>>,
+    }
+
+    extern "C" {
+        fn upb_Arena_New() -> RawArena;
+        fn upb_Arena_Free(arena: RawArena);
+        fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
+        fn upb_Arena_Realloc(arena: RawArena, ptr: *mut u8, old: usize, new: usize) -> *mut u8;
+    }
+
+    impl Arena {
+        /// Allocates a fresh arena.
+        #[inline]
+        pub fn new() -> Self {
+            Self { raw: unsafe { upb_Arena_New() }, _not_sync: PhantomData }
+        }
+
+        /// Returns the raw, UPB-managed pointer to the arena.
+        #[inline]
+        pub fn raw(&self) -> RawArena {
+            self.raw
+        }
+
+        /// Allocates some memory on the arena.
+        ///
+        /// # Safety
+        ///
+        /// `layout`'s alignment must be less than `UPB_MALLOC_ALIGN`.
+        #[inline]
+        pub unsafe fn alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
+            debug_assert!(layout.align() <= UPB_MALLOC_ALIGN);
+            let ptr = upb_Arena_Malloc(self.raw, layout.size());
+            if ptr.is_null() {
+                alloc::handle_alloc_error(layout);
+            }
+
+            slice::from_raw_parts_mut(ptr.cast(), layout.size())
+        }
+
+        /// Resizes some memory on the arena.
+        ///
+        /// # Safety
+        ///
+        /// After calling this function, `ptr` is essentially zapped. `old` must
+        /// be the layout `ptr` was allocated with via [`Arena::alloc()`].
+        /// `new`'s alignment must be less than `UPB_MALLOC_ALIGN`.
+        #[inline]
+        pub unsafe fn resize(&self, ptr: *mut u8, old: Layout, new: Layout) -> &[MaybeUninit<u8>] {
+            debug_assert!(new.align() <= UPB_MALLOC_ALIGN);
+            let ptr = upb_Arena_Realloc(self.raw, ptr, old.size(), new.size());
+            if ptr.is_null() {
+                alloc::handle_alloc_error(new);
+            }
+
+            slice::from_raw_parts_mut(ptr.cast(), new.size())
+        }
+    }
+
+    impl Drop for Arena {
+        #[inline]
+        fn drop(&mut self) {
+            unsafe {
+                upb_Arena_Free(self.raw);
+            }
+        }
+    }
+} // mod __runtime
+
 #[cfg(test)]
 mod tests {
+    use super::__runtime::*;
     use super::*;
 
     #[test]

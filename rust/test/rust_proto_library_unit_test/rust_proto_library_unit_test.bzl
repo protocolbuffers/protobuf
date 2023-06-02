@@ -57,7 +57,7 @@ def _rust_upb_aspect_test_impl(ctx):
     rustc_action = _find_action_with_mnemonic(actions, "Rustc")
 
     # The action needs to have the Rust runtime as an input
-    _find_rust_lib_input(rustc_action.inputs, "protobuf")
+    _find_rust_lib_input(rustc_action.inputs, "upb")
 
     # The action needs to produce a .rlib artifact (sometimes .rmeta as well, not tested here).
     asserts.true(env, rustc_action.outputs.to_list()[0].path.endswith(".rlib"))
@@ -88,7 +88,7 @@ def _rust_cc_aspect_test_impl(ctx):
     rustc_action = _find_action_with_mnemonic(actions, "Rustc")
 
     # The action needs to have the Rust runtime as an input
-    _find_rust_lib_input(rustc_action.inputs, "protobuf")
+    _find_rust_lib_input(rustc_action.inputs, "cpp")
 
     # The action needs to produce a .rlib artifact (sometimes .rmeta as well, not tested here).
     asserts.true(env, rustc_action.outputs.to_list()[0].path.endswith(".rlib"))

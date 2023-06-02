@@ -21,7 +21,7 @@ rust_test(
     ],
     deps = [
         ":test_utils",
-        "//rust:protobuf_cpp",
+        "//rust/cpp_kernel:cpp",
         "//rust/test:unittest_cc_rust_proto",
     ],
 )
