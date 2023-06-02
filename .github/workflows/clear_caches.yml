@@ -8,6 +8,9 @@ on:
   # manual
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   bazel-repository-cache:
     strategy:
