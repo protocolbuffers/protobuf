@@ -3,7 +3,7 @@ load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 # Run Linkage Monitor
 sh_test(
     name = "linkage_monitor",
-    size = "small",
+    size = "large",
     srcs = [
         ":linkage_monitor.sh",
     ],

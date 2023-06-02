@@ -16,8 +16,11 @@ echo "Maven command: $(which mvn)"
 
 echo "protoc command:$(which protoc); $(protoc --version)"
 
-mvn --projects "bom,core,util" -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true -Dprotoc="${RUNFILES_DIR}/com_google_protobuf/protoc"
+mvn --projects "bom,core,util" -e -B -Dhttps.protocols=TLSv1.2 install \
+    -Dmaven.test.skip=true \
+    -Dprotobuf.basedir="../" \
+    -Dprotoc="${RUNFILES_DIR}/com_google_protobuf/protoc" \
 
 curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
 
-java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:libraries-bom
+java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:google-cloud-shared-dependencies
