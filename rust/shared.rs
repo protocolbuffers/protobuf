@@ -40,6 +40,8 @@ pub mod __runtime;
 #[path = "upb.rs"]
 pub mod __runtime;
 
+mod proxied;
+
 pub use __runtime::SerializedData;
 
 use std::fmt;
