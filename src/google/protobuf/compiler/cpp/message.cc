@@ -699,7 +699,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     p->Emit(
-        {{"field_comment", FieldComment(field)},
+        {{"field_comment", FieldComment(field, options_)},
          Sub("const_impl", "const;").WithSuffix(";"),
          Sub("impl", ";").WithSuffix(";"),
          {"sizer",
@@ -1134,7 +1134,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   p->Emit("// $classname$\n\n");
 
   for (auto field : FieldRange(descriptor_)) {
-    PrintFieldComment(Formatter{p}, field);
+    PrintFieldComment(Formatter{p}, field, options_);
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
@@ -3688,7 +3688,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     return;
   }
 
-  PrintFieldComment(Formatter{p}, field);
+  PrintFieldComment(Formatter{p}, field, options_);
   if (HasHasbit(field)) {
     p->Emit(
         {
@@ -3959,7 +3959,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
                  re.Flush();
                  if (field->options().weak()) {
                    largest_weak_field.ReplaceIfLarger(field);
-                   PrintFieldComment(Formatter{p}, field);
+                   PrintFieldComment(Formatter{p}, field, options_);
                  } else {
                    e.EmitIfNotNull(largest_weak_field.Release());
                    e.Emit(field);
@@ -4204,7 +4204,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
       const FieldDescriptor* field = chunk[j];
       bool have_enclosing_if = false;
 
-      PrintFieldComment(format, field);
+      PrintFieldComment(format, field, options_);
 
       if (field->is_repeated()) {
         // No presence check is required.
@@ -4246,7 +4246,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     format("switch ($1$_case()) {\n", oneof->name());
     format.Indent();
     for (auto field : FieldRange(oneof)) {
-      PrintFieldComment(format, field);
+      PrintFieldComment(format, field, options_);
       format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
       format.Indent();
       field_generators_.get(field).GenerateByteSize(p);

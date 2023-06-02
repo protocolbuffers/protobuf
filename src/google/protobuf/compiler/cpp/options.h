@@ -88,6 +88,7 @@ struct Options {
   bool force_eagerly_verified_lazy = false;
   bool force_inline_string = false;
 #endif  // !PROTOBUF_STABLE_EXPERIMENTS
+  bool strip_nonfunctional_codegen = false;
 };
 
 }  // namespace cpp

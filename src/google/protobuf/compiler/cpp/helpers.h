@@ -915,16 +915,19 @@ class PROTOC_EXPORT Formatter {
 };
 
 template <typename T>
-std::string FieldComment(const T* field) {
+std::string FieldComment(const T* field, const Options& options) {
+  if (options.strip_nonfunctional_codegen) {
+    return field->name();
+  }
   // Print the field's (or oneof's) proto-syntax definition as a comment.
   // We don't want to print group bodies so we cut off after the first
   // line.
-  DebugStringOptions options;
-  options.elide_group_body = true;
-  options.elide_oneof_body = true;
+  DebugStringOptions debug_options;
+  debug_options.elide_group_body = true;
+  debug_options.elide_oneof_body = true;
 
   for (absl::string_view chunk :
-       absl::StrSplit(field->DebugStringWithOptions(options), '\n')) {
+       absl::StrSplit(field->DebugStringWithOptions(debug_options), '\n')) {
     return std::string(chunk);
   }
 
@@ -932,8 +935,9 @@ std::string FieldComment(const T* field) {
 }
 
 template <class T>
-void PrintFieldComment(const Formatter& format, const T* field) {
-  format("// $1$\n", FieldComment(field));
+void PrintFieldComment(const Formatter& format, const T* field,
+                       const Options& options) {
+  format("// $1$\n", FieldComment(field, options));
 }
 
 class PROTOC_EXPORT NamespaceOpener {
