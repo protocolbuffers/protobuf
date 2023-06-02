@@ -203,6 +203,10 @@ std::string IntTypeName(const Options& options, absl::string_view type) {
 
 }  // namespace
 
+bool IsRarelyPresent(const FieldDescriptor* field, const Options& options) {
+  return false;
+}
+
 bool IsLazy(const FieldDescriptor* field, const Options& options,
             MessageSCCAnalyzer* scc_analyzer) {
   return IsLazilyVerifiedLazy(field, options) ||
