@@ -7,6 +7,9 @@ on:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+        
+permissions:
+  contents: read
 
 jobs:
   linux:
