@@ -191,6 +191,7 @@ struct WeakRepeatedPtrField {
     return base().AddWeak(prototype);
   }
   T* Add() { return weak.Add(); }
+  int size() const { return base().size(); }
   void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {
     base().template MergeFrom<TypeHandler>(other.base());

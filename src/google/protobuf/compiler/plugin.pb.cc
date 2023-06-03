@@ -623,7 +623,7 @@ const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_Internal::co
   return *msg->_impl_.compiler_version_;
 }
 void CodeGeneratorRequest::clear_proto_file() {
-  _internal_mutable_proto_file()->Clear();
+  _impl_.proto_file_.Clear();
 }
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
@@ -694,7 +694,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   (void) cached_has_bits;
 
   _impl_.file_to_generate_.Clear();
-  _internal_mutable_proto_file()->Clear();
+  _impl_.proto_file_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -806,8 +806,8 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_proto_file_size()); i < n; i++) {
-    const auto& repfield = this->_internal_proto_file().Get(i);
+      n = static_cast<unsigned>(this->_impl_.proto_file_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.proto_file_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(15, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -835,8 +835,8 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(_impl_.file_to_generate_.Get(i));
   }
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  total_size += 1UL * this->_internal_proto_file_size();
-  for (const auto& msg : this->_internal_proto_file()) {
+  total_size += 1UL * this->_impl_.proto_file_.size();
+  for (const auto& msg : this->_impl_.proto_file_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -875,7 +875,7 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
   (void) cached_has_bits;
 
   _this->_impl_.file_to_generate_.MergeFrom(from._impl_.file_to_generate_);
-  _this->_internal_mutable_proto_file()->MergeFrom(from._internal_proto_file());
+  _this->_impl_.proto_file_.MergeFrom(from._impl_.proto_file_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -897,7 +897,7 @@ void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_proto_file()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.proto_file_))
     return false;
   return true;
 }
@@ -909,7 +909,7 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.file_to_generate_.InternalSwap(&other->_impl_.file_to_generate_);
-  _internal_mutable_proto_file()->InternalSwap(other->_internal_mutable_proto_file());
+  _impl_.proto_file_.InternalSwap(&other->_impl_.proto_file_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, lhs_arena,
                                        &other->_impl_.parameter_, rhs_arena);
   swap(_impl_.compiler_version_, other->_impl_.compiler_version_);
@@ -1348,7 +1348,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_file()->Clear();
+  _impl_.file_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     _impl_.error_.ClearNonDefaultToEmpty();
@@ -1436,8 +1436,8 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_file_size()); i < n; i++) {
-    const auto& repfield = this->_internal_file().Get(i);
+      n = static_cast<unsigned>(this->_impl_.file_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.file_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(15, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -1460,8 +1460,8 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  total_size += 1UL * this->_internal_file_size();
-  for (const auto& msg : this->_internal_file()) {
+  total_size += 1UL * this->_impl_.file_.size();
+  for (const auto& msg : this->_impl_.file_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -1498,7 +1498,7 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::Message& to_msg, const
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_file()->MergeFrom(from._internal_file());
+  _this->_impl_.file_.MergeFrom(from._impl_.file_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -1529,7 +1529,7 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_file()->InternalSwap(other->_internal_mutable_file());
+  _impl_.file_.InternalSwap(&other->_impl_.file_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_, lhs_arena,
                                        &other->_impl_.error_, rhs_arena);
         swap(_impl_.supported_features_, other->_impl_.supported_features_);

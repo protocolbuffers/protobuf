@@ -2062,7 +2062,7 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_file()->Clear();
+  _impl_.file_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -2111,8 +2111,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
 
   // repeated .google.protobuf.FileDescriptorProto file = 1;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_file_size()); i < n; i++) {
-    const auto& repfield = this->_internal_file().Get(i);
+      n = static_cast<unsigned>(this->_impl_.file_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.file_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(1, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -2135,8 +2135,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.FileDescriptorProto file = 1;
-  total_size += 1UL * this->_internal_file_size();
-  for (const auto& msg : this->_internal_file()) {
+  total_size += 1UL * this->_impl_.file_.size();
+  for (const auto& msg : this->_impl_.file_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -2158,7 +2158,7 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::Message& to_msg, const ::g
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_file()->MergeFrom(from._internal_file());
+  _this->_impl_.file_.MergeFrom(from._impl_.file_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -2170,7 +2170,7 @@ void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
 }
 
 PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_file()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.file_))
     return false;
   return true;
 }
@@ -2178,7 +2178,7 @@ PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_file()->InternalSwap(other->_internal_mutable_file());
+  _impl_.file_.InternalSwap(&other->_impl_.file_);
 }
 
 ::google::protobuf::Metadata FileDescriptorSet::GetMetadata() const {
@@ -2353,10 +2353,10 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
   (void) cached_has_bits;
 
   _impl_.dependency_.Clear();
-  _internal_mutable_message_type()->Clear();
-  _internal_mutable_enum_type()->Clear();
-  _internal_mutable_service()->Clear();
-  _internal_mutable_extension()->Clear();
+  _impl_.message_type_.Clear();
+  _impl_.enum_type_.Clear();
+  _impl_.service_.Clear();
+  _impl_.extension_.Clear();
   _impl_.public_dependency_.Clear();
   _impl_.weak_dependency_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
@@ -2543,32 +2543,32 @@ constexpr ::_pbi::TcParseTable<4, 13, 6, 86, 2> FileDescriptorProto::_table_ = {
 
   // repeated .google.protobuf.DescriptorProto message_type = 4;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_message_type_size()); i < n; i++) {
-    const auto& repfield = this->_internal_message_type().Get(i);
+      n = static_cast<unsigned>(this->_impl_.message_type_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.message_type_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_enum_type_size()); i < n; i++) {
-    const auto& repfield = this->_internal_enum_type().Get(i);
+      n = static_cast<unsigned>(this->_impl_.enum_type_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.enum_type_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(5, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_service_size()); i < n; i++) {
-    const auto& repfield = this->_internal_service().Get(i);
+      n = static_cast<unsigned>(this->_impl_.service_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.service_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(6, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_extension_size()); i < n; i++) {
-    const auto& repfield = this->_internal_extension().Get(i);
+      n = static_cast<unsigned>(this->_impl_.extension_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.extension_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(7, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -2640,26 +2640,26 @@ constexpr ::_pbi::TcParseTable<4, 13, 6, 86, 2> FileDescriptorProto::_table_ = {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(_impl_.dependency_.Get(i));
   }
   // repeated .google.protobuf.DescriptorProto message_type = 4;
-  total_size += 1UL * this->_internal_message_type_size();
-  for (const auto& msg : this->_internal_message_type()) {
+  total_size += 1UL * this->_impl_.message_type_.size();
+  for (const auto& msg : this->_impl_.message_type_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-  total_size += 1UL * this->_internal_enum_type_size();
-  for (const auto& msg : this->_internal_enum_type()) {
+  total_size += 1UL * this->_impl_.enum_type_.size();
+  for (const auto& msg : this->_impl_.enum_type_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-  total_size += 1UL * this->_internal_service_size();
-  for (const auto& msg : this->_internal_service()) {
+  total_size += 1UL * this->_impl_.service_.size();
+  for (const auto& msg : this->_impl_.service_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-  total_size += 1UL * this->_internal_extension_size();
-  for (const auto& msg : this->_internal_extension()) {
+  total_size += 1UL * this->_impl_.extension_.size();
+  for (const auto& msg : this->_impl_.extension_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -2741,10 +2741,10 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   (void) cached_has_bits;
 
   _this->_impl_.dependency_.MergeFrom(from._impl_.dependency_);
-  _this->_internal_mutable_message_type()->MergeFrom(from._internal_message_type());
-  _this->_internal_mutable_enum_type()->MergeFrom(from._internal_enum_type());
-  _this->_internal_mutable_service()->MergeFrom(from._internal_service());
-  _this->_internal_mutable_extension()->MergeFrom(from._internal_extension());
+  _this->_impl_.message_type_.MergeFrom(from._impl_.message_type_);
+  _this->_impl_.enum_type_.MergeFrom(from._impl_.enum_type_);
+  _this->_impl_.service_.MergeFrom(from._impl_.service_);
+  _this->_impl_.extension_.MergeFrom(from._impl_.extension_);
   _this->_impl_.public_dependency_.MergeFrom(from._impl_.public_dependency_);
   _this->_impl_.weak_dependency_.MergeFrom(from._impl_.weak_dependency_);
   cached_has_bits = from._impl_._has_bits_[0];
@@ -2781,13 +2781,13 @@ void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_message_type()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.message_type_))
     return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_enum_type()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.enum_type_))
     return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_service()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.service_))
     return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_extension()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.extension_))
     return false;
   if ((_impl_._has_bits_[0] & 0x00000010u) != 0) {
     if (!_impl_.options_->IsInitialized()) return false;
@@ -2802,10 +2802,10 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.dependency_.InternalSwap(&other->_impl_.dependency_);
-  _internal_mutable_message_type()->InternalSwap(other->_internal_mutable_message_type());
-  _internal_mutable_enum_type()->InternalSwap(other->_internal_mutable_enum_type());
-  _internal_mutable_service()->InternalSwap(other->_internal_mutable_service());
-  _internal_mutable_extension()->InternalSwap(other->_internal_mutable_extension());
+  _impl_.message_type_.InternalSwap(&other->_impl_.message_type_);
+  _impl_.enum_type_.InternalSwap(&other->_impl_.enum_type_);
+  _impl_.service_.InternalSwap(&other->_impl_.service_);
+  _impl_.extension_.InternalSwap(&other->_impl_.extension_);
   _impl_.public_dependency_.InternalSwap(&other->_impl_.public_dependency_);
   _impl_.weak_dependency_.InternalSwap(&other->_impl_.weak_dependency_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
@@ -3426,13 +3426,13 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_field()->Clear();
-  _internal_mutable_nested_type()->Clear();
-  _internal_mutable_enum_type()->Clear();
-  _internal_mutable_extension_range()->Clear();
-  _internal_mutable_extension()->Clear();
-  _internal_mutable_oneof_decl()->Clear();
-  _internal_mutable_reserved_range()->Clear();
+  _impl_.field_.Clear();
+  _impl_.nested_type_.Clear();
+  _impl_.enum_type_.Clear();
+  _impl_.extension_range_.Clear();
+  _impl_.extension_.Clear();
+  _impl_.oneof_decl_.Clear();
+  _impl_.reserved_range_.Clear();
   _impl_.reserved_name_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -3573,40 +3573,40 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
 
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_field_size()); i < n; i++) {
-    const auto& repfield = this->_internal_field().Get(i);
+      n = static_cast<unsigned>(this->_impl_.field_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.field_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_nested_type_size()); i < n; i++) {
-    const auto& repfield = this->_internal_nested_type().Get(i);
+      n = static_cast<unsigned>(this->_impl_.nested_type_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.nested_type_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_enum_type_size()); i < n; i++) {
-    const auto& repfield = this->_internal_enum_type().Get(i);
+      n = static_cast<unsigned>(this->_impl_.enum_type_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.enum_type_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_extension_range_size()); i < n; i++) {
-    const auto& repfield = this->_internal_extension_range().Get(i);
+      n = static_cast<unsigned>(this->_impl_.extension_range_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.extension_range_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(5, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_extension_size()); i < n; i++) {
-    const auto& repfield = this->_internal_extension().Get(i);
+      n = static_cast<unsigned>(this->_impl_.extension_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.extension_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(6, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -3620,16 +3620,16 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
 
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_oneof_decl_size()); i < n; i++) {
-    const auto& repfield = this->_internal_oneof_decl().Get(i);
+      n = static_cast<unsigned>(this->_impl_.oneof_decl_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.oneof_decl_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(8, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_reserved_range_size()); i < n; i++) {
-    const auto& repfield = this->_internal_reserved_range().Get(i);
+      n = static_cast<unsigned>(this->_impl_.reserved_range_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.reserved_range_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(9, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -3660,44 +3660,44 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
-  total_size += 1UL * this->_internal_field_size();
-  for (const auto& msg : this->_internal_field()) {
+  total_size += 1UL * this->_impl_.field_.size();
+  for (const auto& msg : this->_impl_.field_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
-  total_size += 1UL * this->_internal_nested_type_size();
-  for (const auto& msg : this->_internal_nested_type()) {
+  total_size += 1UL * this->_impl_.nested_type_.size();
+  for (const auto& msg : this->_impl_.nested_type_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-  total_size += 1UL * this->_internal_enum_type_size();
-  for (const auto& msg : this->_internal_enum_type()) {
+  total_size += 1UL * this->_impl_.enum_type_.size();
+  for (const auto& msg : this->_impl_.enum_type_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-  total_size += 1UL * this->_internal_extension_range_size();
-  for (const auto& msg : this->_internal_extension_range()) {
+  total_size += 1UL * this->_impl_.extension_range_.size();
+  for (const auto& msg : this->_impl_.extension_range_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-  total_size += 1UL * this->_internal_extension_size();
-  for (const auto& msg : this->_internal_extension()) {
+  total_size += 1UL * this->_impl_.extension_.size();
+  for (const auto& msg : this->_impl_.extension_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
-  total_size += 1UL * this->_internal_oneof_decl_size();
-  for (const auto& msg : this->_internal_oneof_decl()) {
+  total_size += 1UL * this->_impl_.oneof_decl_.size();
+  for (const auto& msg : this->_impl_.oneof_decl_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
-  total_size += 1UL * this->_internal_reserved_range_size();
-  for (const auto& msg : this->_internal_reserved_range()) {
+  total_size += 1UL * this->_impl_.reserved_range_.size();
+  for (const auto& msg : this->_impl_.reserved_range_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -3740,13 +3740,13 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_field()->MergeFrom(from._internal_field());
-  _this->_internal_mutable_nested_type()->MergeFrom(from._internal_nested_type());
-  _this->_internal_mutable_enum_type()->MergeFrom(from._internal_enum_type());
-  _this->_internal_mutable_extension_range()->MergeFrom(from._internal_extension_range());
-  _this->_internal_mutable_extension()->MergeFrom(from._internal_extension());
-  _this->_internal_mutable_oneof_decl()->MergeFrom(from._internal_oneof_decl());
-  _this->_internal_mutable_reserved_range()->MergeFrom(from._internal_reserved_range());
+  _this->_impl_.field_.MergeFrom(from._impl_.field_);
+  _this->_impl_.nested_type_.MergeFrom(from._impl_.nested_type_);
+  _this->_impl_.enum_type_.MergeFrom(from._impl_.enum_type_);
+  _this->_impl_.extension_range_.MergeFrom(from._impl_.extension_range_);
+  _this->_impl_.extension_.MergeFrom(from._impl_.extension_);
+  _this->_impl_.oneof_decl_.MergeFrom(from._impl_.oneof_decl_);
+  _this->_impl_.reserved_range_.MergeFrom(from._impl_.reserved_range_);
   _this->_impl_.reserved_name_.MergeFrom(from._impl_.reserved_name_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -3769,17 +3769,17 @@ void DescriptorProto::CopyFrom(const DescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_field()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.field_))
     return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_nested_type()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.nested_type_))
     return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_enum_type()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.enum_type_))
     return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_extension_range()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.extension_range_))
     return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_extension()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.extension_))
     return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_oneof_decl()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.oneof_decl_))
     return false;
   if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
     if (!_impl_.options_->IsInitialized()) return false;
@@ -3793,13 +3793,13 @@ void DescriptorProto::InternalSwap(DescriptorProto* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_field()->InternalSwap(other->_internal_mutable_field());
-  _internal_mutable_nested_type()->InternalSwap(other->_internal_mutable_nested_type());
-  _internal_mutable_enum_type()->InternalSwap(other->_internal_mutable_enum_type());
-  _internal_mutable_extension_range()->InternalSwap(other->_internal_mutable_extension_range());
-  _internal_mutable_extension()->InternalSwap(other->_internal_mutable_extension());
-  _internal_mutable_oneof_decl()->InternalSwap(other->_internal_mutable_oneof_decl());
-  _internal_mutable_reserved_range()->InternalSwap(other->_internal_mutable_reserved_range());
+  _impl_.field_.InternalSwap(&other->_impl_.field_);
+  _impl_.nested_type_.InternalSwap(&other->_impl_.nested_type_);
+  _impl_.enum_type_.InternalSwap(&other->_impl_.enum_type_);
+  _impl_.extension_range_.InternalSwap(&other->_impl_.extension_range_);
+  _impl_.extension_.InternalSwap(&other->_impl_.extension_);
+  _impl_.oneof_decl_.InternalSwap(&other->_impl_.oneof_decl_);
+  _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
   _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
@@ -4260,8 +4260,8 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_declaration()->Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.declaration_.Clear();
+  _impl_.uninterpreted_option_.Clear();
   _impl_.verification_ = 1;
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -4325,8 +4325,8 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 7> ExtensionRangeOptions::_table_ = {
 
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_declaration_size()); i < n; i++) {
-    const auto& repfield = this->_internal_declaration().Get(i);
+      n = static_cast<unsigned>(this->_impl_.declaration_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.declaration_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -4341,8 +4341,8 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 7> ExtensionRangeOptions::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option().Get(i);
+      n = static_cast<unsigned>(this->_impl_.uninterpreted_option_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.uninterpreted_option_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -4370,14 +4370,14 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 7> ExtensionRangeOptions::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
-  total_size += 1UL * this->_internal_declaration_size();
-  for (const auto& msg : this->_internal_declaration()) {
+  total_size += 1UL * this->_impl_.declaration_.size();
+  for (const auto& msg : this->_impl_.declaration_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_internal_uninterpreted_option()) {
+  total_size += 2UL * this->_impl_.uninterpreted_option_.size();
+  for (const auto& msg : this->_impl_.uninterpreted_option_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -4406,8 +4406,8 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_declaration()->MergeFrom(from._internal_declaration());
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_impl_.declaration_.MergeFrom(from._impl_.declaration_);
+  _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_internal_set_verification(from._internal_verification());
   }
@@ -4426,7 +4426,7 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.uninterpreted_option_))
     return false;
   return true;
 }
@@ -4436,8 +4436,8 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_declaration()->InternalSwap(other->_internal_mutable_declaration());
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.declaration_.InternalSwap(&other->_impl_.declaration_);
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   swap(_impl_.verification_, other->_impl_.verification_);
 }
 
@@ -5615,8 +5615,8 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_value()->Clear();
-  _internal_mutable_reserved_range()->Clear();
+  _impl_.value_.Clear();
+  _impl_.reserved_range_.Clear();
   _impl_.reserved_name_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -5719,8 +5719,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
 
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_value_size()); i < n; i++) {
-    const auto& repfield = this->_internal_value().Get(i);
+      n = static_cast<unsigned>(this->_impl_.value_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.value_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -5734,8 +5734,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
 
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_reserved_range_size()); i < n; i++) {
-    const auto& repfield = this->_internal_reserved_range().Get(i);
+      n = static_cast<unsigned>(this->_impl_.reserved_range_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.reserved_range_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -5766,14 +5766,14 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-  total_size += 1UL * this->_internal_value_size();
-  for (const auto& msg : this->_internal_value()) {
+  total_size += 1UL * this->_impl_.value_.size();
+  for (const auto& msg : this->_impl_.value_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
-  total_size += 1UL * this->_internal_reserved_range_size();
-  for (const auto& msg : this->_internal_reserved_range()) {
+  total_size += 1UL * this->_impl_.reserved_range_.size();
+  for (const auto& msg : this->_impl_.reserved_range_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -5816,8 +5816,8 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_value()->MergeFrom(from._internal_value());
-  _this->_internal_mutable_reserved_range()->MergeFrom(from._internal_reserved_range());
+  _this->_impl_.value_.MergeFrom(from._impl_.value_);
+  _this->_impl_.reserved_range_.MergeFrom(from._impl_.reserved_range_);
   _this->_impl_.reserved_name_.MergeFrom(from._impl_.reserved_name_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -5840,7 +5840,7 @@ void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_value()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.value_))
     return false;
   if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
     if (!_impl_.options_->IsInitialized()) return false;
@@ -5854,8 +5854,8 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_value()->InternalSwap(other->_internal_mutable_value());
-  _internal_mutable_reserved_range()->InternalSwap(other->_internal_mutable_reserved_range());
+  _impl_.value_.InternalSwap(&other->_impl_.value_);
+  _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
   _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
@@ -6244,7 +6244,7 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_method()->Clear();
+  _impl_.method_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -6330,8 +6330,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
 
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_method_size()); i < n; i++) {
-    const auto& repfield = this->_internal_method().Get(i);
+      n = static_cast<unsigned>(this->_impl_.method_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.method_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -6361,8 +6361,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
   (void) cached_has_bits;
 
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
-  total_size += 1UL * this->_internal_method_size();
-  for (const auto& msg : this->_internal_method()) {
+  total_size += 1UL * this->_impl_.method_.size();
+  for (const auto& msg : this->_impl_.method_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -6400,7 +6400,7 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, cons
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_method()->MergeFrom(from._internal_method());
+  _this->_impl_.method_.MergeFrom(from._impl_.method_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -6422,7 +6422,7 @@ void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_method()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.method_))
     return false;
   if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
     if (!_impl_.options_->IsInitialized()) return false;
@@ -6436,7 +6436,7 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_method()->InternalSwap(other->_internal_mutable_method());
+  _impl_.method_.InternalSwap(&other->_impl_.method_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   swap(_impl_.options_, other->_impl_.options_);
@@ -7145,7 +7145,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
@@ -7534,8 +7534,8 @@ constexpr ::_pbi::TcParseTable<5, 21, 2, 202, 12> FileOptions::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option().Get(i);
+      n = static_cast<unsigned>(this->_impl_.uninterpreted_option_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.uninterpreted_option_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -7563,8 +7563,8 @@ constexpr ::_pbi::TcParseTable<5, 21, 2, 202, 12> FileOptions::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_internal_uninterpreted_option()) {
+  total_size += 2UL * this->_impl_.uninterpreted_option_.size();
+  for (const auto& msg : this->_impl_.uninterpreted_option_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -7704,7 +7704,7 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
@@ -7789,7 +7789,7 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.uninterpreted_option_))
     return false;
   return true;
 }
@@ -7801,7 +7801,7 @@ void FileOptions::InternalSwap(FileOptions* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_package_, lhs_arena,
                                        &other->_impl_.java_package_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_outer_classname_, lhs_arena,
@@ -7923,7 +7923,7 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000001fu) {
     ::memset(&_impl_.message_set_wire_format_, 0, static_cast<::size_t>(
@@ -8045,8 +8045,8 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 0, 7> MessageOptions::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option().Get(i);
+      n = static_cast<unsigned>(this->_impl_.uninterpreted_option_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.uninterpreted_option_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -8074,8 +8074,8 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 0, 7> MessageOptions::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_internal_uninterpreted_option()) {
+  total_size += 2UL * this->_impl_.uninterpreted_option_.size();
+  for (const auto& msg : this->_impl_.uninterpreted_option_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -8125,7 +8125,7 @@ void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000001fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -8160,7 +8160,7 @@ PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.uninterpreted_option_))
     return false;
   return true;
 }
@@ -8170,7 +8170,7 @@ void MessageOptions::InternalSwap(MessageOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.deprecated_legacy_json_field_conflicts_)
       + sizeof(MessageOptions::_impl_.deprecated_legacy_json_field_conflicts_)
@@ -8301,7 +8301,7 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
 
   _impl_._extensions_.Clear();
   _impl_.targets_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     ::memset(&_impl_.ctype_, 0, static_cast<::size_t>(
@@ -8511,8 +8511,8 @@ constexpr ::_pbi::TcParseTable<4, 12, 6, 0, 7> FieldOptions::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option().Get(i);
+      n = static_cast<unsigned>(this->_impl_.uninterpreted_option_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.uninterpreted_option_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -8552,8 +8552,8 @@ constexpr ::_pbi::TcParseTable<4, 12, 6, 0, 7> FieldOptions::_table_ = {
     total_size += std::size_t{2} * count;
   }
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_internal_uninterpreted_option()) {
+  total_size += 2UL * this->_impl_.uninterpreted_option_.size();
+  for (const auto& msg : this->_impl_.uninterpreted_option_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -8635,7 +8635,7 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
   (void) cached_has_bits;
 
   _this->_impl_.targets_.MergeFrom(from._impl_.targets_);
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
@@ -8688,7 +8688,7 @@ PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.uninterpreted_option_))
     return false;
   return true;
 }
@@ -8699,7 +8699,7 @@ void FieldOptions::InternalSwap(FieldOptions* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.targets_.InternalSwap(&other->_impl_.targets_);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.target_obsolete_do_not_use_)
       + sizeof(FieldOptions::_impl_.target_obsolete_do_not_use_)
@@ -8768,7 +8768,7 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -8819,8 +8819,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 7> OneofOptions::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option().Get(i);
+      n = static_cast<unsigned>(this->_impl_.uninterpreted_option_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.uninterpreted_option_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -8848,8 +8848,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 7> OneofOptions::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_internal_uninterpreted_option()) {
+  total_size += 2UL * this->_impl_.uninterpreted_option_.size();
+  for (const auto& msg : this->_impl_.uninterpreted_option_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -8871,7 +8871,7 @@ void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -8887,7 +8887,7 @@ PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.uninterpreted_option_))
     return false;
   return true;
 }
@@ -8896,7 +8896,7 @@ void OneofOptions::InternalSwap(OneofOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
 }
 
 ::google::protobuf::Metadata OneofOptions::GetMetadata() const {
@@ -8982,7 +8982,7 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   ::memset(&_impl_.allow_alias_, 0, static_cast<::size_t>(
       reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
       reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
@@ -9081,8 +9081,8 @@ constexpr ::_pbi::TcParseTable<3, 4, 1, 0, 7> EnumOptions::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option().Get(i);
+      n = static_cast<unsigned>(this->_impl_.uninterpreted_option_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.uninterpreted_option_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -9110,8 +9110,8 @@ constexpr ::_pbi::TcParseTable<3, 4, 1, 0, 7> EnumOptions::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_internal_uninterpreted_option()) {
+  total_size += 2UL * this->_impl_.uninterpreted_option_.size();
+  for (const auto& msg : this->_impl_.uninterpreted_option_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -9151,7 +9151,7 @@ void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
@@ -9180,7 +9180,7 @@ PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.uninterpreted_option_))
     return false;
   return true;
 }
@@ -9190,7 +9190,7 @@ void EnumOptions::InternalSwap(EnumOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.deprecated_legacy_json_field_conflicts_)
       + sizeof(EnumOptions::_impl_.deprecated_legacy_json_field_conflicts_)
@@ -9277,7 +9277,7 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   ::memset(&_impl_.deprecated_, 0, static_cast<::size_t>(
       reinterpret_cast<char*>(&_impl_.debug_redact_) -
       reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.debug_redact_));
@@ -9358,8 +9358,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 7> EnumValueOptions::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option().Get(i);
+      n = static_cast<unsigned>(this->_impl_.uninterpreted_option_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.uninterpreted_option_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -9387,8 +9387,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 7> EnumValueOptions::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_internal_uninterpreted_option()) {
+  total_size += 2UL * this->_impl_.uninterpreted_option_.size();
+  for (const auto& msg : this->_impl_.uninterpreted_option_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -9423,7 +9423,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::go
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -9449,7 +9449,7 @@ PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.uninterpreted_option_))
     return false;
   return true;
 }
@@ -9459,7 +9459,7 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_.debug_redact_)
       + sizeof(EnumValueOptions::_impl_.debug_redact_)
@@ -9539,7 +9539,7 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   _impl_.deprecated_ = false;
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -9609,8 +9609,8 @@ constexpr ::_pbi::TcParseTable<2, 2, 1, 0, 12> ServiceOptions::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option().Get(i);
+      n = static_cast<unsigned>(this->_impl_.uninterpreted_option_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.uninterpreted_option_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -9638,8 +9638,8 @@ constexpr ::_pbi::TcParseTable<2, 2, 1, 0, 12> ServiceOptions::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_internal_uninterpreted_option()) {
+  total_size += 2UL * this->_impl_.uninterpreted_option_.size();
+  for (const auto& msg : this->_impl_.uninterpreted_option_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -9667,7 +9667,7 @@ void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_internal_set_deprecated(from._internal_deprecated());
   }
@@ -9686,7 +9686,7 @@ PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.uninterpreted_option_))
     return false;
   return true;
 }
@@ -9696,7 +9696,7 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
         swap(_impl_.deprecated_, other->_impl_.deprecated_);
 }
 
@@ -9778,7 +9778,7 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     ::memset(&_impl_.deprecated_, 0, static_cast<::size_t>(
@@ -9866,8 +9866,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> MethodOptions::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_uninterpreted_option_size()); i < n; i++) {
-    const auto& repfield = this->_internal_uninterpreted_option().Get(i);
+      n = static_cast<unsigned>(this->_impl_.uninterpreted_option_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.uninterpreted_option_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(999, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -9895,8 +9895,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> MethodOptions::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2UL * this->_internal_uninterpreted_option_size();
-  for (const auto& msg : this->_internal_uninterpreted_option()) {
+  total_size += 2UL * this->_impl_.uninterpreted_option_.size();
+  for (const auto& msg : this->_impl_.uninterpreted_option_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -9932,7 +9932,7 @@ void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::googl
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_impl_.uninterpreted_option_.MergeFrom(from._impl_.uninterpreted_option_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -9958,7 +9958,7 @@ PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.uninterpreted_option_))
     return false;
   return true;
 }
@@ -9968,7 +9968,7 @@ void MethodOptions::InternalSwap(MethodOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.idempotency_level_)
       + sizeof(MethodOptions::_impl_.idempotency_level_)
@@ -10351,7 +10351,7 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_name()->Clear();
+  _impl_.name_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
@@ -10459,8 +10459,8 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
 
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_name_size()); i < n; i++) {
-    const auto& repfield = this->_internal_name().Get(i);
+      n = static_cast<unsigned>(this->_impl_.name_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.name_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -10527,8 +10527,8 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-  total_size += 1UL * this->_internal_name_size();
-  for (const auto& msg : this->_internal_name()) {
+  total_size += 1UL * this->_impl_.name_.size();
+  for (const auto& msg : this->_impl_.name_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -10588,7 +10588,7 @@ void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const :
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_name()->MergeFrom(from._internal_name());
+  _this->_impl_.name_.MergeFrom(from._impl_.name_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -10622,7 +10622,7 @@ void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_name()))
+  if (!::google::protobuf::internal::AllAreInitialized(_impl_.name_))
     return false;
   return true;
 }
@@ -10633,7 +10633,7 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_name()->InternalSwap(other->_internal_mutable_name());
+  _impl_.name_.InternalSwap(&other->_impl_.name_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.identifier_value_, lhs_arena,
                                        &other->_impl_.identifier_value_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.string_value_, lhs_arena,
@@ -11059,7 +11059,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_location()->Clear();
+  _impl_.location_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -11108,8 +11108,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
 
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_location_size()); i < n; i++) {
-    const auto& repfield = this->_internal_location().Get(i);
+      n = static_cast<unsigned>(this->_impl_.location_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.location_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(1, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -11132,8 +11132,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
-  total_size += 1UL * this->_internal_location_size();
-  for (const auto& msg : this->_internal_location()) {
+  total_size += 1UL * this->_impl_.location_.size();
+  for (const auto& msg : this->_impl_.location_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -11155,7 +11155,7 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_location()->MergeFrom(from._internal_location());
+  _this->_impl_.location_.MergeFrom(from._impl_.location_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -11173,7 +11173,7 @@ PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitialized() const {
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_location()->InternalSwap(other->_internal_mutable_location());
+  _impl_.location_.InternalSwap(&other->_impl_.location_);
 }
 
 ::google::protobuf::Metadata SourceCodeInfo::GetMetadata() const {
@@ -11574,7 +11574,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_annotation()->Clear();
+  _impl_.annotation_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -11623,8 +11623,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
 
   // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
   for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_annotation_size()); i < n; i++) {
-    const auto& repfield = this->_internal_annotation().Get(i);
+      n = static_cast<unsigned>(this->_impl_.annotation_.size()); i < n; i++) {
+    const auto& repfield = this->_impl_.annotation_.Get(i);
     target = ::google::protobuf::internal::WireFormatLite::
         InternalWriteMessage(1, repfield, repfield.GetCachedSize(), target, stream);
   }
@@ -11647,8 +11647,8 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
   (void) cached_has_bits;
 
   // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
-  total_size += 1UL * this->_internal_annotation_size();
-  for (const auto& msg : this->_internal_annotation()) {
+  total_size += 1UL * this->_impl_.annotation_.size();
+  for (const auto& msg : this->_impl_.annotation_) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
@@ -11670,7 +11670,7 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::g
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_annotation()->MergeFrom(from._internal_annotation());
+  _this->_impl_.annotation_.MergeFrom(from._impl_.annotation_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -11688,7 +11688,7 @@ PROTOBUF_NOINLINE bool GeneratedCodeInfo::IsInitialized() const {
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_annotation()->InternalSwap(other->_internal_mutable_annotation());
+  _impl_.annotation_.InternalSwap(&other->_impl_.annotation_);
 }
 
 ::google::protobuf::Metadata GeneratedCodeInfo::GetMetadata() const {

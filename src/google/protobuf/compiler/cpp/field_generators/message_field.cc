@@ -784,14 +784,14 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // TODO(dlj): move insertion points
       "  // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)\n"
       "$StrongRef$;"
-      "  return _internal_mutable_$name$()->Mutable(index);\n"
+      "  return $field_$$.weak$.Mutable(index);\n"
       "}\n"
       "inline $pb$::RepeatedPtrField< $Submsg$ >*\n"
       "$Msg$::mutable_$name$() {\n"
       "$annotate_mutable_list$"
       "  // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)\n"
       "$StrongRef$;"
-      "  return _internal_mutable_$name$();\n"
+      "  return &$field_$$.weak$;\n"
       "}\n");
 
   p->Emit({{"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
@@ -805,10 +805,10 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           "$annotate_get$"
           "  // @@protoc_insertion_point(field_get:$pkg.Msg.field$)\n"
           "  $StrongRef$;"
-          "  return _internal_$name$().$Get$(index$GetExtraArg$);\n"
+          "  return $field_$$.weak$.$Get$(index$GetExtraArg$);\n"
           "}\n"
           "inline $Submsg$* $Msg$::add_$name$() {\n"
-          "  $Submsg$* _add = _internal_mutable_$name$()->Add();\n"
+          "  $Submsg$* _add = $field_$$.weak$.Add();\n"
           "$annotate_add_mutable$"
           "  // @@protoc_insertion_point(field_add:$pkg.Msg.field$)\n"
           "  return _add;\n"
@@ -820,7 +820,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "$annotate_list$"
       "  // @@protoc_insertion_point(field_list:$pkg.Msg.field$)\n"
       "$StrongRef$;"
-      "  return _internal_$name$();\n"
+      "  return $field_$$.weak$;\n"
       "}\n");
 
   p->Emit(R"cc(
@@ -848,19 +848,15 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
-  p->Emit("_internal_mutable$_weak$_$name$()->Clear();\n");
+  p->Emit("$field_$.Clear();\n");
 }
 
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
-  p->Emit(
-      "_this->_internal_mutable$_weak$_$name$()->MergeFrom(from._internal"
-      "$_weak$_$name$());\n");
+  p->Emit("_this->$field_$.MergeFrom(from.$field_$);\n");
 }
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
-  p->Emit(
-      "_internal_mutable$_weak$_$name$()->InternalSwap(other->_internal_"
-      "mutable$_weak$_$name$());\n");
+  p->Emit("$field_$.InternalSwap(&other->$field_$);\n");
 }
 
 void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
@@ -893,11 +889,11 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
   } else {
     p->Emit(
         "for (unsigned i = 0,\n"
-        "    n = static_cast<unsigned>(this->_internal_$name$_size());"
+        "    n = static_cast<unsigned>(this->$field_$.size());"
         " i < n; i++) {\n");
     if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
       p->Emit(
-          "  const auto& repfield = this->_internal_$name$().Get(i);\n"
+          "  const auto& repfield = this->$field_$.Get(i);\n"
           "  target = $pbi$::WireFormatLite::\n"
           "      InternalWrite$declared_type$($number$, "
           "repfield, repfield.GetCachedSize(), target, stream);\n"
@@ -907,7 +903,7 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
           "  target = stream->EnsureSpace(target);\n"
           "  target = $pbi$::WireFormatLite::\n"
           "    InternalWrite$declared_type$($number$, "
-          "this->_internal_$name$().Get(i), target, stream);\n"
+          "this->$field_$.Get(i), target, stream);\n"
           "}\n");
     }
   }
@@ -915,8 +911,8 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(
-      "total_size += $tag_size$UL * this->_internal_$name$_size();\n"
-      "for (const auto& msg : this->_internal$_weak$_$name$()) {\n"
+      "total_size += $tag_size$UL * this->$field_$.size();\n"
+      "for (const auto& msg : this->$field_$) {\n"
       "  total_size +=\n"
       "    $pbi$::WireFormatLite::$declared_type$Size(msg);\n"
       "}\n");
@@ -931,7 +927,7 @@ void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
         "  return false;\n");
   } else {
     p->Emit(
-        "if (!$pbi$::AllAreInitialized(_internal_$name$()))\n"
+        "if (!$pbi$::AllAreInitialized($field_$))\n"
         "  return false;\n");
   }
 }
