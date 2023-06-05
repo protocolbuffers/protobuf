@@ -169,3 +169,11 @@ jobs:
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
+
+  staleness:
+    name: Staleness
+    needs: [check-tag]
+    uses: ./.github/workflows/staleness_check.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
