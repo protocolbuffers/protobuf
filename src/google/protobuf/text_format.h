@@ -45,6 +45,7 @@
 
 #include "google/protobuf/port.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
@@ -68,6 +69,8 @@ PROTOBUF_EXPORT extern const char kDebugStringSilentMarker[1];
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
 
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_format_marker;
+PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_detection;
+PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_redaction;
 PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
 
 }  // namespace internal
@@ -445,9 +448,10 @@ class PROTOBUF_EXPORT TextFormat {
       randomize_debug_string_ = randomize;
     }
 
-    // Sets the.
-    void SetRootMessageFullName(absl::string_view root_message_full_name) {
-      root_message_full_name_ = std::string(root_message_full_name);
+    // Sets whether sensitive fields found in the message will be reported or
+    // not.
+    void SetReportSensitiveFields(bool report) {
+      report_sensitive_fields_ = report;
     }
 
     // Forward declaration of an internal class used to print the text
@@ -521,6 +525,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool insert_silent_marker_;
     bool redact_debug_string_;
     bool randomize_debug_string_;
+    bool report_sensitive_fields_;
     bool hide_unknown_fields_;
     bool print_message_fields_in_index_order_;
     bool expand_any_;
@@ -536,7 +541,6 @@ class PROTOBUF_EXPORT TextFormat {
         custom_message_printers_;
 
     const Finder* finder_;
-    std::string root_message_full_name_;
   };
 
   // Parses a text-format protocol message from the given input stream to
