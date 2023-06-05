@@ -5,6 +5,7 @@ set -e
 cd java
 
 echo "Maven command: $(which mvn)"
+mvn --version
 
 protoc_location="${RUNFILES_DIR}/com_google_protobuf/protoc"
 if [ ! -x "${protoc_location}" ]; then
