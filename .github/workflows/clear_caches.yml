@@ -8,6 +8,9 @@ on:
   # manual
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   bazel-repository-cache:
     strategy:
@@ -16,6 +19,9 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     name: Clear Bazel repository cache ${{ runner.os }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      actions: write # permission is required to delete caches
+      contents: read
     steps:
       - uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
         with:
