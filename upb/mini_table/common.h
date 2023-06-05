@@ -61,10 +61,22 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
   return &t->fields[index];
 }
 
-UPB_API upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
+UPB_API_INLINE upb_FieldType
+upb_MiniTableField_Type(const upb_MiniTableField* field) {
+  if (field->mode & kUpb_LabelFlags_IsAlternate) {
+    if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Int32) {
+      return kUpb_FieldType_Enum;
+    } else if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bytes) {
+      return kUpb_FieldType_String;
+    } else {
+      UPB_ASSERT(false);
+    }
+  }
+  return (upb_FieldType)field->UPB_PRIVATE(descriptortype);
+}
 
 UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f) {
-  switch (f->UPB_PRIVATE(descriptortype)) {
+  switch (upb_MiniTableField_Type(f)) {
     case kUpb_FieldType_Double:
       return kUpb_CType_Double;
     case kUpb_FieldType_Float:

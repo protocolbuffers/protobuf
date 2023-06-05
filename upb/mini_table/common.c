@@ -82,19 +82,6 @@ const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   return NULL;
 }
 
-upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field) {
-  if (field->mode & kUpb_LabelFlags_IsAlternate) {
-    if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Int32) {
-      return kUpb_FieldType_Enum;
-    } else if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bytes) {
-      return kUpb_FieldType_String;
-    } else {
-      UPB_ASSERT(false);
-    }
-  }
-  return field->UPB_PRIVATE(descriptortype);
-}
-
 static bool upb_MiniTable_Is_Oneof(const upb_MiniTableField* f) {
   return f->presence < 0;
 }
