@@ -3599,8 +3599,10 @@ bool FieldDescriptor::has_presence() const {
 }
 
 bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
-  return type() == TYPE_ENUM && FileDescriptorLegacy(file_).syntax() ==
-                                    FileDescriptorLegacy::Syntax::SYNTAX_PROTO2;
+  return type() == TYPE_ENUM &&
+         (FileDescriptorLegacy(file_).syntax() ==
+              FileDescriptorLegacy::Syntax::SYNTAX_PROTO2 ||
+          enum_type()->is_closed());
 }
 
 // Location methods ===============================================
@@ -8873,7 +8875,11 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
 
 namespace cpp {
 bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
-  return !field->legacy_enum_field_treated_as_closed();
+  if (field->legacy_enum_field_treated_as_closed()) {
+    return false;
+  }
+
+  return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
 bool HasHasbit(const FieldDescriptor* field) {
