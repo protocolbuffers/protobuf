@@ -68,14 +68,12 @@ jobs:
         run: |
           mv ${{ steps.build-protoc.outputs.protoc }} protoc
           sudo rm -rf _build
-      - name: Install snapshot version locally
+      - name: Run Linkage Monitor Bazel test
         run: |
-          cd java
-          mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
-      - name: Download Linkage Monitor
-        run: curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
-      - name: Fails if there's new linkage errors compared with baseline
-        run: java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:libraries-bom
+          # --spawn_strategy=standalone is needed to save files in local Maven
+          # repositories during dependency resolution.
+          bazelisk test --sandbox_debug --subcommands  //java:linkage_monitor --spawn_strategy=standalone
+          echo "Linkage Monitor test passed"
 
   protobuf-bom:
     name: Protobuf Maven BOM

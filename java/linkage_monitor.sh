@@ -4,14 +4,6 @@ set -e
 
 cd java
 
-echo "list of files here:"
-
-ls -alt
-
-echo "list of files in core:"
-
-ls -alt core/
-
 echo "Maven command: $(which mvn)"
 
 protoc_location="${RUNFILES_DIR}/com_google_protobuf/protoc"
