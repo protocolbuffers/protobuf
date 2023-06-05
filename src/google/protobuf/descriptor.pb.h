@@ -8849,75 +8849,72 @@ inline int FileDescriptorProto::dependency_size() const {
   return _internal_dependency_size();
 }
 inline void FileDescriptorProto::clear_dependency() {
-  _internal_mutable_dependency()->Clear();
+  _impl_.dependency_.Clear();
 }
 inline std::string* FileDescriptorProto::add_dependency() {
-  std::string* _s = _internal_mutable_dependency()->Add();
+  std::string* _s = _impl_.dependency_.Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.dependency)
   return _s;
 }
 inline const std::string& FileDescriptorProto::dependency(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.dependency)
-  return _internal_dependency().Get(index);
+  return _impl_.dependency_.Get(index);
 }
 inline std::string* FileDescriptorProto::mutable_dependency(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.dependency)
-  return _internal_mutable_dependency()->Mutable(index);
+  return _impl_.dependency_.Mutable(index);
 }
 inline void FileDescriptorProto::set_dependency(int index, const std::string& value) {
-  _internal_mutable_dependency()->Mutable(index)->assign(value);
+  _impl_.dependency_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, std::string&& value) {
-  _internal_mutable_dependency()->Mutable(index)->assign(std::move(value));
+  _impl_.dependency_.Mutable(index)->assign(std::move(value));
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _internal_mutable_dependency()->Mutable(index)->assign(value);
+  _impl_.dependency_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, const char* value,
                               std::size_t size) {
-  _internal_mutable_dependency()->Mutable(index)->assign(
-      reinterpret_cast<const char*>(value), size);
+  _impl_.dependency_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, absl::string_view value) {
-  _internal_mutable_dependency()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _impl_.dependency_.Mutable(index)->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const std::string& value) {
-  _internal_mutable_dependency()->Add()->assign(value);
+  _impl_.dependency_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(std::string&& value) {
-  _internal_mutable_dependency()->Add(std::move(value));
+  _impl_.dependency_.Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _internal_mutable_dependency()->Add()->assign(value);
+  _impl_.dependency_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const char* value, std::size_t size) {
-  _internal_mutable_dependency()->Add()->assign(
-      reinterpret_cast<const char*>(value), size);
+  _impl_.dependency_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(absl::string_view value) {
-  _internal_mutable_dependency()->Add()->assign(value.data(), value.size());
+  _impl_.dependency_.Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 FileDescriptorProto::dependency() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.dependency)
-  return _internal_dependency();
+  return _impl_.dependency_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* FileDescriptorProto::mutable_dependency() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.dependency)
-  return _internal_mutable_dependency();
+  return &_impl_.dependency_;
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 FileDescriptorProto::_internal_dependency() const {
@@ -8936,27 +8933,27 @@ inline int FileDescriptorProto::public_dependency_size() const {
   return _internal_public_dependency_size();
 }
 inline void FileDescriptorProto::clear_public_dependency() {
-  _internal_mutable_public_dependency()->Clear();
+  _impl_.public_dependency_.Clear();
 }
 inline ::int32_t FileDescriptorProto::public_dependency(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.public_dependency)
-  return _internal_public_dependency().Get(index);
+  return _impl_.public_dependency_.Get(index);
 }
 inline void FileDescriptorProto::set_public_dependency(int index, ::int32_t value) {
-  _internal_mutable_public_dependency()->Set(index, value);
+  _impl_.public_dependency_.Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.public_dependency)
 }
 inline void FileDescriptorProto::add_public_dependency(::int32_t value) {
-  _internal_mutable_public_dependency()->Add(value);
+  _impl_.public_dependency_.Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.public_dependency)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::public_dependency() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.public_dependency)
-  return _internal_public_dependency();
+  return _impl_.public_dependency_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_public_dependency() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.public_dependency)
-  return _internal_mutable_public_dependency();
+  return &_impl_.public_dependency_;
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_public_dependency() const {
@@ -8974,27 +8971,27 @@ inline int FileDescriptorProto::weak_dependency_size() const {
   return _internal_weak_dependency_size();
 }
 inline void FileDescriptorProto::clear_weak_dependency() {
-  _internal_mutable_weak_dependency()->Clear();
+  _impl_.weak_dependency_.Clear();
 }
 inline ::int32_t FileDescriptorProto::weak_dependency(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.weak_dependency)
-  return _internal_weak_dependency().Get(index);
+  return _impl_.weak_dependency_.Get(index);
 }
 inline void FileDescriptorProto::set_weak_dependency(int index, ::int32_t value) {
-  _internal_mutable_weak_dependency()->Set(index, value);
+  _impl_.weak_dependency_.Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.weak_dependency)
 }
 inline void FileDescriptorProto::add_weak_dependency(::int32_t value) {
-  _internal_mutable_weak_dependency()->Add(value);
+  _impl_.weak_dependency_.Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.weak_dependency)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::weak_dependency() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.weak_dependency)
-  return _internal_weak_dependency();
+  return _impl_.weak_dependency_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_weak_dependency() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.weak_dependency)
-  return _internal_mutable_weak_dependency();
+  return &_impl_.weak_dependency_;
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_weak_dependency() const {
@@ -10135,75 +10132,72 @@ inline int DescriptorProto::reserved_name_size() const {
   return _internal_reserved_name_size();
 }
 inline void DescriptorProto::clear_reserved_name() {
-  _internal_mutable_reserved_name()->Clear();
+  _impl_.reserved_name_.Clear();
 }
 inline std::string* DescriptorProto::add_reserved_name() {
-  std::string* _s = _internal_mutable_reserved_name()->Add();
+  std::string* _s = _impl_.reserved_name_.Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.DescriptorProto.reserved_name)
   return _s;
 }
 inline const std::string& DescriptorProto::reserved_name(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.reserved_name)
-  return _internal_reserved_name().Get(index);
+  return _impl_.reserved_name_.Get(index);
 }
 inline std::string* DescriptorProto::mutable_reserved_name(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.reserved_name)
-  return _internal_mutable_reserved_name()->Mutable(index);
+  return _impl_.reserved_name_.Mutable(index);
 }
 inline void DescriptorProto::set_reserved_name(int index, const std::string& value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value);
+  _impl_.reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, std::string&& value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(std::move(value));
+  _impl_.reserved_name_.Mutable(index)->assign(std::move(value));
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value);
+  _impl_.reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, const char* value,
                               std::size_t size) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(
-      reinterpret_cast<const char*>(value), size);
+  _impl_.reserved_name_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, absl::string_view value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _impl_.reserved_name_.Mutable(index)->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const std::string& value) {
-  _internal_mutable_reserved_name()->Add()->assign(value);
+  _impl_.reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(std::string&& value) {
-  _internal_mutable_reserved_name()->Add(std::move(value));
+  _impl_.reserved_name_.Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _internal_mutable_reserved_name()->Add()->assign(value);
+  _impl_.reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const char* value, std::size_t size) {
-  _internal_mutable_reserved_name()->Add()->assign(
-      reinterpret_cast<const char*>(value), size);
+  _impl_.reserved_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(absl::string_view value) {
-  _internal_mutable_reserved_name()->Add()->assign(value.data(), value.size());
+  _impl_.reserved_name_.Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 DescriptorProto::reserved_name() const {
   // @@protoc_insertion_point(field_list:google.protobuf.DescriptorProto.reserved_name)
-  return _internal_reserved_name();
+  return _impl_.reserved_name_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* DescriptorProto::mutable_reserved_name() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_name)
-  return _internal_mutable_reserved_name();
+  return &_impl_.reserved_name_;
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 DescriptorProto::_internal_reserved_name() const {
@@ -11554,75 +11548,72 @@ inline int EnumDescriptorProto::reserved_name_size() const {
   return _internal_reserved_name_size();
 }
 inline void EnumDescriptorProto::clear_reserved_name() {
-  _internal_mutable_reserved_name()->Clear();
+  _impl_.reserved_name_.Clear();
 }
 inline std::string* EnumDescriptorProto::add_reserved_name() {
-  std::string* _s = _internal_mutable_reserved_name()->Add();
+  std::string* _s = _impl_.reserved_name_.Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.EnumDescriptorProto.reserved_name)
   return _s;
 }
 inline const std::string& EnumDescriptorProto::reserved_name(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.reserved_name)
-  return _internal_reserved_name().Get(index);
+  return _impl_.reserved_name_.Get(index);
 }
 inline std::string* EnumDescriptorProto::mutable_reserved_name(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.reserved_name)
-  return _internal_mutable_reserved_name()->Mutable(index);
+  return _impl_.reserved_name_.Mutable(index);
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, const std::string& value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value);
+  _impl_.reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, std::string&& value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(std::move(value));
+  _impl_.reserved_name_.Mutable(index)->assign(std::move(value));
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value);
+  _impl_.reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, const char* value,
                               std::size_t size) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(
-      reinterpret_cast<const char*>(value), size);
+  _impl_.reserved_name_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, absl::string_view value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _impl_.reserved_name_.Mutable(index)->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const std::string& value) {
-  _internal_mutable_reserved_name()->Add()->assign(value);
+  _impl_.reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(std::string&& value) {
-  _internal_mutable_reserved_name()->Add(std::move(value));
+  _impl_.reserved_name_.Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _internal_mutable_reserved_name()->Add()->assign(value);
+  _impl_.reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const char* value, std::size_t size) {
-  _internal_mutable_reserved_name()->Add()->assign(
-      reinterpret_cast<const char*>(value), size);
+  _impl_.reserved_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(absl::string_view value) {
-  _internal_mutable_reserved_name()->Add()->assign(value.data(), value.size());
+  _impl_.reserved_name_.Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 EnumDescriptorProto::reserved_name() const {
   // @@protoc_insertion_point(field_list:google.protobuf.EnumDescriptorProto.reserved_name)
-  return _internal_reserved_name();
+  return _impl_.reserved_name_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* EnumDescriptorProto::mutable_reserved_name() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.reserved_name)
-  return _internal_mutable_reserved_name();
+  return &_impl_.reserved_name_;
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 EnumDescriptorProto::_internal_reserved_name() const {
@@ -13685,29 +13676,29 @@ inline int FieldOptions::targets_size() const {
   return _internal_targets_size();
 }
 inline void FieldOptions::clear_targets() {
-  _internal_mutable_targets()->Clear();
+  _impl_.targets_.Clear();
 }
 inline ::google::protobuf::FieldOptions_OptionTargetType FieldOptions::targets(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.targets)
-  return static_cast<::google::protobuf::FieldOptions_OptionTargetType>(_internal_targets().Get(index));
+  return static_cast<::google::protobuf::FieldOptions_OptionTargetType>(_impl_.targets_.Get(index));
 }
 inline void FieldOptions::set_targets(int index, ::google::protobuf::FieldOptions_OptionTargetType value) {
   assert(::google::protobuf::FieldOptions_OptionTargetType_IsValid(value));
-  _internal_mutable_targets()->Set(index, value);
+  _impl_.targets_.Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.targets)
 }
 inline void FieldOptions::add_targets(::google::protobuf::FieldOptions_OptionTargetType value) {
   assert(::google::protobuf::FieldOptions_OptionTargetType_IsValid(value));
-  _internal_mutable_targets()->Add(value);
+  _impl_.targets_.Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.targets)
 }
 inline const ::google::protobuf::RepeatedField<int>& FieldOptions::targets() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FieldOptions.targets)
-  return _internal_targets();
+  return _impl_.targets_;
 }
 inline ::google::protobuf::RepeatedField<int>* FieldOptions::mutable_targets() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.targets)
-  return _internal_mutable_targets();
+  return &_impl_.targets_;
 }
 inline const ::google::protobuf::RepeatedField<int>& FieldOptions::_internal_targets() const {
   return _impl_.targets_;
@@ -14629,27 +14620,27 @@ inline int SourceCodeInfo_Location::path_size() const {
   return _internal_path_size();
 }
 inline void SourceCodeInfo_Location::clear_path() {
-  _internal_mutable_path()->Clear();
+  _impl_.path_.Clear();
 }
 inline ::int32_t SourceCodeInfo_Location::path(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.path)
-  return _internal_path().Get(index);
+  return _impl_.path_.Get(index);
 }
 inline void SourceCodeInfo_Location::set_path(int index, ::int32_t value) {
-  _internal_mutable_path()->Set(index, value);
+  _impl_.path_.Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.path)
 }
 inline void SourceCodeInfo_Location::add_path(::int32_t value) {
-  _internal_mutable_path()->Add(value);
+  _impl_.path_.Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.path)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::path() const {
   // @@protoc_insertion_point(field_list:google.protobuf.SourceCodeInfo.Location.path)
-  return _internal_path();
+  return _impl_.path_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_path() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.path)
-  return _internal_mutable_path();
+  return &_impl_.path_;
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_path() const {
@@ -14667,27 +14658,27 @@ inline int SourceCodeInfo_Location::span_size() const {
   return _internal_span_size();
 }
 inline void SourceCodeInfo_Location::clear_span() {
-  _internal_mutable_span()->Clear();
+  _impl_.span_.Clear();
 }
 inline ::int32_t SourceCodeInfo_Location::span(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.span)
-  return _internal_span().Get(index);
+  return _impl_.span_.Get(index);
 }
 inline void SourceCodeInfo_Location::set_span(int index, ::int32_t value) {
-  _internal_mutable_span()->Set(index, value);
+  _impl_.span_.Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.span)
 }
 inline void SourceCodeInfo_Location::add_span(::int32_t value) {
-  _internal_mutable_span()->Add(value);
+  _impl_.span_.Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.span)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::span() const {
   // @@protoc_insertion_point(field_list:google.protobuf.SourceCodeInfo.Location.span)
-  return _internal_span();
+  return _impl_.span_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_span() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.span)
-  return _internal_mutable_span();
+  return &_impl_.span_;
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_span() const {
@@ -14831,75 +14822,72 @@ inline int SourceCodeInfo_Location::leading_detached_comments_size() const {
   return _internal_leading_detached_comments_size();
 }
 inline void SourceCodeInfo_Location::clear_leading_detached_comments() {
-  _internal_mutable_leading_detached_comments()->Clear();
+  _impl_.leading_detached_comments_.Clear();
 }
 inline std::string* SourceCodeInfo_Location::add_leading_detached_comments() {
-  std::string* _s = _internal_mutable_leading_detached_comments()->Add();
+  std::string* _s = _impl_.leading_detached_comments_.Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   return _s;
 }
 inline const std::string& SourceCodeInfo_Location::leading_detached_comments(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
-  return _internal_leading_detached_comments().Get(index);
+  return _impl_.leading_detached_comments_.Get(index);
 }
 inline std::string* SourceCodeInfo_Location::mutable_leading_detached_comments(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
-  return _internal_mutable_leading_detached_comments()->Mutable(index);
+  return _impl_.leading_detached_comments_.Mutable(index);
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const std::string& value) {
-  _internal_mutable_leading_detached_comments()->Mutable(index)->assign(value);
+  _impl_.leading_detached_comments_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, std::string&& value) {
-  _internal_mutable_leading_detached_comments()->Mutable(index)->assign(std::move(value));
+  _impl_.leading_detached_comments_.Mutable(index)->assign(std::move(value));
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _internal_mutable_leading_detached_comments()->Mutable(index)->assign(value);
+  _impl_.leading_detached_comments_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value,
                               std::size_t size) {
-  _internal_mutable_leading_detached_comments()->Mutable(index)->assign(
-      reinterpret_cast<const char*>(value), size);
+  _impl_.leading_detached_comments_.Mutable(index)->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, absl::string_view value) {
-  _internal_mutable_leading_detached_comments()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _impl_.leading_detached_comments_.Mutable(index)->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const std::string& value) {
-  _internal_mutable_leading_detached_comments()->Add()->assign(value);
+  _impl_.leading_detached_comments_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(std::string&& value) {
-  _internal_mutable_leading_detached_comments()->Add(std::move(value));
+  _impl_.leading_detached_comments_.Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  _internal_mutable_leading_detached_comments()->Add()->assign(value);
+  _impl_.leading_detached_comments_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value, std::size_t size) {
-  _internal_mutable_leading_detached_comments()->Add()->assign(
-      reinterpret_cast<const char*>(value), size);
+  _impl_.leading_detached_comments_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(absl::string_view value) {
-  _internal_mutable_leading_detached_comments()->Add()->assign(value.data(), value.size());
+  _impl_.leading_detached_comments_.Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 SourceCodeInfo_Location::leading_detached_comments() const {
   // @@protoc_insertion_point(field_list:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
-  return _internal_leading_detached_comments();
+  return _impl_.leading_detached_comments_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* SourceCodeInfo_Location::mutable_leading_detached_comments() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
-  return _internal_mutable_leading_detached_comments();
+  return &_impl_.leading_detached_comments_;
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 SourceCodeInfo_Location::_internal_leading_detached_comments() const {
@@ -14968,27 +14956,27 @@ inline int GeneratedCodeInfo_Annotation::path_size() const {
   return _internal_path_size();
 }
 inline void GeneratedCodeInfo_Annotation::clear_path() {
-  _internal_mutable_path()->Clear();
+  _impl_.path_.Clear();
 }
 inline ::int32_t GeneratedCodeInfo_Annotation::path(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.GeneratedCodeInfo.Annotation.path)
-  return _internal_path().Get(index);
+  return _impl_.path_.Get(index);
 }
 inline void GeneratedCodeInfo_Annotation::set_path(int index, ::int32_t value) {
-  _internal_mutable_path()->Set(index, value);
+  _impl_.path_.Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
 inline void GeneratedCodeInfo_Annotation::add_path(::int32_t value) {
-  _internal_mutable_path()->Add(value);
+  _impl_.path_.Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::path() const {
   // @@protoc_insertion_point(field_list:google.protobuf.GeneratedCodeInfo.Annotation.path)
-  return _internal_path();
+  return _impl_.path_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotation::mutable_path() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.GeneratedCodeInfo.Annotation.path)
-  return _internal_mutable_path();
+  return &_impl_.path_;
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::_internal_path() const {

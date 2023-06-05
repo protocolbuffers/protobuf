@@ -258,26 +258,25 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _internal_mutable_$name$()->Clear();
+      $field_$.Clear();
     )cc");
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
+      _this->$field_$.MergeFrom(from.$field_$);
     )cc");
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _internal_mutable_$name$()->InternalSwap(
-          other->_internal_mutable_$name$());
+      $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _internal_mutable_$name$()->~RepeatedField();
+      $field_$.~RepeatedField();
     )cc");
   }
 
@@ -307,7 +306,7 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      decltype($field_$){from._internal_$name$()},
+      decltype($field_$){from.$field_$},
     )cc");
     if (has_cached_size_) {
       // std::atomic has no copy constructor.
@@ -363,29 +362,29 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline $Enum$ $Msg$::$name$(int index) const {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-      return static_cast<$Enum$>(_internal_$name$().Get(index));
+      return static_cast<$Enum$>($field_$.Get(index));
     }
     inline void $Msg$::set_$name$(int index, $Enum$ value) {
       $assert_valid$;
-      _internal_mutable_$name$()->Set(index, value);
+      $field_$.Set(index, value);
       $annotate_set$
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
     inline void $Msg$::add_$name$($Enum$ value) {
       $assert_valid$;
-      _internal_mutable_$name$()->Add(value);
+      $field_$.Add(value);
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
     inline const $pb$::RepeatedField<int>& $Msg$::$name$() const {
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-      return _internal_$name$();
+      return $field_$;
     }
     inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$() {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
-      return _internal_mutable_$name$();
+      return &$field_$;
     }
     inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
       return $field_$;
@@ -403,19 +402,17 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
       {
         int byte_size = $cached_size_$.Get();
         if (byte_size > 0) {
-          target = stream->WriteEnumPacked($number$, _internal_$name$(),
-                                           byte_size, target);
+          target = stream->WriteEnumPacked($number$, $field_$, byte_size, target);
         }
       }
     )cc");
     return;
   }
   p->Emit(R"cc(
-    for (int i = 0, n = this->_internal_$name$_size(); i < n; ++i) {
+    for (int i = 0, n = this->$field_$.size(); i < n; ++i) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          $number$, static_cast<$Enum$>(this->_internal_$name$().Get(i)),
-          target);
+          $number$, static_cast<$Enum$>(this->$field_$.Get(i)), target);
     }
   )cc");
 }
@@ -445,11 +442,11 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
       R"cc(
         {
           std::size_t data_size = 0;
-          auto count = static_cast<std::size_t>(this->_internal_$name$_size());
+          auto count = static_cast<std::size_t>(this->$field_$.size());
 
           for (std::size_t i = 0; i < count; ++i) {
             data_size += ::_pbi::WireFormatLite::EnumSize(
-                this->_internal_$name$().Get(static_cast<int>(i)));
+                this->$field_$.Get(static_cast<int>(i)));
           }
           total_size += data_size;
           $add_to_size$;
