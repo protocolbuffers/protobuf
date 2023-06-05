@@ -49,14 +49,12 @@ enum {
   GPBWireFormatMessageSetMessage = 3
 };
 
-uint32_t GPBWireFormatMakeTag(uint32_t fieldNumber, GPBWireFormat wireType)
-    __attribute__((const));
+uint32_t GPBWireFormatMakeTag(uint32_t fieldNumber, GPBWireFormat wireType) __attribute__((const));
 GPBWireFormat GPBWireFormatGetTagWireType(uint32_t tag) __attribute__((const));
 uint32_t GPBWireFormatGetTagFieldNumber(uint32_t tag) __attribute__((const));
 BOOL GPBWireFormatIsValidTag(uint32_t tag) __attribute__((const));
 
-GPBWireFormat GPBWireFormatForType(GPBDataType dataType, BOOL isPacked)
-    __attribute__((const));
+GPBWireFormat GPBWireFormatForType(GPBDataType dataType, BOOL isPacked) __attribute__((const));
 
 #define GPBWireFormatMessageSetItemTag \
   (GPBWireFormatMakeTag(GPBWireFormatMessageSetItem, GPBWireFormatStartGroup))
@@ -64,9 +62,8 @@ GPBWireFormat GPBWireFormatForType(GPBDataType dataType, BOOL isPacked)
   (GPBWireFormatMakeTag(GPBWireFormatMessageSetItem, GPBWireFormatEndGroup))
 #define GPBWireFormatMessageSetTypeIdTag \
   (GPBWireFormatMakeTag(GPBWireFormatMessageSetTypeId, GPBWireFormatVarint))
-#define GPBWireFormatMessageSetMessageTag               \
-  (GPBWireFormatMakeTag(GPBWireFormatMessageSetMessage, \
-                        GPBWireFormatLengthDelimited))
+#define GPBWireFormatMessageSetMessageTag \
+  (GPBWireFormatMakeTag(GPBWireFormatMessageSetMessage, GPBWireFormatLengthDelimited))
 
 NS_ASSUME_NONNULL_END
 
