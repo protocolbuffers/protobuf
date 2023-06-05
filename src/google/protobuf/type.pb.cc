@@ -546,7 +546,7 @@ Type::~Type() {
 inline void Type::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fields_.~RepeatedPtrField();
-  _internal_mutable_oneofs()->~RepeatedPtrField();
+  _impl_.oneofs_.~RepeatedPtrField();
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
@@ -563,7 +563,7 @@ PROTOBUF_NOINLINE void Type::Clear() {
   (void) cached_has_bits;
 
   _internal_mutable_fields()->Clear();
-  _internal_mutable_oneofs()->Clear();
+  _impl_.oneofs_.Clear();
   _internal_mutable_options()->Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.edition_.ClearToEmpty();
@@ -682,8 +682,8 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
   }
 
   // repeated string oneofs = 3;
-  for (int i = 0, n = this->_internal_oneofs_size(); i < n; ++i) {
-    const auto& s = this->_internal_oneofs().Get(i);
+  for (int i = 0, n = this->_impl_.oneofs_.size(); i < n; ++i) {
+    const auto& s = this->_impl_.oneofs_.Get(i);
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
         s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.oneofs");
     target = stream->WriteString(3, s, target);
@@ -744,10 +744,9 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated string oneofs = 3;
-  total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_oneofs().size());
-  for (int i = 0, n = _internal_oneofs().size(); i < n; ++i) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-        _internal_oneofs().Get(i));
+  total_size += 1 * ::google::protobuf::internal::FromIntSize(_impl_.oneofs_.size());
+  for (int i = 0, n = _impl_.oneofs_.size(); i < n; ++i) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(_impl_.oneofs_.Get(i));
   }
   // repeated .google.protobuf.Option options = 4;
   total_size += 1UL * this->_internal_options_size();
@@ -800,7 +799,7 @@ void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
   (void) cached_has_bits;
 
   _this->_internal_mutable_fields()->MergeFrom(from._internal_fields());
-  _this->_internal_mutable_oneofs()->MergeFrom(from._internal_oneofs());
+  _this->_impl_.oneofs_.MergeFrom(from._impl_.oneofs_);
   _this->_internal_mutable_options()->MergeFrom(from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
@@ -836,8 +835,7 @@ void Type::InternalSwap(Type* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _internal_mutable_fields()->InternalSwap(other->_internal_mutable_fields());
-  _internal_mutable_oneofs()->InternalSwap(
-      other->_internal_mutable_oneofs());
+  _impl_.oneofs_.InternalSwap(&other->_impl_.oneofs_);
   _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);

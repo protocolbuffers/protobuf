@@ -149,7 +149,7 @@ FieldMask::~FieldMask() {
 }
 inline void FieldMask::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_paths()->~RepeatedPtrField();
+  _impl_.paths_.~RepeatedPtrField();
 }
 void FieldMask::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
@@ -161,7 +161,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_paths()->Clear();
+  _impl_.paths_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -213,8 +213,8 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
   (void)cached_has_bits;
 
   // repeated string paths = 1;
-  for (int i = 0, n = this->_internal_paths_size(); i < n; ++i) {
-    const auto& s = this->_internal_paths().Get(i);
+  for (int i = 0, n = this->_impl_.paths_.size(); i < n; ++i) {
+    const auto& s = this->_impl_.paths_.Get(i);
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
         s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.FieldMask.paths");
     target = stream->WriteString(1, s, target);
@@ -238,10 +238,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
   (void) cached_has_bits;
 
   // repeated string paths = 1;
-  total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_paths().size());
-  for (int i = 0, n = _internal_paths().size(); i < n; ++i) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-        _internal_paths().Get(i));
+  total_size += 1 * ::google::protobuf::internal::FromIntSize(_impl_.paths_.size());
+  for (int i = 0, n = _impl_.paths_.size(); i < n; ++i) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(_impl_.paths_.Get(i));
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
@@ -261,7 +260,7 @@ void FieldMask::MergeImpl(::google::protobuf::Message& to_msg, const ::google::p
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_paths()->MergeFrom(from._internal_paths());
+  _this->_impl_.paths_.MergeFrom(from._impl_.paths_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -279,8 +278,7 @@ PROTOBUF_NOINLINE bool FieldMask::IsInitialized() const {
 void FieldMask::InternalSwap(FieldMask* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_paths()->InternalSwap(
-      other->_internal_mutable_paths());
+  _impl_.paths_.InternalSwap(&other->_impl_.paths_);
 }
 
 ::google::protobuf::Metadata FieldMask::GetMetadata() const {
