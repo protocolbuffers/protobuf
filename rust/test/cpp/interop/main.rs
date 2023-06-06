@@ -48,10 +48,10 @@ macro_rules! proto_assert_eq {
 extern "C" {
     fn DeserializeTestAllTypes(data: *const u8, len: usize) -> NonNull<u8>;
     fn MutateTestAllTypes(msg: NonNull<u8>);
-    fn SerializeTestAllTypes(msg: NonNull<u8>) -> cpp::SerializedData;
+    fn SerializeTestAllTypes(msg: NonNull<u8>) -> protobuf_cpp::SerializedData;
 
     fn NewWithExtension() -> NonNull<u8>;
-    fn GetBytesExtension(msg: NonNull<u8>) -> cpp::PtrAndLen;
+    fn GetBytesExtension(msg: NonNull<u8>) -> protobuf_cpp::PtrAndLen;
 }
 
 #[test]
@@ -110,7 +110,8 @@ fn smuggle_extension() {
 
     let mut msg2 = TestAllExtensions::new();
     msg2.deserialize(&data).unwrap();
-    let bytes =
-        unsafe { GetBytesExtension(msg2.__unstable_cpp_repr_grant_permission_to_break()).as_ref() };
+    let bytes = unsafe {
+        GetBytesExtension(msg2.__unstable_cpp_repr_grant_permission_to_break()).as_ref()
+    };
     assert_eq!(&*bytes, b"smuggled");
 }

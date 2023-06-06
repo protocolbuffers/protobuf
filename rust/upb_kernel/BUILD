@@ -2,11 +2,6 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
-# Represents Rust Protobuf runtime using the upb kernel.
-#
-# `rust_upb_proto_library` implicitly depends on this target. This target cannot depend on
-# `:rust_proto_library_kernel` build setting; it has to be fully functional under any value of that
-# setting.
 rust_library(
     name = "upb",
     srcs = ["upb.rs"],
@@ -14,10 +9,7 @@ rust_library(
         "//src/google/protobuf:__subpackages__",
         "//rust:__subpackages__",
     ],
-    deps = [
-        ":upb_c_api",
-        "//rust:common",
-    ],
+    deps = [":upb_c_api"],
 )
 
 rust_test(

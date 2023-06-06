@@ -36,6 +36,6 @@
 //! cpp and upb kernels from user code.
 
 #[cfg(cpp_kernel)]
-pub use cpp::*;
+pub use protobuf_cpp::*;
 #[cfg(upb_kernel)]
-pub use upb::*;
+pub use protobuf_upb::*;
