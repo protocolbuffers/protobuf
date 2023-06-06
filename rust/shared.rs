@@ -28,7 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Kernel-agnostic logic for Rust Protobuf Runtimes.
+//! Kernel-agnostic logic for the Rust Protobuf Runtime.
+//!
+//! For kernel-specific logic this crate delegates to the respective __runtime
+//! crate.
+
+#[cfg(cpp_kernel)]
+pub extern crate cpp as __runtime;
+#[cfg(upb_kernel)]
+pub extern crate upb as __runtime;
+
+pub use __runtime::SerializedData;
 
 use std::fmt;
 use std::slice;
