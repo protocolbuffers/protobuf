@@ -17,7 +17,7 @@ fi
 
 cd java
 
-mvn --projects "bom,core,util" -e -B -Dhttps.protocols=TLSv1.2 install \
+mvn --projects "bom,core,util" -e -B -Dhttps.protocols=TLSv1.2 generate-sources install \
     -Dmaven.test.skip=true \
     -Dprotobuf.basedir="../" \
     -Dprotoc="${protoc_location}"
