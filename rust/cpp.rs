@@ -32,7 +32,6 @@
 
 use std::alloc;
 use std::alloc::Layout;
-use std::boxed::Box;
 use std::cell::UnsafeCell;
 use std::fmt;
 use std::marker::PhantomData;
@@ -51,6 +50,7 @@ use std::slice;
 ///
 /// Note that this type is neither `Sync` nor `Send`.
 pub struct Arena {
+    #[allow(dead_code)]
     ptr: NonNull<u8>,
     _not_sync: PhantomData<UnsafeCell<()>>,
 }
@@ -74,7 +74,7 @@ impl Arena {
     ///
     /// `layout`'s alignment must be less than `UPB_MALLOC_ALIGN`.
     #[inline]
-    pub unsafe fn alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
+    pub unsafe fn alloc(&self, _layout: Layout) -> &mut [MaybeUninit<u8>] {
         unimplemented!()
     }
 
@@ -86,7 +86,7 @@ impl Arena {
     /// be the layout `ptr` was allocated with via [`Arena::alloc()`]. `new`'s
     /// alignment must be less than `UPB_MALLOC_ALIGN`.
     #[inline]
-    pub unsafe fn resize(&self, ptr: *mut u8, old: Layout, new: Layout) -> &[MaybeUninit<u8>] {
+    pub unsafe fn resize(&self, _ptr: *mut u8, _old: Layout, _new: Layout) -> &[MaybeUninit<u8>] {
         unimplemented!()
     }
 }
@@ -146,6 +146,7 @@ impl fmt::Debug for SerializedData {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::boxed::Box;
 
     // We need to allocate the byte array so SerializedData can own it and
     // deallocate it in its drop. This function makes it easier to do so for our
