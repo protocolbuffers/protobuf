@@ -2,8 +2,6 @@
 
 set -e
 
-cd java
-
 echo "Running Linkage Monitor check"
 
 echo "Maven command: $(which mvn)"
@@ -16,6 +14,8 @@ if [ ! -x "${protoc_location}" ]; then
   echo "${protoc_location} is not found or not executable"
   exit 1
 fi
+
+cd java
 
 mvn --projects "bom,core,util" -e -B -Dhttps.protocols=TLSv1.2 install \
     -Dmaven.test.skip=true \
