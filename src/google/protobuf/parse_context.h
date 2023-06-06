@@ -31,11 +31,17 @@
 #ifndef GOOGLE_PROTOBUF_PARSE_CONTEXT_H__
 #define GOOGLE_PROTOBUF_PARSE_CONTEXT_H__
 
+#include <atomic>
 #include <cstdint>
 #include <cstring>
 #include <string>
 #include <type_traits>
 #include <utility>
+
+#if defined(__x86_64__) && defined(__BMI2__)
+#include <x86intrin.h>
+#define PROTOBUF_USE_BMI2_PEXT
+#endif  // __BMI2__
 
 #include "absl/base/config.h"
 #include "absl/log/absl_check.h"
@@ -252,6 +258,11 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   template <typename Add, typename SizeCb>
   PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add,
                                                   SizeCb size_callback);
+#ifdef PROTOBUF_USE_BMI2_PEXT
+  template <typename Add>
+  PROTOBUF_NODISCARD const char* ReadPackedVarintBmi(const char* ptr, Add add,
+                                                     int size);
+#endif  // PROTOBUF_USE_BMI2_PEXT
 
   uint32_t LastTag() const { return last_tag_minus_1_ + 1; }
   bool ConsumeEndGroup(uint32_t start_tag) {
@@ -1236,10 +1247,224 @@ const char* ReadPackedVarintArray(const char* ptr, const char* end, Add add) {
     uint64_t varint;
     ptr = VarintParse(ptr, &varint);
     if (ptr == nullptr) return nullptr;
-    add(varint);
+    PROTOBUF_ALWAYS_INLINE add(varint);
   }
   return ptr;
 }
+
+#ifdef PROTOBUF_USE_BMI2_PEXT
+// Interprets packed varint data in bulk. May read 16 bytes past the end, and
+// requires that data past the end to be actual data, not just readable garbage.
+template <typename Add>
+__attribute__((target("bmi2"))) const char* ReadPackedVarintArrayBmi(
+    const char* ptr, const char* end, Add add) {
+  // We load the data by qwords and let `mask` track where we are in that
+  // qword. If we are 2 bytes into a qword (i.e., least significant two bytes
+  // of the qword are already parsed) our mask is
+  //           7  6  5  4  3  2  1  0
+  // mask =   00 00 00 00 00 00 FF FF   (FF indicates already parsed bytes)
+  //
+  // Let's say data contains the content of the qword we'd like to parse in
+  // this example a two byte varint at position 2 and 3, let's say 257
+  //
+  // data =   XX XX XX XX 02 81 XX XX  (the last two bytes are already parsed)
+  //
+  // The value `data | kVarintMask` only depends on the continuation bits, as
+  // these bits plug the holes in the `kVarintMask`. Because of this, expression
+  // `cont_bits = data | kVarintMask | mask` depends only on the continuation
+  // bits of the unparsed bytes as well. In our example `cont_bits` will be
+  //
+  // cont_bits    =   XX XX XX XX 7F FF FF FF
+  //
+  // `varint_end = cont_bits + 1` leverages the carry of add's to find where
+  // the varint ends:
+  //
+  // `varint_end`    =   XX XX XX XX 80 00 00 00
+  //
+  // and `mask = cont_bits ^ varint_end` gives us the new mask of the parsed
+  // bytes for the next iteration. In our example:
+  //
+  // mask = 00 00 00 00 FF FF FF FF
+  //
+  // This completes the loop by establishing the loop invariant of the next
+  // iter. There are 3 elementary register instructions on this loop chain. If
+  // we keep track of the old mask (`oldmask`) we get that `mask ^ oldmask` has
+  // the bits set for all the bytes participating in the varint. Hence we can
+  // construct an `extract_mask = (mask ^ oldmask) & kVarintMask`, which in the
+  // example here will be: 00 00 00 00 7F 7F 00 00.
+
+  constexpr uint64_t kVarintMask = 0x7F7F7F7F7F7F7F7F;
+  uint64_t data;
+  uint64_t cont_bits;
+  uint64_t mask;
+  auto next = [&]() PROTOBUF_ALWAYS_INLINE {
+    // Unaligned loads are faster than pre-read + aligned loop.
+    uint64_t data = UNALIGNED_LOAD64(ptr);
+    ptr += 8;
+    return data;
+  };
+  do {
+    data = next();
+    cont_bits = data | kVarintMask;
+    mask = 0;
+    do {
+      uint64_t old_mask = mask;
+      uint64_t varint_end = cont_bits + 1;
+      mask = cont_bits ^ varint_end;
+      cont_bits |= varint_end;  // Loop-carried data-chain.
+      uint64_t extract_mask = (mask ^ old_mask) & kVarintMask;
+      uint64_t extracted = _pext_u64(data, extract_mask);
+      if (ABSL_PREDICT_FALSE(varint_end == 0)) {
+        // The varint continues into the next qword.
+        uint32_t shift = absl::popcount(extract_mask);
+        if (ABSL_PREDICT_FALSE(ptr > end)) {
+          // Adjust `ptr` accordingly with how much data we consumed.
+          auto adjusted_ptr = ptr - 8 + (__builtin_popcountll(old_mask) / 8);
+          if (adjusted_ptr >= end) return adjusted_ptr;
+          // Here adjusted_ptr < end < ptr, which means that we must have
+          // extracted at least 2 bytes, and so we need to read at most 8 more.
+          ABSL_DCHECK_GE(shift, 14);
+          // Which means that the extraction will end with one more qword read
+          // and if not, it will be caught by the 11+ byte varint check.
+          // Either way we will read only one more qword. That qword might
+          // have some additional varints to be parsed, and that is fine,
+          // if they overflow, the adjusted_ptr above will then be true.
+        }
+        data = next();
+        cont_bits = data | kVarintMask;
+        varint_end = cont_bits + 1;
+        mask = cont_bits ^ varint_end;
+        cont_bits |= varint_end;
+        uint64_t extract_mask = mask & kVarintMask;
+        extracted += _pext_u64(data, extract_mask) << shift;
+        if (ABSL_PREDICT_TRUE(varint_end != 0)) {
+          // Validate against 11+ byte varints. This test costs us ~20% of
+          // performance on non-zigzagged types (for others it doesn't matter).
+          if (uint32_t second_shift = absl::popcount(extract_mask);
+              ABSL_PREDICT_FALSE(shift + second_shift > 70)) {
+            return nullptr;
+          }
+        } else {
+          // Varint continues, so it must span this whole qword which happens
+          // only in one case a 10 byte varint, that spans 3 qwords.
+          // "last byte", qword, "first byte"
+          if (ABSL_PREDICT_FALSE(shift > 7)) return nullptr;
+          data = next();
+          cont_bits = data | kVarintMask;
+          varint_end = cont_bits + 1;
+          // Validate against 11+ byte varints. This check is cheap.
+          if (ABSL_PREDICT_FALSE(static_cast<uint8_t>(data) >=
+                                 static_cast<uint8_t>(0x80))) {
+            return nullptr;
+          }
+          mask = cont_bits ^ varint_end;
+          cont_bits |= varint_end;
+          extracted += _pext_u64(data, mask & kVarintMask) << (shift + (8 * 7));
+          if (varint_end == 0) {
+            // This branch is unreachable (there is a check and return nullptr
+            // just above), but somehow the compiler produces a better code with
+            // the __builtin_trap rather than __builtin_assume or
+            // __builtin_unreachable.
+            __builtin_trap();
+          }
+        }
+      }
+      PROTOBUF_ALWAYS_INLINE_CALL add(extracted);
+    } while (mask != 0xFFFFFFFFFFFFFFFFul);
+    // Precisely consumed the qword. Start over fresh at next qword.
+  } while (ptr < end);
+  return ptr;
+}
+
+template <typename Add>
+ABSL_ATTRIBUTE_NOINLINE const char* EpsCopyInputStream::ReadPackedVarintBmi(
+    const char* ptr, Add add, int size) {
+  // ReadPackedVarintArrayBmi cannot stop mid-qword and so has the invariant
+  // that the slop bytes have to be actual data. If we cannot satisfy this
+  // requirement we fallback to ReadPackedVarint which might read data past
+  // the end but does not interpret it.
+  int chunk_size = static_cast<int>(buffer_end_ - ptr);
+  while (size > chunk_size + kSlopBytes) {
+    PROTOBUF_ALWAYS_INLINE_CALL ptr =
+        ReadPackedVarintArrayBmi(ptr, buffer_end_, add);
+    if (ptr == nullptr) return nullptr;
+    int overrun = static_cast<int>(ptr - buffer_end_);
+    ABSL_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
+    size -= overrun + chunk_size;
+    ABSL_DCHECK_GT(size, 0);
+    // We must flip buffers
+    if (limit_ <= kSlopBytes) return nullptr;
+    ptr = Next();
+    if (ptr == nullptr) return nullptr;
+    ptr += overrun;
+    chunk_size = static_cast<int>(buffer_end_ - ptr);
+  }
+  // At this moment we have that size <= chunk_size + kSlopBytes, so the current
+  // buffer contains all the information we need, and we might be able to avoid
+  // any further buffer flips. Still, we need to be careful, as it might lack
+  // required slop bytes.
+  ABSL_DCHECK_LE(size, chunk_size + kSlopBytes);
+  if (size > kSlopBytes) {  // Reduce the data size if possible.
+    const char* end = ptr + size;
+    PROTOBUF_ALWAYS_INLINE_CALL ptr =
+        ReadPackedVarintArrayBmi(ptr, end - kSlopBytes, add);
+    if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+    size = end - ptr;
+  }
+  {
+    char buf[kSlopBytes + 10] = {};
+    ABSL_CHECK_LE(size, kSlopBytes);
+    std::memcpy(buf, ptr, size);
+    const char* end = buf + size;
+    PROTOBUF_ALWAYS_INLINE_CALL auto res = ReadPackedVarintArray(buf, end, add);
+    return res == end ? ptr + size : nullptr;
+  }
+}
+
+// Based on base/cpuid.cc.
+ABSL_ATTRIBUTE_NOINLINE inline bool HasFastPextImpl() {
+// Inline cpuid instruction. %rbx is occasionally used to address stack
+// variables in presence of dynamic allocas. Preserve the %rbx register via
+// %rdi to work around a clang bug https://bugs.llvm.org/show_bug.cgi?id=17907
+// (%rbx in an output constraint is not considered a clobbered register).
+#define PROTO_GETCPUID(a, b, c, d, a_inp, c_inp) \
+  asm("mov %%rbx, %%rdi\n"                       \
+      "cpuid\n"                                  \
+      "xchg %%rdi, %%rbx\n"                      \
+      : "=a"(a), "=D"(b), "=c"(c), "=d"(d)       \
+      : "a"(a_inp), "2"(c_inp))
+
+  // Get vendor string (issue CPUID with eax = 0)
+  uint32_t eax, ebx, ecx, edx;
+  PROTO_GETCPUID(eax, ebx, ecx, edx, 0, 0);
+
+  // At the moment we are only enabling all Intel CPUs and AMD Zen3.
+  if (ebx == 0x756e6547 && edx == 0x49656e69 && ecx == 0x6c65746e) {
+    // Vendor string "GenuineIntel".
+    return true;
+  }
+  if (ebx == 0x68747541 && edx == 0x444D4163 && ecx == 0x69746E65) {
+    // Vendor string "AuthenticAMD".
+    PROTO_GETCPUID(eax, ebx, ecx, edx, 1, 0);
+    uint32_t cpu_family = (eax >> 8) & 0xf;
+    uint32_t ext_family = (eax >> 20) & 0xff;
+    if (cpu_family == 15) cpu_family += ext_family;
+    return cpu_family == 0x19;  // AuthenticAMD Zen3.
+  }
+#undef PROTO_GETCPUID
+  return false;
+}
+inline bool HasFastPext() {
+  ABSL_CONST_INIT static std::atomic<int> fast_pext_state = -1;
+  int local = fast_pext_state.load(std::memory_order_relaxed);
+  if (ABSL_PREDICT_FALSE(local < 0)) {
+    fast_pext_state.store(HasFastPextImpl(), std::memory_order_relaxed);
+    // We don't update the local, because that would force an additional
+    // test, while parsing the old way the first time is not a big cost.
+  }
+  return local > 0;
+}
+#endif  // PROTOBUF_USE_BMI2_PEXT
 
 template <typename Add, typename SizeCb>
 const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add,
@@ -1248,21 +1473,33 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add,
   size_callback(size);
 
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+
+#ifdef PROTOBUF_USE_BMI2_PEXT
+  static_assert(kSlopBytes >= 16);  // Two reads of pext_u64.
+  if (size >= 2 * kSlopBytes && HasFastPext()) {
+    // Some implementations of pext_u64 can be slow, so we use them only
+    // on specific platforms.
+    return ReadPackedVarintBmi(ptr, add, size);
+  }
+#endif  // PROTOBUF_USE_BMI2_PEXT
+
   int chunk_size = static_cast<int>(buffer_end_ - ptr);
   while (size > chunk_size) {
-    ptr = ReadPackedVarintArray(ptr, buffer_end_, add);
+    PROTOBUF_ALWAYS_INLINE_CALL ptr =
+        ReadPackedVarintArray(ptr, buffer_end_, add);
     if (ptr == nullptr) return nullptr;
     int overrun = static_cast<int>(ptr - buffer_end_);
     ABSL_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
     if (size - chunk_size <= kSlopBytes) {
       // The current buffer contains all the information needed, we don't need
-      // to flip buffers. However we must parse from a buffer with enough space
-      // so we are not prone to a buffer overflow.
+      // to flip buffers. However we must parse from a buffer with enough
+      // space so we are not prone to a buffer overflow.
       char buf[kSlopBytes + 10] = {};
       std::memcpy(buf, buffer_end_, kSlopBytes);
       ABSL_CHECK_LE(size - chunk_size, kSlopBytes);
       auto end = buf + (size - chunk_size);
-      auto res = ReadPackedVarintArray(buf + overrun, end, add);
+      PROTOBUF_ALWAYS_INLINE_CALL auto res =
+          ReadPackedVarintArray(buf + overrun, end, add);
       if (res == nullptr || res != end) return nullptr;
       return buffer_end_ + (res - buf);
     }
@@ -1276,7 +1513,7 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add,
     chunk_size = static_cast<int>(buffer_end_ - ptr);
   }
   auto end = ptr + size;
-  ptr = ReadPackedVarintArray(ptr, end, add);
+  PROTOBUF_ALWAYS_INLINE_CALL ptr = ReadPackedVarintArray(ptr, end, add);
   return end == ptr ? ptr : nullptr;
 }
 
