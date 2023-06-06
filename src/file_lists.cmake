@@ -25,7 +25,6 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.cc
@@ -104,7 +103,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.h
@@ -202,7 +200,6 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.cc
@@ -233,7 +230,6 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/endian.h
