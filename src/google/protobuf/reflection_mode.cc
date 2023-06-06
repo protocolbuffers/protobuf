@@ -39,7 +39,7 @@ namespace internal {
 
 #if !defined(PROTOBUF_NO_THREADLOCAL)
 
-#if defined(PROTOBUF_USE_DLLS)
+#if defined(PROTOBUF_USE_DLLS) && defined(_MSC_VER)
 ReflectionMode& ScopedReflectionMode::reflection_mode() {
   static PROTOBUF_THREAD_LOCAL ReflectionMode reflection_mode =
       ReflectionMode::kDefault;
