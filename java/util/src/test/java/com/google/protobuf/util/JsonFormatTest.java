@@ -191,6 +191,9 @@ public class JsonFormatTest {
   private String toSortedJsonString(Message message) throws IOException {
     return JsonFormat.printer().sortingMapKeys().print(message);
   }
+  private String toNotAlwaysWithQuotesJsonString(Message message) throws IOException {
+    return JsonFormat.printer().notAlwaysWithQuotes().print(message);
+  }
 
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
     JsonFormat.parser().merge(json, builder);
@@ -239,6 +242,60 @@ public class JsonFormatTest {
                 + "  \"repeatedFixed64\": [\"4567890123456789012\", \"567890123456789012\"],\n"
                 + "  \"repeatedSfixed32\": [7890, 890],\n"
                 + "  \"repeatedSfixed64\": [\"5678901234567890123\", \"678901234567890123\"],\n"
+                + "  \"repeatedFloat\": [1.5, 11.5],\n"
+                + "  \"repeatedDouble\": [1.25, 11.25],\n"
+                + "  \"repeatedBool\": [true, true],\n"
+                + "  \"repeatedString\": [\"Hello world!\", \"ello world!\"],\n"
+                + "  \"repeatedBytes\": [\"AAEC\", \"AQI=\"],\n"
+                + "  \"repeatedNestedMessage\": [{\n"
+                + "    \"value\": 100\n"
+                + "  }, {\n"
+                + "    \"value\": 200\n"
+                + "  }],\n"
+                + "  \"repeatedNestedEnum\": [\"BAR\", \"BAZ\"]\n"
+                + "}");
+
+    assertRoundTripEquals(message);
+  }
+
+  @Test
+  public void testAllFieldsNotAlwaysWithQuotes() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    setAllFields(builder);
+    TestAllTypes message = builder.build();
+
+    assertThat(toNotAlwaysWithQuotesJsonString(message))
+        .isEqualTo(
+            "{\n"
+                + "  \"optionalInt32\": 1234,\n"
+                + "  \"optionalInt64\": 1234567890123456789,\n"
+                + "  \"optionalUint32\": 5678,\n"
+                + "  \"optionalUint64\": 2345678901234567890,\n"
+                + "  \"optionalSint32\": 9012,\n"
+                + "  \"optionalSint64\": 3456789012345678901,\n"
+                + "  \"optionalFixed32\": 3456,\n"
+                + "  \"optionalFixed64\": 4567890123456789012,\n"
+                + "  \"optionalSfixed32\": 7890,\n"
+                + "  \"optionalSfixed64\": 5678901234567890123,\n"
+                + "  \"optionalFloat\": 1.5,\n"
+                + "  \"optionalDouble\": 1.25,\n"
+                + "  \"optionalBool\": true,\n"
+                + "  \"optionalString\": \"Hello world!\",\n"
+                + "  \"optionalBytes\": \"AAEC\",\n"
+                + "  \"optionalNestedMessage\": {\n"
+                + "    \"value\": 100\n"
+                + "  },\n"
+                + "  \"optionalNestedEnum\": \"BAR\",\n"
+                + "  \"repeatedInt32\": [1234, 234],\n"
+                + "  \"repeatedInt64\": [1234567890123456789, 234567890123456789],\n"
+                + "  \"repeatedUint32\": [5678, 678],\n"
+                + "  \"repeatedUint64\": [2345678901234567890, 345678901234567890],\n"
+                + "  \"repeatedSint32\": [9012, 10],\n"
+                + "  \"repeatedSint64\": [3456789012345678901, 456789012345678901],\n"
+                + "  \"repeatedFixed32\": [3456, 456],\n"
+                + "  \"repeatedFixed64\": [4567890123456789012, 567890123456789012],\n"
+                + "  \"repeatedSfixed32\": [7890, 890],\n"
+                + "  \"repeatedSfixed64\": [5678901234567890123, 678901234567890123],\n"
                 + "  \"repeatedFloat\": [1.5, 11.5],\n"
                 + "  \"repeatedDouble\": [1.25, 11.25],\n"
                 + "  \"repeatedBool\": [true, true],\n"
