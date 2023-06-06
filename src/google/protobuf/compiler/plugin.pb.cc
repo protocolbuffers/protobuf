@@ -678,7 +678,7 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 }
 inline void CodeGeneratorRequest::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.file_to_generate_.~RepeatedPtrField();
+  _internal_mutable_file_to_generate()->~RepeatedPtrField();
   _impl_.proto_file_.~RepeatedPtrField();
   _impl_.parameter_.Destroy();
   if (this != internal_default_instance()) delete _impl_.compiler_version_;
@@ -693,7 +693,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.file_to_generate_.Clear();
+  _internal_mutable_file_to_generate()->Clear();
   _internal_mutable_proto_file()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -781,8 +781,8 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
   (void)cached_has_bits;
 
   // repeated string file_to_generate = 1;
-  for (int i = 0, n = this->_impl_.file_to_generate_.size(); i < n; ++i) {
-    const auto& s = this->_impl_.file_to_generate_.Get(i);
+  for (int i = 0, n = this->_internal_file_to_generate_size(); i < n; ++i) {
+    const auto& s = this->_internal_file_to_generate().Get(i);
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.compiler.CodeGeneratorRequest.file_to_generate");
     target = stream->WriteString(1, s, target);
@@ -830,9 +830,10 @@ const ::_pbi::TcParseTable<3, 4, 2, 79, 2> CodeGeneratorRequest::_table_ = {
   (void) cached_has_bits;
 
   // repeated string file_to_generate = 1;
-  total_size += 1 * ::google::protobuf::internal::FromIntSize(_impl_.file_to_generate_.size());
-  for (int i = 0, n = _impl_.file_to_generate_.size(); i < n; ++i) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(_impl_.file_to_generate_.Get(i));
+  total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_file_to_generate().size());
+  for (int i = 0, n = _internal_file_to_generate().size(); i < n; ++i) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+        _internal_file_to_generate().Get(i));
   }
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   total_size += 1UL * this->_internal_proto_file_size();
@@ -874,7 +875,7 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.file_to_generate_.MergeFrom(from._impl_.file_to_generate_);
+  _this->_internal_mutable_file_to_generate()->MergeFrom(from._internal_file_to_generate());
   _this->_internal_mutable_proto_file()->MergeFrom(from._internal_proto_file());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -908,7 +909,8 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.file_to_generate_.InternalSwap(&other->_impl_.file_to_generate_);
+  _internal_mutable_file_to_generate()->InternalSwap(
+      other->_internal_mutable_file_to_generate());
   _internal_mutable_proto_file()->InternalSwap(other->_internal_mutable_proto_file());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, lhs_arena,
                                        &other->_impl_.parameter_, rhs_arena);

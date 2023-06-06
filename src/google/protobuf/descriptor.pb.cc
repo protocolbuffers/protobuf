@@ -2328,7 +2328,7 @@ FileDescriptorProto::~FileDescriptorProto() {
 }
 inline void FileDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.dependency_.~RepeatedPtrField();
+  _internal_mutable_dependency()->~RepeatedPtrField();
   _impl_.message_type_.~RepeatedPtrField();
   _impl_.enum_type_.~RepeatedPtrField();
   _impl_.service_.~RepeatedPtrField();
@@ -2352,13 +2352,13 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.dependency_.Clear();
+  _internal_mutable_dependency()->Clear();
   _internal_mutable_message_type()->Clear();
   _internal_mutable_enum_type()->Clear();
   _internal_mutable_service()->Clear();
   _internal_mutable_extension()->Clear();
-  _impl_.public_dependency_.Clear();
-  _impl_.weak_dependency_.Clear();
+  _internal_mutable_public_dependency()->Clear();
+  _internal_mutable_weak_dependency()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -2534,8 +2534,8 @@ constexpr ::_pbi::TcParseTable<4, 13, 6, 86, 2> FileDescriptorProto::_table_ = {
   }
 
   // repeated string dependency = 3;
-  for (int i = 0, n = this->_impl_.dependency_.size(); i < n; ++i) {
-    const auto& s = this->_impl_.dependency_.Get(i);
+  for (int i = 0, n = this->_internal_dependency_size(); i < n; ++i) {
+    const auto& s = this->_internal_dependency().Get(i);
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileDescriptorProto.dependency");
     target = stream->WriteString(3, s, target);
@@ -2588,17 +2588,17 @@ constexpr ::_pbi::TcParseTable<4, 13, 6, 86, 2> FileDescriptorProto::_table_ = {
   }
 
   // repeated int32 public_dependency = 10;
-  for (int i = 0, n = this->_impl_.public_dependency_.size(); i < n; ++i) {
+  for (int i = 0, n = this->_internal_public_dependency_size(); i < n; ++i) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteInt32ToArray(
-        10, this->_impl_.public_dependency_.Get(i), target);
+        10, this->_internal_public_dependency().Get(i), target);
   }
 
   // repeated int32 weak_dependency = 11;
-  for (int i = 0, n = this->_impl_.weak_dependency_.size(); i < n; ++i) {
+  for (int i = 0, n = this->_internal_weak_dependency_size(); i < n; ++i) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteInt32ToArray(
-        11, this->_impl_.weak_dependency_.Get(i), target);
+        11, this->_internal_weak_dependency().Get(i), target);
   }
 
   // optional string syntax = 12;
@@ -2635,9 +2635,10 @@ constexpr ::_pbi::TcParseTable<4, 13, 6, 86, 2> FileDescriptorProto::_table_ = {
   (void) cached_has_bits;
 
   // repeated string dependency = 3;
-  total_size += 1 * ::google::protobuf::internal::FromIntSize(_impl_.dependency_.size());
-  for (int i = 0, n = _impl_.dependency_.size(); i < n; ++i) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(_impl_.dependency_.Get(i));
+  total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_dependency().size());
+  for (int i = 0, n = _internal_dependency().size(); i < n; ++i) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+        _internal_dependency().Get(i));
   }
   // repeated .google.protobuf.DescriptorProto message_type = 4;
   total_size += 1UL * this->_internal_message_type_size();
@@ -2665,19 +2666,21 @@ constexpr ::_pbi::TcParseTable<4, 13, 6, 86, 2> FileDescriptorProto::_table_ = {
   }
   // repeated int32 public_dependency = 10;
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.public_dependency_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_public_dependency())
     ;
     std::size_t tag_size = std::size_t{1} *
-        ::_pbi::FromIntSize(this->_impl_.public_dependency_.size());
+        ::_pbi::FromIntSize(this->_internal_public_dependency_size());
     ;
     total_size += tag_size + data_size;
   }
   // repeated int32 weak_dependency = 11;
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.weak_dependency_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_weak_dependency())
     ;
     std::size_t tag_size = std::size_t{1} *
-        ::_pbi::FromIntSize(this->_impl_.weak_dependency_.size());
+        ::_pbi::FromIntSize(this->_internal_weak_dependency_size());
     ;
     total_size += tag_size + data_size;
   }
@@ -2740,7 +2743,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.dependency_.MergeFrom(from._impl_.dependency_);
+  _this->_internal_mutable_dependency()->MergeFrom(from._internal_dependency());
   _this->_internal_mutable_message_type()->MergeFrom(from._internal_message_type());
   _this->_internal_mutable_enum_type()->MergeFrom(from._internal_enum_type());
   _this->_internal_mutable_service()->MergeFrom(from._internal_service());
@@ -2801,7 +2804,8 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.dependency_.InternalSwap(&other->_impl_.dependency_);
+  _internal_mutable_dependency()->InternalSwap(
+      other->_internal_mutable_dependency());
   _internal_mutable_message_type()->InternalSwap(other->_internal_mutable_message_type());
   _internal_mutable_enum_type()->InternalSwap(other->_internal_mutable_enum_type());
   _internal_mutable_service()->InternalSwap(other->_internal_mutable_service());
@@ -3412,7 +3416,7 @@ inline void DescriptorProto::SharedDtor() {
   _impl_.extension_.~RepeatedPtrField();
   _impl_.oneof_decl_.~RepeatedPtrField();
   _impl_.reserved_range_.~RepeatedPtrField();
-  _impl_.reserved_name_.~RepeatedPtrField();
+  _internal_mutable_reserved_name()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
@@ -3433,7 +3437,7 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
   _internal_mutable_extension()->Clear();
   _internal_mutable_oneof_decl()->Clear();
   _internal_mutable_reserved_range()->Clear();
-  _impl_.reserved_name_.Clear();
+  _internal_mutable_reserved_name()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -3635,8 +3639,8 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
   }
 
   // repeated string reserved_name = 10;
-  for (int i = 0, n = this->_impl_.reserved_name_.size(); i < n; ++i) {
-    const auto& s = this->_impl_.reserved_name_.Get(i);
+  for (int i = 0, n = this->_internal_reserved_name_size(); i < n; ++i) {
+    const auto& s = this->_internal_reserved_name().Get(i);
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.DescriptorProto.reserved_name");
     target = stream->WriteString(10, s, target);
@@ -3702,9 +3706,10 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated string reserved_name = 10;
-  total_size += 1 * ::google::protobuf::internal::FromIntSize(_impl_.reserved_name_.size());
-  for (int i = 0, n = _impl_.reserved_name_.size(); i < n; ++i) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(_impl_.reserved_name_.Get(i));
+  total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_reserved_name().size());
+  for (int i = 0, n = _internal_reserved_name().size(); i < n; ++i) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+        _internal_reserved_name().Get(i));
   }
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -3747,7 +3752,7 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
   _this->_internal_mutable_extension()->MergeFrom(from._internal_extension());
   _this->_internal_mutable_oneof_decl()->MergeFrom(from._internal_oneof_decl());
   _this->_internal_mutable_reserved_range()->MergeFrom(from._internal_reserved_range());
-  _this->_impl_.reserved_name_.MergeFrom(from._impl_.reserved_name_);
+  _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -3800,7 +3805,8 @@ void DescriptorProto::InternalSwap(DescriptorProto* other) {
   _internal_mutable_extension()->InternalSwap(other->_internal_mutable_extension());
   _internal_mutable_oneof_decl()->InternalSwap(other->_internal_mutable_oneof_decl());
   _internal_mutable_reserved_range()->InternalSwap(other->_internal_mutable_reserved_range());
-  _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
+  _internal_mutable_reserved_name()->InternalSwap(
+      other->_internal_mutable_reserved_name());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   swap(_impl_.options_, other->_impl_.options_);
@@ -5601,7 +5607,7 @@ inline void EnumDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.~RepeatedPtrField();
   _impl_.reserved_range_.~RepeatedPtrField();
-  _impl_.reserved_name_.~RepeatedPtrField();
+  _internal_mutable_reserved_name()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
 }
@@ -5617,7 +5623,7 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
 
   _internal_mutable_value()->Clear();
   _internal_mutable_reserved_range()->Clear();
-  _impl_.reserved_name_.Clear();
+  _internal_mutable_reserved_name()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -5741,8 +5747,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
   }
 
   // repeated string reserved_name = 5;
-  for (int i = 0, n = this->_impl_.reserved_name_.size(); i < n; ++i) {
-    const auto& s = this->_impl_.reserved_name_.Get(i);
+  for (int i = 0, n = this->_internal_reserved_name_size(); i < n; ++i) {
+    const auto& s = this->_internal_reserved_name().Get(i);
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.EnumDescriptorProto.reserved_name");
     target = stream->WriteString(5, s, target);
@@ -5778,9 +5784,10 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated string reserved_name = 5;
-  total_size += 1 * ::google::protobuf::internal::FromIntSize(_impl_.reserved_name_.size());
-  for (int i = 0, n = _impl_.reserved_name_.size(); i < n; ++i) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(_impl_.reserved_name_.Get(i));
+  total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_reserved_name().size());
+  for (int i = 0, n = _internal_reserved_name().size(); i < n; ++i) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+        _internal_reserved_name().Get(i));
   }
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -5818,7 +5825,7 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
 
   _this->_internal_mutable_value()->MergeFrom(from._internal_value());
   _this->_internal_mutable_reserved_range()->MergeFrom(from._internal_reserved_range());
-  _this->_impl_.reserved_name_.MergeFrom(from._impl_.reserved_name_);
+  _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -5856,7 +5863,8 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _internal_mutable_value()->InternalSwap(other->_internal_mutable_value());
   _internal_mutable_reserved_range()->InternalSwap(other->_internal_mutable_reserved_range());
-  _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
+  _internal_mutable_reserved_name()->InternalSwap(
+      other->_internal_mutable_reserved_name());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   swap(_impl_.options_, other->_impl_.options_);
@@ -8235,7 +8243,7 @@ FieldOptions::FieldOptions(const FieldOptions& from) : ::google::protobuf::Messa
       /*decltype(_impl_._extensions_)*/ {},
       decltype(_impl_._has_bits_){from._impl_._has_bits_},
       /*decltype(_impl_._cached_size_)*/ {},
-      decltype(_impl_.targets_){from._impl_.targets_},
+      decltype(_impl_.targets_){from._internal_targets()},
       decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
       decltype(_impl_.ctype_){},
       decltype(_impl_.jstype_){},
@@ -8286,7 +8294,7 @@ FieldOptions::~FieldOptions() {
 inline void FieldOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  _impl_.targets_.~RepeatedField();
+  _internal_mutable_targets()->~RepeatedField();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
 }
 void FieldOptions::SetCachedSize(int size) const {
@@ -8300,7 +8308,7 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _impl_.targets_.Clear();
+  _internal_mutable_targets()->Clear();
   _internal_mutable_uninterpreted_option()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
@@ -8503,10 +8511,11 @@ constexpr ::_pbi::TcParseTable<4, 12, 6, 0, 7> FieldOptions::_table_ = {
   }
 
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
-  for (int i = 0, n = this->_impl_.targets_.size(); i < n; ++i) {
+  for (int i = 0, n = this->_internal_targets_size(); i < n; ++i) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        19, static_cast<::google::protobuf::FieldOptions_OptionTargetType>(this->_impl_.targets_.Get(i)), target);
+        19, static_cast<::google::protobuf::FieldOptions_OptionTargetType>(this->_internal_targets().Get(i)),
+        target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -8542,11 +8551,11 @@ constexpr ::_pbi::TcParseTable<4, 12, 6, 0, 7> FieldOptions::_table_ = {
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
   {
     std::size_t data_size = 0;
-    auto count = static_cast<std::size_t>(this->_impl_.targets_.size());
+    auto count = static_cast<std::size_t>(this->_internal_targets_size());
 
     for (std::size_t i = 0; i < count; ++i) {
       data_size += ::_pbi::WireFormatLite::EnumSize(
-          this->_impl_.targets_.Get(static_cast<int>(i)));
+          this->_internal_targets().Get(static_cast<int>(i)));
     }
     total_size += data_size;
     total_size += std::size_t{2} * count;
@@ -8634,7 +8643,7 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.targets_.MergeFrom(from._impl_.targets_);
+  _this->_internal_mutable_targets()->MergeFrom(from._internal_targets());
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
@@ -8698,7 +8707,8 @@ void FieldOptions::InternalSwap(FieldOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.targets_.InternalSwap(&other->_impl_.targets_);
+  _internal_mutable_targets()->InternalSwap(
+      other->_internal_mutable_targets());
   _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.target_obsolete_do_not_use_)
@@ -10737,7 +10747,7 @@ inline void SourceCodeInfo_Location::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.path_.~RepeatedField();
   _impl_.span_.~RepeatedField();
-  _impl_.leading_detached_comments_.~RepeatedPtrField();
+  _internal_mutable_leading_detached_comments()->~RepeatedPtrField();
   _impl_.leading_comments_.Destroy();
   _impl_.trailing_comments_.Destroy();
 }
@@ -10751,9 +10761,9 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.path_.Clear();
-  _impl_.span_.Clear();
-  _impl_.leading_detached_comments_.Clear();
+  _internal_mutable_path()->Clear();
+  _internal_mutable_span()->Clear();
+  _internal_mutable_leading_detached_comments()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -10846,7 +10856,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
   {
     int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(1, _impl_.path_,
+      target = stream->WriteInt32Packed(1, _internal_path(),
                                                  byte_size, target);
     }
   }
@@ -10855,7 +10865,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
   {
     int byte_size = _impl_._span_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(2, _impl_.span_,
+      target = stream->WriteInt32Packed(2, _internal_span(),
                                                  byte_size, target);
     }
   }
@@ -10878,8 +10888,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
   }
 
   // repeated string leading_detached_comments = 6;
-  for (int i = 0, n = this->_impl_.leading_detached_comments_.size(); i < n; ++i) {
-    const auto& s = this->_impl_.leading_detached_comments_.Get(i);
+  for (int i = 0, n = this->_internal_leading_detached_comments_size(); i < n; ++i) {
+    const auto& s = this->_internal_leading_detached_comments().Get(i);
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.SourceCodeInfo.Location.leading_detached_comments");
     target = stream->WriteString(6, s, target);
@@ -10904,7 +10914,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
 
   // repeated int32 path = 1 [packed = true];
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.path_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_path())
     ;
     _impl_._path_cached_byte_size_.Set(::_pbi::ToCachedSize(data_size));
     std::size_t tag_size = data_size == 0
@@ -10916,7 +10927,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
   }
   // repeated int32 span = 2 [packed = true];
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.span_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_span())
     ;
     _impl_._span_cached_byte_size_.Set(::_pbi::ToCachedSize(data_size));
     std::size_t tag_size = data_size == 0
@@ -10927,9 +10939,10 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
     total_size += tag_size + data_size;
   }
   // repeated string leading_detached_comments = 6;
-  total_size += 1 * ::google::protobuf::internal::FromIntSize(_impl_.leading_detached_comments_.size());
-  for (int i = 0, n = _impl_.leading_detached_comments_.size(); i < n; ++i) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(_impl_.leading_detached_comments_.Get(i));
+  total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_leading_detached_comments().size());
+  for (int i = 0, n = _internal_leading_detached_comments().size(); i < n; ++i) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+        _internal_leading_detached_comments().Get(i));
   }
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -10966,7 +10979,7 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::Message& to_msg, con
 
   _this->_impl_.path_.MergeFrom(from._impl_.path_);
   _this->_impl_.span_.MergeFrom(from._impl_.span_);
-  _this->_impl_.leading_detached_comments_.MergeFrom(from._impl_.leading_detached_comments_);
+  _this->_internal_mutable_leading_detached_comments()->MergeFrom(from._internal_leading_detached_comments());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -10998,7 +11011,8 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.path_.InternalSwap(&other->_impl_.path_);
   _impl_.span_.InternalSwap(&other->_impl_.span_);
-  _impl_.leading_detached_comments_.InternalSwap(&other->_impl_.leading_detached_comments_);
+  _internal_mutable_leading_detached_comments()->InternalSwap(
+      other->_internal_mutable_leading_detached_comments());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.leading_comments_, lhs_arena,
                                        &other->_impl_.leading_comments_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.trailing_comments_, lhs_arena,
@@ -11272,7 +11286,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.path_.Clear();
+  _internal_mutable_path()->Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     _impl_.source_file_.ClearNonDefaultToEmpty();
@@ -11363,7 +11377,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
   {
     int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(1, _impl_.path_,
+      target = stream->WriteInt32Packed(1, _internal_path(),
                                                  byte_size, target);
     }
   }
@@ -11417,7 +11431,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
 
   // repeated int32 path = 1 [packed = true];
   {
-    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(this->_impl_.path_)
+    std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+        this->_internal_path())
     ;
     _impl_._path_cached_byte_size_.Set(::_pbi::ToCachedSize(data_size));
     std::size_t tag_size = data_size == 0

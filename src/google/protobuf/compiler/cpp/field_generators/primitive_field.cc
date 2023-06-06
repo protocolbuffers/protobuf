@@ -315,7 +315,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$.Clear();
+      _internal_mutable_$name$()->Clear();
     )cc");
   }
 
@@ -431,27 +431,27 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     inline $Type$ $Msg$::$name$(int index) const {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-      return $field_$.Get(index);
+      return _internal_$name$().Get(index);
     }
     inline void $Msg$::set_$name$(int index, $Type$ value) {
       $annotate_set$;
-      $field_$.Set(index, value);
+      _internal_mutable_$name$()->Set(index, value);
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
     inline void $Msg$::add_$name$($Type$ value) {
-      $field_$.Add(value);
+      _internal_mutable_$name$()->Add(value);
       $annotate_add$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
     inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const {
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-      return $field_$;
+      return _internal_$name$();
     }
     inline $pb$::RepeatedField<$Type$>* $Msg$::mutable_$name$() {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
-      return &$field_$;
+      return _internal_mutable_$name$();
     }
 
     inline const $pb$::RepeatedField<$Type$>& $Msg$::_internal_$name$() const {
@@ -467,10 +467,10 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!field_->is_packed()) {
     p->Emit(R"cc(
-      for (int i = 0, n = this->$field_$.size(); i < n; ++i) {
+      for (int i = 0, n = this->_internal_$name$_size(); i < n; ++i) {
         target = stream->EnsureSpace(target);
         target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
-            $number$, this->$field_$.Get(i), target);
+            $number$, this->_internal_$name$().Get(i), target);
       }
     )cc");
     return;
@@ -478,8 +478,8 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
 
   if (FixedSize(field_->type()).has_value()) {
     p->Emit(R"cc(
-      if (this->$field_$.size() > 0) {
-        target = stream->WriteFixedPacked($number$, $field_$, target);
+      if (this->_internal_$name$_size() > 0) {
+        target = stream->WriteFixedPacked($number$, _internal_$name$(), target);
       }
     )cc");
     return;
@@ -489,7 +489,7 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
     {
       int byte_size = $_field_cached_byte_size_$.Get();
       if (byte_size > 0) {
-        target = stream->Write$DeclaredType$Packed($number$, $field_$,
+        target = stream->Write$DeclaredType$Packed($number$, _internal_$name$(),
                                                    byte_size, target);
       }
     }
@@ -505,11 +505,12 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
                 if (fixed_size.has_value()) {
                   p->Emit({{"kFixed", *fixed_size}}, R"cc(
                     std::size_t{$kFixed$} *
-                        ::_pbi::FromIntSize(this->$field_$.size())
+                        ::_pbi::FromIntSize(this->_internal_$name$_size())
                   )cc");
                 } else {
                   p->Emit(R"cc(
-                    ::_pbi::WireFormatLite::$DeclaredType$Size(this->$field_$)
+                    ::_pbi::WireFormatLite::$DeclaredType$Size(
+                        this->_internal_$name$())
                   )cc");
                 }
               }}  // Here and below, we need to disable the default ;-chomping
@@ -534,7 +535,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
                 } else {
                   p->Emit(R"cc(
                     std::size_t{$kTagBytes$} *
-                        ::_pbi::FromIntSize(this->$field_$.size());
+                        ::_pbi::FromIntSize(this->_internal_$name$_size());
                   )cc");
                 }
               }}
