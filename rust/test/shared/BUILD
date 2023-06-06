@@ -19,10 +19,6 @@ load("@rules_rust//rust:defs.bzl", "rust_test")
 rust_test(
     name = "child_parent_upb_test",
     srcs = ["child_parent_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = [
         "//rust/test:child_upb_rust_proto",
         "//rust/test:parent_upb_rust_proto",
@@ -32,10 +28,6 @@ rust_test(
 rust_test(
     name = "child_parent_cpp_test",
     srcs = ["child_parent_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = [
         "//rust/test:child_cc_rust_proto",
         "//rust/test:parent_cc_rust_proto",
@@ -45,10 +37,6 @@ rust_test(
 rust_test(
     name = "package_cpp_test",
     srcs = ["package_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = [
         "//rust/test:dots_in_package_cc_rust_proto",
         "//rust/test:no_package_cc_rust_proto",
@@ -59,10 +47,6 @@ rust_test(
 rust_test(
     name = "package_upb_test",
     srcs = ["package_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = [
         "//rust/test:dots_in_package_upb_rust_proto",
         "//rust/test:no_package_upb_rust_proto",
@@ -73,59 +57,35 @@ rust_test(
 rust_test(
     name = "nested_messages_cpp_test",
     srcs = ["nested_messages_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = ["//rust/test:unittest_cc_rust_proto"],
 )
 
 rust_test(
     name = "nested_messages_upb_test",
     srcs = ["nested_messages_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = ["//rust/test:unittest_upb_rust_proto"],
 )
 
 rust_test(
     name = "accessors_cpp_test",
     srcs = ["accessors_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = ["//rust/test:unittest_cc_rust_proto"],
 )
 
 rust_test(
     name = "accessors_upb_test",
     srcs = ["accessors_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = ["//rust/test:unittest_upb_rust_proto"],
 )
 
 rust_test(
     name = "serialization_upb_test",
     srcs = ["serialization_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = ["//rust/test:unittest_upb_rust_proto"],
 )
 
 rust_test(
     name = "serialization_cpp_test",
     srcs = ["serialization_test.rs"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
     deps = ["//rust/test:unittest_cc_rust_proto"],
 )
