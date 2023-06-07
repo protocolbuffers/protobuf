@@ -1263,31 +1263,31 @@ std::string GetModeInit(const upb_MiniTableField* field32,
   uint8_t mode32 = field32->mode;
   switch (mode32 & kUpb_FieldMode_Mask) {
     case kUpb_FieldMode_Map:
-      ret = "kUpb_FieldMode_Map";
+      ret = "(int)kUpb_FieldMode_Map";
       break;
     case kUpb_FieldMode_Array:
-      ret = "kUpb_FieldMode_Array";
+      ret = "(int)kUpb_FieldMode_Array";
       break;
     case kUpb_FieldMode_Scalar:
-      ret = "kUpb_FieldMode_Scalar";
+      ret = "(int)kUpb_FieldMode_Scalar";
       break;
     default:
       break;
   }
 
   if (mode32 & kUpb_LabelFlags_IsPacked) {
-    absl::StrAppend(&ret, " | kUpb_LabelFlags_IsPacked");
+    absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsPacked");
   }
 
   if (mode32 & kUpb_LabelFlags_IsExtension) {
-    absl::StrAppend(&ret, " | kUpb_LabelFlags_IsExtension");
+    absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsExtension");
   }
 
   if (mode32 & kUpb_LabelFlags_IsAlternate) {
-    absl::StrAppend(&ret, " | kUpb_LabelFlags_IsAlternate");
+    absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsAlternate");
   }
 
-  absl::StrAppend(&ret, " | (", GetFieldRep(field32, field64),
+  absl::StrAppend(&ret, " | ((int)", GetFieldRep(field32, field64),
                   " << kUpb_FieldRep_Shift)");
   return ret;
 }
