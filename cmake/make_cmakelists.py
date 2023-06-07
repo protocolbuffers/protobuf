@@ -45,6 +45,19 @@ def StripFirstChar(deps):
 def IsSourceFile(name):
   return name.endswith(".c") or name.endswith(".cc")
 
+
+ADD_LIBRARY_FORMAT = """
+add_library(%(name)s %(type)s
+    %(sources)s
+)
+target_include_directories(%(name)s %(keyword)s
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
+)
+"""
+
+
 class BuildFileFunctions(object):
   def __init__(self, converter):
     self.converter = converter
@@ -60,7 +73,7 @@ class BuildFileFunctions(object):
 
   def load(self, *args):
     pass
-
+  
   def cc_library(self, **kwargs):
     if kwargs["name"].endswith("amalgamation"):
       return
@@ -83,18 +96,23 @@ class BuildFileFunctions(object):
 
     if list(filter(IsSourceFile, files)):
       # Has sources, make this a normal library.
-      self.converter.toplevel += "add_library(%s\n  %s)\n" % (
-          kwargs["name"],
-          "\n  ".join(found_files)
-      )
+      self.converter.toplevel += ADD_LIBRARY_FORMAT % {
+          "name": kwargs["name"],
+          "type": "",
+          "keyword": "PUBLIC",
+          "sources": "\n  ".join(found_files),
+      }
       self._add_deps(kwargs)
     else:
       # Header-only library, have to do a couple things differently.
       # For some info, see:
       #  http://mariobadr.com/creating-a-header-only-library-with-cmake.html
-      self.converter.toplevel += "add_library(%s INTERFACE)\n" % (
-          kwargs["name"]
-      )
+      self.converter.toplevel += ADD_LIBRARY_FORMAT % {
+          "name": kwargs["name"],
+          "type": "INTERFACE",
+          "keyword": "INTERFACE",
+          "sources": "",
+      }
       self._add_deps(kwargs, " INTERFACE")
 
   def cc_binary(self, **kwargs):
@@ -298,16 +316,7 @@ class Converter(object):
   template = textwrap.dedent("""\
     # This file was generated from BUILD using tools/make_cmakelists.py.
 
-    cmake_minimum_required(VERSION 3.1)
-
-    if(${CMAKE_VERSION} VERSION_LESS 3.12)
-        cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-    else()
-        cmake_policy(VERSION 3.12)
-    endif()
-
-    cmake_minimum_required (VERSION 3.0)
-    cmake_policy(SET CMP0048 NEW)
+    cmake_minimum_required(VERSION 3.10...3.24)
 
     %(prelude)s
 
@@ -344,10 +353,6 @@ class Converter(object):
       set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
     endif()
-
-    include_directories(..)
-    include_directories(../cmake)
-    include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
     if(NOT TARGET utf8_range)
       if(EXISTS ../external/utf8_range)
