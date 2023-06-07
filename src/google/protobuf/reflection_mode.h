@@ -95,18 +95,20 @@ class PROTOBUF_EXPORT ScopedReflectionMode final {
  private:
 #if !defined(PROTOBUF_NO_THREADLOCAL)
   const ReflectionMode previous_mode_;
-#if defined(PROTOBUF_USE_DLLS)
+#if defined(PROTOBUF_USE_DLLS) && defined(_MSC_VER)
+  // Thread local variables cannot be exposed through MSVC DLL interface but we
+  // can wrap them in static functions.
   static ReflectionMode& reflection_mode();
 #else
   PROTOBUF_CONSTINIT static PROTOBUF_THREAD_LOCAL ReflectionMode
       reflection_mode_;
-#endif  // PROTOBUF_USE_DLLS
+#endif  // PROTOBUF_USE_DLLS && _MSC_VER
 #endif  // !PROTOBUF_NO_THREADLOCAL
 };
 
 #if !defined(PROTOBUF_NO_THREADLOCAL)
 
-#if defined(PROTOBUF_USE_DLLS)
+#if defined(PROTOBUF_USE_DLLS) && defined(_MSC_VER)
 
 inline ScopedReflectionMode::ScopedReflectionMode(ReflectionMode mode)
     : previous_mode_(reflection_mode()) {
@@ -140,7 +142,7 @@ inline ReflectionMode ScopedReflectionMode::current_reflection_mode() {
   return reflection_mode_;
 }
 
-#endif  // PROTOBUF_USE_DLLS
+#endif  // PROTOBUF_USE_DLLS && _MSC_VER
 
 #else
 
