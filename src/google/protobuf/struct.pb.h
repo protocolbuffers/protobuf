@@ -779,6 +779,7 @@ inline void Struct::clear_fields() {
   _impl_.fields_.Clear();
 }
 inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::_internal_fields() const {
+  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.fields_.GetMap();
 }
 inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::fields() const {
@@ -786,6 +787,7 @@ inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& St
   return _internal_fields();
 }
 inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::_internal_mutable_fields() {
+  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return _impl_.fields_.MutableMap();
 }
 inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::mutable_fields() {
@@ -1175,10 +1177,12 @@ ListValue::values() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>&
 ListValue::_internal_values() const {
+  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.values_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>*
 ListValue::_internal_mutable_values() {
+  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.values_;
 }
 
