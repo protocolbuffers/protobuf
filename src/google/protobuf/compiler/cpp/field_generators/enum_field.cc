@@ -388,9 +388,11 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name$();
     }
     inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
+      $TsanDetectConcurrentRead$;
       return $field_$;
     }
     inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name$() {
+      $TsanDetectConcurrentMutation$;
       return &$field_$;
     }
   )cc");

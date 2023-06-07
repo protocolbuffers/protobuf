@@ -893,10 +893,12 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
             }
             inline const ::$proto_ns$::RepeatedPtrField<std::string>&
             $Msg$::_internal_$name$() const {
+              $TsanDetectConcurrentRead$;
               return $field_$;
             }
             inline ::$proto_ns$::RepeatedPtrField<std::string>*
             $Msg$::_internal_mutable_$name$() {
+              $TsanDetectConcurrentMutation$;
               return &$field_$;
             }
           )cc");
