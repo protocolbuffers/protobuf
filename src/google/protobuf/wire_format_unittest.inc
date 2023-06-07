@@ -33,6 +33,11 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -965,13 +970,19 @@ TEST(WireFormatTest, UnknownFieldRecursionLimit) {
 }
 
 TEST(WireFormatTest, ZigZag) {
-// avoid line-wrapping
-#define LL(x) static_cast<int64_t>(ULL(x))
-#define ULL(x) uint64_t{x##u}
-#define ZigZagEncode32(x) WireFormatLite::ZigZagEncode32(x)
-#define ZigZagDecode32(x) WireFormatLite::ZigZagDecode32(x)
-#define ZigZagEncode64(x) WireFormatLite::ZigZagEncode64(x)
-#define ZigZagDecode64(x) WireFormatLite::ZigZagDecode64(x)
+  // shorthands to avoid excessive line-wrapping
+  auto ZigZagEncode32 = [](int32_t x) {
+    return WireFormatLite::ZigZagEncode32(x);
+  };
+  auto ZigZagDecode32 = [](uint32_t x) {
+    return WireFormatLite::ZigZagDecode32(x);
+  };
+  auto ZigZagEncode64 = [](int64_t x) {
+    return WireFormatLite::ZigZagEncode64(x);
+  };
+  auto ZigZagDecode64 = [](uint64_t x) {
+    return WireFormatLite::ZigZagDecode64(x);
+  };
 
   EXPECT_EQ(0u, ZigZagEncode32(0));
   EXPECT_EQ(1u, ZigZagEncode32(-1));
@@ -995,23 +1006,29 @@ TEST(WireFormatTest, ZigZag) {
   EXPECT_EQ(1u, ZigZagEncode64(-1));
   EXPECT_EQ(2u, ZigZagEncode64(1));
   EXPECT_EQ(3u, ZigZagEncode64(-2));
-  EXPECT_EQ(ULL(0x000000007FFFFFFE), ZigZagEncode64(LL(0x000000003FFFFFFF)));
-  EXPECT_EQ(ULL(0x000000007FFFFFFF), ZigZagEncode64(LL(0xFFFFFFFFC0000000)));
-  EXPECT_EQ(ULL(0x00000000FFFFFFFE), ZigZagEncode64(LL(0x000000007FFFFFFF)));
-  EXPECT_EQ(ULL(0x00000000FFFFFFFF), ZigZagEncode64(LL(0xFFFFFFFF80000000)));
-  EXPECT_EQ(ULL(0xFFFFFFFFFFFFFFFE), ZigZagEncode64(LL(0x7FFFFFFFFFFFFFFF)));
-  EXPECT_EQ(ULL(0xFFFFFFFFFFFFFFFF), ZigZagEncode64(LL(0x8000000000000000)));
+  EXPECT_EQ(0x000000007FFFFFFEu, ZigZagEncode64(0x000000003FFFFFFF));
+  EXPECT_EQ(0x000000007FFFFFFFu,
+            ZigZagEncode64(absl::bit_cast<int64_t>(0xFFFFFFFFC0000000)));
+  EXPECT_EQ(0x00000000FFFFFFFEu, ZigZagEncode64(0x000000007FFFFFFF));
+  EXPECT_EQ(0x00000000FFFFFFFFu,
+            ZigZagEncode64(absl::bit_cast<int64_t>(0xFFFFFFFF80000000)));
+  EXPECT_EQ(0xFFFFFFFFFFFFFFFEu, ZigZagEncode64(0x7FFFFFFFFFFFFFFF));
+  EXPECT_EQ(0xFFFFFFFFFFFFFFFFu,
+            ZigZagEncode64(absl::bit_cast<int64_t>(0x8000000000000000)));
 
   EXPECT_EQ(0, ZigZagDecode64(0u));
   EXPECT_EQ(-1, ZigZagDecode64(1u));
   EXPECT_EQ(1, ZigZagDecode64(2u));
   EXPECT_EQ(-2, ZigZagDecode64(3u));
-  EXPECT_EQ(LL(0x000000003FFFFFFF), ZigZagDecode64(ULL(0x000000007FFFFFFE)));
-  EXPECT_EQ(LL(0xFFFFFFFFC0000000), ZigZagDecode64(ULL(0x000000007FFFFFFF)));
-  EXPECT_EQ(LL(0x000000007FFFFFFF), ZigZagDecode64(ULL(0x00000000FFFFFFFE)));
-  EXPECT_EQ(LL(0xFFFFFFFF80000000), ZigZagDecode64(ULL(0x00000000FFFFFFFF)));
-  EXPECT_EQ(LL(0x7FFFFFFFFFFFFFFF), ZigZagDecode64(ULL(0xFFFFFFFFFFFFFFFE)));
-  EXPECT_EQ(LL(0x8000000000000000), ZigZagDecode64(ULL(0xFFFFFFFFFFFFFFFF)));
+  EXPECT_EQ(0x000000003FFFFFFF, ZigZagDecode64(0x000000007FFFFFFEu));
+  EXPECT_EQ(absl::bit_cast<int64_t>(0xFFFFFFFFC0000000),
+            ZigZagDecode64(0x000000007FFFFFFFu));
+  EXPECT_EQ(0x000000007FFFFFFF, ZigZagDecode64(0x00000000FFFFFFFEu));
+  EXPECT_EQ(absl::bit_cast<int64_t>(0xFFFFFFFF80000000),
+            ZigZagDecode64(0x00000000FFFFFFFFu));
+  EXPECT_EQ(0x7FFFFFFFFFFFFFFF, ZigZagDecode64(0xFFFFFFFFFFFFFFFEu));
+  EXPECT_EQ(absl::bit_cast<int64_t>(0x8000000000000000),
+            ZigZagDecode64(0xFFFFFFFFFFFFFFFFu));
 
   // Some easier-to-verify round-trip tests.  The inputs (other than 0, 1, -1)
   // were chosen semi-randomly via keyboard bashing.
@@ -1027,10 +1044,9 @@ TEST(WireFormatTest, ZigZag) {
   EXPECT_EQ(14927, ZigZagDecode64(ZigZagEncode64(14927)));
   EXPECT_EQ(-3612, ZigZagDecode64(ZigZagEncode64(-3612)));
 
-  EXPECT_EQ(LL(856912304801416),
-            ZigZagDecode64(ZigZagEncode64(LL(856912304801416))));
-  EXPECT_EQ(LL(-75123905439571256),
-            ZigZagDecode64(ZigZagEncode64(LL(-75123905439571256))));
+  EXPECT_EQ(856912304801416, ZigZagDecode64(ZigZagEncode64(856912304801416)));
+  EXPECT_EQ(-75123905439571256,
+            ZigZagDecode64(ZigZagEncode64(-75123905439571256)));
 }
 
 TEST(WireFormatTest, RepeatedScalarsDifferentTagSizes) {
