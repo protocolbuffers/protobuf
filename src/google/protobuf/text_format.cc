@@ -438,12 +438,14 @@ class TextFormat::Parser::ParserImpl {
   void ReportWarning(int line, int col, const absl::string_view message) {
     if (error_collector_ == nullptr) {
       if (line >= 0) {
-        ABSL_LOG(WARNING) << "Warning parsing text-format "
-                          << root_message_type_->full_name() << ": "
-                          << (line + 1) << ":" << (col + 1) << ": " << message;
+        ABSL_LOG_EVERY_POW_2(WARNING)
+            << "Warning parsing text-format " << root_message_type_->full_name()
+            << ": " << (line + 1) << ":" << (col + 1) << " (N = " << COUNTER
+            << "): " << message;
       } else {
-        ABSL_LOG(WARNING) << "Warning parsing text-format "
-                          << root_message_type_->full_name() << ": " << message;
+        ABSL_LOG_EVERY_POW_2(WARNING)
+            << "Warning parsing text-format " << root_message_type_->full_name()
+            << " (N = " << COUNTER << "): " << message;
       }
     } else {
       error_collector_->RecordWarning(line, col, message);
