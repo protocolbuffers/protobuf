@@ -28,6 +28,6 @@ curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor
 
 echo "Running linkage-monitor-latest-all-deps.jar."
 
-java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:first-party-dependencies
+java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:google-cloud-shared-dependencies
 
 echo "Finished running Linkage Monitor check"
