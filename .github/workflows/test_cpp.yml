@@ -336,6 +336,48 @@ jobs:
           bazel: ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.cache_key }}
 
+  windows-2022-test:
+    name: Bazel test ${{ matrix.machine }}
+    runs-on: ${{ matrix.machine }}
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        machine: [macos-12, ubuntu-latest, windows-2019, windows-2022]
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+          submodules: recursive
+
+      - name: Fix Windows line breaks
+        if: runner.os == 'Windows'
+        shell: bash
+        run: find . -type f -print0 | xargs -0 d2u 2>/dev/null
+
+      - name: Install bazelrc files
+        shell: bash
+        run: |
+          cp ci/*.bazelrc .
+          cp -f ${{ runner.os }}.bazelrc .bazelrc
+
+      - name: Set Bazel flags
+        shell: bash
+        run: |
+          echo "BAZEL=bazelisk" >> $GITHUB_ENV
+          echo "USE_BAZEL_VERSION=5.1.1" >> $GITHUB_ENV
+          echo "BAZEL_FLAGS=--keep_going --test_output=errors --test_timeout=600 --enable_runfiles" >> $GITHUB_ENV
+
+      - name: Set Windows Bazel flags
+        shell: bash
+        if: runner.os == 'Windows'
+        run: |
+          echo "BAZEL_STARTUP_FLAGS=--output_user_root=C:/tmp --windows_enable_symlinks" >> $GITHUB_ENV
+
+      - name: Run Bazel Build
+        shell: bash
+        run: ./regenerate_stale_files.sh $BAZEL_FLAGS
+
   non-linux-cmake:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
@@ -351,16 +393,13 @@ jobs:
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2019'
-          # TODO(b/285566773) Re-enable this test.
-          # This is broken due to a github runner update.
-          # See https://github.com/actions/runner-images/issues/7662 for more details
-          #- name: Windows CMake 2022
-          #  os: windows-2022
-          #  flags: >-
-          #    -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
-          #    -Dprotobuf_BUILD_SHARED_LIBS=OFF
-          #    -Dprotobuf_BUILD_EXAMPLES=ON
-          #  vsversion: '2022'
+          - name: Windows CMake 2022
+            os: windows-2022
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -Dprotobuf_BUILD_SHARED_LIBS=OFF
+              -Dprotobuf_BUILD_EXAMPLES=ON
+            vsversion: '2022'
           - name: Windows CMake Shared
             os: windows-2019
             flags: >-
@@ -377,6 +416,8 @@ jobs:
             vsversion: '2019'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    env:
+      BAZEL_VC_FULL_VERSION: 14.35.32215
     steps:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
