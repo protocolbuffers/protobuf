@@ -60,9 +60,9 @@ jobs:
       - name: Run Linkage Monitor test
         uses: protocolbuffers/protobuf-ci/bazel-docker@v1
         with:
-          image: ${{ matrix.image }}
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-03a376b5d6ef66f827fc307716e3b841cc26b709
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: java_linux/${{ matrix.version }}
+          bazel-cache: java_linux/8
           bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone
 
   protobuf-bom:
