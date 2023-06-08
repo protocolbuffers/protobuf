@@ -290,7 +290,7 @@ def _upb_proto_rule_impl(ctx):
         cc_info,
     ]
 
-def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
+def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, provide_cc_shared_library_hints = True):
     proto_info = target[ProtoInfo]
     files = _compile_upb_protos(ctx, generator, proto_info, proto_info.direct_sources)
     deps = ctx.rule.attr.deps + getattr(ctx.attr, "_" + generator)
@@ -301,9 +301,11 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
         if UpbWrappedCcInfo not in target:
             fail("Target should have UpbWrappedCcInfo provider")
         dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
+    name = ctx.rule.attr.name + "." + generator
+    owners = [ctx.label.relative(name)]
     cc_info = _cc_library_func(
         ctx = ctx,
-        name = ctx.rule.attr.name + "." + generator,
+        name = name,
         hdrs = files.hdrs,
         srcs = files.srcs,
         includes = files.includes,
@@ -312,9 +314,11 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
     )
 
     if files.thunks:
+        name_thunks = ctx.rule.attr.name + "." + generator + ".thunks"
+        owners.append(ctx.label.relative(name_thunks))
         cc_info_with_thunks = _cc_library_func(
             ctx = ctx,
-            name = ctx.rule.attr.name + "." + generator + ".thunks",
+            name = name_thunks,
             hdrs = [],
             srcs = files.thunks,
             includes = files.includes,
@@ -329,16 +333,23 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
         wrapped_cc_info = cc_provider(
             cc_info = cc_info,
         )
-    return [
+    providers = [
         wrapped_cc_info,
         file_provider(srcs = files),
     ]
+    if provide_cc_shared_library_hints:
+        if hasattr(cc_common, "CcSharedLibraryHintInfo"):
+            providers.append(cc_common.CcSharedLibraryHintInfo(owners = owners))
+        elif hasattr(cc_common, "CcSharedLibraryHintInfo_6_X_constructor_do_not_use"):
+            # This branch can be deleted once 6.X is not supported by upb rules
+            providers.append(cc_common.CcSharedLibraryHintInfo_6_X_constructor_do_not_use(owners = owners))
+    return providers
 
 def upb_proto_library_aspect_impl(target, ctx):
     return _upb_proto_aspect_impl(target, ctx, "upb", UpbWrappedCcInfo, _UpbWrappedGeneratedSrcsInfo)
 
 def _upb_proto_reflection_library_aspect_impl(target, ctx):
-    return _upb_proto_aspect_impl(target, ctx, "upbdefs", _UpbDefsWrappedCcInfo, _WrappedDefsGeneratedSrcsInfo)
+    return _upb_proto_aspect_impl(target, ctx, "upbdefs", _UpbDefsWrappedCcInfo, _WrappedDefsGeneratedSrcsInfo, provide_cc_shared_library_hints = False)
 
 def _maybe_add(d):
     if _is_google3:
@@ -350,6 +361,20 @@ def _maybe_add(d):
     return d
 
 # upb_proto_library() ##########################################################
+
+def _get_upb_proto_library_aspect_provides():
+    provides = [
+        UpbWrappedCcInfo,
+        _UpbWrappedGeneratedSrcsInfo,
+    ]
+
+    if hasattr(cc_common, "CcSharedLibraryHintInfo"):
+        provides.append(cc_common.CcSharedLibraryHintInfo)
+    elif hasattr(cc_common, "CcSharedLibraryHintInfo_6_X_getter_do_not_use"):
+        # This branch can be deleted once 6.X is not supported by upb rules
+        provides.append(cc_common.CcSharedLibraryHintInfo_6_X_getter_do_not_use)
+
+    return provides
 
 upb_proto_library_aspect = aspect(
     attrs = _maybe_add({
@@ -375,10 +400,7 @@ upb_proto_library_aspect = aspect(
         "_fasttable_enabled": attr.label(default = "//:fasttable_enabled"),
     }),
     implementation = upb_proto_library_aspect_impl,
-    provides = [
-        UpbWrappedCcInfo,
-        _UpbWrappedGeneratedSrcsInfo,
-    ],
+    provides = _get_upb_proto_library_aspect_provides(),
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = use_cpp_toolchain(),
