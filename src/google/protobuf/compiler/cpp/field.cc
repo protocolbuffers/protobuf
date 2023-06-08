@@ -85,6 +85,11 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"{", ""},
       {"}", ""},
 
+      // For TSan validation.
+      {"TsanDetectConcurrentMutation",
+       "PROTOBUF_TSAN_WRITE(&_internal_metadata_)"},
+      {"TsanDetectConcurrentRead", "PROTOBUF_TSAN_READ(&_internal_metadata_)"},
+
       // Old-style names.
       {"field", FieldMemberName(field, split)},
       {"declared_type", DeclaredTypeMethodName(field->type())},
