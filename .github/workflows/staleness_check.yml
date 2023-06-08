@@ -33,7 +33,7 @@ jobs:
       # For commit-based tests, simply run the bazel query to make sure it works.  This should be
       # identical to the step below, except for the xargs piece that runs bazel test.
       - name: Check that staleness tests are queryable
-        if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_call'}}
+        if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'pull_request' || github.event_name == 'push' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.0.0-6361b3a6e5c97e9951d03a4de28542fc45f1adab
@@ -42,7 +42,7 @@ jobs:
           bash: bazel query 'attr(tags, "staleness_test", //...)'
 
       - name: Run all staleness tests
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_call' }}
+        if: ${{ github.event_name != 'pull_request_target' && github.event_name != 'pull_request' && github.event_name != 'push' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
