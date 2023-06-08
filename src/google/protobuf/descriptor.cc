@@ -4087,9 +4087,6 @@ class DescriptorBuilder {
                                  absl::string_view declared_type_name,
                                  bool is_repeated);
 
-  // Must be run only after cross-linking.
-  void InterpretOptions();
-
   // A helper class for interpreting options.
   class OptionInterpreter {
    public:
@@ -4114,15 +4111,21 @@ class DescriptorBuilder {
     class AggregateOptionFinder;
 
    private:
+    bool InterpretOptionsImpl(OptionsToInterpret* options_to_interpret,
+                              bool features);
+
     // Interprets uninterpreted_option_ on the specified message, which
     // must be the mutable copy of the original options message to which
     // uninterpreted_option_ belongs. The given src_path is the source
     // location path to the uninterpreted option, and options_path is the
     // source location path to the options message. The location paths are
     // recorded and then used in UpdateSourceCodeInfo.
+    // The features boolean controls whether or not we should only interpret
+    // feature options or skip them entirely.
     bool InterpretSingleOption(Message* options,
                                const std::vector<int>& src_path,
-                               const std::vector<int>& options_path);
+                               const std::vector<int>& options_path,
+                               bool features);
 
     // Adds the uninterpreted_option to the given options message verbatim.
     // Used when AllowUnknownDependencies() is in effect and we can't find
@@ -5505,6 +5508,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     SuggestFieldNumbers(result, proto);
   }
 
+
   // Interpret any remaining uninterpreted options gathered into
   // options_to_interpret_ during descriptor building.  Cross-linking has made
   // extension options known, so all interpretations should now succeed.
@@ -5520,7 +5524,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       option_interpreter.UpdateSourceCodeInfo(info);
     }
   }
-
 
   // Validate options. See comments at InternalSetLazilyBuildDependencies about
   // error checking and lazy import building.
@@ -7766,6 +7769,10 @@ DescriptorBuilder::OptionInterpreter::~OptionInterpreter() {}
 
 bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
     OptionsToInterpret* options_to_interpret) {
+  return InterpretOptionsImpl(options_to_interpret, /*features=*/false);
+}
+bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
+    OptionsToInterpret* options_to_interpret, bool features) {
   // Note that these may be in different pools, so we can't use the same
   // descriptor and reflection objects on both.
   Message* options = options_to_interpret->options;
@@ -7801,7 +7808,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
         &original_options->GetReflection()->GetRepeatedMessage(
             *original_options, original_uninterpreted_options_field, i));
     if (!InterpretSingleOption(options, src_path,
-                               options_to_interpret->element_path)) {
+                               options_to_interpret->element_path, features)) {
       // Error already added by InterpretSingleOption().
       failed = true;
       break;
@@ -7851,7 +7858,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
 
 bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     Message* options, const std::vector<int>& src_path,
-    const std::vector<int>& options_path) {
+    const std::vector<int>& options_path, bool features) {
   // First do some basic validation.
   if (uninterpreted_option_->name_size() == 0) {
     // This should never happen unless the parser has gone seriously awry or
@@ -7863,6 +7870,13 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     return AddNameError([]() -> std::string {
       return "Option must not use reserved name \"uninterpreted_option\".";
     });
+  }
+  if (features != (uninterpreted_option_->name(0).name_part() == "features")) {
+    // Allow feature and option interpretation to occur in two phases.  This is
+    // necessary because features *are* options and need to be interpreted
+    // before resolving them.  However, options can also *have* features
+    // attached to them.
+    return true;
   }
 
   const Descriptor* options_descriptor = nullptr;
