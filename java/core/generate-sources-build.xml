@@ -1,4 +1,4 @@
-<project name="generate-sources">
+    <project name="generate-sources">
     <echo message="Running protoc ..."/>
     <mkdir dir="${generated.sources.dir}"/>
     <exec executable="${protoc}">
