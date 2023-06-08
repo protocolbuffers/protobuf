@@ -34,6 +34,7 @@
 #include <gmock/gmock.h>
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/text_format.h"
 
 // This file contains private helpers for dealing with textprotos in our
@@ -46,6 +47,14 @@ MATCHER_P(EqualsProto, textproto, "") {
   auto msg = absl::WrapUnique(arg.New());
   return TextFormat::ParseFromString(textproto, msg.get()) &&
          msg->DebugString() == arg.DebugString();
+}
+
+MATCHER_P3(EqualsProtoSerialized, pool, type, textproto, "") {
+  const Descriptor* desc = pool->FindMessageTypeByName(type);
+  DynamicMessageFactory factory(pool);
+  auto msg = absl::WrapUnique(factory.GetPrototype(desc)->New());
+  return TextFormat::ParseFromString(textproto, msg.get()) &&
+         arg.SerializeAsString() == msg->SerializeAsString();
 }
 
 class ParseTextOrDie {
