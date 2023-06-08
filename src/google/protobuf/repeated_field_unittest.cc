@@ -2029,6 +2029,7 @@ TEST(RepeatedPtrField, Cleanups) {
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 }
 
+
 // ===================================================================
 
 // Iterator tests stolen from net/proto/proto-array_unittest.
