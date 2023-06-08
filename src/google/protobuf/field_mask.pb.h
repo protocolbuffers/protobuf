@@ -342,12 +342,10 @@ inline ::google::protobuf::RepeatedPtrField<std::string>* FieldMask::mutable_pat
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 FieldMask::_internal_paths() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.paths_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 FieldMask::_internal_mutable_paths() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.paths_;
 }
 

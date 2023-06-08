@@ -886,12 +886,10 @@ Api::methods() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>&
 Api::_internal_methods() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.methods_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>*
 Api::_internal_mutable_methods() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.methods_;
 }
 
@@ -927,12 +925,10 @@ Api::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Api::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Api::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.options_;
 }
 
@@ -1102,12 +1098,10 @@ Api::mixins() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>&
 Api::_internal_mixins() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.mixins_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>*
 Api::_internal_mutable_mixins() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.mixins_;
 }
 
@@ -1342,12 +1336,10 @@ Method::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Method::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Method::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.options_;
 }
 

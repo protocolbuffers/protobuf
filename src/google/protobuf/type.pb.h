@@ -1570,12 +1570,10 @@ Type::fields() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>&
 Type::_internal_fields() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.fields_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>*
 Type::_internal_mutable_fields() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.fields_;
 }
 
@@ -1659,12 +1657,10 @@ inline ::google::protobuf::RepeatedPtrField<std::string>* Type::mutable_oneofs()
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 Type::_internal_oneofs() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.oneofs_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 Type::_internal_mutable_oneofs() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.oneofs_;
 }
 
@@ -1703,12 +1699,10 @@ Type::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Type::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Type::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.options_;
 }
 
@@ -2092,12 +2086,10 @@ Field::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Field::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Field::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.options_;
 }
 
@@ -2275,12 +2267,10 @@ Enum::enumvalue() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>&
 Enum::_internal_enumvalue() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.enumvalue_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>*
 Enum::_internal_mutable_enumvalue() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.enumvalue_;
 }
 
@@ -2319,12 +2309,10 @@ Enum::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Enum::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Enum::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.options_;
 }
 
@@ -2583,12 +2571,10 @@ EnumValue::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 EnumValue::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_internal_metadata_);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 EnumValue::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_internal_metadata_);
   return &_impl_.options_;
 }
 
