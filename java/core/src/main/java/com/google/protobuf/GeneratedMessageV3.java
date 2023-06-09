@@ -2096,8 +2096,10 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           FieldDescriptor field = descriptor.getFields().get(i);
           String containingOneofCamelCaseName = null;
           if (field.getContainingOneof() != null) {
-            containingOneofCamelCaseName =
-                camelCaseNames[fieldsSize + field.getContainingOneof().getIndex()];
+            int index = fieldsSize + field.getContainingOneof().getIndex();
+            if (index < camelCaseNames.length) {
+              containingOneofCamelCaseName = camelCaseNames[index];
+            }
           }
           if (field.isRepeated()) {
             if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
@@ -2153,12 +2155,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           }
         }
 
-        int oneofsSize = oneofs.length;
-        for (int i = 0; i < oneofsSize; i++) {
-          oneofs[i] =
-              new OneofAccessor(
-                  descriptor, i, camelCaseNames[i + fieldsSize], messageClass, builderClass);
+        for (int i = 0; i < descriptor.getOneofs().size(); i++) {
+          if (i < descriptor.getRealOneofs().size()) {
+            oneofs[i] =
+                new RealOneofAccessor(
+                    descriptor, i, camelCaseNames[i + fieldsSize], messageClass, builderClass);
+          } else {
+            oneofs[i] = new SyntheticOneofAccessor(descriptor, i);
+          }
         }
+
         initialized = true;
         camelCaseNames = null;
         return this;
@@ -2230,24 +2236,29 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
 
     /** OneofAccessor provides access to a single oneof. */
-    private static class OneofAccessor {
-      OneofAccessor(
+    private static interface OneofAccessor {
+      public boolean has(final GeneratedMessageV3 message);
+
+      public boolean has(GeneratedMessageV3.Builder<?> builder);
+
+      public FieldDescriptor get(final GeneratedMessageV3 message);
+
+      public FieldDescriptor get(GeneratedMessageV3.Builder<?> builder);
+
+      public void clear(final Builder<?> builder);
+    }
+
+    /** RealOneofAccessor provides access to a single real oneof. */
+    private static class RealOneofAccessor implements OneofAccessor {
+      RealOneofAccessor(
           final Descriptor descriptor,
           final int oneofIndex,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
           final Class<? extends Builder<?>> builderClass) {
         this.descriptor = descriptor;
-        OneofDescriptor oneofDescriptor = descriptor.getOneofs().get(oneofIndex);
-        if (oneofDescriptor.isSynthetic()) {
-          caseMethod = null;
-          caseMethodBuilder = null;
-          fieldDescriptor = oneofDescriptor.getFields().get(0);
-        } else {
-          caseMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Case");
-          caseMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Case");
-          fieldDescriptor = null;
-        }
+        caseMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Case");
+        caseMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Case");
         clearMethod = getMethodOrDie(builderClass, "clear" + camelCaseName);
       }
 
@@ -2255,52 +2266,73 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       private final Method caseMethod;
       private final Method caseMethodBuilder;
       private final Method clearMethod;
-      private final FieldDescriptor fieldDescriptor;
 
+      @Override
       public boolean has(final GeneratedMessageV3 message) {
-        if (fieldDescriptor != null) {
-          return message.hasField(fieldDescriptor);
-        } else {
-          return ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber() != 0;
-        }
+        return ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber() != 0;
       }
 
+      @Override
       public boolean has(GeneratedMessageV3.Builder<?> builder) {
-        if (fieldDescriptor != null) {
-          return builder.hasField(fieldDescriptor);
-        } else {
-          return ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber() != 0;
-        }
+        return ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber() != 0;
       }
 
+      @Override
       public FieldDescriptor get(final GeneratedMessageV3 message) {
-        if (fieldDescriptor != null) {
-          return message.hasField(fieldDescriptor) ? fieldDescriptor : null;
-        } else {
-          int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
-          if (fieldNumber > 0) {
-            return descriptor.findFieldByNumber(fieldNumber);
-          }
+        int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
+        if (fieldNumber > 0) {
+          return descriptor.findFieldByNumber(fieldNumber);
         }
         return null;
       }
 
+      @Override
       public FieldDescriptor get(GeneratedMessageV3.Builder<?> builder) {
-        if (fieldDescriptor != null) {
-          return builder.hasField(fieldDescriptor) ? fieldDescriptor : null;
-        } else {
-          int fieldNumber =
-              ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
-          if (fieldNumber > 0) {
-            return descriptor.findFieldByNumber(fieldNumber);
-          }
+        int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
+        if (fieldNumber > 0) {
+          return descriptor.findFieldByNumber(fieldNumber);
         }
         return null;
       }
 
+      @Override
       public void clear(final Builder<?> builder) {
         // TODO(b/230609037): remove the unused variable
         Object unused = invokeOrDie(clearMethod, builder);
+      }
+    }
+
+    /** SyntheticOneofAccessor provides access to a single synthetic oneof. */
+    private static class SyntheticOneofAccessor implements OneofAccessor {
+      SyntheticOneofAccessor(final Descriptor descriptor, final int oneofIndex) {
+        OneofDescriptor oneofDescriptor = descriptor.getOneofs().get(oneofIndex);
+        fieldDescriptor = oneofDescriptor.getFields().get(0);
+      }
+
+      private final FieldDescriptor fieldDescriptor;
+
+      @Override
+      public boolean has(final GeneratedMessageV3 message) {
+        return message.hasField(fieldDescriptor);
+      }
+
+      @Override
+      public boolean has(GeneratedMessageV3.Builder<?> builder) {
+        return builder.hasField(fieldDescriptor);
+      }
+
+      @Override
+      public FieldDescriptor get(final GeneratedMessageV3 message) {
+        return message.hasField(fieldDescriptor) ? fieldDescriptor : null;
+      }
+
+      public FieldDescriptor get(GeneratedMessageV3.Builder<?> builder) {
+        return builder.hasField(fieldDescriptor) ? fieldDescriptor : null;
+      }
+
+      @Override
+      public void clear(final Builder<?> builder) {
+        builder.clearField(fieldDescriptor);
       }
     }
 
