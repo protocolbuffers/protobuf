@@ -39,7 +39,7 @@ else
   commit_message="Auto-generate files"
 fi
 
-git pull --rebase
 git add -A
 git diff --staged --quiet || git commit -am "$commit_message"
-git push
+git pull --rebase
+git push --force-with-lease || echo "Conflicting commit hit, retrying in next job..."
