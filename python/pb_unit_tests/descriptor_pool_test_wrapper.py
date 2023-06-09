@@ -24,10 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
-from google.protobuf.internal import api_implementation
 from google.protobuf.internal.descriptor_pool_test import *
-
-AddDescriptorTest.testAddTypeError.__unittest_skip__ = True
 
 SecondaryDescriptorFromDescriptorDB.testErrorCollector.__unittest_expecting_failure__ = True
 
