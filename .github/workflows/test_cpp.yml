@@ -348,13 +348,16 @@ jobs:
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2019'
-          - name: Windows CMake 2022
-            os: windows-2022
-            flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
-              -Dprotobuf_BUILD_SHARED_LIBS=OFF
-              -Dprotobuf_BUILD_EXAMPLES=ON
-            vsversion: '2022'
+          # TODO(b/285566773) Re-enable this test.
+          # This is broken due to a github runner update.
+          # See https://github.com/actions/runner-images/issues/7662 for more details
+          #- name: Windows CMake 2022
+          #  os: windows-2022
+          #  flags: >-
+          #    -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+          #    -Dprotobuf_BUILD_SHARED_LIBS=OFF
+          #    -Dprotobuf_BUILD_EXAMPLES=ON
+          #  vsversion: '2022'
           - name: Windows CMake Shared
             os: windows-2019
             flags: >-
