@@ -439,6 +439,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
     inline void $Msg$::add_$name$($Type$ value) {
+      $TsanDetectConcurrentMutation$;
       _internal_mutable_$name$()->Add(value);
       $annotate_add$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
@@ -451,6 +452,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     inline $pb$::RepeatedField<$Type$>* $Msg$::mutable_$name$() {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+      $TsanDetectConcurrentMutation$;
       return _internal_mutable_$name$();
     }
 
@@ -459,7 +461,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       return $field_$;
     }
     inline $pb$::RepeatedField<$Type$>* $Msg$::_internal_mutable_$name$() {
-      $TsanDetectConcurrentMutation$;
+      $TsanDetectConcurrentRead$;
       return &$field_$;
     }
   )cc");
