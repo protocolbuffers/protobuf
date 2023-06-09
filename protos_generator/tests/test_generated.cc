@@ -29,6 +29,8 @@
 
 #include "gtest/gtest.h"
 #include "protos/protos.h"
+#include "protos/repeated_field.h"
+#include "protos/repeated_field_iterator.h"
 #include "protos_generator/tests/child_model.upb.proto.h"
 #include "protos_generator/tests/no_package.upb.proto.h"
 #include "protos_generator/tests/test_model.upb.proto.h"
@@ -333,29 +335,29 @@ TEST(CppGeneratedCode, NestedMessages) {
 TEST(CppGeneratedCode, RepeatedMessages) {
   ::protos::Arena arena;
   auto test_model = ::protos::CreateMessage<TestModel>(arena);
-  EXPECT_EQ(0, test_model.child_model_2_size());
+  EXPECT_EQ(0, test_model.child_models_size());
   // Should be able to clear repeated field when empty.
-  test_model.clear_child_model_2();
-  EXPECT_EQ(0, test_model.child_model_2_size());
+  test_model.mutable_child_models()->clear();
+  EXPECT_EQ(0, test_model.child_models_size());
   // Add 2 children.
-  auto new_child = test_model.add_child_model_2();
+  auto new_child = test_model.add_child_models();
   EXPECT_EQ(true, new_child.ok());
   new_child.value()->set_child_str1(kTestStr1);
-  new_child = test_model.add_child_model_2();
+  new_child = test_model.add_child_models();
   EXPECT_EQ(true, new_child.ok());
   new_child.value()->set_child_str1(kTestStr2);
-  EXPECT_EQ(2, test_model.child_model_2_size());
+  EXPECT_EQ(2, test_model.child_models_size());
   // Mutable access.
-  auto mutable_first = test_model.mutable_child_model_2(0);
+  auto mutable_first = test_model.mutable_child_models(0);
   EXPECT_EQ(mutable_first->child_str1(), kTestStr1);
   mutable_first->set_child_str1("change1");
-  auto mutable_second = test_model.mutable_child_model_2(1);
+  auto mutable_second = test_model.mutable_child_models(1);
   EXPECT_EQ(mutable_second->child_str1(), kTestStr2);
   mutable_second->set_child_str1("change2");
   // Check mutations using views.
-  auto view_first = test_model.child_model_2(0);
+  auto view_first = test_model.child_models(0);
   EXPECT_EQ(view_first->child_str1(), "change1");
-  auto view_second = test_model.child_model_2(1);
+  auto view_second = test_model.child_models(1);
   EXPECT_EQ(view_second->child_str1(), "change2");
 }
 
@@ -364,7 +366,7 @@ TEST(CppGeneratedCode, RepeatedScalar) {
   auto test_model = ::protos::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.value_array_size());
   // Should be able to clear repeated field when empty.
-  test_model.clear_value_array();
+  test_model.mutable_value_array()->clear();
   EXPECT_EQ(0, test_model.value_array_size());
   // Add 2 children.
   EXPECT_EQ(true, test_model.add_value_array(5));
@@ -380,12 +382,173 @@ TEST(CppGeneratedCode, RepeatedScalar) {
   EXPECT_EQ(7, test_model.value_array(2));
 }
 
+TEST(CppGeneratedCode, RepeatedFieldClear) {
+  ::protos::Arena arena;
+  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  test_model.mutable_value_array()->push_back(5);
+  test_model.mutable_value_array()->push_back(16);
+  test_model.mutable_value_array()->push_back(27);
+  ASSERT_EQ(test_model.mutable_value_array()->size(), 3);
+  test_model.mutable_value_array()->clear();
+  EXPECT_EQ(test_model.mutable_value_array()->size(), 0);
+}
+
+TEST(CppGeneratedCode, RepeatedFieldProxyForScalars) {
+  ::protos::Arena arena;
+  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  EXPECT_EQ(0, test_model.value_array().size());
+  EXPECT_EQ(0, test_model.mutable_value_array()->size());
+
+  test_model.mutable_value_array()->push_back(5);
+  test_model.mutable_value_array()->push_back(16);
+  test_model.mutable_value_array()->push_back(27);
+
+  ASSERT_EQ(test_model.mutable_value_array()->size(), 3);
+  EXPECT_EQ((*test_model.mutable_value_array())[0], 5);
+  EXPECT_EQ((*test_model.mutable_value_array())[1], 16);
+  EXPECT_EQ((*test_model.mutable_value_array())[2], 27);
+
+  ASSERT_EQ(test_model.value_array().size(), 3);
+  EXPECT_EQ(test_model.value_array()[0], 5);
+  EXPECT_EQ(test_model.value_array()[1], 16);
+  EXPECT_EQ(test_model.value_array()[2], 27);
+}
+
+TEST(CppGeneratedCode, RepeatedScalarIterator) {
+  ::protos::Arena arena;
+  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  test_model.mutable_value_array()->push_back(5);
+  test_model.mutable_value_array()->push_back(16);
+  test_model.mutable_value_array()->push_back(27);
+  int sum = 0;
+  // Access by value.
+  const ::protos::RepeatedField<int32_t>::CProxy rep1 =
+      test_model.value_array();
+  for (auto i : rep1) {
+    sum += i;
+  }
+  EXPECT_EQ(sum, 5 + 16 + 27);
+  // Access by const reference.
+  sum = 0;
+  for (const int& i : *test_model.mutable_value_array()) {
+    sum += i;
+  }
+  EXPECT_EQ(sum, 5 + 16 + 27);
+  // Access by forwarding reference.
+  sum = 0;
+  for (auto&& i : *test_model.mutable_value_array()) {
+    sum += i;
+  }
+  EXPECT_EQ(sum, 5 + 16 + 27);
+  // Test iterator operators.
+  auto begin = test_model.value_array().begin();
+  auto end = test_model.value_array().end();
+  sum = 0;
+  for (auto it = begin; it != end; ++it) {
+    sum += *it;
+  }
+  EXPECT_EQ(sum, 5 + 16 + 27);
+  auto it = begin;
+  ++it;
+  EXPECT_TRUE(begin < it);
+  EXPECT_TRUE(begin <= it);
+  it = end;
+  EXPECT_TRUE(it == end);
+  EXPECT_TRUE(it > begin);
+  EXPECT_TRUE(it >= begin);
+  EXPECT_TRUE(it != begin);
+  // difference type
+  it = end;
+  --it;
+  --it;
+  EXPECT_EQ(end - it, 2);
+  it = begin;
+  EXPECT_EQ(it[0], 5);
+  EXPECT_EQ(it[1], 16);
+  EXPECT_EQ(it[2], 27);
+  // ValueProxy.
+  sum = 0;
+  for (::protos::RepeatedField<int32_t>::ValueCProxy c :
+       test_model.value_array()) {
+    sum += c;
+  }
+  EXPECT_EQ(sum, 5 + 16 + 27);
+  sum = 0;
+  for (::protos::RepeatedField<int32_t>::ValueProxy c :
+       *test_model.mutable_value_array()) {
+    sum += c;
+  }
+  EXPECT_EQ(sum, 5 + 16 + 27);
+}
+
+TEST(CppGeneratedCode, RepeatedFieldProxyForStrings) {
+  ::protos::Arena arena;
+  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  EXPECT_EQ(0, test_model.repeated_string().size());
+  EXPECT_EQ(0, test_model.mutable_repeated_string()->size());
+
+  test_model.mutable_repeated_string()->push_back("a");
+  test_model.mutable_repeated_string()->push_back("b");
+  test_model.mutable_repeated_string()->push_back("c");
+
+  ASSERT_EQ(test_model.repeated_string().size(), 3);
+  EXPECT_EQ(test_model.repeated_string()[0], "a");
+  EXPECT_EQ(test_model.repeated_string()[1], "b");
+  EXPECT_EQ(test_model.repeated_string()[2], "c");
+
+  ASSERT_EQ(test_model.mutable_repeated_string()->size(), 3);
+  EXPECT_EQ((*test_model.mutable_repeated_string())[0], "a");
+  EXPECT_EQ((*test_model.mutable_repeated_string())[1], "b");
+  EXPECT_EQ((*test_model.mutable_repeated_string())[2], "c");
+  test_model.mutable_repeated_string()->clear();
+  EXPECT_EQ(test_model.mutable_repeated_string()->size(), 0);
+}
+
+TEST(CppGeneratedCode, RepeatedFieldProxyForMessages) {
+  ::protos::Arena arena;
+  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  EXPECT_EQ(0, test_model.child_models().size());
+  ChildModel1 child1;
+  child1.set_child_str1(kTestStr1);
+  test_model.mutable_child_models()->push_back(child1);
+  ChildModel1 child2;
+  child2.set_child_str1(kTestStr2);
+  test_model.mutable_child_models()->push_back(std::move(child2));
+  EXPECT_EQ(test_model.child_models().size(), 2);
+  EXPECT_EQ(test_model.child_models()[0].child_str1(), kTestStr1);
+  EXPECT_EQ(test_model.child_models()[1].child_str1(), kTestStr2);
+  EXPECT_EQ((*test_model.mutable_child_models())[0].child_str1(), kTestStr1);
+  EXPECT_EQ((*test_model.mutable_child_models())[1].child_str1(), kTestStr2);
+  (*test_model.mutable_child_models())[0].set_child_str1("change1");
+  EXPECT_EQ((*test_model.mutable_child_models())[0].child_str1(), "change1");
+  test_model.mutable_child_models()->clear();
+  EXPECT_EQ(test_model.mutable_child_models()->size(), 0);
+}
+
+TEST(CppGeneratedCode, RepeatedFieldProxyForMessagesIndexOperator) {
+  ::protos::Arena arena;
+  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  EXPECT_EQ(0, test_model.child_models().size());
+  ChildModel1 child1;
+  child1.set_child_str1(kTestStr1);
+  test_model.mutable_child_models()->push_back(child1);
+  ChildModel1 child2;
+
+  child2.set_child_str1(kTestStr2);
+  test_model.mutable_child_models()->push_back(std::move(child2));
+  ASSERT_EQ(test_model.child_models().size(), 2);
+
+  // test_model.child_models()[0].set_child_str1("change1");
+  (*test_model.mutable_child_models())[0].set_child_str1("change1");
+  EXPECT_EQ((*test_model.mutable_child_models())[0].child_str1(), "change1");
+}
+
 TEST(CppGeneratedCode, RepeatedStrings) {
   ::protos::Arena arena;
   auto test_model = ::protos::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.repeated_string_size());
   // Should be able to clear repeated field when empty.
-  test_model.clear_repeated_string();
+  test_model.mutable_repeated_string()->clear();
   EXPECT_EQ(0, test_model.repeated_string_size());
   // Add 2 children.
   EXPECT_EQ(true, test_model.add_repeated_string("Hello"));

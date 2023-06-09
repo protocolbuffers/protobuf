@@ -50,6 +50,12 @@ upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
   return _upb_Array_New(a, 4, _upb_Array_CTypeSizeLg2(type));
 }
 
+const void* upb_Array_DataPtr(const upb_Array* arr) {
+  return _upb_array_ptr((upb_Array*)arr);
+}
+
+void* upb_Array_MutableDataPtr(upb_Array* arr) { return _upb_array_ptr(arr); }
+
 size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
 
 upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {

@@ -76,6 +76,12 @@ UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
 // Returns false on allocation failure.
 UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 
+// Returns pointer to array data.
+UPB_API const void* upb_Array_DataPtr(const upb_Array* arr);
+
+// Returns mutable pointer to array data.
+UPB_API void* upb_Array_MutableDataPtr(upb_Array* arr);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

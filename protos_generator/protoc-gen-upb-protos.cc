@@ -130,6 +130,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
 
 #include "protos/protos.h"
 #include "protos/protos_internal.h"
+#include "protos/repeated_field.h"
 #include "upb/upb.hpp"
 
 #include "absl/strings/string_view.h"

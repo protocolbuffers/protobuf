@@ -43,7 +43,7 @@ message TestModel {
   }
   optional NestedChild nested_child_1 = 212;
   optional ChildModel1 child_model_1 = 222;
-  repeated ChildModel1 child_model_2 = 223;
+  repeated ChildModel1 child_models = 223;
   optional ChildModel1 bar = 224;
   oneof child_oneof1 {
     string oneof_member1 = 98;

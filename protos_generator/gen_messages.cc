@@ -89,25 +89,24 @@ void WriteMessageClassDeclarations(
   }
 
   // Forward declaration of Proto Class for GCC handling of free friend method.
-  output("class $0;", ClassName(descriptor));
-  output("namespace internal {\n");
+  output("class $0;\n", ClassName(descriptor));
+  output("namespace internal {\n\n");
   WriteModelAccessDeclaration(descriptor, output);
   output("\n");
   WriteInternalForwardDeclarationsInHeader(descriptor, output);
   output("\n");
-  output("}  // namespace internal\n");
+  output("}  // namespace internal\n\n");
   WriteModelPublicDeclaration(descriptor, file_exts, file_enums, output);
   output("namespace internal {\n");
   WriteModelCProxyDeclaration(descriptor, output);
   WriteModelProxyDeclaration(descriptor, output);
-  output("}  // namespace internal\n");
+  output("}  // namespace internal\n\n");
 }
 
 void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
                                  Output& output) {
   output(
       R"cc(
-
         class $0Access {
          public:
           $0Access() {}
@@ -189,8 +188,6 @@ void WriteModelPublicDeclaration(
   WriteUsingEnumsInHeader(descriptor, file_enums, output);
   WriteDefaultInstanceHeader(descriptor, output);
   WriteExtensionIdentifiersInClassHeader(descriptor, file_exts, output);
-  output.Indent();
-  output.Indent();
   if (descriptor->extension_range_count()) {
     // for typetrait checking
     output("using ExtendableType = $0;\n", ClassName(descriptor));
@@ -200,11 +197,16 @@ void WriteModelPublicDeclaration(
   // with gcc otherwise the compiler will fail with
   // "has not been declared within namespace" error. Even though there is a
   // namespace qualifier, cross namespace matching fails.
+  output.Indent();
   output(
       R"cc(
         static const upb_MiniTable* minitable();
         using $0Access::GetInternalArena;
-
+      )cc",
+      ClassName(descriptor));
+  output("\n");
+  output(
+      R"cc(
         private:
         $0(upb_Message* msg, upb_Arena* arena) : $0Access() {
           msg_ = ($1*)msg;
@@ -264,6 +266,7 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
         friend $0::Proxy(::protos::CreateMessage<$0>(::protos::Arena& arena));
         friend $0::Proxy(::protos::internal::CreateMessageProxy<$0>(
             upb_Message*, upb_Arena*));
+        friend class RepeatedFieldProxy;
         friend class $0CProxy;
         friend class $0Access;
         friend class ::protos::Ptr<$0>;
@@ -307,6 +310,7 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
         private:
         $0CProxy(void* msg) : internal::$0Access(($1*)msg, nullptr){};
         friend $0::CProxy(::protos::internal::CreateMessage<$0>(upb_Message* msg));
+        friend class RepeatedFieldProxy;
         friend class ::protos::Ptr<$0>;
         friend class ::protos::Ptr<const $0>;
         static void Rebind($0CProxy& lhs, const $0CProxy& rhs) {
