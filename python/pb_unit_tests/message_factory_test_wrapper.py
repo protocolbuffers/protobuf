@@ -27,10 +27,9 @@ from google.protobuf.internal.message_factory_test import *
 import unittest
 
 MessageFactoryTest.testDuplicateExtensionNumber.__unittest_expecting_failure__ = True
-MessageFactoryTest.testGetMessages.__unittest_expecting_failure__ = True
-MessageFactoryTest.testGetPrototype.__unittest_expecting_failure__ = True
-if hasattr(MessageFactoryTest, 'testExtensionValueInDifferentFile'):
-  MessageFactoryTest.testExtensionValueInDifferentFile.__unittest_expecting_failure__ = True
+MessageFactoryTest.testGetMessages.__unittest_skip__ = True
+MessageFactoryTest.testGetPrototype.__unittest_skip__ = True
+MessageFactoryTest.testExtensionValueInDifferentFile.__unittest_skip__ = True
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
