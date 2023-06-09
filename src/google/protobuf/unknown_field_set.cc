@@ -91,6 +91,12 @@ void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
   }
 }
 
+void UnknownFieldSet::CopyFrom(const UnknownFieldSet& other) {
+  if (this == &other) return;
+  Clear();
+  MergeFrom(other);
+}
+
 // A specialized MergeFrom for performance when we are merging from an UFS that
 // is temporary and can be destroyed in the process.
 void UnknownFieldSet::MergeFromAndDestroy(UnknownFieldSet* other) {

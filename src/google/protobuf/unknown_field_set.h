@@ -102,6 +102,9 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Merge the contents of some other UnknownFieldSet with this one.
   void MergeFrom(const UnknownFieldSet& other);
 
+  // XXX
+  void CopyFrom(const UnknownFieldSet& other);
+
   // Similar to above, but this function will destroy the contents of other.
   void MergeFromAndDestroy(UnknownFieldSet* other);
 

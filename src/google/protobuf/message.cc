@@ -461,6 +461,12 @@ InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 
 }  // namespace internal
 
+template <>
+void MessageLite::DoCopyFromUFS<UnknownFieldSet>(const MessageLite& other) {
+  _internal_metadata_.mutable_unknown_fields<UnknownFieldSet>()->CopyFrom(
+      other._internal_metadata_.unknown_fields<UnknownFieldSet>(nullptr));
+}
+
 }  // namespace protobuf
 }  // namespace google
 

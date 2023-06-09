@@ -1570,6 +1570,11 @@ const Type& Reflection::GetRaw(const Message& message,
   return internal::GetConstRefAtOffset<Type>(message,
                                              schema_.GetFieldOffset(field));
 }
+
+template <>
+PROTOBUF_EXPORT void MessageLite::DoCopyFromUFS<UnknownFieldSet>(
+    const MessageLite& other);
+
 }  // namespace protobuf
 }  // namespace google
 

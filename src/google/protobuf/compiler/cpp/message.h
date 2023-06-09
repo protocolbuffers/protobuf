@@ -160,8 +160,10 @@ class MessageGenerator {
   void GenerateFieldClear(const FieldDescriptor* field, bool is_inline,
                           io::Printer* p);
 
-  // Returns whether impl_ has a copy ctor.
-  bool ImplHasCopyCtor() const;
+  // Returns whether _impl_ is trivial (ie only scalars in it).
+  // This means we can copy via copy constructor/assignment, it is trivial
+  // destroy, etc.
+  bool ImplIsTrivial() const;
 
   // Generates the body of the message's copy constructor.
   void GenerateCopyConstructorBody(io::Printer* p) const;

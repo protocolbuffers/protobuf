@@ -479,6 +479,21 @@ class PROTOBUF_EXPORT MessageLite {
   // messages, etc), or owning incoming objects (e.g., set allocated).
   Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
 
+  template <typename T>
+  PROTOBUF_NDEBUG_INLINE void CopyFromUFS(const MessageLite& other) {
+    if (other._internal_metadata_.have_unknown_fields()) {
+      DoCopyFromUFS<T>(other);
+    }
+  }
+
+  // Use a member function on MessageLite with a MessageLite argument to avoid
+  // having the caller perform the offsets.
+  // They already have pointers to both MessageLite, but to get the pointers to
+  // InternalMetadata they need to calculate them. Reduces code size on the
+  // inlined caller of CopyFromUFS.
+  template <typename T>
+  PROTOBUF_NOINLINE void DoCopyFromUFS(const MessageLite& other);
+
   internal::InternalMetadata _internal_metadata_;
 
  public:
@@ -617,6 +632,10 @@ T* OnShutdownDelete(T* p) {
 }
 
 }  // namespace internal
+
+template <>
+PROTOBUF_EXPORT void MessageLite::DoCopyFromUFS<std::string>(
+    const MessageLite& other);
 
 std::string ShortFormat(const MessageLite& message_lite);
 std::string Utf8Format(const MessageLite& message_lite);

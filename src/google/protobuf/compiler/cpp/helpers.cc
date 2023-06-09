@@ -400,6 +400,23 @@ bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
   }
 }
 
+bool IsTrivial(const FieldDescriptor* field, const Options& options) {
+  if (field->is_repeated()) return false;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return true;
+    default:
+      return false;
+  }
+}
+
 std::string ClassName(const Descriptor* descriptor) {
   const Descriptor* parent = descriptor->containing_type();
   std::string res;

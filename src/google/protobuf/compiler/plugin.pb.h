@@ -130,18 +130,8 @@ class PROTOC_EXPORT Version final :
  public:
   inline Version() : Version(nullptr) {}
   ~Version() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR Version(::google::protobuf::internal::ConstantInitialized);
-
-  Version(const Version& from);
-  Version(Version&& from) noexcept
-    : Version() {
+  Version(Version&& from) noexcept : Version() {
     *this = ::std::move(from);
-  }
-
-  inline Version& operator=(const Version& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline Version& operator=(Version&& from) noexcept {
     if (this == &from) return *this;
@@ -154,6 +144,14 @@ class PROTOC_EXPORT Version final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR Version(::google::protobuf::internal::ConstantInitialized);
+
+  Version(const Version& from);
+  inline Version& operator=(const Version& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -226,11 +224,11 @@ class PROTOC_EXPORT Version final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Version* other);
 
@@ -334,18 +332,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
   ~CodeGeneratorRequest() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR CodeGeneratorRequest(::google::protobuf::internal::ConstantInitialized);
-
-  CodeGeneratorRequest(const CodeGeneratorRequest& from);
-  CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept
-    : CodeGeneratorRequest() {
+  CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept : CodeGeneratorRequest() {
     *this = ::std::move(from);
-  }
-
-  inline CodeGeneratorRequest& operator=(const CodeGeneratorRequest& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline CodeGeneratorRequest& operator=(CodeGeneratorRequest&& from) noexcept {
     if (this == &from) return *this;
@@ -358,6 +346,14 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR CodeGeneratorRequest(::google::protobuf::internal::ConstantInitialized);
+
+  CodeGeneratorRequest(const CodeGeneratorRequest& from);
+  inline CodeGeneratorRequest& operator=(const CodeGeneratorRequest& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -430,11 +426,11 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorRequest* other);
 
@@ -566,18 +562,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
   ~CodeGeneratorResponse_File() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse_File(::google::protobuf::internal::ConstantInitialized);
-
-  CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from);
-  CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept
-    : CodeGeneratorResponse_File() {
+  CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept : CodeGeneratorResponse_File() {
     *this = ::std::move(from);
-  }
-
-  inline CodeGeneratorResponse_File& operator=(const CodeGeneratorResponse_File& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline CodeGeneratorResponse_File& operator=(CodeGeneratorResponse_File&& from) noexcept {
     if (this == &from) return *this;
@@ -590,6 +576,14 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse_File(::google::protobuf::internal::ConstantInitialized);
+
+  CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from);
+  inline CodeGeneratorResponse_File& operator=(const CodeGeneratorResponse_File& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -662,11 +656,11 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorResponse_File* other);
 
@@ -786,18 +780,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
   ~CodeGeneratorResponse() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse(::google::protobuf::internal::ConstantInitialized);
-
-  CodeGeneratorResponse(const CodeGeneratorResponse& from);
-  CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept
-    : CodeGeneratorResponse() {
+  CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept : CodeGeneratorResponse() {
     *this = ::std::move(from);
-  }
-
-  inline CodeGeneratorResponse& operator=(const CodeGeneratorResponse& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline CodeGeneratorResponse& operator=(CodeGeneratorResponse&& from) noexcept {
     if (this == &from) return *this;
@@ -810,6 +794,14 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse(::google::protobuf::internal::ConstantInitialized);
+
+  CodeGeneratorResponse(const CodeGeneratorResponse& from);
+  inline CodeGeneratorResponse& operator=(const CodeGeneratorResponse& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -882,11 +874,11 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorResponse* other);
 

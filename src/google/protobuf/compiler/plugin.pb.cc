@@ -333,8 +333,7 @@ Version::Version(const Version& from) : ::google::protobuf::Message() {
       decltype(_impl_.minor_){},
       decltype(_impl_.patch_){},
   };
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
+  CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
   _impl_.suffix_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.suffix_.Set("", GetArenaForAllocation());
@@ -641,8 +640,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from) : :
       decltype(_impl_.parameter_){},
       decltype(_impl_.compiler_version_){nullptr},
   };
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
+  CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
   _impl_.parameter_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.parameter_.Set("", GetArenaForAllocation());
@@ -967,8 +965,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorRespon
       decltype(_impl_.content_){},
       decltype(_impl_.generated_code_info_){nullptr},
   };
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
+  CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
   _impl_.name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.name_.Set("", GetArenaForAllocation());
@@ -1303,8 +1300,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from) 
       decltype(_impl_.error_){},
       decltype(_impl_.supported_features_){},
   };
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
+  CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
   _impl_.error_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.error_.Set("", GetArenaForAllocation());

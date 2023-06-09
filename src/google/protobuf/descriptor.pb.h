@@ -528,18 +528,8 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
  public:
   inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
   ~FileDescriptorSet() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
-
-  FileDescriptorSet(const FileDescriptorSet& from);
-  FileDescriptorSet(FileDescriptorSet&& from) noexcept
-    : FileDescriptorSet() {
+  FileDescriptorSet(FileDescriptorSet&& from) noexcept : FileDescriptorSet() {
     *this = ::std::move(from);
-  }
-
-  inline FileDescriptorSet& operator=(const FileDescriptorSet& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline FileDescriptorSet& operator=(FileDescriptorSet&& from) noexcept {
     if (this == &from) return *this;
@@ -552,6 +542,14 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
+
+  FileDescriptorSet(const FileDescriptorSet& from);
+  inline FileDescriptorSet& operator=(const FileDescriptorSet& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -624,11 +622,11 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FileDescriptorSet* other);
 
@@ -693,18 +691,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
  public:
   inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
   ~FileDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
-
-  FileDescriptorProto(const FileDescriptorProto& from);
-  FileDescriptorProto(FileDescriptorProto&& from) noexcept
-    : FileDescriptorProto() {
+  FileDescriptorProto(FileDescriptorProto&& from) noexcept : FileDescriptorProto() {
     *this = ::std::move(from);
-  }
-
-  inline FileDescriptorProto& operator=(const FileDescriptorProto& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline FileDescriptorProto& operator=(FileDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
@@ -717,6 +705,14 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+
+  FileDescriptorProto(const FileDescriptorProto& from);
+  inline FileDescriptorProto& operator=(const FileDescriptorProto& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -789,11 +785,11 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FileDescriptorProto* other);
 
@@ -1099,18 +1095,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
  public:
   inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
   ~DescriptorProto_ExtensionRange() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
-
-  DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from);
-  DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
-    : DescriptorProto_ExtensionRange() {
+  DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept : DescriptorProto_ExtensionRange() {
     *this = ::std::move(from);
-  }
-
-  inline DescriptorProto_ExtensionRange& operator=(const DescriptorProto_ExtensionRange& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline DescriptorProto_ExtensionRange& operator=(DescriptorProto_ExtensionRange&& from) noexcept {
     if (this == &from) return *this;
@@ -1123,6 +1109,14 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
+
+  DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from);
+  inline DescriptorProto_ExtensionRange& operator=(const DescriptorProto_ExtensionRange& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -1195,11 +1189,11 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DescriptorProto_ExtensionRange* other);
 
@@ -1287,31 +1281,33 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange) */ {
  public:
   inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
-  ~DescriptorProto_ReservedRange() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
-
-  DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from);
-  DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
-    : DescriptorProto_ReservedRange() {
-    *this = ::std::move(from);
+  ~DescriptorProto_ReservedRange() override {
+    // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ReservedRange)
+    _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   }
-
-  inline DescriptorProto_ReservedRange& operator=(const DescriptorProto_ReservedRange& from) {
-    CopyFrom(from);
-    return *this;
+  DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept : _impl_(from._impl_) {
+    _internal_metadata_.InternalSwap(&from._internal_metadata_);
   }
   inline DescriptorProto_ReservedRange& operator=(DescriptorProto_ReservedRange&& from) noexcept {
     if (this == &from) return *this;
+    _impl_ = from._impl_;
     if (GetOwningArena() == from.GetOwningArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetOwningArena() != nullptr
   #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
-      InternalSwap(&from);
+      _internal_metadata_.InternalSwap(&from._internal_metadata_);
     } else {
-      CopyFrom(from);
+      CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
+
+  DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from);
+  inline DescriptorProto_ReservedRange& operator=(const DescriptorProto_ReservedRange& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -1388,7 +1384,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DescriptorProto_ReservedRange* other);
 
@@ -1460,18 +1455,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
  public:
   inline DescriptorProto() : DescriptorProto(nullptr) {}
   ~DescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR DescriptorProto(::google::protobuf::internal::ConstantInitialized);
-
-  DescriptorProto(const DescriptorProto& from);
-  DescriptorProto(DescriptorProto&& from) noexcept
-    : DescriptorProto() {
+  DescriptorProto(DescriptorProto&& from) noexcept : DescriptorProto() {
     *this = ::std::move(from);
-  }
-
-  inline DescriptorProto& operator=(const DescriptorProto& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline DescriptorProto& operator=(DescriptorProto&& from) noexcept {
     if (this == &from) return *this;
@@ -1484,6 +1469,14 @@ class PROTOBUF_EXPORT DescriptorProto final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR DescriptorProto(::google::protobuf::internal::ConstantInitialized);
+
+  DescriptorProto(const DescriptorProto& from);
+  inline DescriptorProto& operator=(const DescriptorProto& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -1556,11 +1549,11 @@ class PROTOBUF_EXPORT DescriptorProto final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DescriptorProto* other);
 
@@ -1815,18 +1808,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
  public:
   inline ExtensionRangeOptions_Declaration() : ExtensionRangeOptions_Declaration(nullptr) {}
   ~ExtensionRangeOptions_Declaration() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
-
-  ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from);
-  ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
-    : ExtensionRangeOptions_Declaration() {
+  ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept : ExtensionRangeOptions_Declaration() {
     *this = ::std::move(from);
-  }
-
-  inline ExtensionRangeOptions_Declaration& operator=(const ExtensionRangeOptions_Declaration& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline ExtensionRangeOptions_Declaration& operator=(ExtensionRangeOptions_Declaration&& from) noexcept {
     if (this == &from) return *this;
@@ -1839,6 +1822,14 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
+
+  ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from);
+  inline ExtensionRangeOptions_Declaration& operator=(const ExtensionRangeOptions_Declaration& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -1911,11 +1902,11 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ExtensionRangeOptions_Declaration* other);
 
@@ -2051,18 +2042,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
  public:
   inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
   ~ExtensionRangeOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
-
-  ExtensionRangeOptions(const ExtensionRangeOptions& from);
-  ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
-    : ExtensionRangeOptions() {
+  ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept : ExtensionRangeOptions() {
     *this = ::std::move(from);
-  }
-
-  inline ExtensionRangeOptions& operator=(const ExtensionRangeOptions& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline ExtensionRangeOptions& operator=(ExtensionRangeOptions&& from) noexcept {
     if (this == &from) return *this;
@@ -2075,6 +2056,14 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
+
+  ExtensionRangeOptions(const ExtensionRangeOptions& from);
+  inline ExtensionRangeOptions& operator=(const ExtensionRangeOptions& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -2147,11 +2136,11 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ExtensionRangeOptions* other);
 
@@ -2425,18 +2414,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
  public:
   inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
   ~FieldDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
-
-  FieldDescriptorProto(const FieldDescriptorProto& from);
-  FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
-    : FieldDescriptorProto() {
+  FieldDescriptorProto(FieldDescriptorProto&& from) noexcept : FieldDescriptorProto() {
     *this = ::std::move(from);
-  }
-
-  inline FieldDescriptorProto& operator=(const FieldDescriptorProto& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline FieldDescriptorProto& operator=(FieldDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
@@ -2449,6 +2428,14 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+
+  FieldDescriptorProto(const FieldDescriptorProto& from);
+  inline FieldDescriptorProto& operator=(const FieldDescriptorProto& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -2521,11 +2508,11 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FieldDescriptorProto* other);
 
@@ -2805,18 +2792,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
  public:
   inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
   ~OneofDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
-
-  OneofDescriptorProto(const OneofDescriptorProto& from);
-  OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
-    : OneofDescriptorProto() {
+  OneofDescriptorProto(OneofDescriptorProto&& from) noexcept : OneofDescriptorProto() {
     *this = ::std::move(from);
-  }
-
-  inline OneofDescriptorProto& operator=(const OneofDescriptorProto& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline OneofDescriptorProto& operator=(OneofDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
@@ -2829,6 +2806,14 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+
+  OneofDescriptorProto(const OneofDescriptorProto& from);
+  inline OneofDescriptorProto& operator=(const OneofDescriptorProto& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -2901,11 +2886,11 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(OneofDescriptorProto* other);
 
@@ -2986,31 +2971,33 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto.EnumReservedRange) */ {
  public:
   inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
-  ~EnumDescriptorProto_EnumReservedRange() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
-
-  EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from);
-  EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
-    : EnumDescriptorProto_EnumReservedRange() {
-    *this = ::std::move(from);
+  ~EnumDescriptorProto_EnumReservedRange() override {
+    // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+    _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   }
-
-  inline EnumDescriptorProto_EnumReservedRange& operator=(const EnumDescriptorProto_EnumReservedRange& from) {
-    CopyFrom(from);
-    return *this;
+  EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept : _impl_(from._impl_) {
+    _internal_metadata_.InternalSwap(&from._internal_metadata_);
   }
   inline EnumDescriptorProto_EnumReservedRange& operator=(EnumDescriptorProto_EnumReservedRange&& from) noexcept {
     if (this == &from) return *this;
+    _impl_ = from._impl_;
     if (GetOwningArena() == from.GetOwningArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetOwningArena() != nullptr
   #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
-      InternalSwap(&from);
+      _internal_metadata_.InternalSwap(&from._internal_metadata_);
     } else {
-      CopyFrom(from);
+      CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
+
+  EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from);
+  inline EnumDescriptorProto_EnumReservedRange& operator=(const EnumDescriptorProto_EnumReservedRange& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -3087,7 +3074,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* other);
 
@@ -3159,18 +3145,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
  public:
   inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
   ~EnumDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
-
-  EnumDescriptorProto(const EnumDescriptorProto& from);
-  EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
-    : EnumDescriptorProto() {
+  EnumDescriptorProto(EnumDescriptorProto&& from) noexcept : EnumDescriptorProto() {
     *this = ::std::move(from);
-  }
-
-  inline EnumDescriptorProto& operator=(const EnumDescriptorProto& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline EnumDescriptorProto& operator=(EnumDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
@@ -3183,6 +3159,14 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+
+  EnumDescriptorProto(const EnumDescriptorProto& from);
+  inline EnumDescriptorProto& operator=(const EnumDescriptorProto& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -3255,11 +3239,11 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumDescriptorProto* other);
 
@@ -3413,18 +3397,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
  public:
   inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
   ~EnumValueDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
-
-  EnumValueDescriptorProto(const EnumValueDescriptorProto& from);
-  EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
-    : EnumValueDescriptorProto() {
+  EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept : EnumValueDescriptorProto() {
     *this = ::std::move(from);
-  }
-
-  inline EnumValueDescriptorProto& operator=(const EnumValueDescriptorProto& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline EnumValueDescriptorProto& operator=(EnumValueDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
@@ -3437,6 +3411,14 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+
+  EnumValueDescriptorProto(const EnumValueDescriptorProto& from);
+  inline EnumValueDescriptorProto& operator=(const EnumValueDescriptorProto& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -3509,11 +3491,11 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumValueDescriptorProto* other);
 
@@ -3608,18 +3590,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
  public:
   inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
   ~ServiceDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
-
-  ServiceDescriptorProto(const ServiceDescriptorProto& from);
-  ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
-    : ServiceDescriptorProto() {
+  ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept : ServiceDescriptorProto() {
     *this = ::std::move(from);
-  }
-
-  inline ServiceDescriptorProto& operator=(const ServiceDescriptorProto& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline ServiceDescriptorProto& operator=(ServiceDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
@@ -3632,6 +3604,14 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+
+  ServiceDescriptorProto(const ServiceDescriptorProto& from);
+  inline ServiceDescriptorProto& operator=(const ServiceDescriptorProto& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -3704,11 +3684,11 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ServiceDescriptorProto* other);
 
@@ -3810,18 +3790,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
  public:
   inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
   ~MethodDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
-
-  MethodDescriptorProto(const MethodDescriptorProto& from);
-  MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
-    : MethodDescriptorProto() {
+  MethodDescriptorProto(MethodDescriptorProto&& from) noexcept : MethodDescriptorProto() {
     *this = ::std::move(from);
-  }
-
-  inline MethodDescriptorProto& operator=(const MethodDescriptorProto& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline MethodDescriptorProto& operator=(MethodDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
@@ -3834,6 +3804,14 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+
+  MethodDescriptorProto(const MethodDescriptorProto& from);
+  inline MethodDescriptorProto& operator=(const MethodDescriptorProto& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -3906,11 +3884,11 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(MethodDescriptorProto* other);
 
@@ -4056,18 +4034,8 @@ class PROTOBUF_EXPORT FileOptions final :
  public:
   inline FileOptions() : FileOptions(nullptr) {}
   ~FileOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FileOptions(::google::protobuf::internal::ConstantInitialized);
-
-  FileOptions(const FileOptions& from);
-  FileOptions(FileOptions&& from) noexcept
-    : FileOptions() {
+  FileOptions(FileOptions&& from) noexcept : FileOptions() {
     *this = ::std::move(from);
-  }
-
-  inline FileOptions& operator=(const FileOptions& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline FileOptions& operator=(FileOptions&& from) noexcept {
     if (this == &from) return *this;
@@ -4080,6 +4048,14 @@ class PROTOBUF_EXPORT FileOptions final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR FileOptions(::google::protobuf::internal::ConstantInitialized);
+
+  FileOptions(const FileOptions& from);
+  inline FileOptions& operator=(const FileOptions& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -4152,11 +4128,11 @@ class PROTOBUF_EXPORT FileOptions final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FileOptions* other);
 
@@ -4716,18 +4692,8 @@ class PROTOBUF_EXPORT MessageOptions final :
  public:
   inline MessageOptions() : MessageOptions(nullptr) {}
   ~MessageOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR MessageOptions(::google::protobuf::internal::ConstantInitialized);
-
-  MessageOptions(const MessageOptions& from);
-  MessageOptions(MessageOptions&& from) noexcept
-    : MessageOptions() {
+  MessageOptions(MessageOptions&& from) noexcept : MessageOptions() {
     *this = ::std::move(from);
-  }
-
-  inline MessageOptions& operator=(const MessageOptions& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline MessageOptions& operator=(MessageOptions&& from) noexcept {
     if (this == &from) return *this;
@@ -4740,6 +4706,14 @@ class PROTOBUF_EXPORT MessageOptions final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR MessageOptions(::google::protobuf::internal::ConstantInitialized);
+
+  MessageOptions(const MessageOptions& from);
+  inline MessageOptions& operator=(const MessageOptions& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -4812,11 +4786,11 @@ class PROTOBUF_EXPORT MessageOptions final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(MessageOptions* other);
 
@@ -5100,18 +5074,8 @@ class PROTOBUF_EXPORT FieldOptions final :
  public:
   inline FieldOptions() : FieldOptions(nullptr) {}
   ~FieldOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldOptions(::google::protobuf::internal::ConstantInitialized);
-
-  FieldOptions(const FieldOptions& from);
-  FieldOptions(FieldOptions&& from) noexcept
-    : FieldOptions() {
+  FieldOptions(FieldOptions&& from) noexcept : FieldOptions() {
     *this = ::std::move(from);
-  }
-
-  inline FieldOptions& operator=(const FieldOptions& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline FieldOptions& operator=(FieldOptions&& from) noexcept {
     if (this == &from) return *this;
@@ -5124,6 +5088,14 @@ class PROTOBUF_EXPORT FieldOptions final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR FieldOptions(::google::protobuf::internal::ConstantInitialized);
+
+  FieldOptions(const FieldOptions& from);
+  inline FieldOptions& operator=(const FieldOptions& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -5196,11 +5168,11 @@ class PROTOBUF_EXPORT FieldOptions final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FieldOptions* other);
 
@@ -5661,18 +5633,8 @@ class PROTOBUF_EXPORT OneofOptions final :
  public:
   inline OneofOptions() : OneofOptions(nullptr) {}
   ~OneofOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR OneofOptions(::google::protobuf::internal::ConstantInitialized);
-
-  OneofOptions(const OneofOptions& from);
-  OneofOptions(OneofOptions&& from) noexcept
-    : OneofOptions() {
+  OneofOptions(OneofOptions&& from) noexcept : OneofOptions() {
     *this = ::std::move(from);
-  }
-
-  inline OneofOptions& operator=(const OneofOptions& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline OneofOptions& operator=(OneofOptions&& from) noexcept {
     if (this == &from) return *this;
@@ -5685,6 +5647,14 @@ class PROTOBUF_EXPORT OneofOptions final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR OneofOptions(::google::protobuf::internal::ConstantInitialized);
+
+  OneofOptions(const OneofOptions& from);
+  inline OneofOptions& operator=(const OneofOptions& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -5757,11 +5727,11 @@ class PROTOBUF_EXPORT OneofOptions final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(OneofOptions* other);
 
@@ -5979,18 +5949,8 @@ class PROTOBUF_EXPORT EnumOptions final :
  public:
   inline EnumOptions() : EnumOptions(nullptr) {}
   ~EnumOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumOptions(::google::protobuf::internal::ConstantInitialized);
-
-  EnumOptions(const EnumOptions& from);
-  EnumOptions(EnumOptions&& from) noexcept
-    : EnumOptions() {
+  EnumOptions(EnumOptions&& from) noexcept : EnumOptions() {
     *this = ::std::move(from);
-  }
-
-  inline EnumOptions& operator=(const EnumOptions& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline EnumOptions& operator=(EnumOptions&& from) noexcept {
     if (this == &from) return *this;
@@ -6003,6 +5963,14 @@ class PROTOBUF_EXPORT EnumOptions final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumOptions(::google::protobuf::internal::ConstantInitialized);
+
+  EnumOptions(const EnumOptions& from);
+  inline EnumOptions& operator=(const EnumOptions& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -6075,11 +6043,11 @@ class PROTOBUF_EXPORT EnumOptions final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumOptions* other);
 
@@ -6337,18 +6305,8 @@ class PROTOBUF_EXPORT EnumValueOptions final :
  public:
   inline EnumValueOptions() : EnumValueOptions(nullptr) {}
   ~EnumValueOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
-
-  EnumValueOptions(const EnumValueOptions& from);
-  EnumValueOptions(EnumValueOptions&& from) noexcept
-    : EnumValueOptions() {
+  EnumValueOptions(EnumValueOptions&& from) noexcept : EnumValueOptions() {
     *this = ::std::move(from);
-  }
-
-  inline EnumValueOptions& operator=(const EnumValueOptions& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline EnumValueOptions& operator=(EnumValueOptions&& from) noexcept {
     if (this == &from) return *this;
@@ -6361,6 +6319,14 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
+
+  EnumValueOptions(const EnumValueOptions& from);
+  inline EnumValueOptions& operator=(const EnumValueOptions& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -6433,11 +6399,11 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumValueOptions* other);
 
@@ -6682,18 +6648,8 @@ class PROTOBUF_EXPORT ServiceOptions final :
  public:
   inline ServiceOptions() : ServiceOptions(nullptr) {}
   ~ServiceOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR ServiceOptions(::google::protobuf::internal::ConstantInitialized);
-
-  ServiceOptions(const ServiceOptions& from);
-  ServiceOptions(ServiceOptions&& from) noexcept
-    : ServiceOptions() {
+  ServiceOptions(ServiceOptions&& from) noexcept : ServiceOptions() {
     *this = ::std::move(from);
-  }
-
-  inline ServiceOptions& operator=(const ServiceOptions& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline ServiceOptions& operator=(ServiceOptions&& from) noexcept {
     if (this == &from) return *this;
@@ -6706,6 +6662,14 @@ class PROTOBUF_EXPORT ServiceOptions final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR ServiceOptions(::google::protobuf::internal::ConstantInitialized);
+
+  ServiceOptions(const ServiceOptions& from);
+  inline ServiceOptions& operator=(const ServiceOptions& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -6778,11 +6742,11 @@ class PROTOBUF_EXPORT ServiceOptions final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ServiceOptions* other);
 
@@ -7014,18 +6978,8 @@ class PROTOBUF_EXPORT MethodOptions final :
  public:
   inline MethodOptions() : MethodOptions(nullptr) {}
   ~MethodOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR MethodOptions(::google::protobuf::internal::ConstantInitialized);
-
-  MethodOptions(const MethodOptions& from);
-  MethodOptions(MethodOptions&& from) noexcept
-    : MethodOptions() {
+  MethodOptions(MethodOptions&& from) noexcept : MethodOptions() {
     *this = ::std::move(from);
-  }
-
-  inline MethodOptions& operator=(const MethodOptions& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline MethodOptions& operator=(MethodOptions&& from) noexcept {
     if (this == &from) return *this;
@@ -7038,6 +6992,14 @@ class PROTOBUF_EXPORT MethodOptions final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR MethodOptions(::google::protobuf::internal::ConstantInitialized);
+
+  MethodOptions(const MethodOptions& from);
+  inline MethodOptions& operator=(const MethodOptions& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -7110,11 +7072,11 @@ class PROTOBUF_EXPORT MethodOptions final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(MethodOptions* other);
 
@@ -7380,18 +7342,8 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
  public:
   inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
   ~UninterpretedOption_NamePart() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
-
-  UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from);
-  UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
-    : UninterpretedOption_NamePart() {
+  UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept : UninterpretedOption_NamePart() {
     *this = ::std::move(from);
-  }
-
-  inline UninterpretedOption_NamePart& operator=(const UninterpretedOption_NamePart& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline UninterpretedOption_NamePart& operator=(UninterpretedOption_NamePart&& from) noexcept {
     if (this == &from) return *this;
@@ -7404,6 +7356,14 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
+
+  UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from);
+  inline UninterpretedOption_NamePart& operator=(const UninterpretedOption_NamePart& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -7476,11 +7436,11 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UninterpretedOption_NamePart* other);
 
@@ -7558,18 +7518,8 @@ class PROTOBUF_EXPORT UninterpretedOption final :
  public:
   inline UninterpretedOption() : UninterpretedOption(nullptr) {}
   ~UninterpretedOption() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
-
-  UninterpretedOption(const UninterpretedOption& from);
-  UninterpretedOption(UninterpretedOption&& from) noexcept
-    : UninterpretedOption() {
+  UninterpretedOption(UninterpretedOption&& from) noexcept : UninterpretedOption() {
     *this = ::std::move(from);
-  }
-
-  inline UninterpretedOption& operator=(const UninterpretedOption& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline UninterpretedOption& operator=(UninterpretedOption&& from) noexcept {
     if (this == &from) return *this;
@@ -7582,6 +7532,14 @@ class PROTOBUF_EXPORT UninterpretedOption final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
+
+  UninterpretedOption(const UninterpretedOption& from);
+  inline UninterpretedOption& operator=(const UninterpretedOption& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -7654,11 +7612,11 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UninterpretedOption* other);
 
@@ -7822,18 +7780,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
  public:
   inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
   ~SourceCodeInfo_Location() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
-
-  SourceCodeInfo_Location(const SourceCodeInfo_Location& from);
-  SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
-    : SourceCodeInfo_Location() {
+  SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept : SourceCodeInfo_Location() {
     *this = ::std::move(from);
-  }
-
-  inline SourceCodeInfo_Location& operator=(const SourceCodeInfo_Location& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline SourceCodeInfo_Location& operator=(SourceCodeInfo_Location&& from) noexcept {
     if (this == &from) return *this;
@@ -7846,6 +7794,14 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
+
+  SourceCodeInfo_Location(const SourceCodeInfo_Location& from);
+  inline SourceCodeInfo_Location& operator=(const SourceCodeInfo_Location& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -7918,11 +7874,11 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(SourceCodeInfo_Location* other);
 
@@ -8078,18 +8034,8 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
  public:
   inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
   ~SourceCodeInfo() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
-
-  SourceCodeInfo(const SourceCodeInfo& from);
-  SourceCodeInfo(SourceCodeInfo&& from) noexcept
-    : SourceCodeInfo() {
+  SourceCodeInfo(SourceCodeInfo&& from) noexcept : SourceCodeInfo() {
     *this = ::std::move(from);
-  }
-
-  inline SourceCodeInfo& operator=(const SourceCodeInfo& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline SourceCodeInfo& operator=(SourceCodeInfo&& from) noexcept {
     if (this == &from) return *this;
@@ -8102,6 +8048,14 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
+
+  SourceCodeInfo(const SourceCodeInfo& from);
+  inline SourceCodeInfo& operator=(const SourceCodeInfo& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -8174,11 +8128,11 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(SourceCodeInfo* other);
 
@@ -8245,18 +8199,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
  public:
   inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
   ~GeneratedCodeInfo_Annotation() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
-
-  GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from);
-  GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
-    : GeneratedCodeInfo_Annotation() {
+  GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept : GeneratedCodeInfo_Annotation() {
     *this = ::std::move(from);
-  }
-
-  inline GeneratedCodeInfo_Annotation& operator=(const GeneratedCodeInfo_Annotation& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline GeneratedCodeInfo_Annotation& operator=(GeneratedCodeInfo_Annotation&& from) noexcept {
     if (this == &from) return *this;
@@ -8269,6 +8213,14 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
+
+  GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from);
+  inline GeneratedCodeInfo_Annotation& operator=(const GeneratedCodeInfo_Annotation& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -8341,11 +8293,11 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(GeneratedCodeInfo_Annotation* other);
 
@@ -8491,18 +8443,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
  public:
   inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
   ~GeneratedCodeInfo() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
-
-  GeneratedCodeInfo(const GeneratedCodeInfo& from);
-  GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
-    : GeneratedCodeInfo() {
+  GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept : GeneratedCodeInfo() {
     *this = ::std::move(from);
-  }
-
-  inline GeneratedCodeInfo& operator=(const GeneratedCodeInfo& from) {
-    CopyFrom(from);
-    return *this;
   }
   inline GeneratedCodeInfo& operator=(GeneratedCodeInfo&& from) noexcept {
     if (this == &from) return *this;
@@ -8515,6 +8457,14 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
     } else {
       CopyFrom(from);
     }
+    return *this;
+  }
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
+
+  GeneratedCodeInfo(const GeneratedCodeInfo& from);
+  inline GeneratedCodeInfo& operator=(const GeneratedCodeInfo& from) {
+    CopyFrom(from);
     return *this;
   }
 
@@ -8587,11 +8537,11 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  void SharedDtor();
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(GeneratedCodeInfo* other);
 
