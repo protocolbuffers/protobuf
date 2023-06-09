@@ -1501,7 +1501,7 @@ final class MessageSchema<T> implements Schema<T> {
         presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
         if (presenceFieldOffset != currentPresenceFieldOffset) {
           currentPresenceFieldOffset = presenceFieldOffset;
-          currentPresenceField = unsafe.getInt(message, (long) presenceFieldOffset);
+          currentPresenceField = intAt(message, (long) presenceFieldOffset);
         }
       } else if (useCachedSizeField
           && fieldType >= FieldType.DOUBLE_LIST_PACKED.id()
@@ -1513,47 +1513,47 @@ final class MessageSchema<T> implements Schema<T> {
 
       switch (fieldType) {
         case 0: // DOUBLE:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             size += CodedOutputStream.computeDoubleSize(number, 0);
           }
           break;
         case 1: // FLOAT:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             size += CodedOutputStream.computeFloatSize(number, 0);
           }
           break;
         case 2: // INT64:
-          if ((currentPresenceField & presenceMask) != 0) {
-            size += CodedOutputStream.computeInt64Size(number, unsafe.getLong(message, offset));
+          if (isFieldPresent(message, i)) {
+            size += CodedOutputStream.computeInt64Size(number, longAt(message, offset));
           }
           break;
         case 3: // UINT64:
-          if ((currentPresenceField & presenceMask) != 0) {
-            size += CodedOutputStream.computeUInt64Size(number, unsafe.getLong(message, offset));
+          if (isFieldPresent(message, i)) {
+            size += CodedOutputStream.computeUInt64Size(number, longAt(message, offset));
           }
           break;
         case 4: // INT32:
-          if ((currentPresenceField & presenceMask) != 0) {
-            size += CodedOutputStream.computeInt32Size(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, i)) {
+            size += CodedOutputStream.computeInt32Size(number, intAt(message, offset));
           }
           break;
         case 5: // FIXED64:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             size += CodedOutputStream.computeFixed64Size(number, 0);
           }
           break;
         case 6: // FIXED32:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             size += CodedOutputStream.computeFixed32Size(number, 0);
           }
           break;
         case 7: // BOOL:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             size += CodedOutputStream.computeBoolSize(number, true);
           }
           break;
         case 8: // STRING:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             Object value = unsafe.getObject(message, offset);
             if (value instanceof ByteString) {
               size += CodedOutputStream.computeBytesSize(number, (ByteString) value);
@@ -1563,49 +1563,49 @@ final class MessageSchema<T> implements Schema<T> {
           }
           break;
         case 9: // MESSAGE:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             Object value = unsafe.getObject(message, offset);
             size += SchemaUtil.computeSizeMessage(number, value, getMessageFieldSchema(i));
           }
           break;
         case 10: // BYTES:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             ByteString value = (ByteString) unsafe.getObject(message, offset);
             size += CodedOutputStream.computeBytesSize(number, value);
           }
           break;
         case 11: // UINT32:
-          if ((currentPresenceField & presenceMask) != 0) {
-            size += CodedOutputStream.computeUInt32Size(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, i)) {
+            size += CodedOutputStream.computeUInt32Size(number, intAt(message, offset));
           }
           break;
         case 12: // ENUM:
-          if ((currentPresenceField & presenceMask) != 0) {
-            size += CodedOutputStream.computeEnumSize(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, i)) {
+            size += CodedOutputStream.computeEnumSize(number, intAt(message, offset));
           }
           break;
         case 13: // SFIXED32:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             size += CodedOutputStream.computeSFixed32Size(number, 0);
           }
           break;
         case 14: // SFIXED64:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             size += CodedOutputStream.computeSFixed64Size(number, 0);
           }
           break;
         case 15: // SINT32:
-          if ((currentPresenceField & presenceMask) != 0) {
-            size += CodedOutputStream.computeSInt32Size(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, i)) {
+            size += CodedOutputStream.computeSInt32Size(number, intAt(message, offset));
           }
           break;
         case 16: // SINT64:
-          if ((currentPresenceField & presenceMask) != 0) {
-            size += CodedOutputStream.computeSInt64Size(number, unsafe.getLong(message, offset));
+          if (isFieldPresent(message, i)) {
+            size += CodedOutputStream.computeSInt64Size(number, longAt(message, offset));
           }
           break;
         case 17: // GROUP:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, i)) {
             size +=
                 CodedOutputStream.computeGroupSize(
                     number,
@@ -2622,26 +2622,11 @@ final class MessageSchema<T> implements Schema<T> {
         nextExtension = extensionIterator.next();
       }
     }
-    int currentPresenceFieldOffset = NO_PRESENCE_SENTINEL;
-    int currentPresenceField = 0;
     final int bufferLength = buffer.length;
     final sun.misc.Unsafe unsafe = UNSAFE;
     for (int pos = 0; pos < bufferLength; pos += INTS_PER_FIELD) {
       final int typeAndOffset = typeAndOffsetAt(pos);
       final int number = numberAt(pos);
-      final int fieldType = type(typeAndOffset);
-
-      int presenceMaskAndOffset = 0;
-      int presenceMask = 0;
-      if (fieldType <= 17) {
-        presenceMaskAndOffset = buffer[pos + 2];
-        final int presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
-        if (presenceFieldOffset != currentPresenceFieldOffset) {
-          currentPresenceFieldOffset = presenceFieldOffset;
-          currentPresenceField = unsafe.getInt(message, (long) presenceFieldOffset);
-        }
-        presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
-      }
 
       // Write any extensions that need to be written before the current field.
       while (nextExtension != null && extensionSchema.extensionNumber(nextExtension) <= number) {
@@ -2650,95 +2635,95 @@ final class MessageSchema<T> implements Schema<T> {
       }
       final long offset = offset(typeAndOffset);
 
-      switch (fieldType) {
+      switch (type(typeAndOffset)) {
         case 0: // DOUBLE:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, pos)) {
             writer.writeDouble(number, doubleAt(message, offset));
           }
           break;
         case 1: // FLOAT:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, pos)) {
             writer.writeFloat(number, floatAt(message, offset));
           }
           break;
         case 2: // INT64:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeInt64(number, unsafe.getLong(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeInt64(number, longAt(message, offset));
           }
           break;
         case 3: // UINT64:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeUInt64(number, unsafe.getLong(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeUInt64(number, longAt(message, offset));
           }
           break;
         case 4: // INT32:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeInt32(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeInt32(number, intAt(message, offset));
           }
           break;
         case 5: // FIXED64:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeFixed64(number, unsafe.getLong(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeFixed64(number, longAt(message, offset));
           }
           break;
         case 6: // FIXED32:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeFixed32(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeFixed32(number, intAt(message, offset));
           }
           break;
         case 7: // BOOL:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, pos)) {
             writer.writeBool(number, booleanAt(message, offset));
           }
           break;
         case 8: // STRING:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, pos)) {
             writeString(number, unsafe.getObject(message, offset), writer);
           }
           break;
         case 9: // MESSAGE:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, pos)) {
             Object value = unsafe.getObject(message, offset);
             writer.writeMessage(number, value, getMessageFieldSchema(pos));
           }
           break;
         case 10: // BYTES:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, pos)) {
             writer.writeBytes(number, (ByteString) unsafe.getObject(message, offset));
           }
           break;
         case 11: // UINT32:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeUInt32(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeUInt32(number, intAt(message, offset));
           }
           break;
         case 12: // ENUM:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeEnum(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeEnum(number, intAt(message, offset));
           }
           break;
         case 13: // SFIXED32:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeSFixed32(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeSFixed32(number, intAt(message, offset));
           }
           break;
         case 14: // SFIXED64:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeSFixed64(number, unsafe.getLong(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeSFixed64(number, longAt(message, offset));
           }
           break;
         case 15: // SINT32:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeSInt32(number, unsafe.getInt(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeSInt32(number, intAt(message, offset));
           }
           break;
         case 16: // SINT64:
-          if ((currentPresenceField & presenceMask) != 0) {
-            writer.writeSInt64(number, unsafe.getLong(message, offset));
+          if (isFieldPresent(message, pos)) {
+            writer.writeSInt64(number, longAt(message, offset));
           }
           break;
         case 17: // GROUP:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(message, pos)) {
             writer.writeGroup(
                 number, unsafe.getObject(message, offset), getMessageFieldSchema(pos));
           }
@@ -2999,6 +2984,7 @@ final class MessageSchema<T> implements Schema<T> {
       }
     }
     final int bufferLength = buffer.length;
+    final sun.misc.Unsafe unsafe = UNSAFE;
     for (int pos = 0; pos < bufferLength; pos += INTS_PER_FIELD) {
       final int typeAndOffset = typeAndOffsetAt(pos);
       final int number = numberAt(pos);
@@ -3008,424 +2994,331 @@ final class MessageSchema<T> implements Schema<T> {
         extensionSchema.serializeExtension(writer, nextExtension);
         nextExtension = extensionIterator.hasNext() ? extensionIterator.next() : null;
       }
+      final long offset = offset(typeAndOffset);
 
       switch (type(typeAndOffset)) {
         case 0: // DOUBLE:
           if (isFieldPresent(message, pos)) {
-            writer.writeDouble(number, doubleAt(message, offset(typeAndOffset)));
+            writer.writeDouble(number, doubleAt(message, offset));
           }
           break;
         case 1: // FLOAT:
           if (isFieldPresent(message, pos)) {
-            writer.writeFloat(number, floatAt(message, offset(typeAndOffset)));
+            writer.writeFloat(number, floatAt(message, offset));
           }
           break;
         case 2: // INT64:
           if (isFieldPresent(message, pos)) {
-            writer.writeInt64(number, longAt(message, offset(typeAndOffset)));
+            writer.writeInt64(number, longAt(message, offset));
           }
           break;
         case 3: // UINT64:
           if (isFieldPresent(message, pos)) {
-            writer.writeUInt64(number, longAt(message, offset(typeAndOffset)));
+            writer.writeUInt64(number, longAt(message, offset));
           }
           break;
         case 4: // INT32:
           if (isFieldPresent(message, pos)) {
-            writer.writeInt32(number, intAt(message, offset(typeAndOffset)));
+            writer.writeInt32(number, intAt(message, offset));
           }
           break;
         case 5: // FIXED64:
           if (isFieldPresent(message, pos)) {
-            writer.writeFixed64(number, longAt(message, offset(typeAndOffset)));
+            writer.writeFixed64(number, longAt(message, offset));
           }
           break;
         case 6: // FIXED32:
           if (isFieldPresent(message, pos)) {
-            writer.writeFixed32(number, intAt(message, offset(typeAndOffset)));
+            writer.writeFixed32(number, intAt(message, offset));
           }
           break;
         case 7: // BOOL:
           if (isFieldPresent(message, pos)) {
-            writer.writeBool(number, booleanAt(message, offset(typeAndOffset)));
+            writer.writeBool(number, booleanAt(message, offset));
           }
           break;
         case 8: // STRING:
           if (isFieldPresent(message, pos)) {
-            writeString(number, UnsafeUtil.getObject(message, offset(typeAndOffset)), writer);
+            writeString(number, unsafe.getObject(message, offset), writer);
           }
           break;
         case 9: // MESSAGE:
           if (isFieldPresent(message, pos)) {
-            Object value = UnsafeUtil.getObject(message, offset(typeAndOffset));
+            Object value = unsafe.getObject(message, offset);
             writer.writeMessage(number, value, getMessageFieldSchema(pos));
           }
           break;
         case 10: // BYTES:
           if (isFieldPresent(message, pos)) {
-            writer.writeBytes(
-                number, (ByteString) UnsafeUtil.getObject(message, offset(typeAndOffset)));
+            writer.writeBytes(number, (ByteString) unsafe.getObject(message, offset));
           }
           break;
         case 11: // UINT32:
           if (isFieldPresent(message, pos)) {
-            writer.writeUInt32(number, intAt(message, offset(typeAndOffset)));
+            writer.writeUInt32(number, intAt(message, offset));
           }
           break;
         case 12: // ENUM:
           if (isFieldPresent(message, pos)) {
-            writer.writeEnum(number, intAt(message, offset(typeAndOffset)));
+            writer.writeEnum(number, intAt(message, offset));
           }
           break;
         case 13: // SFIXED32:
           if (isFieldPresent(message, pos)) {
-            writer.writeSFixed32(number, intAt(message, offset(typeAndOffset)));
+            writer.writeSFixed32(number, intAt(message, offset));
           }
           break;
         case 14: // SFIXED64:
           if (isFieldPresent(message, pos)) {
-            writer.writeSFixed64(number, longAt(message, offset(typeAndOffset)));
+            writer.writeSFixed64(number, longAt(message, offset));
           }
           break;
         case 15: // SINT32:
           if (isFieldPresent(message, pos)) {
-            writer.writeSInt32(number, intAt(message, offset(typeAndOffset)));
+            writer.writeSInt32(number, intAt(message, offset));
           }
           break;
         case 16: // SINT64:
           if (isFieldPresent(message, pos)) {
-            writer.writeSInt64(number, longAt(message, offset(typeAndOffset)));
+            writer.writeSInt64(number, longAt(message, offset));
           }
           break;
         case 17: // GROUP:
           if (isFieldPresent(message, pos)) {
             writer.writeGroup(
-                number,
-                UnsafeUtil.getObject(message, offset(typeAndOffset)),
-                getMessageFieldSchema(pos));
+                number, unsafe.getObject(message, offset), getMessageFieldSchema(pos));
           }
           break;
         case 18: // DOUBLE_LIST:
           SchemaUtil.writeDoubleList(
-              numberAt(pos),
-              (List<Double>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Double>) unsafe.getObject(message, offset), writer, false);
           break;
         case 19: // FLOAT_LIST:
           SchemaUtil.writeFloatList(
-              numberAt(pos),
-              (List<Float>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Float>) unsafe.getObject(message, offset), writer, false);
           break;
         case 20: // INT64_LIST:
           SchemaUtil.writeInt64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, false);
           break;
         case 21: // UINT64_LIST:
           SchemaUtil.writeUInt64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, false);
           break;
         case 22: // INT32_LIST:
           SchemaUtil.writeInt32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, false);
           break;
         case 23: // FIXED64_LIST:
           SchemaUtil.writeFixed64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, false);
           break;
         case 24: // FIXED32_LIST:
           SchemaUtil.writeFixed32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, false);
           break;
         case 25: // BOOL_LIST:
           SchemaUtil.writeBoolList(
-              numberAt(pos),
-              (List<Boolean>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Boolean>) unsafe.getObject(message, offset), writer, false);
           break;
         case 26: // STRING_LIST:
           SchemaUtil.writeStringList(
-              numberAt(pos),
-              (List<String>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer);
+              numberAt(pos), (List<String>) unsafe.getObject(message, offset), writer);
           break;
         case 27: // MESSAGE_LIST:
           SchemaUtil.writeMessageList(
               numberAt(pos),
-              (List<?>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
+              (List<?>) unsafe.getObject(message, offset),
               writer,
               getMessageFieldSchema(pos));
           break;
         case 28: // BYTES_LIST:
           SchemaUtil.writeBytesList(
-              numberAt(pos),
-              (List<ByteString>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer);
+              numberAt(pos), (List<ByteString>) unsafe.getObject(message, offset), writer);
           break;
         case 29: // UINT32_LIST:
           SchemaUtil.writeUInt32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, false);
           break;
         case 30: // ENUM_LIST:
           SchemaUtil.writeEnumList(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, false);
           break;
         case 31: // SFIXED32_LIST:
           SchemaUtil.writeSFixed32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, false);
           break;
         case 32: // SFIXED64_LIST:
           SchemaUtil.writeSFixed64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, false);
           break;
         case 33: // SINT32_LIST:
           SchemaUtil.writeSInt32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, false);
           break;
         case 34: // SINT64_LIST:
           SchemaUtil.writeSInt64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              false);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, false);
           break;
         case 35: // DOUBLE_LIST_PACKED:
           // TODO(xiaofeng): Make use of cached field size to speed up serialization.
           SchemaUtil.writeDoubleList(
-              numberAt(pos),
-              (List<Double>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Double>) unsafe.getObject(message, offset), writer, true);
           break;
         case 36: // FLOAT_LIST_PACKED:
           SchemaUtil.writeFloatList(
-              numberAt(pos),
-              (List<Float>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Float>) unsafe.getObject(message, offset), writer, true);
           break;
         case 37: // INT64_LIST_PACKED:
           SchemaUtil.writeInt64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, true);
           break;
         case 38: // UINT64_LIST_PACKED:
           SchemaUtil.writeUInt64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, true);
           break;
         case 39: // INT32_LIST_PACKED:
           SchemaUtil.writeInt32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, true);
           break;
         case 40: // FIXED64_LIST_PACKED:
           SchemaUtil.writeFixed64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, true);
           break;
         case 41: // FIXED32_LIST_PACKED:
           SchemaUtil.writeFixed32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, true);
 
           break;
         case 42: // BOOL_LIST_PACKED:
           SchemaUtil.writeBoolList(
-              numberAt(pos),
-              (List<Boolean>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Boolean>) unsafe.getObject(message, offset), writer, true);
           break;
         case 43: // UINT32_LIST_PACKED:
           SchemaUtil.writeUInt32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, true);
           break;
         case 44: // ENUM_LIST_PACKED:
           SchemaUtil.writeEnumList(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, true);
           break;
         case 45: // SFIXED32_LIST_PACKED:
           SchemaUtil.writeSFixed32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, true);
           break;
         case 46: // SFIXED64_LIST_PACKED:
           SchemaUtil.writeSFixed64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, true);
           break;
         case 47: // SINT32_LIST_PACKED:
           SchemaUtil.writeSInt32List(
-              numberAt(pos),
-              (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Integer>) unsafe.getObject(message, offset), writer, true);
           break;
         case 48: // SINT64_LIST_PACKED:
           SchemaUtil.writeSInt64List(
-              numberAt(pos),
-              (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer,
-              true);
+              numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, true);
           break;
         case 49: // GROUP_LIST:
           SchemaUtil.writeGroupList(
               numberAt(pos),
-              (List<?>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
+              (List<?>) unsafe.getObject(message, offset),
               writer,
               getMessageFieldSchema(pos));
           break;
         case 50: // MAP:
           // TODO(dweis): Use schema cache.
-          writeMapHelper(writer, number, UnsafeUtil.getObject(message, offset(typeAndOffset)), pos);
+          writeMapHelper(writer, number, unsafe.getObject(message, offset), pos);
           break;
         case 51: // ONEOF_DOUBLE:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeDouble(number, oneofDoubleAt(message, offset(typeAndOffset)));
+            writer.writeDouble(number, oneofDoubleAt(message, offset));
           }
           break;
         case 52: // ONEOF_FLOAT:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeFloat(number, oneofFloatAt(message, offset(typeAndOffset)));
+            writer.writeFloat(number, oneofFloatAt(message, offset));
           }
           break;
         case 53: // ONEOF_INT64:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeInt64(number, oneofLongAt(message, offset(typeAndOffset)));
+            writer.writeInt64(number, oneofLongAt(message, offset));
           }
           break;
         case 54: // ONEOF_UINT64:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeUInt64(number, oneofLongAt(message, offset(typeAndOffset)));
+            writer.writeUInt64(number, oneofLongAt(message, offset));
           }
           break;
         case 55: // ONEOF_INT32:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeInt32(number, oneofIntAt(message, offset(typeAndOffset)));
+            writer.writeInt32(number, oneofIntAt(message, offset));
           }
           break;
         case 56: // ONEOF_FIXED64:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeFixed64(number, oneofLongAt(message, offset(typeAndOffset)));
+            writer.writeFixed64(number, oneofLongAt(message, offset));
           }
           break;
         case 57: // ONEOF_FIXED32:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeFixed32(number, oneofIntAt(message, offset(typeAndOffset)));
+            writer.writeFixed32(number, oneofIntAt(message, offset));
           }
           break;
         case 58: // ONEOF_BOOL:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeBool(number, oneofBooleanAt(message, offset(typeAndOffset)));
+            writer.writeBool(number, oneofBooleanAt(message, offset));
           }
           break;
         case 59: // ONEOF_STRING:
           if (isOneofPresent(message, number, pos)) {
-            writeString(number, UnsafeUtil.getObject(message, offset(typeAndOffset)), writer);
+            writeString(number, unsafe.getObject(message, offset), writer);
           }
           break;
         case 60: // ONEOF_MESSAGE:
           if (isOneofPresent(message, number, pos)) {
-            Object value = UnsafeUtil.getObject(message, offset(typeAndOffset));
+            Object value = unsafe.getObject(message, offset);
             writer.writeMessage(number, value, getMessageFieldSchema(pos));
           }
           break;
         case 61: // ONEOF_BYTES:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeBytes(
-                number, (ByteString) UnsafeUtil.getObject(message, offset(typeAndOffset)));
+            writer.writeBytes(number, (ByteString) unsafe.getObject(message, offset));
           }
           break;
         case 62: // ONEOF_UINT32:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeUInt32(number, oneofIntAt(message, offset(typeAndOffset)));
+            writer.writeUInt32(number, oneofIntAt(message, offset));
           }
           break;
         case 63: // ONEOF_ENUM:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeEnum(number, oneofIntAt(message, offset(typeAndOffset)));
+            writer.writeEnum(number, oneofIntAt(message, offset));
           }
           break;
         case 64: // ONEOF_SFIXED32:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeSFixed32(number, oneofIntAt(message, offset(typeAndOffset)));
+            writer.writeSFixed32(number, oneofIntAt(message, offset));
           }
           break;
         case 65: // ONEOF_SFIXED64:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeSFixed64(number, oneofLongAt(message, offset(typeAndOffset)));
+            writer.writeSFixed64(number, oneofLongAt(message, offset));
           }
           break;
         case 66: // ONEOF_SINT32:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeSInt32(number, oneofIntAt(message, offset(typeAndOffset)));
+            writer.writeSInt32(number, oneofIntAt(message, offset));
           }
           break;
         case 67: // ONEOF_SINT64:
           if (isOneofPresent(message, number, pos)) {
-            writer.writeSInt64(number, oneofLongAt(message, offset(typeAndOffset)));
+            writer.writeSInt64(number, oneofLongAt(message, offset));
           }
           break;
         case 68: // ONEOF_GROUP:
           if (isOneofPresent(message, number, pos)) {
             writer.writeGroup(
-                number,
-                UnsafeUtil.getObject(message, offset(typeAndOffset)),
-                getMessageFieldSchema(pos));
+                number, unsafe.getObject(message, offset), getMessageFieldSchema(pos));
           }
           break;
         default:
@@ -3977,39 +3870,40 @@ final class MessageSchema<T> implements Schema<T> {
           return;
         }
         final int typeAndOffset = typeAndOffsetAt(pos);
+        final long offset = offset(typeAndOffset);
 
         try {
           switch (type(typeAndOffset)) {
             case 0: // DOUBLE:
-              UnsafeUtil.putDouble(message, offset(typeAndOffset), reader.readDouble());
+              UnsafeUtil.putDouble(message, offset, reader.readDouble());
               setFieldPresent(message, pos);
               break;
             case 1: // FLOAT:
-              UnsafeUtil.putFloat(message, offset(typeAndOffset), reader.readFloat());
+              UnsafeUtil.putFloat(message, offset, reader.readFloat());
               setFieldPresent(message, pos);
               break;
             case 2: // INT64:
-              UnsafeUtil.putLong(message, offset(typeAndOffset), reader.readInt64());
+              UnsafeUtil.putLong(message, offset, reader.readInt64());
               setFieldPresent(message, pos);
               break;
             case 3: // UINT64:
-              UnsafeUtil.putLong(message, offset(typeAndOffset), reader.readUInt64());
+              UnsafeUtil.putLong(message, offset, reader.readUInt64());
               setFieldPresent(message, pos);
               break;
             case 4: // INT32:
-              UnsafeUtil.putInt(message, offset(typeAndOffset), reader.readInt32());
+              UnsafeUtil.putInt(message, offset, reader.readInt32());
               setFieldPresent(message, pos);
               break;
             case 5: // FIXED64:
-              UnsafeUtil.putLong(message, offset(typeAndOffset), reader.readFixed64());
+              UnsafeUtil.putLong(message, offset, reader.readFixed64());
               setFieldPresent(message, pos);
               break;
             case 6: // FIXED32:
-              UnsafeUtil.putInt(message, offset(typeAndOffset), reader.readFixed32());
+              UnsafeUtil.putInt(message, offset, reader.readFixed32());
               setFieldPresent(message, pos);
               break;
             case 7: // BOOL:
-              UnsafeUtil.putBoolean(message, offset(typeAndOffset), reader.readBool());
+              UnsafeUtil.putBoolean(message, offset, reader.readBool());
               setFieldPresent(message, pos);
               break;
             case 8: // STRING:
@@ -4025,11 +3919,11 @@ final class MessageSchema<T> implements Schema<T> {
                 break;
               }
             case 10: // BYTES:
-              UnsafeUtil.putObject(message, offset(typeAndOffset), reader.readBytes());
+              UnsafeUtil.putObject(message, offset, reader.readBytes());
               setFieldPresent(message, pos);
               break;
             case 11: // UINT32:
-              UnsafeUtil.putInt(message, offset(typeAndOffset), reader.readUInt32());
+              UnsafeUtil.putInt(message, offset, reader.readUInt32());
               setFieldPresent(message, pos);
               break;
             case 12: // ENUM:
@@ -4037,7 +3931,7 @@ final class MessageSchema<T> implements Schema<T> {
                 int enumValue = reader.readEnum();
                 EnumVerifier enumVerifier = getEnumFieldVerifier(pos);
                 if (enumVerifier == null || enumVerifier.isInRange(enumValue)) {
-                  UnsafeUtil.putInt(message, offset(typeAndOffset), enumValue);
+                  UnsafeUtil.putInt(message, offset, enumValue);
                   setFieldPresent(message, pos);
                 } else {
                   unknownFields =
@@ -4047,19 +3941,19 @@ final class MessageSchema<T> implements Schema<T> {
                 break;
               }
             case 13: // SFIXED32:
-              UnsafeUtil.putInt(message, offset(typeAndOffset), reader.readSFixed32());
+              UnsafeUtil.putInt(message, offset, reader.readSFixed32());
               setFieldPresent(message, pos);
               break;
             case 14: // SFIXED64:
-              UnsafeUtil.putLong(message, offset(typeAndOffset), reader.readSFixed64());
+              UnsafeUtil.putLong(message, offset, reader.readSFixed64());
               setFieldPresent(message, pos);
               break;
             case 15: // SINT32:
-              UnsafeUtil.putInt(message, offset(typeAndOffset), reader.readSInt32());
+              UnsafeUtil.putInt(message, offset, reader.readSInt32());
               setFieldPresent(message, pos);
               break;
             case 16: // SINT64:
-              UnsafeUtil.putLong(message, offset(typeAndOffset), reader.readSInt64());
+              UnsafeUtil.putLong(message, offset, reader.readSInt64());
               setFieldPresent(message, pos);
               break;
             case 17:
@@ -4071,36 +3965,28 @@ final class MessageSchema<T> implements Schema<T> {
                 break;
               }
             case 18: // DOUBLE_LIST:
-              reader.readDoubleList(
-                  listFieldSchema.<Double>mutableListAt(message, offset(typeAndOffset)));
+              reader.readDoubleList(listFieldSchema.<Double>mutableListAt(message, offset));
               break;
             case 19: // FLOAT_LIST:
-              reader.readFloatList(
-                  listFieldSchema.<Float>mutableListAt(message, offset(typeAndOffset)));
+              reader.readFloatList(listFieldSchema.<Float>mutableListAt(message, offset));
               break;
             case 20: // INT64_LIST:
-              reader.readInt64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readInt64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 21: // UINT64_LIST:
-              reader.readUInt64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readUInt64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 22: // INT32_LIST:
-              reader.readInt32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readInt32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 23: // FIXED64_LIST:
-              reader.readFixed64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readFixed64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 24: // FIXED32_LIST:
-              reader.readFixed32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readFixed32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 25: // BOOL_LIST:
-              reader.readBoolList(
-                  listFieldSchema.<Boolean>mutableListAt(message, offset(typeAndOffset)));
+              reader.readBoolList(listFieldSchema.<Boolean>mutableListAt(message, offset));
               break;
             case 26: // STRING_LIST:
               readStringList(message, typeAndOffset, reader);
@@ -4116,17 +4002,14 @@ final class MessageSchema<T> implements Schema<T> {
                 break;
               }
             case 28: // BYTES_LIST:
-              reader.readBytesList(
-                  listFieldSchema.<ByteString>mutableListAt(message, offset(typeAndOffset)));
+              reader.readBytesList(listFieldSchema.<ByteString>mutableListAt(message, offset));
               break;
             case 29: // UINT32_LIST:
-              reader.readUInt32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readUInt32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 30: // ENUM_LIST:
               {
-                List<Integer> enumList =
-                    listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset));
+                List<Integer> enumList = listFieldSchema.<Integer>mutableListAt(message, offset);
                 reader.readEnumList(enumList);
                 unknownFields =
                     SchemaUtil.filterUnknownEnumList(
@@ -4139,61 +4022,47 @@ final class MessageSchema<T> implements Schema<T> {
                 break;
               }
             case 31: // SFIXED32_LIST:
-              reader.readSFixed32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readSFixed32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 32: // SFIXED64_LIST:
-              reader.readSFixed64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readSFixed64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 33: // SINT32_LIST:
-              reader.readSInt32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readSInt32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 34: // SINT64_LIST:
-              reader.readSInt64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readSInt64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 35: // DOUBLE_LIST_PACKED:
-              reader.readDoubleList(
-                  listFieldSchema.<Double>mutableListAt(message, offset(typeAndOffset)));
+              reader.readDoubleList(listFieldSchema.<Double>mutableListAt(message, offset));
               break;
             case 36: // FLOAT_LIST_PACKED:
-              reader.readFloatList(
-                  listFieldSchema.<Float>mutableListAt(message, offset(typeAndOffset)));
+              reader.readFloatList(listFieldSchema.<Float>mutableListAt(message, offset));
               break;
             case 37: // INT64_LIST_PACKED:
-              reader.readInt64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readInt64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 38: // UINT64_LIST_PACKED:
-              reader.readUInt64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readUInt64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 39: // INT32_LIST_PACKED:
-              reader.readInt32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readInt32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 40: // FIXED64_LIST_PACKED:
-              reader.readFixed64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readFixed64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 41: // FIXED32_LIST_PACKED:
-              reader.readFixed32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readFixed32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 42: // BOOL_LIST_PACKED:
-              reader.readBoolList(
-                  listFieldSchema.<Boolean>mutableListAt(message, offset(typeAndOffset)));
+              reader.readBoolList(listFieldSchema.<Boolean>mutableListAt(message, offset));
               break;
             case 43: // UINT32_LIST_PACKED:
-              reader.readUInt32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readUInt32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 44: // ENUM_LIST_PACKED:
               {
-                List<Integer> enumList =
-                    listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset));
+                List<Integer> enumList = listFieldSchema.<Integer>mutableListAt(message, offset);
                 reader.readEnumList(enumList);
                 unknownFields =
                     SchemaUtil.filterUnknownEnumList(
@@ -4206,26 +4075,22 @@ final class MessageSchema<T> implements Schema<T> {
                 break;
               }
             case 45: // SFIXED32_LIST_PACKED:
-              reader.readSFixed32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readSFixed32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 46: // SFIXED64_LIST_PACKED:
-              reader.readSFixed64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readSFixed64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 47: // SINT32_LIST_PACKED:
-              reader.readSInt32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
+              reader.readSInt32List(listFieldSchema.<Integer>mutableListAt(message, offset));
               break;
             case 48: // SINT64_LIST_PACKED:
-              reader.readSInt64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
+              reader.readSInt64List(listFieldSchema.<Long>mutableListAt(message, offset));
               break;
             case 49:
               { // GROUP_LIST:
                 readGroupList(
                     message,
-                    offset(typeAndOffset),
+                    offset,
                     reader,
                     (Schema<T>) getMessageFieldSchema(pos),
                     extensionRegistry);
@@ -4235,43 +4100,35 @@ final class MessageSchema<T> implements Schema<T> {
               mergeMap(message, pos, getMapFieldDefaultEntry(pos), extensionRegistry, reader);
               break;
             case 51: // ONEOF_DOUBLE:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Double.valueOf(reader.readDouble()));
+              UnsafeUtil.putObject(message, offset, Double.valueOf(reader.readDouble()));
               setOneofPresent(message, number, pos);
               break;
             case 52: // ONEOF_FLOAT:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Float.valueOf(reader.readFloat()));
+              UnsafeUtil.putObject(message, offset, Float.valueOf(reader.readFloat()));
               setOneofPresent(message, number, pos);
               break;
             case 53: // ONEOF_INT64:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Long.valueOf(reader.readInt64()));
+              UnsafeUtil.putObject(message, offset, Long.valueOf(reader.readInt64()));
               setOneofPresent(message, number, pos);
               break;
             case 54: // ONEOF_UINT64:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Long.valueOf(reader.readUInt64()));
+              UnsafeUtil.putObject(message, offset, Long.valueOf(reader.readUInt64()));
               setOneofPresent(message, number, pos);
               break;
             case 55: // ONEOF_INT32:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Integer.valueOf(reader.readInt32()));
+              UnsafeUtil.putObject(message, offset, Integer.valueOf(reader.readInt32()));
               setOneofPresent(message, number, pos);
               break;
             case 56: // ONEOF_FIXED64:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Long.valueOf(reader.readFixed64()));
+              UnsafeUtil.putObject(message, offset, Long.valueOf(reader.readFixed64()));
               setOneofPresent(message, number, pos);
               break;
             case 57: // ONEOF_FIXED32:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Integer.valueOf(reader.readFixed32()));
+              UnsafeUtil.putObject(message, offset, Integer.valueOf(reader.readFixed32()));
               setOneofPresent(message, number, pos);
               break;
             case 58: // ONEOF_BOOL:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Boolean.valueOf(reader.readBool()));
+              UnsafeUtil.putObject(message, offset, Boolean.valueOf(reader.readBool()));
               setOneofPresent(message, number, pos);
               break;
             case 59: // ONEOF_STRING:
@@ -4288,12 +4145,11 @@ final class MessageSchema<T> implements Schema<T> {
                 break;
               }
             case 61: // ONEOF_BYTES:
-              UnsafeUtil.putObject(message, offset(typeAndOffset), reader.readBytes());
+              UnsafeUtil.putObject(message, offset, reader.readBytes());
               setOneofPresent(message, number, pos);
               break;
             case 62: // ONEOF_UINT32:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Integer.valueOf(reader.readUInt32()));
+              UnsafeUtil.putObject(message, offset, Integer.valueOf(reader.readUInt32()));
               setOneofPresent(message, number, pos);
               break;
             case 63: // ONEOF_ENUM:
@@ -4301,7 +4157,7 @@ final class MessageSchema<T> implements Schema<T> {
                 int enumValue = reader.readEnum();
                 EnumVerifier enumVerifier = getEnumFieldVerifier(pos);
                 if (enumVerifier == null || enumVerifier.isInRange(enumValue)) {
-                  UnsafeUtil.putObject(message, offset(typeAndOffset), enumValue);
+                  UnsafeUtil.putObject(message, offset, enumValue);
                   setOneofPresent(message, number, pos);
                 } else {
                   unknownFields =
@@ -4311,23 +4167,19 @@ final class MessageSchema<T> implements Schema<T> {
                 break;
               }
             case 64: // ONEOF_SFIXED32:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Integer.valueOf(reader.readSFixed32()));
+              UnsafeUtil.putObject(message, offset, Integer.valueOf(reader.readSFixed32()));
               setOneofPresent(message, number, pos);
               break;
             case 65: // ONEOF_SFIXED64:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Long.valueOf(reader.readSFixed64()));
+              UnsafeUtil.putObject(message, offset, Long.valueOf(reader.readSFixed64()));
               setOneofPresent(message, number, pos);
               break;
             case 66: // ONEOF_SINT32:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Integer.valueOf(reader.readSInt32()));
+              UnsafeUtil.putObject(message, offset, Integer.valueOf(reader.readSInt32()));
               setOneofPresent(message, number, pos);
               break;
             case 67: // ONEOF_SINT64:
-              UnsafeUtil.putObject(
-                  message, offset(typeAndOffset), Long.valueOf(reader.readSInt64()));
+              UnsafeUtil.putObject(message, offset, Long.valueOf(reader.readSInt64()));
               setOneofPresent(message, number, pos);
               break;
             case 68:
@@ -4935,7 +4787,7 @@ final class MessageSchema<T> implements Schema<T> {
               unsafe.putInt(message, (long) currentPresenceFieldOffset, currentPresenceField);
             }
             currentPresenceFieldOffset = presenceFieldOffset;
-            currentPresenceField = unsafe.getInt(message, (long) presenceFieldOffset);
+            currentPresenceField = intAt(message, (long) presenceFieldOffset);
           }
           switch (fieldType) {
             case 0: // DOUBLE
@@ -5295,7 +5147,7 @@ final class MessageSchema<T> implements Schema<T> {
               unsafe.putInt(message, (long) currentPresenceFieldOffset, currentPresenceField);
             }
             if (presenceFieldOffset != NO_PRESENCE_SENTINEL) {
-              currentPresenceField = unsafe.getInt(message, (long) presenceFieldOffset);
+              currentPresenceField = intAt(message, (long) presenceFieldOffset);
             }
             currentPresenceFieldOffset = presenceFieldOffset;
           }
@@ -5700,7 +5552,7 @@ final class MessageSchema<T> implements Schema<T> {
       if (presenceFieldOffset != currentPresenceFieldOffset) {
         currentPresenceFieldOffset = presenceFieldOffset;
         if (currentPresenceFieldOffset != NO_PRESENCE_SENTINEL) {
-          currentPresenceField = UNSAFE.getInt(message, (long) presenceFieldOffset);
+          currentPresenceField = intAt(message, (long) presenceFieldOffset);
         }
       }
 
