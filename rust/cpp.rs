@@ -30,15 +30,13 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use std::alloc;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::fmt;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::ops::Deref;
-use std::ptr::NonNull;
-use std::slice;
+use std::ptr::{self, NonNull};
 
 /// A wrapper over a `proto2::Arena`.
 ///
@@ -117,23 +115,42 @@ pub struct SerializedData {
 // h) copybara:strip_end
 
 impl SerializedData {
+    /// Constructs owned serialized data from raw components.
+    ///
+    /// # Safety
+    /// - `data` must be readable for `len` bytes.
+    /// - `data` must be an owned pointer and valid until deallocated.
+    /// - `data` must have been allocated by the Rust global allocator with a
+    ///   size of `len` and align of 1.
     pub unsafe fn from_raw_parts(data: NonNull<u8>, len: usize) -> Self {
         Self { data, len }
+    }
+
+    /// Gets a raw slice pointer.
+    pub fn as_ptr(&self) -> *const [u8] {
+        ptr::slice_from_raw_parts(self.data.as_ptr(), self.len)
+    }
+
+    /// Gets a mutable raw slice pointer.
+    fn as_mut_ptr(&mut self) -> *mut [u8] {
+        ptr::slice_from_raw_parts_mut(self.data.as_ptr(), self.len)
     }
 }
 
 impl Deref for SerializedData {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
-        unsafe { slice::from_raw_parts(self.data.as_ptr(), self.len) }
+        // SAFETY: `data` is valid for `len` bytes until deallocated as promised by
+        // `from_raw_parts`.
+        unsafe { &*self.as_ptr() }
     }
 }
 
 impl Drop for SerializedData {
     fn drop(&mut self) {
-        unsafe {
-            alloc::dealloc(self.data.as_ptr(), Layout::array::<u8>(self.len).unwrap());
-        };
+        // SAFETY: `data` was allocated by the Rust global allocator with a
+        // size of `len` and align of 1 as promised by `from_raw_parts`.
+        unsafe { drop(Box::from_raw(self.as_mut_ptr())) }
     }
 }
 
