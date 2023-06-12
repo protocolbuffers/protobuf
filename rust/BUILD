@@ -9,17 +9,17 @@ package(
     default_visibility = ["//src/google/protobuf:__subpackages__"],
 )
 
-# Represents the current Rust protobuf runtime for the build. Depending on the value of
+# The current Rust Protobuf runtime for the build. Depending on the value of
 # `:rust_proto_library_kernel` build setting it forwards to the cpp or upb kernels. This is the
 # target that users are expected to depend on.
 #
 # Rust gencode (via `rust_upb_proto_library` and `rust_cc_proto_library`) doesn't depend on this
 # target, instead, it depends on the kernel-specific libraries directly. The reason is that we need
-# to be able to use both kernels in the same build. That allows us to have one tap config for both
+# to be able to use both kernels in the same build. That allows us to have one TAP config for both
 # kernels, and to run tests using a single Blaze invocation.
 #
 # WARNING: It's critical that users do not end up using Rust Protobufs with multiple kernels in
-# their binaries. Currently this is achieved by using bzl visibility on kernel specific rules.
+# their binaries. Currently this is achieved by using bzl visibility on kernel-specific rules.
 # TODO(b/149440343): Hide the kernel-specific targets once we can restrict a target visibility to a
 # rule.
 rust_library(
@@ -35,7 +35,7 @@ rust_library(
     }),
 )
 
-# Represents Rust Protobuf runtime using the upb kernel.
+# The Rust Protobuf runtime using the upb kernel.
 #
 # `rust_upb_proto_library` implicitly depends on this target. This target cannot depend on
 # `:rust_proto_library_kernel` build setting; it has to be fully functional under any value of that
@@ -43,7 +43,7 @@ rust_library(
 #
 # `shared.rs` contains kernel-agnostic logic and simple kernel-specific logic controlled by
 # `#[cfg(...)]` attributes. That forces us to compile this file twice, once for each kernel. As a
-# result this file is declared in both `:protobuf_upb` and `:protobuf_cpp`. This is in principle
+# result this file is included in both `:protobuf_upb` and `:protobuf_cpp`. This is in principle
 # identical to how we compile regular Rust source files twice (once for production, and once for
 # unittesting).
 rust_library(
@@ -72,13 +72,13 @@ rust_test(
     ],
 )
 
-# Represents Rust Protobuf runtime using the cpp kernel.
+# The Rust Protobuf runtime using the cpp kernel.
 #
 # `rust_cpp_proto_library` implicitly depends on this target. This target cannot depend on
 # `:rust_proto_library_kernel` build setting; it has to be fully functional under any value of that
 # setting.
 #
-# See the comment for `:protobuf` for discussion of `shared.rs` file.
+# See the comment for `:protobuf_upb` for discussion of the `shared.rs` file.
 rust_library(
     name = "protobuf_cpp",
     srcs = [
