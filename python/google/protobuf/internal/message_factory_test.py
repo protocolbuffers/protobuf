@@ -149,16 +149,14 @@ class MessageFactoryTest(unittest.TestCase):
       self.assertEqual(None,
                        msg1.Extensions._FindExtensionByNumber(12321))
       self.assertEqual(2, len(msg1.Extensions))
-      if api_implementation.Type() == 'cpp':
-        self.assertRaises(TypeError,
-                          msg1.Extensions._FindExtensionByName, 0)
-        self.assertRaises(TypeError,
-                          msg1.Extensions._FindExtensionByNumber, '')
-      else:
+      if api_implementation.Type() == 'python':
         self.assertEqual(None,
                          msg1.Extensions._FindExtensionByName(0))
         self.assertEqual(None,
                          msg1.Extensions._FindExtensionByNumber(''))
+      else:
+        self.assertRaises(TypeError, msg1.Extensions._FindExtensionByName, 0)
+        self.assertRaises(TypeError, msg1.Extensions._FindExtensionByNumber, '')
 
   def testDuplicateExtensionNumber(self):
     pool = descriptor_pool.DescriptorPool()
@@ -181,9 +179,11 @@ class MessageFactoryTest(unittest.TestCase):
     msg.extension.add(
         name='extension_field',
         number=2,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
         label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
         type_name='Extension',
-        extendee='Container')
+        extendee='Container',
+    )
     pool.Add(f)
     msgs = message_factory.GetMessageClassesForFiles([f.name], pool)
     self.assertIn('google.protobuf.python.internal.Extension', msgs)
@@ -197,9 +197,11 @@ class MessageFactoryTest(unittest.TestCase):
     msg.extension.add(
         name='extension_field',
         number=2,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
         label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
         type_name='Duplicate',
-        extendee='Container')
+        extendee='Container',
+    )
     pool.Add(f)
 
     with self.assertRaises(Exception) as cm:
@@ -240,15 +242,19 @@ class MessageFactoryTest(unittest.TestCase):
     f3.extension.add(
         name='top_level_extension_field',
         number=2,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
         label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
         type_name='ValueType',
-        extendee='Container')
+        extendee='Container',
+    )
     f3.message_type.add(name='Extension').extension.add(
         name='nested_extension_field',
         number=3,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
         label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
         type_name='ValueType',
-        extendee='Container')
+        extendee='Container',
+    )
 
     class SimpleDescriptorDB:
 
