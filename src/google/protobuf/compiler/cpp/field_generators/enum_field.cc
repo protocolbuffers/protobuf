@@ -373,6 +373,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
     inline void $Msg$::add_$name$($Enum$ value) {
       $assert_valid$;
+      $TsanDetectConcurrentMutation$;
       _internal_mutable_$name$()->Add(value);
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
@@ -385,12 +386,15 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$() {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+      $TsanDetectConcurrentMutation$;
       return _internal_mutable_$name$();
     }
     inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
+      $TsanDetectConcurrentRead$;
       return $field_$;
     }
     inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name$() {
+      $TsanDetectConcurrentRead$;
       return &$field_$;
     }
   )cc");

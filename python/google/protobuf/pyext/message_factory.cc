@@ -209,11 +209,6 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
     if (py_extension == nullptr) {
       return nullptr;
     }
-    ScopedPyObjectPtr result(cmessage::RegisterExtension(
-        py_extended_class.get(), py_extension.get()));
-    if (result == nullptr) {
-      return nullptr;
-    }
   }
   return reinterpret_cast<CMessageClass*>(message_class.release());
 }

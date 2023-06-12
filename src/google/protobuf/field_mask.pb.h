@@ -273,6 +273,7 @@ inline void FieldMask::clear_paths() {
   _internal_mutable_paths()->Clear();
 }
 inline std::string* FieldMask::add_paths() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   std::string* _s = _internal_mutable_paths()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
   return _s;
@@ -310,24 +311,29 @@ inline void FieldMask::set_paths(int index, absl::string_view value) {
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::add_paths(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_paths()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::add_paths(std::string&& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_paths()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::add_paths(const char* value) {
   ABSL_DCHECK(value != nullptr);
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_paths()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::add_paths(const char* value, std::size_t size) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_paths()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::add_paths(absl::string_view value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_paths()->Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FieldMask.paths)
 }
@@ -338,14 +344,17 @@ FieldMask::paths() const {
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* FieldMask::mutable_paths() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldMask.paths)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_paths();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 FieldMask::_internal_paths() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.paths_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 FieldMask::_internal_mutable_paths() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.paths_;
 }
 

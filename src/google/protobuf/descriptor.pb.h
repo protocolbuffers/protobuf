@@ -8686,6 +8686,7 @@ inline ::google::protobuf::FileDescriptorProto* FileDescriptorSet::mutable_file(
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
 FileDescriptorSet::mutable_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorSet.file)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_file();
 }
 inline const ::google::protobuf::FileDescriptorProto& FileDescriptorSet::file(int index) const {
@@ -8693,6 +8694,7 @@ inline const ::google::protobuf::FileDescriptorProto& FileDescriptorSet::file(in
     return _internal_file().Get(index);
 }
 inline ::google::protobuf::FileDescriptorProto* FileDescriptorSet::add_file() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_file()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorSet.file)
   return _add;
@@ -8704,10 +8706,12 @@ FileDescriptorSet::file() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
 FileDescriptorSet::_internal_file() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.file_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>*
 FileDescriptorSet::_internal_mutable_file() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.file_;
 }
 
@@ -8852,6 +8856,7 @@ inline void FileDescriptorProto::clear_dependency() {
   _internal_mutable_dependency()->Clear();
 }
 inline std::string* FileDescriptorProto::add_dependency() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   std::string* _s = _internal_mutable_dependency()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.dependency)
   return _s;
@@ -8889,24 +8894,29 @@ inline void FileDescriptorProto::set_dependency(int index, absl::string_view val
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_dependency()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(std::string&& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_dependency()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const char* value) {
   ABSL_DCHECK(value != nullptr);
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_dependency()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const char* value, std::size_t size) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_dependency()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(absl::string_view value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_dependency()->Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
@@ -8917,14 +8927,17 @@ FileDescriptorProto::dependency() const {
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* FileDescriptorProto::mutable_dependency() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.dependency)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_dependency();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 FileDescriptorProto::_internal_dependency() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.dependency_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 FileDescriptorProto::_internal_mutable_dependency() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.dependency_;
 }
 
@@ -8947,6 +8960,7 @@ inline void FileDescriptorProto::set_public_dependency(int index, ::int32_t valu
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.public_dependency)
 }
 inline void FileDescriptorProto::add_public_dependency(::int32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_public_dependency()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.public_dependency)
 }
@@ -8956,13 +8970,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_public_dependency() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.public_dependency)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_public_dependency();
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_public_dependency() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.public_dependency_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::_internal_mutable_public_dependency() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.public_dependency_;
 }
 
@@ -8985,6 +9002,7 @@ inline void FileDescriptorProto::set_weak_dependency(int index, ::int32_t value)
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.weak_dependency)
 }
 inline void FileDescriptorProto::add_weak_dependency(::int32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_weak_dependency()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.weak_dependency)
 }
@@ -8994,13 +9012,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_weak_dependency() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.weak_dependency)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_weak_dependency();
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_weak_dependency() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.weak_dependency_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::_internal_mutable_weak_dependency() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.weak_dependency_;
 }
 
@@ -9021,6 +9042,7 @@ inline ::google::protobuf::DescriptorProto* FileDescriptorProto::mutable_message
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >*
 FileDescriptorProto::mutable_message_type() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.message_type)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_message_type();
 }
 inline const ::google::protobuf::DescriptorProto& FileDescriptorProto::message_type(int index) const {
@@ -9028,6 +9050,7 @@ inline const ::google::protobuf::DescriptorProto& FileDescriptorProto::message_t
     return _internal_message_type().Get(index);
 }
 inline ::google::protobuf::DescriptorProto* FileDescriptorProto::add_message_type() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::DescriptorProto* _add = _internal_mutable_message_type()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.message_type)
   return _add;
@@ -9039,10 +9062,12 @@ FileDescriptorProto::message_type() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>&
 FileDescriptorProto::_internal_message_type() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.message_type_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>*
 FileDescriptorProto::_internal_mutable_message_type() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.message_type_;
 }
 
@@ -9063,6 +9088,7 @@ inline ::google::protobuf::EnumDescriptorProto* FileDescriptorProto::mutable_enu
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >*
 FileDescriptorProto::mutable_enum_type() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.enum_type)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_enum_type();
 }
 inline const ::google::protobuf::EnumDescriptorProto& FileDescriptorProto::enum_type(int index) const {
@@ -9070,6 +9096,7 @@ inline const ::google::protobuf::EnumDescriptorProto& FileDescriptorProto::enum_
     return _internal_enum_type().Get(index);
 }
 inline ::google::protobuf::EnumDescriptorProto* FileDescriptorProto::add_enum_type() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.enum_type)
   return _add;
@@ -9081,10 +9108,12 @@ FileDescriptorProto::enum_type() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>&
 FileDescriptorProto::_internal_enum_type() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.enum_type_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>*
 FileDescriptorProto::_internal_mutable_enum_type() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.enum_type_;
 }
 
@@ -9105,6 +9134,7 @@ inline ::google::protobuf::ServiceDescriptorProto* FileDescriptorProto::mutable_
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto >*
 FileDescriptorProto::mutable_service() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.service)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_service();
 }
 inline const ::google::protobuf::ServiceDescriptorProto& FileDescriptorProto::service(int index) const {
@@ -9112,6 +9142,7 @@ inline const ::google::protobuf::ServiceDescriptorProto& FileDescriptorProto::se
     return _internal_service().Get(index);
 }
 inline ::google::protobuf::ServiceDescriptorProto* FileDescriptorProto::add_service() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::ServiceDescriptorProto* _add = _internal_mutable_service()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.service)
   return _add;
@@ -9123,10 +9154,12 @@ FileDescriptorProto::service() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>&
 FileDescriptorProto::_internal_service() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.service_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>*
 FileDescriptorProto::_internal_mutable_service() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.service_;
 }
 
@@ -9147,6 +9180,7 @@ inline ::google::protobuf::FieldDescriptorProto* FileDescriptorProto::mutable_ex
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
 FileDescriptorProto::mutable_extension() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.extension)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_extension();
 }
 inline const ::google::protobuf::FieldDescriptorProto& FileDescriptorProto::extension(int index) const {
@@ -9154,6 +9188,7 @@ inline const ::google::protobuf::FieldDescriptorProto& FileDescriptorProto::exte
     return _internal_extension().Get(index);
 }
 inline ::google::protobuf::FieldDescriptorProto* FileDescriptorProto::add_extension() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.extension)
   return _add;
@@ -9165,10 +9200,12 @@ FileDescriptorProto::extension() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>&
 FileDescriptorProto::_internal_extension() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.extension_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>*
 FileDescriptorProto::_internal_mutable_extension() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.extension_;
 }
 
@@ -9760,6 +9797,7 @@ inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::mutable_field(
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
 DescriptorProto::mutable_field() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.field)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_field();
 }
 inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::field(int index) const {
@@ -9767,6 +9805,7 @@ inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::field(in
     return _internal_field().Get(index);
 }
 inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::add_field() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_field()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.field)
   return _add;
@@ -9778,10 +9817,12 @@ DescriptorProto::field() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>&
 DescriptorProto::_internal_field() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.field_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>*
 DescriptorProto::_internal_mutable_field() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.field_;
 }
 
@@ -9802,6 +9843,7 @@ inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::mutable_extens
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
 DescriptorProto::mutable_extension() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.extension)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_extension();
 }
 inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::extension(int index) const {
@@ -9809,6 +9851,7 @@ inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::extensio
     return _internal_extension().Get(index);
 }
 inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::add_extension() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension)
   return _add;
@@ -9820,10 +9863,12 @@ DescriptorProto::extension() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>&
 DescriptorProto::_internal_extension() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.extension_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>*
 DescriptorProto::_internal_mutable_extension() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.extension_;
 }
 
@@ -9844,6 +9889,7 @@ inline ::google::protobuf::DescriptorProto* DescriptorProto::mutable_nested_type
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >*
 DescriptorProto::mutable_nested_type() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.nested_type)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_nested_type();
 }
 inline const ::google::protobuf::DescriptorProto& DescriptorProto::nested_type(int index) const {
@@ -9851,6 +9897,7 @@ inline const ::google::protobuf::DescriptorProto& DescriptorProto::nested_type(i
     return _internal_nested_type().Get(index);
 }
 inline ::google::protobuf::DescriptorProto* DescriptorProto::add_nested_type() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::DescriptorProto* _add = _internal_mutable_nested_type()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.nested_type)
   return _add;
@@ -9862,10 +9909,12 @@ DescriptorProto::nested_type() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>&
 DescriptorProto::_internal_nested_type() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.nested_type_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>*
 DescriptorProto::_internal_mutable_nested_type() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.nested_type_;
 }
 
@@ -9886,6 +9935,7 @@ inline ::google::protobuf::EnumDescriptorProto* DescriptorProto::mutable_enum_ty
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >*
 DescriptorProto::mutable_enum_type() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.enum_type)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_enum_type();
 }
 inline const ::google::protobuf::EnumDescriptorProto& DescriptorProto::enum_type(int index) const {
@@ -9893,6 +9943,7 @@ inline const ::google::protobuf::EnumDescriptorProto& DescriptorProto::enum_type
     return _internal_enum_type().Get(index);
 }
 inline ::google::protobuf::EnumDescriptorProto* DescriptorProto::add_enum_type() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.enum_type)
   return _add;
@@ -9904,10 +9955,12 @@ DescriptorProto::enum_type() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>&
 DescriptorProto::_internal_enum_type() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.enum_type_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>*
 DescriptorProto::_internal_mutable_enum_type() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.enum_type_;
 }
 
@@ -9928,6 +9981,7 @@ inline ::google::protobuf::DescriptorProto_ExtensionRange* DescriptorProto::muta
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange >*
 DescriptorProto::mutable_extension_range() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.extension_range)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_extension_range();
 }
 inline const ::google::protobuf::DescriptorProto_ExtensionRange& DescriptorProto::extension_range(int index) const {
@@ -9935,6 +9989,7 @@ inline const ::google::protobuf::DescriptorProto_ExtensionRange& DescriptorProto
     return _internal_extension_range().Get(index);
 }
 inline ::google::protobuf::DescriptorProto_ExtensionRange* DescriptorProto::add_extension_range() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::DescriptorProto_ExtensionRange* _add = _internal_mutable_extension_range()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension_range)
   return _add;
@@ -9946,10 +10001,12 @@ DescriptorProto::extension_range() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>&
 DescriptorProto::_internal_extension_range() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.extension_range_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>*
 DescriptorProto::_internal_mutable_extension_range() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.extension_range_;
 }
 
@@ -9970,6 +10027,7 @@ inline ::google::protobuf::OneofDescriptorProto* DescriptorProto::mutable_oneof_
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto >*
 DescriptorProto::mutable_oneof_decl() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.oneof_decl)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_oneof_decl();
 }
 inline const ::google::protobuf::OneofDescriptorProto& DescriptorProto::oneof_decl(int index) const {
@@ -9977,6 +10035,7 @@ inline const ::google::protobuf::OneofDescriptorProto& DescriptorProto::oneof_de
     return _internal_oneof_decl().Get(index);
 }
 inline ::google::protobuf::OneofDescriptorProto* DescriptorProto::add_oneof_decl() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::OneofDescriptorProto* _add = _internal_mutable_oneof_decl()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.oneof_decl)
   return _add;
@@ -9988,10 +10047,12 @@ DescriptorProto::oneof_decl() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>&
 DescriptorProto::_internal_oneof_decl() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.oneof_decl_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>*
 DescriptorProto::_internal_mutable_oneof_decl() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.oneof_decl_;
 }
 
@@ -10102,6 +10163,7 @@ inline ::google::protobuf::DescriptorProto_ReservedRange* DescriptorProto::mutab
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ReservedRange >*
 DescriptorProto::mutable_reserved_range() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_range)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_reserved_range();
 }
 inline const ::google::protobuf::DescriptorProto_ReservedRange& DescriptorProto::reserved_range(int index) const {
@@ -10109,6 +10171,7 @@ inline const ::google::protobuf::DescriptorProto_ReservedRange& DescriptorProto:
     return _internal_reserved_range().Get(index);
 }
 inline ::google::protobuf::DescriptorProto_ReservedRange* DescriptorProto::add_reserved_range() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::DescriptorProto_ReservedRange* _add = _internal_mutable_reserved_range()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_range)
   return _add;
@@ -10120,10 +10183,12 @@ DescriptorProto::reserved_range() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>&
 DescriptorProto::_internal_reserved_range() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.reserved_range_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>*
 DescriptorProto::_internal_mutable_reserved_range() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.reserved_range_;
 }
 
@@ -10138,6 +10203,7 @@ inline void DescriptorProto::clear_reserved_name() {
   _internal_mutable_reserved_name()->Clear();
 }
 inline std::string* DescriptorProto::add_reserved_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   std::string* _s = _internal_mutable_reserved_name()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.DescriptorProto.reserved_name)
   return _s;
@@ -10175,24 +10241,29 @@ inline void DescriptorProto::set_reserved_name(int index, absl::string_view valu
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(std::string&& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const char* value) {
   ABSL_DCHECK(value != nullptr);
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const char* value, std::size_t size) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(absl::string_view value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
@@ -10203,14 +10274,17 @@ DescriptorProto::reserved_name() const {
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* DescriptorProto::mutable_reserved_name() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_name)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_reserved_name();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 DescriptorProto::_internal_reserved_name() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.reserved_name_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 DescriptorProto::_internal_mutable_reserved_name() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.reserved_name_;
 }
 
@@ -10465,6 +10539,7 @@ inline ::google::protobuf::UninterpretedOption* ExtensionRangeOptions::mutable_u
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
 ExtensionRangeOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& ExtensionRangeOptions::uninterpreted_option(int index) const {
@@ -10472,6 +10547,7 @@ inline const ::google::protobuf::UninterpretedOption& ExtensionRangeOptions::uni
     return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* ExtensionRangeOptions::add_uninterpreted_option() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
   return _add;
@@ -10483,10 +10559,12 @@ ExtensionRangeOptions::uninterpreted_option() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 ExtensionRangeOptions::_internal_uninterpreted_option() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 ExtensionRangeOptions::_internal_mutable_uninterpreted_option() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -10507,6 +10585,7 @@ inline ::google::protobuf::ExtensionRangeOptions_Declaration* ExtensionRangeOpti
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::ExtensionRangeOptions_Declaration >*
 ExtensionRangeOptions::mutable_declaration() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.declaration)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_declaration();
 }
 inline const ::google::protobuf::ExtensionRangeOptions_Declaration& ExtensionRangeOptions::declaration(int index) const {
@@ -10514,6 +10593,7 @@ inline const ::google::protobuf::ExtensionRangeOptions_Declaration& ExtensionRan
     return _internal_declaration().Get(index);
 }
 inline ::google::protobuf::ExtensionRangeOptions_Declaration* ExtensionRangeOptions::add_declaration() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::ExtensionRangeOptions_Declaration* _add = _internal_mutable_declaration()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.declaration)
   return _add;
@@ -10525,10 +10605,12 @@ ExtensionRangeOptions::declaration() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>&
 ExtensionRangeOptions::_internal_declaration() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.declaration_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>*
 ExtensionRangeOptions::_internal_mutable_declaration() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.declaration_;
 }
 
@@ -11389,6 +11471,7 @@ inline ::google::protobuf::EnumValueDescriptorProto* EnumDescriptorProto::mutabl
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto >*
 EnumDescriptorProto::mutable_value() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.value)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_value();
 }
 inline const ::google::protobuf::EnumValueDescriptorProto& EnumDescriptorProto::value(int index) const {
@@ -11396,6 +11479,7 @@ inline const ::google::protobuf::EnumValueDescriptorProto& EnumDescriptorProto::
     return _internal_value().Get(index);
 }
 inline ::google::protobuf::EnumValueDescriptorProto* EnumDescriptorProto::add_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::EnumValueDescriptorProto* _add = _internal_mutable_value()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.value)
   return _add;
@@ -11407,10 +11491,12 @@ EnumDescriptorProto::value() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>&
 EnumDescriptorProto::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.value_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>*
 EnumDescriptorProto::_internal_mutable_value() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.value_;
 }
 
@@ -11521,6 +11607,7 @@ inline ::google::protobuf::EnumDescriptorProto_EnumReservedRange* EnumDescriptor
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto_EnumReservedRange >*
 EnumDescriptorProto::mutable_reserved_range() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.reserved_range)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_reserved_range();
 }
 inline const ::google::protobuf::EnumDescriptorProto_EnumReservedRange& EnumDescriptorProto::reserved_range(int index) const {
@@ -11528,6 +11615,7 @@ inline const ::google::protobuf::EnumDescriptorProto_EnumReservedRange& EnumDesc
     return _internal_reserved_range().Get(index);
 }
 inline ::google::protobuf::EnumDescriptorProto_EnumReservedRange* EnumDescriptorProto::add_reserved_range() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::EnumDescriptorProto_EnumReservedRange* _add = _internal_mutable_reserved_range()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_range)
   return _add;
@@ -11539,10 +11627,12 @@ EnumDescriptorProto::reserved_range() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>&
 EnumDescriptorProto::_internal_reserved_range() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.reserved_range_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>*
 EnumDescriptorProto::_internal_mutable_reserved_range() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.reserved_range_;
 }
 
@@ -11557,6 +11647,7 @@ inline void EnumDescriptorProto::clear_reserved_name() {
   _internal_mutable_reserved_name()->Clear();
 }
 inline std::string* EnumDescriptorProto::add_reserved_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   std::string* _s = _internal_mutable_reserved_name()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.EnumDescriptorProto.reserved_name)
   return _s;
@@ -11594,24 +11685,29 @@ inline void EnumDescriptorProto::set_reserved_name(int index, absl::string_view 
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(std::string&& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const char* value) {
   ABSL_DCHECK(value != nullptr);
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const char* value, std::size_t size) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(absl::string_view value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
@@ -11622,14 +11718,17 @@ EnumDescriptorProto::reserved_name() const {
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* EnumDescriptorProto::mutable_reserved_name() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.reserved_name)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_reserved_name();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 EnumDescriptorProto::_internal_reserved_name() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.reserved_name_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 EnumDescriptorProto::_internal_mutable_reserved_name() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.reserved_name_;
 }
 
@@ -11899,6 +11998,7 @@ inline ::google::protobuf::MethodDescriptorProto* ServiceDescriptorProto::mutabl
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto >*
 ServiceDescriptorProto::mutable_method() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ServiceDescriptorProto.method)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_method();
 }
 inline const ::google::protobuf::MethodDescriptorProto& ServiceDescriptorProto::method(int index) const {
@@ -11906,6 +12006,7 @@ inline const ::google::protobuf::MethodDescriptorProto& ServiceDescriptorProto::
     return _internal_method().Get(index);
 }
 inline ::google::protobuf::MethodDescriptorProto* ServiceDescriptorProto::add_method() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::MethodDescriptorProto* _add = _internal_mutable_method()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceDescriptorProto.method)
   return _add;
@@ -11917,10 +12018,12 @@ ServiceDescriptorProto::method() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>&
 ServiceDescriptorProto::_internal_method() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.method_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>*
 ServiceDescriptorProto::_internal_mutable_method() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.method_;
 }
 
@@ -13249,6 +13352,7 @@ inline ::google::protobuf::UninterpretedOption* FileOptions::mutable_uninterpret
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
 FileOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileOptions.uninterpreted_option)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& FileOptions::uninterpreted_option(int index) const {
@@ -13256,6 +13360,7 @@ inline const ::google::protobuf::UninterpretedOption& FileOptions::uninterpreted
     return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* FileOptions::add_uninterpreted_option() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileOptions.uninterpreted_option)
   return _add;
@@ -13267,10 +13372,12 @@ FileOptions::uninterpreted_option() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 FileOptions::_internal_uninterpreted_option() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 FileOptions::_internal_mutable_uninterpreted_option() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -13420,6 +13527,7 @@ inline ::google::protobuf::UninterpretedOption* MessageOptions::mutable_uninterp
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
 MessageOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.MessageOptions.uninterpreted_option)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& MessageOptions::uninterpreted_option(int index) const {
@@ -13427,6 +13535,7 @@ inline const ::google::protobuf::UninterpretedOption& MessageOptions::uninterpre
     return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* MessageOptions::add_uninterpreted_option() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.MessageOptions.uninterpreted_option)
   return _add;
@@ -13438,10 +13547,12 @@ MessageOptions::uninterpreted_option() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 MessageOptions::_internal_uninterpreted_option() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 MessageOptions::_internal_mutable_uninterpreted_option() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -13698,6 +13809,7 @@ inline void FieldOptions::set_targets(int index, ::google::protobuf::FieldOption
 }
 inline void FieldOptions::add_targets(::google::protobuf::FieldOptions_OptionTargetType value) {
   assert(::google::protobuf::FieldOptions_OptionTargetType_IsValid(value));
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_targets()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.targets)
 }
@@ -13707,12 +13819,15 @@ inline const ::google::protobuf::RepeatedField<int>& FieldOptions::targets() con
 }
 inline ::google::protobuf::RepeatedField<int>* FieldOptions::mutable_targets() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.targets)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_targets();
 }
 inline const ::google::protobuf::RepeatedField<int>& FieldOptions::_internal_targets() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.targets_;
 }
 inline ::google::protobuf::RepeatedField<int>* FieldOptions::_internal_mutable_targets() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.targets_;
 }
 
@@ -13733,6 +13848,7 @@ inline ::google::protobuf::UninterpretedOption* FieldOptions::mutable_uninterpre
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
 FieldOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.uninterpreted_option)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& FieldOptions::uninterpreted_option(int index) const {
@@ -13740,6 +13856,7 @@ inline const ::google::protobuf::UninterpretedOption& FieldOptions::uninterprete
     return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* FieldOptions::add_uninterpreted_option() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.uninterpreted_option)
   return _add;
@@ -13751,10 +13868,12 @@ FieldOptions::uninterpreted_option() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 FieldOptions::_internal_uninterpreted_option() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 FieldOptions::_internal_mutable_uninterpreted_option() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -13805,6 +13924,7 @@ inline ::google::protobuf::UninterpretedOption* OneofOptions::mutable_uninterpre
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
 OneofOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.OneofOptions.uninterpreted_option)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& OneofOptions::uninterpreted_option(int index) const {
@@ -13812,6 +13932,7 @@ inline const ::google::protobuf::UninterpretedOption& OneofOptions::uninterprete
     return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* OneofOptions::add_uninterpreted_option() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.OneofOptions.uninterpreted_option)
   return _add;
@@ -13823,10 +13944,12 @@ OneofOptions::uninterpreted_option() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 OneofOptions::_internal_uninterpreted_option() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 OneofOptions::_internal_mutable_uninterpreted_option() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -13926,6 +14049,7 @@ inline ::google::protobuf::UninterpretedOption* EnumOptions::mutable_uninterpret
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
 EnumOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumOptions.uninterpreted_option)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& EnumOptions::uninterpreted_option(int index) const {
@@ -13933,6 +14057,7 @@ inline const ::google::protobuf::UninterpretedOption& EnumOptions::uninterpreted
     return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* EnumOptions::add_uninterpreted_option() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumOptions.uninterpreted_option)
   return _add;
@@ -13944,10 +14069,12 @@ EnumOptions::uninterpreted_option() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 EnumOptions::_internal_uninterpreted_option() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 EnumOptions::_internal_mutable_uninterpreted_option() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -14022,6 +14149,7 @@ inline ::google::protobuf::UninterpretedOption* EnumValueOptions::mutable_uninte
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
 EnumValueOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValueOptions.uninterpreted_option)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& EnumValueOptions::uninterpreted_option(int index) const {
@@ -14029,6 +14157,7 @@ inline const ::google::protobuf::UninterpretedOption& EnumValueOptions::uninterp
     return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* EnumValueOptions::add_uninterpreted_option() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumValueOptions.uninterpreted_option)
   return _add;
@@ -14040,10 +14169,12 @@ EnumValueOptions::uninterpreted_option() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 EnumValueOptions::_internal_uninterpreted_option() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 EnumValueOptions::_internal_mutable_uninterpreted_option() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -14093,6 +14224,7 @@ inline ::google::protobuf::UninterpretedOption* ServiceOptions::mutable_uninterp
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
 ServiceOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ServiceOptions.uninterpreted_option)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& ServiceOptions::uninterpreted_option(int index) const {
@@ -14100,6 +14232,7 @@ inline const ::google::protobuf::UninterpretedOption& ServiceOptions::uninterpre
     return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* ServiceOptions::add_uninterpreted_option() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceOptions.uninterpreted_option)
   return _add;
@@ -14111,10 +14244,12 @@ ServiceOptions::uninterpreted_option() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 ServiceOptions::_internal_uninterpreted_option() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 ServiceOptions::_internal_mutable_uninterpreted_option() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -14190,6 +14325,7 @@ inline ::google::protobuf::UninterpretedOption* MethodOptions::mutable_uninterpr
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
 MethodOptions::mutable_uninterpreted_option() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.MethodOptions.uninterpreted_option)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& MethodOptions::uninterpreted_option(int index) const {
@@ -14197,6 +14333,7 @@ inline const ::google::protobuf::UninterpretedOption& MethodOptions::uninterpret
     return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* MethodOptions::add_uninterpreted_option() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.MethodOptions.uninterpreted_option)
   return _add;
@@ -14208,10 +14345,12 @@ MethodOptions::uninterpreted_option() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 MethodOptions::_internal_uninterpreted_option() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 MethodOptions::_internal_mutable_uninterpreted_option() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -14328,6 +14467,7 @@ inline ::google::protobuf::UninterpretedOption_NamePart* UninterpretedOption::mu
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart >*
 UninterpretedOption::mutable_name() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.UninterpretedOption.name)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_name();
 }
 inline const ::google::protobuf::UninterpretedOption_NamePart& UninterpretedOption::name(int index) const {
@@ -14335,6 +14475,7 @@ inline const ::google::protobuf::UninterpretedOption_NamePart& UninterpretedOpti
     return _internal_name().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption_NamePart* UninterpretedOption::add_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::UninterpretedOption_NamePart* _add = _internal_mutable_name()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.UninterpretedOption.name)
   return _add;
@@ -14346,10 +14487,12 @@ UninterpretedOption::name() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>&
 UninterpretedOption::_internal_name() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.name_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>*
 UninterpretedOption::_internal_mutable_name() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.name_;
 }
 
@@ -14640,6 +14783,7 @@ inline void SourceCodeInfo_Location::set_path(int index, ::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.path)
 }
 inline void SourceCodeInfo_Location::add_path(::int32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_path()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.path)
 }
@@ -14649,13 +14793,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Locati
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_path() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.path)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_path();
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_path() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.path_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::_internal_mutable_path() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.path_;
 }
 
@@ -14678,6 +14825,7 @@ inline void SourceCodeInfo_Location::set_span(int index, ::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.span)
 }
 inline void SourceCodeInfo_Location::add_span(::int32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_span()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.span)
 }
@@ -14687,13 +14835,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Locati
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_span() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.span)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_span();
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_span() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.span_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::_internal_mutable_span() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.span_;
 }
 
@@ -14834,6 +14985,7 @@ inline void SourceCodeInfo_Location::clear_leading_detached_comments() {
   _internal_mutable_leading_detached_comments()->Clear();
 }
 inline std::string* SourceCodeInfo_Location::add_leading_detached_comments() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   std::string* _s = _internal_mutable_leading_detached_comments()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   return _s;
@@ -14871,24 +15023,29 @@ inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, ab
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_leading_detached_comments()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(std::string&& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_leading_detached_comments()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value) {
   ABSL_DCHECK(value != nullptr);
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_leading_detached_comments()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value, std::size_t size) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_leading_detached_comments()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(absl::string_view value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_leading_detached_comments()->Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
@@ -14899,14 +15056,17 @@ SourceCodeInfo_Location::leading_detached_comments() const {
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* SourceCodeInfo_Location::mutable_leading_detached_comments() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_leading_detached_comments();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 SourceCodeInfo_Location::_internal_leading_detached_comments() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.leading_detached_comments_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 SourceCodeInfo_Location::_internal_mutable_leading_detached_comments() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.leading_detached_comments_;
 }
 
@@ -14931,6 +15091,7 @@ inline ::google::protobuf::SourceCodeInfo_Location* SourceCodeInfo::mutable_loca
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >*
 SourceCodeInfo::mutable_location() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.location)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_location();
 }
 inline const ::google::protobuf::SourceCodeInfo_Location& SourceCodeInfo::location(int index) const {
@@ -14938,6 +15099,7 @@ inline const ::google::protobuf::SourceCodeInfo_Location& SourceCodeInfo::locati
     return _internal_location().Get(index);
 }
 inline ::google::protobuf::SourceCodeInfo_Location* SourceCodeInfo::add_location() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::SourceCodeInfo_Location* _add = _internal_mutable_location()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.location)
   return _add;
@@ -14949,10 +15111,12 @@ SourceCodeInfo::location() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>&
 SourceCodeInfo::_internal_location() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.location_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>*
 SourceCodeInfo::_internal_mutable_location() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.location_;
 }
 
@@ -14979,6 +15143,7 @@ inline void GeneratedCodeInfo_Annotation::set_path(int index, ::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
 inline void GeneratedCodeInfo_Annotation::add_path(::int32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   _internal_mutable_path()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
@@ -14988,13 +15153,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Ann
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotation::mutable_path() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.GeneratedCodeInfo.Annotation.path)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_path();
 }
 
 inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::_internal_path() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.path_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotation::_internal_mutable_path() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.path_;
 }
 
@@ -15158,6 +15326,7 @@ inline ::google::protobuf::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::muta
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation >*
 GeneratedCodeInfo::mutable_annotation() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.GeneratedCodeInfo.annotation)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_annotation();
 }
 inline const ::google::protobuf::GeneratedCodeInfo_Annotation& GeneratedCodeInfo::annotation(int index) const {
@@ -15165,6 +15334,7 @@ inline const ::google::protobuf::GeneratedCodeInfo_Annotation& GeneratedCodeInfo
     return _internal_annotation().Get(index);
 }
 inline ::google::protobuf::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::add_annotation() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::GeneratedCodeInfo_Annotation* _add = _internal_mutable_annotation()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.annotation)
   return _add;
@@ -15176,10 +15346,12 @@ GeneratedCodeInfo::annotation() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>&
 GeneratedCodeInfo::_internal_annotation() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.annotation_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>*
 GeneratedCodeInfo::_internal_mutable_annotation() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.annotation_;
 }
 

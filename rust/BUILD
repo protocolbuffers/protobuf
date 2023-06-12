@@ -48,9 +48,18 @@ rust_library(
 # unittesting).
 rust_library(
     name = "protobuf_upb",
-    srcs = ["shared.rs"],
+    srcs = [
+        "proxied.rs",
+        "shared.rs",
+        "upb.rs",
+    ],
+    crate_root = "shared.rs",
     rustc_flags = ["--cfg=upb_kernel"],
-    deps = ["//rust/upb_kernel:upb"],
+    visibility = [
+        "//src/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
+    ],
+    deps = ["//rust/upb_kernel:upb_c_api"],
 )
 
 rust_test(
@@ -72,9 +81,17 @@ rust_test(
 # See the comment for `:protobuf` for discussion of `shared.rs` file.
 rust_library(
     name = "protobuf_cpp",
-    srcs = ["shared.rs"],
+    srcs = [
+        "cpp.rs",
+        "proxied.rs",
+        "shared.rs",
+    ],
+    crate_root = "shared.rs",
     rustc_flags = ["--cfg=cpp_kernel"],
-    deps = ["//rust/cpp_kernel:cpp"],
+    visibility = [
+        "//src/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
+    ],
 )
 
 rust_test(

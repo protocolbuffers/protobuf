@@ -791,6 +791,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "$annotate_mutable_list$"
       "  // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)\n"
       "$StrongRef$;"
+      "  $TsanDetectConcurrentMutation$;\n"
       "  return _internal_mutable_$name$();\n"
       "}\n");
 
@@ -808,6 +809,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           "  return _internal_$name$().$Get$(index$GetExtraArg$);\n"
           "}\n"
           "inline $Submsg$* $Msg$::add_$name$() {\n"
+          "  $TsanDetectConcurrentMutation$;\n"
           "  $Submsg$* _add = _internal_mutable_$name$()->Add();\n"
           "$annotate_add_mutable$"
           "  // @@protoc_insertion_point(field_add:$pkg.Msg.field$)\n"
@@ -826,10 +828,12 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
     inline const $pb$::RepeatedPtrField<$Submsg$>&
     $classname$::_internal_$name$() const {
+      $TsanDetectConcurrentRead$;
       return $field$$.weak$;
     }
     inline $pb$::RepeatedPtrField<$Submsg$>*
     $classname$::_internal_mutable_$name$() {
+      $TsanDetectConcurrentRead$;
       return &$field$$.weak$;
     }
   )cc");
@@ -837,6 +841,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     p->Emit(R"cc(
       inline const $pb$::WeakRepeatedPtrField<$Submsg$>&
       $Msg$::_internal_weak_$name$() const {
+        $TsanDetectConcurrentRead$;
         return $field$;
       }
       inline $pb$::WeakRepeatedPtrField<$Submsg$>*

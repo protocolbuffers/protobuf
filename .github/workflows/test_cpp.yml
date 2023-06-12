@@ -7,6 +7,9 @@ on:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+        
+permissions:
+  contents: read
 
 jobs:
   linux:
@@ -33,9 +36,10 @@ jobs:
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-3af05275178e16af30961976af126eabbbb2c733"
-          - config: { name: "Bazel4" }
-            targets: "//src/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-6361b3a6e5c97e9951d03a4de28542fc45f1adab"
+          # TODO(b/278116805) Enable this once Bazel 6 is supported.
+          #- config: { name: "Bazel6" }
+          #  targets: "//src/..."
+          #  image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.0.0-6361b3a6e5c97e9951d03a4de28542fc45f1adab"
     name: Linux ${{ matrix.config.name }}
     runs-on: ubuntu-latest
     steps:
@@ -348,13 +352,16 @@ jobs:
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2019'
-          - name: Windows CMake 2022
-            os: windows-2022
-            flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
-              -Dprotobuf_BUILD_SHARED_LIBS=OFF
-              -Dprotobuf_BUILD_EXAMPLES=ON
-            vsversion: '2022'
+          # TODO(b/285566773) Re-enable this test.
+          # This is broken due to a github runner update.
+          # See https://github.com/actions/runner-images/issues/7662 for more details
+          #- name: Windows CMake 2022
+          #  os: windows-2022
+          #  flags: >-
+          #    -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+          #    -Dprotobuf_BUILD_SHARED_LIBS=OFF
+          #    -Dprotobuf_BUILD_EXAMPLES=ON
+          #  vsversion: '2022'
           - name: Windows CMake Shared
             os: windows-2019
             flags: >-

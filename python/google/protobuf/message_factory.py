@@ -104,7 +104,13 @@ def GetMessageClassesForFiles(files, pool):
 
     for extension in file_desc.extensions_by_name.values():
       extended_class = GetMessageClass(extension.containing_type)
-      extended_class.RegisterExtension(extension)
+      if api_implementation.Type() != 'python':
+        # TODO(b/286443080): Remove this check here. Duplicate extension
+        # register check should be in descriptor_pool.
+        if extension is not pool.FindExtensionByNumber(
+            extension.containing_type, extension.number
+        ):
+          raise ValueError('Double registration of Extensions')
       # Recursively load protos for extension field, in order to be able to
       # fully represent the extension. This matches the behavior for regular
       # fields too.
@@ -136,7 +142,14 @@ def _InternalCreateMessageClass(descriptor):
       GetMessageClass(field.message_type)
   for extension in result_class.DESCRIPTOR.extensions:
     extended_class = GetMessageClass(extension.containing_type)
-    extended_class.RegisterExtension(extension)
+    if api_implementation.Type() != 'python':
+      # TODO(b/286443080): Remove this check here. Duplicate extension
+      # register check should be in descriptor_pool.
+      pool = extension.containing_type.file.pool
+      if extension is not pool.FindExtensionByNumber(
+          extension.containing_type, extension.number
+      ):
+        raise ValueError('Double registration of Extensions')
     if extension.message_type:
       GetMessageClass(extension.message_type)
   return result_class

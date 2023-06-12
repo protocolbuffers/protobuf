@@ -3563,6 +3563,48 @@ void MethodDescriptor::DebugString(
   comment_printer.AddPostComment(contents);
 }
 
+// Feature methods ===============================================
+
+bool EnumDescriptor::is_closed() const {
+  PROTOBUF_IGNORE_DEPRECATION_START
+  return file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+}
+
+bool FieldDescriptor::is_packed() const {
+  if (!is_packable()) return false;
+  if (FileDescriptorLegacy(file_).syntax() ==
+      FileDescriptorLegacy::Syntax::SYNTAX_PROTO2) {
+    return (options_ != nullptr) && options_->packed();
+  } else {
+    return options_ == nullptr || !options_->has_packed() || options_->packed();
+  }
+}
+
+static bool FieldEnforceUtf8(const FieldDescriptor* field) {
+  return
+      FileDescriptorLegacy(field->file()).syntax() ==
+      FileDescriptorLegacy::Syntax::SYNTAX_PROTO3;
+}
+
+bool FieldDescriptor::requires_utf8_validation() const {
+  return type() == TYPE_STRING && FieldEnforceUtf8(this);
+}
+
+bool FieldDescriptor::has_presence() const {
+  if (is_repeated()) return false;
+  return cpp_type() == CPPTYPE_MESSAGE || containing_oneof() ||
+         FileDescriptorLegacy(file_).syntax() ==
+             FileDescriptorLegacy::Syntax::SYNTAX_PROTO2;
+}
+
+bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
+  return type() == TYPE_ENUM &&
+         (FileDescriptorLegacy(file_).syntax() ==
+              FileDescriptorLegacy::Syntax::SYNTAX_PROTO2 ||
+          enum_type()->is_closed());
+}
+
 // Location methods ===============================================
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
@@ -3593,22 +3635,6 @@ bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
 bool FileDescriptor::GetSourceLocation(SourceLocation* out_location) const {
   std::vector<int> path;  // empty path for root FileDescriptor
   return GetSourceLocation(path, out_location);
-}
-
-bool FieldDescriptor::is_packed() const {
-  if (!is_packable()) return false;
-  if (FileDescriptorLegacy(file_).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_PROTO2) {
-    return (options_ != nullptr) && options_->packed();
-  } else {
-    return options_ == nullptr || !options_->has_packed() || options_->packed();
-  }
-}
-
-bool FieldDescriptor::requires_utf8_validation() const {
-  return type() == TYPE_STRING &&
-         FileDescriptorLegacy(file_).syntax() ==
-             FileDescriptorLegacy::Syntax::SYNTAX_PROTO3;
 }
 
 bool Descriptor::GetSourceLocation(SourceLocation* out_location) const {
@@ -4023,6 +4049,7 @@ class DescriptorBuilder {
                                     const Descriptor* result);
   void CheckFieldJsonNameUniqueness(const std::string& message_name,
                                     const DescriptorProto& message,
+                                    const Descriptor* descriptor,
                                     FileDescriptorLegacy::Syntax syntax,
                                     bool use_custom_names);
   void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
@@ -4060,9 +4087,6 @@ class DescriptorBuilder {
                                  absl::string_view declared_type_name,
                                  bool is_repeated);
 
-  // Must be run only after cross-linking.
-  void InterpretOptions();
-
   // A helper class for interpreting options.
   class OptionInterpreter {
    public:
@@ -4087,15 +4111,21 @@ class DescriptorBuilder {
     class AggregateOptionFinder;
 
    private:
+    bool InterpretOptionsImpl(OptionsToInterpret* options_to_interpret,
+                              bool features);
+
     // Interprets uninterpreted_option_ on the specified message, which
     // must be the mutable copy of the original options message to which
     // uninterpreted_option_ belongs. The given src_path is the source
     // location path to the uninterpreted option, and options_path is the
     // source location path to the options message. The location paths are
     // recorded and then used in UpdateSourceCodeInfo.
+    // The features boolean controls whether or not we should only interpret
+    // feature options or skip them entirely.
     bool InterpretSingleOption(Message* options,
                                const std::vector<int>& src_path,
-                               const std::vector<int>& options_path);
+                               const std::vector<int>& options_path,
+                               bool features);
 
     // Adds the uninterpreted_option to the given options message verbatim.
     // Used when AllowUnknownDependencies() is in effect and we can't find
@@ -5478,6 +5508,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     SuggestFieldNumbers(result, proto);
   }
 
+
   // Interpret any remaining uninterpreted options gathered into
   // options_to_interpret_ during descriptor building.  Cross-linking has made
   // extension options known, so all interpretations should now succeed.
@@ -5493,7 +5524,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       option_interpreter.UpdateSourceCodeInfo(info);
     }
   }
-
 
   // Validate options. See comments at InternalSetLazilyBuildDependencies about
   // error checking and lazy import building.
@@ -5744,13 +5774,13 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     if (syntax == FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
       // Only check default JSON names for conflicts in proto3.  This is legacy
       // behavior that will be removed in a later version.
-      CheckFieldJsonNameUniqueness(message_name, proto, syntax, false);
+      CheckFieldJsonNameUniqueness(message_name, proto, result, syntax, false);
     }
   } else {
     // Check both with and without taking json_name into consideration.  This is
     // needed for field masks, which don't use json_name.
-    CheckFieldJsonNameUniqueness(message_name, proto, syntax, false);
-    CheckFieldJsonNameUniqueness(message_name, proto, syntax, true);
+    CheckFieldJsonNameUniqueness(message_name, proto, result, syntax, false);
+    CheckFieldJsonNameUniqueness(message_name, proto, result, syntax, true);
   }
 }
 
@@ -5781,7 +5811,8 @@ bool JsonNameLooksLikeExtension(std::string name) {
 
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const std::string& message_name, const DescriptorProto& message,
-    FileDescriptorLegacy::Syntax syntax, bool use_custom_names) {
+    const Descriptor* descriptor, FileDescriptorLegacy::Syntax syntax,
+    bool use_custom_names) {
   absl::flat_hash_map<std::string, JsonNameDetails> name_to_field;
   for (const FieldDescriptorProto& field : message.field()) {
     JsonNameDetails details = GetJsonNameDetails(&field, use_custom_names);
@@ -5884,7 +5915,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->label_ = static_cast<FieldDescriptor::Label>(
       absl::implicit_cast<int>(proto.label()));
 
-  if (result->label_ == FieldDescriptor::LABEL_REQUIRED) {
+  if (result->is_required()) {
     // An extension cannot have a required field (b/13365836).
     if (result->is_extension_) {
       AddError(result->full_name(), proto,
@@ -7738,6 +7769,10 @@ DescriptorBuilder::OptionInterpreter::~OptionInterpreter() {}
 
 bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
     OptionsToInterpret* options_to_interpret) {
+  return InterpretOptionsImpl(options_to_interpret, /*features=*/false);
+}
+bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
+    OptionsToInterpret* options_to_interpret, bool features) {
   // Note that these may be in different pools, so we can't use the same
   // descriptor and reflection objects on both.
   Message* options = options_to_interpret->options;
@@ -7773,7 +7808,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
         &original_options->GetReflection()->GetRepeatedMessage(
             *original_options, original_uninterpreted_options_field, i));
     if (!InterpretSingleOption(options, src_path,
-                               options_to_interpret->element_path)) {
+                               options_to_interpret->element_path, features)) {
       // Error already added by InterpretSingleOption().
       failed = true;
       break;
@@ -7823,7 +7858,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
 
 bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     Message* options, const std::vector<int>& src_path,
-    const std::vector<int>& options_path) {
+    const std::vector<int>& options_path, bool features) {
   // First do some basic validation.
   if (uninterpreted_option_->name_size() == 0) {
     // This should never happen unless the parser has gone seriously awry or
@@ -7835,6 +7870,13 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     return AddNameError([]() -> std::string {
       return "Option must not use reserved name \"uninterpreted_option\".";
     });
+  }
+  if (features != (uninterpreted_option_->name(0).name_part() == "features")) {
+    // Allow feature and option interpretation to occur in two phases.  This is
+    // necessary because features *are* options and need to be interpreted
+    // before resolving them.  However, options can also *have* features
+    // attached to them.
+    return true;
   }
 
   const Descriptor* options_descriptor = nullptr;
@@ -8847,16 +8889,16 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
 
 namespace cpp {
 bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
-  return !field->legacy_enum_field_treated_as_closed();
+  if (field->legacy_enum_field_treated_as_closed()) {
+    return false;
+  }
+
+  return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
 bool HasHasbit(const FieldDescriptor* field) {
   return field->has_presence() && !field->real_containing_oneof() &&
          !field->options().weak();
-}
-
-static bool FieldEnforceUtf8(const FieldDescriptor* field) {
-  return true;
 }
 
 static bool FileUtf8Verification(const FileDescriptor* file) {
@@ -8865,9 +8907,7 @@ static bool FileUtf8Verification(const FileDescriptor* file) {
 
 // Which level of UTF-8 enforcemant is placed on this file.
 Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
-  if (FileDescriptorLegacy(field->file()).syntax() ==
-          FileDescriptorLegacy::Syntax::SYNTAX_PROTO3 &&
-      FieldEnforceUtf8(field)) {
+  if (FieldEnforceUtf8(field)) {
     return Utf8CheckMode::kStrict;
   } else if (!is_lite && FileUtf8Verification(field->file())) {
     return Utf8CheckMode::kVerify;

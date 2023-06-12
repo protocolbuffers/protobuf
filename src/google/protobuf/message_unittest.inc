@@ -72,6 +72,9 @@
 #include "google/protobuf/test_util2.h"
 
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 
@@ -1431,7 +1434,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
 
   constexpr int kInvalidValue = 0x900913;
   auto* ref = obj.GetReflection();
-  auto* descriptor = obj.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
   for (bool use_packed : {false, true}) {
     SCOPED_TRACE(use_packed);
     for (bool use_tail_field : {false, true}) {
@@ -1528,7 +1531,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParserForUnknownEnumValue) {
   // For unknown enum values, for consistency we must include the
   // int32_t enum value in the unknown field set, which might not be exactly the
   // same as the input.
-  auto* descriptor = non_dynamic.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = non_dynamic.descriptor();
 
   const std::vector<const FieldDescriptor*> fields =
       GetFields<UNITTEST::EnumParseTester>();
@@ -1590,7 +1593,7 @@ TEST(MESSAGE_TEST_NAME, TestBoolParsers) {
       GetFields<UNITTEST::BoolParseTester>();
 
   auto* ref = obj.GetReflection();
-  auto* descriptor = obj.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1654,7 +1657,7 @@ TEST(MESSAGE_TEST_NAME, TestInt32Parsers) {
       GetFields<UNITTEST::Int32ParseTester>();
 
   auto* ref = obj.GetReflection();
-  auto* descriptor = obj.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1719,7 +1722,7 @@ TEST(MESSAGE_TEST_NAME, TestInt64Parsers) {
       GetFields<UNITTEST::Int64ParseTester>();
 
   auto* ref = obj.GetReflection();
-  auto* descriptor = obj.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1875,7 +1878,8 @@ TEST(MESSAGE_TEST_NAME, TestRepeatedStringParsers) {
       "abcdefghijklmnopqrstuvwxyz"
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  const auto* const descriptor = UNITTEST::StringParseTester::descriptor();
+  PROTOBUF_UNUSED const auto* const descriptor =
+      UNITTEST::StringParseTester::descriptor();
 
   const std::vector<const FieldDescriptor*> fields =
       GetFields<UNITTEST::StringParseTester>();
@@ -1957,3 +1961,5 @@ TEST(MESSAGE_TEST_NAME, TestRegressionOnParseFailureNotSettingHasBits) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

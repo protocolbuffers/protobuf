@@ -809,6 +809,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
             }}},
           R"cc(
             inline std::string* $Msg$::add_$name$() {
+              $TsanDetectConcurrentMutation$;
               std::string* _s = _internal_mutable_$name$()->Add();
               $annotate_add_mutable$;
               // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
@@ -854,28 +855,33 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
               // @@protoc_insertion_point(field_set_string_piece:$pkg.Msg.field$)
             }
             inline void $Msg$::add_$name$(const std::string& value) {
+              $TsanDetectConcurrentMutation$;
               _internal_mutable_$name$()->Add()->assign(value);
               $annotate_add$;
               // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
             }
             inline void $Msg$::add_$name$(std::string&& value) {
+              $TsanDetectConcurrentMutation$;
               _internal_mutable_$name$()->Add(std::move(value));
               $annotate_add$;
               // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
             }
             inline void $Msg$::add_$name$(const char* value) {
               $DCHK$(value != nullptr);
+              $TsanDetectConcurrentMutation$;
               _internal_mutable_$name$()->Add()->assign(value);
               $annotate_add$;
               // @@protoc_insertion_point(field_add_char:$pkg.Msg.field$)
             }
             inline void $Msg$::add_$name$(const $byte$* value, std::size_t size) {
+              $TsanDetectConcurrentMutation$;
               _internal_mutable_$name$()->Add()->assign(
                   reinterpret_cast<const char*>(value), size);
               $annotate_add$;
               // @@protoc_insertion_point(field_add_pointer:$pkg.Msg.field$)
             }
             inline void $Msg$::add_$name$(absl::string_view value) {
+              $TsanDetectConcurrentMutation$;
               _internal_mutable_$name$()->Add()->assign(value.data(), value.size());
               $annotate_add$;
               // @@protoc_insertion_point(field_add_string_piece:$pkg.Msg.field$)
@@ -889,14 +895,17 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
             inline ::$proto_ns$::RepeatedPtrField<std::string>* $Msg$::mutable_$name$() {
               $annotate_mutable_list$;
               // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+              $TsanDetectConcurrentMutation$;
               return _internal_mutable_$name$();
             }
             inline const ::$proto_ns$::RepeatedPtrField<std::string>&
             $Msg$::_internal_$name$() const {
+              $TsanDetectConcurrentRead$;
               return $field_$;
             }
             inline ::$proto_ns$::RepeatedPtrField<std::string>*
             $Msg$::_internal_mutable_$name$() {
+              $TsanDetectConcurrentRead$;
               return &$field_$;
             }
           )cc");

@@ -8,6 +8,9 @@ on:
         description: "The SHA key for the commit we want to run over"
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   linux:
     name: Linux
@@ -25,6 +28,5 @@ jobs:
           bazel-cache: rust_linux
           bazel: |
             test //rust:protobuf_upb_test //rust:protobuf_cpp_test \
-              //rust/upb_kernel:upb_test //rust/cpp_kernel:cpp_test \
               //rust/test/rust_proto_library_unit_test:rust_upb_aspect_test \
-              //rust/upb_kernel:upb_test //src/google/protobuf/compiler/rust/...
+              //src/google/protobuf/compiler/rust/...

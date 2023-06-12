@@ -800,10 +800,13 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   bool is_repeated() const;  // shorthand for label() == LABEL_REPEATED
   bool is_packable() const;  // shorthand for is_repeated() &&
                              //               IsTypePackable(type())
-  bool is_packed() const;    // shorthand for is_packable() &&
-                             //               options().packed()
   bool is_map() const;       // shorthand for type() == TYPE_MESSAGE &&
                              // message_type()->options().map_entry()
+
+  // Whether or not this field is packable and packed.  In proto2, packable
+  // fields must have `packed = true` specified.  In proto3, all packable fields
+  // are packed by default unless `packed = false` is specified.
+  bool is_packed() const;
 
   // Returns true if this field tracks presence, ie. does the field
   // distinguish between "unset" and "present with default value."
@@ -2398,12 +2401,6 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
                                const EnumDescriptor::ReservedRange*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
 
-inline bool EnumDescriptor::is_closed() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  return file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-}
-
 PROTOBUF_DEFINE_NAME_ACCESSOR(EnumValueDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, type, const EnumDescriptor*)
@@ -2563,21 +2560,6 @@ inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
   PROTOBUF_IGNORE_DEPRECATION_START
   auto* oneof = containing_oneof();
   return oneof && !oneof->is_synthetic() ? oneof : nullptr;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-}
-
-inline bool FieldDescriptor::has_presence() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  if (is_repeated()) return false;
-  return cpp_type() == CPPTYPE_MESSAGE || containing_oneof() ||
-         file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-}
-
-inline bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  return type() == TYPE_ENUM &&
-         file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
   PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 

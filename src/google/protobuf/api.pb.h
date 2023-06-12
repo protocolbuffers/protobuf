@@ -868,6 +868,7 @@ inline ::google::protobuf::Method* Api::mutable_methods(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
 Api::mutable_methods() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_methods();
 }
 inline const ::google::protobuf::Method& Api::methods(int index) const {
@@ -875,6 +876,7 @@ inline const ::google::protobuf::Method& Api::methods(int index) const {
     return _internal_methods().Get(index);
 }
 inline ::google::protobuf::Method* Api::add_methods() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::Method* _add = _internal_mutable_methods()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.methods)
   return _add;
@@ -886,10 +888,12 @@ Api::methods() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>&
 Api::_internal_methods() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.methods_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>*
 Api::_internal_mutable_methods() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.methods_;
 }
 
@@ -907,6 +911,7 @@ inline ::google::protobuf::Option* Api::mutable_options(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Api::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_options();
 }
 inline const ::google::protobuf::Option& Api::options(int index) const {
@@ -914,6 +919,7 @@ inline const ::google::protobuf::Option& Api::options(int index) const {
     return _internal_options().Get(index);
 }
 inline ::google::protobuf::Option* Api::add_options() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.options)
   return _add;
@@ -925,10 +931,12 @@ Api::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Api::_internal_options() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Api::_internal_mutable_options() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.options_;
 }
 
@@ -1080,6 +1088,7 @@ inline ::google::protobuf::Mixin* Api::mutable_mixins(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
 Api::mutable_mixins() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_mixins();
 }
 inline const ::google::protobuf::Mixin& Api::mixins(int index) const {
@@ -1087,6 +1096,7 @@ inline const ::google::protobuf::Mixin& Api::mixins(int index) const {
     return _internal_mixins().Get(index);
 }
 inline ::google::protobuf::Mixin* Api::add_mixins() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::Mixin* _add = _internal_mutable_mixins()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.mixins)
   return _add;
@@ -1098,10 +1108,12 @@ Api::mixins() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>&
 Api::_internal_mixins() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.mixins_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>*
 Api::_internal_mutable_mixins() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.mixins_;
 }
 
@@ -1318,6 +1330,7 @@ inline ::google::protobuf::Option* Method::mutable_options(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Method::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
+  PROTOBUF_TSAN_WRITE(&_impl_);
   return _internal_mutable_options();
 }
 inline const ::google::protobuf::Option& Method::options(int index) const {
@@ -1325,6 +1338,7 @@ inline const ::google::protobuf::Option& Method::options(int index) const {
     return _internal_options().Get(index);
 }
 inline ::google::protobuf::Option* Method::add_options() {
+  PROTOBUF_TSAN_WRITE(&_impl_);
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Method.options)
   return _add;
@@ -1336,10 +1350,12 @@ Method::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Method::_internal_options() const {
+  PROTOBUF_TSAN_READ(&_impl_);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Method::_internal_mutable_options() {
+  PROTOBUF_TSAN_READ(&_impl_);
   return &_impl_.options_;
 }
 

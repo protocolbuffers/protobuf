@@ -218,6 +218,7 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
 void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
     inline const $Map$& $Msg$::_internal_$name$() const {
+      $TsanDetectConcurrentRead$;
       return $field_$.GetMap();
     }
     inline const $Map$& $Msg$::$name$() const {
@@ -227,6 +228,7 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
     inline $Map$* $Msg$::_internal_mutable_$name$() {
       $PrepareSplitMessageForWrite$;
+      $TsanDetectConcurrentMutation$;
       return $field_$.MutableMap();
     }
     inline $Map$* $Msg$::mutable_$name$() {

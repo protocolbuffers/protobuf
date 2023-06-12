@@ -472,6 +472,15 @@ struct MapSorterIt {
   MapSorterIt operator+(int v) { return MapSorterIt{ptr + v}; }
 };
 
+// Defined outside of MapSorterFlat to only be templatized on the key.
+template <typename KeyT>
+struct MapSorterLessThan {
+  using storage_type = std::pair<KeyT, const void*>;
+  bool operator()(const storage_type& a, const storage_type& b) const {
+    return a.first < b.first;
+  }
+};
+
 // MapSorterFlat stores keys inline with pointers to map entries, so that
 // keys can be compared without indirection. This type is used for maps with
 // keys that are not strings.
@@ -479,7 +488,10 @@ template <typename MapT>
 class MapSorterFlat {
  public:
   using value_type = typename MapT::value_type;
-  using storage_type = std::pair<typename MapT::key_type, const value_type*>;
+  // To avoid code bloat we don't put `value_type` in `storage_type`. It is not
+  // necessary for the call to sort, and avoiding it prevents unnecessary
+  // separate instantiations of sort.
+  using storage_type = std::pair<typename MapT::key_type, const void*>;
 
   // This const_iterator dereferenes to the map entry stored in the sorting
   // array pairs. This is the same interface as the Map::const_iterator type,
@@ -491,7 +503,9 @@ class MapSorterFlat {
     using reference = const typename MapT::value_type&;
     using MapSorterIt<storage_type>::MapSorterIt;
 
-    pointer operator->() const { return this->ptr->second; }
+    pointer operator->() const {
+      return static_cast<const value_type*>(this->ptr->second);
+    }
     reference operator*() const { return *this->operator->(); }
   };
 
@@ -503,9 +517,7 @@ class MapSorterFlat {
       *it++ = {entry.first, &entry};
     }
     std::sort(&items_[0], &items_[size_],
-              [](const storage_type& a, const storage_type& b) {
-                return a.first < b.first;
-              });
+              MapSorterLessThan<typename MapT::key_type>{});
   }
   size_t size() const { return size_; }
   const_iterator begin() const { return {items_.get()}; }
@@ -516,13 +528,27 @@ class MapSorterFlat {
   std::unique_ptr<storage_type[]> items_;
 };
 
+// Defined outside of MapSorterPtr to only be templatized on the key.
+template <typename KeyT>
+struct MapSorterPtrLessThan {
+  bool operator()(const void* a, const void* b) const {
+    // The pointers point to the `std::pair<const Key, Value>` object.
+    // We cast directly to the key to read it.
+    return *reinterpret_cast<const KeyT*>(a) <
+           *reinterpret_cast<const KeyT*>(b);
+  }
+};
+
 // MapSorterPtr stores and sorts pointers to map entries. This type is used for
 // maps with keys that are strings.
 template <typename MapT>
 class MapSorterPtr {
  public:
   using value_type = typename MapT::value_type;
-  using storage_type = const typename MapT::value_type*;
+  // To avoid code bloat we don't put `value_type` in `storage_type`. It is not
+  // necessary for the call to sort, and avoiding it prevents unnecessary
+  // separate instantiations of sort.
+  using storage_type = const void*;
 
   // This const_iterator dereferenes the map entry pointer stored in the sorting
   // array. This is the same interface as the Map::const_iterator type, and
@@ -534,7 +560,9 @@ class MapSorterPtr {
     using reference = const typename MapT::value_type&;
     using MapSorterIt<storage_type>::MapSorterIt;
 
-    pointer operator->() const { return *this->ptr; }
+    pointer operator->() const {
+      return static_cast<const value_type*>(*this->ptr);
+    }
     reference operator*() const { return *this->operator->(); }
   };
 
@@ -545,10 +573,10 @@ class MapSorterPtr {
     for (const auto& entry : m) {
       *it++ = &entry;
     }
+    static_assert(PROTOBUF_FIELD_OFFSET(typename MapT::value_type, first) == 0,
+                  "Must hold for MapSorterPtrLessThan to work.");
     std::sort(&items_[0], &items_[size_],
-              [](const storage_type& a, const storage_type& b) {
-                return a->first < b->first;
-              });
+              MapSorterPtrLessThan<typename MapT::key_type>{});
   }
   size_t size() const { return size_; }
   const_iterator begin() const { return {items_.get()}; }

@@ -82,6 +82,8 @@ using internal::ScopedReflectionMode;
 
 namespace {
 
+const absl::string_view kFieldValueReplacement = "[REDACTED]";
+
 inline bool IsHexNumber(const std::string& str) {
   return (str.length() >= 2 && str[0] == '0' &&
           (str[1] == 'x' || str[1] == 'X'));
@@ -114,6 +116,10 @@ const char kDebugStringSilentMarkerForDetection[] = "\t ";
 
 // Controls insertion of kDebugStringSilentMarker into DebugString() output.
 PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
+
+// Controls insertion of a marker making debug strings non-parseable, and
+// redacting annotated fields.
+PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_redaction{true};
 
 int64_t GetRedactedFieldCount() {
   return num_redacted_field.load(std::memory_order_relaxed);
@@ -190,9 +196,10 @@ std::string StringifyMessage(const Message& message, Option option) {
       break;
   }
   printer.SetExpandAny(true);
-  printer.SetRedactDebugString(true);
+  printer.SetRedactDebugString(
+      internal::enable_debug_text_redaction.load(std::memory_order_relaxed));
   printer.SetRandomizeDebugString(true);
-  printer.SetRootMessageFullName(message.GetDescriptor()->full_name());
+  printer.SetReportSensitiveFields(true);
   std::string result;
   printer.PrintToString(message, &result);
 
@@ -431,12 +438,14 @@ class TextFormat::Parser::ParserImpl {
   void ReportWarning(int line, int col, const absl::string_view message) {
     if (error_collector_ == nullptr) {
       if (line >= 0) {
-        ABSL_LOG(WARNING) << "Warning parsing text-format "
-                          << root_message_type_->full_name() << ": "
-                          << (line + 1) << ":" << (col + 1) << ": " << message;
+        ABSL_LOG_EVERY_POW_2(WARNING)
+            << "Warning parsing text-format " << root_message_type_->full_name()
+            << ": " << (line + 1) << ":" << (col + 1) << " (N = " << COUNTER
+            << "): " << message;
       } else {
-        ABSL_LOG(WARNING) << "Warning parsing text-format "
-                          << root_message_type_->full_name() << ": " << message;
+        ABSL_LOG_EVERY_POW_2(WARNING)
+            << "Warning parsing text-format " << root_message_type_->full_name()
+            << " (N = " << COUNTER << "): " << message;
       }
     } else {
       error_collector_->RecordWarning(line, col, message);
@@ -2099,12 +2108,12 @@ TextFormat::Printer::Printer()
       insert_silent_marker_(false),
       redact_debug_string_(false),
       randomize_debug_string_(false),
+      report_sensitive_fields_(false),
       hide_unknown_fields_(false),
       print_message_fields_in_index_order_(false),
       expand_any_(false),
       truncate_string_field_longer_than_(0LL),
-      finder_(nullptr),
-      root_message_full_name_("") {
+      finder_(nullptr) {
   SetUseUtf8StringEscaping(false);
 }
 
@@ -2863,27 +2872,35 @@ void TextFormat::Printer::PrintUnknownFields(
   }
 }
 
+namespace {
+
+// Check if the field is sensitive and should be redacted.
+bool ShouldRedactField(const FieldDescriptor* field) {
+  if (field->options().debug_redact()) return true;
+  return false;
+}
+
+}  // namespace
+
 bool TextFormat::Printer::TryRedactFieldValue(
     const Message& message, const FieldDescriptor* field,
     BaseTextGenerator* generator, bool insert_value_separator) const {
-  auto do_redact = [&](absl::string_view replacement) {
-    IncrementRedactedFieldCounter();
-    if (insert_value_separator) {
-      generator->PrintMaybeWithMarker(MarkerToken(), ": ");
-    }
-    generator->PrintString(replacement);
-    if (insert_value_separator) {
-      if (single_line_mode_) {
-        generator->PrintLiteral(" ");
-      } else {
-        generator->PrintLiteral("\n");
+  if (ShouldRedactField(field)) {
+    if (redact_debug_string_) {
+      IncrementRedactedFieldCounter();
+      if (insert_value_separator) {
+        generator->PrintMaybeWithMarker(MarkerToken(), ": ");
       }
+      generator->PrintString(kFieldValueReplacement);
+      if (insert_value_separator) {
+        if (single_line_mode_) {
+          generator->PrintLiteral(" ");
+        } else {
+          generator->PrintLiteral("\n");
+        }
+      }
+      return true;
     }
-  };
-
-  if (redact_debug_string_ && field->options().debug_redact()) {
-    do_redact("[REDACTED]");
-    return true;
   }
   return false;
 }

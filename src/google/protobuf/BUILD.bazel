@@ -267,20 +267,6 @@ cc_library(
 )
 
 cc_library(
-    name = "arena_config",
-    srcs = ["arena_config.cc"],
-    hdrs = ["arena_config.h"],
-    include_prefix = "google/protobuf",
-    visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
-    ],
-    deps = [
-        "//src/google/protobuf/stubs:lite",
-    ],
-)
-
-cc_library(
     name = "arena_allocation_policy",
     hdrs = ["arena_allocation_policy.h"],
     include_prefix = "google/protobuf",
@@ -289,7 +275,6 @@ cc_library(
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
-        ":arena_config",
         "//src/google/protobuf/stubs:lite",
     ],
 )
@@ -322,7 +307,6 @@ cc_library(
     ],
     hdrs = [
         "arena.h",
-        "arena_config.h",
         "arenaz_sampler.h",
         "serial_arena.h",
         "thread_safe_arena.h",
@@ -336,7 +320,6 @@ cc_library(
         ":arena_align",
         ":arena_allocation_policy",
         ":arena_cleanup",
-        ":arena_config",
         ":string_block",
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/log:absl_check",
@@ -411,7 +394,6 @@ cc_library(
     deps = [
         ":arena",
         ":arena_align",
-        ":arena_config",
         ":string_block",
         ":varint_shuffle",
         "//src/google/protobuf/io",

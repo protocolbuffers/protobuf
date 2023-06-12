@@ -34,9 +34,13 @@
 //! crate.
 
 #[cfg(cpp_kernel)]
-pub extern crate cpp as __runtime;
+#[path = "cpp.rs"]
+pub mod __runtime;
 #[cfg(upb_kernel)]
-pub extern crate upb as __runtime;
+#[path = "upb.rs"]
+pub mod __runtime;
+
+mod proxied;
 
 pub use __runtime::SerializedData;
 

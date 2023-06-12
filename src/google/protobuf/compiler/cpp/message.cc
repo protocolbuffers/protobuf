@@ -39,6 +39,7 @@
 #include <cmath>
 #include <cstdint>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <type_traits>
@@ -330,37 +331,59 @@ bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
   return false;
 }
 
-using FieldChunk = std::vector<const FieldDescriptor*>;
-using ChunkRun = std::vector<FieldChunk>;
+struct FieldChunk {
+  FieldChunk(bool has_hasbit, bool is_rarely_present, bool should_split)
+      : has_hasbit(has_hasbit),
+        is_rarely_present(is_rarely_present),
+        should_split(should_split) {}
+
+  bool has_hasbit;
+  bool is_rarely_present;
+  bool should_split;
+
+  std::vector<const FieldDescriptor*> fields;
+};
+
+using ChunkIterator = std::vector<FieldChunk>::const_iterator;
 
 // Breaks down a single chunk of fields into a few chunks that share attributes
 // controlled by "equivalent" predicate. Returns an array of chunks.
 template <typename Predicate>
-std::vector<FieldChunk> CollectFields(const FieldChunk& fields,
-                                      const Predicate& equivalent) {
+std::vector<FieldChunk> CollectFields(
+    const std::vector<const FieldDescriptor*>& fields, const Options& options,
+    const Predicate& equivalent) {
   std::vector<FieldChunk> chunks;
   for (auto field : fields) {
-    if (chunks.empty() || !equivalent(chunks.back().back(), field)) {
-      chunks.emplace_back();
+    if (chunks.empty() || !equivalent(chunks.back().fields.back(), field)) {
+      chunks.emplace_back(HasHasbit(field), IsRarelyPresent(field, options),
+                          ShouldSplit(field, options));
     }
-    chunks.back().push_back(field);
+    chunks.back().fields.push_back(field);
   }
   return chunks;
 }
 
-// Breaks down a single run of chunks into a few runs that share attributes
-// controlled by "equivalent" predicate. Returns an array of runs.
 template <typename Predicate>
-std::vector<ChunkRun> CollectChunks(const ChunkRun& chunks,
-                                    const Predicate& equivalent) {
-  std::vector<ChunkRun> runs;
-  for (const auto& chunk : chunks) {
-    if (runs.empty() || !equivalent(runs.back().back(), chunk)) {
-      runs.emplace_back();
+ChunkIterator FindNextUnequalChunk(ChunkIterator start, ChunkIterator end,
+                                   const Predicate& equal) {
+  auto it = start;
+  while (++it != end) {
+    if (!equal(*start, *it)) {
+      return it;
     }
-    runs.back().push_back(chunk);
   }
-  return runs;
+  return end;
+}
+
+// Returns true if two chunks may be grouped for hasword check to skip multiple
+// cold fields at once. They have to share the following traits:
+// - whether they have hasbits
+// - whether they are rarely present
+// - whether they are split
+bool MayGroupChunksForHaswordsCheck(const FieldChunk& a, const FieldChunk& b) {
+  return a.has_hasbit == b.has_hasbit &&
+         a.is_rarely_present == b.is_rarely_present &&
+         a.should_split == b.should_split;
 }
 
 // Returns a bit mask based on has_bit index of "fields" that are typically on
@@ -381,6 +404,22 @@ uint32_t GenChunkMask(const std::vector<const FieldDescriptor*>& fields,
   return chunk_mask;
 }
 
+// Returns a bit mask based on has_bit index of "fields" in chunks in [it, end).
+// Assumes that all chunks share the same hasbit word.
+uint32_t GenChunkMask(ChunkIterator it, ChunkIterator end,
+                      const std::vector<int>& has_bit_indices) {
+  ABSL_CHECK(it != end);
+
+  int first_index_offset = has_bit_indices[it->fields.front()->index()] / 32;
+  uint32_t chunk_mask = 0;
+  do {
+    ABSL_CHECK_EQ(first_index_offset,
+                  has_bit_indices[it->fields.front()->index()] / 32);
+    chunk_mask |= GenChunkMask(it->fields, has_bit_indices);
+  } while (++it != end);
+  return chunk_mask;
+}
+
 // Return the number of bits set in n, a non-negative integer.
 static int popcnt(uint32_t n) {
   int result = 0;
@@ -391,96 +430,47 @@ static int popcnt(uint32_t n) {
   return result;
 }
 
-// For a run of cold chunks, opens and closes an external if statement that
-// checks multiple has_bits words to skip bulk of cold fields.
-class ColdChunkSkipper {
- public:
-  ColdChunkSkipper(
-      const Descriptor* descriptor, const Options& options,
-      const std::vector<std::vector<const FieldDescriptor*>>& chunks,
-      const std::vector<int>& has_bit_indices, const double cold_threshold)
-      : chunks_(chunks),
-        has_bit_indices_(has_bit_indices),
-        access_info_map_(options.access_info_map),
-        cold_threshold_(cold_threshold) {
-    SetCommonMessageDataVariables(descriptor, &variables_);
+// Returns true if it emits conditional check against hasbit words. This is
+// useful to skip multiple fields that are unlikely present based on profile
+// (go/pdproto).
+bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
+                            const Options& options,
+                            const std::vector<int>& has_bit_indices,
+                            int cached_has_word_index, const std::string& from,
+                            io::Printer* p) {
+  if (!it->has_hasbit || !IsProfileDriven(options) ||
+      std::distance(it, end) < 2 || !it->is_rarely_present) {
+    return false;
   }
 
-  // May open an external if check for a batch of cold fields. "from" is the
-  // prefix to _has_bits_ to allow MergeFrom to use "from._has_bits_".
-  // Otherwise, it should be "".
-  void OnStartChunk(int chunk, int cached_has_word_index,
-                    const std::string& from, io::Printer* p);
-  bool OnEndChunk(int chunk, io::Printer* p);
+  auto hasbit_word = [&has_bit_indices](const FieldDescriptor* field) {
+    return has_bit_indices[field->index()] / 32;
+  };
+  auto is_same_hasword = [&](const FieldChunk& a, const FieldChunk& b) {
+    return hasbit_word(a.fields.front()) == hasbit_word(b.fields.front());
+  };
 
- private:
-  bool IsColdChunk(int chunk);
+  struct HasWordMask {
+    int word;
+    uint32_t mask;
+  };
 
-  int HasbitWord(int chunk, int offset) {
-    return has_bit_indices_[chunks_[chunk][offset]->index()] / 32;
-  }
-
-  const std::vector<std::vector<const FieldDescriptor*>>& chunks_;
-  const std::vector<int>& has_bit_indices_;
-  const AccessInfoMap* access_info_map_;
-  const double cold_threshold_;
-  absl::flat_hash_map<absl::string_view, std::string> variables_;
-  int limit_chunk_ = -1;
-};
-
-// Tuning parameters for ColdChunkSkipper.
-const double kColdRatio = 0.005;
-
-bool ColdChunkSkipper::IsColdChunk(int chunk) {
-  // Mark this variable as used until it is actually used
-  (void)cold_threshold_;
-  return false;
-}
-
-
-void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
-                                    const std::string& from, io::Printer* p) {
-  if (!access_info_map_) {
-    return;
-  } else if (chunk < limit_chunk_) {
-    // We are already inside a run of cold chunks.
-    return;
-  } else if (!IsColdChunk(chunk)) {
-    // We can't start a run of cold chunks.
-    return;
-  }
-
-  // Find the end of consecutive cold chunks.
-  limit_chunk_ = chunk;
-  while (limit_chunk_ < chunks_.size() && IsColdChunk(limit_chunk_)) {
-    limit_chunk_++;
-  }
-
-  if (limit_chunk_ <= chunk + 1) {
-    // Require at least two chunks to emit external has_bit checks.
-    limit_chunk_ = -1;
-    return;
+  std::vector<HasWordMask> hasword_masks;
+  while (it != end) {
+    auto next = FindNextUnequalChunk(it, end, is_same_hasword);
+    hasword_masks.push_back({hasbit_word(it->fields.front()),
+                             GenChunkMask(it, next, has_bit_indices)});
+    it = next;
   }
 
   // Emit has_bit check for each has_bit_dword index.
   p->Emit(
       {{"cond",
         [&] {
-          int first_word = HasbitWord(chunk, 0);
-          while (chunk < limit_chunk_) {
-            uint32_t mask = 0;
-            int this_word = HasbitWord(chunk, 0);
-            // Generate mask for chunks on the same word.
-            for (; chunk < limit_chunk_ && HasbitWord(chunk, 0) == this_word;
-                 chunk++) {
-              for (auto field : chunks_[chunk]) {
-                int hasbit_index = has_bit_indices_[field->index()];
-                // Fields on a chunk must be in the same word.
-                ABSL_CHECK_EQ(this_word, hasbit_index / 32);
-                mask |= 1 << (hasbit_index % 32);
-              }
-            }
-
+          int first_word = hasword_masks.front().word;
+          for (const auto& m : hasword_masks) {
+            uint32_t mask = m.mask;
+            int this_word = m.word;
             if (this_word != first_word) {
               p->Emit(R"cc(
                 ||
@@ -499,16 +489,6 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
         if (PROTOBUF_PREDICT_FALSE($cond$)) {
       )cc");
   p->Indent();
-}
-
-bool ColdChunkSkipper::OnEndChunk(int chunk, io::Printer* p) {
-  if (chunk != limit_chunk_ - 1) {
-    return false;
-  }
-  p->Outdent();
-  p->Emit(R"cc(
-    }
-  )cc");
   return true;
 }
 
@@ -699,7 +679,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     p->Emit(
-        {{"field_comment", FieldComment(field)},
+        {{"field_comment", FieldComment(field, options_)},
          Sub("const_impl", "const;").WithSuffix(";"),
          Sub("impl", ";").WithSuffix(";"),
          {"sizer",
@@ -1134,7 +1114,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   p->Emit("// $classname$\n\n");
 
   for (auto field : FieldRange(descriptor_)) {
-    PrintFieldComment(Formatter{p}, field);
+    PrintFieldComment(Formatter{p}, field, options_);
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
@@ -3012,7 +2992,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   int chunk_count = 0;
 
   std::vector<FieldChunk> chunks = CollectFields(
-      optimized_order_,
+      optimized_order_, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         chunk_count++;
         // This predicate guarantees that there is only a single zero-init
@@ -3027,43 +3007,31 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         return same;
       });
 
-  // This guarantees that all chunks in a run share the same split and has_bit
-  // attributes.
-  std::vector<ChunkRun> runs = CollectChunks(
-      chunks, [&](const FieldChunk& a, const FieldChunk& b) -> bool {
-        const FieldDescriptor* fa = a.front();
-        const FieldDescriptor* fb = b.front();
-        return (HasBitIndex(fa) != kNoHasbit) ==
-                   (HasBitIndex(fb) != kNoHasbit) &&
-               ShouldSplit(fa, options_) == ShouldSplit(fb, options_);
-      });
-
+  auto it = chunks.begin();
+  auto end = chunks.end();
   int cached_has_word_index = -1;
-  for (auto& run : runs) {
-    ColdChunkSkipper cold_skipper(descriptor_, options_, run, has_bit_indices_,
-                                  kColdRatio);
-    bool first_split_chunk_processed = false;
-    for (int chunk_index = 0, run_size = static_cast<int>(run.size());
-         chunk_index < run_size; chunk_index++) {
-      std::vector<const FieldDescriptor*>& chunk = run[chunk_index];
-      cold_skipper.OnStartChunk(chunk_index, cached_has_word_index, "", p);
+  while (it != end) {
+    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+    bool has_haswords_check = MaybeEmitHaswordsCheck(
+        it, next, options_, has_bit_indices_, cached_has_word_index, "", p);
+
+    bool has_default_split_check = !it->fields.empty() && it->should_split;
+    if (has_default_split_check) {
+      // Some fields are cleared without checking has_bit. So we add the
+      // condition here to avoid writing to the default split instance.
+      format("if (!IsSplitMessageDefault()) {\n");
+      format.Indent();
+    }
+    while (it != next) {
+      const std::vector<const FieldDescriptor*>& fields = it->fields;
+      bool chunk_is_split = it->should_split;
+      ABSL_CHECK_EQ(has_default_split_check, chunk_is_split);
 
       const FieldDescriptor* memset_start = nullptr;
       const FieldDescriptor* memset_end = nullptr;
       bool saw_non_zero_init = false;
-      bool chunk_is_split =
-          !chunk.empty() && ShouldSplit(chunk.front(), options_);
-      // All or none of the cunks in a run are split.
-      ABSL_CHECK(!first_split_chunk_processed || chunk_is_split);
-      if (chunk_is_split && !first_split_chunk_processed) {
-        // Some fields are cleared without checking has_bit. So we add the
-        // condition here to avoid writing to the default split instance.
-        format("if (!IsSplitMessageDefault()) {\n");
-        format.Indent();
-        first_split_chunk_processed = true;
-      }
 
-      for (const auto& field : chunk) {
+      for (const auto& field : fields) {
         if (CanClearByZeroing(field)) {
           ABSL_CHECK(!saw_non_zero_init);
           if (!memset_start) memset_start = field;
@@ -3079,12 +3047,12 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       // hasbits. I don't understand the rationale for the last part of the
       // condition, but it matches the old logic.
       const bool have_outer_if =
-          HasBitIndex(chunk.front()) != kNoHasbit && chunk.size() > 1 &&
-          (memset_end != chunk.back() || merge_zero_init);
+          HasBitIndex(fields.front()) != kNoHasbit && fields.size() > 1 &&
+          (memset_end != fields.back() || merge_zero_init);
 
       if (have_outer_if) {
         // Emit an if() that will let us skip the whole chunk if none are set.
-        uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
+        uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
         std::string chunk_mask_str =
             absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
@@ -3094,8 +3062,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         ABSL_DCHECK_LE(2, popcnt(chunk_mask));
         ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-        if (cached_has_word_index != HasWordIndex(chunk.front())) {
-          cached_has_word_index = HasWordIndex(chunk.front());
+        if (cached_has_word_index != HasWordIndex(fields.front())) {
+          cached_has_word_index = HasWordIndex(fields.front());
           format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
         }
         format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
@@ -3119,7 +3087,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       }
 
       // Clear all non-zero-initializable fields in the chunk.
-      for (const auto& field : chunk) {
+      for (const auto& field : fields) {
         if (CanClearByZeroing(field)) continue;
         // It's faster to just overwrite primitive types, but we should only
         // clear strings and messages if they were set.
@@ -3149,17 +3117,22 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         format("}\n");
       }
 
-      if (chunk_index == static_cast<int>(run.size()) - 1) {
-        if (first_split_chunk_processed) {
-          format.Outdent();
-          format("}\n");
-        }
-      }
+      // To next chunk.
+      ++it;
+    }
 
-      if (cold_skipper.OnEndChunk(chunk_index, p)) {
-        // Reset here as it may have been updated in just closed if statement.
-        cached_has_word_index = -1;
-      }
+    if (has_default_split_check) {
+      format.Outdent();
+      format("}\n");
+    }
+    if (has_haswords_check) {
+      p->Outdent();
+      p->Emit(R"cc(
+        }
+      )cc");
+
+      // Reset here as it may have been updated in just closed if statement.
+      cached_has_word_index = -1;
     }
   }
 
@@ -3419,112 +3392,126 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   }
 
   std::vector<FieldChunk> chunks = CollectFields(
-      optimized_order_,
+      optimized_order_, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         return HasByteIndex(a) == HasByteIndex(b) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });
 
-  ColdChunkSkipper cold_skipper(descriptor_, options_, chunks, has_bit_indices_,
-                                kColdRatio);
-
+  auto it = chunks.begin();
+  auto end = chunks.end();
   // cached_has_word_index maintains that:
   //   cached_has_bits = from._has_bits_[cached_has_word_index]
   // for cached_has_word_index >= 0
   int cached_has_word_index = -1;
+  while (it != end) {
+    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+    bool has_haswords_check =
+        MaybeEmitHaswordsCheck(it, next, options_, has_bit_indices_,
+                               cached_has_word_index, "from.", p);
 
-  for (int chunk_index = 0; chunk_index < chunks.size(); chunk_index++) {
-    const std::vector<const FieldDescriptor*>& chunk = chunks[chunk_index];
-    bool have_outer_if =
-        chunk.size() > 1 && HasByteIndex(chunk.front()) != kNoHasbit;
-    cold_skipper.OnStartChunk(chunk_index, cached_has_word_index, "from.", p);
+    while (it != next) {
+      const std::vector<const FieldDescriptor*>& fields = it->fields;
+      const bool have_outer_if =
+          fields.size() > 1 && HasByteIndex(fields.front()) != kNoHasbit;
 
-    if (have_outer_if) {
-      // Emit an if() that will let us skip the whole chunk if none are set.
-      uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
-      std::string chunk_mask_str =
-          absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
+      if (have_outer_if) {
+        // Emit an if() that will let us skip the whole chunk if none are set.
+        uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
+        std::string chunk_mask_str =
+            absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
-      // Check (up to) 8 has_bits at a time if we have more than one field in
-      // this chunk.  Due to field layout ordering, we may check
-      // _has_bits_[last_chunk * 8 / 32] multiple times.
-      ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-      ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+        // Check (up to) 8 has_bits at a time if we have more than one field in
+        // this chunk.  Due to field layout ordering, we may check
+        // _has_bits_[last_chunk * 8 / 32] multiple times.
+        ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+        ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-      if (cached_has_word_index != HasWordIndex(chunk.front())) {
-        cached_has_word_index = HasWordIndex(chunk.front());
-        format("cached_has_bits = from.$has_bits$[$1$];\n",
-               cached_has_word_index);
+        if (cached_has_word_index != HasWordIndex(fields.front())) {
+          cached_has_word_index = HasWordIndex(fields.front());
+          format("cached_has_bits = from.$has_bits$[$1$];\n",
+                 cached_has_word_index);
+        }
+
+        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format.Indent();
       }
 
-      format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
-      format.Indent();
-    }
+      // Go back and emit merging code for each of the fields we processed.
+      bool deferred_has_bit_changes = false;
+      for (const auto* field : fields) {
+        const auto& generator = field_generators_.get(field);
 
-    // Go back and emit merging code for each of the fields we processed.
-    bool deferred_has_bit_changes = false;
-    for (const auto field : chunk) {
-      const auto& generator = field_generators_.get(field);
+        if (field->is_repeated()) {
+          generator.GenerateMergingCode(p);
+        } else if (field->is_optional() && !HasHasbit(field)) {
+          // Merge semantics without true field presence: primitive fields are
+          // merged only if non-zero (numeric) or non-empty (string).
+          bool have_enclosing_if =
+              EmitFieldNonDefaultCondition(p, "from.", field);
+          if (have_enclosing_if) format.Indent();
+          generator.GenerateMergingCode(p);
+          if (have_enclosing_if) {
+            format.Outdent();
+            format("}\n");
+          }
+        } else if (field->options().weak() ||
+                   cached_has_word_index != HasWordIndex(field)) {
+          // Check hasbit, not using cached bits.
+          auto v = p->WithVars(HasBitVars(field));
+          format(
+              "if ((from.$has_bits$[$has_array_index$] & $has_mask$) != 0) "
+              "{\n");
+          format.Indent();
+          generator.GenerateMergingCode(p);
+          format.Outdent();
+          format("}\n");
+        } else {
+          // Check hasbit, using cached bits.
+          ABSL_CHECK(HasHasbit(field));
+          int has_bit_index = has_bit_indices_[field->index()];
+          const std::string mask = absl::StrCat(
+              absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
+          format("if (cached_has_bits & 0x$1$u) {\n", mask);
+          format.Indent();
 
-      if (field->is_repeated()) {
-        generator.GenerateMergingCode(p);
-      } else if (field->is_optional() && !HasHasbit(field)) {
-        // Merge semantics without true field presence: primitive fields are
-        // merged only if non-zero (numeric) or non-empty (string).
-        bool have_enclosing_if =
-            EmitFieldNonDefaultCondition(p, "from.", field);
-        if (have_enclosing_if) format.Indent();
-        generator.GenerateMergingCode(p);
-        if (have_enclosing_if) {
+          if (have_outer_if && IsPOD(field)) {
+            // Defer hasbit modification until the end of chunk.
+            // This can reduce the number of loads/stores by up to 7 per 8
+            // fields.
+            deferred_has_bit_changes = true;
+            generator.GenerateCopyConstructorCode(p);
+          } else {
+            generator.GenerateMergingCode(p);
+          }
+
           format.Outdent();
           format("}\n");
         }
-      } else if (field->options().weak() ||
-                 cached_has_word_index != HasWordIndex(field)) {
-        // Check hasbit, not using cached bits.
-        auto v = p->WithVars(HasBitVars(field));
-        format(
-            "if ((from.$has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
-        format.Indent();
-        generator.GenerateMergingCode(p);
-        format.Outdent();
-        format("}\n");
-      } else {
-        // Check hasbit, using cached bits.
-        ABSL_CHECK(HasHasbit(field));
-        int has_bit_index = has_bit_indices_[field->index()];
-        const std::string mask = absl::StrCat(
-            absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-        format("if (cached_has_bits & 0x$1$u) {\n", mask);
-        format.Indent();
+      }
 
-        if (have_outer_if && IsPOD(field)) {
-          // Defer hasbit modification until the end of chunk.
-          // This can reduce the number of loads/stores by up to 7 per 8 fields.
-          deferred_has_bit_changes = true;
-          generator.GenerateCopyConstructorCode(p);
-        } else {
-          generator.GenerateMergingCode(p);
+      if (have_outer_if) {
+        if (deferred_has_bit_changes) {
+          // Flush the has bits for the primitives we deferred.
+          ABSL_CHECK_LE(0, cached_has_word_index);
+          format("_this->$has_bits$[$1$] |= cached_has_bits;\n",
+                 cached_has_word_index);
         }
 
         format.Outdent();
         format("}\n");
       }
+
+      // To next chunk.
+      ++it;
     }
 
-    if (have_outer_if) {
-      if (deferred_has_bit_changes) {
-        // Flush the has bits for the primitives we deferred.
-        ABSL_CHECK_LE(0, cached_has_word_index);
-        format("_this->$has_bits$[$1$] |= cached_has_bits;\n",
-               cached_has_word_index);
-      }
+    if (has_haswords_check) {
+      p->Outdent();
+      p->Emit(R"cc(
+        }
+      )cc");
 
-      format.Outdent();
-      format("}\n");
-    }
-
-    if (cold_skipper.OnEndChunk(chunk_index, p)) {
       // Reset here as it may have been updated in just closed if statement.
       cached_has_word_index = -1;
     }
@@ -3688,7 +3675,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     return;
   }
 
-  PrintFieldComment(Formatter{p}, field);
+  PrintFieldComment(Formatter{p}, field, options_);
   if (HasHasbit(field)) {
     p->Emit(
         {
@@ -3959,7 +3946,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
                  re.Flush();
                  if (field->options().weak()) {
                    largest_weak_field.ReplaceIfLarger(field);
-                   PrintFieldComment(Formatter{p}, field);
+                   PrintFieldComment(Formatter{p}, field, options_);
                  } else {
                    e.EmitIfNotNull(largest_weak_field.Release());
                    e.Emit(field);
@@ -4158,14 +4145,14 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   }
 
   std::vector<FieldChunk> chunks = CollectFields(
-      optimized_order_,
+      optimized_order_, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });
 
-  ColdChunkSkipper cold_skipper(descriptor_, options_, chunks, has_bit_indices_,
-                                kColdRatio);
+  auto it = chunks.begin();
+  auto end = chunks.end();
   int cached_has_word_index = -1;
 
   format(
@@ -4173,68 +4160,81 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
       "// Prevent compiler warnings about cached_has_bits being unused\n"
       "(void) cached_has_bits;\n\n");
 
-  for (int chunk_index = 0; chunk_index < chunks.size(); chunk_index++) {
-    const std::vector<const FieldDescriptor*>& chunk = chunks[chunk_index];
-    const bool have_outer_if =
-        chunk.size() > 1 && HasWordIndex(chunk[0]) != kNoHasbit;
-    cold_skipper.OnStartChunk(chunk_index, cached_has_word_index, "", p);
+  while (it != end) {
+    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+    bool has_haswords_check = MaybeEmitHaswordsCheck(
+        it, next, options_, has_bit_indices_, cached_has_word_index, "", p);
 
-    if (have_outer_if) {
-      // Emit an if() that will let us skip the whole chunk if none are set.
-      uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
-      std::string chunk_mask_str =
-          absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
+    while (it != next) {
+      const std::vector<const FieldDescriptor*>& fields = it->fields;
+      const bool have_outer_if =
+          fields.size() > 1 && HasWordIndex(fields[0]) != kNoHasbit;
 
-      // Check (up to) 8 has_bits at a time if we have more than one field in
-      // this chunk.  Due to field layout ordering, we may check
-      // _has_bits_[last_chunk * 8 / 32] multiple times.
-      ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-      ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+      if (have_outer_if) {
+        // Emit an if() that will let us skip the whole chunk if none are set.
+        uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
+        std::string chunk_mask_str =
+            absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
-      if (cached_has_word_index != HasWordIndex(chunk.front())) {
-        cached_has_word_index = HasWordIndex(chunk.front());
-        format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
-      }
-      format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
-      format.Indent();
-    }
+        // Check (up to) 8 has_bits at a time if we have more than one field in
+        // this chunk.  Due to field layout ordering, we may check
+        // _has_bits_[last_chunk * 8 / 32] multiple times.
+        ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+        ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-    // Go back and emit checks for each of the fields we processed.
-    for (int j = 0; j < chunk.size(); j++) {
-      const FieldDescriptor* field = chunk[j];
-      bool have_enclosing_if = false;
-
-      PrintFieldComment(format, field);
-
-      if (field->is_repeated()) {
-        // No presence check is required.
-      } else if (HasHasbit(field)) {
-        PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index);
-        have_enclosing_if = true;
-      } else {
-        // Without field presence: field is serialized only if it has a
-        // non-default value.
-        have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
+        if (cached_has_word_index != HasWordIndex(fields.front())) {
+          cached_has_word_index = HasWordIndex(fields.front());
+          format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
+        }
+        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format.Indent();
       }
 
-      if (have_enclosing_if) format.Indent();
+      // Go back and emit checks for each of the fields we processed.
+      for (const auto* field : fields) {
+        bool have_enclosing_if = false;
 
-      field_generators_.get(field).GenerateByteSize(p);
+        PrintFieldComment(format, field, options_);
 
-      if (have_enclosing_if) {
+        if (field->is_repeated()) {
+          // No presence check is required.
+        } else if (HasHasbit(field)) {
+          PrintPresenceCheck(field, has_bit_indices_, p,
+                             &cached_has_word_index);
+          have_enclosing_if = true;
+        } else {
+          // Without field presence: field is serialized only if it has a
+          // non-default value.
+          have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
+        }
+
+        if (have_enclosing_if) format.Indent();
+
+        field_generators_.get(field).GenerateByteSize(p);
+
+        if (have_enclosing_if) {
+          format.Outdent();
+          format(
+              "}\n"
+              "\n");
+        }
+      }
+
+      if (have_outer_if) {
         format.Outdent();
-        format(
-            "}\n"
-            "\n");
+        format("}\n");
       }
+
+      // To next chunk.
+      ++it;
     }
 
-    if (have_outer_if) {
-      format.Outdent();
-      format("}\n");
-    }
+    if (has_haswords_check) {
+      p->Outdent();
+      p->Emit(R"cc(
+        }
+      )cc");
 
-    if (cold_skipper.OnEndChunk(chunk_index, p)) {
       // Reset here as it may have been updated in just closed if statement.
       cached_has_word_index = -1;
     }
@@ -4246,7 +4246,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     format("switch ($1$_case()) {\n", oneof->name());
     format.Indent();
     for (auto field : FieldRange(oneof)) {
-      PrintFieldComment(format, field);
+      PrintFieldComment(format, field, options_);
       format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
       format.Indent();
       field_generators_.get(field).GenerateByteSize(p);
