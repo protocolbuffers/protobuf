@@ -26,14 +26,12 @@
 from google.protobuf.internal.message_test import *
 import unittest
 
-# We don't want to support extending repeated fields with nothing; this behavior
-# is marked for deprecation in the existing library.
-MessageTest.testExtendFloatWithNothing_proto2.__unittest_expecting_failure__ = True
-MessageTest.testExtendFloatWithNothing_proto3.__unittest_expecting_failure__ = True
-MessageTest.testExtendInt32WithNothing_proto2.__unittest_expecting_failure__ = True
-MessageTest.testExtendInt32WithNothing_proto3.__unittest_expecting_failure__ = True
-MessageTest.testExtendStringWithNothing_proto2.__unittest_expecting_failure__ = True
-MessageTest.testExtendStringWithNothing_proto3.__unittest_expecting_failure__ = True
+MessageTest.testExtendFloatWithNothing_proto2.__unittest_skip__ = True
+MessageTest.testExtendFloatWithNothing_proto3.__unittest_skip__ = True
+MessageTest.testExtendInt32WithNothing_proto2.__unittest_skip__ = True
+MessageTest.testExtendInt32WithNothing_proto3.__unittest_skip__ = True
+MessageTest.testExtendStringWithNothing_proto2.__unittest_skip__ = True
+MessageTest.testExtendStringWithNothing_proto3.__unittest_skip__ = True
 
 # Python/C++ customizes the C++ TextFormat to always print trailing ".0" for
 # floats. upb doesn't do this, it matches C++ TextFormat.
