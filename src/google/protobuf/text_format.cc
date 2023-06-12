@@ -2117,6 +2117,8 @@ TextFormat::Printer::Printer()
   SetUseUtf8StringEscaping(false);
 }
 
+TextFormat::Printer::~Printer() = default;
+
 void TextFormat::Printer::SetUseUtf8StringEscaping(bool as_utf8) {
   SetDefaultFieldValuePrinter(as_utf8 ? new FastFieldValuePrinterUtf8Escaping()
                                       : new DebugStringFieldValuePrinter());
