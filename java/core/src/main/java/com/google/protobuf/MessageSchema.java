@@ -1480,18 +1480,8 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   @Override
+  @SuppressWarnings("unchecked") // Field type checks guarantee type casts from Unsafe.
   public int getSerializedSize(T message) {
-    switch (syntax) {
-      case PROTO2:
-        return getSerializedSizeProto2(message);
-      case PROTO3:
-        return getSerializedSizeProto3(message);
-    }
-    throw new IllegalArgumentException("Unsupported syntax: " + syntax);
-  }
-
-  @SuppressWarnings("unchecked")
-  private int getSerializedSizeProto2(T message) {
     int size = 0;
 
     final sun.misc.Unsafe unsafe = UNSAFE;
@@ -1499,70 +1489,87 @@ final class MessageSchema<T> implements Schema<T> {
     int currentPresenceField = 0;
     for (int i = 0; i < buffer.length; i += INTS_PER_FIELD) {
       final int typeAndOffset = typeAndOffsetAt(i);
+      final int fieldType = type(typeAndOffset);
       final int number = numberAt(i);
 
-      int fieldType = type(typeAndOffset);
-      int presenceMaskAndOffset = 0;
       int presenceMask = 0;
+      int presenceMaskAndOffset = buffer[i + 2];
+      final int presenceOrCachedSizeFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
       if (fieldType <= 17) {
-        presenceMaskAndOffset = buffer[i + 2];
-        final int presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
-        presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
-        if (presenceFieldOffset != currentPresenceFieldOffset) {
-          currentPresenceFieldOffset = presenceFieldOffset;
-          currentPresenceField = unsafe.getInt(message, (long) presenceFieldOffset);
+        // Performance optimization to cache the presence field which is shared for multiple
+        // fields.
+        // TODO(b/279034699): Improve caching for case when fields alternate between having and not
+        // having presence by caching presence field for last field with presence only.
+        if (presenceOrCachedSizeFieldOffset != currentPresenceFieldOffset) {
+          currentPresenceFieldOffset = presenceOrCachedSizeFieldOffset;
+          currentPresenceField =
+              currentPresenceFieldOffset == NO_PRESENCE_SENTINEL
+                  ? 0
+                  : unsafe.getInt(message, (long) currentPresenceFieldOffset);
         }
-      } else if (useCachedSizeField
-          && fieldType >= FieldType.DOUBLE_LIST_PACKED.id()
-          && fieldType <= FieldType.SINT64_LIST_PACKED.id()) {
-        presenceMaskAndOffset = buffer[i + 2] & OFFSET_MASK;
+        // Mask for presence bit of the current field from the shared presence field.
+        presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
       }
 
       final long offset = offset(typeAndOffset);
+      final int cachedSizeOffset =
+          fieldType >= FieldType.DOUBLE_LIST_PACKED.id()
+                  && fieldType <= FieldType.SINT64_LIST_PACKED.id()
+              ? presenceOrCachedSizeFieldOffset
+              : 0;
 
       switch (fieldType) {
         case 0: // DOUBLE:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeDoubleSize(number, 0);
           }
           break;
         case 1: // FLOAT:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeFloatSize(number, 0);
           }
           break;
         case 2: // INT64:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeInt64Size(number, unsafe.getLong(message, offset));
           }
           break;
         case 3: // UINT64:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeUInt64Size(number, unsafe.getLong(message, offset));
           }
           break;
         case 4: // INT32:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeInt32Size(number, unsafe.getInt(message, offset));
           }
           break;
         case 5: // FIXED64:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeFixed64Size(number, 0);
           }
           break;
         case 6: // FIXED32:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeFixed32Size(number, 0);
           }
           break;
         case 7: // BOOL:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeBoolSize(number, true);
           }
           break;
         case 8: // STRING:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             Object value = unsafe.getObject(message, offset);
             if (value instanceof ByteString) {
               size += CodedOutputStream.computeBytesSize(number, (ByteString) value);
@@ -1572,49 +1579,58 @@ final class MessageSchema<T> implements Schema<T> {
           }
           break;
         case 9: // MESSAGE:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             Object value = unsafe.getObject(message, offset);
             size += SchemaUtil.computeSizeMessage(number, value, getMessageFieldSchema(i));
           }
           break;
         case 10: // BYTES:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             ByteString value = (ByteString) unsafe.getObject(message, offset);
             size += CodedOutputStream.computeBytesSize(number, value);
           }
           break;
         case 11: // UINT32:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeUInt32Size(number, unsafe.getInt(message, offset));
           }
           break;
         case 12: // ENUM:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeEnumSize(number, unsafe.getInt(message, offset));
           }
           break;
         case 13: // SFIXED32:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeSFixed32Size(number, 0);
           }
           break;
         case 14: // SFIXED64:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeSFixed64Size(number, 0);
           }
           break;
         case 15: // SINT32:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeSInt32Size(number, unsafe.getInt(message, offset));
           }
           break;
         case 16: // SINT64:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size += CodedOutputStream.computeSInt64Size(number, unsafe.getLong(message, offset));
           }
           break;
         case 17: // GROUP:
-          if ((currentPresenceField & presenceMask) != 0) {
+          if (isFieldPresent(
+              message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size +=
                 CodedOutputStream.computeGroupSize(
                     number,
@@ -1713,7 +1729,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Double>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1729,7 +1745,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Float>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1745,7 +1761,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Long>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1761,7 +1777,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Long>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1777,7 +1793,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Integer>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1793,7 +1809,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Long>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1809,7 +1825,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Integer>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1825,7 +1841,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Boolean>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1841,7 +1857,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Integer>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1857,7 +1873,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Integer>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1873,7 +1889,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Integer>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1889,7 +1905,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Long>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1905,7 +1921,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Integer>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -1921,7 +1937,7 @@ final class MessageSchema<T> implements Schema<T> {
                     (List<Long>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
-                unsafe.putInt(message, (long) presenceMaskAndOffset, fieldSize);
+                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
               }
               size +=
                   CodedOutputStream.computeTagSize(number)
@@ -2059,546 +2075,10 @@ final class MessageSchema<T> implements Schema<T> {
     return size;
   }
 
-  private int getSerializedSizeProto3(T message) {
-    final sun.misc.Unsafe unsafe = UNSAFE;
-    int size = 0;
-    for (int i = 0; i < buffer.length; i += INTS_PER_FIELD) {
-      final int typeAndOffset = typeAndOffsetAt(i);
-      final int fieldType = type(typeAndOffset);
-      final int number = numberAt(i);
-
-      final long offset = offset(typeAndOffset);
-      final int cachedSizeOffset =
-          fieldType >= FieldType.DOUBLE_LIST_PACKED.id()
-                  && fieldType <= FieldType.SINT64_LIST_PACKED.id()
-              ? buffer[i + 2] & OFFSET_MASK
-              : 0;
-
-      switch (fieldType) {
-        case 0: // DOUBLE:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeDoubleSize(number, 0);
-          }
-          break;
-        case 1: // FLOAT:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeFloatSize(number, 0);
-          }
-          break;
-        case 2: // INT64:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeInt64Size(number, UnsafeUtil.getLong(message, offset));
-          }
-          break;
-        case 3: // UINT64:
-          if (isFieldPresent(message, i)) {
-            size +=
-                CodedOutputStream.computeUInt64Size(number, UnsafeUtil.getLong(message, offset));
-          }
-          break;
-        case 4: // INT32:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeInt32Size(number, UnsafeUtil.getInt(message, offset));
-          }
-          break;
-        case 5: // FIXED64:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeFixed64Size(number, 0);
-          }
-          break;
-        case 6: // FIXED32:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeFixed32Size(number, 0);
-          }
-          break;
-        case 7: // BOOL:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeBoolSize(number, true);
-          }
-          break;
-        case 8: // STRING:
-          if (isFieldPresent(message, i)) {
-            Object value = UnsafeUtil.getObject(message, offset);
-            if (value instanceof ByteString) {
-              size += CodedOutputStream.computeBytesSize(number, (ByteString) value);
-            } else {
-              size += CodedOutputStream.computeStringSize(number, (String) value);
-            }
-          }
-          break;
-        case 9: // MESSAGE:
-          if (isFieldPresent(message, i)) {
-            Object value = UnsafeUtil.getObject(message, offset);
-            size += SchemaUtil.computeSizeMessage(number, value, getMessageFieldSchema(i));
-          }
-          break;
-        case 10: // BYTES:
-          if (isFieldPresent(message, i)) {
-            ByteString value = (ByteString) UnsafeUtil.getObject(message, offset);
-            size += CodedOutputStream.computeBytesSize(number, value);
-          }
-          break;
-        case 11: // UINT32:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeUInt32Size(number, UnsafeUtil.getInt(message, offset));
-          }
-          break;
-        case 12: // ENUM:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeEnumSize(number, UnsafeUtil.getInt(message, offset));
-          }
-          break;
-        case 13: // SFIXED32:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeSFixed32Size(number, 0);
-          }
-          break;
-        case 14: // SFIXED64:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeSFixed64Size(number, 0);
-          }
-          break;
-        case 15: // SINT32:
-          if (isFieldPresent(message, i)) {
-            size += CodedOutputStream.computeSInt32Size(number, UnsafeUtil.getInt(message, offset));
-          }
-          break;
-        case 16: // SINT64:
-          if (isFieldPresent(message, i)) {
-            size +=
-                CodedOutputStream.computeSInt64Size(number, UnsafeUtil.getLong(message, offset));
-          }
-          break;
-        case 17: // GROUP:
-          if (isFieldPresent(message, i)) {
-            size +=
-                CodedOutputStream.computeGroupSize(
-                    number,
-                    (MessageLite) UnsafeUtil.getObject(message, offset),
-                    getMessageFieldSchema(i));
-          }
-          break;
-        case 18: // DOUBLE_LIST:
-          size += SchemaUtil.computeSizeFixed64List(number, listAt(message, offset), false);
-          break;
-        case 19: // FLOAT_LIST:
-          size += SchemaUtil.computeSizeFixed32List(number, listAt(message, offset), false);
-          break;
-        case 20: // INT64_LIST:
-          size +=
-              SchemaUtil.computeSizeInt64List(number, (List<Long>) listAt(message, offset), false);
-          break;
-        case 21: // UINT64_LIST:
-          size +=
-              SchemaUtil.computeSizeUInt64List(number, (List<Long>) listAt(message, offset), false);
-          break;
-        case 22: // INT32_LIST:
-          size +=
-              SchemaUtil.computeSizeInt32List(
-                  number, (List<Integer>) listAt(message, offset), false);
-          break;
-        case 23: // FIXED64_LIST:
-          size += SchemaUtil.computeSizeFixed64List(number, listAt(message, offset), false);
-          break;
-        case 24: // FIXED32_LIST:
-          size += SchemaUtil.computeSizeFixed32List(number, listAt(message, offset), false);
-          break;
-        case 25: // BOOL_LIST:
-          size += SchemaUtil.computeSizeBoolList(number, listAt(message, offset), false);
-          break;
-        case 26: // STRING_LIST:
-          size += SchemaUtil.computeSizeStringList(number, listAt(message, offset));
-          break;
-        case 27: // MESSAGE_LIST:
-          size +=
-              SchemaUtil.computeSizeMessageList(
-                  number, listAt(message, offset), getMessageFieldSchema(i));
-          break;
-        case 28: // BYTES_LIST:
-          size +=
-              SchemaUtil.computeSizeByteStringList(
-                  number, (List<ByteString>) listAt(message, offset));
-          break;
-        case 29: // UINT32_LIST:
-          size +=
-              SchemaUtil.computeSizeUInt32List(
-                  number, (List<Integer>) listAt(message, offset), false);
-          break;
-        case 30: // ENUM_LIST:
-          size +=
-              SchemaUtil.computeSizeEnumList(
-                  number, (List<Integer>) listAt(message, offset), false);
-          break;
-        case 31: // SFIXED32_LIST:
-          size += SchemaUtil.computeSizeFixed32List(number, listAt(message, offset), false);
-          break;
-        case 32: // SFIXED64_LIST:
-          size += SchemaUtil.computeSizeFixed64List(number, listAt(message, offset), false);
-          break;
-        case 33: // SINT32_LIST:
-          size +=
-              SchemaUtil.computeSizeSInt32List(
-                  number, (List<Integer>) listAt(message, offset), false);
-          break;
-        case 34: // SINT64_LIST:
-          size +=
-              SchemaUtil.computeSizeSInt64List(number, (List<Long>) listAt(message, offset), false);
-          break;
-        case 35:
-          { // DOUBLE_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed64ListNoTag(
-                    (List<Double>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 36:
-          { // FLOAT_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed32ListNoTag(
-                    (List<Float>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 37:
-          { // INT64_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeInt64ListNoTag(
-                    (List<Long>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 38:
-          { // UINT64_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeUInt64ListNoTag(
-                    (List<Long>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 39:
-          { // INT32_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeInt32ListNoTag(
-                    (List<Integer>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 40:
-          { // FIXED64_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed64ListNoTag(
-                    (List<Long>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 41:
-          { // FIXED32_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed32ListNoTag(
-                    (List<Integer>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 42:
-          { // BOOL_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeBoolListNoTag(
-                    (List<Boolean>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 43:
-          { // UINT32_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeUInt32ListNoTag(
-                    (List<Integer>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 44:
-          { // ENUM_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeEnumListNoTag(
-                    (List<Integer>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 45:
-          { // SFIXED32_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed32ListNoTag(
-                    (List<Integer>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 46:
-          { // SFIXED64_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed64ListNoTag(
-                    (List<Long>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 47:
-          { // SINT32_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeSInt32ListNoTag(
-                    (List<Integer>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 48:
-          { // SINT64_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeSInt64ListNoTag(
-                    (List<Long>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 49: // GROUP_LIST:
-          size +=
-              SchemaUtil.computeSizeGroupList(
-                  number, (List<MessageLite>) listAt(message, offset), getMessageFieldSchema(i));
-          break;
-        case 50: // MAP:
-          // TODO(dweis): Use schema cache.
-          size +=
-              mapFieldSchema.getSerializedSize(
-                  number, UnsafeUtil.getObject(message, offset), getMapFieldDefaultEntry(i));
-          break;
-        case 51: // ONEOF_DOUBLE:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeDoubleSize(number, 0);
-          }
-          break;
-        case 52: // ONEOF_FLOAT:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeFloatSize(number, 0);
-          }
-          break;
-        case 53: // ONEOF_INT64:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeInt64Size(number, oneofLongAt(message, offset));
-          }
-          break;
-        case 54: // ONEOF_UINT64:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeUInt64Size(number, oneofLongAt(message, offset));
-          }
-          break;
-        case 55: // ONEOF_INT32:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeInt32Size(number, oneofIntAt(message, offset));
-          }
-          break;
-        case 56: // ONEOF_FIXED64:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeFixed64Size(number, 0);
-          }
-          break;
-        case 57: // ONEOF_FIXED32:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeFixed32Size(number, 0);
-          }
-          break;
-        case 58: // ONEOF_BOOL:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeBoolSize(number, true);
-          }
-          break;
-        case 59: // ONEOF_STRING:
-          if (isOneofPresent(message, number, i)) {
-            Object value = UnsafeUtil.getObject(message, offset);
-            if (value instanceof ByteString) {
-              size += CodedOutputStream.computeBytesSize(number, (ByteString) value);
-            } else {
-              size += CodedOutputStream.computeStringSize(number, (String) value);
-            }
-          }
-          break;
-        case 60: // ONEOF_MESSAGE:
-          if (isOneofPresent(message, number, i)) {
-            Object value = UnsafeUtil.getObject(message, offset);
-            size += SchemaUtil.computeSizeMessage(number, value, getMessageFieldSchema(i));
-          }
-          break;
-        case 61: // ONEOF_BYTES:
-          if (isOneofPresent(message, number, i)) {
-            size +=
-                CodedOutputStream.computeBytesSize(
-                    number, (ByteString) UnsafeUtil.getObject(message, offset));
-          }
-          break;
-        case 62: // ONEOF_UINT32:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeUInt32Size(number, oneofIntAt(message, offset));
-          }
-          break;
-        case 63: // ONEOF_ENUM:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeEnumSize(number, oneofIntAt(message, offset));
-          }
-          break;
-        case 64: // ONEOF_SFIXED32:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeSFixed32Size(number, 0);
-          }
-          break;
-        case 65: // ONEOF_SFIXED64:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeSFixed64Size(number, 0);
-          }
-          break;
-        case 66: // ONEOF_SINT32:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeSInt32Size(number, oneofIntAt(message, offset));
-          }
-          break;
-        case 67: // ONEOF_SINT64:
-          if (isOneofPresent(message, number, i)) {
-            size += CodedOutputStream.computeSInt64Size(number, oneofLongAt(message, offset));
-          }
-          break;
-        case 68: // ONEOF_GROUP:
-          if (isOneofPresent(message, number, i)) {
-            size +=
-                CodedOutputStream.computeGroupSize(
-                    number,
-                    (MessageLite) UnsafeUtil.getObject(message, offset),
-                    getMessageFieldSchema(i));
-          }
-          break;
-        default:
-          // Assume it's an empty entry.
-      }
-    }
-
-    size += getUnknownFieldsSerializedSize(unknownFieldSchema, message);
-
-    return size;
-  }
-
   private <UT, UB> int getUnknownFieldsSerializedSize(
       UnknownFieldSchema<UT, UB> schema, T message) {
     UT unknowns = schema.getFromMessage(message);
     return schema.getSerializedSize(unknowns);
-  }
-
-  private static List<?> listAt(Object message, long offset) {
-    return (List<?>) UnsafeUtil.getObject(message, offset);
   }
 
   @Override
