@@ -57,25 +57,13 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
-      - name: Build protoc
-        id: build-protoc
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+      - name: Run Linkage Monitor test
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-03a376b5d6ef66f827fc307716e3b841cc26b709
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          architecture: linux-x86_64
-      - name: Move protoc into place and clean up
-        run: |
-          mv ${{ steps.build-protoc.outputs.protoc }} protoc
-          sudo rm -rf _build
-      - name: Install snapshot version locally
-        run: |
-          cd java
-          mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
-      - name: Download Linkage Monitor
-        run: curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
-      - name: Fails if there's new linkage errors compared with baseline
-        run: java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:libraries-bom
+          bazel-cache: java_linux/8
+          bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone
 
   protobuf-bom:
     name: Protobuf Maven BOM
