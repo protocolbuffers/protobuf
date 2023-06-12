@@ -53,6 +53,10 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByName(PyObject* _self,
                                                          PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   const char* name = PyUpb_GetStrData(key);
+  if (!name) {
+    PyErr_Format(PyExc_TypeError, "_FindExtensionByName expect a str");
+    return NULL;
+  }
   const upb_MessageDef* m = PyUpb_Message_GetMsgdef(self->msg);
   const upb_FileDef* file = upb_MessageDef_File(m);
   const upb_DefPool* symtab = upb_FileDef_Pool(file);
@@ -73,6 +77,7 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
   const upb_DefPool* symtab = upb_FileDef_Pool(file);
   const upb_ExtensionRegistry* reg = upb_DefPool_ExtensionRegistry(symtab);
   int64_t number = PyLong_AsLong(arg);
+  if (number == -1 && PyErr_Occurred()) return NULL;
   const upb_MiniTableExtension* ext =
       (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(reg, l, number);
   if (ext) {

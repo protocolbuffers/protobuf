@@ -1677,10 +1677,6 @@ static PyMethodDef PyUpb_Message_Methods[] = {
      "Merges a serialized message into the current message."},
     {"ParseFromString", PyUpb_Message_ParseFromString, METH_O,
      "Parses a serialized message into the current message."},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "RegisterExtension", (PyCFunction)RegisterExtension, METH_O |
-    // METH_CLASS,
-    //  "Registers an extension with the current message." },
     {"SerializePartialToString",
      (PyCFunction)PyUpb_Message_SerializePartialToString,
      METH_VARARGS | METH_KEYWORDS,
