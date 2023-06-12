@@ -2211,7 +2211,7 @@ TEST_F(ParserValidationErrorTest, Proto3EnumError) {
   ExpectHasValidationErrors(
       "syntax = 'proto3';\n"
       "enum Foo {A = 1;}\n",
-      "1:14: The first enum value must be zero in proto3.\n");
+      "1:14: The first enum value must be zero for open enums.\n");
 }
 
 TEST_F(ParserValidationErrorTest, EnumValueNameError) {
