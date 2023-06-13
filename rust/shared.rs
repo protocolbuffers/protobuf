@@ -46,6 +46,7 @@ pub use __runtime::SerializedData;
 
 use std::fmt;
 use std::slice;
+use std::ptr::NonNull;
 
 /// Represents error during deserialization.
 #[derive(Debug, Clone)]
@@ -69,6 +70,11 @@ pub struct PtrAndLen {
 
 impl PtrAndLen {
     pub unsafe fn as_ref<'a>(self) -> &'a [u8] {
-        slice::from_raw_parts(self.ptr, self.len)
+        assert!(self.len == 0 || !self.ptr.is_null());
+        if self.len == 0 {
+            slice::from_raw_parts(NonNull::dangling().as_ptr(), 0)
+        } else {
+            slice::from_raw_parts(self.ptr, self.len)
+        }
     }
 }
