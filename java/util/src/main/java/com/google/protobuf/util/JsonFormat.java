@@ -115,7 +115,7 @@ public class JsonFormat {
         /* omittingInsignificantWhitespace */ false,
         /* printingEnumsAsInts */ false,
         /* sortingMapKeys */ false,
-        /* alwaysWithQuotes */ true);
+        /* quoteInt64 */ true);
   }
 
   /**
@@ -138,7 +138,7 @@ public class JsonFormat {
     private final boolean omittingInsignificantWhitespace;
     private final boolean printingEnumsAsInts;
     private final boolean sortingMapKeys;
-    private final boolean alwaysWithQuotes;
+    private final boolean quoteInt64;
 
     private Printer(
         com.google.protobuf.TypeRegistry registry,
@@ -149,7 +149,7 @@ public class JsonFormat {
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
         boolean sortingMapKeys,
-        boolean alwaysWithQuotes) {
+        boolean quoteInt64) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
@@ -158,7 +158,7 @@ public class JsonFormat {
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
-      this.alwaysWithQuotes = alwaysWithQuotes;
+      this.quoteInt64 = quoteInt64;
     }
 
     /**
@@ -181,7 +181,7 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          alwaysWithQuotes);
+          quoteInt64);
     }
 
     /**
@@ -204,7 +204,7 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          alwaysWithQuotes);
+          quoteInt64);
     }
 
     /**
@@ -224,7 +224,7 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          alwaysWithQuotes);
+          quoteInt64);
     }
 
     /**
@@ -242,7 +242,7 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           true,
           sortingMapKeys,
-          alwaysWithQuotes);
+          quoteInt64);
     }
 
     private void checkUnsetPrintingEnumsAsInts() {
@@ -273,7 +273,7 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          alwaysWithQuotes);
+          quoteInt64);
     }
 
     private void checkUnsetIncludingDefaultValueFields() {
@@ -299,7 +299,7 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          alwaysWithQuotes);
+          quoteInt64);
     }
 
 
@@ -329,11 +329,11 @@ public class JsonFormat {
           true,
           printingEnumsAsInts,
           sortingMapKeys,
-          alwaysWithQuotes);
+          quoteInt64);
     }
 
     /**
-     * Create a new {@link Printer} that does not quote numbers or booleans.
+     * Create a new {@link Printer} that does not quote 64 bit integers or booleans.
      */
     public Printer notAlwaysWithQuotes() {
       return new Printer(
@@ -369,7 +369,7 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           true,
-          alwaysWithQuotes);
+          quoteInt64);
     }
 
     /**
@@ -392,7 +392,7 @@ public class JsonFormat {
               omittingInsignificantWhitespace,
               printingEnumsAsInts,
               sortingMapKeys,
-              alwaysWithQuotes)
+              quoteInt64)
           .print(message);
     }
 
@@ -1158,20 +1158,6 @@ public class JsonFormat {
       generator.print("}");
     }
 
-    private void quoted(String value, boolean quote) throws IOException {
-      if (quote) {
-        generator.print("\"");
-      }
-      generator.print(value);
-      if (quote) {
-        generator.print("\"");
-      }
-    }
-
-    private boolean getQuote(boolean forceQuote, boolean quoteable) {
-      return forceQuote || (alwaysWithQuotes && quoteable);
-    }
-
     private void printKey(
         final FieldDescriptor field, final Object value)
         throws IOException {
@@ -1188,9 +1174,8 @@ public class JsonFormat {
      * Prints a field's value in the proto3 JSON format.
      */
     private void printSingleFieldValue(
-        final FieldDescriptor field, final Object value, final boolean isKey)
+        final FieldDescriptor field, final Object value, boolean alwaysWithQuotes)
         throws IOException {
-      boolean forceQuote = false;
       boolean quoteable = false;
       String stringValue = null;
 
@@ -1198,9 +1183,6 @@ public class JsonFormat {
         case INT32:
         case SINT32:
         case SFIXED32:
-          if (isKey) {
-            forceQuote = true;
-          }
           stringValue = ((Integer) value).toString();
           break;
 
@@ -1208,16 +1190,10 @@ public class JsonFormat {
         case SINT64:
         case SFIXED64:
           quoteable = true;
-          if (isKey) {
-            forceQuote = true;
-          }
           stringValue = ((Long) value).toString();
           break;
 
         case BOOL:
-          if (isKey) {
-            forceQuote = true;
-          }
           stringValue = (Boolean) value ? "true" : "false";
           break;
 
@@ -1232,9 +1208,6 @@ public class JsonFormat {
               stringValue = "\"Infinity\"";
             }
           } else {
-            if (isKey) {
-              forceQuote = true;
-            }
             stringValue = floatValue.toString();
           }
           break;
@@ -1242,44 +1215,39 @@ public class JsonFormat {
         case DOUBLE:
           Double doubleValue = (Double) value;
           if (doubleValue.isNaN()) {
-            stringValue = "\"NaN\"";
+            alwaysWithQuotes = true;
+            stringValue = "NaN";
           } else if (doubleValue.isInfinite()) {
+            alwaysWithQuotes = true;
             if (doubleValue < 0) {
-              stringValue = "\"-Infinity\"";
+              stringValue = "-Infinity";
             } else {
-              stringValue = "\"Infinity\"";
+              stringValue = "Infinity";
             }
           } else {
-            if (isKey) {
-              forceQuote = true;
-            }
             stringValue = doubleValue.toString();
           }
           break;
 
         case UINT32:
         case FIXED32:
-          if (isKey) {
-            forceQuote = true;
-          }
           stringValue = unsignedToString((Integer) value);
           break;
 
         case UINT64:
         case FIXED64:
           quoteable = true;
-          if (isKey) {
-            forceQuote = true;
-          }
           stringValue = unsignedToString((Long) value);
           break;
 
         case STRING:
+          // `gson.toJson` quotes the value, so we must not quote it again in this method.
+          alwaysWithQuotes = false;
           stringValue = gson.toJson(value);
           break;
 
         case BYTES:
-          forceQuote = true;
+          alwaysWithQuotes = true;
           stringValue = BaseEncoding.base64().encode(((ByteString) value).toByteArray());
           break;
 
@@ -1287,18 +1255,12 @@ public class JsonFormat {
           // Special-case google.protobuf.NullValue (it's an Enum).
           if (field.getEnumType().getFullName().equals("google.protobuf.NullValue")) {
             // No matter what value it contains, we always print it as "null".
-            if (isKey) {
-              forceQuote = true;
-            }
             stringValue = "null";
           } else {
             if (printingEnumsAsInts || ((EnumValueDescriptor) value).getIndex() == -1) {
-              if (isKey) {
-                forceQuote = true;
-              }
               stringValue = String.valueOf(((EnumValueDescriptor) value).getNumber());
             } else {
-              forceQuote = true;
+              alwaysWithQuotes = true;
               stringValue = ((EnumValueDescriptor) value).getName();
             }
           }
@@ -1310,7 +1272,14 @@ public class JsonFormat {
           return;
       }
 
-      quoted(stringValue, getQuote(forceQuote, quoteable));
+      final boolean shouldQuote = alwaysWithQuotes || (this.alwaysWithQuotes && quoteable);
+      if (shouldQuote) {
+        generator.print("\"");
+      }
+      generator.print(stringValue);
+      if (shouldQuote) {
+        generator.print("\"");
+      }
     }
   }
 
