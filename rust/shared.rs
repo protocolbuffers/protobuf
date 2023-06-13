@@ -45,8 +45,8 @@ mod proxied;
 pub use __runtime::SerializedData;
 
 use std::fmt;
-use std::slice;
 use std::ptr::NonNull;
+use std::slice;
 
 /// An error that happened during deserialization.
 #[derive(Debug, Clone)]
@@ -62,8 +62,6 @@ impl fmt::Display for ParseError {
 ///
 /// Has semantics equivalent to `&[u8]` in Rust and `std::string_view` in C++,
 /// but is not ABI-compatible with them.
-///
-/// TODO: Is `ptr` allowed to be null or dangling when `len` is 0?
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct PtrAndLen {
