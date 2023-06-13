@@ -319,6 +319,9 @@ class PROTOBUF_EXPORT TextFormat {
   class PROTOBUF_EXPORT Printer {
    public:
     Printer();
+    virtual ~Printer() = default;
+    Printer(Printer&&) = default;
+    Printer& operator=(Printer&&) = default;
 
     // Like TextFormat::Print
     bool Print(const Message& message, io::ZeroCopyOutputStream* output) const;
