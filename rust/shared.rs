@@ -47,7 +47,7 @@ pub use __runtime::SerializedData;
 use std::fmt;
 use std::slice;
 
-/// Represents error during deserialization.
+/// An error that happened during deserialization.
 #[derive(Debug, Clone)]
 pub struct ParseError;
 
@@ -57,8 +57,12 @@ impl fmt::Display for ParseError {
     }
 }
 
-/// Represents an ABI-stable version of &[u8]/string_view (a borrowed slice of
-/// bytes) for FFI use only.
+/// An ABI-stable, FFI-safe borrowed slice of bytes.
+///
+/// Has semantics equivalent to `&[u8]` in Rust and `std::string_view` in C++,
+/// but is not ABI-compatible with them.
+///
+/// TODO: Is `ptr` allowed to be null or dangling when `len` is 0?
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct PtrAndLen {
