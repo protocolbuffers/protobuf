@@ -40,6 +40,7 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -86,8 +87,10 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"}", ""},
 
       // For TSan validation.
-      {"TsanDetectConcurrentMutation", "PROTOBUF_TSAN_WRITE(&_impl_)"},
-      {"TsanDetectConcurrentRead", "PROTOBUF_TSAN_READ(&_impl_)"},
+      {"TsanDetectConcurrentMutation",
+       "PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race)"},
+      {"TsanDetectConcurrentRead",
+       "PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race)"},
 
       // Old-style names.
       {"field", FieldMemberName(field, split)},

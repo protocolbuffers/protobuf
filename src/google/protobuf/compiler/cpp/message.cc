@@ -1821,6 +1821,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     format("::$proto_ns$::internal::AnyMetadata _any_metadata_;\n");
   }
 
+  // For detecting when concurrent accessor calls cause races.
+  format("PROTOBUF_TSAN_DECLARE_MEMBER;\n");
+
   format.Outdent();
   format("};\n");
 
