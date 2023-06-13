@@ -84,11 +84,10 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_java"):
-        _github_archive(
+        http_archive(
             name = "rules_java",
-            repo = "https://github.com/bazelbuild/rules_java",
-            commit = "981f06c3d2bd10225e85209904090eb7b5fb26bd",
-            sha256 = "7979ece89e82546b0dcd1dff7538c34b5a6ebc9148971106f0e3705444f00665",
+            url = "https://github.com/bazelbuild/rules_java/releases/download/6.0.0/rules_java-6.0.0.tar.gz",
+            sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
         )
 
     if not native.existing_rule("rules_proto"):
