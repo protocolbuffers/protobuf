@@ -87,6 +87,45 @@ class MessageFactoryTest(unittest.TestCase):
     result = cls.FromString(reserialized)
     self.assertEqual(msg, result)
 
+  def testTempDpool(self):
+    """Fixture to isolate the descriptor pool used in each test"""
+    dpool = descriptor_pool.DescriptorPool()
+    global_dpool = descriptor_pool._DEFAULT
+    descriptor_pool._DEFAULT = dpool
+    fd = descriptor_pb2.FileDescriptorProto()
+    struct_pb2.DESCRIPTOR.CopyToProto(fd)
+    dpool.Add(fd)
+    yield dpool
+    descriptor_pool._DEFAULT = global_dpool
+
+  def testGitSeg(self):
+    fdp = descriptor_pb2.FileDescriptorProto(
+        name="f.proto",
+        package="some.package",
+        message_type=[
+            descriptor_pb2.DescriptorProto(
+                name="ProtoMessage",
+                nested_type=[
+                    descriptor_pb2.DescriptorProto(
+                        name="NestedMessage",
+                        field=[
+                            descriptor_pb2.FieldDescriptorProto(name="a_text_field", number=1, type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
+                        ]
+                    )
+                ],
+                field=[descriptor_pb2.FieldDescriptorProto(name="msg_field", number=1, type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE, type_name="NestedMessage")]
+            )
+        ]
+    )
+
+    mf = message_factory.MessageFactory()
+    mf.pool.Add(fdp)
+    msgs = mf.GetMessages([fdp.name])
+    ProtoMessage = msgs["some.package.ProtoMessage"]
+    # nested_msg_class = ProtoMessage.NestedMessage
+    msg = ProtoMessage()
+    print(msg.msg_field)
+
   def testGetPrototype(self):
     db = descriptor_database.DescriptorDatabase()
     pool = descriptor_pool.DescriptorPool(db)
