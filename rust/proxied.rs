@@ -28,10 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// copybara:strip_begin
-// See http://go/rust-proxy-reference-types for design discussion.
-// copybara:strip_end
-
 //! Operating on borrowed data owned by a message is a central concept in
 //! Protobuf (and Rust in general). The way this is normally accomplished in
 //! Rust is to pass around references and operate on those. Unfortunately,
