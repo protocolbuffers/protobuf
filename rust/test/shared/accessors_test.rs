@@ -65,4 +65,7 @@ fn test_optional_bytes_accessors() {
 
     msg.optional_bytes_set(None);
     assert_eq!(msg.optional_bytes(), None);
+
+    msg.optional_bytes_set(Some(b""));
+    assert_eq!(msg.optional_bytes().unwrap(), b"");
 }
