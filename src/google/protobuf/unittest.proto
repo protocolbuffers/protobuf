@@ -588,6 +588,9 @@ message TestEagerMessage {
 message TestLazyMessage {
   optional TestAllTypes sub_message = 1 [lazy=true];
 }
+message TestLazyMessageRepeated {
+  repeated TestLazyMessage repeated_message = 1;
+}
 message TestEagerMaybeLazy {
   message NestedMessage {
     optional TestPackedTypes packed = 1;
