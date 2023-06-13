@@ -19,6 +19,7 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
 PROTOBUF_NAMESPACE_OPEN
+template <typename>
 PROTOBUF_CONSTEXPR Duration::Duration(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.seconds_)*/ ::int64_t{0}

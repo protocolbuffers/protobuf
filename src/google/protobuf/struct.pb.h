@@ -125,6 +125,7 @@ public:
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE> SuperType;
   Struct_FieldsEntry_DoNotUse();
+  template <typename = void>
   explicit PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse(
       ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
   explicit Struct_FieldsEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
@@ -145,6 +146,7 @@ class PROTOBUF_EXPORT Struct final :
  public:
   inline Struct() : Struct(nullptr) {}
   ~Struct() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Struct(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Struct(const Struct& from);
@@ -311,6 +313,7 @@ class PROTOBUF_EXPORT Value final :
  public:
   inline Value() : Value(nullptr) {}
   ~Value() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Value(const Value& from);
@@ -582,6 +585,7 @@ class PROTOBUF_EXPORT ListValue final :
  public:
   inline ListValue() : ListValue(nullptr) {}
   ~ListValue() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR ListValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ListValue(const ListValue& from);

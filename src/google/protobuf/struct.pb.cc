@@ -19,6 +19,7 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
 PROTOBUF_NAMESPACE_OPEN
+template <typename>
 PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(
     ::_pbi::ConstantInitialized) {}
 struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
@@ -31,6 +32,7 @@ struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
+template <typename>
 PROTOBUF_CONSTEXPR Struct::Struct(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.fields_)*/{}
@@ -45,6 +47,7 @@ struct StructDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StructDefaultTypeInternal _Struct_default_instance_;
+template <typename>
 PROTOBUF_CONSTEXPR Value::Value(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.kind_)*/{}
@@ -60,6 +63,7 @@ struct ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ValueDefaultTypeInternal _Value_default_instance_;
+template <typename>
 PROTOBUF_CONSTEXPR ListValue::ListValue(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.values_)*/{}
