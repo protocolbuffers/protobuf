@@ -110,6 +110,7 @@ class PROTOBUF_EXPORT DoubleValue final :
  public:
   inline DoubleValue() : DoubleValue(nullptr) {}
   ~DoubleValue() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR DoubleValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   DoubleValue(const DoubleValue& from);
@@ -264,6 +265,7 @@ class PROTOBUF_EXPORT FloatValue final :
  public:
   inline FloatValue() : FloatValue(nullptr) {}
   ~FloatValue() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR FloatValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FloatValue(const FloatValue& from);
@@ -418,6 +420,7 @@ class PROTOBUF_EXPORT Int64Value final :
  public:
   inline Int64Value() : Int64Value(nullptr) {}
   ~Int64Value() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Int64Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Int64Value(const Int64Value& from);
@@ -572,6 +575,7 @@ class PROTOBUF_EXPORT UInt64Value final :
  public:
   inline UInt64Value() : UInt64Value(nullptr) {}
   ~UInt64Value() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR UInt64Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   UInt64Value(const UInt64Value& from);
@@ -726,6 +730,7 @@ class PROTOBUF_EXPORT Int32Value final :
  public:
   inline Int32Value() : Int32Value(nullptr) {}
   ~Int32Value() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Int32Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Int32Value(const Int32Value& from);
@@ -880,6 +885,7 @@ class PROTOBUF_EXPORT UInt32Value final :
  public:
   inline UInt32Value() : UInt32Value(nullptr) {}
   ~UInt32Value() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR UInt32Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   UInt32Value(const UInt32Value& from);
@@ -1034,6 +1040,7 @@ class PROTOBUF_EXPORT BoolValue final :
  public:
   inline BoolValue() : BoolValue(nullptr) {}
   ~BoolValue() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR BoolValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   BoolValue(const BoolValue& from);
@@ -1188,6 +1195,7 @@ class PROTOBUF_EXPORT StringValue final :
  public:
   inline StringValue() : StringValue(nullptr) {}
   ~StringValue() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR StringValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   StringValue(const StringValue& from);
@@ -1352,6 +1360,7 @@ class PROTOBUF_EXPORT BytesValue final :
  public:
   inline BytesValue() : BytesValue(nullptr) {}
   ~BytesValue() override;
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR BytesValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   BytesValue(const BytesValue& from);

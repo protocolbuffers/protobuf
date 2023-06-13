@@ -23,6 +23,7 @@ namespace _pbi = ::PROTOBUF_NAMESPACE_ID::internal;
 #pragma clang diagnostic ignored "-Wuninitialized"
 #endif  // __llvm__
 PROTOBUF_NAMESPACE_OPEN
+template <typename>
 PROTOBUF_CONSTEXPR Any::Any(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.type_url_)*/ {

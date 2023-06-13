@@ -70,6 +70,7 @@ class PROTOBUF_EXPORT Empty final :
     public ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
  public:
   inline Empty() : Empty(nullptr) {}
+  template<typename = void>
   explicit PROTOBUF_CONSTEXPR Empty(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Empty(const Empty& from);
