@@ -74,37 +74,37 @@
 use std::fmt::Debug;
 use std::marker::{Send, Sync};
 
-/// Represents a type that can be accessed through a reference-like proxy.
+/// A type that can be accessed through a reference-like proxy.
 ///
 /// An instance of a `Proxied` can be accessed
 /// immutably via `Proxied::View` and mutably via `Proxied::Mut`.
 ///
 /// All Protobuf field types implement `Proxied`.
 pub trait Proxied {
-    /// Represents a shared accessor of a `T` through an `&'a T`-like proxy
-    /// type.
+    /// The proxy type that provides shared access to a `T`, like a `&'a T`.
     ///
     /// Most code should use the type alias [`View`].
-    type View<'a>: ViewFor<'a, Self> + Copy + Send + Sync + Unpin + Sized + Debug
+    type View<'a>: ViewProxy<'a, Proxied = Self> + Copy + Send + Sync + Unpin + Sized + Debug
     where
         Self: 'a;
 
-    /// Represents a unique mutator of a `T` through an `&'a mut T`-like proxy
-    /// type.
+    /// The proxy type that provides exclusive mutable access to a `T`, like a
+    /// `&'a mut T`.
     ///
     /// Most code should use the type alias [`Mut`].
-    type Mut<'a>: MutFor<'a, Self> + Sync + Sized + Debug
+    type Mut<'a>: MutProxy<'a, Proxied = Self> + Sync + Sized + Debug
     where
         Self: 'a;
 }
 
-/// Represents a shared accessor of a `T` through an `&'a T`-like proxy type.
+/// A proxy type that provides shared access to a `T`, like a `&'a T`.
 ///
 /// This is more concise than fully spelling the associated type.
 #[allow(dead_code)]
 pub type View<'a, T> = <T as Proxied>::View<'a>;
 
-/// Represents a unique mutator of a `T` through an `&'a mut T`-like proxy type.
+/// A proxy type that provides exclusive mutable access to a `T`, like a
+/// `&'a mut T`.
 ///
 /// This is more concise than fully spelling the associated type.
 #[allow(dead_code)]
@@ -114,7 +114,9 @@ pub type Mut<'a, T> = <T as Proxied>::Mut<'a>;
 ///
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
-pub trait ViewFor<'a, T: 'a + Proxied + ?Sized>: 'a + Sized {
+pub trait ViewProxy<'a>: 'a + Sized {
+    type Proxied: 'a + Proxied + ?Sized;
+
     /// Converts a borrow into a `View` with the lifetime of that borrow.
     ///
     /// In non-generic code we don't need to use `as_view` because the proxy
@@ -134,7 +136,7 @@ pub trait ViewFor<'a, T: 'a + Proxied + ?Sized>: 'a + Sized {
     /// ```
     ///
     /// [invariant]: https://doc.rust-lang.org/nomicon/subtyping.html#variance
-    fn as_view(&self) -> View<'_, T>;
+    fn as_view(&self) -> View<'_, Self::Proxied>;
 
     /// Converts into a `View` with a potentially shorter lifetime.
     ///
@@ -161,7 +163,7 @@ pub trait ViewFor<'a, T: 'a + Proxied + ?Sized>: 'a + Sized {
     /// ```
     ///
     /// [invariant]: https://doc.rust-lang.org/nomicon/subtyping.html#variance
-    fn into_view<'shorter>(self) -> View<'shorter, T>
+    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
     where
         'a: 'shorter;
 }
@@ -170,7 +172,7 @@ pub trait ViewFor<'a, T: 'a + Proxied + ?Sized>: 'a + Sized {
 ///
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
-pub trait MutFor<'a, T: 'a + Proxied + ?Sized>: ViewFor<'a, T> {
+pub trait MutProxy<'a>: ViewProxy<'a> {
     /// Converts a borrow into a `Mut` with the lifetime of that borrow.
     ///
     /// This function enables calling multiple methods consuming `self`, for
@@ -184,7 +186,7 @@ pub trait MutFor<'a, T: 'a + Proxied + ?Sized>: ViewFor<'a, T> {
     ///
     /// `as_mut` is also useful in generic code to explicitly perform the
     /// operation that in concrete code coercion would perform implicitly.
-    fn as_mut(&mut self) -> Mut<'_, T>;
+    fn as_mut(&mut self) -> Mut<'_, Self::Proxied>;
 
     /// Converts into a `Mut` with a potentially shorter lifetime.
     ///
@@ -208,7 +210,7 @@ pub trait MutFor<'a, T: 'a + Proxied + ?Sized>: ViewFor<'a, T> {
     /// ```
     ///
     /// [invariant]: https://doc.rust-lang.org/nomicon/subtyping.html#variance
-    fn into_mut<'shorter>(self) -> Mut<'shorter, T>
+    fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
     where
         'a: 'shorter;
 }
@@ -248,7 +250,9 @@ mod tests {
         }
     }
 
-    impl<'a> ViewFor<'a, MyProxied> for MyProxiedView<'a> {
+    impl<'a> ViewProxy<'a> for MyProxiedView<'a> {
+        type Proxied = MyProxied;
+
         fn as_view(&self) -> View<'a, MyProxied> {
             *self
         }
@@ -272,7 +276,9 @@ mod tests {
         }
     }
 
-    impl<'a> ViewFor<'a, MyProxied> for MyProxiedMut<'a> {
+    impl<'a> ViewProxy<'a> for MyProxiedMut<'a> {
+        type Proxied = MyProxied;
+
         fn as_view(&self) -> View<'_, MyProxied> {
             MyProxiedView { my_proxied_ref: self.my_proxied_ref }
         }
@@ -284,7 +290,7 @@ mod tests {
         }
     }
 
-    impl<'a> MutFor<'a, MyProxied> for MyProxiedMut<'a> {
+    impl<'a> MutProxy<'a> for MyProxiedMut<'a> {
         fn as_mut(&mut self) -> Mut<'_, MyProxied> {
             MyProxiedMut { my_proxied_ref: self.my_proxied_ref }
         }
