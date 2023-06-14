@@ -1022,23 +1022,18 @@ bool MergedDescriptorDatabase::FindFileContainingExtension(
 
 bool MergedDescriptorDatabase::FindAllExtensionNumbers(
     const std::string& extendee_type, std::vector<int>* output) {
+  // NOLINTNEXTLINE(google3-runtime-rename-unnecessary-ordering)
   absl::btree_set<int> merged_results;
   std::vector<int> results;
   bool success = false;
-
   for (DescriptorDatabase* source : sources_) {
     if (source->FindAllExtensionNumbers(extendee_type, &results)) {
-      std::copy(results.begin(), results.end(),
-                std::insert_iterator<absl::btree_set<int> >(
-                    merged_results, merged_results.begin()));
+      for (int r : results) merged_results.insert(r);
       success = true;
     }
     results.clear();
   }
-
-  std::copy(merged_results.begin(), merged_results.end(),
-            std::insert_iterator<std::vector<int> >(*output, output->end()));
-
+  for (int r : merged_results) output->push_back(r);
   return success;
 }
 
