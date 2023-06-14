@@ -61,13 +61,17 @@ class SingularBytes final : public AccessorGenerator {
               return None;
             }
             unsafe {
-              let val = $getter_thunk$(self.msg);
-              Some($std$::slice::from_raw_parts(val.ptr, val.len))
+              Some($getter_thunk$(self.msg).as_ref())
             }
           }
           pub fn $field$_set(&mut self, val: Option<&[u8]>) {
             match val {
-              Some(val) => unsafe { $setter_thunk$(self.msg, val.as_ptr(), val.len()) },
+              Some(val) =>
+                if val.len() == 0 {
+                  unsafe { $setter_thunk$(self.msg, $std$::ptr::null(), 0) }
+                } else {
+                  unsafe { $setter_thunk$(self.msg, val.as_ptr(), val.len()) }
+                },
               None => unsafe { $clearer_thunk$(self.msg) },
             }
           }
