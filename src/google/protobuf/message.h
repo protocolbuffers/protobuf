@@ -161,6 +161,7 @@ namespace internal {
 struct FuzzPeer;
 struct DescriptorTable;
 class MapFieldBase;
+class MessageUtil;
 class SwapFieldHelper;
 class CachedSize;
 struct TailCallTableInfo;
@@ -1119,6 +1120,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class expr::CelMapReflectionFriend;
   friend class internal::MapFieldReflectionTest;
   friend class internal::MapKeySorter;
+  friend class internal::MessageUtil;
   friend class internal::WireFormat;
   friend class internal::ReflectionOps;
   friend class internal::SwapFieldHelper;
