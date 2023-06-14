@@ -1137,18 +1137,12 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
         }
       )cc");
 
-  // For descriptor.proto we want to avoid doing any dynamic initialization,
-  // because in some situations that would otherwise pull in a lot of
-  // unnecessary code that can't be stripped by --gc-sections. Descriptor
-  // initialization will still be performed lazily when it's needed.
-  if (file_->name() != "net/proto2/proto/descriptor.proto") {
-    p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
-            R"cc(
-              // Force running AddDescriptors() at dynamic initialization time.
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-              static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
-            )cc");
-  }
+  p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
+          R"cc(
+            // Force running AddDescriptors() at dynamic initialization time.
+            PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+            static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
+          )cc");
 
   // However, we must provide a way to force initialize the default instances
   // of FileDescriptorProto which will be used during registration of other
