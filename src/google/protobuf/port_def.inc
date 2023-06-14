@@ -1035,6 +1035,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // This error has been generally flaky, but we need to disable it specifically
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma clang diagnostic ignored "-Wunused-parameter"
+// -Wshadow means that declaration shadows a variable.
+// for (int i = 0; i < file_->public_dependency_count(); ++i) 
+//   for (int i = 0; i < public_dep->message_type_count(); ++i)
+#pragma clang diagnostic ignored "-Wshadow"
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -1058,6 +1062,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // This error has been generally flaky, but we need to disable it specifically
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+// -Wshadow means that declaration shadows a variable.
+// for (int i = 0; i < file_->public_dependency_count(); ++i) 
+//   for (int i = 0; i < public_dep->message_type_count(); ++i)
+#pragma GCC diagnostic ignored "-Wshadow"
 #ifndef __clang__
 // This causes spurious warnings in GCC 13.
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
