@@ -45,6 +45,7 @@
 #define GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 
 #include <algorithm>
+#include <cstddef>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -56,7 +57,9 @@
 #include "google/protobuf/port.h"
 #include "absl/base/attributes.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/generated_enum_util.h"
@@ -346,6 +349,8 @@ class RepeatedField final
   // This is public due to it being called by generated code.
   inline void InternalSwap(RepeatedField* other);
 
+  void MergeFromArray(const Element* array, size_t length);
+
  private:
   template <typename T> friend class Arena::InternalHelper;
 
@@ -603,6 +608,29 @@ inline int RepeatedField<Element>::size() const {
 template <typename Element>
 inline int RepeatedField<Element>::Capacity() const {
   return total_size_;
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::MergeFromArray(const Element* array,
+                                                   size_t length) {
+  // Only supports trivially copyable types.
+  static_assert(std::is_trivially_copyable<Element>::value,
+                "only trivialy copyable types are supported");
+
+  ABSL_DCHECK_GT(length, 0u);
+  if (ABSL_PREDICT_TRUE(current_size_ + length > total_size_)) {
+    Grow(current_size_, current_size_ + length);
+  }
+  Element* elem = unsafe_elements();
+  ABSL_DCHECK_NE(elem, nullptr);
+  void* p = elem + ExchangeCurrentSize(current_size_ + length);
+  memcpy(p, array, sizeof(Element) * length);
+}
+
+template <>
+inline void RepeatedField<absl::Cord>::MergeFromArray(const absl::Cord* array,
+                                                      size_t length) {
+  ABSL_LOG(FATAL) << "not supported";
 }
 
 template <typename Element>
