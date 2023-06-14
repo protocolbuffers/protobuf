@@ -1963,7 +1963,13 @@ DescriptorPool* DescriptorPool::internal_generated_pool() {
 }
 
 const DescriptorPool* DescriptorPool::generated_pool() {
-  return internal_generated_pool();
+  const DescriptorPool* pool = internal_generated_pool();
+  // Ensure that descriptor.proto gets registered in the generated pool. It is a
+  // special case because it is included in the full runtime. We have to avoid
+  // registering it pre-main, because we need to ensure that the linker
+  // --gc-sections step can strip out the full runtime if it is unused.
+  DescriptorProto::descriptor();
+  return pool;
 }
 
 
