@@ -6880,7 +6880,7 @@ TEST_F(ValidationErrorTest, ValidateProto3Enum) {
       "  value { name: 'FOO_FOO' number:1 } "
       "}",
       "foo.proto: FooEnum: NUMBER: The first enum value must be "
-      "zero in proto3.\n");
+      "zero for open enums.\n");
 
   BuildFileWithErrors(
       "name: 'foo.proto' "
@@ -6893,7 +6893,7 @@ TEST_F(ValidationErrorTest, ValidateProto3Enum) {
       "  } "
       "}",
       "foo.proto: Foo.FooEnum: NUMBER: The first enum value must be "
-      "zero in proto3.\n");
+      "zero for open enums.\n");
 
   // valid case.
   BuildFile(

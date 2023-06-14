@@ -4285,8 +4285,6 @@ class DescriptorBuilder {
                              const DescriptorProto& proto);
   void ValidateProto3Field(const FieldDescriptor* field,
                            const FieldDescriptorProto& proto);
-  void ValidateProto3Enum(const EnumDescriptor* enm,
-                          const EnumDescriptorProto& proto);
 
   // Returns true if the map entry message is compatible with the
   // auto-generated entry message from map fields syntax.
@@ -7199,18 +7197,12 @@ void DescriptorBuilder::ValidateProto3(const FileDescriptor* file,
   for (int i = 0; i < file->message_type_count(); ++i) {
     ValidateProto3Message(file->message_types_ + i, proto.message_type(i));
   }
-  for (int i = 0; i < file->enum_type_count(); ++i) {
-    ValidateProto3Enum(file->enum_types_ + i, proto.enum_type(i));
-  }
 }
 
 void DescriptorBuilder::ValidateProto3Message(const Descriptor* message,
                                               const DescriptorProto& proto) {
   for (int i = 0; i < message->nested_type_count(); ++i) {
     ValidateProto3Message(message->nested_types_ + i, proto.nested_type(i));
-  }
-  for (int i = 0; i < message->enum_type_count(); ++i) {
-    ValidateProto3Enum(message->enum_types_ + i, proto.enum_type(i));
   }
   for (int i = 0; i < message->field_count(); ++i) {
     ValidateProto3Field(message->fields_ + i, proto.field(i));
@@ -7266,15 +7258,6 @@ void DescriptorBuilder::ValidateProto3Field(const FieldDescriptor* field,
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
              "Groups are not supported in proto3 syntax.");
-  }
-}
-
-void DescriptorBuilder::ValidateProto3Enum(const EnumDescriptor* enm,
-                                           const EnumDescriptorProto& proto) {
-  if (enm->value_count() > 0 && enm->value(0)->number() != 0) {
-    AddError(enm->full_name(), proto.value(0),
-             DescriptorPool::ErrorCollector::NUMBER,
-             "The first enum value must be zero in proto3.");
   }
 }
 
@@ -7384,6 +7367,13 @@ void DescriptorBuilder::ValidateFieldFeatures(
 void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
                                         const EnumDescriptorProto& proto) {
   CheckEnumValueUniqueness(proto, enm);
+
+  if (!enm->is_closed() && enm->value_count() > 0 &&
+      enm->value(0)->number() != 0) {
+    AddError(enm->full_name(), proto.value(0),
+             DescriptorPool::ErrorCollector::NUMBER,
+             "The first enum value must be zero for open enums.");
+  }
 
   if (!enm->options().has_allow_alias() || !enm->options().allow_alias()) {
     absl::flat_hash_map<int, std::string> used_values;
