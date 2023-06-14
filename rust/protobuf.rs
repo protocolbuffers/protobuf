@@ -30,12 +30,15 @@
 
 //! Rust Protobuf Runtime
 //!
-//! This file forwards to the kernel specific implementation. Rust Protobuf
-//! gencode actually depends directly on kernel specific crates. The only reason
-//! this crate exists is to be able to use `protobuf` as a crate name for both
-//! cpp and upb kernels from user code.
+//! This file forwards to `shared.rs`, which exports a kernel-specific
+//! `__runtime`. Rust Protobuf gencode actually depends directly on kernel
+//! specific crates. The only reason this crate exists is to be able to use
+//! `protobuf` as a crate name for both cpp and upb kernels from user code.
 
 #[cfg(cpp_kernel)]
-pub use protobuf_cpp::*;
+use protobuf_cpp as kernel;
+
 #[cfg(upb_kernel)]
-pub use protobuf_upb::*;
+use protobuf_upb as kernel;
+
+pub use kernel::{Mut, MutProxy, ParseError, Proxied, View, ViewProxy};

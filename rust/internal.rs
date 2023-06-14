@@ -28,39 +28,44 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Kernel-agnostic logic for the Rust Protobuf Runtime.
-//!
-//! For kernel-specific logic this crate delegates to the respective `__runtime`
-//! crate.
+//! Kernel-agnostic logic for the Rust Protobuf runtime that should not be
+//! exposed to through the `protobuf` path but must be public for use by
+//! generated code.
 
-/// Everything in `__runtime` is allowed to change without it being considered
-/// a breaking change for the protobuf library. Nothing in here should be
-/// exported in `protobuf.rs`.
-#[cfg(cpp_kernel)]
-#[path = "cpp.rs"]
-pub mod __runtime;
-#[cfg(upb_kernel)]
-#[path = "upb.rs"]
-pub mod __runtime;
+use std::slice;
 
-mod proxied;
+/// Represents an ABI-stable version of `NonNull<[u8]>`/`string_view` (a
+/// borrowed slice of bytes) for FFI use only.
+///
+/// Has semantics similar to `std::string_view` in C++ and `&[u8]` in Rust,
+/// but is not ABI-compatible with either.
+///
+/// If `len` is 0, then `ptr` can be null or dangling. C++ considers a dangling
+/// 0-len `std::string_view` to be invalid, and Rust considers a `&[u8]` with a
+/// null data pointer to be invalid.
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct PtrAndLen {
+    /// Pointer to the first byte.
+    /// Borrows the memory.
+    pub ptr: *const u8,
 
-pub use proxied::{Mut, MutProxy, Proxied, View, ViewProxy};
+    /// Length of the `[u8]` pointed to by `ptr`.
+    pub len: usize,
+}
 
-/// Everything in `__internal` is allowed to change without it being considered
-/// a breaking change for the protobuf library. Nothing in here should be
-/// exported in `protobuf.rs`.
-#[path = "internal.rs"]
-pub mod __internal;
-
-use std::fmt;
-
-/// An error that happened during deserialization.
-#[derive(Debug, Clone)]
-pub struct ParseError;
-
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Couldn't deserialize given bytes into a proto")
+impl PtrAndLen {
+    /// Unsafely dereference this slice.
+    ///
+    /// # Safety
+    /// - `ptr` must be valid for `len` bytes. It can be null or dangling if
+    ///   `self.len == 0`.
+    pub unsafe fn as_ref<'a>(self) -> &'a [u8] {
+        if self.ptr.is_null() {
+            assert_eq!(self.len, 0, "Non-empty slice with null data pointer");
+            &[]
+        } else {
+            slice::from_raw_parts(self.ptr, self.len)
+        }
     }
 }
