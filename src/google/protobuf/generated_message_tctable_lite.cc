@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <numeric>
 #include <string>
@@ -510,9 +511,14 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
+  // We use a local buffer to allow compiler to see that there's no aliasing.
+  alignas(RepeatedPtrFieldBase) char buffer[sizeof(RepeatedPtrFieldBase)];
+  memcpy(buffer, reinterpret_cast<char*>(&field), sizeof(RepeatedPtrFieldBase));
+  RepeatedPtrFieldBase& local_field =
+      *reinterpret_cast<RepeatedPtrFieldBase*>(buffer);
   do {
     ptr += sizeof(TagType);
-    MessageLite* submsg = field.Add<GenericTypeHandler<MessageLite>>(
+    MessageLite* submsg = local_field.Add<GenericTypeHandler<MessageLite>>(
         aux_is_table ? aux.table->default_instance : aux.message_default());
     if (aux_is_table) {
       if (group_coding) {
@@ -529,13 +535,18 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
       }
     }
     if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+      memcpy(reinterpret_cast<char*>(&field), buffer,
+             sizeof(RepeatedPtrFieldBase));
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
     if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+      memcpy(reinterpret_cast<char*>(&field), buffer,
+             sizeof(RepeatedPtrFieldBase));
       PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
   } while (UnalignedLoad<TagType>(ptr) == expected_tag);
 
+  memcpy(reinterpret_cast<char*>(&field), buffer, sizeof(RepeatedPtrFieldBase));
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
