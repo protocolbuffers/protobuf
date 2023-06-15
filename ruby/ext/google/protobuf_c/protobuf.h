@@ -84,10 +84,9 @@ void Arena_Pin(VALUE arena, VALUE obj);
 // being collected (though in Ruby <2.7 is it effectively strong, due to
 // implementation limitations).
 
-// Adds an entry to the cache. The "arena" parameter must give the arena that
-// "key" was allocated from.  In Ruby <2.7.0, it will be used to remove the key
-// from the cache when the arena is destroyed.
-void ObjectCache_Add(const void* key, VALUE val);
+// Tries to add a new entry to the cache, returning the newly installed value or
+// the pre-existing entry.
+VALUE ObjectCache_GetSet(const void* key, VALUE val);
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key);

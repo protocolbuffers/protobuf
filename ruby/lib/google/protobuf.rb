@@ -35,6 +35,98 @@ require 'google/protobuf/message_exts'
 # That way the module init can grab references to these.
 module Google
   module Protobuf
+    # A pointer -> Ruby Object cache that keeps references to Ruby wrapper
+    # objects.  This allows us to look up any Ruby wrapper object by the address
+    # of the object it is wrapping. That way we can avoid ever creating two
+    # different wrapper objects for the same C object, which saves memory and
+    # preserves object identity.
+    #
+    # We use WeakMap for the cache. For Ruby <2.7 we also need a secondary Hash
+    # to store WeakMap keys because Ruby <2.7 WeakMap doesn't allow non-finalizable
+    # keys.
+    #
+    # We also need the secondary Hash if sizeof(long) < sizeof(VALUE), because this
+    # means it may not be possible to fit a pointer into a Fixnum. Keys are
+    # pointers, and if they fit into a Fixnum, Ruby doesn't collect them, but if
+    # they overflow and require allocating a Bignum, they could get collected
+    # prematurely, thus removing the cache entry. This happens on 64-bit Windows,
+    # on which pointers are 64 bits but longs are 32 bits. In this case, we enable
+    # the secondary Hash to hold the keys and prevent them from being collected.
+    class ObjectCache
+      def initialize
+        @map = ObjectSpace::WeakMap.new
+        @mutex = Mutex.new
+      end
+
+      def get(key)
+        @map[key]
+      end
+
+      def getset(key, value)
+        @map[key] || @mutex.synchronize do
+          @map[key] ||= value
+        end
+      end
+
+      def purge
+        # noop to expose the same interface as LegacyObjectCache
+      end
+    end
+
+    class LegacyObjectCache
+      def initialize
+        @secondary_map = {}
+        @map = ObjectSpace::WeakMap.new
+        @mutex = Mutex.new
+      end
+
+      def get(key)
+        value = if secondary_key = @secondary_map[key]
+          @map[secondary_key]
+        else
+          @mutex.synchronize do
+            @map[(@secondary_map[key] ||= Object.new)]
+          end
+        end
+
+        # GC if we could remove at least 2000 entries or 20% of the table size
+        # (whichever is greater).  Since the cost of the GC pass is O(N), we
+        # want to make sure that we condition this on overall table size, to
+        # avoid O(N^2) CPU costs.
+        cutoff = (@secondary_map.size * 0.2).ceil
+        cutoff = 2_000 if cutoff < 2_000
+        if (@secondary_map.size - @map.size) > cutoff
+          purge
+        end
+
+        value
+      end
+
+      def getset(key, value)
+        if secondary_key = @secondary_map[key]
+          if old_value = @map[secondary_key]
+            return old_value
+          end
+        end
+
+        @mutex.synchronize do
+          secondary_key ||= (@secondary_map[key] ||= Object.new)
+          @map[secondary_key] ||= value
+        end
+      end
+
+      def purge
+        @mutex.synchronize do
+          @secondary_map.each do |key, secondary_key|
+            unless @map.key?(secondary_key)
+              @secondary_map.delete(key)
+            end
+          end
+        end
+        nil
+      end
+    end
+
     class Error < StandardError; end
     class ParseError < Error; end
     class TypeError < ::TypeError; end
