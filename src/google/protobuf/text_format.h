@@ -590,7 +590,7 @@ class PROTOBUF_EXPORT TextFormat {
   // Parse the given text as a single field value and store it into the
   // given field of the given message. If the field is a repeated field,
   // the new value will be added to the end
-  static bool ParseFieldValueFromString(const std::string& input,
+  static bool ParseFieldValueFromString(absl::string_view input,
                                         const FieldDescriptor* field,
                                         Message* message);
 
@@ -707,7 +707,7 @@ class PROTOBUF_EXPORT TextFormat {
     }
 
     // Like TextFormat::ParseFieldValueFromString
-    bool ParseFieldValueFromString(const std::string& input,
+    bool ParseFieldValueFromString(absl::string_view input,
                                    const FieldDescriptor* field,
                                    Message* output);
 
