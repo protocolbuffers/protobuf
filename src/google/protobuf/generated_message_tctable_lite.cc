@@ -633,8 +633,11 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
   do {
     field.Add(UnalignedLoad<LayoutType>(ptr + sizeof(TagType)));
     ptr += sizeof(TagType) + sizeof(LayoutType);
-  } while (ctx->DataAvailable(ptr) && UnalignedLoad<TagType>(ptr) == tag);
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+  } while (UnalignedLoad<TagType>(ptr) == tag);
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastF32R1(PROTOBUF_TC_PARAM_DECL) {
@@ -974,11 +977,11 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
     field.Add(ZigZagDecodeHelper<FieldType, zigzag>(tmp));
-    if (!ctx->DataAvailable(ptr)) {
-      break;
+    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
   } while (UnalignedLoad<TagType>(ptr) == expected_tag);
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8R1(PROTOBUF_TC_PARAM_DECL) {
@@ -1201,11 +1204,12 @@ const char* TcParser::RepeatedEnum(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_MUSTTAIL return FastUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
     }
     field.Add(static_cast<int32_t>(tmp));
-    if (!ctx->DataAvailable(ptr)) {
-      break;
+    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
   } while (UnalignedLoad<TagType>(ptr) == expected_tag);
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 const TcParser::UnknownFieldOps& TcParser::GetUnknownFieldOps(
@@ -1346,10 +1350,12 @@ const char* TcParser::RepeatedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
     }
     field.Add(static_cast<int32_t>(v));
     ptr += sizeof(TagType) + 1;
-    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) break;
+    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
   } while (UnalignedLoad<TagType>(ptr) == expected_tag);
 
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0R1(PROTOBUF_TC_PARAM_DECL) {
@@ -1502,17 +1508,19 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
 #ifdef NDEBUG
     case kUtf8ValidateOnly:
 #endif
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+      break;
     default:
       if (PROTOBUF_PREDICT_TRUE(IsValidUTF8(field))) {
-        PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+        break;
       }
       ReportFastUtf8Error(FastDecodeTag(saved_tag), table);
       if (utf8 == kUtf8) {
         PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
       }
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+      break;
   }
+
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastBS1(PROTOBUF_TC_PARAM_DECL) {
@@ -1632,10 +1640,12 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
         PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
       }
-      if (!ctx->DataAvailable(ptr)) break;
+      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+        PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+      }
     } while (UnalignedLoad<TagType>(ptr) == expected_tag);
   }
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastBR1(PROTOBUF_TC_PARAM_DECL) {
@@ -2196,7 +2206,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   if (ptr == nullptr || !is_valid) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
@@ -2273,7 +2283,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
 #endif
   }
 
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 
