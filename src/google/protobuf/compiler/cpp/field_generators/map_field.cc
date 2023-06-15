@@ -105,6 +105,12 @@ class Map : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      $field_$.CopyFrom(rhs.$field_$);
+    )cc");
+  }
+
   void GenerateSwappingCode(io::Printer* p) const override {
     p->Emit(R"cc(
       $field_$.InternalSwap(&other->$field_$);

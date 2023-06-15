@@ -105,6 +105,7 @@ class SingularMessage : public FieldGeneratorBase {
         weak_(IsImplicitWeakField(field, opts, scc)),
         has_required_(scc->HasRequiredFields(field->message_type())),
         has_hasbit_(HasHasbit(field)),
+        is_lazy_(IsLazy(field, opts, scc)),
         is_oneof_(field_->real_containing_oneof() != nullptr),
         is_foreign_(IsCrossFileMessage(field)) {}
 
@@ -129,6 +130,7 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
+  void GenerateCopyFromCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateConstructorCode(io::Printer* p) const override {}
@@ -148,6 +150,7 @@ class SingularMessage : public FieldGeneratorBase {
   bool weak_;
   bool has_required_;
   bool has_hasbit_;
+  bool is_lazy_;
   bool is_oneof_;
   bool is_foreign_;
 };
@@ -423,6 +426,20 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
         "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
         "    from._internal_$name$());\n");
   }
+}
+
+void SingularMessage::GenerateCopyFromCode(io::Printer* p) const {
+  ABSL_CHECK(!field_->is_map());
+  ABSL_CHECK(!is_lazy_);
+  ABSL_CHECK_EQ(field_->cpp_type(), FieldDescriptor::CPPTYPE_MESSAGE);
+  p->Emit("// Message: $name$\n");
+  p->Emit(R"cc(
+    if (rhs.$field_$ != nullptr) {
+      _internal_mutable_$name$()->CheckTypeAndCopyFrom(*rhs.$field_$);
+    } else if ($field_$ != nullptr) {
+      $field_$->Clear();
+    }
+  )cc");
 }
 
 void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
@@ -727,6 +744,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
+  void GenerateCopyFromCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override {}
@@ -860,6 +878,18 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
   p->Emit(
       "_this->_internal_mutable$_weak$_$name$()->MergeFrom(from._internal"
       "$_weak$_$name$());\n");
+}
+
+void RepeatedMessage::GenerateCopyFromCode(io::Printer* p) const {
+  if (weak_) {
+    p->Emit("// Repeated Weak Message: $name$\n");
+    p->Emit(
+        "_internal_mutable$_weak$_$name$()->CopyFrom(rhs._internal"
+        "$_weak$_$name$());\n");
+  } else {
+    p->Emit("// Repeated Message: $name$\n");
+    p->Emit("$field_$.CopyFrom(rhs.$field_$);\n");
+  }
 }
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {

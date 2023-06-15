@@ -498,21 +498,29 @@ bool DynamicMapField::InsertOrLookupMapValueNoSync(const MapKey& map_key,
   return false;
 }
 
-void DynamicMapField::MergeFrom(const MapFieldBase& other) {
+template <bool is_copy>
+void DynamicMapField::MergeOrCopy(const MapFieldBase& other) {
   ABSL_DCHECK(IsMapValid() && other.IsMapValid());
+  if (is_copy) Clear();
   Map<MapKey, MapValueRef>* map = MutableMap();
+
   const DynamicMapField& other_field =
       reinterpret_cast<const DynamicMapField&>(other);
   for (Map<MapKey, MapValueRef>::const_iterator other_it =
            other_field.map_.begin();
        other_it != other_field.map_.end(); ++other_it) {
-    Map<MapKey, MapValueRef>::iterator iter = map->find(other_it->first);
     MapValueRef* map_val;
-    if (iter == map->end()) {
+    if (is_copy) {
       map_val = &map_[other_it->first];
       AllocateMapValue(map_val);
     } else {
-      map_val = &iter->second;
+      Map<MapKey, MapValueRef>::iterator iter = map->find(other_it->first);
+      if (iter == map->end()) {
+        map_val = &map_[other_it->first];
+        AllocateMapValue(map_val);
+      } else {
+        map_val = &iter->second;
+      }
     }
 
     // Copy map value
@@ -562,6 +570,14 @@ void DynamicMapField::MergeFrom(const MapFieldBase& other) {
       }
     }
   }
+}
+
+void DynamicMapField::MergeFrom(const MapFieldBase& other) {
+  MergeOrCopy<false>(other);
+}
+
+void DynamicMapField::CopyFrom(const MapFieldBase& other) {
+  MergeOrCopy<true>(other);
 }
 
 const Message* DynamicMapField::GetPrototype() const { return default_entry_; }

@@ -165,6 +165,12 @@ void TypeDefinedMapFieldBase<Key, T>::MergeFrom(const MapFieldBase& other) {
 }
 
 template <typename Key, typename T>
+void TypeDefinedMapFieldBase<Key, T>::CopyFrom(const MapFieldBase& other) {
+  Clear();
+  MergeFrom(other);
+}
+
+template <typename Key, typename T>
 size_t TypeDefinedMapFieldBase<Key, T>::SpaceUsedExcludingSelfNoLock() const {
   size_t size = 0;
   if (auto* p = maybe_payload()) {

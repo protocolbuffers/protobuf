@@ -138,6 +138,8 @@ bool CanClearByZeroing(const FieldDescriptor* field);
 // Determines if swap can be implemented via memcpy.
 bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
                     MessageSCCAnalyzer* scc_analyzer);
+// Returns true if the field is trivial.
+bool IsTrivial(const FieldDescriptor* field, const Options& options);
 
 PROTOC_EXPORT std::string ClassName(const Descriptor* descriptor);
 PROTOC_EXPORT std::string ClassName(const EnumDescriptor* enum_descriptor);
@@ -1008,6 +1010,7 @@ struct OneOfRangeImpl {
   Iterator end() const {
     return {descriptor->real_oneof_decl_count(), descriptor};
   }
+  bool empty() const { return descriptor->real_oneof_decl_count() == 0; }
 
   const Descriptor* descriptor;
 };

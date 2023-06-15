@@ -270,14 +270,14 @@ void ArenaStringPtr::ClearToEmpty() {
   }
 }
 
-void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
+void ArenaStringPtr::ClearToDefault(const std::string* default_value,
                                     ::google::protobuf::Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   (void)arena;
   if (IsDefault()) {
     // Already set to default -- do nothing.
   } else {
-    UnsafeMutablePointer()->assign(default_value.get());
+    UnsafeMutablePointer()->assign(*default_value);
   }
 }
 

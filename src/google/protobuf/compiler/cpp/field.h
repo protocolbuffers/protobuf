@@ -100,6 +100,8 @@ class FieldGeneratorBase {
 
   virtual void GenerateConstructorCode(io::Printer* p) const = 0;
 
+  virtual void GenerateCopyFromCode(io::Printer* p) const = 0;
+
   virtual void GenerateDestructorCode(io::Printer* p) const {}
 
   virtual void GenerateArenaDestructorCode(io::Printer* p) const {
@@ -254,6 +256,11 @@ class FieldGenerator {
   void GenerateCopyConstructorCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateCopyConstructorCode(p);
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateCopyFromCode(p);
   }
 
   // Generates statements which swap this field and the corresponding field of

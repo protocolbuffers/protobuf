@@ -977,14 +977,29 @@ void ExtensionSet::MergeFrom(const MessageLite* extendee,
     }
   }
   other.ForEach([extendee, this, &other](int number, const Extension& ext) {
-    this->InternalExtensionMergeFrom(extendee, number, ext, other.arena_);
+    this->ExtensionMergeOrCopyFrom<true>(extendee, number, ext, other.arena_);
   });
 }
 
-void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
-                                              int number,
-                                              const Extension& other_extension,
-                                              Arena* other_arena) {
+void ExtensionSet::CopyFromSlow(const MessageLite* extendee,
+                                const ExtensionSet& other) {
+  // Clear existing extensions and clear the map
+  ForEach([](int /* number */, Extension& ext) { ext.Clear(); });
+  if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    map_.large->clear();
+  } else {
+    GrowCapacity(other.NumExtensions());
+  }
+  other.ForEach([extendee, this, &other](int number, const Extension& ext) {
+    this->ExtensionMergeOrCopyFrom<false>(extendee, number, ext, other.arena_);
+  });
+}
+
+template <bool merge>
+void ExtensionSet::ExtensionMergeOrCopyFrom(const MessageLite* extendee,
+                                            int number,
+                                            const Extension& other_extension,
+                                            Arena* other_arena) {
   if (other_extension.is_repeated) {
     Extension* extension;
     bool is_new =
@@ -1001,14 +1016,19 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
     }
 
     switch (cpp_type(other_extension.type)) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE, REPEATED_TYPE) \
-  case WireFormatLite::CPPTYPE_##UPPERCASE:              \
-    if (is_new) {                                        \
-      extension->repeated_##LOWERCASE##_value =          \
-          Arena::CreateMessage<REPEATED_TYPE>(arena_);   \
-    }                                                    \
-    extension->repeated_##LOWERCASE##_value->MergeFrom(  \
-        *other_extension.repeated_##LOWERCASE##_value);  \
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE, REPEATED_TYPE)  \
+  case WireFormatLite::CPPTYPE_##UPPERCASE:               \
+    if (is_new) {                                         \
+      extension->repeated_##LOWERCASE##_value =           \
+          Arena::CreateMessage<REPEATED_TYPE>(arena_);    \
+    }                                                     \
+    if (merge) {                                          \
+      extension->repeated_##LOWERCASE##_value->MergeFrom( \
+          *other_extension.repeated_##LOWERCASE##_value); \
+    } else {                                              \
+      extension->repeated_##LOWERCASE##_value->CopyFrom(  \
+          *other_extension.repeated_##LOWERCASE##_value); \
+    }                                                     \
     break;
 
       HANDLE_TYPE(INT32, int32_t, RepeatedField<int32_t>);
@@ -1041,7 +1061,11 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
             target = other_message.New(arena_);
             extension->repeated_message_value->AddAllocated(target);
           }
-          target->CheckTypeAndMergeFrom(other_message);
+          if (merge) {
+            target->CheckTypeAndMergeFrom(other_message);
+          } else {
+            target->CheckTypeAndCopyFrom(other_message);
+          }
         }
         break;
     }
@@ -1080,15 +1104,25 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
               extension->is_lazy = true;
               extension->lazymessage_value =
                   other_extension.lazymessage_value->New(arena_);
-              extension->lazymessage_value->MergeFrom(
-                  GetPrototypeForLazyMessage(extendee, number),
-                  *other_extension.lazymessage_value, arena_);
+              if (merge) {
+                extension->lazymessage_value->MergeFrom(
+                    GetPrototypeForLazyMessage(extendee, number),
+                    *other_extension.lazymessage_value, arena_);
+              } else {
+                extension->lazymessage_value->CopyFrom(
+                    *other_extension.lazymessage_value, arena_);
+              }
             } else {
               extension->is_lazy = false;
               extension->message_value =
                   other_extension.message_value->New(arena_);
-              extension->message_value->CheckTypeAndMergeFrom(
-                  *other_extension.message_value);
+              if (merge) {
+                extension->message_value->CheckTypeAndMergeFrom(
+                    *other_extension.message_value);
+              } else {
+                extension->message_value->CheckTypeAndCopyFrom(
+                    *other_extension.message_value);
+              }
             }
           } else {
             ABSL_DCHECK_EQ(extension->type, other_extension.type);
@@ -1096,22 +1130,44 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
             ABSL_DCHECK(!extension->is_repeated);
             if (other_extension.is_lazy) {
               if (extension->is_lazy) {
-                extension->lazymessage_value->MergeFrom(
-                    GetPrototypeForLazyMessage(extendee, number),
-                    *other_extension.lazymessage_value, arena_);
+                if (merge) {
+                  extension->lazymessage_value->MergeFrom(
+                      GetPrototypeForLazyMessage(extendee, number),
+                      *other_extension.lazymessage_value, arena_);
+                } else {
+                  extension->lazymessage_value->CopyFrom(
+                      *other_extension.lazymessage_value, arena_);
+                }
               } else {
-                extension->message_value->CheckTypeAndMergeFrom(
-                    other_extension.lazymessage_value->GetMessage(
-                        *extension->message_value, other_arena));
+                if (merge) {
+                  extension->message_value->CheckTypeAndMergeFrom(
+                      other_extension.lazymessage_value->GetMessage(
+                          *extension->message_value, other_arena));
+                } else {
+                  extension->message_value->CheckTypeAndCopyFrom(
+                      other_extension.lazymessage_value->GetMessage(
+                          *extension->message_value, other_arena));
+                }
               }
             } else {
               if (extension->is_lazy) {
-                extension->lazymessage_value
-                    ->MutableMessage(*other_extension.message_value, arena_)
-                    ->CheckTypeAndMergeFrom(*other_extension.message_value);
+                if (merge) {
+                  extension->lazymessage_value
+                      ->MutableMessage(*other_extension.message_value, arena_)
+                      ->CheckTypeAndMergeFrom(*other_extension.message_value);
+                } else {
+                  extension->lazymessage_value
+                      ->MutableMessage(*other_extension.message_value, arena_)
+                      ->CheckTypeAndCopyFrom(*other_extension.message_value);
+                }
               } else {
-                extension->message_value->CheckTypeAndMergeFrom(
-                    *other_extension.message_value);
+                if (merge) {
+                  extension->message_value->CheckTypeAndMergeFrom(
+                      *other_extension.message_value);
+                } else {
+                  extension->message_value->CheckTypeAndCopyFrom(
+                      *other_extension.message_value);
+                }
               }
             }
           }
@@ -1172,22 +1228,24 @@ void ExtensionSet::SwapExtension(const MessageLite* extendee,
     // We do it this way to reuse the copy-across-arenas logic already
     // implemented in ExtensionSet's MergeFrom.
     ExtensionSet temp;
-    temp.InternalExtensionMergeFrom(extendee, number, *other_ext,
-                                    other->GetArena());
+    temp.ExtensionMergeOrCopyFrom<true>(extendee, number, *other_ext,
+                                        other->GetArena());
     Extension* temp_ext = temp.FindOrNull(number);
 
     other_ext->Clear();
-    other->InternalExtensionMergeFrom(extendee, number, *this_ext,
-                                      this->GetArena());
+    other->ExtensionMergeOrCopyFrom<true>(extendee, number, *this_ext,
+                                          this->GetArena());
     this_ext->Clear();
-    InternalExtensionMergeFrom(extendee, number, *temp_ext, temp.GetArena());
+    ExtensionMergeOrCopyFrom<true>(extendee, number, *temp_ext,
+                                   temp.GetArena());
   } else if (this_ext == nullptr) {
-    InternalExtensionMergeFrom(extendee, number, *other_ext, other->GetArena());
+    ExtensionMergeOrCopyFrom<true>(extendee, number, *other_ext,
+                                   other->GetArena());
     if (other->GetArena() == nullptr) other_ext->Free();
     other->Erase(number);
   } else {
-    other->InternalExtensionMergeFrom(extendee, number, *this_ext,
-                                      this->GetArena());
+    other->ExtensionMergeOrCopyFrom<true>(extendee, number, *this_ext,
+                                          this->GetArena());
     if (GetArena() == nullptr) this_ext->Free();
     Erase(number);
   }

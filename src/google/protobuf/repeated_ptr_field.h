@@ -162,6 +162,11 @@ struct IsMovable
 //     // Only needs to be implemented if SpaceUsedExcludingSelf() is called.
 //     static int SpaceUsedLong(const Type&);
 //   };
+//
+// Note that 'Merge' actually performs a copy: while RepeatedPtrField provides
+// a `CopyFrom` and `MergeFrom()`, the latter differs only in the fact that
+// items are appended to existing fields; `Merge()` still copies into a clean,
+// initialized value.
 class PROTOBUF_EXPORT RepeatedPtrFieldBase {
  protected:
   constexpr RepeatedPtrFieldBase()
@@ -342,19 +347,19 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ++rep_->allocated_size;
   }
 
+  template <typename TypeHandler>
+  void CopyFrom(const RepeatedPtrFieldBase& other) {
+    if (&other == this) return;
+    RepeatedPtrFieldBase::Clear<TypeHandler>();
+    RepeatedPtrFieldBase::MergeFrom<TypeHandler>(other);
+  }
+
  protected:
   template <typename TypeHandler>
   void RemoveLast() {
     ABSL_DCHECK_GT(current_size_, 0);
     ExchangeCurrentSize(current_size_ - 1);
     TypeHandler::Clear(cast<TypeHandler>(rep_->elements[current_size_]));
-  }
-
-  template <typename TypeHandler>
-  void CopyFrom(const RepeatedPtrFieldBase& other) {
-    if (&other == this) return;
-    RepeatedPtrFieldBase::Clear<TypeHandler>();
-    RepeatedPtrFieldBase::MergeFrom<TypeHandler>(other);
   }
 
   void CloseGap(int start, int num);  // implemented in the cc file
@@ -843,8 +848,9 @@ inline Arena* GenericTypeHandler<MessageLite>::GetOwningArena(
 template <typename GenericType>
 PROTOBUF_NOINLINE inline void GenericTypeHandler<GenericType>::Merge(
     const GenericType& from, GenericType* to) {
-  to->MergeFrom(from);
+  to->CopyFrom(from);
 }
+
 template <>
 void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to);
@@ -1514,6 +1520,7 @@ inline void RepeatedPtrField<Element>::MergeFrom(
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::CopyFrom(const RepeatedPtrField& other) {
+  if (this == &other) return;
   RepeatedPtrFieldBase::CopyFrom<TypeHandler>(other);
 }
 

@@ -195,6 +195,9 @@ struct WeakRepeatedPtrField {
   void MergeFrom(const WeakRepeatedPtrField& other) {
     base().template MergeFrom<TypeHandler>(other.base());
   }
+  void CopyFrom(const WeakRepeatedPtrField& other) {
+    base().template CopyFrom<TypeHandler>(other.base());
+  }
   void InternalSwap(WeakRepeatedPtrField* other) {
     base().InternalSwap(&other->base());
   }

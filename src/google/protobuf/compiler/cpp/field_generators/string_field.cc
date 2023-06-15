@@ -94,7 +94,8 @@ class SingularString : public FieldGeneratorBase {
         field_(field),
         opts_(&opts),
         is_oneof_(field->real_containing_oneof() != nullptr),
-        inlined_(IsStringInlined(field, opts)) {}
+        inlined_(IsStringInlined(field, opts)),
+        is_cord_(IsCord(field, opts)) {}
   ~SingularString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -117,6 +118,16 @@ class SingularString : public FieldGeneratorBase {
     p->Emit(R"cc(
       _this->_internal_set_$name$(from._internal_$name$());
     )cc");
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    if (inlined_) {
+      p->Emit("$field_$.CopyFrom(rhs.$field_$);\n");
+    } else if (is_cord_) {
+      p->Emit("$field_$ = rhs.$field_$;\n");
+    } else {
+      p->Emit("$field_$.CopyFrom(rhs.$field_$, arena);\n");
+    }
   }
 
   void GenerateArenaDestructorCode(io::Printer* p) const override {
@@ -174,6 +185,7 @@ class SingularString : public FieldGeneratorBase {
   const Options* opts_;
   bool is_oneof_;
   bool inlined_;
+  bool is_cord_;
 };
 
 void SingularString::GenerateStaticMembers(io::Printer* p) const {
@@ -737,6 +749,10 @@ class RepeatedString : public FieldGeneratorBase {
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     ABSL_CHECK(!ShouldSplit(field_, options_));
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    p->Emit("$field_$.CopyFrom(rhs.$field_$);\n");
   }
 
   void GenerateByteSize(io::Printer* p) const override {
