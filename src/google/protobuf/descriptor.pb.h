@@ -608,6 +608,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   FileDescriptorSet* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FileDescriptorSet>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorSet& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -773,6 +774,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   FileDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FileDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1179,6 +1181,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   DescriptorProto_ExtensionRange* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DescriptorProto_ExtensionRange>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ExtensionRange& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1368,6 +1371,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   DescriptorProto_ReservedRange* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DescriptorProto_ReservedRange>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ReservedRange& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1540,6 +1544,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   DescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1895,6 +1900,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   ExtensionRangeOptions_Declaration* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ExtensionRangeOptions_Declaration>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions_Declaration& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2131,6 +2137,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   ExtensionRangeOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ExtensionRangeOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2505,6 +2512,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   FieldDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FieldDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2885,6 +2893,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   OneofDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<OneofDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3067,6 +3076,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   EnumDescriptorProto_EnumReservedRange* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3239,6 +3249,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   EnumDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3493,6 +3504,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   EnumValueDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumValueDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3688,6 +3700,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   ServiceDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ServiceDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3890,6 +3903,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   MethodDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<MethodDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -4136,6 +4150,7 @@ class PROTOBUF_EXPORT FileOptions final :
   FileOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FileOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -4796,6 +4811,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   MessageOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<MessageOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MessageOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -5180,6 +5196,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   FieldOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FieldOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -5741,6 +5758,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   OneofOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<OneofOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -6059,6 +6077,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   EnumOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -6417,6 +6436,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   EnumValueOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumValueOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -6762,6 +6782,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   ServiceOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ServiceOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7094,6 +7115,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   MethodOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<MethodOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7460,6 +7482,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   UninterpretedOption_NamePart* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<UninterpretedOption_NamePart>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption_NamePart& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7638,6 +7661,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   UninterpretedOption* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<UninterpretedOption>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7902,6 +7926,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   SourceCodeInfo_Location* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<SourceCodeInfo_Location>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo_Location& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8158,6 +8183,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   SourceCodeInfo* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<SourceCodeInfo>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8325,6 +8351,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   GeneratedCodeInfo_Annotation* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<GeneratedCodeInfo_Annotation>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo_Annotation& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8571,6 +8598,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   GeneratedCodeInfo* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<GeneratedCodeInfo>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from)  final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo& from);
   using ::google::protobuf::Message::MergeFrom;

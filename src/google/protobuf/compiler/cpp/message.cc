@@ -42,6 +42,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -1474,6 +1475,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       {{"full_final",
         HasDescriptorMethods(descriptor_->file(), options_) ? "final" : ""}});
 
+  // All classes (Lite, Message) have a CheckTypeAndCopyFrom() implementation
+  // that is implemented in terms of operator=. operator= may be implemented
+  // explicitly for speed, or implemented in terms of reflection or MergeFrom.
+  format(
+      "void CheckTypeAndCopyFrom(const ::$proto_ns$::MessageLite& from)"
+      "  final;\n");
+
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       if (!HasSimpleBaseClass(descriptor_, options_)) {
@@ -2040,6 +2048,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     GenerateIsInitialized(p);
     format("\n");
   }
+
+  GenerateCheckTypeAndCopyFrom(p);
 
   if (ShouldSplit(descriptor_, options_)) {
     format(
@@ -3560,9 +3570,63 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   format("}\n");
 }
 
+void MessageGenerator::GenerateCheckTypeAndCopyFrom(io::Printer* p) {
+  Formatter format(p);
+
+  // Generate `CheckTypeAndCopyFrom()`. This is the internal implementation for
+  // `CopyFrom()` and `operator=()`. This function is most typically invoked on
+  // the final message class, making it a non-virtual call. This function does
+  // not perform any additional validations other then performing a DownCast<>
+  // to validate the type in debug builds, and asserting that `this <> from`
+  format(
+      "void $classname$::CheckTypeAndCopyFrom(\n"
+      "    const ::$proto_ns$::MessageLite& from) {\n");
+  format.Indent();
+
+  format("const auto& rhs = ::_pbi::DownCast<const $classname$&>(from);\n");
+  format("assert(&rhs != this);\n");
+
+  if (!options_.opensource_runtime && HasMessageFieldOrExtension(descriptor_)) {
+    // This check is disabled in the opensource release because we're
+    // concerned that many users do not define NDEBUG in their release builds.
+    // It is also disabled if a message has neither message fields nor
+    // extensions, as it's impossible to copy from its descendant.
+    //
+    // Note that IsDescendant is implemented by reflection and not available for
+    // lite runtime. In that case, check if the size of the source has changed
+    // after Clear.
+    if (HasDescriptorMethods(descriptor_->file(), options_)) {
+      format(
+          "$DCHK$(!::_pbi::IsDescendant(*this, rhs))\n"
+          "    << \"Source of CopyFrom cannot be a descendant of the "
+          "target.\";\n"
+          "Clear();\n");
+    } else {
+      format(
+          "#ifndef NDEBUG\n"
+          "::size_t from_size = rhs.ByteSizeLong();\n"
+          "#endif\n"
+          "Clear();\n"
+          "#ifndef NDEBUG\n"
+          "$CHK$_EQ(from_size, rhs.ByteSizeLong())\n"
+          "  << \"Source of CopyFrom changed when clearing target.  Either \"\n"
+          "     \"source is a nested message in target (not allowed), or \"\n"
+          "     \"another thread is modifying the source.\";\n"
+          "#endif\n");
+    }
+  } else {
+    format("Clear();\n");
+  }
+  format("MergeFrom(rhs);\n");
+
+  format.Outdent();
+  format("}\n\n");
+}
+
 void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(p);
+
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     // We don't override the generalized CopyFrom (aka that which
     // takes in the Message base class as a parameter); instead we just
@@ -3585,38 +3649,9 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
 
   format("if (&from == this) return;\n");
 
-  if (!options_.opensource_runtime && HasMessageFieldOrExtension(descriptor_)) {
-    // This check is disabled in the opensource release because we're
-    // concerned that many users do not define NDEBUG in their release builds.
-    // It is also disabled if a message has neither message fields nor
-    // extensions, as it's impossible to copy from its descendant.
-    //
-    // Note that IsDescendant is implemented by reflection and not available for
-    // lite runtime. In that case, check if the size of the source has changed
-    // after Clear.
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "$DCHK$(!::_pbi::IsDescendant(*this, from))\n"
-          "    << \"Source of CopyFrom cannot be a descendant of the "
-          "target.\";\n"
-          "Clear();\n");
-    } else {
-      format(
-          "#ifndef NDEBUG\n"
-          "::size_t from_size = from.ByteSizeLong();\n"
-          "#endif\n"
-          "Clear();\n"
-          "#ifndef NDEBUG\n"
-          "$CHK$_EQ(from_size, from.ByteSizeLong())\n"
-          "  << \"Source of CopyFrom changed when clearing target.  Either \"\n"
-          "     \"source is a nested message in target (not allowed), or \"\n"
-          "     \"another thread is modifying the source.\";\n"
-          "#endif\n");
-    }
-  } else {
-    format("Clear();\n");
-  }
-  format("MergeFrom(from);\n");
+  // Start recursive CopyFrom invocation.
+  // This locaton would be a good spot to add 'CopyFrom' sampling hooks.
+  format("CheckTypeAndCopyFrom(from);\n");
 
   format.Outdent();
   format("}\n");

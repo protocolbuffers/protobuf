@@ -2165,14 +2165,21 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::Message& to_msg, const ::g
 void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorSet)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_file()))
     return false;
   return true;
+}
+
+void FileDescriptorSet::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const FileDescriptorSet&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
@@ -2779,8 +2786,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
 void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
@@ -2796,6 +2802,14 @@ PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void FileDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const FileDescriptorProto&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
@@ -3079,8 +3093,7 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::Message& to_m
 void DescriptorProto_ExtensionRange::CopyFrom(const DescriptorProto_ExtensionRange& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ExtensionRange)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitialized() const {
@@ -3088,6 +3101,14 @@ PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void DescriptorProto_ExtensionRange::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const DescriptorProto_ExtensionRange&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange* other) {
@@ -3300,12 +3321,19 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::Message& to_ms
 void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ReservedRange)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto_ReservedRange::IsInitialized() const {
   return true;
+}
+
+void DescriptorProto_ReservedRange::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const DescriptorProto_ReservedRange&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* other) {
@@ -3769,8 +3797,7 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
 void DescriptorProto::CopyFrom(const DescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
@@ -3790,6 +3817,14 @@ PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void DescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const DescriptorProto&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void DescriptorProto::InternalSwap(DescriptorProto* other) {
@@ -4166,12 +4201,19 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::Message& t
 void ExtensionRangeOptions_Declaration::CopyFrom(const ExtensionRangeOptions_Declaration& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions.Declaration)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ExtensionRangeOptions_Declaration::IsInitialized() const {
   return true;
+}
+
+void ExtensionRangeOptions_Declaration::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const ExtensionRangeOptions_Declaration&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* other) {
@@ -4424,8 +4466,7 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const
 void ExtensionRangeOptions::CopyFrom(const ExtensionRangeOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
@@ -4435,6 +4476,14 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void ExtensionRangeOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const ExtensionRangeOptions&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
@@ -5016,8 +5065,7 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
 void FieldDescriptorProto::CopyFrom(const FieldDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
@@ -5025,6 +5073,14 @@ PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void FieldDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const FieldDescriptorProto&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
@@ -5286,8 +5342,7 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
 void OneofDescriptorProto::CopyFrom(const OneofDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
@@ -5295,6 +5350,14 @@ PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void OneofDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const OneofDescriptorProto&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
@@ -5506,12 +5569,19 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
 void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_EnumReservedRange& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumDescriptorProto_EnumReservedRange::IsInitialized() const {
   return true;
+}
+
+void EnumDescriptorProto_EnumReservedRange::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const EnumDescriptorProto_EnumReservedRange&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* other) {
@@ -5842,8 +5912,7 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
 void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
@@ -5853,6 +5922,14 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void EnumDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const EnumDescriptorProto&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
@@ -6136,8 +6213,7 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, co
 void EnumValueDescriptorProto::CopyFrom(const EnumValueDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
@@ -6145,6 +6221,14 @@ PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void EnumValueDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const EnumValueDescriptorProto&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
@@ -6425,8 +6509,7 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, cons
 void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
@@ -6436,6 +6519,14 @@ PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void ServiceDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const ServiceDescriptorProto&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
@@ -6834,8 +6925,7 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const
 void MethodDescriptorProto::CopyFrom(const MethodDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
@@ -6843,6 +6933,14 @@ PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void MethodDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const MethodDescriptorProto&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
@@ -7789,8 +7887,7 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
 void FileOptions::CopyFrom(const FileOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
@@ -7800,6 +7897,14 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void FileOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const FileOptions&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void FileOptions::InternalSwap(FileOptions* other) {
@@ -8160,8 +8265,7 @@ void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
 void MessageOptions::CopyFrom(const MessageOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MessageOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
@@ -8171,6 +8275,14 @@ PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void MessageOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const MessageOptions&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void MessageOptions::InternalSwap(MessageOptions* other) {
@@ -8689,8 +8801,7 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
 void FieldOptions::CopyFrom(const FieldOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
@@ -8700,6 +8811,14 @@ PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void FieldOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const FieldOptions&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void FieldOptions::InternalSwap(FieldOptions* other) {
@@ -8889,8 +9008,7 @@ void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
 void OneofOptions::CopyFrom(const OneofOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
@@ -8900,6 +9018,14 @@ PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void OneofOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const OneofOptions&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void OneofOptions::InternalSwap(OneofOptions* other) {
@@ -9182,8 +9308,7 @@ void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
 void EnumOptions::CopyFrom(const EnumOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
@@ -9193,6 +9318,14 @@ PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void EnumOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const EnumOptions&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void EnumOptions::InternalSwap(EnumOptions* other) {
@@ -9451,8 +9584,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::go
 void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
@@ -9462,6 +9594,14 @@ PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void EnumValueOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const EnumValueOptions&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
@@ -9688,8 +9828,7 @@ void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
 void ServiceOptions::CopyFrom(const ServiceOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
@@ -9699,6 +9838,14 @@ PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void ServiceOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const ServiceOptions&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void ServiceOptions::InternalSwap(ServiceOptions* other) {
@@ -9960,8 +10107,7 @@ void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::googl
 void MethodOptions::CopyFrom(const MethodOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
@@ -9971,6 +10117,14 @@ PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void MethodOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const MethodOptions&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void MethodOptions::InternalSwap(MethodOptions* other) {
@@ -10211,8 +10365,7 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::Message& to_msg
 void UninterpretedOption_NamePart::CopyFrom(const UninterpretedOption_NamePart& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption.NamePart)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
@@ -10220,6 +10373,14 @@ PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
     return false;
   }
   return true;
+}
+
+void UninterpretedOption_NamePart::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const UninterpretedOption_NamePart&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* other) {
@@ -10627,14 +10788,21 @@ void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const :
 void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_name()))
     return false;
   return true;
+}
+
+void UninterpretedOption::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const UninterpretedOption&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
@@ -10995,12 +11163,19 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::Message& to_msg, con
 void SourceCodeInfo_Location::CopyFrom(const SourceCodeInfo_Location& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo.Location)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool SourceCodeInfo_Location::IsInitialized() const {
   return true;
+}
+
+void SourceCodeInfo_Location::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const SourceCodeInfo_Location&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
@@ -11176,12 +11351,19 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
 void SourceCodeInfo::CopyFrom(const SourceCodeInfo& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitialized() const {
   return true;
+}
+
+void SourceCodeInfo::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const SourceCodeInfo&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
@@ -11510,12 +11692,19 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::Message& to_msg
 void GeneratedCodeInfo_Annotation::CopyFrom(const GeneratedCodeInfo_Annotation& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool GeneratedCodeInfo_Annotation::IsInitialized() const {
   return true;
+}
+
+void GeneratedCodeInfo_Annotation::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const GeneratedCodeInfo_Annotation&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* other) {
@@ -11692,12 +11881,19 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::g
 void GeneratedCodeInfo::CopyFrom(const GeneratedCodeInfo& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool GeneratedCodeInfo::IsInitialized() const {
   return true;
+}
+
+void GeneratedCodeInfo::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const GeneratedCodeInfo&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {

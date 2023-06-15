@@ -574,12 +574,19 @@ void Version::MergeImpl(::google::protobuf::Message& to_msg, const ::google::pro
 void Version::CopyFrom(const Version& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.Version)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool Version::IsInitialized() const {
   return true;
+}
+
+void Version::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const Version&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void Version::InternalSwap(Version* other) {
@@ -893,14 +900,21 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
 void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorRequest)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_proto_file()))
     return false;
   return true;
+}
+
+void CodeGeneratorRequest::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const CodeGeneratorRequest&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
@@ -1245,12 +1259,19 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::Message& to_msg, 
 void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
   return true;
+}
+
+void CodeGeneratorResponse_File::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const CodeGeneratorResponse_File&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other) {
@@ -1517,12 +1538,19 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::Message& to_msg, const
 void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorResponse)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
   return true;
+}
+
+void CodeGeneratorResponse::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  const auto& rhs = ::_pbi::DownCast<const CodeGeneratorResponse&>(from);
+  assert(&rhs != this);
+  Clear();
+  MergeFrom(rhs);
 }
 
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
