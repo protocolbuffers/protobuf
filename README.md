@@ -56,7 +56,7 @@ how to install protobuf runtime for that specific language:
 | Go                                   | [protocolbuffers/protobuf-go](https://github.com/protocolbuffers/protobuf-go)|
 | PHP                                  | [php](php)                                                  |
 | Dart                                 | [dart-lang/protobuf](https://github.com/dart-lang/protobuf) |
-| Javascript                           | [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript)|
+| JavaScript                           | [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript)|
 
 Quick Start
 -----------
