@@ -103,18 +103,12 @@ impl Drop for Arena {
 ///
 /// This struct is ABI compatible with the equivalent struct on the C++ side. It
 /// owns (and drops) its data.
-// copybara:strip_begin
-// LINT.IfChange
-// copybara:strip_end
 #[repr(C)]
 pub struct SerializedData {
     /// Owns the memory.
     data: NonNull<u8>,
     len: usize,
 }
-// copybara:strip_begin
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/cpp_api.
-// h) copybara:strip_end
 
 impl SerializedData {
     pub unsafe fn from_raw_parts(data: NonNull<u8>, len: usize) -> Self {
