@@ -3386,7 +3386,8 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       inlined_string_indices);
 
   const size_t fast_entries_count = table_info.fast_path_fields.size();
-  ABSL_CHECK_EQ(fast_entries_count, 1 << table_info.table_size_log2);
+  ABSL_CHECK_EQ(static_cast<int>(fast_entries_count),
+                1 << table_info.table_size_log2);
   const uint16_t lookup_table_offset = AlignTo<uint16_t>(
       sizeof(TcParseTableBase) +
       fast_entries_count * sizeof(TcParseTableBase::FastFieldEntry));
