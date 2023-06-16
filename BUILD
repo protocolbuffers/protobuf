@@ -1279,14 +1279,9 @@ pkg_files(
 #     headers_to_exclude = glob([
 #         "**/*.hpp",
 #     ]),
-#     no_string_conversion = ["upb_MiniTable_Build"],
+#     kotlin_package = "upb",
+#     no_string_conversion = ["_upb_MiniTable_Build"],
 #     strict_enums = ["upb_FieldType"],
-# )
-#
-# kt_native_interop_hint(
-#     name = "suppress_kotlin_interop",
-#     compatible_with = ["//buildenv/target:non_prod"],
-#     suppressed = True,
 # )
 #
 # end:google_only
