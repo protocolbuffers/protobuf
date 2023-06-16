@@ -44,6 +44,13 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+namespace {
+
+bool RequiresLazyInitialization(const FieldDescriptor* descriptor) {
+  return false;
+}
+
+}  // namespace
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
                                        const Options& options,
@@ -172,12 +179,20 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
         "#endif\n");
   }
 
-  format(
-      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
-      "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
-      "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
-      "  $scoped_name$($constant_name$, $1$, $verify_fn$);\n",
-      default_str);
+  if (RequiresLazyInitialization(descriptor_)) {
+    format(
+        "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2\n"
+        "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
+        "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
+        "  $scoped_name$($constant_name$);\n");
+  } else {
+    format(
+        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
+        "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
+        "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
+        "  $scoped_name$($constant_name$, $1$, $verify_fn$);\n",
+        default_str);
+  }
 }
 
 }  // namespace cpp
