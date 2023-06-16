@@ -1024,9 +1024,11 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
   arena_or_elements_ = new_rep->elements();
 }
 
-// TODO(b/266411038): we should really be able to make this:
-// template <bool annotate_size = true>
-// void Grow();
+// Ideally we would be able to use:
+//   template <bool annotate_size = true>
+//   void Grow();
+// However, as explained in b/266411038#comment9, this causes issues
+// in shared libraries for Youtube (and possibly elsewhere).
 template <typename Element>
 PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(int current_size,
                                                     int new_size) {
