@@ -485,11 +485,27 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new BooleanArrayList();
   }
 
-  @SuppressWarnings("unchecked") // Guaranteed by proto runtime.
   protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(ListT list) {
+    return makeMutableCopy(list, 0);
+  }
+
+  @SuppressWarnings("unchecked") // Guaranteed by proto runtime.
+  protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(
+      ListT list, int minCapacity) {
     int size = list.size();
-    return (ListT)
-        list.mutableCopyWithCapacity(size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    if (minCapacity <= size) {
+      minCapacity = size * 2;
+    }
+    if (minCapacity <= 0) {
+      minCapacity = AbstractProtobufList.DEFAULT_CAPACITY;
+    }
+
+    return (ListT) list.mutableCopyWithCapacity(minCapacity);
+  }
+
+  @SuppressWarnings("unchecked") // The empty list can be safely cast
+  protected static <T> ProtobufList<T> emptyList(Class<T> elementType) {
+    return (ProtobufList<T>) ProtobufArrayList.emptyList();
   }
 
   @Override
