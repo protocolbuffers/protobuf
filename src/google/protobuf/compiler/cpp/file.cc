@@ -562,7 +562,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
             };
           };
 
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$;
         )cc");
   }
@@ -590,7 +590,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
             };
           };
 
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
         )cc");
   } else {
@@ -609,7 +609,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
             };
           };
 
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
         )cc");
   }
