@@ -510,10 +510,12 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
+  const MessageLite* const default_instance =
+      aux_is_table ? aux.table->default_instance : aux.message_default();
   do {
     ptr += sizeof(TagType);
-    MessageLite* submsg = field.Add<GenericTypeHandler<MessageLite>>(
-        aux_is_table ? aux.table->default_instance : aux.message_default());
+    MessageLite* submsg =
+        field.Add<GenericTypeHandler<MessageLite>>(default_instance);
     if (aux_is_table) {
       if (group_coding) {
         ptr = ctx->ParseGroup<TcParser>(submsg, ptr,
