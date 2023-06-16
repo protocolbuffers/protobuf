@@ -228,6 +228,7 @@ cc_library(
         "//:mini_table",
         "//:port",
         "//:reflection",
+        "//upb/json",
     ],
 )
 

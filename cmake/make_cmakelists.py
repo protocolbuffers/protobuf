@@ -227,6 +227,9 @@ class BuildFileFunctions(object):
   def bootstrap_cc_library(self, **kwargs):
     pass
 
+  def alias(self, **kwargs):
+    pass
+
 
 class WorkspaceFileFunctions(object):
   def __init__(self, converter):

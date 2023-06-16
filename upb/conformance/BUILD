@@ -92,6 +92,7 @@ cc_binary(
         "//:reflection",
         "//:textformat",
         "//:wire",
+        "//upb/json",
     ],
 )
 
@@ -141,6 +142,7 @@ cc_binary(
         "//:reflection",
         "//:textformat",
         "//:wire",
+        "//upb/json",
     ],
 )
 

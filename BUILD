@@ -743,29 +743,10 @@ cc_library(
     ],
 )
 
-# TODO(b/232091617): Once we can delete the deprecated forwarding headers
-# (= everything in upb/) we can move this build target down into json/
-cc_library(
+alias(
     name = "json",
-    srcs = [
-        "upb/json/decode.c",
-        "upb/json/encode.c",
-    ],
-    hdrs = [
-        "upb/json/decode.h",
-        "upb/json/encode.h",
-        "upb/json_decode.h",
-        "upb/json_encode.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
+    actual = "//upb/json",
     visibility = ["//visibility:public"],
-    deps = [
-        ":collections",
-        ":lex",
-        ":port",
-        ":reflection",
-        ":upb",
-    ],
 )
 
 # Tests ########################################################################
@@ -790,53 +771,6 @@ cc_test(
     ],
 )
 
-proto_library(
-    name = "json_test_proto",
-    testonly = 1,
-    srcs = ["upb/json/test.proto"],
-    deps = ["@com_google_protobuf//:struct_proto"],
-)
-
-upb_proto_library(
-    name = "json_test_upb_proto",
-    testonly = 1,
-    deps = [":json_test_proto"],
-)
-
-upb_proto_reflection_library(
-    name = "json_test_upb_proto_reflection",
-    testonly = 1,
-    deps = [":json_test_proto"],
-)
-
-cc_test(
-    name = "json_decode_test",
-    srcs = ["upb/json/decode_test.cc"],
-    deps = [
-        ":json",
-        ":json_test_upb_proto",
-        ":json_test_upb_proto_reflection",
-        ":reflection",
-        ":struct_upb_proto",
-        ":upb",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "json_encode_test",
-    srcs = ["upb/json/encode_test.cc"],
-    deps = [
-        ":json",
-        ":json_test_upb_proto",
-        ":json_test_upb_proto_reflection",
-        ":reflection",
-        ":struct_upb_proto",
-        ":upb",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
 cc_test(
     name = "collections_test",
     srcs = ["upb/collections/test.cc"],
@@ -856,6 +790,7 @@ cc_test(
         ":message_test_upb_proto_reflection",
         ":reflection",
         ":upb",
+        "//upb/json",
         "//upb/test:fuzz_util",
         "//upb/test:test_messages_proto3_upb_proto",
         "@com_google_googletest//:gtest_main",
@@ -879,11 +814,6 @@ upb_proto_reflection_library(
     name = "message_test_upb_proto_reflection",
     testonly = 1,
     deps = [":message_test_proto"],
-)
-
-upb_proto_library(
-    name = "struct_upb_proto",
-    deps = ["@com_google_protobuf//:struct_proto"],
 )
 
 cc_test(

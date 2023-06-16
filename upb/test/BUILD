@@ -169,6 +169,7 @@ cc_test(
         "//:json",
         "//:port",
         "//:reflection",
+        "//upb/json",
         "@com_google_googletest//:gtest_main",
     ],
 )
