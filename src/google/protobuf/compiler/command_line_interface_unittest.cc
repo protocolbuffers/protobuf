@@ -42,23 +42,21 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "google/protobuf/compiler/command_line_interface_tester.h"
 
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "google/protobuf/testing/file.h"
-#include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "absl/status/status.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -68,8 +66,6 @@
 #include "google/protobuf/compiler/mock_code_generator.h"
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/io/io_win32.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
@@ -99,19 +95,56 @@ using google::protobuf::io::win32::write;
 
 namespace {
 
-bool FileExists(const std::string& path) {
-  return File::Exists(path);
+std::string CreatePluginArg() {
+  std::string plugin_path;
+#ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
+  plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
+#else
+  const char* possible_paths[] = {
+      // When building with shared libraries, libtool hides the real
+      // executable
+      // in .libs and puts a fake wrapper in the current directory.
+      // Unfortunately, due to an apparent bug on Cygwin/MinGW, if one program
+      // wrapped in this way (e.g. protobuf-tests.exe) tries to execute
+      // another
+      // program wrapped in this way (e.g. test_plugin.exe), the latter fails
+      // with error code 127 and no explanation message.  Presumably the
+      // problem
+      // is that the wrapper for protobuf-tests.exe set some environment
+      // variables that confuse the wrapper for test_plugin.exe.  Luckily, it
+      // turns out that if we simply invoke the wrapped test_plugin.exe
+      // directly, it works -- I guess the environment variables set by the
+      // protobuf-tests.exe wrapper happen to be correct for it too.  So we do
+      // that.
+      ".libs/test_plugin.exe",  // Win32 w/autotool (Cygwin / MinGW)
+      "test_plugin.exe",        // Other Win32 (MSVC)
+      "test_plugin",            // Unix
+  };
+  for (int i = 0; i < ABSL_ARRAYSIZE(possible_paths); i++) {
+    if (access(possible_paths[i], F_OK) == 0) {
+      plugin_path = possible_paths[i];
+      break;
+    }
+  }
+#endif
+
+  if (plugin_path.empty() || !File::Exists(plugin_path)) {
+    ABSL_LOG(ERROR)
+        << "Plugin executable not found.  Plugin tests are likely to fail. "
+        << plugin_path;
+    return "";
+  }
+  return absl::StrCat("--plugin=prefix-gen-plug=", plugin_path);
 }
 
-class CommandLineInterfaceTest : public testing::Test {
+class CommandLineInterfaceTest : public CommandLineInterfaceTester {
  protected:
-  void SetUp() override;
-  void TearDown() override;
+  CommandLineInterfaceTest();
 
   // Runs the CommandLineInterface with the given command line.  The
   // command is automatically split on spaces, and the string "$tmpdir"
   // is replaced with TestTempDir().
-  void Run(const std::string& command);
+  void Run(std::string command);
   void RunWithArgs(std::vector<std::string> args);
 
   // -----------------------------------------------------------------
@@ -122,63 +155,6 @@ class CommandLineInterfaceTest : public testing::Test {
   // Normally plugins are allowed for all tests.  Call this to explicitly
   // disable them.
   void DisallowPlugins() { disallow_plugins_ = true; }
-
-  // Create a temp file within temp_directory_ with the given name.
-  // The containing directory is also created if necessary.
-  void CreateTempFile(absl::string_view name, absl::string_view contents);
-
-  // Create a subdirectory within temp_directory_.
-  void CreateTempDir(absl::string_view name);
-
-#ifdef PROTOBUF_OPENSOURCE
-  // Change working directory to temp directory.
-  void SwitchToTempDirectory() {
-    File::ChangeWorkingDirectory(temp_directory_);
-  }
-#else  // !PROTOBUF_OPENSOURCE
-  // TODO(teboring): Figure out how to change and get working directory in
-  // google3.
-#endif  // !PROTOBUF_OPENSOURCE
-
-  // -----------------------------------------------------------------
-  // Methods to check the test results (called after Run()).
-
-  // Checks that no text was written to stderr during Run(), and Run()
-  // returned 0.
-  void ExpectNoErrors();
-
-  // Checks that Run() returned non-zero and the stderr output is exactly
-  // the text given.  expected_test may contain references to "$tmpdir",
-  // which will be replaced by the temporary directory path.
-  void ExpectErrorText(const std::string& expected_text);
-
-  // Checks that Run() returned non-zero and the stderr contains the given
-  // substring.
-  void ExpectErrorSubstring(const std::string& expected_substring);
-
-  // Checks that Run() returned zero and the stderr contains the given
-  // substring.
-  void ExpectWarningSubstring(const std::string& expected_substring);
-
-  // Checks that the captured stdout is the same as the expected_text.
-  void ExpectCapturedStdout(const std::string& expected_text);
-
-  // Checks that Run() returned zero and the stdout contains the given
-  // substring.
-  void ExpectCapturedStdoutSubstringWithZeroReturnCode(
-      const std::string& expected_substring);
-
-  // Checks that Run() returned zero and the stderr contains the given
-  // substring.
-  void ExpectCapturedStderrSubstringWithZeroReturnCode(
-      const std::string& expected_substring);
-
-#if defined(_WIN32) && !defined(__CYGWIN__)
-  // Returns true if ExpectErrorSubstring(expected_substring) would pass, but
-  // does not fail otherwise.
-  bool HasAlternateErrorSubstring(const std::string& expected_substring);
-#endif  // _WIN32 && !__CYGWIN__
-
   // Checks that MockCodeGenerator::Generate() was called in the given
   // context (or the generator in test_plugin.cc, which produces the same
   // output).  That is, this tests if the generator with the given name
@@ -220,45 +196,21 @@ class CommandLineInterfaceTest : public testing::Test {
   void WriteDescriptorSet(absl::string_view filename,
                           const FileDescriptorSet* descriptor_set);
 
-  void ExpectFileContent(absl::string_view filename, absl::string_view content);
-
   // The default code generators support all features. Use this to create a
   // code generator that omits the given feature(s).
   void CreateGeneratorWithMissingFeatures(const std::string& name,
                                           const std::string& description,
                                           uint64_t features) {
-    MockCodeGenerator* generator = new MockCodeGenerator(name);
+    auto generator = std::make_unique<MockCodeGenerator>(name);
     generator->SuppressFeatures(features);
-    mock_generators_to_delete_.push_back(generator);
-    cli_.RegisterGenerator(name, generator, description);
+    RegisterGenerator(name, std::move(generator), description);
   }
 
  private:
-  // The object we are testing.
-  CommandLineInterface cli_;
-
   // Was DisallowPlugins() called?
-  bool disallow_plugins_;
+  bool disallow_plugins_ = false;
 
-  // We create a directory within TestTempDir() in order to add extra
-  // protection against accidentally deleting user files (since we recursively
-  // delete this directory during the test).  This is the full path of that
-  // directory.
-  std::string temp_directory_;
-
-  // The result of Run().
-  int return_code_;
-
-  // The captured stderr output.
-  std::string error_text_;
-
-  // The captured stdout.
-  std::string captured_stdout_;
-
-  // Pointers which need to be deleted later.
-  std::vector<CodeGenerator*> mock_generators_to_delete_;
-
-  NullCodeGenerator* null_generator_;
+  NullCodeGenerator* null_generator_ = nullptr;
 };
 
 class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
@@ -280,185 +232,50 @@ class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
 
 // ===================================================================
 
-void CommandLineInterfaceTest::SetUp() {
-  temp_directory_ = absl::StrCat(TestTempDir(), "/proto2_cli_test_temp");
-
-  // If the temp directory already exists, it must be left over from a
-  // previous run.  Delete it.
-  if (FileExists(temp_directory_)) {
-    File::DeleteRecursively(temp_directory_, NULL, NULL);
-  }
-
-  // Create the temp directory.
-  ABSL_CHECK_OK(File::CreateDir(temp_directory_, 0777));
-
+CommandLineInterfaceTest::CommandLineInterfaceTest() {
   // Register generators.
-  CodeGenerator* generator = new MockCodeGenerator("test_generator");
-  mock_generators_to_delete_.push_back(generator);
-  cli_.RegisterGenerator("--test_out", "--test_opt", generator, "Test output.");
-  cli_.RegisterGenerator("-t", generator, "Test output.");
+  RegisterGenerator("--test_out", "--test_opt",
+                    std::make_unique<MockCodeGenerator>("test_generator"),
+                    "Test output.");
+  RegisterGenerator("-t", std::make_unique<MockCodeGenerator>("test_generator"),
+                    "Test output.");
 
-  generator = new MockCodeGenerator("alt_generator");
-  mock_generators_to_delete_.push_back(generator);
-  cli_.RegisterGenerator("--alt_out", generator, "Alt output.");
+  RegisterGenerator("--alt_out",
+                    std::make_unique<MockCodeGenerator>("alt_generator"),
+                    "Alt output.");
 
-  generator = null_generator_ = new NullCodeGenerator();
-  mock_generators_to_delete_.push_back(generator);
-  cli_.RegisterGenerator("--null_out", generator, "Null output.");
+  auto null_generator = std::make_unique<NullCodeGenerator>();
+  null_generator_ = null_generator.get();
+  RegisterGenerator("--null_out", std::move(null_generator), "Null output.");
 
-
-  disallow_plugins_ = false;
 }
 
-void CommandLineInterfaceTest::TearDown() {
-  // Delete the temp directory.
-  if (FileExists(temp_directory_)) {
-    File::DeleteRecursively(temp_directory_, NULL, NULL);
+void CommandLineInterfaceTest::Run(std::string command) {
+  if (!disallow_plugins_) {
+    AllowPlugins("prefix-");
+    absl::StrAppend(&command, " ", CreatePluginArg());
   }
 
-  // Delete all the MockCodeGenerators.
-  for (int i = 0; i < mock_generators_to_delete_.size(); i++) {
-    delete mock_generators_to_delete_[i];
-  }
-  mock_generators_to_delete_.clear();
-}
-
-void CommandLineInterfaceTest::Run(const std::string& command) {
-  RunWithArgs(absl::StrSplit(command, " ", absl::SkipEmpty()));
+  RunProtoc(command);
 }
 
 void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
   if (!disallow_plugins_) {
-    cli_.AllowPlugins("prefix-");
-    std::string plugin_path;
-#ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
-    plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
-#else
-    const char* possible_paths[] = {
-        // When building with shared libraries, libtool hides the real
-        // executable
-        // in .libs and puts a fake wrapper in the current directory.
-        // Unfortunately, due to an apparent bug on Cygwin/MinGW, if one program
-        // wrapped in this way (e.g. protobuf-tests.exe) tries to execute
-        // another
-        // program wrapped in this way (e.g. test_plugin.exe), the latter fails
-        // with error code 127 and no explanation message.  Presumably the
-        // problem
-        // is that the wrapper for protobuf-tests.exe set some environment
-        // variables that confuse the wrapper for test_plugin.exe.  Luckily, it
-        // turns out that if we simply invoke the wrapped test_plugin.exe
-        // directly, it works -- I guess the environment variables set by the
-        // protobuf-tests.exe wrapper happen to be correct for it too.  So we do
-        // that.
-        ".libs/test_plugin.exe",  // Win32 w/autotool (Cygwin / MinGW)
-        "test_plugin.exe",        // Other Win32 (MSVC)
-        "test_plugin",            // Unix
-    };
-    for (int i = 0; i < ABSL_ARRAYSIZE(possible_paths); i++) {
-      if (access(possible_paths[i], F_OK) == 0) {
-        plugin_path = possible_paths[i];
-        break;
-      }
-    }
-#endif
-
-    if (plugin_path.empty() || !FileExists(plugin_path)) {
-      ABSL_LOG(ERROR)
-          << "Plugin executable not found.  Plugin tests are likely to fail."
-          << plugin_path;
-    } else {
-      args.push_back(absl::StrCat("--plugin=prefix-gen-plug=", plugin_path));
-    }
+    AllowPlugins("prefix-");
+    args.push_back(CreatePluginArg());
   }
 
-  std::unique_ptr<const char*[]> argv(new const char*[args.size()]);
-
-  for (size_t i = 0; i < args.size(); i++) {
-    args[i] = absl::StrReplaceAll(args[i], {{"$tmpdir", temp_directory_}});
-    argv[i] = args[i].c_str();
-  }
-
-  // TODO(jieluo): Cygwin doesn't work well if we try to capture stderr and
-  // stdout at the same time. Need to figure out why and add this capture back
-  // for Cygwin.
-#if !defined(__CYGWIN__)
-  CaptureTestStdout();
-#endif
-  CaptureTestStderr();
-
-  return_code_ = cli_.Run(args.size(), argv.get());
-
-  error_text_ = GetCapturedTestStderr();
-#if !defined(__CYGWIN__)
-  captured_stdout_ = GetCapturedTestStdout();
-#endif
+  RunProtocWithArgs(std::move(args));
 }
 
 // -------------------------------------------------------------------
-
-void CommandLineInterfaceTest::CreateTempFile(absl::string_view name,
-                                              absl::string_view contents) {
-  // Create parent directory, if necessary.
-  std::string::size_type slash_pos = name.find_last_of('/');
-  if (slash_pos != std::string::npos) {
-    absl::string_view dir = name.substr(0, slash_pos);
-    if (!FileExists(absl::StrCat(temp_directory_, "/", dir))) {
-      ABSL_CHECK_OK(File::RecursivelyCreateDir(
-          absl::StrCat(temp_directory_, "/", dir), 0777));
-    }
-  }
-
-  // Write file.
-  std::string full_name = absl::StrCat(temp_directory_, "/", name);
-  ABSL_CHECK_OK(File::SetContents(
-      full_name, absl::StrReplaceAll(contents, {{"$tmpdir", temp_directory_}}),
-      true));
-}
-
-void CommandLineInterfaceTest::CreateTempDir(absl::string_view name) {
-  ABSL_CHECK_OK(File::RecursivelyCreateDir(
-      absl::StrCat(temp_directory_, "/", name), 0777));
-}
-
-// -------------------------------------------------------------------
-
-void CommandLineInterfaceTest::ExpectNoErrors() {
-  EXPECT_EQ(0, return_code_);
-  EXPECT_EQ("", error_text_);
-}
-
-void CommandLineInterfaceTest::ExpectErrorText(
-    const std::string& expected_text) {
-  EXPECT_NE(0, return_code_);
-  EXPECT_EQ(absl::StrReplaceAll(expected_text, {{"$tmpdir", temp_directory_}}),
-            error_text_);
-}
-
-void CommandLineInterfaceTest::ExpectErrorSubstring(
-    const std::string& expected_substring) {
-  EXPECT_NE(0, return_code_);
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
-}
-
-void CommandLineInterfaceTest::ExpectWarningSubstring(
-    const std::string& expected_substring) {
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
-  EXPECT_EQ(0, return_code_);
-}
-
-#if defined(_WIN32) && !defined(__CYGWIN__)
-bool CommandLineInterfaceTest::HasAlternateErrorSubstring(
-    const std::string& expected_substring) {
-  EXPECT_NE(0, return_code_);
-  return error_text_.find(expected_substring) != std::string::npos;
-}
-#endif  // _WIN32 && !__CYGWIN__
 
 void CommandLineInterfaceTest::ExpectGenerated(
     const std::string& generator_name, const std::string& parameter,
     const std::string& proto_name, const std::string& message_name) {
   MockCodeGenerator::ExpectGenerated(generator_name, parameter, "", proto_name,
-                                     message_name, proto_name, temp_directory_);
+                                     message_name, proto_name,
+                                     temp_directory());
 }
 
 void CommandLineInterfaceTest::ExpectGenerated(
@@ -467,7 +284,7 @@ void CommandLineInterfaceTest::ExpectGenerated(
     const std::string& output_directory) {
   MockCodeGenerator::ExpectGenerated(
       generator_name, parameter, "", proto_name, message_name, proto_name,
-      absl::StrCat(temp_directory_, "/", output_directory));
+      absl::StrCat(temp_directory(), "/", output_directory));
 }
 
 void CommandLineInterfaceTest::ExpectGeneratedWithMultipleInputs(
@@ -475,7 +292,7 @@ void CommandLineInterfaceTest::ExpectGeneratedWithMultipleInputs(
     const std::string& proto_name, const std::string& message_name) {
   MockCodeGenerator::ExpectGenerated(generator_name, "", "", proto_name,
                                      message_name, all_proto_names,
-                                     temp_directory_);
+                                     temp_directory());
 }
 
 void CommandLineInterfaceTest::ExpectGeneratedWithInsertions(
@@ -484,12 +301,12 @@ void CommandLineInterfaceTest::ExpectGeneratedWithInsertions(
     const std::string& message_name) {
   MockCodeGenerator::ExpectGenerated(generator_name, parameter, insertions,
                                      proto_name, message_name, proto_name,
-                                     temp_directory_);
+                                     temp_directory());
 }
 
 void CommandLineInterfaceTest::CheckGeneratedAnnotations(
     const std::string& name, const std::string& file) {
-  MockCodeGenerator::CheckGeneratedAnnotations(name, file, temp_directory_);
+  MockCodeGenerator::CheckGeneratedAnnotations(name, file, temp_directory());
 }
 
 #if defined(_WIN32)
@@ -503,7 +320,7 @@ void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
 
 void CommandLineInterfaceTest::ReadDescriptorSet(
     absl::string_view filename, FileDescriptorSet* descriptor_set) {
-  std::string path = absl::StrCat(temp_directory_, "/", filename);
+  std::string path = absl::StrCat(temp_directory(), "/", filename);
   std::string file_contents;
   ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
 
@@ -517,34 +334,6 @@ void CommandLineInterfaceTest::WriteDescriptorSet(
   std::string binary_proto;
   ABSL_CHECK(descriptor_set->SerializeToString(&binary_proto));
   CreateTempFile(filename, binary_proto);
-}
-
-void CommandLineInterfaceTest::ExpectCapturedStdout(
-    const std::string& expected_text) {
-  EXPECT_EQ(expected_text, captured_stdout_);
-}
-
-void CommandLineInterfaceTest::ExpectCapturedStdoutSubstringWithZeroReturnCode(
-    const std::string& expected_substring) {
-  EXPECT_EQ(0, return_code_);
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring,
-                      captured_stdout_);
-}
-
-void CommandLineInterfaceTest::ExpectCapturedStderrSubstringWithZeroReturnCode(
-    const std::string& expected_substring) {
-  EXPECT_EQ(0, return_code_);
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
-}
-
-void CommandLineInterfaceTest::ExpectFileContent(absl::string_view filename,
-                                                 absl::string_view content) {
-  std::string path = absl::StrCat(temp_directory_, "/", filename);
-  std::string file_contents;
-  ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
-
-  EXPECT_EQ(absl::StrReplaceAll(content, {{"$tmpdir", temp_directory_}}),
-            file_contents);
 }
 
 // ===================================================================
