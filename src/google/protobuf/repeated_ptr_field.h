@@ -169,16 +169,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   explicit RepeatedPtrFieldBase(Arena* arena)
       : arena_(arena), current_size_(0), total_size_(0), rep_(nullptr) {}
 
-  RepeatedPtrFieldBase(const RepeatedPtrFieldBase&) = delete;
-  RepeatedPtrFieldBase& operator=(const RepeatedPtrFieldBase&) = delete;
-
-  ~RepeatedPtrFieldBase() {
-#ifndef NDEBUG
-    // Try to trigger segfault / asan failure in non-opt builds. If arena_
-    // lifetime has ended before the destructor.
-    if (arena_) (void)arena_->SpaceAllocated();
-#endif
-  }
+  RepeatedPtrFieldBase(const RepeatedPtrFieldBase&) = default;
+  RepeatedPtrFieldBase& operator=(const RepeatedPtrFieldBase&) = default;
+  ~RepeatedPtrFieldBase() = default;
 
   bool empty() const { return current_size_ == 0; }
   int size() const { return current_size_; }
@@ -1281,6 +1274,11 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(Iter begin, Iter end) {
 template <typename Element>
 RepeatedPtrField<Element>::~RepeatedPtrField() {
   StaticValidityCheck();
+#ifndef NDEBUG
+  // Try to trigger segfault / asan failure in non-opt builds if arena
+  // lifetime has ended before the destructor.
+  if (GetArena()) (void)GetArena()->SpaceAllocated();
+#endif
 #ifdef __cpp_if_constexpr
   if constexpr (std::is_base_of<MessageLite, Element>::value) {
 #else
