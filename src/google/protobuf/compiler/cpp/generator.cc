@@ -40,12 +40,15 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_visitor.h"
+
 
 namespace google {
 namespace protobuf {
@@ -96,6 +99,7 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
        "K"},
   };
 }
+
 }  // namespace
 
 bool CppGenerator::Generate(const FileDescriptor* file,
@@ -235,6 +239,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     return true;
   }
 
+  absl::Status validation_result = ValidateFeatures(file);
+  if (!validation_result.ok()) {
+    *error = std::string(validation_result.message());
+    return false;
+  }
+
   FileGenerator file_generator(file, file_options);
 
   // Generate header(s).
@@ -351,6 +361,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   return true;
 }
+
+absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
+  absl::Status status = absl::OkStatus();
+  return status;
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
