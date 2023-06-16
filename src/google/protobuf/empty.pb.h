@@ -192,6 +192,7 @@ class PROTOBUF_EXPORT Empty final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
 };

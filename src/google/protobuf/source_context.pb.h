@@ -229,6 +229,7 @@ class PROTOBUF_EXPORT SourceContext final :
   struct Impl_ {
     ::google::protobuf::internal::ArenaStringPtr file_name_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto;

@@ -283,6 +283,7 @@ class PROTOBUF_EXPORT Any final :
     ::google::protobuf::internal::ArenaStringPtr value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::AnyMetadata _any_metadata_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fany_2eproto;

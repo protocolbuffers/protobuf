@@ -235,6 +235,7 @@ class PROTOBUF_EXPORT Duration final :
     ::int64_t seconds_;
     ::int32_t nanos_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fduration_2eproto;

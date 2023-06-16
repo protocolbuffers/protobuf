@@ -308,6 +308,7 @@ class PROTOBUF_EXPORT Struct final :
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
         fields_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
@@ -580,6 +581,7 @@ class PROTOBUF_EXPORT Value final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::uint32_t _oneof_case_[1];
 
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
@@ -745,6 +747,7 @@ class PROTOBUF_EXPORT ListValue final :
   struct Impl_ {
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
@@ -779,7 +782,7 @@ inline void Struct::clear_fields() {
   _impl_.fields_.Clear();
 }
 inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::_internal_fields() const {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.fields_.GetMap();
 }
 inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::fields() const {
@@ -787,7 +790,7 @@ inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& St
   return _internal_fields();
 }
 inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::_internal_mutable_fields() {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _impl_.fields_.MutableMap();
 }
 inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::mutable_fields() {
@@ -1159,7 +1162,7 @@ inline ::google::protobuf::Value* ListValue::mutable_values(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >*
 ListValue::mutable_values() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_values();
 }
 inline const ::google::protobuf::Value& ListValue::values(int index) const {
@@ -1167,7 +1170,7 @@ inline const ::google::protobuf::Value& ListValue::values(int index) const {
     return _internal_values().Get(index);
 }
 inline ::google::protobuf::Value* ListValue::add_values() {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::Value* _add = _internal_mutable_values()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
   return _add;
@@ -1179,12 +1182,12 @@ ListValue::values() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>&
 ListValue::_internal_values() const {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.values_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>*
 ListValue::_internal_mutable_values() {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return &_impl_.values_;
 }
 

@@ -486,6 +486,7 @@ class PROTOBUF_EXPORT Type final :
     ::google::protobuf::internal::ArenaStringPtr edition_;
     ::google::protobuf::SourceContext* source_context_;
     int syntax_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -842,6 +843,7 @@ class PROTOBUF_EXPORT Field final :
     ::int32_t oneof_index_;
     bool packed_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -1093,6 +1095,7 @@ class PROTOBUF_EXPORT Enum final :
     ::google::protobuf::internal::ArenaStringPtr edition_;
     ::google::protobuf::SourceContext* source_context_;
     int syntax_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -1288,6 +1291,7 @@ class PROTOBUF_EXPORT EnumValue final :
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::int32_t number_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -1469,6 +1473,7 @@ class PROTOBUF_EXPORT Option final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::Any* value_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -1552,7 +1557,7 @@ inline ::google::protobuf::Field* Type::mutable_fields(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >*
 Type::mutable_fields() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.fields)
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_fields();
 }
 inline const ::google::protobuf::Field& Type::fields(int index) const {
@@ -1560,7 +1565,7 @@ inline const ::google::protobuf::Field& Type::fields(int index) const {
     return _internal_fields().Get(index);
 }
 inline ::google::protobuf::Field* Type::add_fields() {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::Field* _add = _internal_mutable_fields()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Type.fields)
   return _add;
@@ -1572,12 +1577,12 @@ Type::fields() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>&
 Type::_internal_fields() const {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.fields_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>*
 Type::_internal_mutable_fields() {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return &_impl_.fields_;
 }
 
@@ -1592,7 +1597,7 @@ inline void Type::clear_oneofs() {
   _internal_mutable_oneofs()->Clear();
 }
 inline std::string* Type::add_oneofs() {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   std::string* _s = _internal_mutable_oneofs()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.Type.oneofs)
   return _s;
@@ -1630,29 +1635,29 @@ inline void Type::set_oneofs(int index, absl::string_view value) {
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _internal_mutable_oneofs()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(std::string&& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _internal_mutable_oneofs()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _internal_mutable_oneofs()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(const char* value, std::size_t size) {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _internal_mutable_oneofs()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.Type.oneofs)
 }
 inline void Type::add_oneofs(absl::string_view value) {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _internal_mutable_oneofs()->Add()->assign(value.data(), value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.Type.oneofs)
 }
@@ -1663,17 +1668,17 @@ Type::oneofs() const {
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>* Type::mutable_oneofs() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.oneofs)
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_oneofs();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 Type::_internal_oneofs() const {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.oneofs_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 Type::_internal_mutable_oneofs() {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return &_impl_.oneofs_;
 }
 
@@ -1694,7 +1699,7 @@ inline ::google::protobuf::Option* Type::mutable_options(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Type::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.options)
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_options();
 }
 inline const ::google::protobuf::Option& Type::options(int index) const {
@@ -1702,7 +1707,7 @@ inline const ::google::protobuf::Option& Type::options(int index) const {
     return _internal_options().Get(index);
 }
 inline ::google::protobuf::Option* Type::add_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Type.options)
   return _add;
@@ -1714,12 +1719,12 @@ Type::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Type::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Type::_internal_mutable_options() {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return &_impl_.options_;
 }
 
@@ -2085,7 +2090,7 @@ inline ::google::protobuf::Option* Field::mutable_options(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Field::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Field.options)
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_options();
 }
 inline const ::google::protobuf::Option& Field::options(int index) const {
@@ -2093,7 +2098,7 @@ inline const ::google::protobuf::Option& Field::options(int index) const {
     return _internal_options().Get(index);
 }
 inline ::google::protobuf::Option* Field::add_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Field.options)
   return _add;
@@ -2105,12 +2110,12 @@ Field::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Field::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Field::_internal_mutable_options() {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return &_impl_.options_;
 }
 
@@ -2270,7 +2275,7 @@ inline ::google::protobuf::EnumValue* Enum::mutable_enumvalue(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >*
 Enum::mutable_enumvalue() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.enumvalue)
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_enumvalue();
 }
 inline const ::google::protobuf::EnumValue& Enum::enumvalue(int index) const {
@@ -2278,7 +2283,7 @@ inline const ::google::protobuf::EnumValue& Enum::enumvalue(int index) const {
     return _internal_enumvalue().Get(index);
 }
 inline ::google::protobuf::EnumValue* Enum::add_enumvalue() {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::EnumValue* _add = _internal_mutable_enumvalue()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Enum.enumvalue)
   return _add;
@@ -2290,12 +2295,12 @@ Enum::enumvalue() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>&
 Enum::_internal_enumvalue() const {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.enumvalue_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>*
 Enum::_internal_mutable_enumvalue() {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return &_impl_.enumvalue_;
 }
 
@@ -2316,7 +2321,7 @@ inline ::google::protobuf::Option* Enum::mutable_options(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Enum::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.options)
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_options();
 }
 inline const ::google::protobuf::Option& Enum::options(int index) const {
@@ -2324,7 +2329,7 @@ inline const ::google::protobuf::Option& Enum::options(int index) const {
     return _internal_options().Get(index);
 }
 inline ::google::protobuf::Option* Enum::add_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Enum.options)
   return _add;
@@ -2336,12 +2341,12 @@ Enum::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Enum::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Enum::_internal_mutable_options() {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return &_impl_.options_;
 }
 
@@ -2582,7 +2587,7 @@ inline ::google::protobuf::Option* EnumValue::mutable_options(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 EnumValue::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValue.options)
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_options();
 }
 inline const ::google::protobuf::Option& EnumValue::options(int index) const {
@@ -2590,7 +2595,7 @@ inline const ::google::protobuf::Option& EnumValue::options(int index) const {
     return _internal_options().Get(index);
 }
 inline ::google::protobuf::Option* EnumValue::add_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumValue.options)
   return _add;
@@ -2602,12 +2607,12 @@ EnumValue::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 EnumValue::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 EnumValue::_internal_mutable_options() {
-  PROTOBUF_TSAN_READ(&_impl_);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return &_impl_.options_;
 }
 
