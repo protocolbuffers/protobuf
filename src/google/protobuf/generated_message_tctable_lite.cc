@@ -38,6 +38,7 @@
 
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/inlined_string_field.h"
@@ -176,18 +177,7 @@ const TcParseTableBase::FieldEntry* TcParser::FindFieldEntry(
     uint32_t skipbit = 1 << adj_fnum;
     if (PROTOBUF_PREDICT_FALSE(skipmap & skipbit)) return nullptr;
     skipmap &= skipbit - 1;
-#if (__GNUC__ || __clang__) && __POPCNT__
-    // Note: here and below, skipmap typically has very few set bits
-    // (31 in the worst case, but usually zero) so a loop isn't that
-    // bad, and a compiler-generated popcount is typically only
-    // worthwhile if the processor itself has hardware popcount support.
-    adj_fnum -= __builtin_popcount(skipmap);
-#else
-    while (skipmap) {
-      --adj_fnum;
-      skipmap &= skipmap - 1;
-    }
-#endif
+    adj_fnum -= absl::popcount(skipmap);
     auto* entry = field_entries + adj_fnum;
     PROTOBUF_ASSUME(entry != nullptr);
     return entry;
@@ -217,14 +207,7 @@ const TcParseTableBase::FieldEntry* TcParser::FindFieldEntry(
       if (PROTOBUF_PREDICT_FALSE(skipmap & skipbit)) return nullptr;
       skipmap &= skipbit - 1;
       adj_fnum += se.field_entry_offset;
-#if (__GNUC__ || __clang__) && __POPCNT__
-      adj_fnum -= __builtin_popcount(skipmap);
-#else
-      while (skipmap) {
-        --adj_fnum;
-        skipmap &= skipmap - 1;
-      }
-#endif
+      adj_fnum -= absl::popcount(skipmap);
       auto* entry = field_entries + adj_fnum;
       PROTOBUF_ASSUME(entry != nullptr);
       return entry;
