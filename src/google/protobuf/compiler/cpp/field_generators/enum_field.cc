@@ -221,9 +221,11 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   } else {
     p->Emit(R"cc(
       inline $Enum$ $Msg$::_internal_$name$() const {
+        $TsanDetectConcurrentRead$;
         return static_cast<$Enum$>($field_$);
       }
       inline void $Msg$::_internal_set_$name$($Enum$ value) {
+        $TsanDetectConcurrentMutation$;
         $assert_valid$;
         $set_hasbit$;
         $field_$ = value;

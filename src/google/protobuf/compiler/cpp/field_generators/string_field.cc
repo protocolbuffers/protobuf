@@ -426,6 +426,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         template <typename Arg_, typename... Args_>
         inline PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg,
                                                              Args_... args) {
+          $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;
           $update_hasbit$;
           $field_$.$Set$(static_cast<Arg_&&>(arg), args..., $set_args$);
@@ -440,26 +441,31 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           return _s;
         }
         inline const std::string& $Msg$::_internal_$name$() const {
+          $TsanDetectConcurrentRead$;
           $check_hasbit$;
           return $field_$.Get();
         }
         inline void $Msg$::_internal_set_$name$(const std::string& value) {
+          $TsanDetectConcurrentMutation$;
           $update_hasbit$;
           //~ Don't use $Set$ here; we always want the std::string variant
           //~ regardless of whether this is a `bytes` field.
           $field_$.Set(value, $set_args$);
         }
         inline std::string* $Msg$::_internal_mutable_$name$() {
+          $TsanDetectConcurrentMutation$;
           $update_hasbit$;
           return $field_$.Mutable($lazy_args$, $set_args$);
         }
         inline std::string* $Msg$::$release_name$() {
+          $TsanDetectConcurrentMutation$;
           $annotate_release$;
           $PrepareSplitMessageForWrite$;
           // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
           $release_impl$;
         }
         inline void $Msg$::set_allocated_$name$(std::string* value) {
+          $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;
           $set_allocated_impl$;
           $annotate_set$;

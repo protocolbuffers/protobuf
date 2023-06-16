@@ -245,9 +245,11 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
   } else {
     p->Emit(R"cc(
       inline $Type$ $Msg$::_internal_$name$() const {
+        $TsanDetectConcurrentRead$;
         return $field_$;
       }
       inline void $Msg$::_internal_set_$name$($Type$ value) {
+        $TsanDetectConcurrentMutation$;
         $set_hasbit$;
         $field_$ = value;
       }
