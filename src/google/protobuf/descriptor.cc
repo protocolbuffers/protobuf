@@ -1964,10 +1964,11 @@ DescriptorPool* DescriptorPool::internal_generated_pool() {
 
 const DescriptorPool* DescriptorPool::generated_pool() {
   const DescriptorPool* pool = internal_generated_pool();
-  // Ensure that descriptor.proto gets registered in the generated pool. It is a
-  // special case because it is included in the full runtime. We have to avoid
-  // registering it pre-main, because we need to ensure that the linker
-  // --gc-sections step can strip out the full runtime if it is unused.
+  // Ensure that descriptor.proto and cpp_features.proto get registered in the
+  // generated pool. They're special cases because they're included in the full
+  // runtime. We have to avoid registering it pre-main, because we need to
+  // ensure that the linker --gc-sections step can strip out the full runtime if
+  // it is unused.
   DescriptorProto::descriptor();
   return pool;
 }
@@ -1997,6 +1998,7 @@ void DescriptorPool::InternalAddGeneratedFile(
   // Therefore, when we parse one, we have to be very careful to avoid using
   // any descriptor-based operations, since this might cause infinite recursion
   // or deadlock.
+  absl::MutexLockMaybe lock(internal_generated_pool()->mutex_);
   ABSL_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size));
 }
 
@@ -4348,7 +4350,8 @@ DescriptorBuilder::DescriptorBuilder(
       error_collector_(error_collector),
       had_errors_(false),
       possible_undeclared_dependency_(nullptr),
-      undefine_resolved_name_("") {}
+      undefine_resolved_name_("") {
+}
 
 DescriptorBuilder::~DescriptorBuilder() {}
 

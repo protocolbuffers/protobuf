@@ -34,6 +34,8 @@
 //
 // This file makes extensive use of RFC 3092.  :)
 
+#include "google/protobuf/descriptor.h"
+
 #include <cstdlib>
 #include <limits>
 #include <memory>
@@ -55,7 +57,6 @@
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/text_format.h"
