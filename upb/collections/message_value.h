@@ -40,8 +40,6 @@
 typedef struct upb_Array upb_Array;
 typedef struct upb_Map upb_Map;
 
-typedef uintptr_t upb_TaggedMessagePtr;
-
 typedef union {
   bool bool_val;
   float float_val;
