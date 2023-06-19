@@ -1,8 +1,5 @@
 #include <stddef.h>
-#include "upb/collections/array_internal.h"
-#include "upb/message/internal.h"
-#include "upb/mini_table/decode.h"
-#include "upb/mini_table/enum_internal.h"
+#include "upb/generated_code_support.h"
 #include "google/protobuf/descriptor.upb.h"
 
 static upb_Arena* upb_BootstrapArena() {
@@ -414,4 +411,3 @@ const upb_MiniTableEnum* google_protobuf_MethodOptions_IdempotencyLevel_enum_ini
                               upb_BootstrapArena(), NULL);
   return mini_table;
 }
-

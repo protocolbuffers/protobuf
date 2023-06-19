@@ -841,14 +841,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
-      "#include \"upb/collections/array_internal.h\"\n"
-      "#include \"upb/collections/map_gencode_util.h\"\n"
-      "#include \"upb/message/accessors.h\"\n"
-      "#include \"upb/message/internal.h\"\n"
-      "#include \"upb/mini_table/enum_internal.h\"\n"
-      "#include \"upb/wire/decode.h\"\n"
-      "#include \"upb/wire/decode_fast.h\"\n"
-      "#include \"upb/wire/encode.h\"\n\n",
+      "#include \"upb/generated_code_support.h\"\n",
       ToPreproc(file.name()));
 
   for (int i = 0; i < file.public_dependency_count(); i++) {
@@ -1544,9 +1537,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
 
   output(
       "#include <stddef.h>\n"
-      "#include \"upb/collections/array_internal.h\"\n"
-      "#include \"upb/message/internal.h\"\n"
-      "#include \"upb/mini_table/enum_internal.h\"\n"
+      "#include \"upb/generated_code_support.h\"\n"
       "#include \"$0\"\n",
       HeaderFilename(file));
 
@@ -1638,10 +1629,7 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
                                const Options& options, Output& output) {
   output(
       "#include <stddef.h>\n"
-      "#include \"upb/collections/array_internal.h\"\n"
-      "#include \"upb/message/internal.h\"\n"
-      "#include \"upb/mini_table/decode.h\"\n"
-      "#include \"upb/mini_table/enum_internal.h\"\n"
+      "#include \"upb/generated_code_support.h\"\n"
       "#include \"$0\"\n\n",
       HeaderFilename(file));
 

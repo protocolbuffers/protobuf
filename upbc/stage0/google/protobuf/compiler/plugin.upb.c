@@ -1,8 +1,5 @@
 #include <stddef.h>
-#include "upb/collections/array_internal.h"
-#include "upb/message/internal.h"
-#include "upb/mini_table/decode.h"
-#include "upb/mini_table/enum_internal.h"
+#include "upb/generated_code_support.h"
 #include "google/protobuf/compiler/plugin.upb.h"
 
 #include "google/protobuf/descriptor.upb.h"
@@ -65,4 +62,3 @@ const upb_MiniTableEnum* google_protobuf_compiler_CodeGeneratorResponse_Feature_
                               upb_BootstrapArena(), NULL);
   return mini_table;
 }
-
