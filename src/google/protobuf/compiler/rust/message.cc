@@ -219,6 +219,10 @@ MessageGenerator::MessageGenerator(Context<Descriptor> msg) {
 }
 
 void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
+  if (msg.desc().map_key() != nullptr) {
+    ABSL_LOG(WARNING) << "unsupported map field: " << msg.desc().full_name();
+    return;
+  }
   msg.Emit(
       {
           {"Msg", msg.desc().name()},
@@ -338,6 +342,10 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
 // Generates code for a particular message in `.pb.thunk.cc`.
 void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
   ABSL_CHECK(msg.is_cpp());
+  if (msg.desc().map_key() != nullptr) {
+    ABSL_LOG(WARNING) << "unsupported map field: " << msg.desc().full_name();
+    return;
+  }
 
   msg.Emit(
       {
