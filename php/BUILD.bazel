@@ -148,6 +148,7 @@ pkg_files(
   ]) + [
     "//:LICENSE",
     "ext/google/protobuf/config.m4",
+    "ext/google/protobuf/config.w32",
     "ext/google/protobuf/wkt.inc",
   ],
 )
