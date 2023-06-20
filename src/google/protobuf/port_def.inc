@@ -939,6 +939,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
 #ifdef _WIN32
+#pragma push_macro("CompareString")
+#undef CompareString
 #pragma push_macro("CREATE_NEW")
 #undef CREATE_NEW
 #pragma push_macro("DELETE")

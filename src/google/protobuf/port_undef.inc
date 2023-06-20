@@ -144,6 +144,7 @@
 #endif
 
 #ifdef _WIN32
+#pragma pop_macro("CompareString")
 #pragma pop_macro("CREATE_NEW")
 #pragma pop_macro("DELETE")
 #pragma pop_macro("DOUBLE_CLICK")
