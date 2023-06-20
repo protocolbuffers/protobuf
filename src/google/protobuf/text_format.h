@@ -71,6 +71,7 @@ PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_format_marker;
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_detection;
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_redaction;
 PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
+PROTOBUF_EXPORT bool ShouldRedactField(const FieldDescriptor* field);
 
 // This enum contains all the APIs that convert protos to human-readable
 // formats. A higher-level API must correspond to a greater number than any

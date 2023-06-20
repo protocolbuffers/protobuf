@@ -2872,7 +2872,7 @@ void TextFormat::Printer::PrintUnknownFields(
   }
 }
 
-namespace {
+namespace internal {
 
 // Check if the field is sensitive and should be redacted.
 bool ShouldRedactField(const FieldDescriptor* field) {
@@ -2880,12 +2880,12 @@ bool ShouldRedactField(const FieldDescriptor* field) {
   return false;
 }
 
-}  // namespace
+}  // namespace internal
 
 bool TextFormat::Printer::TryRedactFieldValue(
     const Message& message, const FieldDescriptor* field,
     BaseTextGenerator* generator, bool insert_value_separator) const {
-  if (ShouldRedactField(field)) {
+  if (internal::ShouldRedactField(field)) {
     if (redact_debug_string_) {
       IncrementRedactedFieldCounter();
       if (insert_value_separator) {
