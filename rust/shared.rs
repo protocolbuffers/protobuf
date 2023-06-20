@@ -43,8 +43,10 @@ pub mod __runtime;
 #[path = "upb.rs"]
 pub mod __runtime;
 
+mod optional;
 mod proxied;
 
+pub use optional::{AbsentField, FieldEntry, Optional, PresentField};
 pub use proxied::{Mut, MutProxy, Proxied, View, ViewProxy};
 
 /// Everything in `__internal` is allowed to change without it being considered
