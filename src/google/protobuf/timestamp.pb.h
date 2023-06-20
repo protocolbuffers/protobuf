@@ -270,9 +270,11 @@ inline void Timestamp::set_seconds(::int64_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.seconds)
 }
 inline ::int64_t Timestamp::_internal_seconds() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.seconds_;
 }
 inline void Timestamp::_internal_set_seconds(::int64_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.seconds_ = value;
 }
@@ -290,9 +292,11 @@ inline void Timestamp::set_nanos(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.nanos)
 }
 inline ::int32_t Timestamp::_internal_nanos() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.nanos_;
 }
 inline void Timestamp::_internal_set_nanos(::int32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.nanos_ = value;
 }

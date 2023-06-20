@@ -1574,9 +1574,11 @@ inline void DoubleValue::set_value(double value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DoubleValue.value)
 }
 inline double DoubleValue::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.value_;
 }
 inline void DoubleValue::_internal_set_value(double value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_ = value;
 }
@@ -1598,9 +1600,11 @@ inline void FloatValue::set_value(float value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FloatValue.value)
 }
 inline float FloatValue::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.value_;
 }
 inline void FloatValue::_internal_set_value(float value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_ = value;
 }
@@ -1622,9 +1626,11 @@ inline void Int64Value::set_value(::int64_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Int64Value.value)
 }
 inline ::int64_t Int64Value::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.value_;
 }
 inline void Int64Value::_internal_set_value(::int64_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_ = value;
 }
@@ -1646,9 +1652,11 @@ inline void UInt64Value::set_value(::uint64_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UInt64Value.value)
 }
 inline ::uint64_t UInt64Value::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.value_;
 }
 inline void UInt64Value::_internal_set_value(::uint64_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_ = value;
 }
@@ -1670,9 +1678,11 @@ inline void Int32Value::set_value(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Int32Value.value)
 }
 inline ::int32_t Int32Value::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.value_;
 }
 inline void Int32Value::_internal_set_value(::int32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_ = value;
 }
@@ -1694,9 +1704,11 @@ inline void UInt32Value::set_value(::uint32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UInt32Value.value)
 }
 inline ::uint32_t UInt32Value::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.value_;
 }
 inline void UInt32Value::_internal_set_value(::uint32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_ = value;
 }
@@ -1718,9 +1730,11 @@ inline void BoolValue::set_value(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.BoolValue.value)
 }
 inline bool BoolValue::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.value_;
 }
 inline void BoolValue::_internal_set_value(bool value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_ = value;
 }
@@ -1740,6 +1754,7 @@ inline const std::string& StringValue::value() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void StringValue::set_value(Arg_&& arg,
                                                      Args_... args) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.StringValue.value)
@@ -1750,21 +1765,26 @@ inline std::string* StringValue::mutable_value() {
   return _s;
 }
 inline const std::string& StringValue::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.value_.Get();
 }
 inline void StringValue::_internal_set_value(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* StringValue::_internal_mutable_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   return _impl_.value_.Mutable( GetArenaForAllocation());
 }
 inline std::string* StringValue::release_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.StringValue.value)
   return _impl_.value_.Release();
 }
 inline void StringValue::set_allocated_value(std::string* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.value_.IsDefault()) {
@@ -1789,6 +1809,7 @@ inline const std::string& BytesValue::value() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void BytesValue::set_value(Arg_&& arg,
                                                      Args_... args) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.BytesValue.value)
@@ -1799,21 +1820,26 @@ inline std::string* BytesValue::mutable_value() {
   return _s;
 }
 inline const std::string& BytesValue::_internal_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.value_.Get();
 }
 inline void BytesValue::_internal_set_value(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   _impl_.value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* BytesValue::_internal_mutable_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
   return _impl_.value_.Mutable( GetArenaForAllocation());
 }
 inline std::string* BytesValue::release_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.BytesValue.value)
   return _impl_.value_.Release();
 }
 inline void BytesValue::set_allocated_value(std::string* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.value_.IsDefault()) {

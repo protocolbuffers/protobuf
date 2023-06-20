@@ -892,6 +892,7 @@ inline const std::string& Value::string_value() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
                                                      Args_... args) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() != kStringValue) {
     clear_kind();
 
@@ -907,12 +908,14 @@ inline std::string* Value::mutable_string_value() {
   return _s;
 }
 inline const std::string& Value::_internal_string_value() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   if (kind_case() != kStringValue) {
     return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
   }
   return _impl_.kind_.string_value_.Get();
 }
 inline void Value::_internal_set_string_value(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() != kStringValue) {
     clear_kind();
 
@@ -922,6 +925,7 @@ inline void Value::_internal_set_string_value(const std::string& value) {
   _impl_.kind_.string_value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Value::_internal_mutable_string_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() != kStringValue) {
     clear_kind();
 
@@ -931,6 +935,7 @@ inline std::string* Value::_internal_mutable_string_value() {
   return _impl_.kind_.string_value_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Value::release_string_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
   if (kind_case() != kStringValue) {
     return nullptr;
@@ -939,6 +944,7 @@ inline std::string* Value::release_string_value() {
   return _impl_.kind_.string_value_.Release();
 }
 inline void Value::set_allocated_string_value(std::string* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (has_kind()) {
     clear_kind();
   }
