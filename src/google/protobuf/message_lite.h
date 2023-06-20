@@ -207,6 +207,10 @@ class PROTOBUF_EXPORT MessageLite {
   // results are undefined (probably crash).
   virtual void CheckTypeAndMergeFrom(const MessageLite& other) = 0;
 
+  // If |other| is the exact same class as this, copies `other` into this
+  // content, Otherwise, results are undefined (probably crash).
+  virtual void CheckTypeAndCopyFrom(const MessageLite& other) = 0;
+
   // These methods return a human-readable summary of the message. Note that
   // since the MessageLite interface does not support reflection, there is very
   // little information that these methods can provide. They are shadowed by

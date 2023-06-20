@@ -95,6 +95,10 @@ class MapFieldLite {
   void MergeFrom(const MapFieldLite& other) {
     internal::MapMergeFrom(map_, other.map_);
   }
+  void CopyFrom(const MapFieldLite& other) {
+    Clear();
+    internal::MapMergeFrom(map_, other.map_);
+  }
   void Swap(MapFieldLite* other) { map_.swap(other->map_); }
   void InternalSwap(MapFieldLite* other) { map_.InternalSwap(&other->map_); }
 

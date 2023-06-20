@@ -574,12 +574,29 @@ void Version::MergeImpl(::google::protobuf::Message& to_msg, const ::google::pro
 void Version::CopyFrom(const Version& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.Version)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool Version::IsInitialized() const {
   return true;
+}
+
+void Version::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::compiler::Version;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [major...patch]: (3)
+  memcpy(&_impl_.major_, &rhs._impl_.major_,
+      offsetof(MessageType::Impl_, patch_) -
+      offsetof(MessageType::Impl_, major_) +
+      sizeof(rhs._impl_.patch_));
+  _impl_.suffix_.CopyFrom(rhs._impl_.suffix_, arena);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void Version::InternalSwap(Version* other) {
@@ -893,14 +910,34 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
 void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorRequest)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_proto_file()))
     return false;
   return true;
+}
+
+void CodeGeneratorRequest::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::compiler::CodeGeneratorRequest;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.file_to_generate_.CopyFrom(rhs._impl_.file_to_generate_);
+  // Repeated Message: proto_file
+  _impl_.proto_file_.CopyFrom(rhs._impl_.proto_file_);
+  _impl_.parameter_.CopyFrom(rhs._impl_.parameter_, arena);
+  if (rhs._impl_.compiler_version_ != nullptr) {
+    _internal_mutable_compiler_version()->CheckTypeAndCopyFrom(*rhs._impl_.compiler_version_);
+  } else if (_impl_.compiler_version_ != nullptr) {
+    _impl_.compiler_version_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
@@ -1245,12 +1282,31 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::Message& to_msg, 
 void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
   return true;
+}
+
+void CodeGeneratorResponse_File::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::compiler::CodeGeneratorResponse_File;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.name_.CopyFrom(rhs._impl_.name_, arena);
+  _impl_.insertion_point_.CopyFrom(rhs._impl_.insertion_point_, arena);
+  _impl_.content_.CopyFrom(rhs._impl_.content_, arena);
+  if (rhs._impl_.generated_code_info_ != nullptr) {
+    _internal_mutable_generated_code_info()->CheckTypeAndCopyFrom(*rhs._impl_.generated_code_info_);
+  } else if (_impl_.generated_code_info_ != nullptr) {
+    _impl_.generated_code_info_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other) {
@@ -1517,12 +1573,27 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::Message& to_msg, const
 void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorResponse)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
   return true;
+}
+
+void CodeGeneratorResponse::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::compiler::CodeGeneratorResponse;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.supported_features_ = rhs._impl_.supported_features_;
+  // Repeated Message: file
+  _impl_.file_.CopyFrom(rhs._impl_.file_);
+  _impl_.error_.CopyFrom(rhs._impl_.error_, arena);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {

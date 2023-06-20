@@ -2165,14 +2165,26 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::Message& to_msg, const ::g
 void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorSet)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_file()))
     return false;
   return true;
+}
+
+void FileDescriptorSet::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::FileDescriptorSet;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Repeated Message: file
+  _impl_.file_.CopyFrom(rhs._impl_.file_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
@@ -2779,8 +2791,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
 void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
@@ -2796,6 +2807,43 @@ PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void FileDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::FileDescriptorProto;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.dependency_.CopyFrom(rhs._impl_.dependency_);
+  // Repeated Message: message_type
+  _impl_.message_type_.CopyFrom(rhs._impl_.message_type_);
+  // Repeated Message: enum_type
+  _impl_.enum_type_.CopyFrom(rhs._impl_.enum_type_);
+  // Repeated Message: service
+  _impl_.service_.CopyFrom(rhs._impl_.service_);
+  // Repeated Message: extension
+  _impl_.extension_.CopyFrom(rhs._impl_.extension_);
+  _impl_.public_dependency_.CopyFrom(rhs._impl_.public_dependency_);
+  _impl_.weak_dependency_.CopyFrom(rhs._impl_.weak_dependency_);
+  _impl_.name_.CopyFrom(rhs._impl_.name_, arena);
+  _impl_.package_.CopyFrom(rhs._impl_.package_, arena);
+  _impl_.syntax_.CopyFrom(rhs._impl_.syntax_, arena);
+  _impl_.edition_.CopyFrom(rhs._impl_.edition_, arena);
+  if (rhs._impl_.options_ != nullptr) {
+    _internal_mutable_options()->CheckTypeAndCopyFrom(*rhs._impl_.options_);
+  } else if (_impl_.options_ != nullptr) {
+    _impl_.options_->Clear();
+  }
+  if (rhs._impl_.source_code_info_ != nullptr) {
+    _internal_mutable_source_code_info()->CheckTypeAndCopyFrom(*rhs._impl_.source_code_info_);
+  } else if (_impl_.source_code_info_ != nullptr) {
+    _impl_.source_code_info_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
@@ -3079,8 +3127,7 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::Message& to_m
 void DescriptorProto_ExtensionRange::CopyFrom(const DescriptorProto_ExtensionRange& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ExtensionRange)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitialized() const {
@@ -3088,6 +3135,28 @@ PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void DescriptorProto_ExtensionRange::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::DescriptorProto_ExtensionRange;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [start...end]: (2)
+  memcpy(&_impl_.start_, &rhs._impl_.start_,
+      offsetof(MessageType::Impl_, end_) -
+      offsetof(MessageType::Impl_, start_) +
+      sizeof(rhs._impl_.end_));
+  if (rhs._impl_.options_ != nullptr) {
+    _internal_mutable_options()->CheckTypeAndCopyFrom(*rhs._impl_.options_);
+  } else if (_impl_.options_ != nullptr) {
+    _impl_.options_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange* other) {
@@ -3300,12 +3369,28 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::Message& to_ms
 void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ReservedRange)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto_ReservedRange::IsInitialized() const {
   return true;
+}
+
+void DescriptorProto_ReservedRange::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::DescriptorProto_ReservedRange;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [start...end]: (2)
+  memcpy(&_impl_.start_, &rhs._impl_.start_,
+      offsetof(MessageType::Impl_, end_) -
+      offsetof(MessageType::Impl_, start_) +
+      sizeof(rhs._impl_.end_));
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* other) {
@@ -3769,8 +3854,7 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
 void DescriptorProto::CopyFrom(const DescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
@@ -3790,6 +3874,39 @@ PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void DescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::DescriptorProto;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Repeated Message: field
+  _impl_.field_.CopyFrom(rhs._impl_.field_);
+  // Repeated Message: nested_type
+  _impl_.nested_type_.CopyFrom(rhs._impl_.nested_type_);
+  // Repeated Message: enum_type
+  _impl_.enum_type_.CopyFrom(rhs._impl_.enum_type_);
+  // Repeated Message: extension_range
+  _impl_.extension_range_.CopyFrom(rhs._impl_.extension_range_);
+  // Repeated Message: extension
+  _impl_.extension_.CopyFrom(rhs._impl_.extension_);
+  // Repeated Message: oneof_decl
+  _impl_.oneof_decl_.CopyFrom(rhs._impl_.oneof_decl_);
+  // Repeated Message: reserved_range
+  _impl_.reserved_range_.CopyFrom(rhs._impl_.reserved_range_);
+  _impl_.reserved_name_.CopyFrom(rhs._impl_.reserved_name_);
+  _impl_.name_.CopyFrom(rhs._impl_.name_, arena);
+  if (rhs._impl_.options_ != nullptr) {
+    _internal_mutable_options()->CheckTypeAndCopyFrom(*rhs._impl_.options_);
+  } else if (_impl_.options_ != nullptr) {
+    _impl_.options_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void DescriptorProto::InternalSwap(DescriptorProto* other) {
@@ -4166,12 +4283,30 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::Message& t
 void ExtensionRangeOptions_Declaration::CopyFrom(const ExtensionRangeOptions_Declaration& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions.Declaration)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ExtensionRangeOptions_Declaration::IsInitialized() const {
   return true;
+}
+
+void ExtensionRangeOptions_Declaration::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::ExtensionRangeOptions_Declaration;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [number...repeated]: (4)
+  memcpy(&_impl_.number_, &rhs._impl_.number_,
+      offsetof(MessageType::Impl_, repeated_) -
+      offsetof(MessageType::Impl_, number_) +
+      sizeof(rhs._impl_.repeated_));
+  _impl_.full_name_.CopyFrom(rhs._impl_.full_name_, arena);
+  _impl_.type_.CopyFrom(rhs._impl_.type_, arena);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* other) {
@@ -4424,8 +4559,7 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const
 void ExtensionRangeOptions::CopyFrom(const ExtensionRangeOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
@@ -4435,6 +4569,24 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void ExtensionRangeOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::ExtensionRangeOptions;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.verification_ = rhs._impl_.verification_;
+  // Repeated Message: declaration
+  _impl_.declaration_.CopyFrom(rhs._impl_.declaration_);
+  // Repeated Message: uninterpreted_option
+  _impl_.uninterpreted_option_.CopyFrom(rhs._impl_.uninterpreted_option_);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _impl_._extensions_.CopyFrom(internal_default_instance(), rhs._impl_._extensions_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
@@ -5016,8 +5168,7 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
 void FieldDescriptorProto::CopyFrom(const FieldDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
@@ -5025,6 +5176,33 @@ PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void FieldDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::FieldDescriptorProto;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [number...type]: (5)
+  memcpy(&_impl_.number_, &rhs._impl_.number_,
+      offsetof(MessageType::Impl_, type_) -
+      offsetof(MessageType::Impl_, number_) +
+      sizeof(rhs._impl_.type_));
+  _impl_.name_.CopyFrom(rhs._impl_.name_, arena);
+  _impl_.extendee_.CopyFrom(rhs._impl_.extendee_, arena);
+  _impl_.type_name_.CopyFrom(rhs._impl_.type_name_, arena);
+  _impl_.default_value_.CopyFrom(rhs._impl_.default_value_, arena);
+  _impl_.json_name_.CopyFrom(rhs._impl_.json_name_, arena);
+  if (rhs._impl_.options_ != nullptr) {
+    _internal_mutable_options()->CheckTypeAndCopyFrom(*rhs._impl_.options_);
+  } else if (_impl_.options_ != nullptr) {
+    _impl_.options_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
@@ -5286,8 +5464,7 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
 void OneofDescriptorProto::CopyFrom(const OneofDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
@@ -5295,6 +5472,24 @@ PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void OneofDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::OneofDescriptorProto;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.name_.CopyFrom(rhs._impl_.name_, arena);
+  if (rhs._impl_.options_ != nullptr) {
+    _internal_mutable_options()->CheckTypeAndCopyFrom(*rhs._impl_.options_);
+  } else if (_impl_.options_ != nullptr) {
+    _impl_.options_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
@@ -5506,12 +5701,28 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
 void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_EnumReservedRange& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumDescriptorProto_EnumReservedRange::IsInitialized() const {
   return true;
+}
+
+void EnumDescriptorProto_EnumReservedRange::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::EnumDescriptorProto_EnumReservedRange;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [start...end]: (2)
+  memcpy(&_impl_.start_, &rhs._impl_.start_,
+      offsetof(MessageType::Impl_, end_) -
+      offsetof(MessageType::Impl_, start_) +
+      sizeof(rhs._impl_.end_));
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* other) {
@@ -5842,8 +6053,7 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
 void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
@@ -5853,6 +6063,29 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void EnumDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::EnumDescriptorProto;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Repeated Message: value
+  _impl_.value_.CopyFrom(rhs._impl_.value_);
+  // Repeated Message: reserved_range
+  _impl_.reserved_range_.CopyFrom(rhs._impl_.reserved_range_);
+  _impl_.reserved_name_.CopyFrom(rhs._impl_.reserved_name_);
+  _impl_.name_.CopyFrom(rhs._impl_.name_, arena);
+  if (rhs._impl_.options_ != nullptr) {
+    _internal_mutable_options()->CheckTypeAndCopyFrom(*rhs._impl_.options_);
+  } else if (_impl_.options_ != nullptr) {
+    _impl_.options_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
@@ -6136,8 +6369,7 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, co
 void EnumValueDescriptorProto::CopyFrom(const EnumValueDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
@@ -6145,6 +6377,25 @@ PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void EnumValueDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::EnumValueDescriptorProto;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.number_ = rhs._impl_.number_;
+  _impl_.name_.CopyFrom(rhs._impl_.name_, arena);
+  if (rhs._impl_.options_ != nullptr) {
+    _internal_mutable_options()->CheckTypeAndCopyFrom(*rhs._impl_.options_);
+  } else if (_impl_.options_ != nullptr) {
+    _impl_.options_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
@@ -6425,8 +6676,7 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, cons
 void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
@@ -6436,6 +6686,26 @@ PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void ServiceDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::ServiceDescriptorProto;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Repeated Message: method
+  _impl_.method_.CopyFrom(rhs._impl_.method_);
+  _impl_.name_.CopyFrom(rhs._impl_.name_, arena);
+  if (rhs._impl_.options_ != nullptr) {
+    _internal_mutable_options()->CheckTypeAndCopyFrom(*rhs._impl_.options_);
+  } else if (_impl_.options_ != nullptr) {
+    _impl_.options_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
@@ -6834,8 +7104,7 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const
 void MethodDescriptorProto::CopyFrom(const MethodDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodDescriptorProto)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
@@ -6843,6 +7112,31 @@ PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
     if (!_impl_.options_->IsInitialized()) return false;
   }
   return true;
+}
+
+void MethodDescriptorProto::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::MethodDescriptorProto;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [client_streaming...server_streaming]: (2)
+  memcpy(&_impl_.client_streaming_, &rhs._impl_.client_streaming_,
+      offsetof(MessageType::Impl_, server_streaming_) -
+      offsetof(MessageType::Impl_, client_streaming_) +
+      sizeof(rhs._impl_.server_streaming_));
+  _impl_.name_.CopyFrom(rhs._impl_.name_, arena);
+  _impl_.input_type_.CopyFrom(rhs._impl_.input_type_, arena);
+  _impl_.output_type_.CopyFrom(rhs._impl_.output_type_, arena);
+  if (rhs._impl_.options_ != nullptr) {
+    _internal_mutable_options()->CheckTypeAndCopyFrom(*rhs._impl_.options_);
+  } else if (_impl_.options_ != nullptr) {
+    _impl_.options_->Clear();
+  }
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
@@ -7789,8 +8083,7 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
 void FileOptions::CopyFrom(const FileOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
@@ -7800,6 +8093,36 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void FileOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::FileOptions;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [java_multiple_files...cc_enable_arenas]: (10)
+  memcpy(&_impl_.java_multiple_files_, &rhs._impl_.java_multiple_files_,
+      offsetof(MessageType::Impl_, cc_enable_arenas_) -
+      offsetof(MessageType::Impl_, java_multiple_files_) +
+      sizeof(rhs._impl_.cc_enable_arenas_));
+  // Repeated Message: uninterpreted_option
+  _impl_.uninterpreted_option_.CopyFrom(rhs._impl_.uninterpreted_option_);
+  _impl_.java_package_.CopyFrom(rhs._impl_.java_package_, arena);
+  _impl_.java_outer_classname_.CopyFrom(rhs._impl_.java_outer_classname_, arena);
+  _impl_.go_package_.CopyFrom(rhs._impl_.go_package_, arena);
+  _impl_.objc_class_prefix_.CopyFrom(rhs._impl_.objc_class_prefix_, arena);
+  _impl_.csharp_namespace_.CopyFrom(rhs._impl_.csharp_namespace_, arena);
+  _impl_.swift_prefix_.CopyFrom(rhs._impl_.swift_prefix_, arena);
+  _impl_.php_class_prefix_.CopyFrom(rhs._impl_.php_class_prefix_, arena);
+  _impl_.php_namespace_.CopyFrom(rhs._impl_.php_namespace_, arena);
+  _impl_.php_metadata_namespace_.CopyFrom(rhs._impl_.php_metadata_namespace_, arena);
+  _impl_.ruby_package_.CopyFrom(rhs._impl_.ruby_package_, arena);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _impl_._extensions_.CopyFrom(internal_default_instance(), rhs._impl_._extensions_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void FileOptions::InternalSwap(FileOptions* other) {
@@ -8160,8 +8483,7 @@ void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
 void MessageOptions::CopyFrom(const MessageOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MessageOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
@@ -8171,6 +8493,26 @@ PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void MessageOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::MessageOptions;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [message_set_wire_format...deprecated_legacy_json_field_conflicts]: (5)
+  memcpy(&_impl_.message_set_wire_format_, &rhs._impl_.message_set_wire_format_,
+      offsetof(MessageType::Impl_, deprecated_legacy_json_field_conflicts_) -
+      offsetof(MessageType::Impl_, message_set_wire_format_) +
+      sizeof(rhs._impl_.deprecated_legacy_json_field_conflicts_));
+  // Repeated Message: uninterpreted_option
+  _impl_.uninterpreted_option_.CopyFrom(rhs._impl_.uninterpreted_option_);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _impl_._extensions_.CopyFrom(internal_default_instance(), rhs._impl_._extensions_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void MessageOptions::InternalSwap(MessageOptions* other) {
@@ -8689,8 +9031,7 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
 void FieldOptions::CopyFrom(const FieldOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
@@ -8700,6 +9041,27 @@ PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void FieldOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::FieldOptions;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [ctype...target_obsolete_do_not_use]: (10)
+  memcpy(&_impl_.ctype_, &rhs._impl_.ctype_,
+      offsetof(MessageType::Impl_, target_obsolete_do_not_use_) -
+      offsetof(MessageType::Impl_, ctype_) +
+      sizeof(rhs._impl_.target_obsolete_do_not_use_));
+  _impl_.targets_.CopyFrom(rhs._impl_.targets_);
+  // Repeated Message: uninterpreted_option
+  _impl_.uninterpreted_option_.CopyFrom(rhs._impl_.uninterpreted_option_);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _impl_._extensions_.CopyFrom(internal_default_instance(), rhs._impl_._extensions_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void FieldOptions::InternalSwap(FieldOptions* other) {
@@ -8889,8 +9251,7 @@ void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
 void OneofOptions::CopyFrom(const OneofOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
@@ -8900,6 +9261,20 @@ PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void OneofOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::OneofOptions;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Repeated Message: uninterpreted_option
+  _impl_.uninterpreted_option_.CopyFrom(rhs._impl_.uninterpreted_option_);
+  _impl_._extensions_.CopyFrom(internal_default_instance(), rhs._impl_._extensions_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void OneofOptions::InternalSwap(OneofOptions* other) {
@@ -9182,8 +9557,7 @@ void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
 void EnumOptions::CopyFrom(const EnumOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
@@ -9193,6 +9567,26 @@ PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void EnumOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::EnumOptions;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [allow_alias...deprecated_legacy_json_field_conflicts]: (3)
+  memcpy(&_impl_.allow_alias_, &rhs._impl_.allow_alias_,
+      offsetof(MessageType::Impl_, deprecated_legacy_json_field_conflicts_) -
+      offsetof(MessageType::Impl_, allow_alias_) +
+      sizeof(rhs._impl_.deprecated_legacy_json_field_conflicts_));
+  // Repeated Message: uninterpreted_option
+  _impl_.uninterpreted_option_.CopyFrom(rhs._impl_.uninterpreted_option_);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _impl_._extensions_.CopyFrom(internal_default_instance(), rhs._impl_._extensions_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void EnumOptions::InternalSwap(EnumOptions* other) {
@@ -9451,8 +9845,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::go
 void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
@@ -9462,6 +9855,26 @@ PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void EnumValueOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::EnumValueOptions;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [deprecated...debug_redact]: (2)
+  memcpy(&_impl_.deprecated_, &rhs._impl_.deprecated_,
+      offsetof(MessageType::Impl_, debug_redact_) -
+      offsetof(MessageType::Impl_, deprecated_) +
+      sizeof(rhs._impl_.debug_redact_));
+  // Repeated Message: uninterpreted_option
+  _impl_.uninterpreted_option_.CopyFrom(rhs._impl_.uninterpreted_option_);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _impl_._extensions_.CopyFrom(internal_default_instance(), rhs._impl_._extensions_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
@@ -9688,8 +10101,7 @@ void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
 void ServiceOptions::CopyFrom(const ServiceOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
@@ -9699,6 +10111,22 @@ PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void ServiceOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::ServiceOptions;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.deprecated_ = rhs._impl_.deprecated_;
+  // Repeated Message: uninterpreted_option
+  _impl_.uninterpreted_option_.CopyFrom(rhs._impl_.uninterpreted_option_);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _impl_._extensions_.CopyFrom(internal_default_instance(), rhs._impl_._extensions_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void ServiceOptions::InternalSwap(ServiceOptions* other) {
@@ -9960,8 +10388,7 @@ void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::googl
 void MethodOptions::CopyFrom(const MethodOptions& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodOptions)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
@@ -9971,6 +10398,26 @@ PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option()))
     return false;
   return true;
+}
+
+void MethodOptions::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::MethodOptions;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [deprecated...idempotency_level]: (2)
+  memcpy(&_impl_.deprecated_, &rhs._impl_.deprecated_,
+      offsetof(MessageType::Impl_, idempotency_level_) -
+      offsetof(MessageType::Impl_, deprecated_) +
+      sizeof(rhs._impl_.idempotency_level_));
+  // Repeated Message: uninterpreted_option
+  _impl_.uninterpreted_option_.CopyFrom(rhs._impl_.uninterpreted_option_);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _impl_._extensions_.CopyFrom(internal_default_instance(), rhs._impl_._extensions_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void MethodOptions::InternalSwap(MethodOptions* other) {
@@ -10211,8 +10658,7 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::Message& to_msg
 void UninterpretedOption_NamePart::CopyFrom(const UninterpretedOption_NamePart& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption.NamePart)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
@@ -10220,6 +10666,20 @@ PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
     return false;
   }
   return true;
+}
+
+void UninterpretedOption_NamePart::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::UninterpretedOption_NamePart;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.is_extension_ = rhs._impl_.is_extension_;
+  _impl_.name_part_.CopyFrom(rhs._impl_.name_part_, arena);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* other) {
@@ -10627,14 +11087,35 @@ void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const :
 void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption::IsInitialized() const {
   if (!::google::protobuf::internal::AllAreInitialized(_internal_name()))
     return false;
   return true;
+}
+
+void UninterpretedOption::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::UninterpretedOption;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [positive_int_value...double_value]: (3)
+  memcpy(&_impl_.positive_int_value_, &rhs._impl_.positive_int_value_,
+      offsetof(MessageType::Impl_, double_value_) -
+      offsetof(MessageType::Impl_, positive_int_value_) +
+      sizeof(rhs._impl_.double_value_));
+  // Repeated Message: name
+  _impl_.name_.CopyFrom(rhs._impl_.name_);
+  _impl_.identifier_value_.CopyFrom(rhs._impl_.identifier_value_, arena);
+  _impl_.string_value_.CopyFrom(rhs._impl_.string_value_, arena);
+  _impl_.aggregate_value_.CopyFrom(rhs._impl_.aggregate_value_, arena);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
@@ -10995,12 +11476,28 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::Message& to_msg, con
 void SourceCodeInfo_Location::CopyFrom(const SourceCodeInfo_Location& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo.Location)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool SourceCodeInfo_Location::IsInitialized() const {
   return true;
+}
+
+void SourceCodeInfo_Location::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::SourceCodeInfo_Location;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  _impl_.path_.CopyFrom(rhs._impl_.path_);
+  _impl_.span_.CopyFrom(rhs._impl_.span_);
+  _impl_.leading_detached_comments_.CopyFrom(rhs._impl_.leading_detached_comments_);
+  _impl_.leading_comments_.CopyFrom(rhs._impl_.leading_comments_, arena);
+  _impl_.trailing_comments_.CopyFrom(rhs._impl_.trailing_comments_, arena);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
@@ -11176,12 +11673,24 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
 void SourceCodeInfo::CopyFrom(const SourceCodeInfo& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitialized() const {
   return true;
+}
+
+void SourceCodeInfo::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::SourceCodeInfo;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Repeated Message: location
+  _impl_.location_.CopyFrom(rhs._impl_.location_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
@@ -11510,12 +12019,30 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::Message& to_msg
 void GeneratedCodeInfo_Annotation::CopyFrom(const GeneratedCodeInfo_Annotation& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool GeneratedCodeInfo_Annotation::IsInitialized() const {
   return true;
+}
+
+void GeneratedCodeInfo_Annotation::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::GeneratedCodeInfo_Annotation;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Fields [begin...semantic]: (3)
+  memcpy(&_impl_.begin_, &rhs._impl_.begin_,
+      offsetof(MessageType::Impl_, semantic_) -
+      offsetof(MessageType::Impl_, begin_) +
+      sizeof(rhs._impl_.semantic_));
+  _impl_.path_.CopyFrom(rhs._impl_.path_);
+  _impl_.source_file_.CopyFrom(rhs._impl_.source_file_, arena);
+  _impl_._has_bits_ = rhs._impl_._has_bits_;
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* other) {
@@ -11692,12 +12219,24 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::g
 void GeneratedCodeInfo::CopyFrom(const GeneratedCodeInfo& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  CheckTypeAndCopyFrom(from);
 }
 
 PROTOBUF_NOINLINE bool GeneratedCodeInfo::IsInitialized() const {
   return true;
+}
+
+void GeneratedCodeInfo::CheckTypeAndCopyFrom(
+    const ::google::protobuf::MessageLite& from) {
+  using MessageType = ::google::protobuf::GeneratedCodeInfo;
+  const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);
+  assert(&rhs != this);
+
+  auto arena = GetArenaForAllocation();
+  // Repeated Message: annotation
+  _impl_.annotation_.CopyFrom(rhs._impl_.annotation_);
+  _internal_metadata_.CopyFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  (void)arena;
 }
 
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {

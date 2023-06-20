@@ -111,7 +111,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options) {
 class SingularPrimitive final : public FieldGeneratorBase {
  public:
   SingularPrimitive(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+      : FieldGeneratorBase("SingularPrimitive", field, opts),
         field_(field),
         opts_(&opts),
         is_oneof_(field_->real_containing_oneof() != nullptr) {}
@@ -135,6 +135,18 @@ class SingularPrimitive final : public FieldGeneratorBase {
     p->Emit(R"cc(
       _this->_internal_set_$name$(from._internal_$name$());
     )cc");
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    if (IsOneof()) {
+      p->Emit(R"cc(
+        _internal_set_$name$(rhs._internal_$name$());
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        $field_$ = rhs.$field_$;
+      )cc");
+    }
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
@@ -310,7 +322,9 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
   RepeatedPrimitive(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase("RepeatedPrimitive", field, opts),
+        field_(field),
+        opts_(&opts) {}
   ~RepeatedPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -325,6 +339,10 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     p->Emit(R"cc(
       _this->$field_$.MergeFrom(from.$field_$);
     )cc");
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    p->Emit("$field_$.CopyFrom(rhs.$field_$);\n");
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {

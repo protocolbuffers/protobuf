@@ -76,7 +76,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 class SingularEnum : public FieldGeneratorBase {
  public:
   SingularEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+      : FieldGeneratorBase("SingularEnum", field, opts),
         field_(field),
         opts_(&opts),
         is_oneof_(field->real_containing_oneof() != nullptr) {}
@@ -100,6 +100,18 @@ class SingularEnum : public FieldGeneratorBase {
     p->Emit(R"cc(
       _this->_internal_set_$name$(from._internal_$name$());
     )cc");
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    if (IsOneof()) {
+      p->Emit(R"cc(
+        _internal_set_$name$(rhs._internal_$name$());
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        $field_$ = rhs.$field_$;
+      )cc");
+    }
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
@@ -237,7 +249,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 class RepeatedEnum : public FieldGeneratorBase {
  public:
   RepeatedEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+      : FieldGeneratorBase("RepeatedEnum", field, opts),
         field_(field),
         opts_(&opts),
         has_cached_size_(field_->is_packed() &&
@@ -321,6 +333,10 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     ABSL_CHECK(!ShouldSplit(field_, *opts_));
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    p->Emit("$field_$.CopyFrom(rhs.$field_$);\n");
   }
 
   void GenerateConstructorCode(io::Printer* p) const override {}

@@ -210,6 +210,7 @@ class PROTOC_EXPORT Version final :
   Version* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Version>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Version& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -415,6 +416,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   CodeGeneratorRequest* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<CodeGeneratorRequest>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorRequest& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -648,6 +650,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<CodeGeneratorResponse_File>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse_File& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -869,6 +872,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   CodeGeneratorResponse* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<CodeGeneratorResponse>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse& from);
   using ::google::protobuf::Message::MergeFrom;

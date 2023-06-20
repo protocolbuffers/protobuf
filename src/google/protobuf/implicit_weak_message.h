@@ -91,6 +91,12 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
     }
   }
 
+  void CheckTypeAndCopyFrom(const MessageLite& other) override {
+    const std::string* other_data =
+        static_cast<const ImplicitWeakMessage&>(other).data_;
+    *data_ = other_data ? *other_data : std::string();
+  }
+
   const char* _InternalParse(const char* ptr, ParseContext* ctx) final;
 
   size_t ByteSizeLong() const override {
@@ -194,6 +200,9 @@ struct WeakRepeatedPtrField {
   void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {
     base().template MergeFrom<TypeHandler>(other.base());
+  }
+  void CopyFrom(const WeakRepeatedPtrField& other) {
+    base().template CopyFrom<TypeHandler>(other.base());
   }
   void InternalSwap(WeakRepeatedPtrField* other) {
     base().InternalSwap(&other->base());

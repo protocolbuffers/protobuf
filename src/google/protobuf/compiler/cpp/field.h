@@ -62,8 +62,11 @@ namespace cpp {
 // matter of clean composability.
 class FieldGeneratorBase {
  public:
-  FieldGeneratorBase(const FieldDescriptor* descriptor, const Options& options)
-      : descriptor_(descriptor), options_(options) {}
+  FieldGeneratorBase(std::string name, const FieldDescriptor* descriptor,
+                     const Options& options)
+      : name_(name), descriptor_(descriptor), options_(options) {}
+
+  absl::string_view name() { return name_; }
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
@@ -100,6 +103,8 @@ class FieldGeneratorBase {
 
   virtual void GenerateConstructorCode(io::Printer* p) const = 0;
 
+  virtual void GenerateCopyFromCode(io::Printer* p) const = 0;
+
   virtual void GenerateDestructorCode(io::Printer* p) const {}
 
   virtual void GenerateArenaDestructorCode(io::Printer* p) const {
@@ -126,8 +131,13 @@ class FieldGeneratorBase {
     return ArenaDtorNeeds::kNone;
   }
 
+  bool IsOneof() const {
+    return descriptor_->real_containing_oneof() != nullptr;
+  }
+
  protected:
   // TODO(b/245791219): Remove these members and make this a pure interface.
+  std::string name_;
   const FieldDescriptor* descriptor_;
   const Options& options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
@@ -161,6 +171,8 @@ class FieldGenerator {
   FieldGenerator& operator=(const FieldGenerator&) = delete;
   FieldGenerator(FieldGenerator&&) = default;
   FieldGenerator& operator=(FieldGenerator&&) = default;
+
+  absl::string_view name() const { return impl_->name(); }
 
   // Prints private members needed to represent this field.
   //
@@ -254,6 +266,11 @@ class FieldGenerator {
   void GenerateCopyConstructorCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateCopyConstructorCode(p);
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateCopyFromCode(p);
   }
 
   // Generates statements which swap this field and the corresponding field of

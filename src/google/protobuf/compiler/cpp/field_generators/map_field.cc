@@ -80,7 +80,7 @@ class Map : public FieldGeneratorBase {
  public:
   Map(const FieldDescriptor* field, const Options& opts,
       MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts),
+      : FieldGeneratorBase("Map", field, opts),
         field_(field),
         key_(field->message_type()->map_key()),
         val_(field->message_type()->map_value()),
@@ -102,6 +102,12 @@ class Map : public FieldGeneratorBase {
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
       _this->$field_$.MergeFrom(from.$field_$);
+    )cc");
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      $field_$.CopyFrom(rhs.$field_$);
     )cc");
   }
 

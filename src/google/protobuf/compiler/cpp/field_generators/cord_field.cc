@@ -85,6 +85,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateCopyFromCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateDestructorCode(io::Printer* printer) const override;
@@ -124,7 +125,7 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
 
 CordFieldGenerator::CordFieldGenerator(const FieldDescriptor* descriptor,
                                        const Options& options)
-    : FieldGeneratorBase(descriptor, options) {
+    : FieldGeneratorBase("CordField", descriptor, options) {
   SetCordVariables(descriptor, &variables_, options);
 }
 
@@ -207,6 +208,15 @@ void CordFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 void CordFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("_this->_internal_set_$name$(from._internal_$name$());\n");
+}
+
+void CordFieldGenerator::GenerateCopyFromCode(io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (IsOneof()) {
+    format("_internal_set_$name$(rhs._internal_$name$());\n");
+  } else {
+    format("$field$ = rhs.$field$;\n");
+  }
 }
 
 void CordFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {

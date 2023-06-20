@@ -384,6 +384,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   void Clear();
   void MergeFrom(const MessageLite* extendee, const ExtensionSet& other);
+  void CopyFrom(const MessageLite* extendee, const ExtensionSet& other);
   void Swap(const MessageLite* extendee, ExtensionSet* other);
   void InternalSwap(ExtensionSet* other);
   void SwapExtension(const MessageLite* extendee, ExtensionSet* other,
@@ -518,6 +519,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend class google::protobuf::Reflection;
   friend class google::protobuf::internal::WireFormat;
 
+  void CopyFromSlow(const MessageLite* extendee, const ExtensionSet& other);
+
   const int32_t& GetRefInt32(int number, const int32_t& default_value) const;
   const int64_t& GetRefInt64(int number, const int64_t& default_value) const;
   const uint32_t& GetRefUInt32(int number, const uint32_t& default_value) const;
@@ -575,6 +578,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     virtual void MergeFrom(const MessageLite* prototype,
                            const LazyMessageExtension& other, Arena* arena) = 0;
+    virtual void CopyFrom(const LazyMessageExtension& other, Arena* arena) = 0;
     virtual void MergeFromMessage(const MessageLite& msg, Arena* arena) = 0;
     virtual void Clear() = 0;
 
@@ -747,10 +751,11 @@ class PROTOBUF_EXPORT ExtensionSet {
     return ForEach(flat_begin(), flat_end(), std::move(func));
   }
 
-  // Merges existing Extension from other_extension
-  void InternalExtensionMergeFrom(const MessageLite* extendee, int number,
-                                  const Extension& other_extension,
-                                  Arena* other_arena);
+  // Merges or copies existing Extension from other_extension
+  template <bool merge>
+  void ExtensionMergeOrCopyFrom(const MessageLite* extendee, int number,
+                                const Extension& other_extension,
+                                Arena* other_arena);
 
   inline static bool is_packable(WireFormatLite::WireType type) {
     switch (type) {
@@ -940,6 +945,14 @@ inline void ExtensionSet::AddString(int number, FieldType type,
                                     const FieldDescriptor* descriptor) {
   AddString(number, type, descriptor)->assign(std::move(value));
 }
+
+inline void ExtensionSet::CopyFrom(const MessageLite* extendee,
+                                   const ExtensionSet& other) {
+  if (ABSL_PREDICT_FALSE(flat_size_ != 0 || other.flat_size_ != 0)) {
+    CopyFromSlow(extendee, other);
+  }
+}
+
 // ===================================================================
 // Glue for generated extension accessors
 

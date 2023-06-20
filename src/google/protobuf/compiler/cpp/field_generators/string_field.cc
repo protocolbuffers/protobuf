@@ -90,11 +90,12 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 class SingularString : public FieldGeneratorBase {
  public:
   SingularString(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+      : FieldGeneratorBase("SingularString", field, opts),
         field_(field),
         opts_(&opts),
         is_oneof_(field->real_containing_oneof() != nullptr),
-        inlined_(IsStringInlined(field, opts)) {}
+        inlined_(IsStringInlined(field, opts)),
+        is_cord_(IsCord(field, opts)) {}
   ~SingularString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -117,6 +118,23 @@ class SingularString : public FieldGeneratorBase {
     p->Emit(R"cc(
       _this->_internal_set_$name$(from._internal_$name$());
     )cc");
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    if (IsOneof()) {
+      p->Emit(R"cc(
+        _internal_set_$name$(rhs._internal_$name$());
+      )cc");
+    } else if (inlined_) {
+      p->Emit(R"cc(
+        $field_$.Set(rhs.$field_$.Get(), arena, _internal_$name$_donated(),
+                     &$donating_states_word$, $mask_for_undonate$, this);
+      )cc");
+    } else if (is_cord_) {
+      p->Emit("$field_$ = rhs.$field_$;\n");
+    } else {
+      p->Emit("$field_$.CopyFrom(rhs.$field_$, arena);\n");
+    }
   }
 
   void GenerateArenaDestructorCode(io::Printer* p) const override {
@@ -174,6 +192,7 @@ class SingularString : public FieldGeneratorBase {
   const Options* opts_;
   bool is_oneof_;
   bool inlined_;
+  bool is_cord_;
 };
 
 void SingularString::GenerateStaticMembers(io::Printer* p) const {
@@ -703,7 +722,9 @@ void SingularString::GenerateAggregateInitializer(io::Printer* p) const {
 class RepeatedString : public FieldGeneratorBase {
  public:
   RepeatedString(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase("RepeatedString", field, opts),
+        field_(field),
+        opts_(&opts) {}
   ~RepeatedString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -724,6 +745,16 @@ class RepeatedString : public FieldGeneratorBase {
     p->Emit(R"cc(
       _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
     )cc");
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    if (IsOneof()) {
+      p->Emit(R"cc(
+        _internal_mutable_$name$()->CopyFrom(rhs._internal_$name$());
+      )cc");
+    } else {
+      p->Emit("$field_$.CopyFrom(rhs.$field_$);\n");
+    }
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
