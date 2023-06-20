@@ -102,6 +102,12 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      $field_$ = rhs.$field_$;
+    )cc");
+  }
+
   void GenerateSwappingCode(io::Printer* p) const override {
     if (is_oneof_) return;
 
@@ -321,6 +327,10 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     ABSL_CHECK(!ShouldSplit(field_, *opts_));
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    p->Emit("$field_$.CopyFrom(rhs.$field_$);\n");
   }
 
   void GenerateConstructorCode(io::Printer* p) const override {}

@@ -137,6 +137,12 @@ class SingularPrimitive final : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      $field_$ = rhs.$field_$;
+    )cc");
+  }
+
   void GenerateSwappingCode(io::Printer* p) const override {
     if (is_oneof_) {
       // Don't print any swapping code. Swapping the union will swap this field.
@@ -325,6 +331,10 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     p->Emit(R"cc(
       _this->$field_$.MergeFrom(from.$field_$);
     )cc");
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const override {
+    p->Emit("$field_$.CopyFrom(rhs.$field_$);\n");
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {

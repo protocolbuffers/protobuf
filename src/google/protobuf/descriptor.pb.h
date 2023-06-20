@@ -608,6 +608,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   FileDescriptorSet* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FileDescriptorSet>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorSet& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -774,6 +775,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   FileDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FileDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1047,6 +1049,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   private:
   const ::google::protobuf::FileOptions& _internal_options() const;
+  void _internal_maybe_create_options(::google::protobuf::Arena* arena);
   ::google::protobuf::FileOptions* _internal_mutable_options();
 
   public:
@@ -1062,6 +1065,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   private:
   const ::google::protobuf::SourceCodeInfo& _internal_source_code_info() const;
+  void _internal_maybe_create_source_code_info(::google::protobuf::Arena* arena);
   ::google::protobuf::SourceCodeInfo* _internal_mutable_source_code_info();
 
   public:
@@ -1181,6 +1185,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   DescriptorProto_ExtensionRange* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DescriptorProto_ExtensionRange>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ExtensionRange& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1240,6 +1245,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
 
   private:
   const ::google::protobuf::ExtensionRangeOptions& _internal_options() const;
+  void _internal_maybe_create_options(::google::protobuf::Arena* arena);
   ::google::protobuf::ExtensionRangeOptions* _internal_mutable_options();
 
   public:
@@ -1371,6 +1377,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   DescriptorProto_ReservedRange* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DescriptorProto_ReservedRange>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ReservedRange& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1544,6 +1551,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   DescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1784,6 +1792,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
 
   private:
   const ::google::protobuf::MessageOptions& _internal_options() const;
+  void _internal_maybe_create_options(::google::protobuf::Arena* arena);
   ::google::protobuf::MessageOptions* _internal_mutable_options();
 
   public:
@@ -1900,6 +1909,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   ExtensionRangeOptions_Declaration* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ExtensionRangeOptions_Declaration>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions_Declaration& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2137,6 +2147,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   ExtensionRangeOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ExtensionRangeOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2512,6 +2523,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   FieldDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FieldDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2721,6 +2733,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   private:
   const ::google::protobuf::FieldOptions& _internal_options() const;
+  void _internal_maybe_create_options(::google::protobuf::Arena* arena);
   ::google::protobuf::FieldOptions* _internal_mutable_options();
 
   public:
@@ -2893,6 +2906,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   OneofDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<OneofDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2968,6 +2982,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
 
   private:
   const ::google::protobuf::OneofOptions& _internal_options() const;
+  void _internal_maybe_create_options(::google::protobuf::Arena* arena);
   ::google::protobuf::OneofOptions* _internal_mutable_options();
 
   public:
@@ -3076,6 +3091,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   EnumDescriptorProto_EnumReservedRange* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3249,6 +3265,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   EnumDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3393,6 +3410,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
 
   private:
   const ::google::protobuf::EnumOptions& _internal_options() const;
+  void _internal_maybe_create_options(::google::protobuf::Arena* arena);
   ::google::protobuf::EnumOptions* _internal_mutable_options();
 
   public:
@@ -3504,6 +3522,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   EnumValueDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumValueDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3580,6 +3599,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
 
   private:
   const ::google::protobuf::EnumValueOptions& _internal_options() const;
+  void _internal_maybe_create_options(::google::protobuf::Arena* arena);
   ::google::protobuf::EnumValueOptions* _internal_mutable_options();
 
   public:
@@ -3700,6 +3720,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   ServiceDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ServiceDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3794,6 +3815,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
 
   private:
   const ::google::protobuf::ServiceOptions& _internal_options() const;
+  void _internal_maybe_create_options(::google::protobuf::Arena* arena);
   ::google::protobuf::ServiceOptions* _internal_mutable_options();
 
   public:
@@ -3903,6 +3925,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   MethodDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<MethodDescriptorProto>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -4016,6 +4039,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
 
   private:
   const ::google::protobuf::MethodOptions& _internal_options() const;
+  void _internal_maybe_create_options(::google::protobuf::Arena* arena);
   ::google::protobuf::MethodOptions* _internal_mutable_options();
 
   public:
@@ -4150,6 +4174,7 @@ class PROTOBUF_EXPORT FileOptions final :
   FileOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FileOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -4811,6 +4836,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   MessageOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<MessageOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MessageOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -5196,6 +5222,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   FieldOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FieldOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -5758,6 +5785,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   OneofOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<OneofOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -6077,6 +6105,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   EnumOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -6436,6 +6465,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   EnumValueOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumValueOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -6782,6 +6812,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   ServiceOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ServiceOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7115,6 +7146,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   MethodOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<MethodOptions>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7482,6 +7514,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   UninterpretedOption_NamePart* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<UninterpretedOption_NamePart>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption_NamePart& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7661,6 +7694,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   UninterpretedOption* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<UninterpretedOption>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7926,6 +7960,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   SourceCodeInfo_Location* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<SourceCodeInfo_Location>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo_Location& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8183,6 +8218,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   SourceCodeInfo* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<SourceCodeInfo>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8351,6 +8387,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   GeneratedCodeInfo_Annotation* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<GeneratedCodeInfo_Annotation>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo_Annotation& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8598,6 +8635,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   GeneratedCodeInfo* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<GeneratedCodeInfo>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -9309,13 +9347,16 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_releas
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_mutable_options() {
+inline void FileDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FileOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FileOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(p);
   }
+}
+inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_mutable_options() {
+  _internal_maybe_create_options(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000010u;
   return _impl_.options_;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() {
@@ -9405,13 +9446,16 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_rel
   _impl_.source_code_info_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_mutable_source_code_info() {
+inline void FileDescriptorProto::_internal_maybe_create_source_code_info(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
   if (_impl_.source_code_info_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(arena);
     _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(p);
   }
+}
+inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_mutable_source_code_info() {
+  _internal_maybe_create_source_code_info(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000020u;
   return _impl_.source_code_info_;
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_code_info() {
@@ -9697,13 +9741,16 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::_internal_mutable_options() {
+inline void DescriptorProto_ExtensionRange::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(p);
   }
+}
+inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::_internal_mutable_options() {
+  _internal_maybe_create_options(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.options_;
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::mutable_options() {
@@ -10200,13 +10247,16 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_mutable_options() {
+inline void DescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::MessageOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::MessageOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(p);
   }
+}
+inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_mutable_options() {
+  _internal_maybe_create_options(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.options_;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() {
@@ -11271,13 +11321,16 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_rele
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_mutable_options() {
+inline void FieldDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FieldOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FieldOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(p);
   }
+}
+inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_mutable_options() {
+  _internal_maybe_create_options(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000020u;
   return _impl_.options_;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options() {
@@ -11467,13 +11520,16 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_rele
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_mutable_options() {
+inline void OneofDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::OneofOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::OneofOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(p);
   }
+}
+inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_mutable_options() {
+  _internal_maybe_create_options(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.options_;
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options() {
@@ -11740,13 +11796,16 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_releas
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_mutable_options() {
+inline void EnumDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::EnumOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::EnumOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(p);
   }
+}
+inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_mutable_options() {
+  _internal_maybe_create_options(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.options_;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() {
@@ -12078,13 +12137,16 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_ar
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal_mutable_options() {
+inline void EnumValueDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::EnumValueOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::EnumValueOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(p);
   }
+}
+inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal_mutable_options() {
+  _internal_maybe_create_options(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.options_;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_options() {
@@ -12293,13 +12355,16 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_mutable_options() {
+inline void ServiceDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::ServiceOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::ServiceOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(p);
   }
+}
+inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_mutable_options() {
+  _internal_maybe_create_options(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.options_;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_options() {
@@ -12600,13 +12665,16 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_re
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_mutable_options() {
+inline void MethodDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::MethodOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::MethodOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(p);
   }
+}
+inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_mutable_options() {
+  _internal_maybe_create_options(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000008u;
   return _impl_.options_;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options() {

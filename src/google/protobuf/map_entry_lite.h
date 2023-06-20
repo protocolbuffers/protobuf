@@ -197,6 +197,11 @@ class MapEntryImpl : public Base {
     MergeFromInternal(*::google::protobuf::internal::DownCast<const Derived*>(&other));
   }
 
+  void CheckTypeAndCopyFrom(const MessageLite& other) override {
+    Clear();
+    MergeFromInternal(*::google::protobuf::internal::DownCast<const Derived*>(&other));
+  }
+
   const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
     while (!ctx->Done(&ptr)) {
       uint32_t tag;

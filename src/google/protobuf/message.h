@@ -279,6 +279,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // The given message must be of the same type as this message (i.e. the
   // exact same class).
   virtual void MergeFrom(const Message& from);
+  void MergeFromReflected(const Message& from);
 
   // Verifies that IsInitialized() returns true.  ABSL_CHECK-fails otherwise,
   // with a nice error message.
@@ -359,6 +360,8 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   bool IsInitialized() const override;
 
   void CheckTypeAndMergeFrom(const MessageLite& other) override;
+  void CheckTypeAndCopyFrom(const MessageLite& other) override;
+
   // Reflective parser
   const char* _InternalParse(const char* ptr,
                              internal::ParseContext* ctx) override;

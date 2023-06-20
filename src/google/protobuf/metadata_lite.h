@@ -146,6 +146,16 @@ class PROTOBUF_EXPORT InternalMetadata {
   }
 
   template <typename T>
+  PROTOBUF_NDEBUG_INLINE void CopyFrom(const InternalMetadata& other) {
+    if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
+      DoClear<T>();
+    }
+    if (ABSL_PREDICT_FALSE(other.have_unknown_fields())) {
+      DoMergeFrom<T>(other.unknown_fields<T>(nullptr));
+    }
+  }
+
+  template <typename T>
   PROTOBUF_NDEBUG_INLINE void Clear() {
     if (have_unknown_fields()) {
       DoClear<T>();

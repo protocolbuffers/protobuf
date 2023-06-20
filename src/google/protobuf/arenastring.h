@@ -356,7 +356,15 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Returns true if this instances holds an immutable default value.
   inline bool IsDefault() const { return tagged_ptr_.IsDefault(); }
 
+  // Copies the contents from `other`. Used by Message::CopyFrom().
+  void CopyFrom(const ArenaStringPtr& from, Arena* arena);
+
  private:
+  // Resets this instances to default, discarding any previously allocated data.
+  // `default_value` must point to a global default instance with an infinite
+  // lifecycle, typically the value of a `LazyString` instance.
+  void ClearToDefault(const std::string* default_value, ::google::protobuf::Arena* arena);
+
   template <typename... Args>
   inline std::string* NewString(Arena* arena, Args&&... args) {
     if (arena == nullptr) {
@@ -481,6 +489,19 @@ inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
   ABSL_DCHECK(tagged_ptr_.IsMutable());
   ABSL_DCHECK(tagged_ptr_.Get() != nullptr);
   return tagged_ptr_.Get();
+}
+
+inline void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
+                                           ::google::protobuf::Arena* arena) {
+  ClearToDefault(&default_value.get(), arena);
+}
+
+inline void ArenaStringPtr::CopyFrom(const ArenaStringPtr& from, Arena* arena) {
+  if (from.IsDefault()) {
+    ClearToDefault(from.tagged_ptr_.Get(), arena);
+  } else {
+    Set(*from.tagged_ptr_.Get(), arena);
+  }
 }
 
 

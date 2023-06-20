@@ -224,6 +224,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+  vars.emplace_back("has_bit_mask", mask);
 
   absl::string_view has_bits = IsMapEntryMessage(field->containing_type())
                                    ? "_has_bits_"
@@ -275,6 +276,11 @@ FieldGenerator::FieldGenerator(const FieldDescriptor* field,
       per_generator_vars_(impl_->MakeVars()) {
   HasBitVars(field, options, hasbit_index, field_vars_);
   InlinedStringVars(field, options, inlined_string_index, field_vars_);
+  if (hasbit_index >= 0) {
+    ABSL_DCHECK(impl_->has_hasbit());
+  } else {
+    ABSL_DCHECK(!impl_->has_hasbit());
+  }
 }
 
 void FieldGeneratorTable::Build(

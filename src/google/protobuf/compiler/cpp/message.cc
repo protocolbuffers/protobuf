@@ -42,6 +42,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -614,6 +615,84 @@ int MessageGenerator::HasByteIndex(const FieldDescriptor* field) const {
 int MessageGenerator::HasWordIndex(const FieldDescriptor* field) const {
   int hasbit = HasBitIndex(field);
   return hasbit == kNoHasbit ? kNoHasbit : hasbit / 32;
+}
+
+std::vector<MessageGenerator::FieldSpan> MessageGenerator::CollectTrivialFields(
+    bool split) const {
+  auto end = optimized_order_.end();
+  auto last = optimized_order_.end();
+  std::vector<FieldSpan> spans;
+
+  for (auto it = optimized_order_.begin(); it != end; ++it) {
+    if (IsTrivial(*it, options_) && ShouldSplit(*it, options_) == split) {
+      if (last == end) last = it;
+    } else if (last != end) {
+      spans.push_back(absl::MakeConstSpan(&*last, it - last));
+      last = end;
+    }
+  }
+  if (last != end) {
+    spans.push_back(absl::MakeConstSpan(&*last, end - last));
+  }
+  return spans;
+}
+
+std::vector<MessageGenerator::GroupedFields>
+MessageGenerator::CollectTrivialFields2(bool split) const {
+  bool contiguous = false;
+  std::vector<MessageGenerator::GroupedFields> fields;
+  auto new_group = [&](const FieldDescriptor* field, int has_word_index) {
+    if (!contiguous) return true;
+    if (fields.empty()) return true;
+    if (fields.back().size >= (split ? 32 : 64)) return true;
+    if (fields.back().fields.size() >= (split ? 8 : 16)) return true;
+    if (has_word_index != fields.back().has_word_index) return true;
+    return false;
+  };
+  for (const FieldDescriptor* field : optimized_order_) {
+    if (IsTrivial(field, options_) && ShouldSplit(field, options_) == split) {
+      int has_bit_index = HasBitIndex(field);
+      int has_word_index = has_bit_index >= 0 ? has_bit_index / 32 : -1;
+      uint32_t has_word_mask =
+          has_bit_index >= 0 ? 1u << (has_bit_index % 32) : 0;
+      if (new_group(field, has_word_index)) {
+        contiguous = true;
+        fields.push_back({has_word_index});
+      }
+      fields.back().has_word_mask |= has_word_mask;
+      fields.back().size += EstimateAlignmentSize(field);
+      fields.back().fields.push_back(field);
+    } else {
+      contiguous = false;
+    }
+  }
+  return fields;
+}
+
+std::vector<MessageGenerator::GroupedFields>
+MessageGenerator::CollectNonTrivialFields(bool split) const {
+  std::vector<MessageGenerator::GroupedFields> fields;
+  auto new_group = [&](const FieldDescriptor* field, int has_word_index) {
+    if (fields.empty()) return true;
+    if (fields.back().fields.size() >= (split ? 8 : 16)) return true;
+    if (has_word_index != fields.back().has_word_index) return true;
+    return false;
+  };
+  for (const FieldDescriptor* field : optimized_order_) {
+    if (!IsTrivial(field, options_) && ShouldSplit(field, options_) == split) {
+      int has_bit_index = HasBitIndex(field);
+      int has_word_index = has_bit_index >= 0 ? has_bit_index / 32 : -1;
+      uint32_t has_word_mask =
+          has_bit_index >= 0 ? 1u << (has_bit_index % 32) : 0;
+      if (new_group(field, has_word_index)) {
+        fields.push_back({has_word_index});
+      }
+      fields.back().has_word_mask |= has_word_mask;
+      fields.back().size += EstimateAlignmentSize(field);
+      fields.back().fields.push_back(field);
+    }
+  }
+  return fields;
 }
 
 void MessageGenerator::AddGenerators(
@@ -1474,6 +1553,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       {{"full_final",
         HasDescriptorMethods(descriptor_->file(), options_) ? "final" : ""}});
 
+  // All classes (Lite, Message) have a CheckTypeAndCopyFrom() implementation
+  // that is implemented in terms of operator=. operator= may be implemented
+  // explicitly for speed, or implemented in terms of reflection or MergeFrom.
+  format(
+      "void CheckTypeAndCopyFrom(const ::$proto_ns$::MessageLite& from)"
+      " final;\n");
+
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       if (!HasSimpleBaseClass(descriptor_, options_)) {
@@ -2043,6 +2129,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     GenerateIsInitialized(p);
     format("\n");
   }
+
+  GenerateCheckTypeAndCopyFrom(p);
 
   if (ShouldSplit(descriptor_, options_)) {
     format(
@@ -3363,6 +3451,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   // Generate the class-specific MergeFrom, which avoids the ABSL_CHECK and
   // cast.
   Formatter format(p);
+
   if (!HasDescriptorMethods(descriptor_->file(), options_)) {
     // For messages that don't inherit from Message, just implement MergeFrom
     // directly.
@@ -3376,6 +3465,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         "  auto* const _this = static_cast<$classname$*>(&to_msg);\n"
         "  auto& from = static_cast<const $classname$&>(from_msg);\n");
   }
+
   format.Indent();
   format(
       "$annotate_mergefrom$"
@@ -3383,10 +3473,16 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       "$full_name$)\n");
   format("$DCHK$_NE(&from, _this);\n");
 
+  if (false && HasDescriptorMethods(descriptor_->file(), options_)) {
+    format("to_msg.MergeFromReflected(from);\n");
+    format.Outdent();
+    format("}\n");
+    return;
+  }
+
   format(
       "$uint32$ cached_has_bits = 0;\n"
       "(void) cached_has_bits;\n\n");
-
   if (ShouldSplit(descriptor_, options_)) {
     format(
         "if (!from.IsSplitMessageDefault()) {\n"
@@ -3563,6 +3659,256 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   format("}\n");
 }
 
+static std::vector<io::Printer::Sub> FieldVars(const FieldDescriptor* field,
+                                               bool split) {
+  absl::string_view type_suffix = split ? "::Split" : "";
+  absl::string_view field_suffix = split ? "_split_->" : "";
+  std::vector<io::Printer::Sub> field_vars{
+      {"name", FieldName(field)},
+      {"field_", absl::StrCat("_impl_.", field_suffix, FieldName(field), "_")},
+      {"containing_type", absl::StrCat("Impl_", type_suffix)},
+  };
+  return field_vars;
+}
+
+static std::vector<io::Printer::Sub> FieldVars(
+    absl::Span<const FieldDescriptor* const> span, bool split) {
+  absl::string_view type_suffix = split ? "::Split" : "";
+  absl::string_view field_suffix = split ? "_split_->" : "";
+  std::vector<io::Printer::Sub> field_vars{
+      {"first_name", FieldName(span.front())},
+      {"last_name", FieldName(span.back())},
+      {"first_field_",
+       absl::StrCat("_impl_.", field_suffix, FieldName(span.front()), "_")},
+      {"last_field_",
+       absl::StrCat("_impl_.", field_suffix, FieldName(span.back()), "_")},
+      {"containing_type", absl::StrCat("Impl_", type_suffix)},
+  };
+  return field_vars;
+}
+
+static std::vector<io::Printer::Sub> FieldVars(
+    const std::vector<const FieldDescriptor*>& fields, bool split) {
+  absl::string_view type_suffix = split ? "::Split" : "";
+  absl::string_view field_suffix = split ? "_split_->" : "";
+  std::vector<io::Printer::Sub> field_vars{
+      {"first_name", FieldName(fields.front())},
+      {"last_name", FieldName(fields.back())},
+      {"first_field_",
+       absl::StrCat("_impl_.", field_suffix, FieldName(fields.front()), "_")},
+      {"last_field_",
+       absl::StrCat("_impl_.", field_suffix, FieldName(fields.back()), "_")},
+      {"containing_type", absl::StrCat("Impl_", type_suffix)},
+  };
+  return field_vars;
+}
+
+class CachedHasbits {
+ public:
+  explicit CachedHasbits(Formatter& format) : format_(format) {}
+
+  void WriteCachedBits(absl::string_view name, int has_word_index) {
+    if (has_word_index_ == -1) format_("$uint32$ ");
+    format_("$1$ = rhs._impl_._has_bits_[$1$];\n", name, has_word_index);
+  }
+
+  void ReloadForCopy(int has_word_index) {
+    if (has_word_index < 0 || has_word_index == has_word_index_) return;
+
+    if (has_word_index_ == -1) format_("$uint32$ ");
+    format_("rhs_has_bits = rhs._impl_._has_bits_[$1$];\n", has_word_index);
+
+    if (has_word_index_ == -1) format_("$uint32$ ");
+    format_("this_has_bits = _impl_._has_bits_[$1$];\n", has_word_index);
+
+    if (has_word_index_ == -1) format_("$uint32$ ");
+    format_("cached_has_bits = this_has_bits | rhs_has_bits;\n");
+    if (has_word_index_ == -1) format_("(void)cached_has_bits;\n");
+    has_word_index_ = has_word_index;
+  }
+
+  void OpenMaskedIf(uint32_t has_word_mask) {
+    if (has_word_mask == 0) return;
+    ABSL_DCHECK_GE(has_word_index_, 0);
+    const std::string mask =
+        absl::StrCat(absl::Hex(has_word_mask, absl::kZeroPad8));
+    format_("if (cached_has_bits & 0x$1$u) {\n", mask);
+    format_.Indent();
+  }
+
+  void CloseMaskedIf(uint32_t has_word_mask) {
+    if (has_word_mask == 0) return;
+    format_.Outdent();
+    format_("}\n");
+  }
+
+  int has_word_index() const { return has_word_index_; }
+
+ private:
+  Formatter& format_;
+  int has_word_index_ = -1;
+};
+
+void MessageGenerator::GenerateCheckTypeAndCopyFrom(io::Printer* p) {
+  Formatter format(p);
+
+  // Generate `CheckTypeAndCopyFrom()`. This is the internal implementation for
+  // `CopyFrom()` and `operator=()`. This function is most typically invoked on
+  // the final message class, making it a non-virtual call. This function does
+  // not perform any additional validations other then performing a DownCast<>
+  // to validate the type in debug builds, and asserting that `this <> from`
+  format(
+      "void $classname$::CheckTypeAndCopyFrom(\n"
+      "    const ::$proto_ns$::MessageLite& from) {\n");
+  format.Indent();
+
+  format("using MessageType = $classtype$;\n");
+  format("const auto& rhs = ::_pbi::DownCast<const MessageType&>(from);\n");
+  format("assert(&rhs != this);\n");
+
+  if (!options_.opensource_runtime && HasMessageFieldOrExtension(descriptor_)) {
+    // This check is disabled in the opensource release because we're
+    // concerned that many users do not define NDEBUG in their release builds.
+    // It is also disabled if a message has neither message fields nor
+    // extensions, as it's impossible to copy from its descendant.
+    //
+    // Note that IsDescendant is implemented by reflection and not available for
+    // lite runtime. In that case, check if the size of the source has changed
+    // after Clear.
+    if (HasDescriptorMethods(descriptor_->file(), options_)) {
+      format(
+          "$DCHK$(!::_pbi::IsDescendant(*this, rhs))\n"
+          "    << \"Source of CopyFrom cannot be a descendant of the "
+          "target.\";\n");
+    }
+  }
+
+  format("\nauto arena = GetArenaForAllocation();\n(void)arena;\n\n");
+
+  CachedHasbits cached_has_bits(format);
+
+  // Emits trivial copy code of all trivial fields in 'span'
+  auto emit_trivial_copy = [&](const GroupedFields& group, bool split) {
+    const auto& fields = group.fields;
+    if (fields.size() > 1) {
+      cached_has_bits.ReloadForCopy(group.has_word_index);
+      cached_has_bits.OpenMaskedIf(group.has_word_mask);
+      format("// Fields = $1$, bytes = $2$\n", fields.size(), group.size);
+
+      auto vars = p->WithVars(FieldVars(fields, split));
+      format(
+          "memcpy(&$first_field_$, &rhs.$first_field_$,\n"
+          "    offsetof(MessageType::$containing_type$, $last_name$_) -\n"
+          "    offsetof(MessageType::$containing_type$, $first_name$_) +\n"
+          "    sizeof(rhs.$last_field_$));\n");
+      cached_has_bits.CloseMaskedIf(group.has_word_mask);
+    } else {
+      auto vars = p->WithVars(FieldVars(fields.front(), split));
+      format("$field_$ = rhs.$field_$;\n");
+    }
+  };
+
+  auto emit_copy = [&](const GroupedFields& group, bool split) {
+    cached_has_bits.ReloadForCopy(group.has_word_index);
+    const auto& fields = group.fields;
+    if (fields.size() > 1) {
+      cached_has_bits.OpenMaskedIf(group.has_word_mask);
+      format("// Fields = $1$, bytes = $2$\n", fields.size(), group.size);
+    }
+
+    for (const FieldDescriptor* field : group.fields) {
+      auto vars = p->WithVars(FieldVars(field, split));
+      auto& generator = field_generators_.get(field);
+      generator.GenerateCopyFromCode(p);
+    }
+
+    if (fields.size() > 1) {
+      cached_has_bits.CloseMaskedIf(group.has_word_mask);
+    }
+  };
+
+  for (const GroupedFields& group : CollectTrivialFields2(false)) {
+    emit_trivial_copy(group, false);
+  }
+
+  for (const GroupedFields& group : CollectNonTrivialFields(false)) {
+    emit_copy(group, false);
+  }
+
+  if (ShouldSplit(descriptor_, options_)) {
+    format("if (!rhs.IsSplitMessageDefault()) {\n");
+    format.Indent();
+    format("PrepareSplitMessageForWrite();\n");
+
+    for (const GroupedFields& group : CollectTrivialFields2(true)) {
+      emit_trivial_copy(group, true);
+    }
+
+    for (const GroupedFields& group : CollectNonTrivialFields(true)) {
+      emit_copy(group, true);
+    }
+
+    format.Outdent();
+    format("}\n");
+  }
+
+  // Copy oneof fields. Oneof field requires oneof case check.
+  if (!OneOfRange(descriptor_).empty()) {
+    format("// Oneof fields\n");
+    for (auto oneof : OneOfRange(descriptor_)) {
+      auto v = p->WithVars({{
+          {"oneof_index", oneof->index()},
+          {"oneof_name", oneof->name()},
+          {"oneof_ucase_name", absl::AsciiStrToUpper(oneof->name())},
+      }});
+      format("// Oneof: $oneof_name$\nclear_$oneof_name$();\n");
+      format("switch (rhs.$oneof_name$_case()) {\n");
+      format.Indent();
+      for (auto field : FieldRange(oneof)) {
+        format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
+        format.Indent();
+        auto& generator = field_generators_.get(field);
+        generator.GenerateCopyFromCode(p);
+        format("break;\n");
+        format.Outdent();
+        format("}\n");
+      }
+      format(
+          "case $oneof_ucase_name$_NOT_SET:\n"
+          "  break;\n");
+      format.Outdent();
+      format("}\n");
+      format(
+          "$oneof_case$[$oneof_index$] = rhs.$oneof_case$[$oneof_index$];\n");
+    }
+  }
+
+  if (num_weak_fields_) {
+    format("$weak_field_map$.CopyFrom(rhs.$weak_field_map$);\n");
+  }
+
+  // Copy all has bits
+  if (HasBitsSize()) {
+    format("_impl_._has_bits_ = rhs._impl_._has_bits_;\n");
+  }
+
+  // Merging of extensions and unknown fields is done last, to maximize
+  // the opportunity for tail calls.
+  if (descriptor_->extension_range_count() > 0) {
+    format(
+        "$extensions$.CopyFrom(internal_default_instance(), "
+        "rhs.$extensions$);\n");
+  }
+
+  format(
+      "_internal_metadata_.CopyFrom<$unknown_fields_type$>(rhs._"
+      "internal_"
+      "metadata_);\n");
+
+  format.Outdent();
+  format("}\n\n");
+}
+
 void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(p);
@@ -3588,38 +3934,9 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
 
   format("if (&from == this) return;\n");
 
-  if (!options_.opensource_runtime && HasMessageFieldOrExtension(descriptor_)) {
-    // This check is disabled in the opensource release because we're
-    // concerned that many users do not define NDEBUG in their release builds.
-    // It is also disabled if a message has neither message fields nor
-    // extensions, as it's impossible to copy from its descendant.
-    //
-    // Note that IsDescendant is implemented by reflection and not available for
-    // lite runtime. In that case, check if the size of the source has changed
-    // after Clear.
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "$DCHK$(!::_pbi::IsDescendant(*this, from))\n"
-          "    << \"Source of CopyFrom cannot be a descendant of the "
-          "target.\";\n"
-          "Clear();\n");
-    } else {
-      format(
-          "#ifndef NDEBUG\n"
-          "::size_t from_size = from.ByteSizeLong();\n"
-          "#endif\n"
-          "Clear();\n"
-          "#ifndef NDEBUG\n"
-          "$CHK$_EQ(from_size, from.ByteSizeLong())\n"
-          "  << \"Source of CopyFrom changed when clearing target.  Either \"\n"
-          "     \"source is a nested message in target (not allowed), or \"\n"
-          "     \"another thread is modifying the source.\";\n"
-          "#endif\n");
-    }
-  } else {
-    format("Clear();\n");
-  }
-  format("MergeFrom(from);\n");
+  // Start recursive CopyFrom invocation.
+  // This location would be a good spot to add 'CopyFrom' sampling hooks.
+  format("CheckTypeAndCopyFrom(from);\n");
 
   format.Outdent();
   format("}\n");

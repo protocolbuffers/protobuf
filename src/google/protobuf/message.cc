@@ -81,6 +81,10 @@ using internal::ReflectionOps;
 using internal::WireFormat;
 using internal::WireFormatLite;
 
+void Message::MergeFromReflected(const Message& from) {
+  ReflectionOps::Merge(from, this);
+}
+
 void Message::MergeFrom(const Message& from) {
   auto* class_to = GetClassData();
   auto* class_from = from.GetClassData();
@@ -95,6 +99,20 @@ void Message::MergeFrom(const Message& from) {
 
 void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
   MergeFrom(*DownCast<const Message*>(&other));
+}
+
+void Message::CheckTypeAndCopyFrom(const MessageLite& other) {
+  const Message& rhs = DownCast<const Message&>(other);
+  auto* class_to = GetClassData();
+  auto* class_from = rhs.GetClassData();
+  auto* copy_to_from = class_to ? class_to->copy_to_from : nullptr;
+  if (class_to == nullptr || class_to != class_from) {
+    copy_to_from = [](Message& to, const Message& from) {
+      to.Clear();
+      ReflectionOps::Merge(from, &to);
+    };
+  }
+  copy_to_from(*this, rhs);
 }
 
 void Message::CopyFrom(const Message& from) {

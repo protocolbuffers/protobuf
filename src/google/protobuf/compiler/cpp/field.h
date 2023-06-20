@@ -100,6 +100,8 @@ class FieldGeneratorBase {
 
   virtual void GenerateConstructorCode(io::Printer* p) const = 0;
 
+  virtual void GenerateCopyFromCode(io::Printer* p) const = 0;
+
   virtual void GenerateDestructorCode(io::Printer* p) const {}
 
   virtual void GenerateArenaDestructorCode(io::Printer* p) const {
@@ -126,11 +128,16 @@ class FieldGeneratorBase {
     return ArenaDtorNeeds::kNone;
   }
 
+  bool is_oneof() const { return is_oneof_; }
+  bool has_hasbit() const { return has_hasbit_; }
+
  protected:
   // TODO(b/245791219): Remove these members and make this a pure interface.
   const FieldDescriptor* descriptor_;
   const Options& options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
+  const bool is_oneof_ = descriptor_->real_containing_oneof() != nullptr;
+  const bool has_hasbit_ = ::google::protobuf::internal::cpp::HasHasbit(descriptor_);
 };
 
 inline FieldGeneratorBase::~FieldGeneratorBase() = default;
@@ -254,6 +261,11 @@ class FieldGenerator {
   void GenerateCopyConstructorCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateCopyConstructorCode(p);
+  }
+
+  void GenerateCopyFromCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateCopyFromCode(p);
   }
 
   // Generates statements which swap this field and the corresponding field of

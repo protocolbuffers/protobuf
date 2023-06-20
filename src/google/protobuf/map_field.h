@@ -349,6 +349,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   bool IsMapValid() const;
   virtual bool DeleteMapValue(const MapKey& map_key) = 0;
   virtual void MergeFrom(const MapFieldBase& other) = 0;
+  virtual void CopyFrom(const MapFieldBase& other) = 0;
   virtual void Swap(MapFieldBase* other);
   virtual void UnsafeShallowSwap(MapFieldBase* other);
   // Sync Map with repeated field and returns the size of map.
@@ -565,6 +566,7 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 
   void UnsafeShallowSwap(MapFieldBase* other) override;
   size_t SpaceUsedExcludingSelfNoLock() const override;
+  void CopyFrom(const MapFieldBase& other) override;
   void MergeFrom(const MapFieldBase& other) override;
 
  protected:
@@ -676,15 +678,21 @@ class PROTOBUF_EXPORT DynamicMapField final
   // Implement MapFieldBase
   bool InsertOrLookupMapValueNoSync(const MapKey& map_key,
                                     MapValueRef* val) final;
+  void CopyFrom(const MapFieldBase& other) final;
   void MergeFrom(const MapFieldBase& other) final;
   void UnsafeShallowSwap(MapFieldBase* other) final { Swap(other); }
 
   void ClearMapNoSync() final;
 
  private:
+  enum class CopyMethod { kMerge, kCopy };
+
   const Message* default_entry_;
 
   void AllocateMapValue(MapValueRef* map_val);
+
+  template <CopyMethod method>
+  void Copy(const MapFieldBase& other);
 
   // Implements MapFieldBase
   const Message* GetPrototype() const final;

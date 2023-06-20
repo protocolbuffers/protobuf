@@ -210,6 +210,7 @@ class PROTOC_EXPORT Version final :
   Version* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Version>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Version& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -415,6 +416,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   CodeGeneratorRequest* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<CodeGeneratorRequest>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorRequest& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -538,6 +540,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
 
   private:
   const ::google::protobuf::compiler::Version& _internal_compiler_version() const;
+  void _internal_maybe_create_compiler_version(::google::protobuf::Arena* arena);
   ::google::protobuf::compiler::Version* _internal_mutable_compiler_version();
 
   public:
@@ -648,6 +651,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<CodeGeneratorResponse_File>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse_File& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -759,6 +763,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   private:
   const ::google::protobuf::GeneratedCodeInfo& _internal_generated_code_info() const;
+  void _internal_maybe_create_generated_code_info(::google::protobuf::Arena* arena);
   ::google::protobuf::GeneratedCodeInfo* _internal_mutable_generated_code_info();
 
   public:
@@ -869,6 +874,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   CodeGeneratorResponse* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<CodeGeneratorResponse>(arena);
   }
+  void CheckTypeAndCopyFrom(const ::google::protobuf::MessageLite& from) final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1443,13 +1449,16 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::unsafe_arena
   _impl_.compiler_version_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mutable_compiler_version() {
+inline void CodeGeneratorRequest::_internal_maybe_create_compiler_version(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.compiler_version_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::compiler::Version>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::compiler::Version>(arena);
     _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(p);
   }
+}
+inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mutable_compiler_version() {
+  _internal_maybe_create_compiler_version(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.compiler_version_;
 }
 inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() {
@@ -1746,13 +1755,16 @@ inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::unsafe
   _impl_.generated_code_info_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
+inline void CodeGeneratorResponse_File::_internal_maybe_create_generated_code_info(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.generated_code_info_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo>(arena);
     _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(p);
   }
+}
+inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
+  _internal_maybe_create_generated_code_info(GetArenaForAllocation());
+  _impl_._has_bits_[0] |= 0x00000008u;
   return _impl_.generated_code_info_;
 }
 inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::mutable_generated_code_info() {

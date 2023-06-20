@@ -103,6 +103,24 @@ class MessageGenerator {
   const Descriptor* descriptor() const { return descriptor_; }
 
  private:
+  using Fields = std::vector<const FieldDescriptor*>;
+
+  // GroupedFields contains fields that:
+  // - are in the same split/non split storage
+  // - sharing the same hasbit index.
+  // - not necessarily consecutive
+  struct GroupedFields {
+    int has_word_index;
+    uint32_t has_word_mask = 0;
+    size_t size = 0;
+    Fields fields;
+  };
+  using FieldSpan = absl::Span<const FieldDescriptor* const>;
+
+  std::vector<FieldSpan> CollectTrivialFields(bool split) const;
+  std::vector<GroupedFields> CollectTrivialFields2(bool split) const;
+  std::vector<GroupedFields> CollectNonTrivialFields(bool split) const;
+
   // Generate declarations and definitions of accessors for fields.
   void GenerateFieldAccessorDeclarations(io::Printer* p);
   void GenerateFieldAccessorDefinitions(io::Printer* p);
@@ -133,6 +151,7 @@ class MessageGenerator {
   void GenerateMergeFrom(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
   void GenerateCopyFrom(io::Printer* p);
+  void GenerateCheckTypeAndCopyFrom(io::Printer* p);
   void GenerateSwap(io::Printer* p);
   void GenerateIsInitialized(io::Printer* p);
 
