@@ -837,7 +837,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 // TODO(b/280674214): re-enable these macros once failing tests are fixed.
 #if defined(PROTOBUF_TSAN) && false
-#define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0
 // TODO(b/285620714): it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
 #define PROTOBUF_TSAN_READ(addr)                                               \
@@ -852,10 +851,15 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
     *reinterpret_cast<char *>(addr) += protobuf_tsan_zero; \
   } while (0)
 #else  // PROTOBUF_TSAN
-#define PROTOBUF_TSAN_DECLARE_MEMBER
 #define PROTOBUF_TSAN_READ(addr)
 #define PROTOBUF_TSAN_WRITE(addr)
 #endif  // PROTOBUF_TSAN
+
+#ifdef PROTOBUF_TSAN
+#define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0
+#else
+#define PROTOBUF_TSAN_DECLARE_MEMBER
+#endif
 
 #ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
 #error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
