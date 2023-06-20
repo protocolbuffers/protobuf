@@ -466,11 +466,17 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
 PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
   cmessage::AssureWritable(self->parent);
 
-  // TODO(ptucker): Deprecate this behavior. b/18413862
+  // TODO(b/286557203): Remove this in OSS
   if (value == Py_None) {
+    PyErr_Warn(nullptr,
+               "Value is not iterable. Please remove the wrong usage."
+               " This will be changed to raise TypeError soon.");
     Py_RETURN_NONE;
   }
   if ((Py_TYPE(value)->tp_as_sequence == nullptr) && PyObject_Not(value)) {
+    PyErr_Warn(nullptr,
+               "Value is not iterable. Please remove the wrong usage."
+               " This will be changed to raise TypeError soon.");
     Py_RETURN_NONE;
   }
 
