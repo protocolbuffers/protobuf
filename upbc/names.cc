@@ -46,9 +46,10 @@ static constexpr absl::string_view kDeleteMethodPrefix = "delete_";
 static constexpr absl::string_view kAddToRepeatedMethodPrefix = "add_";
 static constexpr absl::string_view kResizeArrayMethodPrefix = "resize_";
 
-const absl::string_view kRepeatedFieldArrayGetterPostfix = "upb_array";
-const absl::string_view kRepeatedFieldMutableArrayGetterPostfix =
-    "mutable_upb_array";
+ABSL_CONST_INIT const absl::string_view kRepeatedFieldArrayGetterPostfix =
+    "upb_array";
+ABSL_CONST_INIT const absl::string_view
+    kRepeatedFieldMutableArrayGetterPostfix = "mutable_upb_array";
 
 // List of generated accessor prefixes to check against.
 // Example:
