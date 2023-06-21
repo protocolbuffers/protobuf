@@ -835,8 +835,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_TSAN_WRITE
 #error PROTOBUF_TSAN_WRITE was previously defined
 #endif
-// TODO(b/280674214): re-enable these macros once failing tests are fixed.
-#if defined(PROTOBUF_TSAN) && false
+#ifdef PROTOBUF_TSAN
 // TODO(b/285620714): it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
 #define PROTOBUF_TSAN_READ(addr)                                               \
@@ -860,6 +859,17 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #else
 #define PROTOBUF_TSAN_DECLARE_MEMBER
 #endif
+
+// TODO(b/280674214): enable these macros in phases. The phases are: repeated
+// fields/maps, enum/primitive fields, string fields, message fields.
+#define PROTOBUF_TSAN_READ_REPEATED(addr)
+#define PROTOBUF_TSAN_READ_PRIMITIVE(addr)
+#define PROTOBUF_TSAN_READ_STRING(addr)
+#define PROTOBUF_TSAN_READ_MESSAGE(addr)
+#define PROTOBUF_TSAN_WRITE_REPEATED(addr)
+#define PROTOBUF_TSAN_WRITE_PRIMITIVE(addr)
+#define PROTOBUF_TSAN_WRITE_STRING(addr)
+#define PROTOBUF_TSAN_WRITE_MESSAGE(addr)
 
 #ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
 #error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
