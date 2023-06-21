@@ -270,11 +270,11 @@ inline void Duration::set_seconds(::int64_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.seconds)
 }
 inline ::int64_t Duration::_internal_seconds() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_PRIMITIVE(&_impl_._tsan_detect_race);
   return _impl_.seconds_;
 }
 inline void Duration::_internal_set_seconds(::int64_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
   ;
   _impl_.seconds_ = value;
 }
@@ -292,11 +292,11 @@ inline void Duration::set_nanos(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.nanos)
 }
 inline ::int32_t Duration::_internal_nanos() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_PRIMITIVE(&_impl_._tsan_detect_race);
   return _impl_.nanos_;
 }
 inline void Duration::_internal_set_nanos(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
   ;
   _impl_.nanos_ = value;
 }

@@ -820,7 +820,7 @@ inline const std::string& Api::name() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Api::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.name)
@@ -831,26 +831,26 @@ inline std::string* Api::mutable_name() {
   return _s;
 }
 inline const std::string& Api::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
 }
 inline void Api::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Api::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   return _impl_.name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Api::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.name)
   return _impl_.name_.Release();
 }
 inline void Api::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_.name_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
@@ -877,7 +877,7 @@ inline ::google::protobuf::Method* Api::mutable_methods(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
 Api::mutable_methods() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
   return _internal_mutable_methods();
 }
 inline const ::google::protobuf::Method& Api::methods(int index) const {
@@ -885,7 +885,7 @@ inline const ::google::protobuf::Method& Api::methods(int index) const {
     return _internal_methods().Get(index);
 }
 inline ::google::protobuf::Method* Api::add_methods() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
   ::google::protobuf::Method* _add = _internal_mutable_methods()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.methods)
   return _add;
@@ -897,12 +897,12 @@ Api::methods() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>&
 Api::_internal_methods() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return _impl_.methods_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>*
 Api::_internal_mutable_methods() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return &_impl_.methods_;
 }
 
@@ -920,7 +920,7 @@ inline ::google::protobuf::Option* Api::mutable_options(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Api::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
   return _internal_mutable_options();
 }
 inline const ::google::protobuf::Option& Api::options(int index) const {
@@ -928,7 +928,7 @@ inline const ::google::protobuf::Option& Api::options(int index) const {
     return _internal_options().Get(index);
 }
 inline ::google::protobuf::Option* Api::add_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.options)
   return _add;
@@ -940,12 +940,12 @@ Api::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Api::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Api::_internal_mutable_options() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return &_impl_.options_;
 }
 
@@ -960,7 +960,7 @@ inline const std::string& Api::version() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Api::set_version(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.version_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.version)
@@ -971,26 +971,26 @@ inline std::string* Api::mutable_version() {
   return _s;
 }
 inline const std::string& Api::_internal_version() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.version_.Get();
 }
 inline void Api::_internal_set_version(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.version_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Api::_internal_mutable_version() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   return _impl_.version_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Api::release_version() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.version)
   return _impl_.version_.Release();
 }
 inline void Api::set_allocated_version(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_.version_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.version_.IsDefault()) {
@@ -1007,7 +1007,7 @@ inline bool Api::has_source_context() const {
   return value;
 }
 inline const ::google::protobuf::SourceContext& Api::_internal_source_context() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceContext&>(::google::protobuf::_SourceContext_default_instance_);
 }
@@ -1016,7 +1016,7 @@ inline const ::google::protobuf::SourceContext& Api::source_context() const {
   return _internal_source_context();
 }
 inline void Api::unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_context_);
   }
@@ -1029,7 +1029,7 @@ inline void Api::unsafe_arena_set_allocated_source_context(::google::protobuf::S
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Api.source_context)
 }
 inline ::google::protobuf::SourceContext* Api::release_source_context() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::SourceContext* released = _impl_.source_context_;
@@ -1048,7 +1048,7 @@ inline ::google::protobuf::SourceContext* Api::release_source_context() {
   return released;
 }
 inline ::google::protobuf::SourceContext* Api::unsafe_arena_release_source_context() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -1057,7 +1057,7 @@ inline ::google::protobuf::SourceContext* Api::unsafe_arena_release_source_conte
   return temp;
 }
 inline ::google::protobuf::SourceContext* Api::_internal_mutable_source_context() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.source_context_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::SourceContext>(GetArenaForAllocation());
@@ -1072,7 +1072,7 @@ inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
 }
 inline void Api::set_allocated_source_context(::google::protobuf::SourceContext* value) {
   ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_context_);
   }
@@ -1109,7 +1109,7 @@ inline ::google::protobuf::Mixin* Api::mutable_mixins(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
 Api::mutable_mixins() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
   return _internal_mutable_mixins();
 }
 inline const ::google::protobuf::Mixin& Api::mixins(int index) const {
@@ -1117,7 +1117,7 @@ inline const ::google::protobuf::Mixin& Api::mixins(int index) const {
     return _internal_mixins().Get(index);
 }
 inline ::google::protobuf::Mixin* Api::add_mixins() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
   ::google::protobuf::Mixin* _add = _internal_mutable_mixins()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Api.mixins)
   return _add;
@@ -1129,12 +1129,12 @@ Api::mixins() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>&
 Api::_internal_mixins() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return _impl_.mixins_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>*
 Api::_internal_mutable_mixins() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return &_impl_.mixins_;
 }
 
@@ -1151,11 +1151,11 @@ inline void Api::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Api.syntax)
 }
 inline ::google::protobuf::Syntax Api::_internal_syntax() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_PRIMITIVE(&_impl_._tsan_detect_race);
   return static_cast<::google::protobuf::Syntax>(_impl_.syntax_);
 }
 inline void Api::_internal_set_syntax(::google::protobuf::Syntax value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
   ;
   _impl_.syntax_ = value;
 }
@@ -1175,7 +1175,7 @@ inline const std::string& Method::name() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Method::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.name)
@@ -1186,26 +1186,26 @@ inline std::string* Method::mutable_name() {
   return _s;
 }
 inline const std::string& Method::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
 }
 inline void Method::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Method::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   return _impl_.name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Method::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.Method.name)
   return _impl_.name_.Release();
 }
 inline void Method::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_.name_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
@@ -1226,7 +1226,7 @@ inline const std::string& Method::request_type_url() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Method::set_request_type_url(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.request_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_type_url)
@@ -1237,26 +1237,26 @@ inline std::string* Method::mutable_request_type_url() {
   return _s;
 }
 inline const std::string& Method::_internal_request_type_url() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.request_type_url_.Get();
 }
 inline void Method::_internal_set_request_type_url(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.request_type_url_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Method::_internal_mutable_request_type_url() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   return _impl_.request_type_url_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Method::release_request_type_url() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.Method.request_type_url)
   return _impl_.request_type_url_.Release();
 }
 inline void Method::set_allocated_request_type_url(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_.request_type_url_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.request_type_url_.IsDefault()) {
@@ -1279,11 +1279,11 @@ inline void Method::set_request_streaming(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_streaming)
 }
 inline bool Method::_internal_request_streaming() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_PRIMITIVE(&_impl_._tsan_detect_race);
   return _impl_.request_streaming_;
 }
 inline void Method::_internal_set_request_streaming(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
   ;
   _impl_.request_streaming_ = value;
 }
@@ -1299,7 +1299,7 @@ inline const std::string& Method::response_type_url() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Method::set_response_type_url(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.response_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_type_url)
@@ -1310,26 +1310,26 @@ inline std::string* Method::mutable_response_type_url() {
   return _s;
 }
 inline const std::string& Method::_internal_response_type_url() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.response_type_url_.Get();
 }
 inline void Method::_internal_set_response_type_url(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.response_type_url_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Method::_internal_mutable_response_type_url() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   return _impl_.response_type_url_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Method::release_response_type_url() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.Method.response_type_url)
   return _impl_.response_type_url_.Release();
 }
 inline void Method::set_allocated_response_type_url(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_.response_type_url_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.response_type_url_.IsDefault()) {
@@ -1352,11 +1352,11 @@ inline void Method::set_response_streaming(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_streaming)
 }
 inline bool Method::_internal_response_streaming() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_PRIMITIVE(&_impl_._tsan_detect_race);
   return _impl_.response_streaming_;
 }
 inline void Method::_internal_set_response_streaming(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
   ;
   _impl_.response_streaming_ = value;
 }
@@ -1375,7 +1375,7 @@ inline ::google::protobuf::Option* Method::mutable_options(int index) {
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Method::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
   return _internal_mutable_options();
 }
 inline const ::google::protobuf::Option& Method::options(int index) const {
@@ -1383,7 +1383,7 @@ inline const ::google::protobuf::Option& Method::options(int index) const {
     return _internal_options().Get(index);
 }
 inline ::google::protobuf::Option* Method::add_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
   ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.Method.options)
   return _add;
@@ -1395,12 +1395,12 @@ Method::options() const {
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Method::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return _impl_.options_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>*
 Method::_internal_mutable_options() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return &_impl_.options_;
 }
 
@@ -1417,11 +1417,11 @@ inline void Method::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Method.syntax)
 }
 inline ::google::protobuf::Syntax Method::_internal_syntax() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_PRIMITIVE(&_impl_._tsan_detect_race);
   return static_cast<::google::protobuf::Syntax>(_impl_.syntax_);
 }
 inline void Method::_internal_set_syntax(::google::protobuf::Syntax value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
   ;
   _impl_.syntax_ = value;
 }
@@ -1441,7 +1441,7 @@ inline const std::string& Mixin::name() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Mixin::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.name)
@@ -1452,26 +1452,26 @@ inline std::string* Mixin::mutable_name() {
   return _s;
 }
 inline const std::string& Mixin::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
 }
 inline void Mixin::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Mixin::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   return _impl_.name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Mixin::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.name)
   return _impl_.name_.Release();
 }
 inline void Mixin::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_.name_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
@@ -1492,7 +1492,7 @@ inline const std::string& Mixin::root() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Mixin::set_root(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.root_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.root)
@@ -1503,26 +1503,26 @@ inline std::string* Mixin::mutable_root() {
   return _s;
 }
 inline const std::string& Mixin::_internal_root() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.root_.Get();
 }
 inline void Mixin::_internal_set_root(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.root_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Mixin::_internal_mutable_root() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   return _impl_.root_.Mutable( GetArenaForAllocation());
 }
 inline std::string* Mixin::release_root() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.root)
   return _impl_.root_.Release();
 }
 inline void Mixin::set_allocated_root(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_.root_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.root_.IsDefault()) {

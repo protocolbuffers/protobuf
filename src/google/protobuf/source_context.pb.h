@@ -262,7 +262,7 @@ inline const std::string& SourceContext::file_name() const {
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void SourceContext::set_file_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.file_name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
@@ -273,26 +273,26 @@ inline std::string* SourceContext::mutable_file_name() {
   return _s;
 }
 inline const std::string& SourceContext::_internal_file_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.file_name_.Get();
 }
 inline void SourceContext::_internal_set_file_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   _impl_.file_name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* SourceContext::_internal_mutable_file_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   ;
   return _impl_.file_name_.Mutable( GetArenaForAllocation());
 }
 inline std::string* SourceContext::release_file_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
   return _impl_.file_name_.Release();
 }
 inline void SourceContext::set_allocated_file_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_.file_name_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.file_name_.IsDefault()) {
