@@ -641,6 +641,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Gets the Arena on which this RepeatedPtrField stores its elements.
   inline Arena* GetArena() const { return GetOwningArena(); }
 
+ public:
+  void MergeFromArray(void* array[], size_t length) {
+    ABSL_DCHECK_NE(length, 0);
+
+    void** new_elements = InternalExtend(length);
+    memcpy(new_elements, array, length * sizeof(void*));
+    ExchangeCurrentSize(current_size_ + length);
+    if (rep_->allocated_size < current_size_) {
+      rep_->allocated_size = current_size_;
+    }
+  }
+
  protected:
   inline Arena* GetOwningArena() const { return arena_; }
 
@@ -692,6 +704,15 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   static inline const typename TypeHandler::Type* cast(const void* element) {
     return reinterpret_cast<const typename TypeHandler::Type*>(element);
+  }
+
+  template <typename TypeHandler>
+  typename TypeHandler::Type* TryGetAllocated() {
+    if (rep_ != nullptr && current_size_ < rep_->allocated_size) {
+      return cast<TypeHandler>(
+          rep_->elements[ExchangeCurrentSize(current_size_ + 1)]);
+    }
+    return nullptr;
   }
 
   // Out-of-line helper routine for Clear() once the inlined check has
