@@ -877,7 +877,6 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* MpMessage(PROTOBUF_TC_PARAM_DECL);
   template <bool is_group>
   static const char* MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL);
-  static const char* MpRepeatedGroup(PROTOBUF_TC_PARAM_DECL);
   static const char* MpLazyMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* MpMap(PROTOBUF_TC_PARAM_DECL);
