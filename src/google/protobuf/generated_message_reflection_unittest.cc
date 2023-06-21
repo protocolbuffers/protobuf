@@ -1323,7 +1323,8 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
                "  Field       : protobuf_unittest.TestAllTypes.repeated_int32\n"
                "  Problem     : Field is repeated; the method requires a "
                "singular field.");
-  EXPECT_DEBUG_DEATH(
+#ifndef NDEBUG
+  EXPECT_DEATH(
       reflection->GetInt32(foreign,
                            descriptor->FindFieldByName("optional_int32")),
       "Protocol Buffer reflection usage error:\n"
@@ -1332,6 +1333,7 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Actual type  : protobuf_unittest.ForeignMessage\n"
       "  Field        : protobuf_unittest.TestAllTypes.optional_int32\n"
       "  Problem      : Message is not the right object for reflection");
+#endif
   EXPECT_DEATH(
       reflection->GetInt32(
           message,
