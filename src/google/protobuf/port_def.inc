@@ -862,11 +862,11 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 // TODO(b/280674214): enable these macros in phases. The phases are: repeated
 // fields/maps, enum/primitive fields, string fields, message fields.
-#define PROTOBUF_TSAN_READ_REPEATED(addr)
+#define PROTOBUF_TSAN_READ_REPEATED(addr) PROTOBUF_TSAN_READ(addr)
 #define PROTOBUF_TSAN_READ_PRIMITIVE(addr)
 #define PROTOBUF_TSAN_READ_STRING(addr)
 #define PROTOBUF_TSAN_READ_MESSAGE(addr)
-#define PROTOBUF_TSAN_WRITE_REPEATED(addr)
+#define PROTOBUF_TSAN_WRITE_REPEATED(addr) PROTOBUF_TSAN_WRITE(addr)
 #define PROTOBUF_TSAN_WRITE_PRIMITIVE(addr)
 #define PROTOBUF_TSAN_WRITE_STRING(addr)
 #define PROTOBUF_TSAN_WRITE_MESSAGE(addr)
