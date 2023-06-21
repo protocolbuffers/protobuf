@@ -529,6 +529,24 @@ TEST(RepeatedField, MergeFrom) {
   EXPECT_EQ(5, destination.Get(4));
 }
 
+TEST(RepeatedField, MergeFromArray) {
+  RepeatedField<int> rep;
+
+  for (int i = 0; i < 7; ++i) {
+    rep.Add(i);
+  }
+  int array[] = {7, 8, 9, 10, 11, 12};
+  rep.MergeFromArray(array, 6);
+  for (int i = 13; i < 19; ++i) {
+    rep.Add(i);
+  }
+
+  EXPECT_EQ(rep.size(), 19);
+  for (int i = 0; i < 19; ++i) {
+    EXPECT_EQ(rep.Get(i), i);
+  }
+}
+
 
 TEST(RepeatedField, CopyFrom) {
   RepeatedField<int> source, destination;
