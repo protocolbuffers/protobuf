@@ -87,7 +87,6 @@ bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_ENUM:
-    case FieldDescriptor::TYPE_BYTES:
       return true;
     default:
       return false;
