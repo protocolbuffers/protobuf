@@ -398,6 +398,7 @@ cc_library(
         ":varint_shuffle",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
+        "@com_google_absl//absl/base",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/hash",

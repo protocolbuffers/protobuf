@@ -41,10 +41,12 @@
 #include <algorithm>
 #include <cassert>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/base/call_once.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/port.h"
@@ -1534,6 +1536,7 @@ class ExtensionIdentifier {
 // Used to retrieve a lazy extension, may return nullptr in some environments.
 extern PROTOBUF_ATTRIBUTE_WEAK ExtensionSet::LazyMessageExtension*
 MaybeCreateLazyExtension(Arena* arena);
+
 
 }  // namespace internal
 
