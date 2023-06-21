@@ -37,6 +37,7 @@
 #include <utility>
 
 #include "absl/base/optimization.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/inlined_string_field.h"
@@ -2357,7 +2358,17 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
 
   // Check for repeated parsing:
   if (card == field_layout::kFcRepeated) {
-    PROTOBUF_MUSTTAIL return MpRepeatedMessage(PROTOBUF_TC_PARAM_PASS);
+    const uint16_t rep = type_card & field_layout::kRepMask;
+    switch (rep) {
+      case field_layout::kRepMessage:
+        PROTOBUF_MUSTTAIL return MpRepeatedMessageOrGroup<false>(
+            PROTOBUF_TC_PARAM_PASS);
+      case field_layout::kRepGroup:
+        PROTOBUF_MUSTTAIL return MpRepeatedMessageOrGroup<true>(
+            PROTOBUF_TC_PARAM_PASS);
+      default:
+        PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+    }
   }
 
   const uint32_t decoded_tag = data.tag();
@@ -2422,30 +2433,26 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   }
 }
 
-const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
+template <bool is_group>
+const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
   ABSL_DCHECK_EQ(type_card & field_layout::kFcMask,
                  static_cast<uint16_t>(field_layout::kFcRepeated));
   const uint32_t decoded_tag = data.tag();
   const uint32_t decoded_wiretype = decoded_tag & 7;
-  const uint16_t rep = type_card & field_layout::kRepMask;
-  const bool is_group = rep == field_layout::kRepGroup;
 
   // Validate wiretype:
-  switch (rep) {
-    case field_layout::kRepMessage:
-      if (decoded_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-        goto fallback;
-      }
-      break;
-    case field_layout::kRepGroup:
-      if (decoded_wiretype != WireFormatLite::WIRETYPE_START_GROUP) {
-        goto fallback;
-      }
-      break;
-    default: {
-    fallback:
+  if (!is_group) {
+    ABSL_DCHECK_EQ(type_card & field_layout::kRepMask,
+                   static_cast<uint16_t>(field_layout::kRepMessage));
+    if (decoded_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+      PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+    }
+  } else {
+    ABSL_DCHECK_EQ(type_card & field_layout::kRepMask,
+                   static_cast<uint16_t>(field_layout::kRepGroup));
+    if (decoded_wiretype != WireFormatLite::WIRETYPE_START_GROUP) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
   }
@@ -2455,27 +2462,47 @@ const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
   const auto aux = *table->field_aux(&entry);
   if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
     auto* inner_table = aux.table;
-    MessageLite* value = field.Add<GenericTypeHandler<MessageLite>>(
-        inner_table->default_instance);
-    if (is_group) {
-      return ctx->ParseGroup<TcParser>(value, ptr, decoded_tag, inner_table);
-    }
-    return ctx->ParseMessage<TcParser>(value, ptr, inner_table);
+    const MessageLite* default_instance = inner_table->default_instance;
+    const char* ptr2 = ptr;
+    uint32_t next_tag;
+    do {
+      MessageLite* value =
+          field.Add<GenericTypeHandler<MessageLite>>(default_instance);
+      ptr = is_group ? ctx->ParseGroup<TcParser>(value, ptr2, decoded_tag,
+                                                 inner_table)
+                     : ctx->ParseMessage<TcParser>(value, ptr2, inner_table);
+      if (ptr == nullptr) goto error;
+      if (!ctx->DataAvailable(ptr)) goto parse_loop;
+      ptr2 = ReadTag(ptr, &next_tag);
+      if (ptr2 == nullptr) goto error;
+    } while (next_tag == decoded_tag);
   } else {
-    const MessageLite* def;
+    const MessageLite* default_instance;
     if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
-      def = aux.message_default();
+      default_instance = aux.message_default();
     } else {
       ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
                      +field_layout::kTvWeakPtr);
-      def = aux.message_default_weak();
+      default_instance = aux.message_default_weak();
     }
-    MessageLite* value = field.Add<GenericTypeHandler<MessageLite>>(def);
-    if (is_group) {
-      return ctx->ParseGroup(value, ptr, decoded_tag);
-    }
-    return ctx->ParseMessage(value, ptr);
+    const char* ptr2 = ptr;
+    uint32_t next_tag;
+    do {
+      MessageLite* value =
+          field.Add<GenericTypeHandler<MessageLite>>(default_instance);
+      ptr = is_group ? ctx->ParseGroup(value, ptr2, decoded_tag)
+                     : ctx->ParseMessage(value, ptr2);
+      if (ptr == nullptr) goto error;
+      if (!ctx->DataAvailable(ptr)) goto parse_loop;
+      ptr2 = ReadTag(ptr, &next_tag);
+      if (ptr2 == nullptr) goto error;
+    } while (next_tag == decoded_tag);
   }
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+parse_loop:
+  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+error:
+  PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 static void SerializeMapKey(const NodeBase* node, MapTypeCard type_card,
