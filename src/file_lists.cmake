@@ -697,6 +697,7 @@ set(protobuf_lite_test_protos_files
 set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/bootstrap_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message_size_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/metadata_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/move_unittest.cc
