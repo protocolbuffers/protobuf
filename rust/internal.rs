@@ -34,6 +34,9 @@
 
 use std::slice;
 
+/// Used to protect internal-only items from being used accidentally.
+pub struct Private;
+
 /// Represents an ABI-stable version of `NonNull<[u8]>`/`string_view` (a
 /// borrowed slice of bytes) for FFI use only.
 ///

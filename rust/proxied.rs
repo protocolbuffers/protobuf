@@ -67,6 +67,7 @@
 //! implemented the concept of "proxy" types. Proxy types are a reference-like
 //! indirection between the user and the internal memory representation.
 
+use crate::__internal::Private;
 use std::fmt::Debug;
 use std::marker::{Send, Sync};
 
@@ -169,6 +170,13 @@ pub trait ViewProxy<'a>: 'a + Sized + Sync + Unpin + Sized + Debug {
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
 pub trait MutProxy<'a>: ViewProxy<'a> {
+    /// Sets this field to the given `val`.
+    ///
+    /// Any borrowed data from `val` will be cloned.
+    fn set(&mut self, val: impl SettableValue<Self::Proxied>) {
+        val.set_on(Private, self.as_mut())
+    }
+
     /// Converts a borrow into a `Mut` with the lifetime of that borrow.
     ///
     /// This function enables calling multiple methods consuming `self`, for
@@ -211,11 +219,22 @@ pub trait MutProxy<'a>: ViewProxy<'a> {
         'a: 'shorter;
 }
 
+/// Values that can be used to set a field of `T`.
+pub trait SettableValue<T>
+where
+    T: Proxied + ?Sized,
+{
+    /// Consumes `self` to set the given mutator to its value.
+    #[doc(hidden)]
+    fn set_on(self, _private: Private, mutator: Mut<T>);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::borrow::Cow;
 
-    #[derive(Debug, PartialEq)]
+    #[derive(Debug, Default, PartialEq)]
     struct MyProxied {
         val: String,
     }
@@ -266,12 +285,6 @@ mod tests {
         my_proxied_ref: &'a mut MyProxied,
     }
 
-    impl MyProxiedMut<'_> {
-        fn set_val(&mut self, new_val: String) {
-            self.my_proxied_ref.val = new_val;
-        }
-    }
-
     impl<'a> ViewProxy<'a> for MyProxiedMut<'a> {
         type Proxied = MyProxied;
 
@@ -299,6 +312,27 @@ mod tests {
         }
     }
 
+    impl SettableValue<MyProxied> for String {
+        fn set_on(self, _private: Private, mutator: Mut<MyProxied>) {
+            mutator.my_proxied_ref.val = self;
+        }
+    }
+
+    impl SettableValue<MyProxied> for &'_ str {
+        fn set_on(self, _private: Private, mutator: Mut<MyProxied>) {
+            mutator.my_proxied_ref.val.replace_range(.., self);
+        }
+    }
+
+    impl SettableValue<MyProxied> for Cow<'_, str> {
+        fn set_on(self, _private: Private, mutator: Mut<MyProxied>) {
+            match self {
+                Cow::Owned(x) => x.set_on(Private, mutator),
+                Cow::Borrowed(x) => x.set_on(Private, mutator),
+            }
+        }
+    }
+
     #[test]
     fn test_as_view() {
         let my_proxied = MyProxied { val: "Hello World".to_string() };
@@ -313,7 +347,7 @@ mod tests {
         let mut my_proxied = MyProxied { val: "Hello World".to_string() };
 
         let mut my_mut = my_proxied.as_mut();
-        my_mut.set_val("Hello indeed".to_string());
+        my_mut.set("Hello indeed".to_string());
 
         let val_after_set = my_mut.as_view().val().to_string();
         assert_eq!(my_proxied.val, val_after_set);
@@ -442,5 +476,18 @@ mod tests {
             // lifetime.
             reborrow_generic_mut_into_mut::<MyProxied>(my_mut, other_mut);
         }
+    }
+
+    #[test]
+    fn test_set() {
+        let mut my_proxied = MyProxied::default();
+        my_proxied.as_mut().set("hello");
+        assert_eq!(my_proxied.as_view().val(), "hello");
+
+        my_proxied.as_mut().set(String::from("hello2"));
+        assert_eq!(my_proxied.as_view().val(), "hello2");
+
+        my_proxied.as_mut().set(Cow::Borrowed("hello3"));
+        assert_eq!(my_proxied.as_view().val(), "hello3");
     }
 }

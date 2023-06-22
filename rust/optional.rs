@@ -32,7 +32,8 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
-use crate::{Mut, MutProxy, Proxied, View, ViewProxy};
+use crate::__internal::Private;
+use crate::{Mut, MutProxy, Proxied, SettableValue, View, ViewProxy};
 use std::convert::{AsMut, AsRef};
 use std::fmt::{self, Debug};
 
@@ -118,8 +119,11 @@ impl<'msg, T: Proxied + ?Sized + 'msg> FieldEntry<'msg, T> {
     /// Sets the value of this field to `val`.
     ///
     /// Equivalent to `self.or_default().set(val)`.
-    pub fn set(&mut self, val: Todo) {
-        todo!("b/285308646: Requires a trait method")
+    pub fn set(&mut self, val: impl SettableValue<T>) {
+        match self {
+            Optional::Set(x) => x.set(val),
+            Optional::Unset(x) => todo!(),
+        }
     }
 
     /// Clears the field; `is_set()` will return `false`.
@@ -181,8 +185,8 @@ impl<'msg, T: Proxied + ?Sized + 'msg> PresentField<'msg, T> {
         self.into_view()
     }
 
-    pub fn set(&mut self, val: Todo) {
-        todo!("b/285308646: Requires a trait method")
+    pub fn set(&mut self, val: impl SettableValue<T>) {
+        val.set_on(Private, self.as_mut())
     }
 
     /// See [`FieldEntry::clear`].
@@ -253,7 +257,7 @@ impl<'msg, T: Proxied + ?Sized> AbsentField<'msg, T> {
 
     /// See [`FieldEntry::set`]. Note that this consumes and returns a
     /// `PresentField`.
-    pub fn set(self, val: Todo) -> PresentField<'msg, T> {
+    pub fn set(self, val: impl SettableValue<T>) -> PresentField<'msg, T> {
         todo!("b/285308646: Requires a trait method")
     }
 
