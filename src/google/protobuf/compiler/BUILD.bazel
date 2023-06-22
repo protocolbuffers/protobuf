@@ -252,6 +252,7 @@ cc_test(
     deps = [
         ":code_generator",
         ":command_line_interface",
+        ":command_line_interface_tester",
         ":mock_code_generator",
         "//:protobuf",
         "//src/google/protobuf:cc_test_protos",
@@ -262,6 +263,27 @@ cc_test(
         "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "command_line_interface_tester",
+    testonly = True,
+    srcs = ["command_line_interface_tester.cc"],
+    hdrs = ["command_line_interface_tester.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+      "//pkg:__pkg__",
+      "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        ":code_generator",
+        ":command_line_interface",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
     ],
 )
 
