@@ -119,6 +119,12 @@ class SingularString : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMergeFromCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      _this->_internal_set_$name$_only(from._internal_$name$(), arena);
+    )cc");
+  }
+
   void GenerateArenaDestructorCode(io::Printer* p) const override {
     if (!inlined_) return;
 
@@ -250,6 +256,8 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
 
         private:
         const std::string& _internal_$name$() const;
+        inline PROTOBUF_ALWAYS_INLINE void _internal_set_$name$_only(
+            const std::string& value, $pb$::Arena* arena);
         inline PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(
             const std::string& value);
         std::string* _internal_mutable_$name$();
@@ -277,14 +285,20 @@ void UpdateHasbitSet(io::Printer* p, bool is_oneof) {
   )cc");
 }
 
-void ArgsForSetter(io::Printer* p, bool inlined) {
+void ArgsForSetter(io::Printer* p, bool inlined, bool explicit_arena) {
   if (!inlined) {
-    p->Emit("GetArenaForAllocation()");
+    p->Emit(explicit_arena ? "arena" : "GetArenaForAllocation()");
     return;
   }
-  p->Emit(
-      "GetArenaForAllocation(), _internal_$name$_donated(), "
-      "&$donating_states_word$, $mask_for_undonate$, this");
+  if (explicit_arena) {
+    p->Emit(
+        "arena, _internal_$name$_donated(), "
+        "&$donating_states_word$, $mask_for_undonate$, this");
+  } else {
+    p->Emit(
+        "GetArenaForAllocation(), _internal_$name$_donated(), "
+        "&$donating_states_word$, $mask_for_undonate$, this");
+  }
 }
 
 void SingularString::ReleaseImpl(io::Printer* p) const {
@@ -401,7 +415,8 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
              )cc");
            }},
           {"update_hasbit", [&] { UpdateHasbitSet(p, is_oneof_); }},
-          {"set_args", [&] { ArgsForSetter(p, inlined_); }},
+          {"set_args", [&] { ArgsForSetter(p, inlined_, false); }},
+          {"arena_set_args", [&] { ArgsForSetter(p, inlined_, true); }},
           {"check_hasbit",
            [&] {
              if (!is_oneof_) return;
@@ -444,6 +459,13 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $TsanDetectConcurrentRead$;
           $check_hasbit$;
           return $field_$.Get();
+        }
+        inline void $Msg$::_internal_set_$name$_only(const std::string& value,
+                                                     $pb$::Arena* arena) {
+          $TsanDetectConcurrentMutation$;
+          //~ Don't use $Set$ here; we always want the std::string variant
+          //~ regardless of whether this is a `bytes` field.
+          $field_$.Set(value, $arena_set_args$);
         }
         inline void $Msg$::_internal_set_$name$(const std::string& value) {
           $TsanDetectConcurrentMutation$;

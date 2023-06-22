@@ -979,6 +979,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   private:
   const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
@@ -996,6 +998,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   private:
   const std::string& _internal_package() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_package_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_package(
       const std::string& value);
   std::string* _internal_mutable_package();
@@ -1013,6 +1017,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   private:
   const std::string& _internal_syntax() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_syntax_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(
       const std::string& value);
   std::string* _internal_mutable_syntax();
@@ -1030,6 +1036,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   private:
   const std::string& _internal_edition() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(
       const std::string& value);
   std::string* _internal_mutable_edition();
@@ -1047,6 +1055,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   private:
   const ::google::protobuf::FileOptions& _internal_options() const;
+  const ::google::protobuf::FileOptions& _internal_assert_options() const;
+  ::google::protobuf::FileOptions* _internal_maybe_create_options(::google::protobuf::Arena*);
   ::google::protobuf::FileOptions* _internal_mutable_options();
 
   public:
@@ -1062,6 +1072,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   private:
   const ::google::protobuf::SourceCodeInfo& _internal_source_code_info() const;
+  const ::google::protobuf::SourceCodeInfo& _internal_assert_source_code_info() const;
+  ::google::protobuf::SourceCodeInfo* _internal_maybe_create_source_code_info(::google::protobuf::Arena*);
   ::google::protobuf::SourceCodeInfo* _internal_mutable_source_code_info();
 
   public:
@@ -1240,6 +1252,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
 
   private:
   const ::google::protobuf::ExtensionRangeOptions& _internal_options() const;
+  const ::google::protobuf::ExtensionRangeOptions& _internal_assert_options() const;
+  ::google::protobuf::ExtensionRangeOptions* _internal_maybe_create_options(::google::protobuf::Arena*);
   ::google::protobuf::ExtensionRangeOptions* _internal_mutable_options();
 
   public:
@@ -1767,6 +1781,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
 
   private:
   const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
@@ -1784,6 +1800,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
 
   private:
   const ::google::protobuf::MessageOptions& _internal_options() const;
+  const ::google::protobuf::MessageOptions& _internal_assert_options() const;
+  ::google::protobuf::MessageOptions* _internal_maybe_create_options(::google::protobuf::Arena*);
   ::google::protobuf::MessageOptions* _internal_mutable_options();
 
   public:
@@ -1962,6 +1980,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
 
   private:
   const std::string& _internal_full_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_full_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(
       const std::string& value);
   std::string* _internal_mutable_full_name();
@@ -1979,6 +1999,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
 
   private:
   const std::string& _internal_type() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_type(
       const std::string& value);
   std::string* _internal_mutable_type();
@@ -2636,6 +2658,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   private:
   const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
@@ -2653,6 +2677,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   private:
   const std::string& _internal_extendee() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_extendee_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(
       const std::string& value);
   std::string* _internal_mutable_extendee();
@@ -2670,6 +2696,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   private:
   const std::string& _internal_type_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(
       const std::string& value);
   std::string* _internal_mutable_type_name();
@@ -2687,6 +2715,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   private:
   const std::string& _internal_default_value() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_default_value_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(
       const std::string& value);
   std::string* _internal_mutable_default_value();
@@ -2704,6 +2734,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   private:
   const std::string& _internal_json_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_json_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(
       const std::string& value);
   std::string* _internal_mutable_json_name();
@@ -2721,6 +2753,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   private:
   const ::google::protobuf::FieldOptions& _internal_options() const;
+  const ::google::protobuf::FieldOptions& _internal_assert_options() const;
+  ::google::protobuf::FieldOptions* _internal_maybe_create_options(::google::protobuf::Arena*);
   ::google::protobuf::FieldOptions* _internal_mutable_options();
 
   public:
@@ -2951,6 +2985,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
 
   private:
   const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
@@ -2968,6 +3004,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
 
   private:
   const ::google::protobuf::OneofOptions& _internal_options() const;
+  const ::google::protobuf::OneofOptions& _internal_assert_options() const;
+  ::google::protobuf::OneofOptions* _internal_maybe_create_options(::google::protobuf::Arena*);
   ::google::protobuf::OneofOptions* _internal_mutable_options();
 
   public:
@@ -3376,6 +3414,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
 
   private:
   const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
@@ -3393,6 +3433,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
 
   private:
   const ::google::protobuf::EnumOptions& _internal_options() const;
+  const ::google::protobuf::EnumOptions& _internal_assert_options() const;
+  ::google::protobuf::EnumOptions* _internal_maybe_create_options(::google::protobuf::Arena*);
   ::google::protobuf::EnumOptions* _internal_mutable_options();
 
   public:
@@ -3563,6 +3605,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
 
   private:
   const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
@@ -3580,6 +3624,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
 
   private:
   const ::google::protobuf::EnumValueOptions& _internal_options() const;
+  const ::google::protobuf::EnumValueOptions& _internal_assert_options() const;
+  ::google::protobuf::EnumValueOptions* _internal_maybe_create_options(::google::protobuf::Arena*);
   ::google::protobuf::EnumValueOptions* _internal_mutable_options();
 
   public:
@@ -3777,6 +3823,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
 
   private:
   const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
@@ -3794,6 +3842,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
 
   private:
   const ::google::protobuf::ServiceOptions& _internal_options() const;
+  const ::google::protobuf::ServiceOptions& _internal_assert_options() const;
+  ::google::protobuf::ServiceOptions* _internal_maybe_create_options(::google::protobuf::Arena*);
   ::google::protobuf::ServiceOptions* _internal_mutable_options();
 
   public:
@@ -3965,6 +4015,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
 
   private:
   const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
@@ -3982,6 +4034,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
 
   private:
   const std::string& _internal_input_type() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_input_type_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(
       const std::string& value);
   std::string* _internal_mutable_input_type();
@@ -3999,6 +4053,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
 
   private:
   const std::string& _internal_output_type() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_output_type_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(
       const std::string& value);
   std::string* _internal_mutable_output_type();
@@ -4016,6 +4072,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
 
   private:
   const ::google::protobuf::MethodOptions& _internal_options() const;
+  const ::google::protobuf::MethodOptions& _internal_assert_options() const;
+  ::google::protobuf::MethodOptions* _internal_maybe_create_options(::google::protobuf::Arena*);
   ::google::protobuf::MethodOptions* _internal_mutable_options();
 
   public:
@@ -4266,6 +4324,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_java_package() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_package_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(
       const std::string& value);
   std::string* _internal_mutable_java_package();
@@ -4283,6 +4343,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_java_outer_classname() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(
       const std::string& value);
   std::string* _internal_mutable_java_outer_classname();
@@ -4300,6 +4362,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_go_package() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_go_package_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(
       const std::string& value);
   std::string* _internal_mutable_go_package();
@@ -4317,6 +4381,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_objc_class_prefix() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(
       const std::string& value);
   std::string* _internal_mutable_objc_class_prefix();
@@ -4334,6 +4400,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_csharp_namespace() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(
       const std::string& value);
   std::string* _internal_mutable_csharp_namespace();
@@ -4351,6 +4419,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_swift_prefix() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(
       const std::string& value);
   std::string* _internal_mutable_swift_prefix();
@@ -4368,6 +4438,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_php_class_prefix() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(
       const std::string& value);
   std::string* _internal_mutable_php_class_prefix();
@@ -4385,6 +4457,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_php_namespace() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(
       const std::string& value);
   std::string* _internal_mutable_php_namespace();
@@ -4402,6 +4476,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_php_metadata_namespace() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(
       const std::string& value);
   std::string* _internal_mutable_php_metadata_namespace();
@@ -4419,6 +4495,8 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   const std::string& _internal_ruby_package() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(
       const std::string& value);
   std::string* _internal_mutable_ruby_package();
@@ -7540,6 +7618,8 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
 
   private:
   const std::string& _internal_name_part() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_part_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(
       const std::string& value);
   std::string* _internal_mutable_name_part();
@@ -7744,6 +7824,8 @@ class PROTOBUF_EXPORT UninterpretedOption final :
 
   private:
   const std::string& _internal_identifier_value() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(
       const std::string& value);
   std::string* _internal_mutable_identifier_value();
@@ -7761,6 +7843,8 @@ class PROTOBUF_EXPORT UninterpretedOption final :
 
   private:
   const std::string& _internal_string_value() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(
       const std::string& value);
   std::string* _internal_mutable_string_value();
@@ -7778,6 +7862,8 @@ class PROTOBUF_EXPORT UninterpretedOption final :
 
   private:
   const std::string& _internal_aggregate_value() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(
       const std::string& value);
   std::string* _internal_mutable_aggregate_value();
@@ -8051,6 +8137,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
 
   private:
   const std::string& _internal_leading_comments() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(
       const std::string& value);
   std::string* _internal_mutable_leading_comments();
@@ -8068,6 +8156,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
 
   private:
   const std::string& _internal_trailing_comments() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(
       const std::string& value);
   std::string* _internal_mutable_trailing_comments();
@@ -8451,6 +8541,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
 
   private:
   const std::string& _internal_source_file() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_source_file_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(
       const std::string& value);
   std::string* _internal_mutable_source_file();
@@ -8777,6 +8869,11 @@ inline const std::string& FileDescriptorProto::_internal_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
 }
+inline void FileDescriptorProto::_internal_set_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_.Set(value, arena);
+}
 inline void FileDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -8845,6 +8942,11 @@ inline std::string* FileDescriptorProto::mutable_package() {
 inline const std::string& FileDescriptorProto::_internal_package() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.package_.Get();
+}
+inline void FileDescriptorProto::_internal_set_package_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.package_.Set(value, arena);
 }
 inline void FileDescriptorProto::_internal_set_package(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -9264,6 +9366,12 @@ inline const ::google::protobuf::FileOptions& FileDescriptorProto::_internal_opt
   const ::google::protobuf::FileOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FileOptions&>(::google::protobuf::_FileOptions_default_instance_);
 }
+inline const ::google::protobuf::FileOptions& FileDescriptorProto::_internal_assert_options() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FileOptions* p = _impl_.options_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.options)
   return _internal_options();
@@ -9309,14 +9417,17 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_releas
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_mutable_options() {
+inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FileOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FileOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(p);
   }
   return _impl_.options_;
+}
+inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_mutable_options() {
+  _impl_._has_bits_[0] |= 0x00000010u;
+  return _internal_maybe_create_options(GetArenaForAllocation());
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() {
   ::google::protobuf::FileOptions* _msg = _internal_mutable_options();
@@ -9359,6 +9470,12 @@ inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::_internal_
   PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
   const ::google::protobuf::SourceCodeInfo* p = _impl_.source_code_info_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceCodeInfo&>(::google::protobuf::_SourceCodeInfo_default_instance_);
+}
+inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::_internal_assert_source_code_info() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::SourceCodeInfo* p = _impl_.source_code_info_;
+  assert(p != nullptr);
+  return *p;
 }
 inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_code_info() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.source_code_info)
@@ -9405,14 +9522,17 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_rel
   _impl_.source_code_info_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_mutable_source_code_info() {
+inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_maybe_create_source_code_info(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
   if (_impl_.source_code_info_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(arena);
     _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(p);
   }
   return _impl_.source_code_info_;
+}
+inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_mutable_source_code_info() {
+  _impl_._has_bits_[0] |= 0x00000020u;
+  return _internal_maybe_create_source_code_info(GetArenaForAllocation());
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_code_info() {
   ::google::protobuf::SourceCodeInfo* _msg = _internal_mutable_source_code_info();
@@ -9470,6 +9590,11 @@ inline std::string* FileDescriptorProto::mutable_syntax() {
 inline const std::string& FileDescriptorProto::_internal_syntax() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.syntax_.Get();
+}
+inline void FileDescriptorProto::_internal_set_syntax_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.syntax_.Set(value, arena);
 }
 inline void FileDescriptorProto::_internal_set_syntax(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -9539,6 +9664,11 @@ inline std::string* FileDescriptorProto::mutable_edition() {
 inline const std::string& FileDescriptorProto::_internal_edition() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.edition_.Get();
+}
+inline void FileDescriptorProto::_internal_set_edition_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.edition_.Set(value, arena);
 }
 inline void FileDescriptorProto::_internal_set_edition(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -9652,6 +9782,12 @@ inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_Extensio
   const ::google::protobuf::ExtensionRangeOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::ExtensionRangeOptions&>(::google::protobuf::_ExtensionRangeOptions_default_instance_);
 }
+inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::_internal_assert_options() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::ExtensionRangeOptions* p = _impl_.options_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.ExtensionRange.options)
   return _internal_options();
@@ -9697,14 +9833,17 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::_internal_mutable_options() {
+inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(p);
   }
   return _impl_.options_;
+}
+inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::_internal_mutable_options() {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  return _internal_maybe_create_options(GetArenaForAllocation());
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::mutable_options() {
   ::google::protobuf::ExtensionRangeOptions* _msg = _internal_mutable_options();
@@ -9824,6 +9963,11 @@ inline std::string* DescriptorProto::mutable_name() {
 inline const std::string& DescriptorProto::_internal_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
+}
+inline void DescriptorProto::_internal_set_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_.Set(value, arena);
 }
 inline void DescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -10155,6 +10299,12 @@ inline const ::google::protobuf::MessageOptions& DescriptorProto::_internal_opti
   const ::google::protobuf::MessageOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::MessageOptions&>(::google::protobuf::_MessageOptions_default_instance_);
 }
+inline const ::google::protobuf::MessageOptions& DescriptorProto::_internal_assert_options() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::MessageOptions* p = _impl_.options_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::MessageOptions& DescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.options)
   return _internal_options();
@@ -10200,14 +10350,17 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_mutable_options() {
+inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::MessageOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::MessageOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(p);
   }
   return _impl_.options_;
+}
+inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_mutable_options() {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _internal_maybe_create_options(GetArenaForAllocation());
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() {
   ::google::protobuf::MessageOptions* _msg = _internal_mutable_options();
@@ -10439,6 +10592,11 @@ inline const std::string& ExtensionRangeOptions_Declaration::_internal_full_name
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.full_name_.Get();
 }
+inline void ExtensionRangeOptions_Declaration::_internal_set_full_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.full_name_.Set(value, arena);
+}
 inline void ExtensionRangeOptions_Declaration::_internal_set_full_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -10507,6 +10665,11 @@ inline std::string* ExtensionRangeOptions_Declaration::mutable_type() {
 inline const std::string& ExtensionRangeOptions_Declaration::_internal_type() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.type_.Get();
+}
+inline void ExtensionRangeOptions_Declaration::_internal_set_type_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.type_.Set(value, arena);
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_type(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -10786,6 +10949,11 @@ inline const std::string& FieldDescriptorProto::_internal_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
 }
+inline void FieldDescriptorProto::_internal_set_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_.Set(value, arena);
+}
 inline void FieldDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -10938,6 +11106,11 @@ inline const std::string& FieldDescriptorProto::_internal_type_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.type_name_.Get();
 }
+inline void FieldDescriptorProto::_internal_set_type_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.type_name_.Set(value, arena);
+}
 inline void FieldDescriptorProto::_internal_set_type_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
@@ -11007,6 +11180,11 @@ inline const std::string& FieldDescriptorProto::_internal_extendee() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.extendee_.Get();
 }
+inline void FieldDescriptorProto::_internal_set_extendee_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.extendee_.Set(value, arena);
+}
 inline void FieldDescriptorProto::_internal_set_extendee(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
@@ -11075,6 +11253,11 @@ inline std::string* FieldDescriptorProto::mutable_default_value() {
 inline const std::string& FieldDescriptorProto::_internal_default_value() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.default_value_.Get();
+}
+inline void FieldDescriptorProto::_internal_set_default_value_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.default_value_.Set(value, arena);
 }
 inline void FieldDescriptorProto::_internal_set_default_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -11172,6 +11355,11 @@ inline const std::string& FieldDescriptorProto::_internal_json_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.json_name_.Get();
 }
+inline void FieldDescriptorProto::_internal_set_json_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.json_name_.Set(value, arena);
+}
 inline void FieldDescriptorProto::_internal_set_json_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000010u;
@@ -11226,6 +11414,12 @@ inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::_internal_o
   const ::google::protobuf::FieldOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FieldOptions&>(::google::protobuf::_FieldOptions_default_instance_);
 }
+inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::_internal_assert_options() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FieldOptions* p = _impl_.options_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.options)
   return _internal_options();
@@ -11271,14 +11465,17 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_rele
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_mutable_options() {
+inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FieldOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FieldOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(p);
   }
   return _impl_.options_;
+}
+inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_mutable_options() {
+  _impl_._has_bits_[0] |= 0x00000020u;
+  return _internal_maybe_create_options(GetArenaForAllocation());
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options() {
   ::google::protobuf::FieldOptions* _msg = _internal_mutable_options();
@@ -11368,6 +11565,11 @@ inline const std::string& OneofDescriptorProto::_internal_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
 }
+inline void OneofDescriptorProto::_internal_set_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_.Set(value, arena);
+}
 inline void OneofDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -11422,6 +11624,12 @@ inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::_internal_o
   const ::google::protobuf::OneofOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::OneofOptions&>(::google::protobuf::_OneofOptions_default_instance_);
 }
+inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::_internal_assert_options() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::OneofOptions* p = _impl_.options_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.OneofDescriptorProto.options)
   return _internal_options();
@@ -11467,14 +11675,17 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_rele
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_mutable_options() {
+inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::OneofOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::OneofOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(p);
   }
   return _impl_.options_;
+}
+inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_mutable_options() {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _internal_maybe_create_options(GetArenaForAllocation());
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options() {
   ::google::protobuf::OneofOptions* _msg = _internal_mutable_options();
@@ -11595,6 +11806,11 @@ inline const std::string& EnumDescriptorProto::_internal_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
 }
+inline void EnumDescriptorProto::_internal_set_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_.Set(value, arena);
+}
 inline void EnumDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -11695,6 +11911,12 @@ inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::_internal_opt
   const ::google::protobuf::EnumOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::EnumOptions&>(::google::protobuf::_EnumOptions_default_instance_);
 }
+inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::_internal_assert_options() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::EnumOptions* p = _impl_.options_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.options)
   return _internal_options();
@@ -11740,14 +11962,17 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_releas
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_mutable_options() {
+inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::EnumOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::EnumOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(p);
   }
   return _impl_.options_;
+}
+inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_mutable_options() {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _internal_maybe_create_options(GetArenaForAllocation());
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() {
   ::google::protobuf::EnumOptions* _msg = _internal_mutable_options();
@@ -11952,6 +12177,11 @@ inline const std::string& EnumValueDescriptorProto::_internal_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
 }
+inline void EnumValueDescriptorProto::_internal_set_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_.Set(value, arena);
+}
 inline void EnumValueDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -12033,6 +12263,12 @@ inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::_in
   const ::google::protobuf::EnumValueOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::EnumValueOptions&>(::google::protobuf::_EnumValueOptions_default_instance_);
 }
+inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::_internal_assert_options() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::EnumValueOptions* p = _impl_.options_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueDescriptorProto.options)
   return _internal_options();
@@ -12078,14 +12314,17 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_ar
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal_mutable_options() {
+inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::EnumValueOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::EnumValueOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(p);
   }
   return _impl_.options_;
+}
+inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal_mutable_options() {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _internal_maybe_create_options(GetArenaForAllocation());
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_options() {
   ::google::protobuf::EnumValueOptions* _msg = _internal_mutable_options();
@@ -12147,6 +12386,11 @@ inline std::string* ServiceDescriptorProto::mutable_name() {
 inline const std::string& ServiceDescriptorProto::_internal_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
+}
+inline void ServiceDescriptorProto::_internal_set_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_.Set(value, arena);
 }
 inline void ServiceDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -12248,6 +12492,12 @@ inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::_intern
   const ::google::protobuf::ServiceOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::ServiceOptions&>(::google::protobuf::_ServiceOptions_default_instance_);
 }
+inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::_internal_assert_options() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::ServiceOptions* p = _impl_.options_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceDescriptorProto.options)
   return _internal_options();
@@ -12293,14 +12543,17 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_mutable_options() {
+inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::ServiceOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::ServiceOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(p);
   }
   return _impl_.options_;
+}
+inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_mutable_options() {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _internal_maybe_create_options(GetArenaForAllocation());
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_options() {
   ::google::protobuf::ServiceOptions* _msg = _internal_mutable_options();
@@ -12362,6 +12615,11 @@ inline std::string* MethodDescriptorProto::mutable_name() {
 inline const std::string& MethodDescriptorProto::_internal_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
+}
+inline void MethodDescriptorProto::_internal_set_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_.Set(value, arena);
 }
 inline void MethodDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -12432,6 +12690,11 @@ inline const std::string& MethodDescriptorProto::_internal_input_type() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.input_type_.Get();
 }
+inline void MethodDescriptorProto::_internal_set_input_type_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.input_type_.Set(value, arena);
+}
 inline void MethodDescriptorProto::_internal_set_input_type(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
@@ -12501,6 +12764,11 @@ inline const std::string& MethodDescriptorProto::_internal_output_type() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.output_type_.Get();
 }
+inline void MethodDescriptorProto::_internal_set_output_type_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.output_type_.Set(value, arena);
+}
 inline void MethodDescriptorProto::_internal_set_output_type(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
@@ -12555,6 +12823,12 @@ inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::_internal
   const ::google::protobuf::MethodOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::MethodOptions&>(::google::protobuf::_MethodOptions_default_instance_);
 }
+inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::_internal_assert_options() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::MethodOptions* p = _impl_.options_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.options)
   return _internal_options();
@@ -12600,14 +12874,17 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_re
   _impl_.options_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_mutable_options() {
+inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_maybe_create_options(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::MethodOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::MethodOptions>(arena);
     _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(p);
   }
   return _impl_.options_;
+}
+inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_mutable_options() {
+  _impl_._has_bits_[0] |= 0x00000008u;
+  return _internal_maybe_create_options(GetArenaForAllocation());
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options() {
   ::google::protobuf::MethodOptions* _msg = _internal_mutable_options();
@@ -12724,6 +13001,11 @@ inline const std::string& FileOptions::_internal_java_package() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.java_package_.Get();
 }
+inline void FileOptions::_internal_set_java_package_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.java_package_.Set(value, arena);
+}
 inline void FileOptions::_internal_set_java_package(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -12792,6 +13074,11 @@ inline std::string* FileOptions::mutable_java_outer_classname() {
 inline const std::string& FileOptions::_internal_java_outer_classname() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.java_outer_classname_.Get();
+}
+inline void FileOptions::_internal_set_java_outer_classname_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.java_outer_classname_.Set(value, arena);
 }
 inline void FileOptions::_internal_set_java_outer_classname(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -12970,6 +13257,11 @@ inline std::string* FileOptions::mutable_go_package() {
 inline const std::string& FileOptions::_internal_go_package() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.go_package_.Get();
+}
+inline void FileOptions::_internal_set_go_package_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.go_package_.Set(value, arena);
 }
 inline void FileOptions::_internal_set_go_package(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -13202,6 +13494,11 @@ inline const std::string& FileOptions::_internal_objc_class_prefix() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.objc_class_prefix_.Get();
 }
+inline void FileOptions::_internal_set_objc_class_prefix_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.objc_class_prefix_.Set(value, arena);
+}
 inline void FileOptions::_internal_set_objc_class_prefix(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
@@ -13270,6 +13567,11 @@ inline std::string* FileOptions::mutable_csharp_namespace() {
 inline const std::string& FileOptions::_internal_csharp_namespace() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.csharp_namespace_.Get();
+}
+inline void FileOptions::_internal_set_csharp_namespace_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.csharp_namespace_.Set(value, arena);
 }
 inline void FileOptions::_internal_set_csharp_namespace(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -13340,6 +13642,11 @@ inline const std::string& FileOptions::_internal_swift_prefix() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.swift_prefix_.Get();
 }
+inline void FileOptions::_internal_set_swift_prefix_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.swift_prefix_.Set(value, arena);
+}
 inline void FileOptions::_internal_set_swift_prefix(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000020u;
@@ -13408,6 +13715,11 @@ inline std::string* FileOptions::mutable_php_class_prefix() {
 inline const std::string& FileOptions::_internal_php_class_prefix() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.php_class_prefix_.Get();
+}
+inline void FileOptions::_internal_set_php_class_prefix_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.php_class_prefix_.Set(value, arena);
 }
 inline void FileOptions::_internal_set_php_class_prefix(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -13478,6 +13790,11 @@ inline const std::string& FileOptions::_internal_php_namespace() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.php_namespace_.Get();
 }
+inline void FileOptions::_internal_set_php_namespace_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.php_namespace_.Set(value, arena);
+}
 inline void FileOptions::_internal_set_php_namespace(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000080u;
@@ -13547,6 +13864,11 @@ inline const std::string& FileOptions::_internal_php_metadata_namespace() const 
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.php_metadata_namespace_.Get();
 }
+inline void FileOptions::_internal_set_php_metadata_namespace_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.php_metadata_namespace_.Set(value, arena);
+}
 inline void FileOptions::_internal_set_php_metadata_namespace(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000100u;
@@ -13615,6 +13937,11 @@ inline std::string* FileOptions::mutable_ruby_package() {
 inline const std::string& FileOptions::_internal_ruby_package() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.ruby_package_.Get();
+}
+inline void FileOptions::_internal_set_ruby_package_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.ruby_package_.Set(value, arena);
 }
 inline void FileOptions::_internal_set_ruby_package(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -14754,6 +15081,11 @@ inline const std::string& UninterpretedOption_NamePart::_internal_name_part() co
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_part_.Get();
 }
+inline void UninterpretedOption_NamePart::_internal_set_name_part_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_part_.Set(value, arena);
+}
 inline void UninterpretedOption_NamePart::_internal_set_name_part(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -14899,6 +15231,11 @@ inline std::string* UninterpretedOption::mutable_identifier_value() {
 inline const std::string& UninterpretedOption::_internal_identifier_value() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.identifier_value_.Get();
+}
+inline void UninterpretedOption::_internal_set_identifier_value_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.identifier_value_.Set(value, arena);
 }
 inline void UninterpretedOption::_internal_set_identifier_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -15050,6 +15387,11 @@ inline const std::string& UninterpretedOption::_internal_string_value() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.string_value_.Get();
 }
+inline void UninterpretedOption::_internal_set_string_value_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.string_value_.Set(value, arena);
+}
 inline void UninterpretedOption::_internal_set_string_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
@@ -15118,6 +15460,11 @@ inline std::string* UninterpretedOption::mutable_aggregate_value() {
 inline const std::string& UninterpretedOption::_internal_aggregate_value() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.aggregate_value_.Get();
+}
+inline void UninterpretedOption::_internal_set_aggregate_value_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.aggregate_value_.Set(value, arena);
 }
 inline void UninterpretedOption::_internal_set_aggregate_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -15276,6 +15623,11 @@ inline const std::string& SourceCodeInfo_Location::_internal_leading_comments() 
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.leading_comments_.Get();
 }
+inline void SourceCodeInfo_Location::_internal_set_leading_comments_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.leading_comments_.Set(value, arena);
+}
 inline void SourceCodeInfo_Location::_internal_set_leading_comments(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -15344,6 +15696,11 @@ inline std::string* SourceCodeInfo_Location::mutable_trailing_comments() {
 inline const std::string& SourceCodeInfo_Location::_internal_trailing_comments() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.trailing_comments_.Get();
+}
+inline void SourceCodeInfo_Location::_internal_set_trailing_comments_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.trailing_comments_.Set(value, arena);
 }
 inline void SourceCodeInfo_Location::_internal_set_trailing_comments(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -15605,6 +15962,11 @@ inline std::string* GeneratedCodeInfo_Annotation::mutable_source_file() {
 inline const std::string& GeneratedCodeInfo_Annotation::_internal_source_file() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.source_file_.Get();
+}
+inline void GeneratedCodeInfo_Annotation::_internal_set_source_file_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.source_file_.Set(value, arena);
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_source_file(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);

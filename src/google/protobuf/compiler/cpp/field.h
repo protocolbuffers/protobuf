@@ -94,6 +94,10 @@ class FieldGeneratorBase {
 
   virtual void GenerateMergingCode(io::Printer* p) const = 0;
 
+  virtual void GenerateMergeFromCode(io::Printer* p) const {
+    return GenerateMergingCode(p);
+  }
+
   virtual void GenerateCopyConstructorCode(io::Printer* p) const;
 
   virtual void GenerateSwappingCode(io::Printer* p) const = 0;
@@ -246,6 +250,10 @@ class FieldGenerator {
   void GenerateMergingCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateMergingCode(p);
+  }
+  void GenerateMergeFromCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMergeFromCode(p);
   }
 
   // Generates a copy constructor

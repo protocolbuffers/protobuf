@@ -85,6 +85,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateMergeFromCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateDestructorCode(io::Printer* printer) const override;
@@ -153,6 +154,7 @@ void CordFieldGenerator::GenerateAccessorDeclarations(
   format(
       "private:\n"
       "const ::absl::Cord& ${1$_internal_$name$$}$() const;\n"
+      "void ${1$_internal_set_$name$$}$_only(const ::absl::Cord& value);\n"
       "void ${1$_internal_set_$name$$}$(const ::absl::Cord& value);\n"
       "::absl::Cord* ${1$_internal_mutable_$name$$}$();\n"
       "public:\n",
@@ -170,6 +172,10 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
       "$annotate_get$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return _internal_$name$();\n"
+      "}\n"
+      "inline void $classname$::_internal_set_$name$_only(const ::absl::Cord& "
+      "value) {\n"
+      "  $field$ = value;\n"
       "}\n"
       "inline void $classname$::_internal_set_$name$(const ::absl::Cord& "
       "value) {\n"
@@ -207,6 +213,11 @@ void CordFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 void CordFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("_this->_internal_set_$name$(from._internal_$name$());\n");
+}
+
+void CordFieldGenerator::GenerateMergeFromCode(io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("_this->_internal_set_$name$_only(from._internal_$name$());\n");
 }
 
 void CordFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
@@ -342,6 +353,10 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "    }\n"
       "  }\n"
       "  *$field$ = value;\n"
+      "}\n"
+      "inline void $classname$::_internal_set_$name$_only(const ::absl::Cord& "
+      "value) {\n"
+      "  _internal_set_$name$(value);\n"
       "}\n"
       "inline void $classname$::set_$name$(const ::absl::Cord& value) {\n"
       "  _internal_set_$name$(value);\n"

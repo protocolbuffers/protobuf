@@ -129,6 +129,7 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
+  void GenerateMergeFromCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateConstructorCode(io::Printer* p) const override {}
@@ -175,6 +176,8 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 
     private:
     const $Submsg$& _internal_$name$() const;
+    const $Submsg$& _internal_assert_$name$() const;
+    $Submsg$* _internal_maybe_create_$name$($pb$::Arena*);
     $Submsg$* _internal_mutable_$name$();
 
     public:
@@ -205,6 +208,13 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $StrongRef$;
           const $Submsg$* p = $cast_field_$;
           return p != nullptr ? *p : reinterpret_cast<const $Submsg$&>($kDefault$);
+        }
+        inline const $Submsg$& $Msg$::_internal_assert_$name$() const {
+          $TsanDetectConcurrentRead$;
+          $StrongRef$;
+          const $Submsg$* p = $cast_field_$;
+          assert(p != nullptr);
+          return *p;
         }
         inline const $Submsg$& $Msg$::$name$() const {
           $annotate_get$;
@@ -258,15 +268,18 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $field_$ = nullptr;
           return temp;
         }
-        inline $Submsg$* $Msg$::_internal_mutable_$name$() {
+        inline $Submsg$* $Msg$::_internal_maybe_create_$name$($pb$::Arena* arena) {
           $TsanDetectConcurrentMutation$;
           $StrongRef$;
-          $set_hasbit$;
           if ($field_$ == nullptr) {
-            auto* p = CreateMaybeMessage<$Submsg$>(GetArenaForAllocation());
+            auto* p = CreateMaybeMessage<$Submsg$>(arena);
             $field_$ = reinterpret_cast<$MemberType$*>(p);
           }
           return $cast_field_$;
+        }
+        inline $Submsg$* $Msg$::_internal_mutable_$name$() {
+          $set_hasbit$;
+          return _internal_maybe_create_$name$(GetArenaForAllocation());
         }
         inline $Submsg$* $Msg$::mutable_$name$() {
           //~ TODO(b/122856539): add tests to make sure all write accessors are
@@ -428,6 +441,18 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     p->Emit(
         "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
         "    from._internal_$name$());\n");
+  }
+}
+
+void SingularMessage::GenerateMergeFromCode(io::Printer* p) const {
+  if (weak_) {
+    p->Emit(
+        "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
+        "    _Internal::$name$(&from));\n");
+  } else {
+    p->Emit(
+        "_this->_internal_maybe_create_$name$(arena)->$Submsg$::MergeFrom(\n"
+        "    from._internal_assert_$name$());\n");
   }
 }
 

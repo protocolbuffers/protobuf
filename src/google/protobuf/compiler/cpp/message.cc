@@ -3358,6 +3358,38 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
   }
 }
 
+bool MessageGenerator::FieldMayRequireArena(
+    const FieldDescriptor* field) const {
+  if (field->is_repeated() || field->is_extension()) return false;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return false;
+    case FieldDescriptor::CPPTYPE_STRING:
+      return internal::cpp::EffectiveStringCType(field) == FieldOptions::STRING;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return true;
+  }
+}
+
+bool MessageGenerator::FieldsMayRequireArena() const {
+  for (const FieldDescriptor* field : optimized_order_) {
+    if (FieldMayRequireArena(field)) return true;
+  }
+  for (auto oneof : OneOfRange(descriptor_)) {
+    for (auto field : FieldRange(oneof)) {
+      if (FieldMayRequireArena(field)) return true;
+    }
+  }
+  return false;
+}
+
 void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   // Generate the class-specific MergeFrom, which avoids the ABSL_CHECK and
@@ -3382,6 +3414,11 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       "// @@protoc_insertion_point(class_specific_merge_from_start:"
       "$full_name$)\n");
   format("$DCHK$_NE(&from, _this);\n");
+
+  // Reduce noise level for cases we know 100% we don't use an arena.
+  if (FieldsMayRequireArena()) {
+    format("auto arena = _this->GetArenaForAllocation();\n(void)arena;\n");
+  }
 
   format(
       "$uint32$ cached_has_bits = 0;\n"
@@ -3446,14 +3483,14 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         const auto& generator = field_generators_.get(field);
 
         if (field->is_repeated()) {
-          generator.GenerateMergingCode(p);
+          generator.GenerateMergeFromCode(p);
         } else if (field->is_optional() && !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
           bool have_enclosing_if =
               EmitFieldNonDefaultCondition(p, "from.", field);
           if (have_enclosing_if) format.Indent();
-          generator.GenerateMergingCode(p);
+          generator.GenerateMergeFromCode(p);
           if (have_enclosing_if) {
             format.Outdent();
             format("}\n");
@@ -3466,7 +3503,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
               "if ((from.$has_bits$[$has_array_index$] & $has_mask$) != 0) "
               "{\n");
           format.Indent();
-          generator.GenerateMergingCode(p);
+          generator.GenerateMergeFromCode(p);
           format.Outdent();
           format("}\n");
         } else {
@@ -3478,14 +3515,14 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           format("if (cached_has_bits & 0x$1$u) {\n", mask);
           format.Indent();
 
-          if (have_outer_if && IsPOD(field)) {
+          if (false && have_outer_if && IsPOD(field)) {
             // Defer hasbit modification until the end of chunk.
             // This can reduce the number of loads/stores by up to 7 per 8
             // fields.
             deferred_has_bit_changes = true;
             generator.GenerateCopyConstructorCode(p);
           } else {
-            generator.GenerateMergingCode(p);
+            generator.GenerateMergeFromCode(p);
           }
 
           format.Outdent();
@@ -3544,6 +3581,10 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
     format(
         "_this->$weak_field_map$.MergeFrom(from.$weak_field_map$);"
         "\n");
+  }
+
+  if (HasBitsSize()) {
+    format("_this->_impl_._has_bits_.Or(from._impl_._has_bits_);\n");
   }
 
   // Merging of extensions and unknown fields is done last, to maximize

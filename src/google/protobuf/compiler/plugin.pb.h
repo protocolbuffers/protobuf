@@ -270,6 +270,8 @@ class PROTOC_EXPORT Version final :
 
   private:
   const std::string& _internal_suffix() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_suffix_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_suffix(
       const std::string& value);
   std::string* _internal_mutable_suffix();
@@ -521,6 +523,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
 
   private:
   const std::string& _internal_parameter() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_parameter_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_parameter(
       const std::string& value);
   std::string* _internal_mutable_parameter();
@@ -538,6 +542,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
 
   private:
   const ::google::protobuf::compiler::Version& _internal_compiler_version() const;
+  const ::google::protobuf::compiler::Version& _internal_assert_compiler_version() const;
+  ::google::protobuf::compiler::Version* _internal_maybe_create_compiler_version(::google::protobuf::Arena*);
   ::google::protobuf::compiler::Version* _internal_mutable_compiler_version();
 
   public:
@@ -708,6 +714,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   private:
   const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
@@ -725,6 +733,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   private:
   const std::string& _internal_insertion_point() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point(
       const std::string& value);
   std::string* _internal_mutable_insertion_point();
@@ -742,6 +752,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   private:
   const std::string& _internal_content() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_content_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_content(
       const std::string& value);
   std::string* _internal_mutable_content();
@@ -759,6 +771,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   private:
   const ::google::protobuf::GeneratedCodeInfo& _internal_generated_code_info() const;
+  const ::google::protobuf::GeneratedCodeInfo& _internal_assert_generated_code_info() const;
+  ::google::protobuf::GeneratedCodeInfo* _internal_maybe_create_generated_code_info(::google::protobuf::Arena*);
   ::google::protobuf::GeneratedCodeInfo* _internal_mutable_generated_code_info();
 
   public:
@@ -968,6 +982,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
 
   private:
   const std::string& _internal_error() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_error_only(
+      const std::string& value, ::google::protobuf::Arena*arena);
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_error(
       const std::string& value);
   std::string* _internal_mutable_error();
@@ -1131,6 +1147,11 @@ inline std::string* Version::mutable_suffix() {
 inline const std::string& Version::_internal_suffix() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.suffix_.Get();
+}
+inline void Version::_internal_set_suffix_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.suffix_.Set(value, arena);
 }
 inline void Version::_internal_set_suffix(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -1301,6 +1322,11 @@ inline const std::string& CodeGeneratorRequest::_internal_parameter() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.parameter_.Get();
 }
+inline void CodeGeneratorRequest::_internal_set_parameter_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.parameter_.Set(value, arena);
+}
 inline void CodeGeneratorRequest::_internal_set_parameter(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
@@ -1398,6 +1424,12 @@ inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_inter
   const ::google::protobuf::compiler::Version* p = _impl_.compiler_version_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::compiler::Version&>(::google::protobuf::compiler::_Version_default_instance_);
 }
+inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_internal_assert_compiler_version() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::compiler::Version* p = _impl_.compiler_version_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compiler_version() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return _internal_compiler_version();
@@ -1443,14 +1475,17 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::unsafe_arena
   _impl_.compiler_version_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mutable_compiler_version() {
+inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_maybe_create_compiler_version(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.compiler_version_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::compiler::Version>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::compiler::Version>(arena);
     _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(p);
   }
   return _impl_.compiler_version_;
+}
+inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mutable_compiler_version() {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _internal_maybe_create_compiler_version(GetArenaForAllocation());
 }
 inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() {
   ::google::protobuf::compiler::Version* _msg = _internal_mutable_compiler_version();
@@ -1512,6 +1547,11 @@ inline std::string* CodeGeneratorResponse_File::mutable_name() {
 inline const std::string& CodeGeneratorResponse_File::_internal_name() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.name_.Get();
+}
+inline void CodeGeneratorResponse_File::_internal_set_name_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.name_.Set(value, arena);
 }
 inline void CodeGeneratorResponse_File::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
@@ -1582,6 +1622,11 @@ inline const std::string& CodeGeneratorResponse_File::_internal_insertion_point(
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.insertion_point_.Get();
 }
+inline void CodeGeneratorResponse_File::_internal_set_insertion_point_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.insertion_point_.Set(value, arena);
+}
 inline void CodeGeneratorResponse_File::_internal_set_insertion_point(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
@@ -1651,6 +1696,11 @@ inline const std::string& CodeGeneratorResponse_File::_internal_content() const 
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.content_.Get();
 }
+inline void CodeGeneratorResponse_File::_internal_set_content_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.content_.Set(value, arena);
+}
 inline void CodeGeneratorResponse_File::_internal_set_content(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
@@ -1701,6 +1751,12 @@ inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::
   const ::google::protobuf::GeneratedCodeInfo* p = _impl_.generated_code_info_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::GeneratedCodeInfo&>(::google::protobuf::_GeneratedCodeInfo_default_instance_);
 }
+inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::_internal_assert_generated_code_info() const {
+  PROTOBUF_TSAN_READ_MESSAGE(&_impl_._tsan_detect_race);
+  const ::google::protobuf::GeneratedCodeInfo* p = _impl_.generated_code_info_;
+  assert(p != nullptr);
+  return *p;
+}
 inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::generated_code_info() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
   return _internal_generated_code_info();
@@ -1746,14 +1802,17 @@ inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::unsafe
   _impl_.generated_code_info_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
+inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_internal_maybe_create_generated_code_info(::google::protobuf::Arena* arena) {
   PROTOBUF_TSAN_WRITE_MESSAGE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.generated_code_info_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo>(arena);
     _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(p);
   }
   return _impl_.generated_code_info_;
+}
+inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
+  _impl_._has_bits_[0] |= 0x00000008u;
+  return _internal_maybe_create_generated_code_info(GetArenaForAllocation());
 }
 inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::mutable_generated_code_info() {
   ::google::protobuf::GeneratedCodeInfo* _msg = _internal_mutable_generated_code_info();
@@ -1815,6 +1874,11 @@ inline std::string* CodeGeneratorResponse::mutable_error() {
 inline const std::string& CodeGeneratorResponse::_internal_error() const {
   PROTOBUF_TSAN_READ_STRING(&_impl_._tsan_detect_race);
   return _impl_.error_.Get();
+}
+inline void CodeGeneratorResponse::_internal_set_error_only(const std::string& value,
+                                             ::google::protobuf::Arena* arena) {
+  PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
+  _impl_.error_.Set(value, arena);
 }
 inline void CodeGeneratorResponse::_internal_set_error(const std::string& value) {
   PROTOBUF_TSAN_WRITE_STRING(&_impl_._tsan_detect_race);
