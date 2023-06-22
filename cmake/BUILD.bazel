@@ -100,6 +100,7 @@ sh_test(
         ":copy_protos",
         ":gen_cmakelists",
         "//:cmake_files",
+        "//upb/mini_table:cmake_files",
         "@utf8_range//:utf8_range_srcs",
     ],
     target_compatible_with = select({

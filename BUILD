@@ -106,7 +106,7 @@ upb_proto_library_copts(
 # you make changes to this list.
 package_group(
     name = "friends",
-    packages = [],
+    packages = ["//..."],
 )
 
 # Public C/C++ libraries #######################################################
@@ -143,7 +143,6 @@ cc_library(
         "upb/mem/arena.h",
         "upb/message/extension_internal.h",
         "upb/message/message.h",
-        "upb/mini_table/extension_registry.h",
         "upb/msg.h",
         "upb/status.h",
         "upb/string_view.h",
@@ -163,9 +162,9 @@ cc_library(
         ":lex",
         ":mem",
         ":message_internal",
-        ":mini_table_internal",
         ":port",
         ":wire",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -186,57 +185,6 @@ cc_library(
 )
 
 cc_library(
-    name = "mini_table",
-    hdrs = [
-        "upb/mini_table.h",
-        "upb/mini_table/decode.h",
-        "upb/mini_table/extension_registry.h",
-        "upb/mini_table/types.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":mem",
-        ":mini_table_internal",
-        ":port",
-    ],
-)
-
-cc_library(
-    name = "mini_table_internal",
-    srcs = [
-        "upb/mini_table/common.c",
-        "upb/mini_table/decode.c",
-        "upb/mini_table/encode.c",
-        "upb/mini_table/extension_registry.c",
-        "upb/mini_table/message_internal.c",
-    ],
-    hdrs = [
-        "upb/mini_table/common.h",
-        "upb/mini_table/common_internal.h",
-        "upb/mini_table/decode.h",
-        "upb/mini_table/encode_internal.h",
-        "upb/mini_table/encode_internal.hpp",
-        "upb/mini_table/enum_internal.h",
-        "upb/mini_table/extension_internal.h",
-        "upb/mini_table/extension_registry.h",
-        "upb/mini_table/field_internal.h",
-        "upb/mini_table/file_internal.h",
-        "upb/mini_table/message_internal.h",
-        "upb/mini_table/sub_internal.h",
-        "upb/mini_table/types.h",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":hash",
-        ":mem",
-        ":port",
-    ],
-)
-
-cc_library(
     name = "message",
     hdrs = [
         "upb/message/message.h",
@@ -246,9 +194,21 @@ cc_library(
     deps = [
         ":mem",
         ":message_internal",
-        ":mini_table",
         ":port",
+        "//upb/mini_table",
     ],
+)
+
+alias(
+    name = "mini_table",
+    actual = "//upb/mini_table",
+    visibility = ["//:friends"],
+)
+
+alias(
+    name = "mini_table_internal",
+    actual = "//upb/mini_table:mini_table_internal",
+    visibility = ["//:friends"],
 )
 
 cc_library(
@@ -267,8 +227,8 @@ cc_library(
         ":base",
         ":hash",
         ":mem",
-        ":mini_table_internal",
         ":port",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -282,8 +242,8 @@ cc_library(
     deps = [
         ":collections_internal",
         ":message_internal",
-        ":mini_table_internal",
         ":port",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -303,11 +263,11 @@ cc_library(
         ":eps_copy_input_stream",
         ":hash",
         ":message_internal",
-        ":mini_table_internal",
         ":port",
         ":upb",
         ":wire",
         ":wire_reader",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -327,11 +287,11 @@ cc_library(
         ":hash",
         ":message_accessors",
         ":message_internal",
-        ":mini_table_internal",
         ":port",
         ":upb",
         ":wire",
         ":wire_reader",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -349,9 +309,9 @@ cc_library(
         ":collections_internal",
         ":message_accessors",
         ":message_internal",
-        ":mini_table_internal",
         ":port",
         ":upb",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -369,32 +329,14 @@ cc_library(
 )
 
 cc_test(
-    name = "mini_table_encode_test",
-    srcs = [
-        "upb/mini_table/encode_test.cc",
-    ],
-    deps = [
-        ":collections_internal",
-        ":hash",
-        ":message_internal",
-        ":mini_table_internal",
-        ":port",
-        ":upb",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf",
-    ],
-)
-
-cc_test(
     name = "message_accessors_test",
     srcs = ["upb/message/accessors_test.cc"],
     deps = [
         ":collections",
         ":message_accessors",
-        ":mini_table_internal",
         ":port",
         ":upb",
+        "//upb/mini_table:mini_table_internal",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -412,9 +354,9 @@ cc_test(
         ":message_accessors",
         ":message_copy",
         ":message_promote",
-        ":mini_table_internal",
         ":port",
         ":upb",
+        "//upb/mini_table:mini_table_internal",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -431,8 +373,8 @@ cc_test(
         ":collections",
         ":message_accessors",
         ":message_copy",
-        ":mini_table_internal",
         ":upb",
+        "//upb/mini_table:mini_table_internal",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -451,9 +393,9 @@ cc_library(
         ":hash",
         ":mem_internal",
         ":message_internal",
-        ":mini_table_internal",
         ":port",
         ":wire",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -477,9 +419,9 @@ cc_library(
         ":message_accessors",
         ":message_accessors_internal",
         ":message_internal",
-        ":mini_table_internal",
         ":upb",
         ":wire_internal",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -487,18 +429,7 @@ cc_library(
 cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "upb/message/copy.h",
-        "upb/message/extension_internal.h",
-        "upb/message/internal.h",
         "upb/message/message.h",
-        "upb/mini_table/common.h",
-        "upb/mini_table/enum_internal.h",
-        "upb/mini_table/extension_internal.h",
-        "upb/mini_table/field_internal.h",
-        "upb/mini_table/file_internal.h",
-        "upb/mini_table/message_internal.h",
-        "upb/mini_table/sub_internal.h",
-        "upb/mini_table/types.h",
         "upb/port/def.inc",
         "upb/port/undef.inc",
         "upb/upb.hpp",
@@ -513,8 +444,8 @@ cc_library(
         ":collections_internal",
         ":hash",
         ":message_copy",
-        ":mini_table",
         ":upb",
+        "//upb/mini_table",
     ],
 )
 
@@ -532,8 +463,8 @@ cc_library(
         ":base",
         ":descriptor_upb_proto",
         ":hash",
-        ":mini_table_internal",
         ":reflection_internal",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -594,8 +525,8 @@ cc_library(
         ":hash",
         ":mem",
         ":message_internal",
-        ":mini_table_internal",
         ":port",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -697,9 +628,9 @@ bootstrap_cc_library(
         ":collections",
         ":hash",
         ":message_accessors",
-        ":mini_table_internal",
         ":port",
         ":upb",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -878,9 +809,9 @@ cc_library(
     deps = [
         ":mem",
         ":message_internal",
-        ":mini_table_internal",
         ":port",
         ":wire_internal",
+        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -910,10 +841,10 @@ cc_library(
         ":mem_internal",
         ":message_accessors_internal",
         ":message_internal",
-        ":mini_table_internal",
         ":port",
         ":wire_reader",
         ":wire_types",
+        "//upb/mini_table:mini_table_internal",
         "@utf8_range",
     ],
 )
@@ -1037,7 +968,7 @@ upb_amalgamation(
         ":hash",
         ":lex",
         ":mem_internal",
-        ":mini_table_internal",
+        "//upb/mini_table:mini_table_internal",
         ":message_accessors",
         ":message_internal",
         ":port",
@@ -1079,7 +1010,7 @@ upb_amalgamation(
         ":mem_internal",
         ":message_accessors",
         ":message_internal",
-        ":mini_table_internal",
+        "//upb/mini_table:mini_table_internal",
         ":port",
         ":reflection",
         ":reflection_internal",
@@ -1120,7 +1051,7 @@ upb_amalgamation(
         ":mem_internal",
         ":message_accessors",
         ":message_internal",
-        ":mini_table_internal",
+        "//upb/mini_table:mini_table_internal",
         ":port",
         ":reflection",
         ":reflection_internal",
@@ -1198,6 +1129,7 @@ pkg_files(
 #     kotlin_package = "upb",
 #     no_string_conversion = ["_upb_MiniTable_Build"],
 #     strict_enums = ["upb_FieldType"],
+#     visibility = ["//:__subpackages__"],
 # )
 #
 # end:google_only
