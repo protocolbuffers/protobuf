@@ -80,7 +80,7 @@ pub trait Proxied {
     /// The proxy type that provides shared access to a `T`, like a `&'a T`.
     ///
     /// Most code should use the type alias [`View`].
-    type View<'a>: ViewProxy<'a, Proxied = Self> + Copy + Send + Sync + Unpin + Sized + Debug
+    type View<'a>: ViewProxy<'a, Proxied = Self> + Copy + Send
     where
         Self: 'a;
 
@@ -88,7 +88,7 @@ pub trait Proxied {
     /// `&'a mut T`.
     ///
     /// Most code should use the type alias [`Mut`].
-    type Mut<'a>: MutProxy<'a, Proxied = Self> + Sync + Sized + Debug
+    type Mut<'a>: MutProxy<'a, Proxied = Self>
     where
         Self: 'a;
 }
@@ -110,7 +110,7 @@ pub type Mut<'a, T> = <T as Proxied>::Mut<'a>;
 ///
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
-pub trait ViewProxy<'a>: 'a + Sized {
+pub trait ViewProxy<'a>: 'a + Sized + Sync + Unpin + Sized + Debug {
     type Proxied: 'a + Proxied + ?Sized;
 
     /// Converts a borrow into a `View` with the lifetime of that borrow.
