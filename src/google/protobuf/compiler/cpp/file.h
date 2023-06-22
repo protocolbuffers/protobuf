@@ -177,6 +177,9 @@ class FileGenerator {
   // generally a breaking change so we prefer the #undef approach.
   void GenerateMacroUndefs(io::Printer* p);
 
+  // Calculates if we should skip importing a specific dependency.
+  bool ShouldSkipDependencyImports(const FileDescriptor* dep) const;
+
   bool IsDepWeak(const FileDescriptor* dep) const {
     if (weak_deps_.count(dep) != 0) {
       ABSL_CHECK(!options_.opensource_runtime);
