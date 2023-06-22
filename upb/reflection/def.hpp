@@ -318,8 +318,14 @@ class MessageDefPtr {
     FieldDefPtr operator*() {
       return FieldDefPtr(upb_MessageDef_Field(m_, i_));
     }
-    bool operator!=(const FieldIter& other) { return i_ != other.i_; }
-    bool operator==(const FieldIter& other) { return i_ == other.i_; }
+
+    friend bool operator==(FieldIter lhs, FieldIter rhs) {
+      return lhs.i_ == rhs.i_;
+    }
+
+    friend bool operator!=(FieldIter lhs, FieldIter rhs) {
+      return !(lhs == rhs);
+    }
 
    private:
     const upb_MessageDef* m_;
@@ -344,8 +350,14 @@ class MessageDefPtr {
     OneofDefPtr operator*() {
       return OneofDefPtr(upb_MessageDef_Oneof(m_, i_));
     }
-    bool operator!=(const OneofIter& other) { return i_ != other.i_; }
-    bool operator==(const OneofIter& other) { return i_ == other.i_; }
+
+    friend bool operator==(OneofIter lhs, OneofIter rhs) {
+      return lhs.i_ == rhs.i_;
+    }
+
+    friend bool operator!=(OneofIter lhs, OneofIter rhs) {
+      return !(lhs == rhs);
+    }
 
    private:
     const upb_MessageDef* m_;
