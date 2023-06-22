@@ -34,6 +34,7 @@
 #define GOOGLE_PROTOBUF_ARENA_H__
 
 #include <limits>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -570,7 +571,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     if (trivial) {
       return AllocateAligned(sizeof(T), alignof(T));
     } else {
-      constexpr auto dtor = &internal::cleanup::arena_destruct_object<T>;
+      // We avoid instantiating arena_destruct_object<T> in the trivial case.
+      constexpr auto dtor = &internal::cleanup::arena_destruct_object<
+          std::conditional_t<trivial, std::string, T>>;
       return AllocateAlignedWithCleanup(sizeof(T), alignof(T), dtor);
     }
   }

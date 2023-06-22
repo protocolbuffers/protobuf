@@ -647,6 +647,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
  private:
   template <typename T> friend class Arena::InternalHelper;
 
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
   static constexpr int kInitialSize = 0;
   // A few notes on internal representation:
   //
