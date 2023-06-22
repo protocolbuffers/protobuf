@@ -137,6 +137,7 @@ class UnknownField;
 
 // Defined in command_line_interface.cc
 namespace compiler {
+class CodeGenerator;
 class CommandLineInterface;
 namespace cpp {
 // Defined in helpers.h

@@ -43,6 +43,7 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -124,6 +125,7 @@ class PROTOC_EXPORT CodeGenerator {
   // version of the library. When protobufs does a api breaking change, the
   // method can be removed.
   virtual bool HasGenerateAll() const { return true; }
+
 };
 
 // CodeGenerators generate one or more files in a given directory.  This
