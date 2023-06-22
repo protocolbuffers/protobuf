@@ -547,6 +547,7 @@ set(plugin_proto_files
 
 # @//pkg:common_test
 set(common_test_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_tester.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.cc
@@ -554,6 +555,7 @@ set(common_test_srcs
 
 # @//pkg:common_test
 set(common_test_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_tester.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_textproto.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.h
