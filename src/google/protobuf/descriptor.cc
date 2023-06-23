@@ -1599,8 +1599,14 @@ void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitInternal() const {
   for (Symbol symbol : symbols_by_parent_) {
     const FieldDescriptor* field = symbol.field_descriptor();
     if (!field) continue;
-    (*map)[{FindParentForFieldsByMap(field), field->camelcase_name().c_str()}] =
-        field;
+    const void* parent = FindParentForFieldsByMap(field);
+    // If we already have a field with this camelCase name, keep the field with
+    // the smallest field number. This way we get a deterministic mapping.
+    const FieldDescriptor*& found =
+        (*map)[{parent, field->camelcase_name().c_str()}];
+    if (found == nullptr || found->number() > field->number()) {
+      found = field;
+    }
   }
   fields_by_camelcase_name_.store(map, std::memory_order_release);
 }
