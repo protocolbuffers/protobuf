@@ -693,6 +693,11 @@ set(protobuf_lite_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lite.proto
 )
 
+# @//src/google/protobuf/compiler:fake_plugin_srcs
+set(fake_plugin_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/fake_plugin.cc
+)
+
 # @//src/google/protobuf/compiler:test_srcs
 set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_unittest.cc
