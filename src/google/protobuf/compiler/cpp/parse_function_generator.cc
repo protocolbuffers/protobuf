@@ -584,7 +584,8 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
                 format(
                     "{::_pbi::TcParser::GetMapAuxInfo<decltype($classname$("
                     ").$1$)>($2$, $3$, $4$)},\n",
-                    FieldMemberName(aux_entry.field, /*split=*/false),
+                    FieldMemberName(aux_entry.field,
+                                    ShouldSplit(aux_entry.field, options_)),
                     utf8_check == internal::cpp::Utf8CheckMode::kStrict,
                     utf8_check == internal::cpp::Utf8CheckMode::kVerify,
                     validated_enum);
