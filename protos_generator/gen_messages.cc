@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_accessors.h"
 #include "protos_generator/gen_enums.h"
@@ -127,9 +128,8 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
         friend class $2;
         friend class $0Proxy;
         friend class $0CProxy;
-        friend void* ::protos::internal::GetInternalMsg<$2>(const $2& message);
-        friend void* ::protos::internal::GetInternalMsg<$2>(
-            const ::protos::Ptr<$2>& message);
+        friend void* ::protos::internal::GetInternalMsg<$2>(const $2* message);
+        friend void* ::protos::internal::GetInternalMsg<$2>(::protos::Ptr<$2> message);
         $1* msg_;
         upb_Arena* arena_;
       )cc",
@@ -166,7 +166,7 @@ void WriteModelPublicDeclaration(
           inline $0& operator=(const CProxy& from) {
             arena_ = owned_arena_.ptr();
             msg_ = ($2*)upb_Message_DeepClone(
-                ::protos::internal::GetInternalMsg(from), &$1, arena_);
+                ::protos::internal::GetInternalMsg(&from), &$1, arena_);
             return *this;
           }
           $0($0&& m)
@@ -223,8 +223,7 @@ void WriteModelPublicDeclaration(
             const ::protos::ExtensionRegistry& extension_registry,
             int options));
         friend upb_Arena* ::protos::internal::GetArena<$0>(const $0& message);
-        friend upb_Arena* ::protos::internal::GetArena<$0>(
-            const ::protos::Ptr<$0>& message);
+        friend upb_Arena* ::protos::internal::GetArena<$0>(::protos::Ptr<$0> message);
         friend $0(::protos::internal::MoveMessage<$0>(upb_Message* msg,
                                                       upb_Arena* arena));
       )cc",
@@ -271,9 +270,13 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
         friend class $0Access;
         friend class ::protos::Ptr<$0>;
         friend class ::protos::Ptr<const $0>;
+        static const upb_MiniTable* minitable() { return $0::minitable(); }
+        friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0Proxy>(
+            const $0Proxy* message);
+        friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0Proxy>(
+            ::protos::Ptr<$0Proxy> message);
         friend upb_Arena* ::protos::internal::GetArena<$2>(const $2& message);
-        friend upb_Arena* ::protos::internal::GetArena<$2>(
-            const ::protos::Ptr<$2>& message);
+        friend upb_Arena* ::protos::internal::GetArena<$2>(::protos::Ptr<$2> message);
         friend $0Proxy(::protos::CloneMessage(::protos::Ptr<$2> message,
                                               ::upb::Arena& arena));
         static void Rebind($0Proxy& lhs, const $0Proxy& rhs) {
@@ -313,6 +316,12 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
         friend class RepeatedFieldProxy;
         friend class ::protos::Ptr<$0>;
         friend class ::protos::Ptr<const $0>;
+        static const upb_MiniTable* minitable() { return $0::minitable(); }
+        friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0CProxy>(
+            const $0CProxy* message);
+        friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0CProxy>(
+            ::protos::Ptr<$0CProxy> message);
+
         static void Rebind($0CProxy& lhs, const $0CProxy& rhs) {
           lhs.msg_ = rhs.msg_;
           lhs.arena_ = rhs.arena_;
@@ -349,12 +358,12 @@ void WriteMessageImplementation(
           $0::$0(const CProxy& from) : $0Access() {
             arena_ = owned_arena_.ptr();
             msg_ = ($1*)upb_Message_DeepClone(
-                ::protos::internal::GetInternalMsg(from), &$2, arena_);
+                ::protos::internal::GetInternalMsg(&from), &$2, arena_);
           }
           $0::$0(const Proxy& from) : $0(static_cast<const CProxy&>(from)) {}
           internal::$0CProxy::$0CProxy($0Proxy m) : $0Access() {
             arena_ = m.arena_;
-            msg_ = ($1*)::protos::internal::GetInternalMsg(m);
+            msg_ = ($1*)::protos::internal::GetInternalMsg(&m);
           }
         )cc",
         ClassName(descriptor), MessageName(descriptor),

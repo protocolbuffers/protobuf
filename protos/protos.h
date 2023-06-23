@@ -199,12 +199,12 @@ class ExtensionIdentifier : public ExtensionMiniTableProvider {
 };
 
 template <typename T>
-void* GetInternalMsg(const T& message) {
-  return message.msg();
+void* GetInternalMsg(const T* message) {
+  return message->msg();
 }
 
 template <typename T>
-void* GetInternalMsg(const Ptr<T>& message) {
+void* GetInternalMsg(Ptr<T> message) {
   return message->msg();
 }
 
@@ -214,8 +214,18 @@ upb_Arena* GetArena(const T& message) {
 }
 
 template <typename T>
-upb_Arena* GetArena(const Ptr<T>& message) {
+upb_Arena* GetArena(Ptr<T> message) {
   return static_cast<upb_Arena*>(message->GetInternalArena());
+}
+
+template <typename T>
+const upb_MiniTable* GetMiniTable(const T*) {
+  return T::minitable();
+}
+
+template <typename T>
+const upb_MiniTable* GetMiniTable(Ptr<T>) {
+  return T::minitable();
 }
 
 upb_ExtensionRegistry* GetUpbExtensions(
@@ -328,7 +338,7 @@ absl::Status SetExtension(
   if (message_arena != extension_arena) {
     upb_Arena_Fuse(message_arena, extension_arena);
   }
-  msg_ext->data.ptr = ::protos::internal::GetInternalMsg(value);
+  msg_ext->data.ptr = ::protos::internal::GetInternalMsg(&value);
   return absl::OkStatus();
 }
 
@@ -362,7 +372,7 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
 
 template <typename T>
 bool Parse(T& message, absl::string_view bytes) {
-  upb_Message_Clear(message.msg(), T::minitable());
+  upb_Message_Clear(message.msg(), ::protos::internal::GetMiniTable(&message));
   auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
   return upb_Decode(bytes.data(), bytes.size(), message.msg(), T::minitable(),
                     /* extreg= */ nullptr, /* options= */ 0,
@@ -372,9 +382,10 @@ bool Parse(T& message, absl::string_view bytes) {
 template <typename T>
 bool Parse(T& message, absl::string_view bytes,
            const ::protos::ExtensionRegistry& extension_registry) {
-  upb_Message_Clear(message.msg(), T::minitable());
+  upb_Message_Clear(message.msg(), ::protos::internal::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
-  return upb_Decode(bytes.data(), bytes.size(), message.msg(), T::minitable(),
+  return upb_Decode(bytes.data(), bytes.size(), message.msg(),
+                    ::protos::internal::GetMiniTable(message),
                     /* extreg= */
                     ::protos::internal::GetUpbExtensions(extension_registry),
                     /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
@@ -382,9 +393,10 @@ bool Parse(T& message, absl::string_view bytes,
 
 template <typename T>
 bool Parse(Ptr<T>& message, absl::string_view bytes) {
-  upb_Message_Clear(message->msg(), T::minitable());
+  upb_Message_Clear(message->msg(), ::protos::internal::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
+  return upb_Decode(bytes.data(), bytes.size(), message->msg(),
+                    ::protos::internal::GetMiniTable(message),
                     /* extreg= */ nullptr, /* options= */ 0,
                     arena) == kUpb_DecodeStatus_Ok;
 }
@@ -392,52 +404,23 @@ bool Parse(Ptr<T>& message, absl::string_view bytes) {
 template <typename T>
 bool Parse(Ptr<T>& message, absl::string_view bytes,
            const ::protos::ExtensionRegistry& extension_registry) {
-  upb_Message_Clear(message->msg(), T::minitable());
+  upb_Message_Clear(message->msg(), ::protos::internal::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
+  return upb_Decode(bytes.data(), bytes.size(), message->msg(),
+                    ::protos::internal::GetMiniTable(message),
                     /* extreg= */
                     ::protos::internal::GetUpbExtensions(extension_registry),
                     /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
 }
 
 template <typename T>
-bool Parse(std::unique_ptr<T>& message, absl::string_view bytes) {
-  upb_Message_Clear(message->msg(), T::minitable());
+bool Parse(T* message, absl::string_view bytes) {
+  upb_Message_Clear(message->msg(), ::protos::internal::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
+  return upb_Decode(bytes.data(), bytes.size(), message->msg(),
+                    ::protos::internal::GetMiniTable(message),
                     /* extreg= */ nullptr, /* options= */ 0,
                     arena) == kUpb_DecodeStatus_Ok;
-}
-
-template <typename T>
-bool Parse(std::unique_ptr<T>& message, absl::string_view bytes,
-           const ::protos::ExtensionRegistry& extension_registry) {
-  upb_Message_Clear(message->msg(), T::minitable());
-  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
-                    /* extreg= */
-                    ::protos::internal::GetUpbExtensions(extension_registry),
-                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
-}
-
-template <typename T>
-bool Parse(std::shared_ptr<T>& message, absl::string_view bytes) {
-  upb_Message_Clear(message->msg(), T::minitable());
-  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
-                    /* extreg= */ nullptr, /* options= */ 0,
-                    arena) == kUpb_DecodeStatus_Ok;
-}
-
-template <typename T>
-bool Parse(std::shared_ptr<T>& message, absl::string_view bytes,
-           const ::protos::ExtensionRegistry& extension_registry) {
-  upb_Message_Clear(message->msg(), T::minitable());
-  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  return upb_Decode(bytes.data(), bytes.size(), message->msg(), T::minitable(),
-                    /* extreg= */
-                    ::protos::internal::GetUpbExtensions(extension_registry),
-                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
 }
 
 template <typename T>
@@ -445,7 +428,8 @@ absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
   T message;
   auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
   upb_DecodeStatus status =
-      upb_Decode(bytes.data(), bytes.size(), message.msg(), T::minitable(),
+      upb_Decode(bytes.data(), bytes.size(), message.msg(),
+                 ::protos::internal::GetMiniTable(&message),
                  /* extreg= */ nullptr, /* options= */ 0, arena);
   if (status == kUpb_DecodeStatus_Ok) {
     return message;
@@ -460,7 +444,8 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
   T message;
   auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
   upb_DecodeStatus status =
-      upb_Decode(bytes.data(), bytes.size(), message.msg(), T::minitable(),
+      upb_Decode(bytes.data(), bytes.size(), message.msg(),
+                 ::protos::internal::GetMiniTable(&message),
                  ::protos::internal::GetUpbExtensions(extension_registry),
                  /* options= */ 0, arena);
   if (status == kUpb_DecodeStatus_Ok) {
@@ -470,34 +455,19 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(const T& message, upb::Arena& arena,
+absl::StatusOr<absl::string_view> Serialize(const T* message, upb::Arena& arena,
                                             int options = 0) {
   return ::protos::internal::Serialize(
-      ::protos::internal::GetInternalMsg(message), T::minitable(), arena.ptr(),
+      message->msg(), ::protos::internal::GetMiniTable(message), arena.ptr(),
       options);
-}
-
-template <typename T>
-absl::StatusOr<absl::string_view> Serialize(std::unique_ptr<T>& message,
-                                            upb::Arena& arena,
-                                            int options = 0) {
-  return ::protos::internal::Serialize(message->msg(), T::minitable(),
-                                       arena.ptr(), options);
-}
-
-template <typename T>
-absl::StatusOr<absl::string_view> Serialize(std::shared_ptr<T>& message,
-                                            upb::Arena& arena,
-                                            int options = 0) {
-  return ::protos::internal::Serialize(message->msg(), T::minitable(),
-                                       arena.ptr(), options);
 }
 
 template <typename T>
 absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, upb::Arena& arena,
                                             int options = 0) {
-  return ::protos::internal::Serialize(message->msg(), T::minitable(),
-                                       arena.ptr(), options);
+  return ::protos::internal::Serialize(
+      message->msg(), ::protos::internal::GetMiniTable(message), arena.ptr(),
+      options);
 }
 
 }  // namespace protos

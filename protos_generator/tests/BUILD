@@ -147,6 +147,8 @@ cc_test(
         ":test_model_upb_proto",
         ":naming_conflict_upb_cc_proto",
         "@com_google_googletest//:gtest_main",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
         "//:upb",
         "//protos",
         "//protos:repeated_field",
