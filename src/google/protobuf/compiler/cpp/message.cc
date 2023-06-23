@@ -1146,113 +1146,115 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   GenerateOneofHasBits(p);
 }
 
-void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
+void MessageGenerator::GenerateMapMessageClassDefinition(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
 
-  if (IsMapEntryMessage(descriptor_)) {
-    absl::flat_hash_map<absl::string_view, std::string> vars;
-    CollectMapInfo(options_, descriptor_, &vars);
-    vars["lite"] =
-        HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite";
-    auto v = p->WithVars(std::move(vars));
-    format(
-        "class $classname$ final : public "
-        "::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {\n"
-        "public:\n"
-        "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
-        "SuperType;\n"
-        "  $classname$();\n"
-        // Templatize constexpr constructor as a workaround for a bug in gcc 12
-        // (warning in gcc 13).
-        "  template <typename = void>\n"
-        "  explicit PROTOBUF_CONSTEXPR $classname$(\n"
-        "      ::$proto_ns$::internal::ConstantInitialized);\n"
-        "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
-        "  void MergeFrom(const $classname$& other);\n"
-        "  static const $classname$* internal_default_instance() { return "
-        "reinterpret_cast<const "
-        "$classname$*>(&_$classname$_default_instance_); }\n");
-    auto utf8_check = internal::cpp::GetUtf8CheckMode(
-        descriptor_->field(0), GetOptimizeFor(descriptor_->file(), options_) ==
-                                   FileOptions::LITE_RUNTIME);
-    if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
-        utf8_check != Utf8CheckMode::kNone) {
-      if (utf8_check == Utf8CheckMode::kStrict) {
-        format(
-            "  static bool ValidateKey(std::string* s) {\n"
-            "    return ::$proto_ns$::internal::WireFormatLite::"
-            "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
-            "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
-            " }\n",
-            descriptor_->field(0)->full_name());
-      } else {
-        ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
-        format(
-            "  static bool ValidateKey(std::string* s) {\n"
-            "#ifndef NDEBUG\n"
-            "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-            "       s->data(), static_cast<int>(s->size()), "
-            "::$proto_ns$::internal::"
-            "WireFormatLite::PARSE, \"$1$\");\n"
-            "#else\n"
-            "    (void) s;\n"
-            "#endif\n"
-            "    return true;\n"
-            " }\n",
-            descriptor_->field(0)->full_name());
-      }
-    } else {
-      format("  static bool ValidateKey(void*) { return true; }\n");
-    }
-    if (descriptor_->field(1)->type() == FieldDescriptor::TYPE_STRING &&
-        utf8_check != Utf8CheckMode::kNone) {
-      if (utf8_check == Utf8CheckMode::kStrict) {
-        format(
-            "  static bool ValidateValue(std::string* s) {\n"
-            "    return ::$proto_ns$::internal::WireFormatLite::"
-            "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
-            "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
-            " }\n",
-            descriptor_->field(1)->full_name());
-      } else {
-        ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
-        format(
-            "  static bool ValidateValue(std::string* s) {\n"
-            "#ifndef NDEBUG\n"
-            "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-            "       s->data(), static_cast<int>(s->size()), "
-            "::$proto_ns$::internal::"
-            "WireFormatLite::PARSE, \"$1$\");\n"
-            "#else\n"
-            "    (void) s;\n"
-            "#endif\n"
-            "    return true;\n"
-            " }\n",
-            descriptor_->field(1)->full_name());
-      }
-    } else {
-      format("  static bool ValidateValue(void*) { return true; }\n");
-    }
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
+  absl::flat_hash_map<absl::string_view, std::string> vars;
+  CollectMapInfo(options_, descriptor_, &vars);
+  vars["lite"] =
+      HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite";
+  auto v2 = p->WithVars(std::move(vars));
+  format(
+      "class $classname$ final : public "
+      "::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
+      "    $key_cpp$, $val_cpp$,\n"
+      "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
+      "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {\n"
+      "public:\n"
+      "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
+      "    $key_cpp$, $val_cpp$,\n"
+      "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
+      "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
+      "SuperType;\n"
+      "  $classname$();\n"
+      // Templatize constexpr constructor as a workaround for a bug in gcc 12
+      // (warning in gcc 13).
+      "  template <typename = void>\n"
+      "  explicit PROTOBUF_CONSTEXPR $classname$(\n"
+      "      ::$proto_ns$::internal::ConstantInitialized);\n"
+      "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
+      "  void MergeFrom(const $classname$& other);\n"
+      "  static const $classname$* internal_default_instance() { return "
+      "reinterpret_cast<const "
+      "$classname$*>(&_$classname$_default_instance_); }\n");
+  auto utf8_check = internal::cpp::GetUtf8CheckMode(
+      descriptor_->field(0), GetOptimizeFor(descriptor_->file(), options_) ==
+                                 FileOptions::LITE_RUNTIME);
+  if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
+      utf8_check != Utf8CheckMode::kNone) {
+    if (utf8_check == Utf8CheckMode::kStrict) {
       format(
-          "  using ::$proto_ns$::Message::MergeFrom;\n"
-          ""
-          "  ::$proto_ns$::Metadata GetMetadata() const final;\n");
+          "  static bool ValidateKey(std::string* s) {\n"
+          "    return ::$proto_ns$::internal::WireFormatLite::"
+          "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
+          "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
+          " }\n",
+          descriptor_->field(0)->full_name());
+    } else {
+      ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
+      format(
+          "  static bool ValidateKey(std::string* s) {\n"
+          "#ifndef NDEBUG\n"
+          "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
+          "       s->data(), static_cast<int>(s->size()), "
+          "::$proto_ns$::internal::"
+          "WireFormatLite::PARSE, \"$1$\");\n"
+          "#else\n"
+          "    (void) s;\n"
+          "#endif\n"
+          "    return true;\n"
+          " }\n",
+          descriptor_->field(0)->full_name());
     }
-    format(
-        "  friend struct ::$tablename$;\n"
-        "};\n");
-    return;
+  } else {
+    format("  static bool ValidateKey(void*) { return true; }\n");
   }
+  if (descriptor_->field(1)->type() == FieldDescriptor::TYPE_STRING &&
+      utf8_check != Utf8CheckMode::kNone) {
+    if (utf8_check == Utf8CheckMode::kStrict) {
+      format(
+          "  static bool ValidateValue(std::string* s) {\n"
+          "    return ::$proto_ns$::internal::WireFormatLite::"
+          "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
+          "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
+          " }\n",
+          descriptor_->field(1)->full_name());
+    } else {
+      ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
+      format(
+          "  static bool ValidateValue(std::string* s) {\n"
+          "#ifndef NDEBUG\n"
+          "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
+          "       s->data(), static_cast<int>(s->size()), "
+          "::$proto_ns$::internal::"
+          "WireFormatLite::PARSE, \"$1$\");\n"
+          "#else\n"
+          "    (void) s;\n"
+          "#endif\n"
+          "    return true;\n"
+          " }\n",
+          descriptor_->field(1)->full_name());
+    }
+  } else {
+    format("  static bool ValidateValue(void*) { return true; }\n");
+  }
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    format(
+        "  using ::$proto_ns$::Message::MergeFrom;\n"
+        ""
+        "  ::$proto_ns$::Metadata GetMetadata() const final;\n");
+  }
+  format(
+      "  friend struct ::$tablename$;\n"
+      "};\n");
+}
 
+void MessageGenerator::GenerateMessageClassDefinition(io::Printer* p) {
+  auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
+  Formatter format(p);
   format(
       "class $dllexport_decl $${1$$classname$$}$ final :\n"
       "    public $superclass$ /* @@protoc_insertion_point("
@@ -1272,7 +1274,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "explicit PROTOBUF_CONSTEXPR "
       "$classname$(::$proto_ns$::internal::ConstantInitialized);\n"
       "\n"
-      "$classname$(const $classname$& from);\n"
+      "$classname$(::$proto_ns$::Arena* arena, const $classname$& rhs);\n"
+      "inline $classname$(const $classname$& from)\n"
+      "  : $classname$(nullptr, from) {}\n"
       "$classname$($classname$&& from) noexcept\n"
       "  : $classname$() {\n"
       "  *this = ::std::move(from);\n"
@@ -1845,6 +1849,15 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   format("};");
   ABSL_DCHECK(!need_to_emit_cached_size);
 }  // NOLINT(readability/fn_size)
+
+void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
+
+  if (IsMapEntryMessage(descriptor_)) {
+    GenerateMapMessageClassDefinition(p);
+  } else {
+    GenerateMessageClassDefinition(p);
+  }
+}
 
 void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
@@ -2864,13 +2877,16 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
     // code size and also cuts down on the complexity of implicit weak fields.
     // We might eventually want to do this for all lite protos.
     p->Emit(R"cc(
-      $classname$::$classname$(const $classname$& from) : $classname$() {
+      $classname$::$classname$(::$proto_ns$::Arena* arena,
+                               const $classname$& from)
+          : $classname$() {
         MergeFrom(from);
       }
     )cc");
   } else if (ImplHasCopyCtor()) {
     p->Emit(R"cc(
-      $classname$::$classname$(const $classname$& from)
+      $classname$::$classname$(::$proto_ns$::Arena* arena,
+                               const $classname$& from)
           : $superclass$(), _impl_(from._impl_) {
         _internal_metadata_.MergeFrom<$unknown_fields_type$>(
             from._internal_metadata_);
@@ -2893,7 +2909,9 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
             {"copy_oneofs", [&] { GenerateCopyConstructorBodyOneofs(p); }},
         },
         R"cc(
-          $classname$::$classname$(const $classname$& from) : $superclass$() {
+          $classname$::$classname$(::$proto_ns$::Arena* arena,
+                                   const $classname$& from)
+              : $superclass$() {
             $classname$* const _this = this;
             (void)_this;
             $copy_impl$;
@@ -3358,6 +3376,38 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
   }
 }
 
+bool MessageGenerator::FieldMayRequireArena(
+    const FieldDescriptor* field) const {
+  if (field->is_repeated() || field->is_extension()) return false;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return false;
+    case FieldDescriptor::CPPTYPE_STRING:
+      return internal::cpp::EffectiveStringCType(field) == FieldOptions::STRING;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return true;
+  }
+}
+
+bool MessageGenerator::FieldsMayRequireArena() const {
+  for (const FieldDescriptor* field : optimized_order_) {
+    if (FieldMayRequireArena(field)) return true;
+  }
+  for (auto oneof : OneOfRange(descriptor_)) {
+    for (auto field : FieldRange(oneof)) {
+      if (FieldMayRequireArena(field)) return true;
+    }
+  }
+  return false;
+}
+
 void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   // Generate the class-specific MergeFrom, which avoids the ABSL_CHECK and
@@ -3382,6 +3432,11 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       "// @@protoc_insertion_point(class_specific_merge_from_start:"
       "$full_name$)\n");
   format("$DCHK$_NE(&from, _this);\n");
+
+  // Reduce noise level for cases we know 100% we don't use an arena.
+  if (FieldsMayRequireArena()) {
+    format("auto arena = _this->GetArenaForAllocation();\n(void)arena;\n");
+  }
 
   format(
       "$uint32$ cached_has_bits = 0;\n"
@@ -3446,14 +3501,14 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         const auto& generator = field_generators_.get(field);
 
         if (field->is_repeated()) {
-          generator.GenerateMergingCode(p);
+          generator.GenerateMergeFromCode(p);
         } else if (field->is_optional() && !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
           bool have_enclosing_if =
               EmitFieldNonDefaultCondition(p, "from.", field);
           if (have_enclosing_if) format.Indent();
-          generator.GenerateMergingCode(p);
+          generator.GenerateMergeFromCode(p);
           if (have_enclosing_if) {
             format.Outdent();
             format("}\n");
@@ -3466,7 +3521,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
               "if ((from.$has_bits$[$has_array_index$] & $has_mask$) != 0) "
               "{\n");
           format.Indent();
-          generator.GenerateMergingCode(p);
+          generator.GenerateMergeFromCode(p);
           format.Outdent();
           format("}\n");
         } else {
@@ -3478,14 +3533,14 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           format("if (cached_has_bits & 0x$1$u) {\n", mask);
           format.Indent();
 
-          if (have_outer_if && IsPOD(field)) {
+          if (false && have_outer_if && IsPOD(field)) {
             // Defer hasbit modification until the end of chunk.
             // This can reduce the number of loads/stores by up to 7 per 8
             // fields.
             deferred_has_bit_changes = true;
             generator.GenerateCopyConstructorCode(p);
           } else {
-            generator.GenerateMergingCode(p);
+            generator.GenerateMergeFromCode(p);
           }
 
           format.Outdent();
@@ -3544,6 +3599,10 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
     format(
         "_this->$weak_field_map$.MergeFrom(from.$weak_field_map$);"
         "\n");
+  }
+
+  if (HasBitsSize()) {
+    format("_this->_impl_._has_bits_.Or(from._impl_._has_bits_);\n");
   }
 
   // Merging of extensions and unknown fields is done last, to maximize

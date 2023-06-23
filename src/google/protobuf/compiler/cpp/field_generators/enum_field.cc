@@ -102,6 +102,12 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMergeFromCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      _this->$field_$ = from.$field_$;
+    )cc");
+  }
+
   void GenerateSwappingCode(io::Printer* p) const override {
     if (is_oneof_) return;
 

@@ -95,6 +95,7 @@ extern const char kThinSeparator[];
 
 absl::flat_hash_map<absl::string_view, std::string> MessageVars(
     const Descriptor* desc);
+std::vector<io::Printer::Sub> MessageVars2(const Descriptor* desc);
 
 // Variables to access message data from the message scope.
 void SetCommonMessageDataVariables(

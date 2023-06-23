@@ -327,7 +327,9 @@ Version::Version(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.Version)
 }
-Version::Version(const Version& from) : ::google::protobuf::Message() {
+Version::Version(::google::protobuf::Arena* arena,
+                         const Version& from)
+    : ::google::protobuf::Message() {
   Version* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -554,14 +556,15 @@ void Version::MergeImpl(::google::protobuf::Message& to_msg, const ::google::pro
   auto& from = static_cast<const Version&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.Version)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_suffix(from._internal_suffix());
-    }
+      _this->_impl_.suffix_.Set(from._impl_.suffix_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.major_ = from._impl_.major_;
     }
@@ -571,8 +574,8 @@ void Version::MergeImpl(::google::protobuf::Message& to_msg, const ::google::pro
     if (cached_has_bits & 0x00000008u) {
       _this->_impl_.patch_ = from._impl_.patch_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -638,7 +641,9 @@ CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
-CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from) : ::google::protobuf::Message() {
+CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena,
+                         const CodeGeneratorRequest& from)
+    : ::google::protobuf::Message() {
   CodeGeneratorRequest* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -902,6 +907,8 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
   auto& from = static_cast<const CodeGeneratorRequest&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -911,13 +918,13 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_parameter(from._internal_parameter());
-    }
+      _this->_impl_.parameter_.Set(from._impl_.parameter_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_compiler_version()->::google::protobuf::compiler::Version::MergeFrom(
-          from._internal_compiler_version());
+      _this->_internal_maybe_create_compiler_version(arena)->::google::protobuf::compiler::Version::MergeFrom(
+          from._internal_assert_compiler_version());
     }
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -990,7 +997,9 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
-CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from) : ::google::protobuf::Message() {
+CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena* arena,
+                         const CodeGeneratorResponse_File& from)
+    : ::google::protobuf::Message() {
   CodeGeneratorResponse_File* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -1254,25 +1263,25 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::Message& to_msg, 
   auto& from = static_cast<const CodeGeneratorResponse_File&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name(from._internal_name());
-    }
+      _this->_impl_.name_.Set(from._impl_.name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_insertion_point(from._internal_insertion_point());
-    }
+      _this->_impl_.insertion_point_.Set(from._impl_.insertion_point_.Get(), arena);}
     if (cached_has_bits & 0x00000004u) {
-      _this->_internal_set_content(from._internal_content());
-    }
+      _this->_impl_.content_.Set(from._impl_.content_.Get(), arena);}
     if (cached_has_bits & 0x00000008u) {
-      _this->_internal_mutable_generated_code_info()->::google::protobuf::GeneratedCodeInfo::MergeFrom(
-          from._internal_generated_code_info());
+      _this->_internal_maybe_create_generated_code_info(arena)->::google::protobuf::GeneratedCodeInfo::MergeFrom(
+          from._internal_assert_generated_code_info());
     }
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -1327,7 +1336,9 @@ CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
-CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from) : ::google::protobuf::Message() {
+CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena,
+                         const CodeGeneratorResponse& from)
+    : ::google::protobuf::Message() {
   CodeGeneratorResponse* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -1531,6 +1542,8 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::Message& to_msg, const
   auto& from = static_cast<const CodeGeneratorResponse&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1538,13 +1551,12 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::Message& to_msg, const
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_error(from._internal_error());
-    }
+      _this->_impl_.error_.Set(from._impl_.error_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.supported_features_ = from._impl_.supported_features_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 

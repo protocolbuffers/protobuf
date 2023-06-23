@@ -119,6 +119,20 @@ class SingularString : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMergeFromCode(io::Printer* p) const override {
+    if (is_oneof_) {
+      p->Emit("_this->_internal_set_$name$(from._internal_$name$());\n");
+    } else if (inlined_) {
+      p->Emit(R"cc(
+        _this->$field_$.Set(from.$field_$.Get(), arena,
+                            _internal_$name$_donated(), &$donating_states_word$,
+                            $mask_for_undonate$, _this);
+      )cc");
+    } else {
+      p->Emit("_this->$field_$.Set(from.$field_$.Get(), arena);");
+    }
+  }
+
   void GenerateArenaDestructorCode(io::Printer* p) const override {
     if (!inlined_) return;
 

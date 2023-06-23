@@ -94,6 +94,10 @@ class FieldGeneratorBase {
 
   virtual void GenerateMergingCode(io::Printer* p) const = 0;
 
+  virtual void GenerateMergeFromCode(io::Printer* p) const {
+    return GenerateMergingCode(p);
+  }
+
   virtual void GenerateCopyConstructorCode(io::Printer* p) const;
 
   virtual void GenerateSwappingCode(io::Printer* p) const = 0;
@@ -126,11 +130,14 @@ class FieldGeneratorBase {
     return ArenaDtorNeeds::kNone;
   }
 
+  bool is_oneof() const { return is_oneof_; }
+
  protected:
   // TODO(b/245791219): Remove these members and make this a pure interface.
   const FieldDescriptor* descriptor_;
   const Options& options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
+  const bool is_oneof_ = descriptor_->real_containing_oneof() != nullptr;
 };
 
 inline FieldGeneratorBase::~FieldGeneratorBase() = default;
@@ -246,6 +253,10 @@ class FieldGenerator {
   void GenerateMergingCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateMergingCode(p);
+  }
+  void GenerateMergeFromCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMergeFromCode(p);
   }
 
   // Generates a copy constructor

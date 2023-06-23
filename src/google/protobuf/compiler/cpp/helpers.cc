@@ -231,6 +231,23 @@ bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
   return false;
 }
 
+std::vector<io::Printer::Sub> MessageVars2(const Descriptor* desc) {
+  absl::string_view prefix = IsMapEntryMessage(desc) ? "" : "_impl_.";
+  return {
+      {"any_metadata", absl::StrCat(prefix, "_any_metadata_")},
+      {"cached_size", absl::StrCat(prefix, "_cached_size_")},
+      {"extensions", absl::StrCat(prefix, "_extensions_")},
+      {"has_bits", absl::StrCat(prefix, "_has_bits_")},
+      {"inlined_string_donated_array",
+       absl::StrCat(prefix, "_inlined_string_donated_")},
+      {"oneof_case", absl::StrCat(prefix, "_oneof_case_")},
+      {"tracker", "Impl_::_tracker_"},
+      {"weak_field_map", absl::StrCat(prefix, "_weak_field_map_")},
+      {"split", absl::StrCat(prefix, "_split_")},
+      {"cached_split_ptr", "cached_split_ptr"},
+  };
+}
+
 absl::flat_hash_map<absl::string_view, std::string> MessageVars(
     const Descriptor* desc) {
   absl::string_view prefix = IsMapEntryMessage(desc) ? "" : "_impl_.";

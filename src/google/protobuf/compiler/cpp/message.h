@@ -76,6 +76,8 @@ class MessageGenerator {
 
   // Generate definitions for this class and all its nested types.
   void GenerateClassDefinition(io::Printer* p);
+  void GenerateMessageClassDefinition(io::Printer* p);
+  void GenerateMapMessageClassDefinition(io::Printer* p);
 
   // Generate definitions of inline methods (placed at the end of the header
   // file).
@@ -179,6 +181,11 @@ class MessageGenerator {
   // - Returning kRequired means we meed to generate ArenaDtor and register it
   //   at construction.
   ArenaDtorNeeds NeedsArenaDestructor() const;
+
+  // Returns true of any of the fields (regular + oneof fields) may require
+  // an arena to either create or update their value.
+  bool FieldsMayRequireArena() const;
+  bool FieldMayRequireArena(const FieldDescriptor* field) const;
 
   size_t HasBitsSize() const;
   size_t InlinedStringDonatedSize() const;

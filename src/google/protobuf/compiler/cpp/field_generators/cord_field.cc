@@ -85,6 +85,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateMergeFromCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateDestructorCode(io::Printer* printer) const override;
@@ -207,6 +208,15 @@ void CordFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 void CordFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("_this->_internal_set_$name$(from._internal_$name$());\n");
+}
+
+void CordFieldGenerator::GenerateMergeFromCode(io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (is_oneof()) {
+    format("_this->_internal_set_$name$(from._internal_$name$());\n");
+  } else {
+    format("_this->$field$ = from.$field$;\n");
+  }
 }
 
 void CordFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {

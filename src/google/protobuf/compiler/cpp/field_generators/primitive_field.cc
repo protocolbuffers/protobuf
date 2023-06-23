@@ -137,6 +137,14 @@ class SingularPrimitive final : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMergeFromCode(io::Printer* p) const override {
+    if (is_oneof()) {
+      p->Emit("_this->_internal_set_$name$(from._internal_$name$());\n");
+    } else {
+      p->Emit("_this->$field$ = from.$field$;\n");
+    }
+  }
+
   void GenerateSwappingCode(io::Printer* p) const override {
     if (is_oneof_) {
       // Don't print any swapping code. Swapping the union will swap this field.

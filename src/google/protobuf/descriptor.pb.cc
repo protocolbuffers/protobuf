@@ -2024,7 +2024,9 @@ FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorSet)
 }
-FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from) : ::google::protobuf::Message() {
+FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena,
+                         const FileDescriptorSet& from)
+    : ::google::protobuf::Message() {
   FileDescriptorSet* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -2226,7 +2228,9 @@ FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorProto)
 }
-FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from) : ::google::protobuf::Message() {
+FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena,
+                         const FileDescriptorProto& from)
+    : ::google::protobuf::Message() {
   FileDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -2740,6 +2744,8 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   auto& from = static_cast<const FileDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2753,26 +2759,23 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name(from._internal_name());
-    }
+      _this->_impl_.name_.Set(from._impl_.name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_package(from._internal_package());
-    }
+      _this->_impl_.package_.Set(from._impl_.package_.Get(), arena);}
     if (cached_has_bits & 0x00000004u) {
-      _this->_internal_set_syntax(from._internal_syntax());
-    }
+      _this->_impl_.syntax_.Set(from._impl_.syntax_.Get(), arena);}
     if (cached_has_bits & 0x00000008u) {
-      _this->_internal_set_edition(from._internal_edition());
-    }
+      _this->_impl_.edition_.Set(from._impl_.edition_.Get(), arena);}
     if (cached_has_bits & 0x00000010u) {
-      _this->_internal_mutable_options()->::google::protobuf::FileOptions::MergeFrom(
-          from._internal_options());
+      _this->_internal_maybe_create_options(arena)->::google::protobuf::FileOptions::MergeFrom(
+          from._internal_assert_options());
     }
     if (cached_has_bits & 0x00000020u) {
-      _this->_internal_mutable_source_code_info()->::google::protobuf::SourceCodeInfo::MergeFrom(
-          from._internal_source_code_info());
+      _this->_internal_maybe_create_source_code_info(arena)->::google::protobuf::SourceCodeInfo::MergeFrom(
+          from._internal_assert_source_code_info());
     }
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -2860,7 +2863,9 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobu
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ExtensionRange)
 }
-DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from) : ::google::protobuf::Message() {
+DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena,
+                         const DescriptorProto_ExtensionRange& from)
+    : ::google::protobuf::Message() {
   DescriptorProto_ExtensionRange* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -3056,14 +3061,16 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::Message& to_m
   auto& from = static_cast<const DescriptorProto_ExtensionRange&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ExtensionRange)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_options()->::google::protobuf::ExtensionRangeOptions::MergeFrom(
-          from._internal_options());
+      _this->_internal_maybe_create_options(arena)->::google::protobuf::ExtensionRangeOptions::MergeFrom(
+          from._internal_assert_options());
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.start_ = from._impl_.start_;
@@ -3071,8 +3078,8 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::Message& to_m
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.end_ = from._impl_.end_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3127,7 +3134,8 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf:
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
-DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from)
+DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* arena,
+                         const DescriptorProto_ReservedRange& from)
     : ::google::protobuf::Message(), _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
@@ -3292,8 +3300,8 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::Message& to_ms
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.end_ = from._impl_.end_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3349,7 +3357,9 @@ DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto)
 }
-DescriptorProto::DescriptorProto(const DescriptorProto& from) : ::google::protobuf::Message() {
+DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena,
+                         const DescriptorProto& from)
+    : ::google::protobuf::Message() {
   DescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -3742,6 +3752,8 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
   auto& from = static_cast<const DescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3756,13 +3768,13 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name(from._internal_name());
-    }
+      _this->_impl_.name_.Set(from._impl_.name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::MessageOptions::MergeFrom(
-          from._internal_options());
+      _this->_internal_maybe_create_options(arena)->::google::protobuf::MessageOptions::MergeFrom(
+          from._internal_assert_options());
     }
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3849,7 +3861,9 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::p
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
 }
-ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from) : ::google::protobuf::Message() {
+ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena,
+                         const ExtensionRangeOptions_Declaration& from)
+    : ::google::protobuf::Message() {
   ExtensionRangeOptions_Declaration* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -4135,17 +4149,17 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::Message& t
   auto& from = static_cast<const ExtensionRangeOptions_Declaration&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions.Declaration)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_full_name(from._internal_full_name());
-    }
+      _this->_impl_.full_name_.Set(from._impl_.full_name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_type(from._internal_type());
-    }
+      _this->_impl_.type_.Set(from._impl_.type_.Get(), arena);}
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.number_ = from._impl_.number_;
     }
@@ -4158,8 +4172,8 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::Message& t
     if (cached_has_bits & 0x00000020u) {
       _this->_impl_.repeated_ = from._impl_.repeated_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -4214,7 +4228,9 @@ ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions)
 }
-ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from) : ::google::protobuf::Message() {
+ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena,
+                         const ExtensionRangeOptions& from)
+    : ::google::protobuf::Message() {
   ExtensionRangeOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -4415,8 +4431,9 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const
   _this->_internal_mutable_declaration()->MergeFrom(from._internal_declaration());
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_set_verification(from._internal_verification());
+    _this->_impl_.verification_ = from._impl_.verification_;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -4503,7 +4520,9 @@ FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldDescriptorProto)
 }
-FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from) : ::google::protobuf::Message() {
+FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena,
+                         const FieldDescriptorProto& from)
+    : ::google::protobuf::Message() {
   FieldDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -4966,29 +4985,26 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
   auto& from = static_cast<const FieldDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name(from._internal_name());
-    }
+      _this->_impl_.name_.Set(from._impl_.name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_extendee(from._internal_extendee());
-    }
+      _this->_impl_.extendee_.Set(from._impl_.extendee_.Get(), arena);}
     if (cached_has_bits & 0x00000004u) {
-      _this->_internal_set_type_name(from._internal_type_name());
-    }
+      _this->_impl_.type_name_.Set(from._impl_.type_name_.Get(), arena);}
     if (cached_has_bits & 0x00000008u) {
-      _this->_internal_set_default_value(from._internal_default_value());
-    }
+      _this->_impl_.default_value_.Set(from._impl_.default_value_.Get(), arena);}
     if (cached_has_bits & 0x00000010u) {
-      _this->_internal_set_json_name(from._internal_json_name());
-    }
+      _this->_impl_.json_name_.Set(from._impl_.json_name_.Get(), arena);}
     if (cached_has_bits & 0x00000020u) {
-      _this->_internal_mutable_options()->::google::protobuf::FieldOptions::MergeFrom(
-          from._internal_options());
+      _this->_internal_maybe_create_options(arena)->::google::protobuf::FieldOptions::MergeFrom(
+          from._internal_assert_options());
     }
     if (cached_has_bits & 0x00000040u) {
       _this->_impl_.number_ = from._impl_.number_;
@@ -4996,7 +5012,6 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
     if (cached_has_bits & 0x00000080u) {
       _this->_impl_.oneof_index_ = from._impl_.oneof_index_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
   if (cached_has_bits & 0x00000700u) {
     if (cached_has_bits & 0x00000100u) {
@@ -5008,8 +5023,8 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
     if (cached_has_bits & 0x00000400u) {
       _this->_impl_.type_ = from._impl_.type_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -5080,7 +5095,9 @@ OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofDescriptorProto)
 }
-OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from) : ::google::protobuf::Message() {
+OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena,
+                         const OneofDescriptorProto& from)
+    : ::google::protobuf::Message() {
   OneofDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -5267,19 +5284,21 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
   auto& from = static_cast<const OneofDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name(from._internal_name());
-    }
+      _this->_impl_.name_.Set(from._impl_.name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::OneofOptions::MergeFrom(
-          from._internal_options());
+      _this->_internal_maybe_create_options(arena)->::google::protobuf::OneofOptions::MergeFrom(
+          from._internal_assert_options());
     }
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -5333,7 +5352,8 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::g
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
-EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from)
+EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena,
+                         const EnumDescriptorProto_EnumReservedRange& from)
     : ::google::protobuf::Message(), _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
@@ -5498,8 +5518,8 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.end_ = from._impl_.end_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -5555,7 +5575,9 @@ EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto)
 }
-EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from) : ::google::protobuf::Message() {
+EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena,
+                         const EnumDescriptorProto& from)
+    : ::google::protobuf::Message() {
   EnumDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -5820,6 +5842,8 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   auto& from = static_cast<const EnumDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -5829,13 +5853,13 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name(from._internal_name());
-    }
+      _this->_impl_.name_.Set(from._impl_.name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::EnumOptions::MergeFrom(
-          from._internal_options());
+      _this->_internal_maybe_create_options(arena)->::google::protobuf::EnumOptions::MergeFrom(
+          from._internal_assert_options());
     }
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -5902,7 +5926,9 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* ar
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueDescriptorProto)
 }
-EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProto& from) : ::google::protobuf::Message() {
+EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* arena,
+                         const EnumValueDescriptorProto& from)
+    : ::google::protobuf::Message() {
   EnumValueDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -6113,23 +6139,24 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, co
   auto& from = static_cast<const EnumValueDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name(from._internal_name());
-    }
+      _this->_impl_.name_.Set(from._impl_.name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::EnumValueOptions::MergeFrom(
-          from._internal_options());
+      _this->_internal_maybe_create_options(arena)->::google::protobuf::EnumValueOptions::MergeFrom(
+          from._internal_assert_options());
     }
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.number_ = from._impl_.number_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -6192,7 +6219,9 @@ ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceDescriptorProto)
 }
-ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& from) : ::google::protobuf::Message() {
+ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena,
+                         const ServiceDescriptorProto& from)
+    : ::google::protobuf::Message() {
   ServiceDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -6405,6 +6434,8 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, cons
   auto& from = static_cast<const ServiceDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -6412,13 +6443,13 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, cons
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name(from._internal_name());
-    }
+      _this->_impl_.name_.Set(from._impl_.name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::ServiceOptions::MergeFrom(
-          from._internal_options());
+      _this->_internal_maybe_create_options(arena)->::google::protobuf::ServiceOptions::MergeFrom(
+          from._internal_assert_options());
     }
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -6491,7 +6522,9 @@ MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodDescriptorProto)
 }
-MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from) : ::google::protobuf::Message() {
+MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena,
+                         const MethodDescriptorProto& from)
+    : ::google::protobuf::Message() {
   MethodDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -6802,23 +6835,22 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const
   auto& from = static_cast<const MethodDescriptorProto&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name(from._internal_name());
-    }
+      _this->_impl_.name_.Set(from._impl_.name_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_input_type(from._internal_input_type());
-    }
+      _this->_impl_.input_type_.Set(from._impl_.input_type_.Get(), arena);}
     if (cached_has_bits & 0x00000004u) {
-      _this->_internal_set_output_type(from._internal_output_type());
-    }
+      _this->_impl_.output_type_.Set(from._impl_.output_type_.Get(), arena);}
     if (cached_has_bits & 0x00000008u) {
-      _this->_internal_mutable_options()->::google::protobuf::MethodOptions::MergeFrom(
-          from._internal_options());
+      _this->_internal_maybe_create_options(arena)->::google::protobuf::MethodOptions::MergeFrom(
+          from._internal_assert_options());
     }
     if (cached_has_bits & 0x00000010u) {
       _this->_impl_.client_streaming_ = from._impl_.client_streaming_;
@@ -6826,8 +6858,8 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const
     if (cached_has_bits & 0x00000020u) {
       _this->_impl_.server_streaming_ = from._impl_.server_streaming_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -6944,7 +6976,9 @@ FileOptions::FileOptions(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileOptions)
 }
-FileOptions::FileOptions(const FileOptions& from) : ::google::protobuf::Message() {
+FileOptions::FileOptions(::google::protobuf::Arena* arena,
+                         const FileOptions& from)
+    : ::google::protobuf::Message() {
   FileOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -7709,6 +7743,8 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   auto& from = static_cast<const FileOptions&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileOptions)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7716,37 +7752,27 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_java_package(from._internal_java_package());
-    }
+      _this->_impl_.java_package_.Set(from._impl_.java_package_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_java_outer_classname(from._internal_java_outer_classname());
-    }
+      _this->_impl_.java_outer_classname_.Set(from._impl_.java_outer_classname_.Get(), arena);}
     if (cached_has_bits & 0x00000004u) {
-      _this->_internal_set_go_package(from._internal_go_package());
-    }
+      _this->_impl_.go_package_.Set(from._impl_.go_package_.Get(), arena);}
     if (cached_has_bits & 0x00000008u) {
-      _this->_internal_set_objc_class_prefix(from._internal_objc_class_prefix());
-    }
+      _this->_impl_.objc_class_prefix_.Set(from._impl_.objc_class_prefix_.Get(), arena);}
     if (cached_has_bits & 0x00000010u) {
-      _this->_internal_set_csharp_namespace(from._internal_csharp_namespace());
-    }
+      _this->_impl_.csharp_namespace_.Set(from._impl_.csharp_namespace_.Get(), arena);}
     if (cached_has_bits & 0x00000020u) {
-      _this->_internal_set_swift_prefix(from._internal_swift_prefix());
-    }
+      _this->_impl_.swift_prefix_.Set(from._impl_.swift_prefix_.Get(), arena);}
     if (cached_has_bits & 0x00000040u) {
-      _this->_internal_set_php_class_prefix(from._internal_php_class_prefix());
-    }
+      _this->_impl_.php_class_prefix_.Set(from._impl_.php_class_prefix_.Get(), arena);}
     if (cached_has_bits & 0x00000080u) {
-      _this->_internal_set_php_namespace(from._internal_php_namespace());
-    }
+      _this->_impl_.php_namespace_.Set(from._impl_.php_namespace_.Get(), arena);}
   }
   if (cached_has_bits & 0x0000ff00u) {
     if (cached_has_bits & 0x00000100u) {
-      _this->_internal_set_php_metadata_namespace(from._internal_php_metadata_namespace());
-    }
+      _this->_impl_.php_metadata_namespace_.Set(from._impl_.php_metadata_namespace_.Get(), arena);}
     if (cached_has_bits & 0x00000200u) {
-      _this->_internal_set_ruby_package(from._internal_ruby_package());
-    }
+      _this->_impl_.ruby_package_.Set(from._impl_.ruby_package_.Get(), arena);}
     if (cached_has_bits & 0x00000400u) {
       _this->_impl_.java_multiple_files_ = from._impl_.java_multiple_files_;
     }
@@ -7765,7 +7791,6 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
     if (cached_has_bits & 0x00008000u) {
       _this->_impl_.py_generic_services_ = from._impl_.py_generic_services_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
   if (cached_has_bits & 0x000f0000u) {
     if (cached_has_bits & 0x00010000u) {
@@ -7780,8 +7805,8 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
     if (cached_has_bits & 0x00080000u) {
       _this->_impl_.cc_enable_arenas_ = from._impl_.cc_enable_arenas_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -7872,7 +7897,9 @@ MessageOptions::MessageOptions(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MessageOptions)
 }
-MessageOptions::MessageOptions(const MessageOptions& from) : ::google::protobuf::Message() {
+MessageOptions::MessageOptions(::google::protobuf::Arena* arena,
+                         const MessageOptions& from)
+    : ::google::protobuf::Message() {
   MessageOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -8151,8 +8178,8 @@ void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
     if (cached_has_bits & 0x00000010u) {
       _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -8236,7 +8263,9 @@ FieldOptions::FieldOptions(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions)
 }
-FieldOptions::FieldOptions(const FieldOptions& from) : ::google::protobuf::Message() {
+FieldOptions::FieldOptions(::google::protobuf::Arena* arena,
+                         const FieldOptions& from)
+    : ::google::protobuf::Message() {
   FieldOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -8671,7 +8700,6 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
     if (cached_has_bits & 0x00000080u) {
       _this->_impl_.debug_redact_ = from._impl_.debug_redact_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
   if (cached_has_bits & 0x00000300u) {
     if (cached_has_bits & 0x00000100u) {
@@ -8680,8 +8708,8 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
     if (cached_has_bits & 0x00000200u) {
       _this->_impl_.target_obsolete_do_not_use_ = from._impl_.target_obsolete_do_not_use_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -8734,7 +8762,9 @@ OneofOptions::OneofOptions(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofOptions)
 }
-OneofOptions::OneofOptions(const OneofOptions& from) : ::google::protobuf::Message() {
+OneofOptions::OneofOptions(::google::protobuf::Arena* arena,
+                         const OneofOptions& from)
+    : ::google::protobuf::Message() {
   OneofOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -8937,7 +8967,9 @@ EnumOptions::EnumOptions(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumOptions)
 }
-EnumOptions::EnumOptions(const EnumOptions& from) : ::google::protobuf::Message() {
+EnumOptions::EnumOptions(::google::protobuf::Arena* arena,
+                         const EnumOptions& from)
+    : ::google::protobuf::Message() {
   EnumOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -9173,8 +9205,8 @@ void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -9234,7 +9266,9 @@ EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueOptions)
 }
-EnumValueOptions::EnumValueOptions(const EnumValueOptions& from) : ::google::protobuf::Message() {
+EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena,
+                         const EnumValueOptions& from)
+    : ::google::protobuf::Message() {
   EnumValueOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -9442,8 +9476,8 @@ void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::go
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.debug_redact_ = from._impl_.debug_redact_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -9500,7 +9534,9 @@ ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceOptions)
 }
-ServiceOptions::ServiceOptions(const ServiceOptions& from) : ::google::protobuf::Message() {
+ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena,
+                         const ServiceOptions& from)
+    : ::google::protobuf::Message() {
   ServiceOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -9679,8 +9715,9 @@ void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
 
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_set_deprecated(from._internal_deprecated());
+    _this->_impl_.deprecated_ = from._impl_.deprecated_;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -9735,7 +9772,9 @@ MethodOptions::MethodOptions(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodOptions)
 }
-MethodOptions::MethodOptions(const MethodOptions& from) : ::google::protobuf::Message() {
+MethodOptions::MethodOptions(::google::protobuf::Arena* arena,
+                         const MethodOptions& from)
+    : ::google::protobuf::Message() {
   MethodOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -9951,8 +9990,8 @@ void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::googl
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.idempotency_level_ = from._impl_.idempotency_level_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -10015,7 +10054,9 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::A
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption.NamePart)
 }
-UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from) : ::google::protobuf::Message() {
+UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* arena,
+                         const UninterpretedOption_NamePart& from)
+    : ::google::protobuf::Message() {
   UninterpretedOption_NamePart* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -10192,19 +10233,20 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::Message& to_msg
   auto& from = static_cast<const UninterpretedOption_NamePart&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption.NamePart)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_name_part(from._internal_name_part());
-    }
+      _this->_impl_.name_part_.Set(from._impl_.name_part_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.is_extension_ = from._impl_.is_extension_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -10270,7 +10312,9 @@ UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption)
 }
-UninterpretedOption::UninterpretedOption(const UninterpretedOption& from) : ::google::protobuf::Message() {
+UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena,
+                         const UninterpretedOption& from)
+    : ::google::protobuf::Message() {
   UninterpretedOption* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -10595,6 +10639,8 @@ void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const :
   auto& from = static_cast<const UninterpretedOption&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10602,14 +10648,11 @@ void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const :
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_identifier_value(from._internal_identifier_value());
-    }
+      _this->_impl_.identifier_value_.Set(from._impl_.identifier_value_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_string_value(from._internal_string_value());
-    }
+      _this->_impl_.string_value_.Set(from._impl_.string_value_.Get(), arena);}
     if (cached_has_bits & 0x00000004u) {
-      _this->_internal_set_aggregate_value(from._internal_aggregate_value());
-    }
+      _this->_impl_.aggregate_value_.Set(from._impl_.aggregate_value_.Get(), arena);}
     if (cached_has_bits & 0x00000008u) {
       _this->_impl_.positive_int_value_ = from._impl_.positive_int_value_;
     }
@@ -10619,8 +10662,8 @@ void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const :
     if (cached_has_bits & 0x00000020u) {
       _this->_impl_.double_value_ = from._impl_.double_value_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -10683,7 +10726,9 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* aren
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo.Location)
 }
-SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& from) : ::google::protobuf::Message() {
+SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* arena,
+                         const SourceCodeInfo_Location& from)
+    : ::google::protobuf::Message() {
   SourceCodeInfo_Location* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -10974,6 +11019,8 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::Message& to_msg, con
   auto& from = static_cast<const SourceCodeInfo_Location&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo.Location)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10983,12 +11030,11 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::Message& to_msg, con
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_leading_comments(from._internal_leading_comments());
-    }
+      _this->_impl_.leading_comments_.Set(from._impl_.leading_comments_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_trailing_comments(from._internal_trailing_comments());
-    }
+      _this->_impl_.trailing_comments_.Set(from._impl_.trailing_comments_.Get(), arena);}
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -11035,7 +11081,9 @@ SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo)
 }
-SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& from) : ::google::protobuf::Message() {
+SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena,
+                         const SourceCodeInfo& from)
+    : ::google::protobuf::Message() {
   SourceCodeInfo* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -11221,7 +11269,9 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::A
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
 }
-GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from) : ::google::protobuf::Message() {
+GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena,
+                         const GeneratedCodeInfo_Annotation& from)
+    : ::google::protobuf::Message() {
   GeneratedCodeInfo_Annotation* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -11484,6 +11534,8 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::Message& to_msg
   auto& from = static_cast<const GeneratedCodeInfo_Annotation&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
   ABSL_DCHECK_NE(&from, _this);
+  auto arena = _this->GetArenaForAllocation();
+  (void)arena;
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11491,8 +11543,7 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::Message& to_msg
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_source_file(from._internal_source_file());
-    }
+      _this->_impl_.source_file_.Set(from._impl_.source_file_.Get(), arena);}
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.begin_ = from._impl_.begin_;
     }
@@ -11502,8 +11553,8 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::Message& to_msg
     if (cached_has_bits & 0x00000008u) {
       _this->_impl_.semantic_ = from._impl_.semantic_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_.Or(from._impl_._has_bits_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -11551,7 +11602,9 @@ GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo)
 }
-GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& from) : ::google::protobuf::Message() {
+GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena,
+                         const GeneratedCodeInfo& from)
+    : ::google::protobuf::Message() {
   GeneratedCodeInfo* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
