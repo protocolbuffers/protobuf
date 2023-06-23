@@ -1462,8 +1462,7 @@ const char* TcParser::PackedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
         if (PROTOBUF_PREDICT_FALSE(min > v || v > max)) {
           AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
         } else {
-          // The size_callback below ensures that we have enough capacity.
-          field->AddAlreadyReserved(v);
+          field->Add(v);
         }
       },
       /*size_callback=*/
@@ -1471,10 +1470,24 @@ const char* TcParser::PackedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
         // For enums that fit in one varint byte, optimistically assume that all
         // the values are one byte long (i.e. no large unknown values).  If so,
         // we know exactly how many values we're going to get.
+        //
+        // But! size_bytes might be much larger than the total size of the
+        // serialized proto (e.g. input corruption, or parsing msg1 as msg2).
+        // We don't want a small serialized proto to lead to giant memory
+        // allocations.
+        //
+        // Ideally we'd restrict size_bytes to the total size of the input, but
+        // we don't know that value.  The best we can do is to restrict it to
+        // the remaining bytes in the chunk, plus a "benefit of the doubt"
+        // factor if we're very close to the end of the chunk.
+        //
+        // Do these calculations in int64 because it's possible we overflow
+        // int32 (imgaine that field->size() and size_bytes are both large).
         int64_t new_size =
-            std::min(int64_t{field->size()} + size_bytes,
-                     int64_t{std::numeric_limits<int32_t>::max()});
-        field->Reserve(static_cast<int32_t>(new_size));
+            int64_t{field->size()} +
+            std::min(size_bytes, std::max(1024, ctx->MaximumReadSize(ptr)));
+        field->Reserve(static_cast<int32_t>(
+            std::min(new_size, int64_t{std::numeric_limits<int32_t>::max()})));
       });
 }
 
