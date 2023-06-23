@@ -372,6 +372,7 @@ inline bool ExposePublicParser(const FileDescriptor* descriptor) {
 // but in the message and can be queried using additional getters that return
 // ints.
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
+  // TODO(b/279034699): Check Java legacy_enum_field_treated_as_closed feature.
   return !field->legacy_enum_field_treated_as_closed();
 }
 
