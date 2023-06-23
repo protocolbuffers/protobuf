@@ -64,6 +64,7 @@
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/mock_code_generator.h"
+#include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/test_util2.h"
@@ -190,6 +191,7 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
 #endif  // _WIN32
 
 
+  std::string ReadFile(absl::string_view filename);
   void ReadDescriptorSet(absl::string_view filename,
                          FileDescriptorSet* descriptor_set);
 
@@ -318,14 +320,18 @@ void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
 #endif  // _WIN32
 
 
-void CommandLineInterfaceTest::ReadDescriptorSet(
-    absl::string_view filename, FileDescriptorSet* descriptor_set) {
+std::string CommandLineInterfaceTest::ReadFile(absl::string_view filename) {
   std::string path = absl::StrCat(temp_directory(), "/", filename);
   std::string file_contents;
   ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
+  return file_contents;
+}
 
+void CommandLineInterfaceTest::ReadDescriptorSet(
+    absl::string_view filename, FileDescriptorSet* descriptor_set) {
+  std::string file_contents = ReadFile(filename);
   if (!descriptor_set->ParseFromString(file_contents)) {
-    FAIL() << "Could not parse file contents: " << path;
+    FAIL() << "Could not parse file contents: " << filename;
   }
 }
 
@@ -397,6 +403,137 @@ TEST_F(CommandLineInterfaceTest, BasicPlugin_DescriptorSetIn) {
 
   ExpectNoErrors();
   ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_OptionRetention) {
+  CreateTempFile("foo.proto",
+                 R"pb(syntax = "proto2"
+                      ;
+                      import "bar.proto";
+                      package foo;
+                      message Foo {
+                        optional bar.Bar b = 1;
+                        extensions 1000 to max [
+                          declaration = {
+                            number: 1000
+                            full_name: ".foo.my_ext"
+                            type: ".foo.MyType"
+                          }
+                        ];
+                      })pb");
+  CreateTempFile("bar.proto",
+                 R"pb(syntax = "proto2"
+                      ;
+                      package bar;
+                      message Bar {
+                        extensions 1000 to max [
+                          declaration = {
+                            number: 1000
+                            full_name: ".baz.my_ext"
+                            type: ".baz.MyType"
+                          }
+                        ];
+                      })pb");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/third_party/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  // request.proto_file() should include source-retention options for bar.proto
+  // but not for foo.proto. Protoc should strip source-retention options from
+  // the immediate proto files being built, but not for all dependencies.
+  ASSERT_EQ(request.proto_file_size(), 2);
+  {
+    EXPECT_EQ(request.proto_file(0).name(), "bar.proto");
+    ASSERT_EQ(request.proto_file(0).message_type_size(), 1);
+    const DescriptorProto& m = request.proto_file(0).message_type(0);
+    ASSERT_EQ(m.extension_range_size(), 1);
+    EXPECT_EQ(m.extension_range(0).options().declaration_size(), 1);
+  }
+
+  {
+    EXPECT_EQ(request.proto_file(1).name(), "foo.proto");
+    ASSERT_EQ(request.proto_file(1).message_type_size(), 1);
+    const DescriptorProto& m = request.proto_file(1).message_type(0);
+    ASSERT_EQ(m.extension_range_size(), 1);
+    EXPECT_TRUE(m.extension_range(0).options().declaration().empty());
+  }
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_SourceFileDescriptors) {
+  CreateTempFile("foo.proto",
+                 R"pb(syntax = "proto2"
+                      ;
+                      import "bar.proto";
+                      package foo;
+                      message Foo {
+                        optional bar.Bar b = 1;
+                        extensions 1000 to max [
+                          declaration = {
+                            number: 1000
+                            full_name: ".foo.my_ext"
+                            type: ".foo.MyType"
+                          }
+                        ];
+                      })pb");
+  CreateTempFile("bar.proto",
+                 R"pb(syntax = "proto2"
+                      ;
+                      package bar;
+                      message Bar {
+                        extensions 1000 to max [
+                          declaration = {
+                            number: 1000
+                            full_name: ".baz.my_ext"
+                            type: ".baz.MyType"
+                          }
+                        ];
+                      })pb");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/third_party/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  // request.source_file_descriptors() should consist of a descriptor for
+  // foo.proto that includes source-retention options.
+  ASSERT_EQ(request.source_file_descriptors_size(), 1);
+  EXPECT_EQ(request.source_file_descriptors(0).name(), "foo.proto");
+  ASSERT_EQ(request.source_file_descriptors(0).message_type_size(), 1);
+  const DescriptorProto& m = request.source_file_descriptors(0).message_type(0);
+  ASSERT_EQ(m.extension_range_size(), 1);
+  EXPECT_EQ(m.extension_range(0).options().declaration_size(), 1);
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorAndPlugin) {

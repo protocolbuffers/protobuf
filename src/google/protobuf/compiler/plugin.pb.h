@@ -460,6 +460,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   enum : int {
     kFileToGenerateFieldNumber = 1,
     kProtoFileFieldNumber = 15,
+    kSourceFileDescriptorsFieldNumber = 17,
     kParameterFieldNumber = 2,
     kCompilerVersionFieldNumber = 3,
   };
@@ -509,6 +510,24 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   ::google::protobuf::FileDescriptorProto* add_proto_file();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
       proto_file() const;
+  // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+  int source_file_descriptors_size() const;
+  private:
+  int _internal_source_file_descriptors_size() const;
+
+  public:
+  void clear_source_file_descriptors() ;
+  ::google::protobuf::FileDescriptorProto* mutable_source_file_descriptors(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
+      mutable_source_file_descriptors();
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* _internal_mutable_source_file_descriptors();
+  public:
+  const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
+  ::google::protobuf::FileDescriptorProto* add_source_file_descriptors();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
+      source_file_descriptors() const;
   // optional string parameter = 2;
   bool has_parameter() const;
   void clear_parameter() ;
@@ -546,7 +565,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 4, 2, 79, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<3, 5, 3, 79, 2> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -555,6 +574,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<std::string> file_to_generate_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > source_file_descriptors_;
     ::google::protobuf::internal::ArenaStringPtr parameter_;
     ::google::protobuf::compiler::Version* compiler_version_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
@@ -1381,6 +1401,49 @@ inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorPr
 CodeGeneratorRequest::_internal_mutable_proto_file() {
   PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return &_impl_.proto_file_;
+}
+
+// repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+inline int CodeGeneratorRequest::_internal_source_file_descriptors_size() const {
+  return _internal_source_file_descriptors().size();
+}
+inline int CodeGeneratorRequest::source_file_descriptors_size() const {
+  return _internal_source_file_descriptors_size();
+}
+inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_source_file_descriptors(int index) {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
+  return _internal_mutable_source_file_descriptors()->Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
+CodeGeneratorRequest::mutable_source_file_descriptors() {
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
+  return _internal_mutable_source_file_descriptors();
+}
+inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::source_file_descriptors(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
+    return _internal_source_file_descriptors().Get(index);
+}
+inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_source_file_descriptors() {
+  PROTOBUF_TSAN_WRITE_REPEATED(&_impl_._tsan_detect_race);
+  ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_source_file_descriptors()->Add();
+  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
+  return _add;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
+CodeGeneratorRequest::source_file_descriptors() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
+  return _internal_source_file_descriptors();
+}
+inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
+CodeGeneratorRequest::_internal_source_file_descriptors() const {
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
+  return _impl_.source_file_descriptors_;
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>*
+CodeGeneratorRequest::_internal_mutable_source_file_descriptors() {
+  PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
+  return &_impl_.source_file_descriptors_;
 }
 
 // optional .google.protobuf.compiler.Version compiler_version = 3;
