@@ -899,6 +899,29 @@ TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRangeLargeSize) {
   EXPECT_FALSE(proto.MergeFromString(serialized));
 }
 
+TEST(GeneratedMessageTctableLiteTest,
+     PackedEnumSmallRangeSizeLargerThanInputSize) {
+  // Create a serialized proto that contains just `field 1: length 2^20`.  We
+  // don't put the actual data in there, just the field header.
+  uint8_t serialize_buffer[64];
+  uint8_t* serialize_ptr = serialize_buffer;
+  serialize_ptr = WireFormatLite::WriteTagToArray(
+      1, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, serialize_ptr);
+  serialize_ptr =
+      WireFormatLite::WriteUInt32NoTagToArray(uint32_t{1} << 20, serialize_ptr);
+
+  absl::string_view serialized{
+      reinterpret_cast<char*>(&serialize_buffer[0]),
+      static_cast<size_t>(serialize_ptr - serialize_buffer)};
+
+  // The deserialized proto should reserve much less than 2^20 elements for
+  // field 1, because it notices that the input serialized proto is much smaller
+  // than 2^20 bytes.
+  protobuf_unittest::TestPackedEnumSmallRange proto;
+  proto.MergeFromString(serialized);
+  EXPECT_LE(proto.vals().Capacity(), 2048);
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
