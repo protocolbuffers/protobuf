@@ -245,6 +245,10 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
             msg_ = m.msg_;
             arena_ = m.arena_;
           }
+          $0Proxy($0* m) : internal::$0Access() {
+            msg_ = m->msg_;
+            arena_ = m->arena_;
+          }
           $0Proxy operator=(const $0Proxy& m) {
             msg_ = m.msg_;
             arena_ = m.arena_;

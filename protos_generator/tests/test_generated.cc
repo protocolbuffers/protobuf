@@ -882,3 +882,76 @@ TEST(CppGeneratedCode, PassProxyToCProxy) {
   model.mutable_child_model_1()->set_child_str1("text in child");
   EXPECT_TRUE(ProxyToCProxyMethod(model.mutable_child_model_1()));
 }
+
+TEST(CppGeneratedCode, PtrImplicitConversion) {
+  TestModel model;
+  model.set_int64(5);
+  ::protos::Ptr<TestModel> model_ptr = &model;
+  EXPECT_EQ(model_ptr->int64(), 5);
+}
+
+TEST(CppGeneratedCode, ClearSubMessage) {
+  // Fill model.
+  TestModel model;
+  model.set_int64(5);
+  auto new_child = model.mutable_child_model_1();
+  new_child->set_child_str1("text in child");
+  ThemeExtension extension1;
+  extension1.set_ext_name("name in extension");
+  EXPECT_TRUE(::protos::SetExtension(model, theme, extension1).ok());
+  EXPECT_TRUE(model.mutable_child_model_1()->has_child_str1());
+  // Clear using Ptr<T>
+  ::protos::ClearMessage(model.mutable_child_model_1());
+  EXPECT_FALSE(model.mutable_child_model_1()->has_child_str1());
+}
+
+TEST(CppGeneratedCode, ClearMessage) {
+  // Fill model.
+  TestModel model;
+  model.set_int64(5);
+  model.set_str2("Hello");
+  auto new_child = model.add_child_models();
+  ASSERT_TRUE(new_child.ok());
+  new_child.value()->set_child_str1("text in child");
+  ThemeExtension extension1;
+  extension1.set_ext_name("name in extension");
+  EXPECT_TRUE(::protos::SetExtension(model, theme, extension1).ok());
+  // Clear using T*
+  ::protos::ClearMessage(&model);
+  // Verify that scalars, repeated fields and extensions are cleared.
+  EXPECT_FALSE(model.has_int64());
+  EXPECT_FALSE(model.has_str2());
+  EXPECT_TRUE(model.child_models().empty());
+  EXPECT_FALSE(::protos::HasExtension(model, theme));
+}
+
+TEST(CppGeneratedCode, DeepCopy) {
+  // Fill model.
+  TestModel model;
+  model.set_int64(5);
+  model.set_str2("Hello");
+  auto new_child = model.add_child_models();
+  ASSERT_TRUE(new_child.ok());
+  new_child.value()->set_child_str1("text in child");
+  ThemeExtension extension1;
+  extension1.set_ext_name("name in extension");
+  EXPECT_TRUE(::protos::SetExtension(model, theme, extension1).ok());
+  TestModel target;
+  target.set_b1(true);
+  ::protos::DeepCopy(&model, &target);
+  EXPECT_FALSE(target.b1()) << "Target was not cleared before copying content";
+  EXPECT_EQ(target.str2(), "Hello");
+  EXPECT_TRUE(::protos::HasExtension(target, theme));
+}
+
+// TODO(b/288491350) : Add BUILD rule to test failures below.
+#ifdef TEST_CLEAR_MESSAGE_FAILURE
+TEST(CppGeneratedCode, ClearConstMessageShouldFail) {
+  // Fill model.
+  TestModel model;
+  model.set_int64(5);
+  model.set_str2("Hello");
+  // Only mutable_ can be cleared not Ptr<const T>.
+  ::protos::ClearMessage(model.child_model_1());
+}
+#endif

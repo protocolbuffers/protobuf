@@ -124,6 +124,39 @@ typename T::Proxy CloneMessage(Ptr<T> message, upb::Arena& arena) {
       arena.ptr());
 }
 
+template <typename T>
+void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
+  upb_Message_DeepCopy(
+      target_message->msg(), source_message->msg(), T::minitable(),
+      static_cast<upb_Arena*>(target_message->GetInternalArena()));
+}
+
+template <typename T>
+void DeepCopy(Ptr<const T> source_message, T* target_message) {
+  DeepCopy(source_message, protos::Ptr(target_message));
+}
+
+template <typename T>
+void DeepCopy(const T* source_message, Ptr<T> target_message) {
+  DeepCopy(protos::Ptr(source_message), target_message);
+}
+
+template <typename T>
+void DeepCopy(const T* source_message, T* target_message) {
+  DeepCopy(protos::Ptr(source_message), protos::Ptr(target_message));
+}
+
+template <typename T>
+void ClearMessage(Ptr<T> message) {
+  static_assert(!std::is_const_v<T>, "");
+  upb_Message_Clear(message->msg(), T::minitable());
+}
+
+template <typename T>
+void ClearMessage(T* message) {
+  ClearMessage(protos::Ptr(message));
+}
+
 // begin:github_only
 // This type exists to work around an absl type that has not yet been
 // released.
