@@ -942,10 +942,9 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_file_to_generate()->InternalSwap(
-      other->_internal_mutable_file_to_generate());
-  _internal_mutable_proto_file()->InternalSwap(other->_internal_mutable_proto_file());
-  _internal_mutable_source_file_descriptors()->InternalSwap(other->_internal_mutable_source_file_descriptors());
+  _impl_.file_to_generate_.InternalSwap(&other->_impl_.file_to_generate_);
+  _impl_.proto_file_.InternalSwap(&other->_impl_.proto_file_);
+  _impl_.source_file_descriptors_.InternalSwap(&other->_impl_.source_file_descriptors_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, lhs_arena,
                                        &other->_impl_.parameter_, rhs_arena);
   swap(_impl_.compiler_version_, other->_impl_.compiler_version_);
@@ -1565,7 +1564,7 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_file()->InternalSwap(other->_internal_mutable_file());
+  _impl_.file_.InternalSwap(&other->_impl_.file_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_, lhs_arena,
                                        &other->_impl_.error_, rhs_arena);
         swap(_impl_.supported_features_, other->_impl_.supported_features_);

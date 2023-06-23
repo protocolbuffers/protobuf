@@ -2175,7 +2175,7 @@ PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_file()->InternalSwap(other->_internal_mutable_file());
+  _impl_.file_.InternalSwap(&other->_impl_.file_);
 }
 
 ::google::protobuf::Metadata FileDescriptorSet::GetMetadata() const {
@@ -2745,8 +2745,8 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   _this->_internal_mutable_enum_type()->MergeFrom(from._internal_enum_type());
   _this->_internal_mutable_service()->MergeFrom(from._internal_service());
   _this->_internal_mutable_extension()->MergeFrom(from._internal_extension());
-  _this->_impl_.public_dependency_.MergeFrom(from._impl_.public_dependency_);
-  _this->_impl_.weak_dependency_.MergeFrom(from._impl_.weak_dependency_);
+  _this->_internal_mutable_public_dependency()->MergeFrom(from._internal_public_dependency());
+  _this->_internal_mutable_weak_dependency()->MergeFrom(from._internal_weak_dependency());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -2801,12 +2801,11 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_dependency()->InternalSwap(
-      other->_internal_mutable_dependency());
-  _internal_mutable_message_type()->InternalSwap(other->_internal_mutable_message_type());
-  _internal_mutable_enum_type()->InternalSwap(other->_internal_mutable_enum_type());
-  _internal_mutable_service()->InternalSwap(other->_internal_mutable_service());
-  _internal_mutable_extension()->InternalSwap(other->_internal_mutable_extension());
+  _impl_.dependency_.InternalSwap(&other->_impl_.dependency_);
+  _impl_.message_type_.InternalSwap(&other->_impl_.message_type_);
+  _impl_.enum_type_.InternalSwap(&other->_impl_.enum_type_);
+  _impl_.service_.InternalSwap(&other->_impl_.service_);
+  _impl_.extension_.InternalSwap(&other->_impl_.extension_);
   _impl_.public_dependency_.InternalSwap(&other->_impl_.public_dependency_);
   _impl_.weak_dependency_.InternalSwap(&other->_impl_.weak_dependency_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
@@ -3795,15 +3794,14 @@ void DescriptorProto::InternalSwap(DescriptorProto* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_field()->InternalSwap(other->_internal_mutable_field());
-  _internal_mutable_nested_type()->InternalSwap(other->_internal_mutable_nested_type());
-  _internal_mutable_enum_type()->InternalSwap(other->_internal_mutable_enum_type());
-  _internal_mutable_extension_range()->InternalSwap(other->_internal_mutable_extension_range());
-  _internal_mutable_extension()->InternalSwap(other->_internal_mutable_extension());
-  _internal_mutable_oneof_decl()->InternalSwap(other->_internal_mutable_oneof_decl());
-  _internal_mutable_reserved_range()->InternalSwap(other->_internal_mutable_reserved_range());
-  _internal_mutable_reserved_name()->InternalSwap(
-      other->_internal_mutable_reserved_name());
+  _impl_.field_.InternalSwap(&other->_impl_.field_);
+  _impl_.nested_type_.InternalSwap(&other->_impl_.nested_type_);
+  _impl_.enum_type_.InternalSwap(&other->_impl_.enum_type_);
+  _impl_.extension_range_.InternalSwap(&other->_impl_.extension_range_);
+  _impl_.extension_.InternalSwap(&other->_impl_.extension_);
+  _impl_.oneof_decl_.InternalSwap(&other->_impl_.oneof_decl_);
+  _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
+  _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   swap(_impl_.options_, other->_impl_.options_);
@@ -4439,8 +4437,8 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_declaration()->InternalSwap(other->_internal_mutable_declaration());
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.declaration_.InternalSwap(&other->_impl_.declaration_);
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   swap(_impl_.verification_, other->_impl_.verification_);
 }
 
@@ -5858,10 +5856,9 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_value()->InternalSwap(other->_internal_mutable_value());
-  _internal_mutable_reserved_range()->InternalSwap(other->_internal_mutable_reserved_range());
-  _internal_mutable_reserved_name()->InternalSwap(
-      other->_internal_mutable_reserved_name());
+  _impl_.value_.InternalSwap(&other->_impl_.value_);
+  _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
+  _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   swap(_impl_.options_, other->_impl_.options_);
@@ -6441,7 +6438,7 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_method()->InternalSwap(other->_internal_mutable_method());
+  _impl_.method_.InternalSwap(&other->_impl_.method_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   swap(_impl_.options_, other->_impl_.options_);
@@ -7806,7 +7803,7 @@ void FileOptions::InternalSwap(FileOptions* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_package_, lhs_arena,
                                        &other->_impl_.java_package_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_outer_classname_, lhs_arena,
@@ -8175,7 +8172,7 @@ void MessageOptions::InternalSwap(MessageOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.deprecated_legacy_json_field_conflicts_)
       + sizeof(MessageOptions::_impl_.deprecated_legacy_json_field_conflicts_)
@@ -8704,9 +8701,8 @@ void FieldOptions::InternalSwap(FieldOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_targets()->InternalSwap(
-      other->_internal_mutable_targets());
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.targets_.InternalSwap(&other->_impl_.targets_);
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.target_obsolete_do_not_use_)
       + sizeof(FieldOptions::_impl_.target_obsolete_do_not_use_)
@@ -8903,7 +8899,7 @@ void OneofOptions::InternalSwap(OneofOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
 }
 
 ::google::protobuf::Metadata OneofOptions::GetMetadata() const {
@@ -9197,7 +9193,7 @@ void EnumOptions::InternalSwap(EnumOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.deprecated_legacy_json_field_conflicts_)
       + sizeof(EnumOptions::_impl_.deprecated_legacy_json_field_conflicts_)
@@ -9466,7 +9462,7 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_.debug_redact_)
       + sizeof(EnumValueOptions::_impl_.debug_redact_)
@@ -9703,7 +9699,7 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
         swap(_impl_.deprecated_, other->_impl_.deprecated_);
 }
 
@@ -9975,7 +9971,7 @@ void MethodOptions::InternalSwap(MethodOptions* other) {
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.idempotency_level_)
       + sizeof(MethodOptions::_impl_.idempotency_level_)
@@ -10640,7 +10636,7 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_name()->InternalSwap(other->_internal_mutable_name());
+  _impl_.name_.InternalSwap(&other->_impl_.name_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.identifier_value_, lhs_arena,
                                        &other->_impl_.identifier_value_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.string_value_, lhs_arena,
@@ -10974,8 +10970,8 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::Message& to_msg, con
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.path_.MergeFrom(from._impl_.path_);
-  _this->_impl_.span_.MergeFrom(from._impl_.span_);
+  _this->_internal_mutable_path()->MergeFrom(from._internal_path());
+  _this->_internal_mutable_span()->MergeFrom(from._internal_span());
   _this->_internal_mutable_leading_detached_comments()->MergeFrom(from._internal_leading_detached_comments());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -11008,8 +11004,7 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.path_.InternalSwap(&other->_impl_.path_);
   _impl_.span_.InternalSwap(&other->_impl_.span_);
-  _internal_mutable_leading_detached_comments()->InternalSwap(
-      other->_internal_mutable_leading_detached_comments());
+  _impl_.leading_detached_comments_.InternalSwap(&other->_impl_.leading_detached_comments_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.leading_comments_, lhs_arena,
                                        &other->_impl_.leading_comments_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.trailing_comments_, lhs_arena,
@@ -11184,7 +11179,7 @@ PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitialized() const {
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_location()->InternalSwap(other->_internal_mutable_location());
+  _impl_.location_.InternalSwap(&other->_impl_.location_);
 }
 
 ::google::protobuf::Metadata SourceCodeInfo::GetMetadata() const {
@@ -11484,7 +11479,7 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::Message& to_msg
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.path_.MergeFrom(from._impl_.path_);
+  _this->_internal_mutable_path()->MergeFrom(from._internal_path());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -11700,7 +11695,7 @@ PROTOBUF_NOINLINE bool GeneratedCodeInfo::IsInitialized() const {
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_annotation()->InternalSwap(other->_internal_mutable_annotation());
+  _impl_.annotation_.InternalSwap(&other->_impl_.annotation_);
 }
 
 ::google::protobuf::Metadata GeneratedCodeInfo::GetMetadata() const {

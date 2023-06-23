@@ -727,9 +727,9 @@ class RepeatedString : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
+    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
     p->Emit(R"cc(
-      _internal_mutable_$name$()->InternalSwap(
-          other->_internal_mutable_$name$());
+      $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 

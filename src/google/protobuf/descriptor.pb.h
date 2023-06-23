@@ -10738,7 +10738,7 @@ inline ::google::protobuf::ExtensionRangeOptions_VerificationState ExtensionRang
   return _internal_verification();
 }
 inline void ExtensionRangeOptions::set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value) {
-   _internal_set_verification(value);
+  _internal_set_verification(value);
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.verification)
 }
 inline ::google::protobuf::ExtensionRangeOptions_VerificationState ExtensionRangeOptions::_internal_verification() const {
@@ -10866,7 +10866,7 @@ inline ::google::protobuf::FieldDescriptorProto_Label FieldDescriptorProto::labe
   return _internal_label();
 }
 inline void FieldDescriptorProto::set_label(::google::protobuf::FieldDescriptorProto_Label value) {
-   _internal_set_label(value);
+  _internal_set_label(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.label)
 }
 inline ::google::protobuf::FieldDescriptorProto_Label FieldDescriptorProto::_internal_label() const {
@@ -10894,7 +10894,7 @@ inline ::google::protobuf::FieldDescriptorProto_Type FieldDescriptorProto::type(
   return _internal_type();
 }
 inline void FieldDescriptorProto::set_type(::google::protobuf::FieldDescriptorProto_Type value) {
-   _internal_set_type(value);
+  _internal_set_type(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.type)
 }
 inline ::google::protobuf::FieldDescriptorProto_Type FieldDescriptorProto::_internal_type() const {
@@ -12927,7 +12927,7 @@ inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() 
   return _internal_optimize_for();
 }
 inline void FileOptions::set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
-   _internal_set_optimize_for(value);
+  _internal_set_optimize_for(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.optimize_for)
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::_internal_optimize_for() const {
@@ -13904,7 +13904,7 @@ inline ::google::protobuf::FieldOptions_CType FieldOptions::ctype() const {
   return _internal_ctype();
 }
 inline void FieldOptions::set_ctype(::google::protobuf::FieldOptions_CType value) {
-   _internal_set_ctype(value);
+  _internal_set_ctype(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.ctype)
 }
 inline ::google::protobuf::FieldOptions_CType FieldOptions::_internal_ctype() const {
@@ -13959,7 +13959,7 @@ inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
   return _internal_jstype();
 }
 inline void FieldOptions::set_jstype(::google::protobuf::FieldOptions_JSType value) {
-   _internal_set_jstype(value);
+  _internal_set_jstype(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.jstype)
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() const {
@@ -14122,7 +14122,7 @@ inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::retention(
   return _internal_retention();
 }
 inline void FieldOptions::set_retention(::google::protobuf::FieldOptions_OptionRetention value) {
-   _internal_set_retention(value);
+  _internal_set_retention(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.retention)
 }
 inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::_internal_retention() const {
@@ -14239,7 +14239,7 @@ inline ::google::protobuf::FieldOptions_OptionTargetType FieldOptions::target_ob
   return _internal_target_obsolete_do_not_use();
 }
 inline void FieldOptions::set_target_obsolete_do_not_use(::google::protobuf::FieldOptions_OptionTargetType value) {
-   _internal_set_target_obsolete_do_not_use(value);
+  _internal_set_target_obsolete_do_not_use(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.target_obsolete_do_not_use)
 }
 inline ::google::protobuf::FieldOptions_OptionTargetType FieldOptions::_internal_target_obsolete_do_not_use() const {
@@ -14660,7 +14660,7 @@ inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::idempot
   return _internal_idempotency_level();
 }
 inline void MethodOptions::set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value) {
-   _internal_set_idempotency_level(value);
+  _internal_set_idempotency_level(value);
   // @@protoc_insertion_point(field_set:google.protobuf.MethodOptions.idempotency_level)
 }
 inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::_internal_idempotency_level() const {
@@ -15713,7 +15713,7 @@ inline ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeIn
   return _internal_semantic();
 }
 inline void GeneratedCodeInfo_Annotation::set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value) {
-   _internal_set_semantic(value);
+  _internal_set_semantic(value);
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.semantic)
 }
 inline ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::_internal_semantic() const {
