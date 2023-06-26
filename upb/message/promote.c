@@ -32,7 +32,7 @@
 #include "upb/collections/map.h"
 #include "upb/message/accessors.h"
 #include "upb/message/message.h"
-#include "upb/mini_table/field_internal.h"
+#include "upb/mini_table/field.h"
 #include "upb/wire/common.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"

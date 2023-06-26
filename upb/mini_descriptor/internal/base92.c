@@ -25,15 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/mini_table/common.h"
-
-#include <inttypes.h>
-
-#include "upb/mem/arena.h"
-#include "upb/mini_table/common_internal.h"
-
-// Must be last.
-#include "upb/port/def.inc"
+#include "upb/mini_descriptor/internal/base92.h"
 
 const char _kUpb_ToBase92[] = {
     ' ', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/',
@@ -52,64 +44,3 @@ const int8_t _kUpb_FromBase92[] = {
     55, 56, 57, -1, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
     73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91,
 };
-
-const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
-    const upb_MiniTable* t, uint32_t number) {
-  const size_t i = ((size_t)number) - 1;  // 0 wraps to SIZE_MAX
-
-  // Ideal case: index into dense fields
-  if (i < t->dense_below) {
-    UPB_ASSERT(t->fields[i].number == number);
-    return &t->fields[i];
-  }
-
-  // Slow case: binary search
-  int lo = t->dense_below;
-  int hi = t->field_count - 1;
-  while (lo <= hi) {
-    int mid = (lo + hi) / 2;
-    uint32_t num = t->fields[mid].number;
-    if (num < number) {
-      lo = mid + 1;
-      continue;
-    }
-    if (num > number) {
-      hi = mid - 1;
-      continue;
-    }
-    return &t->fields[mid];
-  }
-  return NULL;
-}
-
-static bool upb_MiniTable_Is_Oneof(const upb_MiniTableField* f) {
-  return f->presence < 0;
-}
-
-const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
-                                                 const upb_MiniTableField* f) {
-  if (UPB_UNLIKELY(!upb_MiniTable_Is_Oneof(f))) {
-    return NULL;
-  }
-  const upb_MiniTableField* ptr = &m->fields[0];
-  const upb_MiniTableField* end = &m->fields[m->field_count];
-  while (++ptr < end) {
-    if (ptr->presence == (*f).presence) {
-      return ptr;
-    }
-  }
-  return NULL;
-}
-
-bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
-                                  const upb_MiniTableField** f) {
-  const upb_MiniTableField* ptr = *f;
-  const upb_MiniTableField* end = &m->fields[m->field_count];
-  while (++ptr < end) {
-    if (ptr->presence == (*f)->presence) {
-      *f = ptr;
-      return true;
-    }
-  }
-  return false;
-}

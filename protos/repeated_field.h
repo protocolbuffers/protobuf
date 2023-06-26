@@ -42,7 +42,6 @@
 #include "upb/collections/array_internal.h"
 #include "upb/mem/arena.h"
 #include "upb/message/copy.h"
-#include "upb/mini_table/types.h"
 
 // Must be last:
 #include "upb/port/def.inc"

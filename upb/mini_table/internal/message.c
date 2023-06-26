@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2023, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,42 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MESSAGE_COPY_H_
-#define UPB_MESSAGE_COPY_H_
+#include "upb/mini_table/internal/message.h"
 
-#include "upb/collections/message_value.h"
-#include "upb/message/internal.h"
-
-// Must be last.
-#include "upb/port/def.inc"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Deep clones a message using the provided target arena.
-upb_Message* upb_Message_DeepClone(const upb_Message* message,
-                                   const upb_MiniTable* mini_table,
-                                   upb_Arena* arena);
-
-// Deep clones array contents.
-upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
-                               const upb_MiniTable* sub, upb_Arena* arena);
-
-// Deep clones map contents.
-upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
-                           upb_CType value_type,
-                           const upb_MiniTable* map_entry_table,
-                           upb_Arena* arena);
-
-// Deep copies the message from src to dst.
-void upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
-                          const upb_MiniTable* mini_table, upb_Arena* arena);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include "upb/port/undef.inc"
-
-#endif  // UPB_MESSAGE_COPY_H_
+const struct upb_MiniTable _kUpb_MiniTable_Empty = {
+    .subs = NULL,
+    .fields = NULL,
+    .size = 0,
+    .field_count = 0,
+    .ext = kUpb_ExtMode_NonExtendable,
+    .dense_below = 0,
+    .table_mask = -1,
+    .required_count = 0,
+};

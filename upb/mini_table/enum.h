@@ -25,23 +25,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_TABLE_FILE_INTERNAL_H_
-#define UPB_MINI_TABLE_FILE_INTERNAL_H_
+#ifndef UPB_MINI_TABLE_ENUM_H_
+#define UPB_MINI_TABLE_ENUM_H_
 
-#include "upb/mini_table/types.h"
+#include "upb/mini_table/internal/enum.h"
 
-// Must be last.
+// Must be last
 #include "upb/port/def.inc"
 
-struct upb_MiniTableFile {
-  const upb_MiniTable** msgs;
-  const upb_MiniTableEnum** enums;
-  const upb_MiniTableExtension** exts;
-  int msg_count;
-  int enum_count;
-  int ext_count;
-};
+typedef struct upb_MiniTableEnum upb_MiniTableEnum;
+
+// Validates enum value against range defined by enum mini table.
+UPB_INLINE bool upb_MiniTableEnum_CheckValue(const struct upb_MiniTableEnum* e,
+                                             uint32_t val) {
+  _kUpb_FastEnumCheck_Status status = _upb_MiniTable_CheckEnumValueFast(e, val);
+  if (UPB_UNLIKELY(status == _kUpb_FastEnumCheck_CannotCheckFast)) {
+    return _upb_MiniTable_CheckEnumValueSlow(e, val);
+  }
+  return status == _kUpb_FastEnumCheck_ValueIsInEnum ? true : false;
+}
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MINI_TABLE_FILE_INTERNAL_H_ */
+#endif /* UPB_MINI_TABLE_ENUM_H_ */

@@ -28,7 +28,7 @@
 #ifndef UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 #define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 
-#include "upb/mini_table/decode.h"
+#include "upb/mini_descriptor/decode.h"
 #include "upb/reflection/def_pool.h"
 
 // Must be last.

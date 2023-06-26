@@ -32,7 +32,7 @@
 #include <vector>
 
 #include "upb/mini_table/extension_registry.h"
-#include "upb/mini_table/types.h"
+// #include "upb/mini_table/types.h"
 
 namespace upb {
 namespace fuzz {

@@ -25,23 +25,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_TABLE_EXTENSION_INTERNAL_H_
-#define UPB_MINI_TABLE_EXTENSION_INTERNAL_H_
+#ifndef UPB_MINI_TABLE_FILE_H_
+#define UPB_MINI_TABLE_FILE_H_
 
-#include "upb/mini_table/field_internal.h"
-#include "upb/mini_table/sub_internal.h"
+#include "upb/mini_table/internal/file.h"
 
-// Must be last.
-#include "upb/port/def.inc"
+typedef struct upb_MiniTableFile upb_MiniTableFile;
 
-struct upb_MiniTableExtension {
-  // Do not move this field. We need to be able to alias pointers.
-  upb_MiniTableField field;
-
-  const upb_MiniTable* extendee;
-  upb_MiniTableSub sub;  // NULL unless submessage or proto2 enum
-};
-
-#include "upb/port/undef.inc"
-
-#endif /* UPB_MINI_TABLE_EXTENSION_INTERNAL_H_ */
+#endif /* UPB_MINI_TABLE_FILE_H_ */

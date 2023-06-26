@@ -39,13 +39,6 @@ extern "C" {
 
 typedef void upb_Message;
 
-typedef struct upb_MiniTable upb_MiniTable;
-typedef struct upb_MiniTableEnum upb_MiniTableEnum;
-typedef struct upb_MiniTableExtension upb_MiniTableExtension;
-typedef struct upb_MiniTableField upb_MiniTableField;
-typedef struct upb_MiniTableFile upb_MiniTableFile;
-typedef union upb_MiniTableSub upb_MiniTableSub;
-
 // When a upb_Message* is stored in a message, array, or map, it is stored in a
 // tagged form.  If the tag bit is set, the referenced upb_Message is of type
 // _kUpb_MiniTable_Empty (a sentinel message type with no fields) instead of

@@ -29,7 +29,8 @@
 #define UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 
 #include "upb/mem/arena.h"
-#include "upb/mini_table/types.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"

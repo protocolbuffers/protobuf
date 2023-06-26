@@ -164,7 +164,7 @@ cc_library(
         ":message_internal",
         ":port",
         ":wire",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table",
     ],
 )
 
@@ -207,7 +207,7 @@ alias(
 
 alias(
     name = "mini_table_internal",
-    actual = "//upb/mini_table:mini_table_internal",
+    actual = "//upb/mini_table:internal",
     visibility = ["//:friends"],
 )
 
@@ -228,7 +228,17 @@ cc_library(
         ":hash",
         ":mem",
         ":port",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table",
+    ],
+)
+
+cc_library(
+    name = "message_tagged_ptr",
+    hdrs = ["upb/message/tagged_ptr.h"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:friends"],
+    deps = [
+        ":port",
     ],
 )
 
@@ -242,8 +252,8 @@ cc_library(
     deps = [
         ":collections_internal",
         ":message_internal",
+        ":mini_table_internal",
         ":port",
-        "//upb/mini_table:mini_table_internal",
     ],
 )
 
@@ -261,13 +271,13 @@ cc_library(
     deps = [
         ":collections_internal",
         ":eps_copy_input_stream",
-        ":hash",
         ":message_internal",
+        ":mini_table",
         ":port",
         ":upb",
         ":wire",
         ":wire_reader",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table:internal",
     ],
 )
 
@@ -291,7 +301,7 @@ cc_library(
         ":upb",
         ":wire",
         ":wire_reader",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table",
     ],
 )
 
@@ -311,7 +321,7 @@ cc_library(
         ":message_internal",
         ":port",
         ":upb",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table",
     ],
 )
 
@@ -336,7 +346,10 @@ cc_test(
         ":message_accessors",
         ":port",
         ":upb",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_descriptor",
+        "//upb/mini_descriptor:encode_internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -356,7 +369,9 @@ cc_test(
         ":message_promote",
         ":port",
         ":upb",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_descriptor:encode_internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -374,7 +389,7 @@ cc_test(
         ":message_accessors",
         ":message_copy",
         ":upb",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -395,7 +410,7 @@ cc_library(
         ":message_internal",
         ":port",
         ":wire",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table",
     ],
 )
 
@@ -421,7 +436,8 @@ cc_library(
         ":message_internal",
         ":upb",
         ":wire_internal",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
     ],
 )
 
@@ -460,11 +476,8 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":base",
-        ":descriptor_upb_proto",
-        ":hash",
         ":reflection_internal",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_descriptor",
     ],
 )
 
@@ -503,6 +516,18 @@ cc_library(
 )
 
 cc_library(
+    name = "message_rep_internal",
+    hdrs = [
+        "upb/message/internal/map_entry.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    deps = [
+        ":base",
+        ":hash",
+    ],
+)
+
+cc_library(
     name = "collections_internal",
     srcs = [
         "upb/collections/array.c",
@@ -525,8 +550,10 @@ cc_library(
         ":hash",
         ":mem",
         ":message_internal",
+        ":message_rep_internal",
+        ":message_tagged_ptr",
         ":port",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table",
     ],
 )
 
@@ -630,7 +657,10 @@ bootstrap_cc_library(
         ":message_accessors",
         ":port",
         ":upb",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_descriptor",
+        "//upb/mini_descriptor:encode_internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
     ],
 )
 
@@ -811,7 +841,7 @@ cc_library(
         ":message_internal",
         ":port",
         ":wire_internal",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table",
     ],
 )
 
@@ -837,14 +867,14 @@ cc_library(
         ":base",
         ":collections_internal",
         ":eps_copy_input_stream",
-        ":hash",
         ":mem_internal",
         ":message_accessors_internal",
         ":message_internal",
+        ":message_rep_internal",
         ":port",
         ":wire_reader",
         ":wire_types",
-        "//upb/mini_table:mini_table_internal",
+        "//upb/mini_table",
         "@utf8_range",
     ],
 )
@@ -937,14 +967,15 @@ cc_binary(
     linkstatic = 1,
     visibility = ["//visibility:public"],
     deps = [
-        "//:collections",
-        "//:collections_split64",
-        "//:mem",
-        "//:message",
-        "//:message_accessors",
-        "//:message_split64",
-        "//:mini_table",
-        "//:port",
+        ":collections",
+        ":collections_split64",
+        ":mem",
+        ":message",
+        ":message_accessors",
+        ":message_split64",
+        ":mini_table",
+        ":port",
+        "//upb/mini_descriptor",
     ],
 )
 
@@ -968,16 +999,22 @@ upb_amalgamation(
         ":hash",
         ":lex",
         ":mem_internal",
-        "//upb/mini_table:mini_table_internal",
         ":message_accessors",
         ":message_internal",
+        ":message_rep_internal",
+        ":message_tagged_ptr",
         ":port",
-        ":reflection",
         ":reflection_internal",
+        ":reflection",
         ":upb",
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
+        "//upb/mini_descriptor:encode_internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_descriptor:mini_descriptor",
+        "//upb/mini_table:internal",
+        "//upb/mini_table:mini_table",
     ],
     strip_import_prefix = ["src"],
 )
@@ -999,8 +1036,8 @@ upb_amalgamation(
     libs = [
         ":base",
         ":collections_internal",
-        ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
+        ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":fastdecode",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
@@ -1010,14 +1047,20 @@ upb_amalgamation(
         ":mem_internal",
         ":message_accessors",
         ":message_internal",
-        "//upb/mini_table:mini_table_internal",
+        ":message_rep_internal",
+        ":message_tagged_ptr",
         ":port",
-        ":reflection",
         ":reflection_internal",
+        ":reflection",
         ":upb",
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
+        "//upb/mini_descriptor:encode_internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_descriptor:mini_descriptor",
+        "//upb/mini_table:internal",
+        "//upb/mini_table:mini_table",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
@@ -1051,14 +1094,20 @@ upb_amalgamation(
         ":mem_internal",
         ":message_accessors",
         ":message_internal",
-        "//upb/mini_table:mini_table_internal",
+        ":message_rep_internal",
+        ":message_tagged_ptr",
         ":port",
-        ":reflection",
         ":reflection_internal",
+        ":reflection",
         ":upb",
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
+        "//upb/mini_descriptor:encode_internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_descriptor:mini_descriptor",
+        "//upb/mini_table:internal",
+        "//upb/mini_table:mini_table",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
@@ -1100,7 +1149,10 @@ pkg_files(
            "upb/**/*.hpp",
            "upb/**/*.inc",
       ],
-       exclude = ["upb/**/conformance_upb.c"],
+       exclude = [
+           "upb/**/conformance_upb.c",
+           "upb/reflection/stage0/**/*",
+       ],
    ),
    strip_prefix = "",
    visibility = ["//python/dist:__pkg__"],

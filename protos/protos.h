@@ -36,7 +36,6 @@
 #include "upb/mem/arena.h"
 #include "upb/message/copy.h"
 #include "upb/message/extension_internal.h"
-#include "upb/mini_table/types.h"
 #include "upb/upb.hpp"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"

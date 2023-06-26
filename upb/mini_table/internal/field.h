@@ -25,11 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_TABLE_FIELD_INTERNAL_H_
-#define UPB_MINI_TABLE_FIELD_INTERNAL_H_
+#ifndef UPB_MINI_TABLE_INTERNAL_FIELD_H_
+#define UPB_MINI_TABLE_INTERNAL_FIELD_H_
 
 #include "upb/base/descriptor_constants.h"
-#include "upb/mini_table/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -91,7 +90,7 @@ typedef enum {
 // LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table_field.ts:mini_table_field_layout)
 
 UPB_INLINE upb_FieldRep
-_upb_MiniTableField_GetRep(const upb_MiniTableField* field) {
+_upb_MiniTableField_GetRep(const struct upb_MiniTableField* field) {
   return (upb_FieldRep)(field->mode >> kUpb_FieldRep_Shift);
 }
 
@@ -99,89 +98,34 @@ _upb_MiniTableField_GetRep(const upb_MiniTableField* field) {
 extern "C" {
 #endif
 
-UPB_INLINE upb_FieldMode upb_FieldMode_Get(const upb_MiniTableField* field) {
+UPB_INLINE upb_FieldMode
+upb_FieldMode_Get(const struct upb_MiniTableField* field) {
   return (upb_FieldMode)(field->mode & 3);
 }
 
 UPB_INLINE void _upb_MiniTableField_CheckIsArray(
-    const upb_MiniTableField* field) {
+    const struct upb_MiniTableField* field) {
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_NativePointer);
   UPB_ASSUME(upb_FieldMode_Get(field) == kUpb_FieldMode_Array);
   UPB_ASSUME(field->presence == 0);
 }
 
 UPB_INLINE void _upb_MiniTableField_CheckIsMap(
-    const upb_MiniTableField* field) {
+    const struct upb_MiniTableField* field) {
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_NativePointer);
   UPB_ASSUME(upb_FieldMode_Get(field) == kUpb_FieldMode_Map);
   UPB_ASSUME(field->presence == 0);
 }
 
-UPB_INLINE bool upb_IsRepeatedOrMap(const upb_MiniTableField* field) {
+UPB_INLINE bool upb_IsRepeatedOrMap(const struct upb_MiniTableField* field) {
   // This works because upb_FieldMode has no value 3.
   return !(field->mode & kUpb_FieldMode_Scalar);
 }
 
-UPB_INLINE bool upb_IsSubMessage(const upb_MiniTableField* field) {
+UPB_INLINE bool upb_IsSubMessage(const struct upb_MiniTableField* field) {
   return field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Message ||
          field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
 }
-
-// LINT.IfChange(presence_logic)
-
-// Hasbit access ///////////////////////////////////////////////////////////////
-
-UPB_INLINE size_t _upb_hasbit_ofs(size_t idx) { return idx / 8; }
-
-UPB_INLINE char _upb_hasbit_mask(size_t idx) { return 1 << (idx % 8); }
-
-UPB_INLINE bool _upb_hasbit(const upb_Message* msg, size_t idx) {
-  return (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), const char) &
-          _upb_hasbit_mask(idx)) != 0;
-}
-
-UPB_INLINE void _upb_sethas(const upb_Message* msg, size_t idx) {
-  (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), char)) |= _upb_hasbit_mask(idx);
-}
-
-UPB_INLINE void _upb_clearhas(const upb_Message* msg, size_t idx) {
-  (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), char)) &= ~_upb_hasbit_mask(idx);
-}
-
-UPB_INLINE size_t _upb_Message_Hasidx(const upb_MiniTableField* f) {
-  UPB_ASSERT(f->presence > 0);
-  return f->presence;
-}
-
-UPB_INLINE bool _upb_hasbit_field(const upb_Message* msg,
-                                  const upb_MiniTableField* f) {
-  return _upb_hasbit(msg, _upb_Message_Hasidx(f));
-}
-
-UPB_INLINE void _upb_sethas_field(const upb_Message* msg,
-                                  const upb_MiniTableField* f) {
-  _upb_sethas(msg, _upb_Message_Hasidx(f));
-}
-
-// Oneof case access ///////////////////////////////////////////////////////////
-
-UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTableField* f) {
-  UPB_ASSERT(f->presence < 0);
-  return ~(ptrdiff_t)f->presence;
-}
-
-UPB_INLINE uint32_t* _upb_oneofcase_field(upb_Message* msg,
-                                          const upb_MiniTableField* f) {
-  return UPB_PTR_AT(msg, _upb_oneofcase_ofs(f), uint32_t);
-}
-
-UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
-                                            const upb_MiniTableField* f) {
-  return *_upb_oneofcase_field((upb_Message*)msg, f);
-}
-
-// LINT.ThenChange(GoogleInternalName2)
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/presence.ts:presence_logic)
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -189,4 +133,4 @@ UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MINI_TABLE_FIELD_INTERNAL_H_ */
+#endif /* UPB_MINI_TABLE_INTERNAL_FIELD_H_ */

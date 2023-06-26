@@ -32,7 +32,6 @@
 #include "upb/message/message.h"
 
 // Must be last.
-#include "upb/mini_table/common.h"
 #include "upb/port/def.inc"
 
 static bool upb_MessageField_IsMap(const upb_MiniTableField* field) {

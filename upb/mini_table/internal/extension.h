@@ -25,41 +25,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "gtest/gtest.h"
-#include "google/protobuf/test_messages_proto2.upb.h"
-#include "google/protobuf/test_messages_proto3.upb.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/message.h"
-#include "upb/test/test.upb.h"
-#include "upb/upb.hpp"
+#ifndef UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
+#define UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
+
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-TEST(MiniTableOneofTest, OneOfIteratorProto2) {
-  constexpr int oneof_first_field_number = 111;
-  constexpr int oneof_test_field_number = 116;
+struct upb_MiniTableExtension {
+  // Do not move this field. We need to be able to alias pointers.
+  struct upb_MiniTableField field;
 
-  const upb_MiniTable* google_protobuf_table =
-      &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init;
-  const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(google_protobuf_table, oneof_test_field_number);
-  ASSERT_TRUE(field != nullptr);
-  const upb_MiniTableField* ptr = upb_MiniTable_GetOneof(google_protobuf_table, field);
-  int field_num = oneof_first_field_number;
-  do {
-    EXPECT_EQ(ptr->number, field_num++);
-  } while (upb_MiniTable_NextOneofField(google_protobuf_table, &ptr));
-}
+  const struct upb_MiniTable* extendee;
+  union upb_MiniTableSub sub;  // NULL unless submessage or proto2 enum
+};
 
-TEST(MiniTableOneofTest, InitialFieldNotOneOf) {
-  constexpr int test_field_number = 1;  // optional int that is not a oneof
-  const upb_MiniTable* google_protobuf_table =
-      &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init;
-  const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(google_protobuf_table, test_field_number);
-  ASSERT_TRUE(field != nullptr);
-  const upb_MiniTableField* first_field =
-      upb_MiniTable_GetOneof(google_protobuf_table, field);
-  EXPECT_EQ(first_field, nullptr);
-}
+#include "upb/port/undef.inc"
+
+#endif /* UPB_MINI_TABLE_INTERNAL_EXTENSION_H_ */

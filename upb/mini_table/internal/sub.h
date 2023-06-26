@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,15 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/mini_table/message_internal.h"
+#ifndef UPB_MINI_TABLE_INTERNAL_SUB_H_
+#define UPB_MINI_TABLE_INTERNAL_SUB_H_
 
-const upb_MiniTable _kUpb_MiniTable_Empty = {
-    .subs = NULL,
-    .fields = NULL,
-    .size = 0,
-    .field_count = 0,
-    .ext = kUpb_ExtMode_NonExtendable,
-    .dense_below = 0,
-    .table_mask = -1,
-    .required_count = 0,
+#include "upb/mini_table/internal/enum.h"
+#include "upb/mini_table/internal/message.h"
+
+union upb_MiniTableSub {
+  const struct upb_MiniTable* submsg;
+  const struct upb_MiniTableEnum* subenum;
 };
+
+#endif /* UPB_MINI_TABLE_INTERNAL_SUB_H_ */

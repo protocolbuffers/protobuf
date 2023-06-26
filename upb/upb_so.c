@@ -31,4 +31,4 @@
 #include "upb/collections/map.h"
 #include "upb/message/accessors_split64.h"
 #include "upb/message/message.h"
-#include "upb/mini_table/decode.h"
+#include "upb/mini_descriptor/decode.h"

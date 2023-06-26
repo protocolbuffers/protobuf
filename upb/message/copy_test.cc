@@ -44,9 +44,6 @@
 #include "upb/collections/map.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
-#include "upb/mini_table/common.h"
-#include "upb/mini_table/encode_internal.hpp"
-#include "upb/mini_table/field_internal.h"
 #include "upb/test/test.upb.h"
 #include "upb/upb.h"
 

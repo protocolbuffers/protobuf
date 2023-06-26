@@ -35,9 +35,8 @@
 #include "upb/collections/map_internal.h"
 #include "upb/message/accessors_internal.h"
 #include "upb/message/internal.h"
-#include "upb/mini_table/common.h"
-#include "upb/mini_table/enum_internal.h"
-#include "upb/mini_table/field_internal.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"

@@ -27,7 +27,7 @@
 
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
-#include "upb/mini_table/decode.h"
+#include "upb/mini_descriptor/decode.h"
 #include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/desc_state_internal.h"

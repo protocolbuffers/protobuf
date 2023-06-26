@@ -25,15 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_TABLE_MESSAGE_INTERNAL_H_
-#define UPB_MINI_TABLE_MESSAGE_INTERNAL_H_
+#ifndef UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
+#define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 
-#include "upb/base/string_view.h"
-#include "upb/hash/common.h"
-#include "upb/mini_table/types.h"
+#include "upb/mini_table/internal/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+typedef void upb_Message;
 
 struct upb_Decoder;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
@@ -58,12 +58,14 @@ typedef enum {
 
 // LINT.IfChange(mini_table_layout)
 
+union upb_MiniTableSub;
+
 // upb_MiniTable represents the memory layout of a given upb_MessageDef.
 // The members are public so generated code can initialize them,
 // but users MUST NOT directly read or write any of its members.
 struct upb_MiniTable {
-  const upb_MiniTableSub* subs;
-  const upb_MiniTableField* fields;
+  const union upb_MiniTableSub* subs;
+  const struct upb_MiniTableField* fields;
 
   // Must be aligned to sizeof(void*). Doesn't include internal members like
   // unknown fields, extension dict, pointer to msglayout, etc.
@@ -83,40 +85,12 @@ struct upb_MiniTable {
 
 // LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table.ts:presence_logic)
 
-// Map entries aren't actually stored for map fields, they are only used during
-// parsing. For parsing, it helps a lot if all map entry messages have the same
-// layout. The layout code in mini_table/decode.c will ensure that all map
-// entries have this layout.
-//
-// Note that users can and do create map entries directly, which will also use
-// this layout.
-//
-// NOTE: sync with mini_table/decode.c.
-typedef struct {
-  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
-  // and the uint64_t helps make this clear.
-  uint64_t hasbits;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-  } k;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-  } v;
-} upb_MapEntryData;
-
-typedef struct {
-  void* internal_data;
-  upb_MapEntryData data;
-} upb_MapEntry;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // A MiniTable for an empty message, used for unlinked sub-messages.
-extern const upb_MiniTable _kUpb_MiniTable_Empty;
+extern const struct upb_MiniTable _kUpb_MiniTable_Empty;
 
 // Computes a bitmask in which the |l->required_count| lowest bits are set,
 // except that we skip the lowest bit (because upb never uses hasbit 0).
@@ -124,7 +98,7 @@ extern const upb_MiniTable _kUpb_MiniTable_Empty;
 // Sample output:
 //    requiredmask(1) => 0b10 (0x2)
 //    requiredmask(5) => 0b111110 (0x3e)
-UPB_INLINE uint64_t upb_MiniTable_requiredmask(const upb_MiniTable* l) {
+UPB_INLINE uint64_t upb_MiniTable_requiredmask(const struct upb_MiniTable* l) {
   int n = l->required_count;
   assert(0 < n && n <= 63);
   return ((1ULL << n) - 1) << 1;
@@ -136,4 +110,4 @@ UPB_INLINE uint64_t upb_MiniTable_requiredmask(const upb_MiniTable* l) {
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MINI_TABLE_MESSAGE_INTERNAL_H_ */
+#endif /* UPB_MINI_TABLE_INTERNAL_MESSAGE_H_ */

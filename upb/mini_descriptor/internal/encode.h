@@ -25,11 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_TABLE_ENCODE_INTERNAL_H_
-#define UPB_MINI_TABLE_ENCODE_INTERNAL_H_
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
 
 #include "upb/base/descriptor_constants.h"
-#include "upb/mini_table/common.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -108,4 +107,4 @@ char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MINI_TABLE_ENCODE_INTERNAL_H_ */
+#endif /* UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_ */

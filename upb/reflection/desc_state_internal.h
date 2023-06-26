@@ -29,7 +29,7 @@
 #define UPB_REFLECTION_DESC_STATE_INTERNAL_H_
 
 #include "upb/mem/arena.h"
-#include "upb/mini_table/encode_internal.h"
+#include "upb/mini_descriptor/internal/encode.h"
 
 // Must be last.
 #include "upb/port/def.inc"

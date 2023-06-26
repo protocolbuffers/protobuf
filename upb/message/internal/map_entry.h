@@ -25,41 +25,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "gtest/gtest.h"
-#include "google/protobuf/test_messages_proto2.upb.h"
-#include "google/protobuf/test_messages_proto3.upb.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/message.h"
-#include "upb/test/test.upb.h"
-#include "upb/upb.hpp"
+#ifndef UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_DATA_H_
+#define UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_DATA_H_
 
-// Must be last.
-#include "upb/port/def.inc"
+#include <stdint.h>
 
-TEST(MiniTableOneofTest, OneOfIteratorProto2) {
-  constexpr int oneof_first_field_number = 111;
-  constexpr int oneof_test_field_number = 116;
+#include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 
-  const upb_MiniTable* google_protobuf_table =
-      &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init;
-  const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(google_protobuf_table, oneof_test_field_number);
-  ASSERT_TRUE(field != nullptr);
-  const upb_MiniTableField* ptr = upb_MiniTable_GetOneof(google_protobuf_table, field);
-  int field_num = oneof_first_field_number;
-  do {
-    EXPECT_EQ(ptr->number, field_num++);
-  } while (upb_MiniTable_NextOneofField(google_protobuf_table, &ptr));
-}
+// Map entries aren't actually stored for map fields, they are only used during
+// parsing. For parsing, it helps a lot if all map entry messages have the same
+// layout. The layout code in mini_table/decode.c will ensure that all map
+// entries have this layout.
+//
+// Note that users can and do create map entries directly, which will also use
+// this layout.
+//
+// NOTE: sync with mini_table/decode.c.
+typedef struct {
+  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
+  // and the uint64_t helps make this clear.
+  uint64_t hasbits;
+  union {
+    upb_StringView str;  // For str/bytes.
+    upb_value val;       // For all other types.
+  } k;
+  union {
+    upb_StringView str;  // For str/bytes.
+    upb_value val;       // For all other types.
+  } v;
+} upb_MapEntryData;
 
-TEST(MiniTableOneofTest, InitialFieldNotOneOf) {
-  constexpr int test_field_number = 1;  // optional int that is not a oneof
-  const upb_MiniTable* google_protobuf_table =
-      &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init;
-  const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(google_protobuf_table, test_field_number);
-  ASSERT_TRUE(field != nullptr);
-  const upb_MiniTableField* first_field =
-      upb_MiniTable_GetOneof(google_protobuf_table, field);
-  EXPECT_EQ(first_field, nullptr);
-}
+typedef struct {
+  void* internal_data;
+  upb_MapEntryData data;
+} upb_MapEntry;
+
+#endif  // UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_DATA_H_

@@ -32,7 +32,7 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
-#include "upb/mini_table/extension_internal.h"
+#include "upb/mini_table/extension.h"
 
 // Must be last.
 #include "upb/port/def.inc"

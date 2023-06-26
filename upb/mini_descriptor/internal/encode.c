@@ -25,11 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "upb/mini_descriptor/internal/encode.h"
 
 #include "upb/base/log2.h"
-#include "upb/mini_table/common.h"
-#include "upb/mini_table/common_internal.h"
-#include "upb/mini_table/encode_internal.h"
+#include "upb/mini_descriptor/internal/base92.h"
+#include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_descriptor/internal/wire_constants.h"
 
 // Must be last.
 #include "upb/port/def.inc"

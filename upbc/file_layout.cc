@@ -28,7 +28,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "upb/mini_table/extension_internal.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upbc/common.h"
 
 namespace upbc {

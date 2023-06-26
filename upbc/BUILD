@@ -132,6 +132,7 @@ bootstrap_cc_library(
         "//:mini_table_internal",
         "//:port",
         "//:upb",
+        "//upb/mini_descriptor",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
     ],
@@ -229,6 +230,7 @@ cc_library(
         "//:port",
         "//:reflection",
         "//upb/json",
+        "//upb/mini_descriptor",
     ],
 )
 

@@ -30,7 +30,7 @@
 #include <inttypes.h>
 
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "upb/mini_table/decode.h"
+#include "upb/mini_descriptor/decode.h"
 #include "upb/reflection/def.h"
 
 // Must be last.

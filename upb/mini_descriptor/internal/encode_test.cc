@@ -25,6 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "upb/mini_descriptor/internal/encode.hpp"
+
 #include <string_view>
 #include <vector>
 
@@ -32,11 +34,11 @@
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/descriptor.h"
-#include "upb/message/internal.h"
-#include "upb/mini_table/common_internal.h"
-#include "upb/mini_table/decode.h"
-#include "upb/mini_table/encode_internal.hpp"
-#include "upb/mini_table/enum_internal.h"
+#include "upb/message/accessors_internal.h"
+#include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/base92.h"
+#include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_table/enum.h"
 #include "upb/upb.hpp"
 #include "upb/wire/decode.h"
 

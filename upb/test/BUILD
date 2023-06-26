@@ -139,8 +139,10 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//:upb",
+        "//:mini_table",
         "//:mini_table_internal",
         "//:port",
+        "//upb/mini_descriptor",
     ],
 )
 
@@ -201,6 +203,7 @@ cc_test(
         ":test_messages_proto3_upb_proto",
         ":test_upb_proto",
         "//:upb",
+        "//:mini_table",
         "//:mini_table_internal",
         "//:port",
         "@com_google_googletest//:gtest_main",
