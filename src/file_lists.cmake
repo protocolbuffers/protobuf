@@ -69,6 +69,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.cc
@@ -167,6 +168,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_def.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_undef.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_internal.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode.h
@@ -219,6 +221,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
@@ -260,6 +263,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_def.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_undef.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/serial_arena.h
@@ -629,6 +633,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_arena_lite_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_arena_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_lite_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/redaction_metric_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops_unittest.cc
