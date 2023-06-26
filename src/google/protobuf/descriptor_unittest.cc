@@ -76,6 +76,7 @@
 #include "google/protobuf/port_def.inc"
 
 using ::testing::AnyOf;
+using ::testing::ElementsAre;
 
 namespace google {
 namespace protobuf {
@@ -802,7 +803,6 @@ TEST_F(DescriptorTest, FieldNamesDedup) {
     return names;
   };
 
-  using testing::ElementsAre;
   // field_name1
   EXPECT_THAT(collect_unique_names(message4_->field(0)),
               ElementsAre("fieldName1", "field_name1"));
