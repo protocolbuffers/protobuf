@@ -262,7 +262,8 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
                 if (!has_$2()) {
                   return $4::default_instance();
                 }
-                return ::protos::internal::CreateMessage<$4>((upb_Message*)($3_$5(msg_)));
+                return ::protos::internal::CreateMessage<$4>(
+                    (upb_Message*)($3_$5(msg_)), arena_);
               }
             )cc",
             class_name, MessagePtrConstType(field, /* is_const */ true),
@@ -338,7 +339,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
             $5* msg_value;
             $7bool success = $4_$9_get(msg_, $8, &msg_value);
             if (success) {
-              return ::protos::internal::CreateMessage<$6>(msg_value);
+              return ::protos::internal::CreateMessage<$6>(msg_value, arena_);
             }
             return absl::NotFoundError("");
           }

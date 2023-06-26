@@ -64,7 +64,8 @@ class RepeatedFieldProxyBase {
   using Array = add_const_if_T_is_const<T, upb_Array>;
 
  public:
-  explicit RepeatedFieldProxyBase(Array* arr) : arr_(arr) {}
+  explicit RepeatedFieldProxyBase(Array* arr, upb_Arena* arena)
+      : arr_(arr), arena_(arena) {}
 
   size_t size() const { return arr_ != nullptr ? upb_Array_Size(arr_) : 0; }
 
@@ -78,6 +79,7 @@ class RepeatedFieldProxyBase {
   inline upb_Message* GetMessage(size_t n) const;
 
   Array* arr_;
+  upb_Arena* arena_;
 };
 
 template <class T>
@@ -98,12 +100,9 @@ template <class T>
 class RepeatedFieldProxyMutableBase : public RepeatedFieldProxyBase<T> {
  public:
   RepeatedFieldProxyMutableBase(upb_Array* arr, upb_Arena* arena)
-      : RepeatedFieldProxyBase<T>(arr), arena_(arena) {}
+      : RepeatedFieldProxyBase<T>(arr, arena) {}
 
-  void clear() { upb_Array_Resize(this->arr_, 0, arena_); }
-
- protected:
-  upb_Arena* arena_;
+  void clear() { upb_Array_Resize(this->arr_, 0, this->arena_); }
 };
 
 // RepeatedField proxy for repeated messages.
@@ -117,8 +116,8 @@ class RepeatedFieldProxy
   static constexpr bool kIsConst = std::is_const_v<T>;
 
  public:
-  explicit RepeatedFieldProxy(const upb_Array* arr)
-      : RepeatedFieldProxyBase<T>(arr) {}
+  explicit RepeatedFieldProxy(const upb_Array* arr, upb_Arena* arena)
+      : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
   // Constructor used by ::protos::Ptr.
@@ -128,7 +127,7 @@ class RepeatedFieldProxy
   typename T::CProxy operator[](size_t n) const {
     upb_MessageValue message_value = upb_Array_Get(this->arr_, n);
     return ::protos::internal::CreateMessage<typename std::remove_const_t<T>>(
-        (upb_Message*)message_value.msg_val);
+        (upb_Message*)message_value.msg_val, this->arena_);
   }
 
   // TODO(b:/280069986) : Audit/Finalize based on Iterator Design.
@@ -156,7 +155,7 @@ class RepeatedFieldProxy
   void push_back(T&& msg) {
     upb_MessageValue message_value;
     message_value.msg_val = GetInternalMsg(&msg);
-    upb_Arena_Fuse(GetArena(msg), this->arena_);
+    upb_Arena_Fuse(GetArena(&msg), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
     T moved_msg = std::move(msg);
   }
@@ -177,8 +176,8 @@ class RepeatedFieldStringProxy
 
  public:
   // Immutable constructor.
-  explicit RepeatedFieldStringProxy(const upb_Array* arr)
-      : RepeatedFieldProxyBase<T>(arr) {}
+  explicit RepeatedFieldStringProxy(const upb_Array* arr, upb_Arena* arena)
+      : RepeatedFieldProxyBase<T>(arr, arena) {}
   // Mutable constructor.
   RepeatedFieldStringProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
@@ -210,8 +209,8 @@ class RepeatedFieldScalarProxy
   static constexpr bool kIsConst = std::is_const_v<T>;
 
  public:
-  explicit RepeatedFieldScalarProxy(const upb_Array* arr)
-      : RepeatedFieldProxyBase<T>(arr) {}
+  explicit RepeatedFieldScalarProxy(const upb_Array* arr, upb_Arena* arena)
+      : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldScalarProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
   // Constructor used by ::protos::Ptr.

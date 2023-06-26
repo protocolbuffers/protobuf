@@ -28,6 +28,8 @@
 #include "protos/protos.h"
 
 #include "absl/strings/str_format.h"
+#include "upb/message/promote.h"
+#include "upb/wire/common.h"
 
 namespace protos {
 
@@ -88,6 +90,27 @@ namespace internal {
 upb_ExtensionRegistry* GetUpbExtensions(
     const ExtensionRegistry& extension_registry) {
   return extension_registry.registry_;
+}
+
+bool HasExtensionOrUnknown(const upb_Message* msg,
+                           const upb_MiniTableExtension* eid) {
+  return _upb_Message_Getext(msg, eid) != nullptr ||
+         upb_MiniTable_FindUnknown(msg, eid->field.number,
+                                   kUpb_WireFormat_DefaultDepthLimit)
+                 .status == kUpb_FindUnknown_Ok;
+}
+
+const upb_Message_Extension* GetOrPromoteExtension(
+    upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena) {
+  const upb_Message_Extension* ext = _upb_Message_Getext(msg, eid);
+  if (ext == nullptr) {
+    upb_GetExtension_Status ext_status = upb_MiniTable_GetOrPromoteExtension(
+        (upb_Message*)msg, eid, kUpb_WireFormat_DefaultDepthLimit, arena, &ext);
+    if (ext_status != kUpb_GetExtension_Ok) {
+      return nullptr;
+    }
+  }
+  return ext;
 }
 
 absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,

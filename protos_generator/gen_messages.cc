@@ -111,9 +111,13 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
         class $0Access {
          public:
           $0Access() {}
-          $0Access($1* msg, upb_Arena* arena) : msg_(msg), arena_(arena) {}  // NOLINT
+          $0Access($1* msg, upb_Arena* arena) : msg_(msg), arena_(arena) {
+            assert(arena != nullptr);
+          }  // NOLINT
           $0Access(const $1* msg, upb_Arena* arena)
-              : msg_(const_cast<$1*>(msg)), arena_(arena) {}  // NOLINT
+              : msg_(const_cast<$1*>(msg)), arena_(arena) {
+            assert(arena != nullptr);
+          }  // NOLINT
           void* GetInternalArena() const { return arena_; }
       )cc",
       ClassName(descriptor), MessageName(descriptor));
@@ -222,7 +226,7 @@ void WriteModelPublicDeclaration(
             absl::string_view bytes,
             const ::protos::ExtensionRegistry& extension_registry,
             int options));
-        friend upb_Arena* ::protos::internal::GetArena<$0>(const $0& message);
+        friend upb_Arena* ::protos::internal::GetArena<$0>($0* message);
         friend upb_Arena* ::protos::internal::GetArena<$0>(::protos::Ptr<$0> message);
         friend $0(::protos::internal::MoveMessage<$0>(upb_Message* msg,
                                                       upb_Arena* arena));
@@ -279,7 +283,7 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
             const $0Proxy* message);
         friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0Proxy>(
             ::protos::Ptr<$0Proxy> message);
-        friend upb_Arena* ::protos::internal::GetArena<$2>(const $2& message);
+        friend upb_Arena* ::protos::internal::GetArena<$2>($2* message);
         friend upb_Arena* ::protos::internal::GetArena<$2>(::protos::Ptr<$2> message);
         friend $0Proxy(::protos::CloneMessage(::protos::Ptr<$2> message,
                                               ::upb::Arena& arena));
@@ -302,7 +306,8 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
         class $0CProxy final : private internal::$0Access {
          public:
           $0CProxy() = delete;
-          $0CProxy(const $0* m) : internal::$0Access(m->msg_, nullptr) {}
+          $0CProxy(const $0* m)
+              : internal::$0Access(m->msg_, ::protos::internal::GetArena(m)) {}
           $0CProxy($0Proxy m);
           using $0Access::GetInternalArena;
       )cc",
@@ -315,8 +320,9 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
   output(
       R"cc(
         private:
-        $0CProxy(void* msg) : internal::$0Access(($1*)msg, nullptr){};
-        friend $0::CProxy(::protos::internal::CreateMessage<$0>(upb_Message* msg));
+        $0CProxy(void* msg, upb_Arena* arena) : internal::$0Access(($1*)msg, arena){};
+        friend $0::CProxy(::protos::internal::CreateMessage<$0>(
+            upb_Message* msg, upb_Arena* arena));
         friend class RepeatedFieldProxy;
         friend class ::protos::Ptr<$0>;
         friend class ::protos::Ptr<const $0>;
@@ -390,9 +396,13 @@ void WriteMessageImplementation(
         R"cc(
           struct $0DefaultTypeInternal {
             $1* msg;
+            upb_Arena* arena;
           };
-          $0DefaultTypeInternal _$0_default_instance_ =
-              $0DefaultTypeInternal{$1_new(upb_Arena_New())};
+          static $0DefaultTypeInternal _$0DefaultTypeBuilder() {
+            upb_Arena* arena = upb_Arena_New();
+            return $0DefaultTypeInternal{$1_new(arena), arena};
+          }
+          $0DefaultTypeInternal _$0_default_instance_ = _$0DefaultTypeBuilder();
         )cc",
         ClassName(descriptor), MessageName(descriptor));
 
@@ -400,7 +410,8 @@ void WriteMessageImplementation(
         R"cc(
           ::protos::Ptr<const $0> $0::default_instance() {
             return ::protos::internal::CreateMessage<$0>(
-                (upb_Message *)_$0_default_instance_.msg);
+                (upb_Message *)_$0_default_instance_.msg,
+                _$0_default_instance_.arena);
           }
         )cc",
         ClassName(descriptor));

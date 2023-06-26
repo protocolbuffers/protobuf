@@ -153,7 +153,8 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
           size_t len;
           auto* ptr = $3_$5(msg_, &len);
           assert(index < len);
-          return ::protos::internal::CreateMessage<$4>((upb_Message*)*(ptr + index));
+          return ::protos::internal::CreateMessage<$4>(
+              (upb_Message*)*(ptr + index), arena_);
         }
       )cc",
       class_name, MessagePtrConstType(field, /* is_const */ true),
@@ -192,7 +193,7 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
         const ::protos::RepeatedField<const $1>::CProxy $0::$2() const {
           size_t size;
           const upb_Array* arr = _$3_$4_$5(msg_, &size);
-          return ::protos::RepeatedField<const $1>::CProxy(arr);
+          return ::protos::RepeatedField<const $1>::CProxy(arr, arena_);
         };
         ::protos::Ptr<::protos::RepeatedField<$1>> $0::mutable_$2() {
           size_t size;
@@ -258,7 +259,7 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
         const ::protos::RepeatedField<$1>::CProxy $0::$2() const {
           size_t size;
           const upb_Array* arr = _$3_$4_$5(msg_, &size);
-          return ::protos::RepeatedField<$1>::CProxy(arr);
+          return ::protos::RepeatedField<$1>::CProxy(arr, arena_);
         };
         ::protos::Ptr<::protos::RepeatedField<$1>> $0::mutable_$2() {
           size_t size;
@@ -322,7 +323,7 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
         const ::protos::RepeatedField<$1>::CProxy $0::$2() const {
           size_t size;
           const upb_Array* arr = _$3_$4_$5(msg_, &size);
-          return ::protos::RepeatedField<$1>::CProxy(arr);
+          return ::protos::RepeatedField<$1>::CProxy(arr, arena_);
         };
         ::protos::Ptr<::protos::RepeatedField<$1>> $0::mutable_$2() {
           size_t size;

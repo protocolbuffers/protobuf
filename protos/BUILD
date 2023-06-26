@@ -71,6 +71,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:message_copy",
+        "//:message_promote",
         "//:mini_table",
         "//:upb",
         "@com_google_absl//absl/status",

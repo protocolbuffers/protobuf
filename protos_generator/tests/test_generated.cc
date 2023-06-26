@@ -25,6 +25,7 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "gtest/gtest.h"
@@ -626,7 +627,7 @@ TEST(CppGeneratedCode, MessageMapStringKeyAndInt32Value) {
 
 TEST(CppGeneratedCode, HasExtension) {
   TestModel model;
-  EXPECT_EQ(false, ::protos::HasExtension(model, theme));
+  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
 }
 
 TEST(CppGeneratedCode, HasExtensionPtr) {
@@ -636,9 +637,9 @@ TEST(CppGeneratedCode, HasExtensionPtr) {
 
 TEST(CppGeneratedCode, ClearExtensionWithEmptyExtension) {
   TestModel model;
-  EXPECT_EQ(false, ::protos::HasExtension(model, theme));
-  ::protos::ClearExtension(model, theme);
-  EXPECT_EQ(false, ::protos::HasExtension(model, theme));
+  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
+  ::protos::ClearExtension(&model, theme);
+  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
 }
 
 TEST(CppGeneratedCode, ClearExtensionWithEmptyExtensionPtr) {
@@ -652,9 +653,9 @@ TEST(CppGeneratedCode, SetExtension) {
   TestModel model;
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::protos::HasExtension(model, theme));
-  EXPECT_EQ(true, ::protos::SetExtension(model, theme, extension1).ok());
-  EXPECT_EQ(true, ::protos::HasExtension(model, theme));
+  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
+  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
+  EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
 }
 
 TEST(CppGeneratedCode, SetExtensionOnMutableChild) {
@@ -674,10 +675,10 @@ TEST(CppGeneratedCode, GetExtension) {
   TestModel model;
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::protos::HasExtension(model, theme));
-  EXPECT_EQ(true, ::protos::SetExtension(model, theme, extension1).ok());
+  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
+  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
   EXPECT_EQ("Hello World",
-            ::protos::GetExtension(model, theme).value()->ext_name());
+            ::protos::GetExtension(&model, theme).value()->ext_name());
 }
 
 TEST(CppGeneratedCode, GetExtensionOnMutableChild) {
@@ -750,14 +751,13 @@ TEST(CppGeneratedCode, Parse) {
   model.set_str1("Test123");
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(true, ::protos::SetExtension(model, theme, extension1).ok());
+  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
   ::upb::Arena arena;
   auto bytes = ::protos::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::protos::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Test123", parsed_model.str1());
-  // Should not return an extension since we did not pass ExtensionRegistry.
-  EXPECT_EQ(false, ::protos::GetExtension(parsed_model, theme).ok());
+  EXPECT_EQ(true, ::protos::GetExtension(&parsed_model, theme).ok());
 }
 
 TEST(CppGeneratedCode, ParseIntoPtrToModel) {
@@ -765,7 +765,7 @@ TEST(CppGeneratedCode, ParseIntoPtrToModel) {
   model.set_str1("Test123");
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(true, ::protos::SetExtension(model, theme, extension1).ok());
+  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
   ::upb::Arena arena;
   auto bytes = ::protos::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
@@ -773,8 +773,9 @@ TEST(CppGeneratedCode, ParseIntoPtrToModel) {
       ::protos::CreateMessage<TestModel>(arena);
   EXPECT_TRUE(::protos::Parse(parsed_model, bytes.value()));
   EXPECT_EQ("Test123", parsed_model->str1());
-  // Should not return an extension since we did not pass ExtensionRegistry.
-  EXPECT_EQ(false, ::protos::GetExtension(parsed_model, theme).ok());
+  // Should return an extension even if we don't pass ExtensionRegistry
+  // by promoting unknown.
+  EXPECT_EQ(true, ::protos::GetExtension(parsed_model, theme).ok());
 }
 
 TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
@@ -782,9 +783,9 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   model.set_str1("Test123");
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(true, ::protos::SetExtension(model, theme, extension1).ok());
-  EXPECT_EQ(true, ::protos::SetExtension(model, ThemeExtension::theme_extension,
-                                         extension1)
+  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
+  EXPECT_EQ(true, ::protos::SetExtension(
+                      &model, ThemeExtension::theme_extension, extension1)
                       .ok());
   ::upb::Arena arena;
   auto bytes = ::protos::Serialize(&model, arena);
@@ -794,12 +795,12 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   TestModel parsed_model =
       ::protos::Parse<TestModel>(bytes.value(), extensions).value();
   EXPECT_EQ("Test123", parsed_model.str1());
-  EXPECT_EQ(true, ::protos::GetExtension(parsed_model, theme).ok());
-  EXPECT_EQ(true, ::protos::GetExtension(parsed_model,
+  EXPECT_EQ(true, ::protos::GetExtension(&parsed_model, theme).ok());
+  EXPECT_EQ(true, ::protos::GetExtension(&parsed_model,
                                          ThemeExtension::theme_extension)
                       .ok());
   EXPECT_EQ("Hello World", ::protos::GetExtension(
-                               parsed_model, ThemeExtension::theme_extension)
+                               &parsed_model, ThemeExtension::theme_extension)
                                .value()
                                ->ext_name());
 }
@@ -898,7 +899,7 @@ TEST(CppGeneratedCode, ClearSubMessage) {
   new_child->set_child_str1("text in child");
   ThemeExtension extension1;
   extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::protos::SetExtension(model, theme, extension1).ok());
+  EXPECT_TRUE(::protos::SetExtension(&model, theme, extension1).ok());
   EXPECT_TRUE(model.mutable_child_model_1()->has_child_str1());
   // Clear using Ptr<T>
   ::protos::ClearMessage(model.mutable_child_model_1());
@@ -915,14 +916,14 @@ TEST(CppGeneratedCode, ClearMessage) {
   new_child.value()->set_child_str1("text in child");
   ThemeExtension extension1;
   extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::protos::SetExtension(model, theme, extension1).ok());
+  EXPECT_TRUE(::protos::SetExtension(&model, theme, extension1).ok());
   // Clear using T*
   ::protos::ClearMessage(&model);
   // Verify that scalars, repeated fields and extensions are cleared.
   EXPECT_FALSE(model.has_int64());
   EXPECT_FALSE(model.has_str2());
   EXPECT_TRUE(model.child_models().empty());
-  EXPECT_FALSE(::protos::HasExtension(model, theme));
+  EXPECT_FALSE(::protos::HasExtension(&model, theme));
 }
 
 TEST(CppGeneratedCode, DeepCopy) {
@@ -935,13 +936,35 @@ TEST(CppGeneratedCode, DeepCopy) {
   new_child.value()->set_child_str1("text in child");
   ThemeExtension extension1;
   extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::protos::SetExtension(model, theme, extension1).ok());
+  EXPECT_TRUE(::protos::SetExtension(&model, theme, extension1).ok());
   TestModel target;
   target.set_b1(true);
   ::protos::DeepCopy(&model, &target);
-  EXPECT_FALSE(target.b1()) << "Target was not cleared before copying content";
+  EXPECT_FALSE(target.b1()) << "Target was not cleared before copying content ";
   EXPECT_EQ(target.str2(), "Hello");
-  EXPECT_TRUE(::protos::HasExtension(target, theme));
+  EXPECT_TRUE(::protos::HasExtension(&target, theme));
+}
+
+TEST(CppGeneratedCode, HasExtensionAndRegistry) {
+  // Fill model.
+  TestModel source;
+  source.set_int64(5);
+  source.set_str2("Hello");
+  auto new_child = source.add_child_models();
+  ASSERT_TRUE(new_child.ok());
+  new_child.value()->set_child_str1("text in child");
+  ThemeExtension extension1;
+  extension1.set_ext_name("name in extension");
+  ASSERT_TRUE(::protos::SetExtension(&source, theme, extension1).ok());
+
+  // Now that we have a source model with extension data, serialize.
+  ::protos::Arena arena;
+  std::string data = std::string(::protos::Serialize(&source, arena).value());
+
+  // Test with ExtensionRegistry
+  ::protos::ExtensionRegistry extensions({&theme}, arena);
+  TestModel parsed_model = ::protos::Parse<TestModel>(data, extensions).value();
+  EXPECT_TRUE(::protos::HasExtension(&parsed_model, theme));
 }
 
 // TODO(b/288491350) : Add BUILD rule to test failures below.
