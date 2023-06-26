@@ -39,6 +39,7 @@
 #include <cstdlib>
 #include <limits>
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #include "google/protobuf/any.pb.h"
@@ -77,6 +78,7 @@
 
 using ::testing::AnyOf;
 using ::testing::ElementsAre;
+using ::testing::NotNull;
 
 namespace google {
 namespace protobuf {

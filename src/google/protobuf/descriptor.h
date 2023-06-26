@@ -479,6 +479,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     // to this descriptor from the file root.
     void GetLocationPath(std::vector<int>* output) const;
 
+    friend class Descriptor;
     friend class DescriptorPool;
     friend class DescriptorBuilder;
   };
