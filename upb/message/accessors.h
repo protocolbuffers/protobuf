@@ -387,6 +387,10 @@ upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
                                                upb_Message* map_entry_message,
                                                upb_Arena* arena);
 
+// Compares two messages by serializing them and calling memcmp().
+bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
+                                const upb_MiniTable* layout);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
