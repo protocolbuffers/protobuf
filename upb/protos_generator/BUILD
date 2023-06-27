@@ -47,8 +47,8 @@ cc_binary(
         ":names",
         ":output",
         "//upb/upbc:file_layout",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:code_generator",
     ],
 )
 
@@ -79,7 +79,7 @@ cc_library(
         "//upb/upbc:file_layout",
         "//upb/upbc:keywords",
         "//upb/upbc:names",
-        "@com_google_protobuf//:protobuf",
+        "//:protobuf",
     ],
 )
 
@@ -91,7 +91,7 @@ cc_library(
     deps = [
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protobuf",
+        "//:protobuf",
     ],
 )
 
@@ -102,8 +102,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:code_generator",
     ],
 )
 

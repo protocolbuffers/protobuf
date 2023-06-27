@@ -50,7 +50,7 @@ proto_library(
     name = "code_generator_request",
     srcs = ["code_generator_request.proto"],
     visibility = ["//upb:friends"],
-    deps = ["@com_google_protobuf//:compiler_plugin_proto"],
+    deps = ["//:compiler_plugin_proto"],
 )
 
 upb_proto_library(
@@ -81,11 +81,11 @@ bootstrap_upb_proto_library(
     ],
     oss_src_files = ["google/protobuf/compiler/plugin.proto"],
     oss_src_rules = [
-        "@com_google_protobuf//:descriptor_proto_srcs",
-        "@com_google_protobuf//src/google/protobuf/compiler:plugin_proto_src",
+        "//:descriptor_proto_srcs",
+        "//src/google/protobuf/compiler:plugin_proto_src",
     ],
     oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
-    proto_lib_deps = ["@com_google_protobuf//:compiler_plugin_proto"],
+    proto_lib_deps = ["//:compiler_plugin_proto"],
     visibility = ["//upb:friends"],
     deps = ["//upb:descriptor_upb_proto"],
 )
@@ -93,7 +93,7 @@ bootstrap_upb_proto_library(
 upb_proto_reflection_library(
     name = "plugin_upb_proto_reflection",
     visibility = ["//upb:friends"],
-    deps = ["@com_google_protobuf//:compiler_plugin_proto"],
+    deps = ["//:compiler_plugin_proto"],
 )
 
 bootstrap_cc_library(
@@ -190,8 +190,8 @@ bootstrap_cc_library(
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:code_generator",
     ],
 )
 

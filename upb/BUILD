@@ -354,7 +354,7 @@ cc_test(
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf",
+        "//:protobuf",
     ],
 )
 
@@ -376,7 +376,7 @@ cc_test(
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf",
+        "//:protobuf",
     ],
 )
 
@@ -394,7 +394,7 @@ cc_test(
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf",
+        "//:protobuf",
     ],
 )
 
@@ -488,16 +488,16 @@ bootstrap_upb_proto_library(
     google3_src_files = ["net/proto2/proto/descriptor.proto"],
     google3_src_rules = ["//net/proto2/proto:descriptor_proto_source"],
     oss_src_files = ["google/protobuf/descriptor.proto"],
-    oss_src_rules = ["@com_google_protobuf//:descriptor_proto_srcs"],
+    oss_src_rules = ["//:descriptor_proto_srcs"],
     oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
-    proto_lib_deps = ["@com_google_protobuf//:descriptor_proto"],
+    proto_lib_deps = ["//:descriptor_proto"],
     visibility = ["//visibility:public"],
 )
 
 upb_proto_reflection_library(
     name = "descriptor_upb_proto_reflection",
     visibility = ["//visibility:public"],
-    deps = ["@com_google_protobuf//:descriptor_proto"],
+    deps = ["//:descriptor_proto"],
 )
 
 cc_library(
@@ -746,7 +746,7 @@ proto_library(
     name = "message_test_proto",
     testonly = 1,
     srcs = ["message/test.proto"],
-    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 upb_proto_library(
@@ -1065,7 +1065,7 @@ upb_amalgamation(
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
-    visibility = ["@com_google_protobuf//php:__subpackages__"],
+    visibility = ["//php:__subpackages__"],
 )
 
 cc_library(
@@ -1112,7 +1112,7 @@ upb_amalgamation(
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
-    visibility = ["@com_google_protobuf//ruby:__subpackages__"],
+    visibility = ["//ruby:__subpackages__"],
 )
 
 cc_library(

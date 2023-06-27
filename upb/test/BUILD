@@ -44,7 +44,7 @@ cc_library(
     visibility = ["//upb:__subpackages__"],
     deps = [
         "@com_google_googletest//:gtest",
-        "@com_google_protobuf//:protobuf",
+        "//:protobuf",
     ],
 )
 
@@ -63,7 +63,7 @@ proto_library(
     name = "proto3_test_proto",
     testonly = 1,
     srcs = ["proto3_test.proto"],
-    deps = ["@com_google_protobuf//:descriptor_proto"],
+    deps = ["//:descriptor_proto"],
 )
 
 upb_proto_library(
@@ -94,7 +94,7 @@ upb_proto_library(
 proto_library(
     name = "test_cpp_proto",
     srcs = ["test_cpp.proto"],
-    deps = ["@com_google_protobuf//:timestamp_proto"],
+    deps = ["//:timestamp_proto"],
 )
 
 upb_proto_library(
@@ -111,24 +111,24 @@ upb_proto_library(
     name = "test_messages_proto2_upb_proto",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
-    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto2_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 upb_proto_library(
     name = "test_messages_proto3_upb_proto",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
-    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 upb_proto_library(
     name = "timestamp_upb_proto",
-    deps = ["@com_google_protobuf//:timestamp_proto"],
+    deps = ["//:timestamp_proto"],
 )
 
 upb_proto_reflection_library(
     name = "timestamp_upb_proto_reflection",
-    deps = ["@com_google_protobuf//:timestamp_proto"],
+    deps = ["//:timestamp_proto"],
 )
 
 cc_library(

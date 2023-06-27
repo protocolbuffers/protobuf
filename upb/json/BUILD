@@ -60,7 +60,7 @@ proto_library(
     name = "test_proto",
     testonly = 1,
     srcs = ["test.proto"],
-    deps = ["@com_google_protobuf//:struct_proto"],
+    deps = ["//:struct_proto"],
 )
 
 upb_proto_library(
@@ -79,5 +79,5 @@ upb_proto_reflection_library(
 upb_proto_library(
     name = "struct_upb_proto",
     testonly = 1,
-    deps = ["@com_google_protobuf//:struct_proto"],
+    deps = ["//:struct_proto"],
 )

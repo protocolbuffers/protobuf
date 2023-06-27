@@ -53,7 +53,7 @@ cc_library(
         "//upb:reflection_internal",
         "//upb:upb",
         "@com_google_googletest//:gtest",
-        "@com_google_protobuf//:protobuf",
+        "//:protobuf",
     ],
 )
 
@@ -71,7 +71,7 @@ cc_test(
         "//upb/test:parse_text_proto",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf",
+        "//:protobuf",
     ],
 )
 

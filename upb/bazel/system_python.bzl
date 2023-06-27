@@ -265,7 +265,7 @@ def _system_python_impl(repository_ctx):
 #   load("@system_python//:pip.bzl", "pip_install")
 #   pip_install(
 #       name="pip_deps",
-#       requirements = "@com_google_protobuf//python:requirements.txt",
+#       requirements = "//python:requirements.txt",
 #   )
 # An optional argument `requirements_overrides` takes a dictionary mapping python versions to alternate
 # requirements files.  This works around the requirement for fully pinned dependencies in python_rules.

@@ -134,7 +134,7 @@ _py_proto_library_aspect = aspect(
         "_protoc": attr.label(
             executable = True,
             cfg = "exec",
-            default = "@com_google_protobuf//:protoc",
+            default = "//:protoc",
         ),
     },
     implementation = _py_proto_library_aspect_impl,

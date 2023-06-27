@@ -59,7 +59,7 @@ py_test(
     main = "numpy_test_wrapper.py",
     deps = [
       requirement("numpy"),
-      "@com_google_protobuf//python/google/protobuf/internal/numpy:numpy_test",
+      "//python/google/protobuf/internal/numpy:numpy_test",
       "//upb/python:_message",
     ],
     target_compatible_with = select({

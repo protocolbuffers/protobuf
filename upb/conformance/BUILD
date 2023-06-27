@@ -49,27 +49,27 @@ config_setting(
 upb_proto_library(
     name = "conformance_upb_proto",
     testonly = 1,
-    deps = ["@com_google_protobuf//conformance:conformance_proto"],
+    deps = ["//conformance:conformance_proto"],
 )
 
 upb_proto_reflection_library(
     name = "conformance_upb_proto_reflection",
     testonly = 1,
-    deps = ["@com_google_protobuf//conformance:conformance_proto"],
+    deps = ["//conformance:conformance_proto"],
 )
 
 upb_proto_reflection_library(
     name = "test_messages_proto2_upbdefs",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
-    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto2_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 upb_proto_reflection_library(
     name = "test_messages_proto3_upbdefs",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
-    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 cc_binary(
@@ -111,7 +111,7 @@ sh_test(
     data = [
         "conformance_upb_failures.txt",
         ":conformance_upb",
-        "@com_google_protobuf//conformance:conformance_test_runner",
+        "//conformance:conformance_test_runner",
     ],
     target_compatible_with = select({
         "@platforms//os:windows": ["@platforms//:incompatible"],
@@ -161,7 +161,7 @@ sh_test(
     data = [
         "conformance_upb_failures.txt",
         ":conformance_upb_dynamic_minitable",
-        "@com_google_protobuf//conformance:conformance_test_runner",
+        "//conformance:conformance_test_runner",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

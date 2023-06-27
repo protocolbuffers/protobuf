@@ -10,7 +10,7 @@ load(
 )
 
 _stages = ["_stage0", "_stage1", ""]
-_protoc = "@com_google_protobuf//:protoc"
+_protoc = "//:protoc"
 _upbc_base = "//upb/upbc:protoc-gen-upb"
 
 # begin:google_only
