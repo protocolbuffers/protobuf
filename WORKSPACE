@@ -105,24 +105,27 @@ ruby_bundle(
     gemfile = "//ruby:Gemfile",
 )
 
-load("@upb//bazel:workspace_deps.bzl", "upb_deps")
+load("//upb/bazel:workspace_deps.bzl", "upb_deps")
 
 upb_deps()
 
-load("@upb//bazel:system_python.bzl", "system_python")
+load("//upb/bazel:system_python.bzl", "system_python")
 
 system_python(
     name = "system_python",
     minimum_python_version = "3.7",
 )
 
+load("@system_python//:register.bzl", "register_system_python")
+register_system_python()
+
 load("@system_python//:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "pip_deps",
-    requirements = "@upb//python:requirements.txt",
+    requirements = "//upb/python:requirements.txt",
     requirements_overrides = {
-        "3.11": "@upb//python:requirements_311.txt",
+        "3.11": "//upb/python:requirements_311.txt",
     },
 )
 
@@ -161,3 +164,29 @@ load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_regi
 rules_rust_dependencies()
 
 rust_register_toolchains(edition = "2021")
+
+http_archive(
+    name = "lua",
+    build_file = "//upb/bazel:lua.BUILD",
+    sha256 = "b9e2e4aad6789b3b63a056d442f7b39f0ecfca3ae0f1fc0ae4e9614401b69f4b",
+    strip_prefix = "lua-5.2.4",
+    urls = [
+        "https://mirror.bazel.build/www.lua.org/ftp/lua-5.2.4.tar.gz",
+        "https://www.lua.org/ftp/lua-5.2.4.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "com_github_google_benchmark",
+    urls = ["https://github.com/google/benchmark/archive/0baacde3618ca617da95375e0af13ce1baadea47.zip"],
+    strip_prefix = "benchmark-0baacde3618ca617da95375e0af13ce1baadea47",
+    sha256 = "62e2f2e6d8a744d67e4bbc212fcfd06647080de4253c97ad5c6749e09faf2cb0",
+)
+
+http_archive(
+    name = "com_google_googleapis",
+    urls = ["https://github.com/googleapis/googleapis/archive/refs/heads/master.zip"],
+    build_file = "//upb/benchmarks:BUILD.googleapis",
+    strip_prefix = "googleapis-master",
+    patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
+)
