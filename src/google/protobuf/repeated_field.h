@@ -618,7 +618,8 @@ inline void RepeatedField<Element>::MergeFromArray(const Element* array,
                 "only trivialy copyable types are supported");
 
   ABSL_DCHECK_GT(length, 0u);
-  if (ABSL_PREDICT_TRUE(current_size_ + length > total_size_)) {
+  if (ABSL_PREDICT_TRUE(current_size_ + static_cast<int>(length) >
+                        total_size_)) {
     Grow(current_size_, current_size_ + length);
   }
   Element* elem = unsafe_elements();
