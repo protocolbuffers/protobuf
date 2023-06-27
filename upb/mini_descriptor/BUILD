@@ -15,6 +15,7 @@ cc_library(
     ],
     hdrs = [
         "internal/base92.h",
+        "internal/decoder.h",
         "internal/modifiers.h",
         "internal/wire_constants.h",
     ],
@@ -29,10 +30,14 @@ cc_library(
 cc_library(
     name = "mini_descriptor",
     srcs = [
+        "build_enum.c",
         "decode.c",
+        "link.c",
     ],
     hdrs = [
+        "build_enum.h",
         "decode.h",
+        "link.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:friends"],
@@ -40,6 +45,7 @@ cc_library(
         ":internal",
         "//:base",
         "//:mem",
+        "//:mini_table_internal",
         "//:port",
         "//upb/mini_table",
     ],

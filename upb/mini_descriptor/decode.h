@@ -35,6 +35,13 @@
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
+// Export the newer headers, for legacy users.  New users should include the
+// more specific headers directly.
+// IWYU pragma: begin_exports
+#include "upb/mini_descriptor/build_enum.h"
+#include "upb/mini_descriptor/link.h"
+// IWYU pragma: end_exports
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -63,24 +70,6 @@ UPB_API_INLINE upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
   return _upb_MiniTable_Build(data, len, kUpb_MiniTablePlatform_Native, arena,
                               status);
 }
-
-// Links a sub-message field to a MiniTable for that sub-message. If a
-// sub-message field is not linked, it will be treated as an unknown field
-// during parsing, and setting the field will not be allowed. It is possible
-// to link the message field later, at which point it will no longer be treated
-// as unknown. However there is no synchronization for this operation, which
-// means parallel mutation requires external synchronization.
-// Returns success/failure.
-UPB_API bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
-                                         upb_MiniTableField* field,
-                                         const upb_MiniTable* sub);
-
-// Links an enum field to a MiniTable for that enum.
-// All enum fields must be linked prior to parsing.
-// Returns success/failure.
-UPB_API bool upb_MiniTable_SetSubEnum(upb_MiniTable* table,
-                                      upb_MiniTableField* field,
-                                      const upb_MiniTableEnum* sub);
 
 // Initializes a MiniTableExtension buffer that has already been allocated.
 // This is needed by upb_FileDef and upb_MessageDef, which allocate all of the
@@ -131,10 +120,6 @@ UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildEnum(
       data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
 }
 
-UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
-                                                   upb_Arena* arena,
-                                                   upb_Status* status);
-
 // Like upb_MiniTable_Build(), but the user provides a buffer of layout data so
 // it can be reused from call to call, avoiding repeated realloc()/free().
 //
@@ -145,33 +130,6 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
                                           upb_MiniTablePlatform platform,
                                           upb_Arena* arena, void** buf,
                                           size_t* buf_size, upb_Status* status);
-
-// Returns a list of fields that require linking at runtime, to connect the
-// MiniTable to its sub-messages and sub-enums.  The list of fields will be
-// written to the `subs` array, which must have been allocated by the caller
-// and must be large enough to hold a list of all fields in the message.
-//
-// The order of the fields returned by this function is significant: it matches
-// the order expected by upb_MiniTable_Link() below.
-//
-// The return value packs the sub-message count and sub-enum count into a single
-// integer like so:
-//  return (msg_count << 16) | enum_count;
-UPB_API uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* mt,
-                                          const upb_MiniTableField** subs);
-
-// Links a message to its sub-messages and sub-enums.  The caller must pass
-// arrays of sub-tables and sub-enums, in the same length and order as is
-// returned by upb_MiniTable_GetSubList() above.  However, individual elements
-// of the sub_tables may be NULL if those sub-messages were tree shaken.
-//
-// Returns false if either array is too short, or if any of the tables fails
-// to link.
-UPB_API bool upb_MiniTable_Link(upb_MiniTable* mt,
-                                const upb_MiniTable** sub_tables,
-                                size_t sub_table_count,
-                                const upb_MiniTableEnum** sub_enums,
-                                size_t sub_enum_count);
 
 #ifdef __cplusplus
 } /* extern "C" */
