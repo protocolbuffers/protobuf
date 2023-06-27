@@ -72,6 +72,7 @@ namespace compiler {
 namespace cpp {
 namespace {
 using Sub = ::google::protobuf::io::Printer::Sub;
+using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
 
 absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
@@ -1156,8 +1157,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // dynamic initialization, because in some situations that would otherwise
   // pull in a lot of unnecessary code that can't be stripped by --gc-sections.
   // Descriptor initialization will still be performed lazily when it's needed.
-  if (file_->name() != "net/proto2/proto/descriptor.proto"
-  ) {
+  if (!IsLazilyInitializedFile(file_->name())) {
     p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
             R"cc(
               // Force running AddDescriptors() at dynamic initialization time.

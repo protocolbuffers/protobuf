@@ -1665,9 +1665,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2e
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fdescriptor_2eproto(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
 namespace google {
 namespace protobuf {
 namespace internal {
