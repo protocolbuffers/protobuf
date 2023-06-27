@@ -23,7 +23,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load("//bazel:py_proto_library.bzl", "py_proto_library")
+load("//upb/bazel:py_proto_library.bzl", "py_proto_library")
 load(":dist.bzl", "py_dist", "py_dist_module")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@com_google_protobuf//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
@@ -36,7 +36,7 @@ licenses(["notice"])
 
 py_dist_module(
     name = "message_mod",
-    extension = "//python:_message_binary",
+    extension = "//upb/python:_message_binary",
     module_name = "google._upb._message",
 )
 
@@ -181,8 +181,8 @@ pkg_files(
     name = "generated_wkt",
     srcs = [
         ":well_known_proto_py_pb2",
-        "//:descriptor_upb_proto",
-        "//:descriptor_upb_proto_reflection",
+        "//upb:descriptor_upb_proto",
+        "//upb:descriptor_upb_proto_reflection",
     ],
     prefix = "google/protobuf",
 )
@@ -211,9 +211,9 @@ pkg_tar(
         ":generated_wkt",
         ":generated_wkt_compiler",
         ":utf8_range_source_files",
-        "//:LICENSE",
-        "//:source_files",
-        "//python:message_srcs",
+        "//upb:LICENSE",
+        "//upb:source_files",
+        "//upb/python:message_srcs",
         "//upb/mini_descriptor:source_files",
         "//upb/mini_table:source_files",
         "//upb/util:source_files",
@@ -250,9 +250,9 @@ genrule(
 py_wheel(
     name = "binary_wheel",
     abi = select({
-        "//python:full_api_3.7": "cp37m",
-        "//python:full_api_3.8": "cp38",
-        "//python:full_api_3.9": "cp39",
+        "//upb/python:full_api_3.7": "cp37m",
+        "//upb/python:full_api_3.8": "cp38",
+        "//upb/python:full_api_3.9": "cp39",
         "//conditions:default": "abi3",
     }),
     author = "protobuf@googlegroups.com",
@@ -267,7 +267,7 @@ py_wheel(
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
-        "//:LICENSE": "LICENSE",
+        "//upb:LICENSE": "LICENSE",
     },
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
@@ -284,10 +284,10 @@ py_wheel(
     }),
     python_requires = ">=3.7",
     python_tag = selects.with_or({
-        ("//python:limited_api_3.7", "//python:full_api_3.7"): "cp37",
-        "//python:full_api_3.8": "cp38",
-        "//python:full_api_3.9": "cp39",
-        "//python:limited_api_3.10": "cp310",
+        ("//upb/python:limited_api_3.7", "//upb/python:full_api_3.7"): "cp37",
+        "//upb/python:full_api_3.8": "cp38",
+        "//upb/python:full_api_3.9": "cp39",
+        "//upb/python:limited_api_3.10": "cp310",
         "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
     }),
     strip_path_prefixes = [
@@ -323,7 +323,7 @@ py_wheel(
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
-        "//:LICENSE": "LICENSE",
+        "//upb:LICENSE": "LICENSE",
     },
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
@@ -352,7 +352,7 @@ py_wheel(
     abi = "none",
     distribution = "protobuftests",
     extra_distinfo_files = {
-        "//:LICENSE": "LICENSE",
+        "//upb:LICENSE": "LICENSE",
     },
     platform = "any",
     python_tag = "py3",
@@ -366,7 +366,7 @@ py_wheel(
     }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
-        "//python/pb_unit_tests:test_files",
+        "//upb/python/pb_unit_tests:test_files",
         "@com_google_protobuf//:python_common_test_protos",
         "@com_google_protobuf//:python_specific_test_protos",
         "@com_google_protobuf//:python_test_srcs",

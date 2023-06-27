@@ -24,12 +24,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -46,7 +46,7 @@ cc_binary(
         ":generator",
         ":names",
         ":output",
-        "//upbc:file_layout",
+        "//upb/upbc:file_layout",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
     ],
@@ -75,10 +75,10 @@ cc_library(
         ":output",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
-        "//upbc:common",
-        "//upbc:file_layout",
-        "//upbc:keywords",
-        "//upbc:names",
+        "//upb/upbc:common",
+        "//upb/upbc:file_layout",
+        "//upb/upbc:keywords",
+        "//upb/upbc:names",
         "@com_google_protobuf//:protobuf",
     ],
 )
@@ -114,6 +114,6 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":output",
-        "//upbc:keywords",
+        "//upb/upbc:keywords",
     ],
 )

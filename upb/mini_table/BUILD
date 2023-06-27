@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
 )
 
@@ -47,10 +47,10 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        "//:base",
-        "//:hash",
-        "//:mem",
-        "//:port",
+        "//upb:base",
+        "//upb:hash",
+        "//upb:mem",
+        "//upb:port",
     ],
 )
 
@@ -69,8 +69,8 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//:base",
-        "//:port",
+        "//upb:base",
+        "//upb:port",
     ],
 )
 
@@ -85,8 +85,8 @@ filegroup(
         exclude = ["encode_test.cc"],
     ),
     visibility = [
-        "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/cmake:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only

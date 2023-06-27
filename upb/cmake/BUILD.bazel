@@ -28,7 +28,7 @@ load(
     "staleness_test",
 )
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "make_shell_script",
 )
 
@@ -63,7 +63,7 @@ genrule(
 
 genrule(
     name = "copy_protos",
-    srcs = ["//:descriptor_upb_proto"],
+    srcs = ["//upb:descriptor_upb_proto"],
     outs = [
         "generated-in/google/protobuf/descriptor.upb.c",
         "generated-in/google/protobuf/descriptor.upb.h",
@@ -98,7 +98,7 @@ sh_test(
     data = [
         ":copy_protos",
         ":gen_cmakelists",
-        "//:source_files",
+        "//upb:source_files",
         "//upb/mini_descriptor:source_files",
         "//upb/mini_table:source_files",
         "@utf8_range//:utf8_range_srcs",

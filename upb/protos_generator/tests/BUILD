@@ -24,15 +24,15 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
-    "//protos/bazel:upb_cc_proto_library.bzl",
+    "//upb/protos/bazel:upb_cc_proto_library.bzl",
     "upb_cc_proto_library",
 )
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
 )
 load(
@@ -41,7 +41,7 @@ load(
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -81,20 +81,20 @@ proto_library(
 upb_proto_library(
     name = "test_model_upb_proto",
     visibility = [
-        "//protos:__pkg__",
+        "//upb/protos:__pkg__",
     ],
     deps = [":test_model_proto"],
 )
 
 upb_cc_proto_library(
     name = "test_model_upb_cc_proto",
-    visibility = ["//protos:__pkg__"],
+    visibility = ["//upb/protos:__pkg__"],
     deps = [":test_model_proto"],
 )
 
 upb_cc_proto_library(
     name = "naming_conflict_upb_cc_proto",
-    visibility = ["//protos:__pkg__"],
+    visibility = ["//upb/protos:__pkg__"],
     deps = [":naming_conflict_proto"],
 )
 
@@ -149,8 +149,8 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "//:upb",
-        "//protos",
-        "//protos:repeated_field",
+        "//upb:upb",
+        "//upb/protos",
+        "//upb/protos:repeated_field",
     ],
 )

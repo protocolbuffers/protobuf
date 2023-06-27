@@ -24,18 +24,18 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
     "make_shell_script",
 )
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -61,14 +61,14 @@ upb_proto_reflection_library(
 upb_proto_reflection_library(
     name = "test_messages_proto2_upbdefs",
     testonly = 1,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 upb_proto_reflection_library(
     name = "test_messages_proto3_upbdefs",
     testonly = 1,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
 )
 
@@ -87,11 +87,11 @@ cc_binary(
         ":conformance_upb_proto_reflection",
         ":test_messages_proto2_upbdefs",
         ":test_messages_proto3_upbdefs",
-        "//:json",
-        "//:port",
-        "//:reflection",
-        "//:textformat",
-        "//:wire",
+        "//upb:json",
+        "//upb:port",
+        "//upb:reflection",
+        "//upb:textformat",
+        "//upb:wire",
         "//upb/json",
     ],
 )
@@ -137,11 +137,11 @@ cc_binary(
         ":conformance_upb_proto_reflection",
         ":test_messages_proto2_upbdefs",
         ":test_messages_proto3_upbdefs",
-        "//:json",
-        "//:port",
-        "//:reflection",
-        "//:textformat",
-        "//:wire",
+        "//upb:json",
+        "//upb:port",
+        "//upb:reflection",
+        "//upb:textformat",
+        "//upb:wire",
         "//upb/json",
     ],
 )

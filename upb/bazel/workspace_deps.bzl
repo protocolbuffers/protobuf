@@ -1,6 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("//bazel:python_downloads.bzl", "python_nuget_package", "python_source_archive")
+load("//upb/bazel:python_downloads.bzl", "python_nuget_package", "python_source_archive")
 
 def _github_archive(repo, commit, **kwargs):
     repo_name = repo.split("/")[-1]

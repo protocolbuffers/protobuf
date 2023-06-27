@@ -24,19 +24,19 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load(
-    "//upbc:bootstrap_compiler.bzl",
+    "//upb/upbc:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
     "bootstrap_upb_proto_library",
 )
@@ -51,13 +51,13 @@ load(
 
 # begin:github_only
 load(
-    "//bazel:amalgamation.bzl",
+    "//upb/bazel:amalgamation.bzl",
     "upb_amalgamation",
 )
 # end:github_only
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 #
 # license(
 #     name = "license",
@@ -74,7 +74,7 @@ exports_files(
         "BUILD",
         "WORKSPACE",
     ],
-    visibility = ["//cmake:__pkg__"],
+    visibility = ["//upb/cmake:__pkg__"],
 )
 
 config_setting(
@@ -91,7 +91,7 @@ bool_flag(
 
 config_setting(
     name = "fasttable_enabled_setting",
-    flag_values = {"//:fasttable_enabled": "true"},
+    flag_values = {"//upb:fasttable_enabled": "true"},
     visibility = ["//visibility:public"],
 )
 
@@ -121,7 +121,7 @@ cc_library(
         "port/def.inc",
         "port/undef.inc",
     ],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
 )
 
 cc_library(
@@ -179,7 +179,7 @@ cc_library(
         "base/string_view.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [":port"],
 )
 
@@ -201,13 +201,13 @@ cc_library(
 alias(
     name = "mini_table",
     actual = "//upb/mini_table",
-    visibility = ["//:friends"],
+    visibility = ["//upb:friends"],
 )
 
 alias(
     name = "mini_table_internal",
     actual = "//upb/mini_table:internal",
-    visibility = ["//:friends"],
+    visibility = ["//upb:friends"],
 )
 
 cc_library(
@@ -235,7 +235,7 @@ cc_library(
     name = "message_tagged_ptr",
     hdrs = ["message/tagged_ptr.h"],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:friends"],
+    visibility = ["//upb:friends"],
     deps = [
         ":port",
     ],
@@ -247,7 +247,7 @@ cc_library(
         "message/accessors_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:friends"],
+    visibility = ["//upb:friends"],
     deps = [
         ":collections_internal",
         ":message_internal",
@@ -545,7 +545,7 @@ cc_library(
         "collections/message_value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [
         ":base",
         ":hash",
@@ -793,7 +793,7 @@ cc_library(
         "mem/arena.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [
         ":mem_internal",
         ":port",
@@ -825,7 +825,7 @@ cc_library(
         "mem/arena_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [":port"],
 )
 
@@ -863,7 +863,7 @@ cc_library(
         "wire/swap_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [
         ":base",
         ":collections_internal",
@@ -933,7 +933,7 @@ cc_library(
         "hash/str_table.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [
         ":base",
         ":mem",
@@ -956,7 +956,7 @@ cc_library(
         "lex/unicode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [":port"],
 )
 
@@ -1128,7 +1128,7 @@ exports_files(
         "third_party/lunit/console.lua",
         "third_party/lunit/lunit.lua",
     ],
-    visibility = ["//lua:__pkg__"],
+    visibility = ["//upb/lua:__pkg__"],
 )
 
 filegroup(
@@ -1147,7 +1147,7 @@ filegroup(
     ),
     visibility = [
         "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only
@@ -1173,7 +1173,7 @@ filegroup(
 #     kotlin_package = "upb",
 #     no_string_conversion = ["_upb_MiniTable_Build"],
 #     strict_enums = ["upb_FieldType"],
-#     visibility = ["//:__subpackages__"],
+#     visibility = ["//upb:__subpackages__"],
 # )
 #
 # end:google_only

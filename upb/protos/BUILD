@@ -24,16 +24,16 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
-    "//protos/bazel:upb_cc_proto_library.bzl",
+    "//upb/protos/bazel:upb_cc_proto_library.bzl",
     "upb_cc_proto_library_copts",
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -49,11 +49,11 @@ cc_library(
     deps = [
         ":protos",
         ":protos_traits",
-        "//:collections_internal",
-        "//:message_copy",
-        "//:mini_table",
-        "//:port",
-        "//:upb",
+        "//upb:collections_internal",
+        "//upb:message_copy",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb:upb",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/strings",
     ],
@@ -70,10 +70,10 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:message_copy",
-        "//:message_promote",
-        "//:mini_table",
-        "//:upb",
+        "//upb:message_copy",
+        "//upb:message_promote",
+        "//upb:mini_table",
+        "//upb:upb",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
@@ -98,8 +98,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":protos",
-        "//:mini_table",
-        "//:upb",
+        "//upb:mini_table",
+        "//upb:upb",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings:str_format",
@@ -127,9 +127,9 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":protos_internal",
-        "//:upb",
-        "//protos_generator/tests:test_model_upb_cc_proto",
-        "//protos_generator/tests:test_model_upb_proto",
+        "//upb:upb",
+        "//upb/protos_generator/tests:test_model_upb_cc_proto",
+        "//upb/protos_generator/tests:test_model_upb_proto",
         "@com_google_googletest//:gtest_main",
     ],
 )

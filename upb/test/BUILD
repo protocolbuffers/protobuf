@@ -24,24 +24,24 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 cc_library(
     name = "parse_text_proto",
     testonly = 1,
     hdrs = ["parse_text_proto.h"],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [
         "@com_google_googletest//:gtest",
         "@com_google_protobuf//:protobuf",
@@ -87,7 +87,7 @@ proto_library(
 upb_proto_library(
     name = "test_upb_proto",
     testonly = 1,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [":test_proto"],
 )
 
@@ -110,14 +110,14 @@ upb_proto_reflection_library(
 upb_proto_library(
     name = "test_messages_proto2_upb_proto",
     testonly = 1,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 upb_proto_library(
     name = "test_messages_proto3_upb_proto",
     testonly = 1,
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
 )
 
@@ -136,12 +136,12 @@ cc_library(
     testonly = 1,
     srcs = ["fuzz_util.cc"],
     hdrs = ["fuzz_util.h"],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [
-        "//:upb",
-        "//:mini_table",
-        "//:mini_table_internal",
-        "//:port",
+        "//upb:upb",
+        "//upb:mini_table",
+        "//upb:mini_table_internal",
+        "//upb:port",
         "//upb/mini_descriptor",
     ],
 )
@@ -153,7 +153,7 @@ cc_test(
     deps = [
         ":proto3_test_upb_proto",
         ":proto3_test_upb_proto_reflection",
-        "//:reflection",
+        "//upb:reflection",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -167,10 +167,10 @@ cc_test(
         ":test_cpp_upb_proto_reflection",
         ":timestamp_upb_proto",
         ":timestamp_upb_proto_reflection",
-        "//:upb",
-        "//:json",
-        "//:port",
-        "//:reflection",
+        "//upb:upb",
+        "//upb:json",
+        "//upb:port",
+        "//upb:reflection",
         "//upb/json",
         "@com_google_googletest//:gtest_main",
     ],
@@ -186,8 +186,8 @@ cc_test(
         ":test_messages_proto2_upb_proto",
         ":test_messages_proto3_upb_proto",
         ":test_upb_proto",
-        "//:upb",
-        "//:port",
+        "//upb:upb",
+        "//upb:port",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -202,10 +202,10 @@ cc_test(
         ":test_messages_proto2_upb_proto",
         ":test_messages_proto3_upb_proto",
         ":test_upb_proto",
-        "//:upb",
-        "//:mini_table",
-        "//:mini_table_internal",
-        "//:port",
+        "//upb:upb",
+        "//upb:mini_table",
+        "//upb:mini_table_internal",
+        "//upb:port",
         "@com_google_googletest//:gtest_main",
     ],
 )

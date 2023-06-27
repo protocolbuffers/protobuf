@@ -1,8 +1,8 @@
 # TODO(haberman): describe this package.
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
 )
@@ -20,11 +20,11 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:collections",
-        "//:lex",
-        "//:port",
-        "//:reflection",
-        "//:wire",
+        "//upb:collections",
+        "//upb:lex",
+        "//upb:port",
+        "//upb:reflection",
+        "//upb:wire",
     ],
 )
 
@@ -36,8 +36,8 @@ cc_test(
         ":struct_upb_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
-        "//:reflection",
-        "//:upb",
+        "//upb:reflection",
+        "//upb:upb",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -50,8 +50,8 @@ cc_test(
         ":struct_upb_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
-        "//:reflection",
-        "//:upb",
+        "//upb:reflection",
+        "//upb:upb",
         "@com_google_googletest//:gtest_main",
     ],
 )

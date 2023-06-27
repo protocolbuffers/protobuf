@@ -28,7 +28,7 @@
 # end:google_only
 
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
 )
@@ -41,7 +41,7 @@ load(
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -91,10 +91,10 @@ cc_test(
         ":benchmark_descriptor_sv_cc_proto",
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
-        "//:base",
-        "//:descriptor_upb_proto",
-        "//:mem",
-        "//:reflection",
+        "//upb:base",
+        "//upb:descriptor_upb_proto",
+        "//upb:mem",
+        "//upb:reflection",
         "@com_github_google_benchmark//:benchmark_main",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_protobuf//:protobuf",
