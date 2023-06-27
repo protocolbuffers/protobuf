@@ -82,7 +82,8 @@ void AlignFail(std::integral_constant<size_t, 8>, std::uintptr_t address) {
 #endif
 
 const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
-  return GenericFallbackImpl<MessageLite, std::string>(PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return GenericFallbackImpl<MessageLite, std::string>(
+      PROTOBUF_TC_PARAM_PASS);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -650,7 +651,8 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
                                 : WireFormatLite::WIRETYPE_FIXED64;
     InvertPacked<fallback_wt>(data);
     if (data.coded_tag<TagType>() == 0) {
-      return PackedFixed<LayoutType, TagType>(PROTOBUF_TC_PARAM_PASS);
+      PROTOBUF_MUSTTAIL return PackedFixed<LayoutType, TagType>(
+          PROTOBUF_TC_PARAM_PASS);
     } else {
       PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
@@ -701,7 +703,8 @@ const char* TcParser::PackedFixed(PROTOBUF_TC_PARAM_DECL) {
         : WireFormatLite::WIRETYPE_FIXED64;
     InvertPacked<fallback_wt>(data);
     if (data.coded_tag<TagType>() == 0) {
-      return RepeatedFixed<LayoutType, TagType>(PROTOBUF_TC_PARAM_PASS);
+      PROTOBUF_MUSTTAIL return RepeatedFixed<LayoutType, TagType>(
+          PROTOBUF_TC_PARAM_PASS);
     } else {
       PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
@@ -992,7 +995,8 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
     // Try parsing as non-packed repeated:
     InvertPacked<WireFormatLite::WIRETYPE_VARINT>(data);
     if (data.coded_tag<TagType>() == 0) {
-      return PackedVarint<FieldType, TagType, zigzag>(PROTOBUF_TC_PARAM_PASS);
+      PROTOBUF_MUSTTAIL return PackedVarint<FieldType, TagType, zigzag>(
+          PROTOBUF_TC_PARAM_PASS);
     } else {
       PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
@@ -1065,7 +1069,8 @@ const char* TcParser::PackedVarint(PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     InvertPacked<WireFormatLite::WIRETYPE_VARINT>(data);
     if (data.coded_tag<TagType>() == 0) {
-      return RepeatedVarint<FieldType, TagType, zigzag>(PROTOBUF_TC_PARAM_PASS);
+      PROTOBUF_MUSTTAIL return RepeatedVarint<FieldType, TagType, zigzag>(
+          PROTOBUF_TC_PARAM_PASS);
     } else {
       PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
