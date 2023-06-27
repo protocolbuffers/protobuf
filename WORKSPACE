@@ -187,6 +187,7 @@ http_archive(
     name = "com_google_googleapis",
     urls = ["https://github.com/googleapis/googleapis/archive/refs/heads/master.zip"],
     build_file = "//upb/benchmarks:BUILD.googleapis",
+    sha256 = "a23cf60ebe7cf9b84dad9168f67169d2af1f092397a4aa01e6fcdd6ee8c2af28",
     strip_prefix = "googleapis-master",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
