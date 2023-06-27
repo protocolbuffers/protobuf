@@ -36,6 +36,8 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <immintrin.h>
+#include <stdint.h>
 
 #include "absl/base/config.h"
 #include "absl/log/absl_check.h"
@@ -903,6 +905,84 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 }
 #endif
 
+  // On x86, the pext instruction is used to optimize the parsing of
+  // varied int. The instruction can extract low 7-bits from multiple
+  // bytes simultaneously and combine them together.
+  // --------------------------------------       --------------------------------------
+  //| c| b30| b29| b28| b27| b26| b25| b24| ......| c | b6 | b5 | b4 | b3 | b2 | b1 | b0 |  SRC
+  // --------------------------------------       --------------------------------------
+  //                                   |               |    |    |    |    |    |    |
+  // --------------------------------------       --------------------------------------
+  //| 0| 0  | 0  | 0  | 0  | 0  | 0  | 1  | ......| 0 | 1  | 1  | 1  | 1  | 1  | 1  | 1  |  MASK
+  // --------------------------------------       --------------------------------------
+  //                                   \-----------|    |    |    |    |    |    |    |
+  // --------------------------------------       --------------------------------------
+  //| c| 0  | 0  | 0  | 0  | 0  | 0  | 0  | ......|b24| b6 | b5 | b4 | b3 | b2 | b1 | b0 |  DEST
+  // --------------------------------------       --------------------------------------
+
+
+#if defined(__x86_64__) && defined(__GNUC__) && defined(__BMI2__)
+inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint64_t>
+VarintParseSlowX86B64(const char* p, uint64_t origdata) {
+  // Caculate the number of the valid bits.
+  uint64_t valid_counts = absl::countr_zero(0x8080808080808080 & ~origdata);
+
+  uint64_t mask = ((uint64_t)1 << valid_counts) - 1;
+  // If there are 64 valid bits, the left-shifting 64 bits will overflow.
+  if ( PROTOBUF_PREDICT_FALSE(valid_counts == 64) ) {
+      mask = 0xffffffffffffffff;
+  }
+
+  uint64 mask_bits = 0x7f7f7f7f7f7f7f7f & mask;
+  uint64_t res = _pext_u64(origdata, mask_bits);
+
+  // Check if there are more bytes. There are only 56 bits for data in 8
+  // encoded bytes. If a 64-bits numbers is larger than 56 bits, we need
+  // to extract other data bits from another 2 bytes.
+  if ( PROTOBUF_PREDICT_FALSE ((valid_counts == 64) && \
+			       ((origdata & 0x8000000000000000) != 0) )) {
+    uint32_t fourbytes;
+    std::memcpy(&fourbytes, p + 8, sizeof(fourbytes));
+
+    uint32_t fourbytes_counts = absl::countr_zero(0x00008080 & ~fourbytes);
+    uint32_t fourbyyes_mask = ((uint32_t)1 << fourbytes_counts) - 1;
+    uint32 fourbyyes_mask_bits = 0x00007f7f & fourbyyes_mask;
+    uint64_t fourbyyes_res = _pext_u32(fourbytes, fourbyyes_mask_bits);
+
+    res |= fourbyyes_res << 56;
+    valid_counts += fourbytes_counts;
+  }
+
+  return {p + (valid_counts >> 3) + 1, res};
+}
+
+inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint32_t>
+VarintParseSlowX86B32(const char* p, uint64_t origdata) {
+
+  uint64_t valid_counts = absl::countr_zero(0x8080808080808080 & ~origdata);
+  uint64_t mask = ((uint64_t)1 << valid_counts) - 1;
+  uint64 mask_bits = 0x7f7f7f7f7f7f7f7f & mask;
+  uint32_t res = _pext_u64(origdata, mask_bits);
+
+  return {p + (valid_counts >> 3) + 1, res};
+}
+
+static const char* VarintParseSlowX86(const char* p, uint32_t* out,
+                                      uint64_t first8) {
+  auto tmp = VarintParseSlowX86B32(p, first8);
+  *out = tmp.second;
+  return tmp.first;
+}
+
+static const char* VarintParseSlowX86(const char* p, uint64_t* out,
+                                      uint64_t first8) {
+  auto tmp = VarintParseSlowX86B64(p, first8);
+  *out = tmp.second;
+  return tmp.first;
+}
+
+#endif
+
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
 #if defined(__aarch64__) && defined(PROTOBUF_LITTLE_ENDIAN)
@@ -923,7 +1003,21 @@ PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
     return p + 2;
   }
   return VarintParseSlowArm(p, out, first8);
-#else   // __aarch64__
+#elif defined(__x86_64__) && defined(__GNUC__) && defined(__BMI2__)
+  uint64_t first8;
+  std::memcpy(&first8, p, sizeof(first8));
+
+  if (PROTOBUF_PREDICT_TRUE((first8 & 0x80) == 0)) {
+    *out = _pext_u64(first8, 0x7f);
+    return p + 1;
+  }
+  if (PROTOBUF_PREDICT_TRUE((first8 & 0x8000) == 0)) {
+    *out = _pext_u64(first8, 0x7f7f);
+    return p + 2;
+  }
+
+  return VarintParseSlowX86(p, out, first8);
+#else
   auto ptr = reinterpret_cast<const uint8_t*>(p);
   uint32_t res = ptr[0];
   if ((res & 0x80) == 0) {
