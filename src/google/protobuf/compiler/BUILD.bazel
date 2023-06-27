@@ -199,7 +199,7 @@ filegroup(
 filegroup(
     name = "plugin_proto_src",
     srcs = ["plugin.proto"],
-    visibility = ["@upb//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
 )
 
 exports_files(
