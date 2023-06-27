@@ -202,7 +202,7 @@ inline int AlignOffset(int offset) { return AlignTo(offset, kSafeAlignment); }
 
 // ===================================================================
 
-class DynamicMessage : public Message {
+class DynamicMessage final : public Message {
  public:
   explicit DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info);
 
