@@ -145,7 +145,6 @@ cc_library(
         "msg.h",
         "status.h",
         "string_view.h",
-        "upb.h",
         "upb.hpp",
         "wire/common.h",
         "wire/decode.h",
