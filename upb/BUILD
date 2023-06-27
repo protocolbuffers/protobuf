@@ -113,13 +113,13 @@ package_group(
 cc_library(
     name = "port",
     hdrs = [
-        "upb/port/atomic.h",
-        "upb/port/vsnprintf_compat.h",
+        "port/atomic.h",
+        "port/vsnprintf_compat.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "upb/port/def.inc",
-        "upb/port/undef.inc",
+        "port/def.inc",
+        "port/undef.inc",
     ],
     visibility = ["//:__subpackages__"],
 )
@@ -127,29 +127,29 @@ cc_library(
 cc_library(
     name = "upb",
     hdrs = [
-        "upb/alloc.h",
-        "upb/arena.h",
-        "upb/array.h",
-        "upb/base/descriptor_constants.h",
-        "upb/base/status.h",
-        "upb/base/string_view.h",
-        "upb/collections/array.h",
-        "upb/decode.h",
-        "upb/encode.h",
-        "upb/extension_registry.h",
-        "upb/map.h",
-        "upb/mem/alloc.h",
-        "upb/mem/arena.h",
-        "upb/message/extension_internal.h",
-        "upb/message/message.h",
-        "upb/msg.h",
-        "upb/status.h",
-        "upb/string_view.h",
-        "upb/upb.h",
-        "upb/upb.hpp",
-        "upb/wire/common.h",
-        "upb/wire/decode.h",
-        "upb/wire/encode.h",
+        "alloc.h",
+        "arena.h",
+        "array.h",
+        "base/descriptor_constants.h",
+        "base/status.h",
+        "base/string_view.h",
+        "collections/array.h",
+        "decode.h",
+        "encode.h",
+        "extension_registry.h",
+        "map.h",
+        "mem/alloc.h",
+        "mem/arena.h",
+        "message/extension_internal.h",
+        "message/message.h",
+        "msg.h",
+        "status.h",
+        "string_view.h",
+        "upb.h",
+        "upb.hpp",
+        "wire/common.h",
+        "wire/decode.h",
+        "wire/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -170,13 +170,13 @@ cc_library(
 cc_library(
     name = "base",
     srcs = [
-        "upb/base/status.c",
+        "base/status.c",
     ],
     hdrs = [
-        "upb/base/descriptor_constants.h",
-        "upb/base/log2.h",
-        "upb/base/status.h",
-        "upb/base/string_view.h",
+        "base/descriptor_constants.h",
+        "base/log2.h",
+        "base/status.h",
+        "base/string_view.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
@@ -186,7 +186,7 @@ cc_library(
 cc_library(
     name = "message",
     hdrs = [
-        "upb/message/message.h",
+        "message/message.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -213,12 +213,12 @@ alias(
 cc_library(
     name = "message_internal",
     srcs = [
-        "upb/message/message.c",
+        "message/message.c",
     ],
     hdrs = [
-        "upb/message/extension_internal.h",
-        "upb/message/internal.h",
-        "upb/message/message.h",
+        "message/extension_internal.h",
+        "message/internal.h",
+        "message/message.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -233,7 +233,7 @@ cc_library(
 
 cc_library(
     name = "message_tagged_ptr",
-    hdrs = ["upb/message/tagged_ptr.h"],
+    hdrs = ["message/tagged_ptr.h"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:friends"],
     deps = [
@@ -244,7 +244,7 @@ cc_library(
 cc_library(
     name = "message_accessors_internal",
     hdrs = [
-        "upb/message/accessors_internal.h",
+        "message/accessors_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:friends"],
@@ -259,11 +259,11 @@ cc_library(
 cc_library(
     name = "message_accessors",
     srcs = [
-        "upb/message/accessors.c",
-        "upb/message/accessors_internal.h",
+        "message/accessors.c",
+        "message/accessors_internal.h",
     ],
     hdrs = [
-        "upb/message/accessors.h",
+        "message/accessors.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -283,10 +283,10 @@ cc_library(
 cc_library(
     name = "message_promote",
     srcs = [
-        "upb/message/promote.c",
+        "message/promote.c",
     ],
     hdrs = [
-        "upb/message/promote.h",
+        "message/promote.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -307,10 +307,10 @@ cc_library(
 cc_library(
     name = "message_copy",
     srcs = [
-        "upb/message/copy.c",
+        "message/copy.c",
     ],
     hdrs = [
-        "upb/message/copy.h",
+        "message/copy.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -327,7 +327,7 @@ cc_library(
 cc_library(
     name = "message_split64",
     hdrs = [
-        "upb/message/accessors_split64.h",
+        "message/accessors_split64.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -339,7 +339,7 @@ cc_library(
 
 cc_test(
     name = "message_accessors_test",
-    srcs = ["upb/message/accessors_test.cc"],
+    srcs = ["message/accessors_test.cc"],
     deps = [
         ":collections",
         ":message_accessors",
@@ -360,7 +360,7 @@ cc_test(
 
 cc_test(
     name = "message_promote_test",
-    srcs = ["upb/message/promote_test.cc"],
+    srcs = ["message/promote_test.cc"],
     deps = [
         ":collections",
         ":message_accessors",
@@ -382,7 +382,7 @@ cc_test(
 
 cc_test(
     name = "message_copy_test",
-    srcs = ["upb/message/copy_test.cc"],
+    srcs = ["message/copy_test.cc"],
     deps = [
         ":collections",
         ":message_accessors",
@@ -421,11 +421,11 @@ cc_library(
 # give up any backward compatibility guarantees.
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    hdrs = ["upb/generated_code_support.h"],
+    hdrs = ["generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "upb/port/def.inc",
-        "upb/port/undef.inc",
+        "port/def.inc",
+        "port/undef.inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -444,13 +444,13 @@ cc_library(
 cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "upb/message/message.h",
-        "upb/port/def.inc",
-        "upb/port/undef.inc",
-        "upb/upb.hpp",
-        "upb/wire/decode.h",
-        "upb/wire/decode_fast.h",
-        "upb/wire/encode.h",
+        "message/message.h",
+        "port/def.inc",
+        "port/undef.inc",
+        "upb.hpp",
+        "wire/decode.h",
+        "wire/decode_fast.h",
+        "wire/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -467,10 +467,10 @@ cc_library(
 cc_library(
     name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "upb/port/def.inc",
-        "upb/port/undef.inc",
-        "upb/reflection/def.h",
-        "upb/reflection/def_pool_internal.h",
+        "port/def.inc",
+        "port/undef.inc",
+        "reflection/def.h",
+        "reflection/def_pool_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -482,7 +482,7 @@ cc_library(
 
 bootstrap_upb_proto_library(
     name = "descriptor_upb_proto",
-    base_dir = "upb/reflection/",
+    base_dir = "reflection/",
     # TODO(b/289127200): Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
     features = ["-layering_check"],
     google3_src_files = ["net/proto2/proto/descriptor.proto"],
@@ -503,8 +503,8 @@ upb_proto_reflection_library(
 cc_library(
     name = "collections",
     hdrs = [
-        "upb/collections/array.h",
-        "upb/collections/map.h",
+        "collections/array.h",
+        "collections/map.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -519,7 +519,7 @@ cc_library(
 cc_library(
     name = "message_rep_internal",
     hdrs = [
-        "upb/message/internal/map_entry.h",
+        "message/internal/map_entry.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     deps = [
@@ -531,18 +531,18 @@ cc_library(
 cc_library(
     name = "collections_internal",
     srcs = [
-        "upb/collections/array.c",
-        "upb/collections/map.c",
-        "upb/collections/map_sorter.c",
+        "collections/array.c",
+        "collections/map.c",
+        "collections/map_sorter.c",
     ],
     hdrs = [
-        "upb/collections/array.h",
-        "upb/collections/array_internal.h",
-        "upb/collections/map.h",
-        "upb/collections/map_gencode_util.h",
-        "upb/collections/map_internal.h",
-        "upb/collections/map_sorter_internal.h",
-        "upb/collections/message_value.h",
+        "collections/array.h",
+        "collections/array_internal.h",
+        "collections/map.h",
+        "collections/map_gencode_util.h",
+        "collections/map_internal.h",
+        "collections/map_sorter_internal.h",
+        "collections/message_value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
@@ -561,7 +561,7 @@ cc_library(
 cc_library(
     name = "collections_split64",
     hdrs = [
-        "upb/collections/array_split64.h",
+        "collections/array_split64.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -576,14 +576,14 @@ cc_library(
 bootstrap_cc_library(
     name = "reflection",
     hdrs = [
-        "upb/def.h",
-        "upb/def.hpp",
-        "upb/reflection.h",
-        "upb/reflection.hpp",
-        "upb/reflection/def.h",
-        "upb/reflection/def.hpp",
-        "upb/reflection/message.h",
-        "upb/reflection/message.hpp",
+        "def.h",
+        "def.hpp",
+        "reflection.h",
+        "reflection.hpp",
+        "reflection/def.h",
+        "reflection/def.hpp",
+        "reflection/message.h",
+        "reflection/message.hpp",
     ],
     bootstrap_deps = [":reflection_internal"],
     copts = UPB_DEFAULT_COPTS,
@@ -598,56 +598,56 @@ bootstrap_cc_library(
 bootstrap_cc_library(
     name = "reflection_internal",
     srcs = [
-        "upb/reflection/def_builder.c",
-        "upb/reflection/def_pool.c",
-        "upb/reflection/def_type.c",
-        "upb/reflection/desc_state.c",
-        "upb/reflection/enum_def.c",
-        "upb/reflection/enum_reserved_range.c",
-        "upb/reflection/enum_value_def.c",
-        "upb/reflection/extension_range.c",
-        "upb/reflection/field_def.c",
-        "upb/reflection/file_def.c",
-        "upb/reflection/message.c",
-        "upb/reflection/message_def.c",
-        "upb/reflection/message_reserved_range.c",
-        "upb/reflection/method_def.c",
-        "upb/reflection/oneof_def.c",
-        "upb/reflection/service_def.c",
+        "reflection/def_builder.c",
+        "reflection/def_pool.c",
+        "reflection/def_type.c",
+        "reflection/desc_state.c",
+        "reflection/enum_def.c",
+        "reflection/enum_reserved_range.c",
+        "reflection/enum_value_def.c",
+        "reflection/extension_range.c",
+        "reflection/field_def.c",
+        "reflection/file_def.c",
+        "reflection/message.c",
+        "reflection/message_def.c",
+        "reflection/message_reserved_range.c",
+        "reflection/method_def.c",
+        "reflection/oneof_def.c",
+        "reflection/service_def.c",
     ],
     hdrs = [
-        "upb/reflection/common.h",
-        "upb/reflection/def.h",
-        "upb/reflection/def.hpp",
-        "upb/reflection/def_builder_internal.h",
-        "upb/reflection/def_pool.h",
-        "upb/reflection/def_pool_internal.h",
-        "upb/reflection/def_type.h",
-        "upb/reflection/desc_state_internal.h",
-        "upb/reflection/enum_def.h",
-        "upb/reflection/enum_def_internal.h",
-        "upb/reflection/enum_reserved_range.h",
-        "upb/reflection/enum_reserved_range_internal.h",
-        "upb/reflection/enum_value_def.h",
-        "upb/reflection/enum_value_def_internal.h",
-        "upb/reflection/extension_range.h",
-        "upb/reflection/extension_range_internal.h",
-        "upb/reflection/field_def.h",
-        "upb/reflection/field_def_internal.h",
-        "upb/reflection/file_def.h",
-        "upb/reflection/file_def_internal.h",
-        "upb/reflection/message.h",
-        "upb/reflection/message.hpp",
-        "upb/reflection/message_def.h",
-        "upb/reflection/message_def_internal.h",
-        "upb/reflection/message_reserved_range.h",
-        "upb/reflection/message_reserved_range_internal.h",
-        "upb/reflection/method_def.h",
-        "upb/reflection/method_def_internal.h",
-        "upb/reflection/oneof_def.h",
-        "upb/reflection/oneof_def_internal.h",
-        "upb/reflection/service_def.h",
-        "upb/reflection/service_def_internal.h",
+        "reflection/common.h",
+        "reflection/def.h",
+        "reflection/def.hpp",
+        "reflection/def_builder_internal.h",
+        "reflection/def_pool.h",
+        "reflection/def_pool_internal.h",
+        "reflection/def_type.h",
+        "reflection/desc_state_internal.h",
+        "reflection/enum_def.h",
+        "reflection/enum_def_internal.h",
+        "reflection/enum_reserved_range.h",
+        "reflection/enum_reserved_range_internal.h",
+        "reflection/enum_value_def.h",
+        "reflection/enum_value_def_internal.h",
+        "reflection/extension_range.h",
+        "reflection/extension_range_internal.h",
+        "reflection/field_def.h",
+        "reflection/field_def_internal.h",
+        "reflection/file_def.h",
+        "reflection/file_def_internal.h",
+        "reflection/message.h",
+        "reflection/message.hpp",
+        "reflection/message_def.h",
+        "reflection/message_def_internal.h",
+        "reflection/message_reserved_range.h",
+        "reflection/message_reserved_range_internal.h",
+        "reflection/method_def.h",
+        "reflection/method_def_internal.h",
+        "reflection/oneof_def.h",
+        "reflection/oneof_def_internal.h",
+        "reflection/service_def.h",
+        "reflection/service_def_internal.h",
     ],
     bootstrap_deps = [":descriptor_upb_proto"],
     copts = UPB_DEFAULT_COPTS,
@@ -668,11 +668,11 @@ bootstrap_cc_library(
 cc_library(
     name = "textformat",
     srcs = [
-        "upb/text/encode.c",
+        "text/encode.c",
     ],
     hdrs = [
-        "upb/text/encode.h",
-        "upb/text_encode.h",
+        "text/encode.h",
+        "text_encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -699,10 +699,10 @@ alias(
 cc_test(
     name = "def_builder_test",
     srcs = [
-        "upb/reflection/common.h",
-        "upb/reflection/def_builder_internal.h",
-        "upb/reflection/def_builder_test.cc",
-        "upb/reflection/def_type.h",
+        "reflection/common.h",
+        "reflection/def_builder_internal.h",
+        "reflection/def_builder_test.cc",
+        "reflection/def_type.h",
     ],
     deps = [
         ":descriptor_upb_proto",
@@ -718,7 +718,7 @@ cc_test(
 
 cc_test(
     name = "collections_test",
-    srcs = ["upb/collections/test.cc"],
+    srcs = ["collections/test.cc"],
     deps = [
         ":collections",
         ":upb",
@@ -728,7 +728,7 @@ cc_test(
 
 cc_test(
     name = "message_test",
-    srcs = ["upb/message/test.cc"],
+    srcs = ["message/test.cc"],
     deps = [
         ":json",
         ":message_test_upb_proto",
@@ -745,7 +745,7 @@ cc_test(
 proto_library(
     name = "message_test_proto",
     testonly = 1,
-    srcs = ["upb/message/test.proto"],
+    srcs = ["message/test.proto"],
     deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
 )
 
@@ -763,7 +763,7 @@ upb_proto_reflection_library(
 
 cc_test(
     name = "atoi_test",
-    srcs = ["upb/lex/atoi_test.cc"],
+    srcs = ["lex/atoi_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":lex",
@@ -774,7 +774,7 @@ cc_test(
 
 cc_test(
     name = "hash_test",
-    srcs = ["upb/hash/test.cc"],
+    srcs = ["hash/test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":hash",
@@ -789,8 +789,8 @@ cc_test(
 cc_library(
     name = "mem",
     hdrs = [
-        "upb/mem/alloc.h",
-        "upb/mem/arena.h",
+        "mem/alloc.h",
+        "mem/arena.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
@@ -802,7 +802,7 @@ cc_library(
 
 cc_test(
     name = "arena_test",
-    srcs = ["upb/mem/arena_test.cc"],
+    srcs = ["mem/arena_test.cc"],
     deps = [
         ":port",
         ":upb",
@@ -816,13 +816,13 @@ cc_test(
 cc_library(
     name = "mem_internal",
     srcs = [
-        "upb/mem/alloc.c",
-        "upb/mem/arena.c",
+        "mem/alloc.c",
+        "mem/arena.c",
     ],
     hdrs = [
-        "upb/mem/alloc.h",
-        "upb/mem/arena.h",
-        "upb/mem/arena_internal.h",
+        "mem/alloc.h",
+        "mem/arena.h",
+        "mem/arena_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
@@ -832,8 +832,8 @@ cc_library(
 cc_library(
     name = "wire",
     hdrs = [
-        "upb/wire/decode.h",
-        "upb/wire/encode.h",
+        "wire/decode.h",
+        "wire/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -849,18 +849,18 @@ cc_library(
 cc_library(
     name = "wire_internal",
     srcs = [
-        "upb/wire/decode.c",
-        "upb/wire/decode_fast.c",
-        "upb/wire/encode.c",
+        "wire/decode.c",
+        "wire/decode_fast.c",
+        "wire/encode.c",
     ],
     hdrs = [
-        "upb/wire/common.h",
-        "upb/wire/common_internal.h",
-        "upb/wire/decode.h",
-        "upb/wire/decode_fast.h",
-        "upb/wire/decode_internal.h",
-        "upb/wire/encode.h",
-        "upb/wire/swap_internal.h",
+        "wire/common.h",
+        "wire/common_internal.h",
+        "wire/decode.h",
+        "wire/decode_fast.h",
+        "wire/decode_internal.h",
+        "wire/encode.h",
+        "wire/swap_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
@@ -882,14 +882,14 @@ cc_library(
 
 cc_library(
     name = "wire_types",
-    hdrs = ["upb/wire/types.h"],
+    hdrs = ["wire/types.h"],
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "eps_copy_input_stream",
-    srcs = ["upb/wire/eps_copy_input_stream.c"],
-    hdrs = ["upb/wire/eps_copy_input_stream.h"],
+    srcs = ["wire/eps_copy_input_stream.c"],
+    hdrs = ["wire/eps_copy_input_stream.h"],
     visibility = ["//visibility:public"],
     deps = [
         ":mem",
@@ -900,10 +900,10 @@ cc_library(
 cc_library(
     name = "wire_reader",
     srcs = [
-        "upb/wire/reader.c",
-        "upb/wire/swap_internal.h",
+        "wire/reader.c",
+        "wire/swap_internal.h",
     ],
-    hdrs = ["upb/wire/reader.h"],
+    hdrs = ["wire/reader.h"],
     visibility = ["//visibility:public"],
     deps = [
         ":eps_copy_input_stream",
@@ -914,7 +914,7 @@ cc_library(
 
 cc_test(
     name = "eps_copy_input_stream_test",
-    srcs = ["upb/wire/eps_copy_input_stream_test.cc"],
+    srcs = ["wire/eps_copy_input_stream_test.cc"],
     deps = [
         ":eps_copy_input_stream",
         ":upb",
@@ -925,12 +925,12 @@ cc_test(
 cc_library(
     name = "hash",
     srcs = [
-        "upb/hash/common.c",
+        "hash/common.c",
     ],
     hdrs = [
-        "upb/hash/common.h",
-        "upb/hash/int_table.h",
-        "upb/hash/str_table.h",
+        "hash/common.h",
+        "hash/int_table.h",
+        "hash/str_table.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
@@ -944,16 +944,16 @@ cc_library(
 cc_library(
     name = "lex",
     srcs = [
-        "upb/lex/atoi.c",
-        "upb/lex/round_trip.c",
-        "upb/lex/strtod.c",
-        "upb/lex/unicode.c",
+        "lex/atoi.c",
+        "lex/round_trip.c",
+        "lex/strtod.c",
+        "lex/unicode.c",
     ],
     hdrs = [
-        "upb/lex/atoi.h",
-        "upb/lex/round_trip.h",
-        "upb/lex/strtod.h",
-        "upb/lex/unicode.h",
+        "lex/atoi.h",
+        "lex/round_trip.h",
+        "lex/strtod.h",
+        "lex/unicode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
@@ -962,7 +962,7 @@ cc_library(
 
 cc_binary(
     name = "libupb.so",
-    srcs = ["upb/upb_so.c"],
+    srcs = ["upb_so.c"],
     copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
     linkshared = 1,
     linkstatic = 1,
@@ -1135,10 +1135,10 @@ filegroup(
     name = "source_files",
     srcs = glob(
         [
-            "upb/**/*.c",
-            "upb/**/*.h",
-            "upb/**/*.hpp",
-            "upb/**/*.inc",
+            "**/*.c",
+            "**/*.h",
+            "**/*.hpp",
+            "**/*.inc",
        ],
         exclude = [
             "upb/**/conformance_upb.c",
