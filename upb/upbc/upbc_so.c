@@ -27,4 +27,4 @@
 
 // These headers form a spanning tree for the upbc defs needed by FFI layers.
 
-#include "upbc/upbdev.h"
+#include "upb/upbc/upbdev.h"

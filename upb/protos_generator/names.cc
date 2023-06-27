@@ -29,7 +29,7 @@
 
 #include <string>
 
-#include "upbc/keywords.h"
+#include "upb/upbc/keywords.h"
 
 namespace protos_generator {
 

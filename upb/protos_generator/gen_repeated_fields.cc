@@ -38,9 +38,9 @@
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/names.h"
 #include "protos_generator/output.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
-#include "upbc/names.h"
+#include "upb/upbc/common.h"
+#include "upb/upbc/file_layout.h"
+#include "upb/upbc/names.h"
 
 namespace protos_generator {
 namespace protobuf = ::google::protobuf;

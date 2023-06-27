@@ -28,7 +28,7 @@
 // Shamelessly copied from the protobuf compiler's subprocess.cc
 // except this version passes strings instead of Messages.
 
-#include "upbc/subprocess.h"
+#include "upb/upbc/subprocess.h"
 
 #include <algorithm>
 #include <cstring>

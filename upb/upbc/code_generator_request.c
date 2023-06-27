@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upbc/code_generator_request.h"
+#include "upb/upbc/code_generator_request.h"
 
 #include <inttypes.h>
 

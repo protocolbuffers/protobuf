@@ -30,7 +30,7 @@
 
 #include "upb/mem/arena.h"
 #include "upb/reflection/def.h"
-#include "upbc/code_generator_request.upb.h"
+#include "upb/upbc/code_generator_request.upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"

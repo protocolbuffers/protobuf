@@ -23,7 +23,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/upbdev.h"
+#include "upb/upbc/upbdev.h"
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -40,9 +40,9 @@
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
-#include "upbc/code_generator_request.h"
-#include "upbc/code_generator_request.upb.h"
-#include "upbc/code_generator_request.upbdefs.h"
+#include "upb/upbc/code_generator_request.h"
+#include "upb/upbc/code_generator_request.upb.h"
+#include "upb/upbc/code_generator_request.upbdefs.h"
 
 static google_protobuf_compiler_CodeGeneratorResponse* upbc_JsonDecode(
     const char* data, size_t size, upb_Arena* arena, upb_Status* status) {

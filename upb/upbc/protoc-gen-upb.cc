@@ -47,10 +47,10 @@
 #include "upb/base/string_view.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
-#include "upbc/names.h"
-#include "upbc/plugin.h"
+#include "upb/upbc/common.h"
+#include "upb/upbc/file_layout.h"
+#include "upb/upbc/names.h"
+#include "upb/upbc/plugin.h"
 
 // Must be last.
 #include "upb/port/def.inc"

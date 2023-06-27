@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upbc/names.h"
+#include "upb/upbc/names.h"
 
 #include <string>
 

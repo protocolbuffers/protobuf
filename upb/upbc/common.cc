@@ -23,7 +23,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/common.h"
+#include "upb/upbc/common.h"
 
 #include "absl/strings/str_replace.h"
 #include "upb/reflection/def.hpp"

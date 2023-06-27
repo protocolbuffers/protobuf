@@ -28,9 +28,9 @@
 #include "google/protobuf/descriptor.upb.h"
 #include "upb/reflection/def.hpp"
 #include "upb/util/def_to_proto.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
-#include "upbc/plugin.h"
+#include "upb/upbc/common.h"
+#include "upb/upbc/file_layout.h"
+#include "upb/upbc/plugin.h"
 
 namespace upbc {
 namespace {
