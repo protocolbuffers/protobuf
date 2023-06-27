@@ -91,9 +91,8 @@ class RepeatedFieldRef<
   friend class Reflection;
   RepeatedFieldRef(const Message& message, const FieldDescriptor* field) {
     const Reflection* reflection = message.GetReflection();
-    data_ = reflection->RepeatedFieldData(const_cast<Message*>(&message), field,
-                                          internal::RefTypeTraits<T>::cpp_type,
-                                          nullptr);
+    data_ = reflection->RepeatedFieldData(
+        message, field, internal::RefTypeTraits<T>::cpp_type, nullptr);
     accessor_ = reflection->RepeatedFieldAccessor(field);
   }
 
@@ -200,8 +199,7 @@ class RepeatedFieldRef<
   RepeatedFieldRef(const Message& message, const FieldDescriptor* field) {
     const Reflection* reflection = message.GetReflection();
     data_ = reflection->RepeatedFieldData(
-        const_cast<Message*>(&message), field,
-        internal::RefTypeTraits<T>::cpp_type,
+        message, field, internal::RefTypeTraits<T>::cpp_type,
         internal::RefTypeTraits<T>::GetMessageFieldDescriptor());
     accessor_ = reflection->RepeatedFieldAccessor(field);
     default_instance_ =

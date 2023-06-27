@@ -59,6 +59,7 @@
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 
@@ -2561,7 +2562,9 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
                                             int ctype,
                                             const Descriptor* desc) const {
   USAGE_CHECK_REPEATED("GetRawRepeatedField");
-  if (field->cpp_type() != cpptype)
+  if (field->cpp_type() != cpptype &&
+      (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
+       cpptype != FieldDescriptor::CPPTYPE_INT32))
     ReportReflectionUsageTypeError(descriptor_, field, "GetRawRepeatedField",
                                    cpptype);
   if (ctype >= 0)
@@ -2569,13 +2572,8 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
   if (desc != nullptr)
     ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
-    // Should use extension_set::GetRawRepeatedField. However, the required
-    // parameter "default repeated value" is not very easy to get here.
-    // Map is not supported in extensions, it is acceptable to use
-    // extension_set::MutableRawRepeatedField which does not change the message.
-    return MutableExtensionSet(const_cast<Message*>(&message))
-        ->MutableRawRepeatedField(field->number(), field->type(),
-                                  field->is_packed(), field);
+    return GetExtensionSet(message).GetRawRepeatedField(
+        field->number(), internal::DefaultRawPtr());
   } else {
     // Trigger transform for MapField
     if (IsMapFieldInApi(field)) {
@@ -3007,8 +3005,8 @@ void Reflection::ClearOneof(Message* message,
   template <>                                                              \
   const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>(   \
       const Message& message, const FieldDescriptor* field) const {        \
-    return *static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(     \
-        const_cast<Message*>(&message), field, CPPTYPE, CTYPE, nullptr));  \
+    return *static_cast<const RepeatedField<TYPE>*>(                       \
+        GetRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr));     \
   }                                                                        \
                                                                            \
   template <>                                                              \
@@ -3028,6 +3026,14 @@ HANDLE_TYPE(bool, FieldDescriptor::CPPTYPE_BOOL, -1);
 
 
 #undef HANDLE_TYPE
+
+const void* Reflection::GetRawRepeatedString(const Message& message,
+                                             const FieldDescriptor* field,
+                                             bool is_string) const {
+  (void)is_string;  // Parameter is used by Google-internal code.
+  return GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_STRING,
+                             FieldOptions::STRING, nullptr);
+}
 
 void* Reflection::MutableRawRepeatedString(Message* message,
                                            const FieldDescriptor* field,
@@ -3112,6 +3118,27 @@ Type* Reflection::AddField(Message* message,
 
 MessageFactory* Reflection::GetMessageFactory() const {
   return message_factory_;
+}
+
+const void* Reflection::RepeatedFieldData(
+    const Message& message, const FieldDescriptor* field,
+    FieldDescriptor::CppType cpp_type, const Descriptor* message_type) const {
+  ABSL_CHECK(field->is_repeated());
+  ABSL_CHECK(field->cpp_type() == cpp_type ||
+             (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM &&
+              cpp_type == FieldDescriptor::CPPTYPE_INT32))
+      << "The type parameter T in RepeatedFieldRef<T> API doesn't match "
+      << "the actual field type (for enums T should be the generated enum "
+      << "type or int32_t).";
+  if (message_type != nullptr) {
+    ABSL_CHECK_EQ(message_type, field->message_type());
+  }
+  if (field->is_extension()) {
+    return GetExtensionSet(message).GetRawRepeatedField(
+        field->number(), internal::DefaultRawPtr());
+  } else {
+    return &GetRawNonOneof<char>(message, field);
+  }
 }
 
 void* Reflection::RepeatedFieldData(Message* message,
