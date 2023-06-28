@@ -89,7 +89,6 @@ Alternatively, you can use Bazel to build and to run tests.
 
 From the project root (rather than the `ruby` directory):
 
-    $ bazel build //:protoc
     $ bazel test //ruby/tests/...
 
 Version Number Scheme
