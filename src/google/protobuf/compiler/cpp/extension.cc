@@ -149,8 +149,27 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) const {
 }
 
 void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
-  auto with_vars = printer->WithVars(&variables_);
-  Formatter format(printer);
+  Formatter format(printer, variables_);
+  std::string default_str;
+  // If this is a class member, it needs to be declared in its class scope.
+  if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+    // We need to declare a global string which will contain the default value.
+    // We cannot declare it at class scope because that would require exposing
+    // it in the header which would be annoying for other reasons.  So we
+    // replace :: with _ in the name and declare it as a global.
+    default_str =
+        absl::StrReplaceAll(variables_["scoped_name"], {{"::", "_"}}) +
+        "_default";
+    format("const std::string $1$($2$);\n", default_str,
+           DefaultValue(options_, descriptor_));
+  } else if (descriptor_->message_type()) {
+    // We have to initialize the default instance for extensions at registration
+    // time.
+    default_str = absl::StrCat(FieldMessageTypeName(descriptor_, options_),
+                               "::default_instance()");
+  } else {
+    default_str = DefaultValue(options_, descriptor_);
+  }
 
   // Likewise, class members need to declare the field constant variable.
   if (IsScoped()) {
@@ -166,31 +185,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
         "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
         "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
         "  $scoped_name$($constant_name$);\n");
-  } else if (descriptor_->cpp_type() == descriptor_->CPPTYPE_MESSAGE) {
-    printer->Emit(
-        R"cc(
-          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-          ::$proto_ns$::internal::ExtensionIdentifier<
-              $extendee$, ::$proto_ns$::internal::$type_traits$, $field_type$,
-              $packed$>
-              $scoped_name$($constant_name$, $verify_fn$);
-        )cc");
   } else {
-    std::string default_str;
-    // If this is a class member, it needs to be declared in its class scope.
-    if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      // We need to declare a global string which will contain the default
-      // value. We cannot declare it at class scope because that would require
-      // exposing it in the header which would be annoying for other reasons. So
-      // we replace :: with _ in the name and declare it as a global.
-      default_str =
-          absl::StrReplaceAll(variables_["scoped_name"], {{"::", "_"}}) +
-          "_default";
-      format("const std::string $1$($2$);\n", default_str,
-             DefaultValue(options_, descriptor_));
-    } else {
-      default_str = DefaultValue(options_, descriptor_);
-    }
     format(
         "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
         "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
