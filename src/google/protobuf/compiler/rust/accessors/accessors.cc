@@ -49,6 +49,7 @@ std::unique_ptr<AccessorGenerator> AccessorGenerator::For(
   }
 
   switch (field.desc().type()) {
+    case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_INT64:
     case FieldDescriptor::TYPE_BOOL:
       if (field.desc().is_repeated()) return nullptr;
