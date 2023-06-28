@@ -30,7 +30,7 @@
 #include <lualib.h>
 #include <signal.h>
 
-#include "lua/upb.h"
+#include "upb/lua/upb.h"
 
 lua_State* L;
 

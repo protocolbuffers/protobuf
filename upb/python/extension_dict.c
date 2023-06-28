@@ -25,10 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "python/extension_dict.h"
+#include "upb/python/extension_dict.h"
 
-#include "python/message.h"
-#include "python/protobuf.h"
+#include "upb/python/message.h"
+#include "upb/python/protobuf.h"
 #include "upb/reflection/def.h"
 
 // -----------------------------------------------------------------------------

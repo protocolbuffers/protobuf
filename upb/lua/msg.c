@@ -38,7 +38,7 @@
 #include <string.h>
 
 #include "lauxlib.h"
-#include "lua/upb.h"
+#include "upb/lua/upb.h"
 #include "upb/collections/map.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"

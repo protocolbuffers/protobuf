@@ -30,7 +30,7 @@
 
 #include <stdbool.h>
 
-#include "python/python_api.h"
+#include "upb/python/python_api.h"
 
 PyObject* PyUpb_UnknownFields_New(PyObject* msg);
 

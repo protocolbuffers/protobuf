@@ -25,11 +25,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "python/map.h"
+#include "upb/python/map.h"
 
-#include "python/convert.h"
-#include "python/message.h"
-#include "python/protobuf.h"
+#include "upb/python/convert.h"
+#include "upb/python/message.h"
+#include "upb/python/protobuf.h"
 #include "upb/map.h"
 #include "upb/reflection/def.h"
 

@@ -30,7 +30,7 @@
 
 #include <stdbool.h>
 
-#include "python/protobuf.h"
+#include "upb/python/protobuf.h"
 #include "upb/reflection/message.h"
 
 // Removes the wrapper object for this field from the unset subobject cache.

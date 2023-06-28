@@ -33,7 +33,7 @@
 #include <string.h>
 
 #include "lauxlib.h"
-#include "lua/upb.h"
+#include "upb/lua/upb.h"
 #include "upb/reflection.h"
 
 #define LUPB_ENUMDEF "lupb.enumdef"

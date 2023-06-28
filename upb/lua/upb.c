@@ -47,7 +47,7 @@
  * domain of [u]int64 values.
  */
 
-#include "lua/upb.h"
+#include "upb/lua/upb.h"
 
 #include <float.h>
 #include <math.h>

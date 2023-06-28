@@ -25,10 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "python/unknown_fields.h"
+#include "upb/python/unknown_fields.h"
 
-#include "python/message.h"
-#include "python/protobuf.h"
+#include "upb/python/message.h"
+#include "upb/python/protobuf.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"

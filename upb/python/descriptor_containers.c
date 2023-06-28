@@ -25,10 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "python/descriptor_containers.h"
+#include "upb/python/descriptor_containers.h"
 
-#include "python/descriptor.h"
-#include "python/protobuf.h"
+#include "upb/python/descriptor.h"
+#include "upb/python/protobuf.h"
 #include "upb/reflection/def.h"
 
 // Implements __repr__ as str(dict(self)).
