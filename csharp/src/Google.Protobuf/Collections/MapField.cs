@@ -347,7 +347,7 @@ namespace Google.Protobuf.Collections
         /// Returns a hash code for this instance.
         /// </summary>
         /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
         /// </returns>
         public override int GetHashCode()
         {
@@ -452,7 +452,14 @@ namespace Google.Protobuf.Collections
             WriteContext.Initialize(output, out WriteContext ctx);
             try
             {
-                WriteTo(ref ctx, codec);
+                if (output.IsSerializationDeterministic())
+                {
+                    WriteDeterministicTo(ref ctx, codec);
+                }
+                else
+                {
+                    WriteTo(ref ctx, codec);
+                }
             }
             finally
             {
@@ -469,10 +476,50 @@ namespace Google.Protobuf.Collections
         [SecuritySafeCritical]
         public void WriteTo(ref WriteContext ctx, Codec codec)
         {
-            foreach (var entry in list)
+            if (ctx.state.CodedOutputStream is not null && ctx.state.CodedOutputStream.IsSerializationDeterministic())
+            {
+                // We can't sort the list in place, as that would invalidate the linked list.
+                // Instead, we create a new list, sort that, and then write it out.
+                var sorted = new List<KeyValuePair<TKey, TValue>>(list);
+                sorted.Sort((pair1, pair2) => Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key));
+
+                WriteTo(ref ctx, codec, sorted);
+            }
+            else
+            {
+                WriteTo(ref ctx, codec, list);
+            }
+        }
+
+        private void WriteTo(ref WriteContext ctx, Codec codec, IEnumerable<KeyValuePair<TKey, TValue>> listKvp)
+        {
+            foreach (var entry in listKvp)
             {
                 ctx.WriteTag(codec.MapTag);
 
+                WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, CalculateEntrySize(codec, entry));
+                codec.KeyCodec.WriteTagAndValue(ref ctx, entry.Key);
+                codec.ValueCodec.WriteTagAndValue(ref ctx, entry.Value);
+            }
+        }
+
+        /// <summary>
+        /// Writes the contents of this map to the given write context, using the specified codec
+        /// to encode each entry.
+        /// </summary>
+        /// <param name="ctx">The write context to write to.</param>
+        /// <param name="codec">The codec to use for each entry.</param>
+        [SecuritySafeCritical]
+        public void WriteDeterministicTo(ref WriteContext ctx, Codec codec)
+        {
+            // sort list by key
+            // We can't sort the list in place, as that would invalidate the linked list.
+            // Instead, we create a new list, sort that, and then write it out.
+            var sorted = new List<KeyValuePair<TKey, TValue>>(list);
+            // sorted.Sort((x, y) => KeyComparer.Compare(x.Key, y.Key));
+            foreach (var entry in sorted)
+            {
+                ctx.WriteTag(codec.MapTag);
                 WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, CalculateEntrySize(codec, entry));
                 codec.KeyCodec.WriteTagAndValue(ref ctx, entry.Key);
                 codec.ValueCodec.WriteTagAndValue(ref ctx, entry.Value);
@@ -651,7 +698,7 @@ namespace Google.Protobuf.Collections
                 this.containsCheck = containsCheck;
             }
 
-            public int Count => parent.Count; 
+            public int Count => parent.Count;
 
             public bool IsReadOnly => true;
 

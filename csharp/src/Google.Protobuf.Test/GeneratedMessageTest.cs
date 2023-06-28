@@ -334,7 +334,7 @@ namespace Google.Protobuf
 
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
 
-            var key = 10; // Field 1 
+            var key = 10; // Field 1
             var value = 20; // Field 2
             var extra = 30; // Field 3
 
@@ -689,6 +689,57 @@ namespace Google.Protobuf
             {
                 Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofUint32, parsedMessage.OneofFieldCase);
             });
+        }
+
+        [Test]
+        public void MapSerializationDeterministicTrue_ThenBytesIdentical()
+        {
+            var testMap1 = new TestMap();
+            testMap1.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test"));
+            testMap1.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            var bytes1 = SerializeTestMap(testMap1, true);
+
+            var testMap2 = new TestMap();
+            testMap2.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            testMap2.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test"));
+            var bytes2 = SerializeTestMap(testMap2, true);
+
+            Assert.IsTrue(bytes1.SequenceEqual(bytes2));
+        }
+
+        [Test]
+        public void MapSerializationDeterministicFalse_ThenBytesDifferent()
+        {
+            var testMap1 = new TestMap();
+            testMap1.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test"));
+            testMap1.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            var bytes1 = SerializeTestMap(testMap1, false);
+
+            var testMap2 = new TestMap();
+            testMap2.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            testMap2.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test"));
+            var bytes2 = SerializeTestMap(testMap2, false);
+
+            Assert.IsFalse(bytes1.SequenceEqual(bytes2));
+        }
+
+
+        private byte[] SerializeTestMap(TestMap testMap, bool useDeterministicSerialization)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                var codedOutputStream = new CodedOutputStream(memoryStream);
+                if (useDeterministicSerialization)
+                {
+                    codedOutputStream.UseDeterministicSerialization();
+                }
+
+                testMap.WriteTo(codedOutputStream);
+                codedOutputStream.Flush();
+
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                return memoryStream.ToArray();
+            }
         }
 
         [Test]
