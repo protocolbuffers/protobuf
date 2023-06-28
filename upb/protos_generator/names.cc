@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "protos_generator/names.h"
+#include "upb/protos_generator/names.h"
 
 #include <string>
 

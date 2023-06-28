@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "protos_generator/gen_messages.h"
+#include "upb/protos_generator/gen_messages.h"
 
 #include <string>
 #include <vector>
@@ -33,12 +33,12 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
-#include "protos_generator/gen_accessors.h"
-#include "protos_generator/gen_enums.h"
-#include "protos_generator/gen_extensions.h"
-#include "protos_generator/gen_utils.h"
-#include "protos_generator/names.h"
-#include "protos_generator/output.h"
+#include "upb/protos_generator/gen_accessors.h"
+#include "upb/protos_generator/gen_enums.h"
+#include "upb/protos_generator/gen_extensions.h"
+#include "upb/protos_generator/gen_utils.h"
+#include "upb/protos_generator/names.h"
+#include "upb/protos_generator/output.h"
 #include "upb/upbc/common.h"
 #include "upb/upbc/file_layout.h"
 

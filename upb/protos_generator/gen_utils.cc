@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "protos_generator/gen_utils.h"
+#include "upb/protos_generator/gen_utils.h"
 
 #include <algorithm>
 #include <string>

@@ -36,9 +36,9 @@
 #include "protos/protos.h"
 #include "protos/repeated_field.h"
 #include "protos/repeated_field_iterator.h"
-#include "protos_generator/tests/child_model.upb.proto.h"
-#include "protos_generator/tests/no_package.upb.proto.h"
-#include "protos_generator/tests/test_model.upb.proto.h"
+#include "upb/protos_generator/tests/child_model.upb.proto.h"
+#include "upb/protos_generator/tests/no_package.upb.proto.h"
+#include "upb/protos_generator/tests/test_model.upb.proto.h"
 #include "upb/upb.hpp"
 
 using ::protos_generator::test::protos::ChildModel1;

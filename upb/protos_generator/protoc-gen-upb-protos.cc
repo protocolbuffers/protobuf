@@ -29,12 +29,12 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
-#include "protos_generator/gen_enums.h"
-#include "protos_generator/gen_extensions.h"
-#include "protos_generator/gen_messages.h"
-#include "protos_generator/gen_utils.h"
-#include "protos_generator/names.h"
-#include "protos_generator/output.h"
+#include "upb/protos_generator/gen_enums.h"
+#include "upb/protos_generator/gen_extensions.h"
+#include "upb/protos_generator/gen_messages.h"
+#include "upb/protos_generator/gen_utils.h"
+#include "upb/protos_generator/names.h"
+#include "upb/protos_generator/output.h"
 #include "upb/upbc/file_layout.h"
 
 namespace protos_generator {
