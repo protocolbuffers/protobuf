@@ -323,6 +323,10 @@ class PROTOBUF_EXPORT TextFormat {
 
     // Like TextFormat::Print
     bool Print(const Message& message, io::ZeroCopyOutputStream* output) const;
+    // Like TextFormat::Printer::Print but takes an additional
+    // internal::FieldReporterLevel
+    bool Print(const Message& message, io::ZeroCopyOutputStream* output,
+               internal::FieldReporterLevel reporter) const;
     // Like TextFormat::PrintUnknownFields
     bool PrintUnknownFields(const UnknownFieldSet& unknown_fields,
                             io::ZeroCopyOutputStream* output) const;
@@ -421,6 +425,14 @@ class PROTOBUF_EXPORT TextFormat {
       truncate_string_field_longer_than_ = truncate_string_field_longer_than;
     }
 
+    // Sets whether sensitive fields found in the message will be reported or
+    // not.
+    void SetReportSensitiveFields(internal::FieldReporterLevel reporter) {
+      if (report_sensitive_fields_ < reporter) {
+        report_sensitive_fields_ = reporter;
+      }
+    }
+
     // Register a custom field-specific FastFieldValuePrinter for fields
     // with a particular FieldDescriptor.
     // Returns "true" if the registration succeeded, or "false", if there is
@@ -465,12 +477,6 @@ class PROTOBUF_EXPORT TextFormat {
     // This discourages equality checks based on serialized string comparisons.
     void SetRandomizeDebugString(bool randomize) {
       randomize_debug_string_ = randomize;
-    }
-
-    // Sets whether sensitive fields found in the message will be reported or
-    // not.
-    void SetReportSensitiveFields(bool report) {
-      report_sensitive_fields_ = report;
     }
 
     // Forward declaration of an internal class used to print the text
@@ -544,7 +550,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool insert_silent_marker_;
     bool redact_debug_string_;
     bool randomize_debug_string_;
-    bool report_sensitive_fields_;
+    internal::FieldReporterLevel report_sensitive_fields_;
     bool hide_unknown_fields_;
     bool print_message_fields_in_index_order_;
     bool expand_any_;
