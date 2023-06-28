@@ -2862,6 +2862,11 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
 
 namespace {
 
+bool IsGroupSyntax(const FieldDescriptor* desc) {
+  return desc->type() == FieldDescriptor::TYPE_GROUP;
+}
+
+
 bool RetrieveOptionsAssumingRightPool(
     int depth, const Message& options,
     std::vector<std::string>* option_entries) {
@@ -3042,9 +3047,11 @@ std::string FileDescriptor::DebugStringWithOptions(
     SourceLocationCommentPrinter syntax_comment(this, path, "",
                                                 debug_string_options);
     syntax_comment.AddPreComment(&contents);
-    absl::SubstituteAndAppend(
-        &contents, "syntax = \"$0\";\n\n",
-        FileDescriptorLegacy::SyntaxName(FileDescriptorLegacy(this).syntax()));
+    {
+      absl::SubstituteAndAppend(&contents, "syntax = \"$0\";\n\n",
+                                FileDescriptorLegacy::SyntaxName(
+                                    FileDescriptorLegacy(this).syntax()));
+    }
     syntax_comment.AddPostComment(&contents);
   }
 
@@ -3079,7 +3086,8 @@ std::string FileDescriptor::DebugStringWithOptions(
     package_comment.AddPostComment(&contents);
   }
 
-  if (FormatLineOptions(0, options(), pool(), &contents)) {
+  FileOptions full_options = options();
+  if (FormatLineOptions(0, full_options, pool(), &contents)) {
     contents.append("\n");  // add some space if we had options
   }
 
@@ -3092,7 +3100,7 @@ std::string FileDescriptor::DebugStringWithOptions(
   // definitions (those will be done with their group field descriptor).
   absl::flat_hash_set<const Descriptor*> groups;
   for (int i = 0; i < extension_count(); i++) {
-    if (extension(i)->type() == FieldDescriptor::TYPE_GROUP) {
+    if (IsGroupSyntax(extension(i))) {
       groups.insert(extension(i)->message_type());
     }
   }
@@ -3158,19 +3166,20 @@ void Descriptor::DebugString(int depth, std::string* contents,
   }
   contents->append(" {\n");
 
-  FormatLineOptions(depth, options(), file()->pool(), contents);
+  MessageOptions full_options = options();
+  FormatLineOptions(depth, full_options, file()->pool(), contents);
 
   // Find all the 'group' types for fields and extensions; we will not output
   // their nested definitions (those will be done with their group field
   // descriptor).
   absl::flat_hash_set<const Descriptor*> groups;
   for (int i = 0; i < field_count(); i++) {
-    if (field(i)->type() == FieldDescriptor::TYPE_GROUP) {
+    if (IsGroupSyntax(field(i))) {
       groups.insert(field(i)->message_type());
     }
   }
   for (int i = 0; i < extension_count(); i++) {
-    if (extension(i)->type() == FieldDescriptor::TYPE_GROUP) {
+    if (IsGroupSyntax(extension(i))) {
       groups.insert(extension(i)->message_type());
     }
   }
@@ -3202,18 +3211,11 @@ void Descriptor::DebugString(int depth, std::string* contents,
       absl::SubstituteAndAppend(contents, " to $0",
                                 extension_range(i)->end_number() - 1);
     }
-    if (extension_range(i)->options().declaration_size() > 0) {
-      absl::StrAppend(contents, " [");
-      for (int j = 0; j < extension_range(i)->options().declaration_size();
-           ++j) {
-        if (j > 0) {
-          absl::StrAppend(contents, ",");
-        }
-        absl::SubstituteAndAppend(
-            contents, " declaration = { $0 }",
-            extension_range(i)->options().declaration(j).ShortDebugString());
-      }
-      absl::StrAppend(contents, " ] ");
+    ExtensionRangeOptions range_options = extension_range(i)->options();
+    std::string formatted_options;
+    if (FormatBracketedOptions(depth, range_options, file()->pool(),
+                               &formatted_options)) {
+      absl::StrAppend(contents, " [", formatted_options, "]");
     }
     absl::StrAppend(contents, ";\n");
   }
@@ -3286,6 +3288,10 @@ std::string FieldDescriptor::DebugStringWithOptions(
 std::string FieldDescriptor::FieldTypeNameDebugString() const {
   switch (type()) {
     case TYPE_MESSAGE:
+    case TYPE_GROUP:
+      if (IsGroupSyntax(this)) {
+        return kTypeToName[type()];
+      }
       return absl::StrCat(".", message_type()->full_name());
     case TYPE_ENUM:
       return absl::StrCat(".", enum_type()->full_name());
@@ -3324,7 +3330,7 @@ void FieldDescriptor::DebugString(
 
   absl::SubstituteAndAppend(
       contents, "$0$1$2 $3 = $4", prefix, label, field_type,
-      type() == TYPE_GROUP ? message_type()->name() : name(), number());
+      IsGroupSyntax(this) ? message_type()->name() : name(), number());
 
   bool bracketed = false;
   if (has_default_value()) {
@@ -3344,8 +3350,9 @@ void FieldDescriptor::DebugString(
     contents->append("\"");
   }
 
+  FieldOptions full_options = options();
   std::string formatted_options;
-  if (FormatBracketedOptions(depth, options(), file()->pool(),
+  if (FormatBracketedOptions(depth, full_options, file()->pool(),
                              &formatted_options)) {
     contents->append(bracketed ? ", " : " [");
     bracketed = true;
@@ -3356,7 +3363,7 @@ void FieldDescriptor::DebugString(
     contents->append("]");
   }
 
-  if (type() == TYPE_GROUP) {
+  if (IsGroupSyntax(this)) {
     if (debug_string_options.elide_group_body) {
       contents->append(" { ... };\n");
     } else {
@@ -3392,7 +3399,8 @@ void OneofDescriptor::DebugString(
   comment_printer.AddPreComment(contents);
   absl::SubstituteAndAppend(contents, "$0oneof $1 {", prefix, name());
 
-  FormatLineOptions(depth, options(), containing_type()->file()->pool(),
+  OneofOptions full_options = options();
+  FormatLineOptions(depth, full_options, containing_type()->file()->pool(),
                     contents);
 
   if (debug_string_options.elide_oneof_body) {
@@ -3431,7 +3439,8 @@ void EnumDescriptor::DebugString(
 
   absl::SubstituteAndAppend(contents, "$0enum $1 {\n", prefix, name());
 
-  FormatLineOptions(depth, options(), file()->pool(), contents);
+  EnumOptions full_options = options();
+  FormatLineOptions(depth, full_options, file()->pool(), contents);
 
   for (int i = 0; i < value_count(); i++) {
     value(i)->DebugString(depth, contents, debug_string_options);
@@ -3490,8 +3499,9 @@ void EnumValueDescriptor::DebugString(
 
   absl::SubstituteAndAppend(contents, "$0$1 = $2", prefix, name(), number());
 
+  EnumValueOptions full_options = options();
   std::string formatted_options;
-  if (FormatBracketedOptions(depth, options(), type()->file()->pool(),
+  if (FormatBracketedOptions(depth, full_options, type()->file()->pool(),
                              &formatted_options)) {
     absl::SubstituteAndAppend(contents, " [$0]", formatted_options);
   }
@@ -3521,7 +3531,8 @@ void ServiceDescriptor::DebugString(
 
   absl::SubstituteAndAppend(contents, "service $0 {\n", name());
 
-  FormatLineOptions(1, options(), file()->pool(), contents);
+  ServiceOptions full_options = options();
+  FormatLineOptions(1, full_options, file()->pool(), contents);
 
   for (int i = 0; i < method_count(); i++) {
     method(i)->DebugString(1, contents, debug_string_options);
@@ -3559,8 +3570,9 @@ void MethodDescriptor::DebugString(
       input_type()->full_name(), output_type()->full_name(),
       client_streaming() ? "stream " : "", server_streaming() ? "stream " : "");
 
+  MethodOptions full_options = options();
   std::string formatted_options;
-  if (FormatLineOptions(depth, options(), service()->file()->pool(),
+  if (FormatLineOptions(depth, full_options, service()->file()->pool(),
                         &formatted_options)) {
     absl::SubstituteAndAppend(contents, " {\n$0$1}\n", formatted_options,
                               prefix);
