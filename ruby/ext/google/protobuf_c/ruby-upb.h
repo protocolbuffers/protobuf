@@ -627,8 +627,6 @@ UPB_INLINE bool upb_MiniTableEnum_CheckValue(const struct upb_MiniTableEnum* e,
 
 // Must be last.
 
-// LINT.IfChange(mini_table_field_layout)
-
 struct upb_MiniTableField {
   uint32_t number;
   uint16_t offset;
@@ -680,8 +678,6 @@ typedef enum {
 } upb_FieldRep;
 
 #define kUpb_FieldRep_Shift 6
-
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table_field.ts:mini_table_field_layout)
 
 UPB_INLINE upb_FieldRep
 _upb_MiniTableField_GetRep(const struct upb_MiniTableField* field) {
@@ -757,8 +753,6 @@ typedef enum {
   kUpb_ExtMode_IsMapEntry = 4,
 } upb_ExtMode;
 
-// LINT.IfChange(mini_table_layout)
-
 union upb_MiniTableSub;
 
 // upb_MiniTable represents the memory layout of a given upb_MessageDef.
@@ -783,8 +777,6 @@ struct upb_MiniTable {
   // of flexible array members is a GNU extension, not in C99 unfortunately.
   _upb_FastTable_Entry fasttable[];
 };
-
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table.ts:presence_logic)
 
 #ifdef __cplusplus
 extern "C" {
@@ -1102,13 +1094,9 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 
 typedef struct upb_Arena upb_Arena;
 
-// LINT.IfChange(arena_head)
-
 typedef struct {
   char *ptr, *end;
 } _upb_ArenaHead;
-
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/arena.ts:arena_head)
 
 #ifdef __cplusplus
 extern "C" {
@@ -1932,7 +1920,7 @@ UPB_INLINE int upb_Log2Ceiling(int x) {
   return 32 - __builtin_clz(x - 1);
 #else
   int lg2 = 0;
-  while (1 << lg2 < x) lg2++;
+  while ((1 << lg2) < x) lg2++;
   return lg2;
 #endif
 }
@@ -2496,7 +2484,6 @@ UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
 }
 
 // LINT.ThenChange(GoogleInternalName2)
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/presence.ts:presence_logic)
 
 UPB_INLINE bool _upb_MiniTableField_InOneOf(const upb_MiniTableField* field) {
   return field->presence < 0;
@@ -2520,8 +2507,6 @@ UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
     *_upb_oneofcase_field(msg, field) = field->number;
   }
 }
-
-// LINT.IfChange(message_raw_fields)
 
 UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
                                               const upb_MiniTableField* field) {
@@ -2560,8 +2545,6 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
   }
   UPB_UNREACHABLE();
 }
-
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/message.ts:message_raw_fields)
 
 UPB_INLINE size_t
 _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
@@ -3357,9 +3340,9 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 // Must be last.
 
 struct upb_MiniTableFile {
-  const upb_MiniTable** msgs;
-  const upb_MiniTableEnum** enums;
-  const upb_MiniTableExtension** exts;
+  const struct upb_MiniTable** msgs;
+  const struct upb_MiniTableEnum** enums;
+  const struct upb_MiniTableExtension** exts;
   int msg_count;
   int enum_count;
   int ext_count;
