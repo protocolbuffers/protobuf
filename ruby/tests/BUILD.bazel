@@ -7,121 +7,123 @@ ruby_library(
 )
 
 filegroup(
-  name = "test_protos",
-  srcs = glob(["*.proto"]),
-  visibility = [
-      "//ruby:__subpackages__",
-  ],
+    name = "test_protos",
+    srcs = glob(["*.proto"]),
+    visibility = [
+        "//ruby:__subpackages__",
+    ],
 )
 
 ruby_test(
     name = "basic",
+    srcs = ["basic.rb"],
     deps = [
         ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["basic.rb"],
 )
 
 ruby_test(
     name = "basic_proto2",
+    srcs = ["basic_proto2.rb"],
     deps = [
         ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["basic_proto2.rb"],
 )
 
 ruby_test(
     name = "encode_decode_test",
+    srcs = ["encode_decode_test.rb"],
     deps = [
-        ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["encode_decode_test.rb"],
 )
 
 ruby_test(
     name = "gc_test",
+    srcs = ["gc_test.rb"],
     deps = [
-        ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["gc_test.rb"],
 )
 
 ruby_test(
     name = "generated_code_test",
+    srcs = ["generated_code_test.rb"],
     deps = [
-        ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["generated_code_test.rb"],
 )
 
 ruby_test(
     name = "multi_level_nesting_test",
+    srcs = ["multi_level_nesting_test.rb"],
     deps = [
-        ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["multi_level_nesting_test.rb"],
 )
 
 ruby_test(
     name = "repeated_field_test",
+    srcs = ["repeated_field_test.rb"],
     deps = [
-        ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["repeated_field_test.rb"],
 )
 
 ruby_test(
     name = "ruby_version",
+    srcs = ["ruby_version.rb"],
     deps = [
-        ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["ruby_version.rb"],
 )
 
 ruby_test(
     name = "stress",
+    srcs = ["stress.rb"],
     deps = [
-        ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["stress.rb"],
 )
 
 ruby_test(
     name = "type_errors",
+    srcs = ["type_errors.rb"],
     deps = [
-        ":common_tests",
         "//ruby:protobuf",
         "//ruby:test_ruby_protos",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["type_errors.rb"],
+)
+
+ruby_test(
+    name = "well_known_types_test",
+    srcs = ["well_known_types_test.rb"],
+    deps = [
+        "//ruby:protobuf",
+        "//ruby:test_ruby_protos",
+        "@protobuf_bundle//:test-unit",
+    ],
 )
 
 pkg_files(
@@ -135,4 +137,3 @@ pkg_files(
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//ruby:__pkg__"],
 )
-

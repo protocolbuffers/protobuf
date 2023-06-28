@@ -882,30 +882,22 @@ module BasicTest
 
     def test_def_errors
       s = Google::Protobuf::DescriptorPool.new
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         s.build do
           # enum with no default (integer value 0)
           add_enum "MyEnum" do
             value :A, 1
           end
         end
-      rescue TypeError
-        success = true
       end
-      assert(success)
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         s.build do
           # message with required field (unsupported in proto3)
           add_message "MyMessage" do
             required :foo, :int32, 1
           end
         end
-      rescue TypeError
-        success = true
       end
-      assert(success)
     end
 
     def test_corecursive
