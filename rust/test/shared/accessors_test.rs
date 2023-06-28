@@ -32,6 +32,18 @@
 use unittest_proto::proto2_unittest::TestAllTypes;
 
 #[test]
+fn test_optional_int32_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.optional_int32(), None);
+
+    msg.optional_int32_set(Some(1));
+    assert_eq!(msg.optional_int32(), Some(1));
+
+    msg.optional_int32_set(None);
+    assert_eq!(msg.optional_int32(), None);
+}
+
+#[test]
 fn test_optional_int64_accessors() {
     let mut msg = TestAllTypes::new();
     assert_eq!(msg.optional_int64(), None);

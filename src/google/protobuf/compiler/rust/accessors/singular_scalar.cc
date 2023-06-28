@@ -57,7 +57,7 @@ class SingularScalar final : public AccessorGenerator {
             {"clearer_thunk", Thunk(field, "clear")},
         },
         R"rs(
-          pub fn $field$(&self) -> Option<$Scalar$> {
+          pub fn r#$field$(&self) -> Option<$Scalar$> {
             if !unsafe { $hazzer_thunk$(self.msg) } {
               return None;
             }
@@ -92,7 +92,7 @@ class SingularScalar final : public AccessorGenerator {
   void InThunkCc(Context<FieldDescriptor> field) const override {
     field.Emit(
         {
-            {"field", field.desc().name()},
+            {"field", cpp::FieldName(&field.desc())},
             {"Scalar", cpp::PrimitiveTypeName(field.desc().cpp_type())},
             {"QualifiedMsg",
              cpp::QualifiedClassName(field.desc().containing_type())},
