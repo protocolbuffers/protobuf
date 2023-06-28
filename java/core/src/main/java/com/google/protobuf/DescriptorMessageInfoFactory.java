@@ -167,7 +167,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
               }
             };
       }
-      if (fd.getContainingOneof() != null && !fd.getContainingOneof().isSynthetic()) {
+      if (fd.getRealContainingOneof() != null) {
         // Build a oneof member field for non-synthetic oneofs.
         builder.withField(buildOneofMember(messageType, fd, oneofState, enforceUtf8, enumVerifier));
         continue;
