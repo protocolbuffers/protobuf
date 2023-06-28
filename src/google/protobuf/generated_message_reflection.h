@@ -338,8 +338,7 @@ struct PROTOBUF_EXPORT DescriptorTable {
 // the descriptor objects.  It also constructs the reflection objects.  It is
 // called the first time anyone calls descriptor() or GetReflection() on one of
 // the types defined in the file.  AssignDescriptors() is thread-safe.
-void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table,
-                                       bool eager = false);
+void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table);
 
 // Overload used to implement GetMetadataStatic in the generated code.
 // See comments in compiler/cpp/file.cc as to why.

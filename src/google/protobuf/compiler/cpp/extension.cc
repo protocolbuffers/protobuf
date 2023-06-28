@@ -37,6 +37,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
@@ -44,13 +45,8 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-namespace {
 
-bool RequiresLazyInitialization(const FieldDescriptor* descriptor) {
-  return false;
-}
-
-}  // namespace
+using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
                                        const Options& options,
@@ -179,7 +175,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
         "#endif\n");
   }
 
-  if (RequiresLazyInitialization(descriptor_)) {
+  if (IsLazilyInitializedFile(descriptor_->file()->name())) {
     format(
         "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2\n"
         "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"

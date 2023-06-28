@@ -28,35 +28,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_ALLOWLISTS_ALLOWLISTS_H__
-#define GOOGLE_PROTOBUF_COMPILER_ALLOWLISTS_ALLOWLISTS_H__
-
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/allowlists/allowlist.h"
+#include "google/protobuf/compiler/allowlists/allowlists.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 
-// Returns whether a file can use the `import weak` syntax.
-bool IsWeakImportFile(absl::string_view file);
+// NOTE: These files have early default access to editions.  The protoc flag
+// `--experimental_editions` can also be used to enable editions.
 
-// Returns whether a file can have an empty package.
-bool IsEmptyPackageFile(absl::string_view file);
+static constexpr auto kEarlyEditionsFile = internal::MakeAllowlist({
+// Intentionally left blank.
+});
 
-// Returns whether a file can contain a cc_open_enum.
-bool IsOpenEnumFile(absl::string_view file);
-
-// Returns whether a message can contain a cc_open_enum.
-bool IsOpenEnumMessage(absl::string_view msg);
-
-// Returns whether a file can contain an unused import.
-bool IsUnusedImportFile(absl::string_view file);
-
-// Returns whether a file has early access to editions.
-bool IsEarlyEditionsFile(absl::string_view file);
-
+bool IsEarlyEditionsFile(absl::string_view file) {
+  return kEarlyEditionsFile.Allows(file);
+}
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_ALLOWLISTS_COMPILER_ALLOWLISTS_H__

@@ -40,6 +40,7 @@
 #include <cstring>
 #include <string>
 
+#include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -84,6 +85,7 @@ using google::protobuf::internal::OnShutdownDelete;
 using google::protobuf::internal::ReflectionSchema;
 using google::protobuf::internal::RepeatedPtrFieldBase;
 using google::protobuf::internal::StringSpaceUsedExcludingSelfLong;
+using google::protobuf::internal::cpp::IsLazilyInitializedFile;
 
 namespace google {
 namespace protobuf {
@@ -3610,7 +3612,11 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
     int num_deps = table->num_deps;
     for (int i = 0; i < num_deps; i++) {
       // In case of weak fields deps[i] could be null.
-      if (table->deps[i]) AssignDescriptors(table->deps[i], true);
+      if (table->deps[i]) {
+        absl::call_once(*table->deps[i]->once, AssignDescriptorsImpl,
+                        table->deps[i],
+                        /*eager=*/true);
+      }
     }
   }
 
@@ -3640,6 +3646,13 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   }
   MetadataOwner::Instance()->AddArray(table->file_level_metadata,
                                       helper.GetCurrentMetadataPtr());
+}
+
+void MaybeInitializeLazyDescriptors(const DescriptorTable* table) {
+  if (!IsLazilyInitializedFile(table->filename)) {
+    // Ensure the generated pool has been lazily initialized.
+    DescriptorPool::generated_pool();
+  }
 }
 
 void AddDescriptorsImpl(const DescriptorTable* table) {
@@ -3689,15 +3702,16 @@ Metadata AssignDescriptors(const DescriptorTable* (*table)(),
                            absl::once_flag* once, const Metadata& metadata) {
   absl::call_once(*once, [=] {
     auto* t = table();
+    MaybeInitializeLazyDescriptors(t);
     AssignDescriptorsImpl(t, t->is_eager);
   });
 
   return metadata;
 }
 
-void AssignDescriptors(const DescriptorTable* table, bool eager) {
-  if (!eager) eager = table->is_eager;
-  absl::call_once(*table->once, AssignDescriptorsImpl, table, eager);
+void AssignDescriptors(const DescriptorTable* table) {
+  MaybeInitializeLazyDescriptors(table);
+  absl::call_once(*table->once, AssignDescriptorsImpl, table, table->is_eager);
 }
 
 AddDescriptorsRunner::AddDescriptorsRunner(const DescriptorTable* table) {
