@@ -1358,6 +1358,7 @@ class RepeatedEnumTypeTraits {
 template <typename Type>
 class MessageTypeTraits {
  public:
+  using T = Type;
   typedef const Type& ConstType;
   typedef Type* MutableType;
   typedef MessageTypeTraits<Type> Singular;
@@ -1416,6 +1417,7 @@ class RepeatedMessageGenericTypeTraits;
 template <typename Type>
 class RepeatedMessageTypeTraits {
  public:
+  using T = Type;
   typedef const Type& ConstType;
   typedef Type* MutableType;
   typedef RepeatedMessageTypeTraits<Type> Repeated;
@@ -1527,6 +1529,49 @@ class ExtensionIdentifier {
  private:
   const int number_;
   typename TypeTraits::ConstType default_value_;
+};
+
+template <typename ExtendeeType, typename Traits, FieldType field_type>
+class MessageExtensionIdentifierImpl {
+ public:
+  using Type = typename Traits::T;
+  using TypeTraits = Traits;
+  using Extendee = ExtendeeType;
+
+  MessageExtensionIdentifierImpl(int number, LazyEagerVerifyFnType verify_func)
+      : number_(number) {
+    Register(number, verify_func);
+  }
+  inline int number() const { return number_; }
+
+  static void Register(int number, LazyEagerVerifyFnType verify_func) {
+    TypeTraits::template Register<ExtendeeType>(number, field_type, false,
+                                                verify_func);
+  }
+
+  static const Type& default_value() { return Type::default_instance(); }
+  static const Type& default_value_ref() { return Type::default_instance(); }
+
+ private:
+  const int number_;
+};
+
+template <typename ExtendeeType, typename Type, FieldType field_type>
+class ExtensionIdentifier<ExtendeeType, MessageTypeTraits<Type>, field_type,
+                          false>
+    : public MessageExtensionIdentifierImpl<
+          ExtendeeType, MessageTypeTraits<Type>, field_type> {
+  using ExtensionIdentifier::MessageExtensionIdentifierImpl::
+      MessageExtensionIdentifierImpl;
+};
+
+template <typename ExtendeeType, typename Type, FieldType field_type>
+class ExtensionIdentifier<ExtendeeType, RepeatedMessageTypeTraits<Type>,
+                          field_type, false>
+    : public MessageExtensionIdentifierImpl<
+          ExtendeeType, RepeatedMessageTypeTraits<Type>, field_type> {
+  using ExtensionIdentifier::MessageExtensionIdentifierImpl::
+      MessageExtensionIdentifierImpl;
 };
 
 // -------------------------------------------------------------------
