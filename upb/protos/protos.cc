@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "protos/protos.h"
+#include "upb/protos/protos.h"
 
 #include "absl/strings/str_format.h"
 #include "upb/message/promote.h"

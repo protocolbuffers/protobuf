@@ -34,9 +34,9 @@
 
 #include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
-#include "protos/protos.h"
-#include "protos/protos_traits.h"
-#include "protos/repeated_field_iterator.h"
+#include "upb/protos/protos.h"
+#include "upb/protos/protos_traits.h"
+#include "upb/protos/repeated_field_iterator.h"
 #include "upb/base/string_view.h"
 #include "upb/collections/array.h"
 #include "upb/collections/array_internal.h"

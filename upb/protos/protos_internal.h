@@ -28,7 +28,7 @@
 #ifndef UPB_PROTOS_PROTOS_INTERNAL_H_
 #define UPB_PROTOS_PROTOS_INTERNAL_H_
 
-#include "protos/protos.h"
+#include "upb/protos/protos.h"
 
 namespace protos::internal {
 

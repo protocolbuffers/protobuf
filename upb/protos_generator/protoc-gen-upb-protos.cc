@@ -133,9 +133,9 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
 #ifndef $0_UPB_PROTO_H_
 #define $0_UPB_PROTO_H_
 
-#include "protos/protos.h"
-#include "protos/protos_internal.h"
-#include "protos/repeated_field.h"
+#include "upb/protos/protos.h"
+#include "upb/protos/protos_internal.h"
+#include "upb/protos/repeated_field.h"
 #include "upb/upb.hpp"
 
 #include "absl/strings/string_view.h"
@@ -201,7 +201,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
       R"cc(
 #include <stddef.h>
 #include "absl/strings/string_view.h"
-#include "protos/protos.h"
+#include "upb/protos/protos.h"
 #include "$0"
       )cc",
       CppHeaderFilename(file));

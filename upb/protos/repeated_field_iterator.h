@@ -33,7 +33,7 @@
 #include <type_traits>
 
 #include "absl/strings/string_view.h"
-#include "protos/protos.h"
+#include "upb/protos/protos.h"
 #include "upb/base/string_view.h"
 #include "upb/collections/array.h"
 #include "upb/mem/arena.h"
