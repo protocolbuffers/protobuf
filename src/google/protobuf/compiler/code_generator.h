@@ -126,6 +126,24 @@ class PROTOC_EXPORT CodeGenerator {
   // method can be removed.
   virtual bool HasGenerateAll() const { return true; }
 
+#ifdef PROTOBUF_FUTURE_EDITIONS
+
+ protected:
+  // Retrieves the resolved source features for a given descriptor.  These
+  // should be used to make any feature-based decisions during code generation.
+  template <typename DescriptorT>
+  static const FeatureSet& GetSourceFeatures(const DescriptorT& desc) {
+    return ::google::protobuf::internal::InternalFeatureHelper::GetFeatures(desc);
+  }
+
+  // Retrieves the raw source features for a given descriptor.  These should be
+  // used to validate the original .proto file and make any decisions about it
+  // during code generation.
+  template <typename DescriptorT>
+  static const FeatureSet& GetSourceRawFeatures(const DescriptorT& desc) {
+    return ::google::protobuf::internal::InternalFeatureHelper::GetRawFeatures(desc);
+  }
+#endif  // PROTOBUF_FUTURE_EDITIONS
 };
 
 // CodeGenerators generate one or more files in a given directory.  This

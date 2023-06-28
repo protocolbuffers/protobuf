@@ -166,6 +166,8 @@ cc_test(
     srcs = ["bootstrap_unittest.cc"],
     data = [
         "//:well_known_type_protos",
+        "//src/google/protobuf:cpp_features_cc_srcs",
+        "//src/google/protobuf:cpp_features_proto_srcs",
         "//src/google/protobuf:descriptor_cc_srcs",
         "//src/google/protobuf:descriptor_proto_srcs",
         "//src/google/protobuf:testdata",

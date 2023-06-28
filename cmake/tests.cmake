@@ -172,6 +172,7 @@ file(GLOB_RECURSE _local_hdrs
 
 # Exclude the bootstrapping that are directly used by tests.
 set(_exclude_hdrs
+  "${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h")
 

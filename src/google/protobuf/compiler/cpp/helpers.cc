@@ -1400,6 +1400,10 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
       new absl::flat_hash_map<absl::string_view, std::string>{
           {"net/proto2/proto/descriptor",
            "third_party/protobuf/descriptor"},
+#ifdef PROTOBUF_FUTURE_EDITIONS
+          {"third_party/protobuf/cpp_features",
+           "third_party/protobuf/cpp_features"},
+#endif  // PROTOBUF_FUTURE_EDITIONS
           {"third_party/protobuf/compiler/plugin",
            "third_party/protobuf/compiler/plugin"},
           {"net/proto2/compiler/proto/profile",

@@ -164,6 +164,9 @@ message ExtensionRangeOptions {
   // used externally.
   repeated Declaration declaration = 2 [retention = RETENTION_SOURCE];
 
+  // Any features defined in the specific edition.
+  optional FeatureSet features = 50;
+
   // The verification state of the extension range.
   enum VerificationState {
     // All the extensions of the range must be declared.
@@ -490,6 +493,9 @@ message FileOptions {
   // determining the ruby package.
   optional string ruby_package = 45;
 
+  // Any features defined in the specific edition.
+  optional FeatureSet features = 50;
+
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -572,6 +578,9 @@ message MessageOptions {
   // TODO(b/261750190) This is legacy behavior we plan to remove once downstream
   // teams have had time to migrate.
   optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
+
+  // Any features defined in the specific edition.
+  optional FeatureSet features = 12;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -712,6 +721,15 @@ message FieldOptions {
 
   repeated OptionTargetType targets = 19;
 
+  message EditionDefault {
+    optional string edition = 1;
+    optional string value = 2;  // Textproto value.
+  }
+  repeated EditionDefault edition_defaults = 20;
+
+  // Any features defined in the specific edition.
+  optional FeatureSet features = 21;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -723,6 +741,8 @@ message FieldOptions {
 }
 
 message OneofOptions {
+  // Any features defined in the specific edition.
+  optional FeatureSet features = 1;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -753,6 +773,9 @@ message EnumOptions {
   // had time to migrate.
   optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
 
+  // Any features defined in the specific edition.
+  optional FeatureSet features = 7;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -767,6 +790,9 @@ message EnumValueOptions {
   // this is a formalization for deprecating enum values.
   optional bool deprecated = 1 [default = false];
 
+  // Any features defined in the specific edition.
+  optional FeatureSet features = 2;
+
   // Indicate that fields annotated with this enum value should not be printed
   // out when using debug formats, e.g. when the field contains sensitive
   // credentials.
@@ -780,6 +806,9 @@ message EnumValueOptions {
 }
 
 message ServiceOptions {
+
+  // Any features defined in the specific edition.
+  optional FeatureSet features = 34;
 
   // Note:  Field numbers 1 through 32 are reserved for Google's internal RPC
   //   framework.  We apologize for hoarding these numbers to ourselves, but
@@ -823,6 +852,9 @@ message MethodOptions {
   optional IdempotencyLevel idempotency_level = 34
       [default = IDEMPOTENCY_UNKNOWN];
 
+  // Any features defined in the specific edition.
+  optional FeatureSet features = 35;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -856,6 +888,97 @@ message UninterpretedOption {
   optional double double_value = 6;
   optional bytes string_value = 7;
   optional string aggregate_value = 8;
+}
+
+// ===================================================================
+// Features
+
+// TODO(b/274655146) Enums in C++ gencode (and potentially other languages) are
+// not well scoped.  This means that each of the feature enums below can clash
+// with each other.  The short names we've chosen maximize call-site
+// readability, but leave us very open to this scenario.  A future feature will
+// be designed and implemented to handle this, hopefully before we ever hit a
+// conflict here.
+message FeatureSet {
+  enum FieldPresence {
+    FIELD_PRESENCE_UNKNOWN = 0;
+    EXPLICIT = 1;
+    IMPLICIT = 2;
+    LEGACY_REQUIRED = 3;
+  }
+  optional FieldPresence field_presence = 1 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: "2023", value: "EXPLICIT" }
+  ];
+
+  enum EnumType {
+    ENUM_TYPE_UNKNOWN = 0;
+    OPEN = 1;
+    CLOSED = 2;
+  }
+  optional EnumType enum_type = 2 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: "2023", value: "OPEN" }
+  ];
+
+  enum RepeatedFieldEncoding {
+    REPEATED_FIELD_ENCODING_UNKNOWN = 0;
+    PACKED = 1;
+    EXPANDED = 2;
+  }
+  optional RepeatedFieldEncoding repeated_field_encoding = 3 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: "2023", value: "PACKED" }
+  ];
+
+  enum StringFieldValidation {
+    STRING_FIELD_VALIDATION_UNKNOWN = 0;
+    MANDATORY = 1;
+    HINT = 2;
+    NONE = 3;
+  }
+  optional StringFieldValidation string_field_validation = 4 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: "2023", value: "MANDATORY" }
+  ];
+
+  enum MessageEncoding {
+    MESSAGE_ENCODING_UNKNOWN = 0;
+    LENGTH_PREFIXED = 1;
+    DELIMITED = 2;
+  }
+  optional MessageEncoding message_encoding = 5 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: "2023", value: "LENGTH_PREFIXED" }
+  ];
+
+  enum JsonFormat {
+    JSON_FORMAT_UNKNOWN = 0;
+    ALLOW = 1;
+    LEGACY_BEST_EFFORT = 2;
+  }
+  optional JsonFormat json_format = 6 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: "2023", value: "ALLOW" }
+  ];
+
+  extensions 1000;  // for Protobuf C++
+  extensions 1001;  // for Protobuf Java
+
+  extensions 9995 to 9999;  // For internal testing
 }
 
 // ===================================================================

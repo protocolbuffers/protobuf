@@ -294,8 +294,8 @@ cc_library(
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
-      "//pkg:__pkg__",
-      "//src/google/protobuf/compiler:__subpackages__",
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
     ],
     deps = [
         ":code_generator",
@@ -431,6 +431,7 @@ filegroup(
         ],
         allow_empty = True,
     ) + [
+        "//src/google/protobuf/compiler/allowlists:test_srcs",
         "//src/google/protobuf/compiler/cpp:test_srcs",
         "//src/google/protobuf/compiler/csharp:test_srcs",
         "//src/google/protobuf/compiler/java:test_srcs",

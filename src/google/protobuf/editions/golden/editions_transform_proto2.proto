@@ -1,0 +1,95 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+edition = "2023";
+import "google/protobuf/cpp_features.proto";
+option features.enum_type = CLOSED;
+option features.repeated_field_encoding = EXPANDED;
+option features.string_field_validation = NONE;
+option features.json_format = LEGACY_BEST_EFFORT;
+option features.(pb.cpp).legacy_closed_enum = true;
+
+// This file contains various edge cases we've collected from migrating real
+// protos in order to lock down the transformations.
+
+// LINT: ALLOW_GROUPS
+
+package protobuf_editions_test;
+
+option java_multiple_files = true;
+option cc_enable_arenas = true;
+
+message EmptyMessage {}
+message EmptyMessage2 {}
+
+service EmptyService {}
+
+service BasicService {
+  rpc BasicMethod(EmptyMessage) returns (EmptyMessage) {}
+}
+
+// clang-format off
+message UnformattedMessage{
+  int32 a=1 ;
+  message Foo { int32 a = 1; }
+  Foo foo = 2 [features.message_encoding = DELIMITED];
+  string string_piece_with_zero = 3 [ctype=STRING_PIECE, default="ab\000c"];
+  float long_float_name_wrapped = 4;
+
+}
+// clang-format on
+
+message ParentMessage {
+  message ExtendedMessage {
+    extensions 536860000 to 536869999 [declaration = {
+      number: 536860000
+      full_name: ".protobuf_editions_test.extension"
+      type: ".protobuf_editions_test.EmptyMessage"
+    }];
+  }
+}
+
+extend ParentMessage.ExtendedMessage {
+  EmptyMessage extension = 536860000;
+}
+
+message TestMessage {
+  message OptionalGroup {
+    int32 a = 17;
+  }
+  OptionalGroup optionalgroup = 16 [features.message_encoding = DELIMITED];
+}
+
+enum TestEnum {
+  FOO = 1;  // Non-zero default
+  BAR = 2;
+  BAZ = 3;
+  NEG = -1;  // Intentionally negative.
+}

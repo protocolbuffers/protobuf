@@ -129,11 +129,13 @@ class MockGeneratorContext : public GeneratorContext {
 };
 
 const char kDescriptorParameter[] = "dllexport_decl=PROTOBUF_EXPORT";
+const char kCppFeaturesParameter[] = "dllexport_decl=PROTOBUF_EXPORT";
 const char kPluginParameter[] = "dllexport_decl=PROTOC_EXPORT";
 
 
 const char* test_protos[][2] = {
     {"google/protobuf/descriptor", kDescriptorParameter},
+    {"google/protobuf/cpp_features", kCppFeaturesParameter},
     {"google/protobuf/compiler/plugin", kPluginParameter},
 };
 

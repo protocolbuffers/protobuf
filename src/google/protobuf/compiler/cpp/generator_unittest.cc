@@ -35,6 +35,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface_tester.h"
+#ifdef PROTOBUF_FUTURE_EDITIONS
+#include "google/protobuf/cpp_features.pb.h"
+#endif  // PROTOBUF_FUTURE_EDITIONS
 
 namespace google {
 namespace protobuf {
@@ -50,8 +53,12 @@ class CppGeneratorTest : public CommandLineInterfaceTester {
 
     // Generate built-in protos.
     CreateTempFile(
-        "net/proto2/proto/descriptor.proto",
+        "google/protobuf/descriptor.proto",
         google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+#ifdef PROTOBUF_FUTURE_EDITIONS
+    CreateTempFile("third_party/protobuf/cpp_features.proto",
+                   pb::CppFeatures::descriptor()->file()->DebugString());
+#endif  // PROTOBUF_FUTURE_EDITIONS
   }
 };
 
@@ -84,6 +91,92 @@ TEST_F(CppGeneratorTest, BasicError) {
       "foo.proto:4:7: Expected \"required\", \"optional\", or \"repeated\"");
 }
 
+#ifdef PROTOBUF_FUTURE_EDITIONS
+
+TEST_F(CppGeneratorTest, LegacyClosedEnumOnNonEnumField) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "third_party/protobuf/cpp_features.proto";
+    
+    message Foo {
+      int32 bar = 1 [features.(pb.cpp).legacy_closed_enum = true];
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring(
+      "Field Foo.bar specifies the legacy_closed_enum feature but has non-enum "
+      "type.");
+}
+
+TEST_F(CppGeneratorTest, LegacyClosedEnum) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "third_party/protobuf/cpp_features.proto";
+
+    enum TestEnum {
+      TEST_ENUM_UNKNOWN = 0;
+    }
+    message Foo {
+      TestEnum bar = 1 [features.(pb.cpp).legacy_closed_enum = true];
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "third_party/protobuf/cpp_features.proto";
+    option features.(pb.cpp).legacy_closed_enum = true;
+    
+    enum TestEnum {
+      TEST_ENUM_UNKNOWN = 0;
+    }
+    message Foo {
+      TestEnum bar = 1;
+      int32 baz = 2;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "third_party/protobuf/cpp_features.proto";
+    option features.(pb.cpp).legacy_closed_enum = true;
+    
+    enum TestEnum {
+      TEST_ENUM_UNKNOWN = 0;
+    }
+    message Foo {
+      TestEnum bar = 1 [features.field_presence = IMPLICIT];
+      int32 baz = 2;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring(
+      "Field Foo.bar has a closed enum type with implicit presence.");
+}
+#endif  // PROTOBUF_FUTURE_EDITIONS
 
 }  // namespace
 }  // namespace cpp
