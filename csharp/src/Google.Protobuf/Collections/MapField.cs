@@ -454,11 +454,14 @@ namespace Google.Protobuf.Collections
             {
                 if (output.IsSerializationDeterministic())
                 {
-                    WriteDeterministicTo(ref ctx, codec);
+                    var sorted = new List<KeyValuePair<TKey, TValue>>(list);
+                    sorted.Sort((pair1, pair2) => Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key));
+
+                    WriteTo(ref ctx, codec, sorted);
                 }
                 else
                 {
-                    WriteTo(ref ctx, codec);
+                    WriteTo(ref ctx, codec, list);
                 }
             }
             finally
@@ -497,29 +500,6 @@ namespace Google.Protobuf.Collections
             {
                 ctx.WriteTag(codec.MapTag);
 
-                WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, CalculateEntrySize(codec, entry));
-                codec.KeyCodec.WriteTagAndValue(ref ctx, entry.Key);
-                codec.ValueCodec.WriteTagAndValue(ref ctx, entry.Value);
-            }
-        }
-
-        /// <summary>
-        /// Writes the contents of this map to the given write context, using the specified codec
-        /// to encode each entry.
-        /// </summary>
-        /// <param name="ctx">The write context to write to.</param>
-        /// <param name="codec">The codec to use for each entry.</param>
-        [SecuritySafeCritical]
-        public void WriteDeterministicTo(ref WriteContext ctx, Codec codec)
-        {
-            // sort list by key
-            // We can't sort the list in place, as that would invalidate the linked list.
-            // Instead, we create a new list, sort that, and then write it out.
-            var sorted = new List<KeyValuePair<TKey, TValue>>(list);
-            // sorted.Sort((x, y) => KeyComparer.Compare(x.Key, y.Key));
-            foreach (var entry in sorted)
-            {
-                ctx.WriteTag(codec.MapTag);
                 WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, CalculateEntrySize(codec, entry));
                 codec.KeyCodec.WriteTagAndValue(ref ctx, entry.Key);
                 codec.ValueCodec.WriteTagAndValue(ref ctx, entry.Value);

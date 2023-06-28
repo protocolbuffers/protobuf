@@ -723,23 +723,20 @@ namespace Google.Protobuf
             Assert.IsFalse(bytes1.SequenceEqual(bytes2));
         }
 
-
         private byte[] SerializeTestMap(TestMap testMap, bool useDeterministicSerialization)
         {
-            using (var memoryStream = new MemoryStream())
+            using var memoryStream = new MemoryStream();
+            var codedOutputStream = new CodedOutputStream(memoryStream);
+            if (useDeterministicSerialization)
             {
-                var codedOutputStream = new CodedOutputStream(memoryStream);
-                if (useDeterministicSerialization)
-                {
-                    codedOutputStream.UseDeterministicSerialization();
-                }
-
-                testMap.WriteTo(codedOutputStream);
-                codedOutputStream.Flush();
-
-                memoryStream.Seek(0, SeekOrigin.Begin);
-                return memoryStream.ToArray();
+                codedOutputStream.UseDeterministicSerialization();
             }
+
+            testMap.WriteTo(codedOutputStream);
+            codedOutputStream.Flush();
+
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return memoryStream.ToArray();
         }
 
         [Test]
