@@ -32,39 +32,56 @@
 use unittest_proto::proto2_unittest::TestAllTypes;
 
 #[test]
+fn test_default_accessors() {
+    // defaults are from here:
+    // http://google3/third_party/protobuf/unittest.proto section default_*
+    let msg = TestAllTypes::new();
+    assert_eq!(msg.default_int32(), 41);
+    assert_eq!(msg.default_int64(), 42);
+    assert_eq!(msg.default_bool(), true);
+}
+
+#[test]
 fn test_optional_int32_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_int32(), None);
+    assert_eq!(msg.optional_int32_opt(), None);
+    assert_eq!(msg.optional_int32(), 0);
 
     msg.optional_int32_set(Some(1));
-    assert_eq!(msg.optional_int32(), Some(1));
+    assert_eq!(msg.optional_int32_opt(), Some(1));
+    assert_eq!(msg.optional_int32(), 1);
 
     msg.optional_int32_set(None);
-    assert_eq!(msg.optional_int32(), None);
+    assert_eq!(msg.optional_int32_opt(), None);
+
+    assert_eq!(msg.optional_int32(), 0);
 }
 
 #[test]
 fn test_optional_int64_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_int64(), None);
+    assert_eq!(msg.optional_int64_opt(), None);
+    assert_eq!(msg.optional_int64(), 0);
 
     msg.optional_int64_set(Some(42));
-    assert_eq!(msg.optional_int64(), Some(42));
+    assert_eq!(msg.optional_int64_opt(), Some(42));
+    assert_eq!(msg.optional_int64(), 42);
 
     msg.optional_int64_set(None);
-    assert_eq!(msg.optional_int64(), None);
+    assert_eq!(msg.optional_int64_opt(), None);
+    assert_eq!(msg.optional_int64(), 0);
 }
 
 #[test]
 fn test_optional_bool_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_bool(), None);
+    assert_eq!(msg.optional_bool_opt(), None);
 
     msg.optional_bool_set(Some(true));
-    assert_eq!(msg.optional_bool(), Some(true));
+    assert_eq!(msg.optional_bool_opt(), Some(true));
 
     msg.optional_bool_set(None);
-    assert_eq!(msg.optional_bool(), None);
+    assert_eq!(msg.optional_bool_opt(), None);
 }
 
 #[test]

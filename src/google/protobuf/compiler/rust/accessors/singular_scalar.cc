@@ -52,17 +52,34 @@ class SingularScalar final : public AccessorGenerator {
             {"field", field.desc().name()},
             {"Scalar", PrimitiveRsTypeName(field)},
             {"hazzer_thunk", Thunk(field, "has")},
+            {"getter",
+             [&] {
+               field.Emit({}, R"rs(
+                  pub fn r#$field$(&self) -> $Scalar$ {
+                    unsafe { $getter_thunk$(self.msg) }
+                  }
+                )rs");
+             }},
+            {"getter_opt",
+             [&] {
+               if (!field.desc().is_optional()) return;
+               field.Emit({}, R"rs(
+                  pub fn r#$field$_opt(&self) -> Option<$Scalar$> {
+                    if !unsafe { $hazzer_thunk$(self.msg) } {
+                      return None;
+                    }
+                    Some(unsafe { $getter_thunk$(self.msg) })
+                  }
+                  )rs");
+             }},
             {"getter_thunk", Thunk(field, "get")},
             {"setter_thunk", Thunk(field, "set")},
             {"clearer_thunk", Thunk(field, "clear")},
         },
         R"rs(
-          pub fn r#$field$(&self) -> Option<$Scalar$> {
-            if !unsafe { $hazzer_thunk$(self.msg) } {
-              return None;
-            }
-            Some(unsafe { $getter_thunk$(self.msg) })
-          }
+          $getter$
+          $getter_opt$
+
           pub fn $field$_set(&mut self, val: Option<$Scalar$>) {
             match val {
               Some(val) => unsafe { $setter_thunk$(self.msg, val) },
