@@ -45,7 +45,6 @@
 #include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/test/test.upb.h"
-#include "upb/upb.h"
 #include "upb/upb.hpp"
 #include "upb/wire/common.h"
 #include "upb/wire/decode.h"

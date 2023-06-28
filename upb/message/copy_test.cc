@@ -45,7 +45,6 @@
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/test/test.upb.h"
-#include "upb/upb.h"
 
 namespace {
 
