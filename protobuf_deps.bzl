@@ -145,12 +145,3 @@ def protobuf_deps():
             urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.7.0-RC-1/rules_kotlin_release.tgz"],
             sha256 = "68b910730026921814d3a504ccbe9adaac9938983d940e626523e6e4ecfb0355",
         )
-
-    if not native.existing_rule("upb"):
-        _github_archive(
-            name = "upb",
-            repo = "https://github.com/protocolbuffers/upb",
-            commit = "01fed1cc1ba255bf22b49393ba054b8d270e6ba3",
-            sha256 = "387bef0d61094773a4ce7dd1c3d92bb99444155531e00945161ec9cd36e5bfce",
-            patches = ["@com_google_protobuf//build_defs:upb.patch"],
-        )
