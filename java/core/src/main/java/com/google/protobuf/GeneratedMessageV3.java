@@ -2460,8 +2460,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final Class<? extends Builder<?>> builderClass,
           final String containingOneofCamelCaseName) {
         isOneofField =
-            descriptor.getContainingOneof() != null
-                && !descriptor.getContainingOneof().isSynthetic();
+            descriptor.getRealContainingOneof() != null;
         hasHasMethod = descriptor.hasPresence();
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
