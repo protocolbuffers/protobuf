@@ -279,8 +279,7 @@ PROTOBUF_NOINLINE bool FieldMask::IsInitialized() const {
 void FieldMask::InternalSwap(FieldMask* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_paths()->InternalSwap(
-      other->_internal_mutable_paths());
+  _impl_.paths_.InternalSwap(&other->_impl_.paths_);
 }
 
 ::google::protobuf::Metadata FieldMask::GetMetadata() const {

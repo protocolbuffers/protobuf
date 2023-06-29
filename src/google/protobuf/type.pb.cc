@@ -835,10 +835,9 @@ void Type::InternalSwap(Type* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_fields()->InternalSwap(other->_internal_mutable_fields());
-  _internal_mutable_oneofs()->InternalSwap(
-      other->_internal_mutable_oneofs());
-  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
+  _impl_.fields_.InternalSwap(&other->_impl_.fields_);
+  _impl_.oneofs_.InternalSwap(&other->_impl_.oneofs_);
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, lhs_arena,
@@ -1311,7 +1310,7 @@ void Field::InternalSwap(Field* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, lhs_arena,
@@ -1689,8 +1688,8 @@ void Enum::InternalSwap(Enum* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_enumvalue()->InternalSwap(other->_internal_mutable_enumvalue());
-  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
+  _impl_.enumvalue_.InternalSwap(&other->_impl_.enumvalue_);
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, lhs_arena,
@@ -1942,7 +1941,7 @@ void EnumValue::InternalSwap(EnumValue* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
         swap(_impl_.number_, other->_impl_.number_);

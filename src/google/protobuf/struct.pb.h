@@ -820,7 +820,7 @@ inline ::google::protobuf::NullValue Value::null_value() const {
   return _internal_null_value();
 }
 inline void Value::set_null_value(::google::protobuf::NullValue value) {
-   _internal_set_null_value(value);
+  _internal_set_null_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Value.null_value)
 }
 inline ::google::protobuf::NullValue Value::_internal_null_value() const {

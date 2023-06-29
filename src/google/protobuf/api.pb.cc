@@ -623,9 +623,9 @@ void Api::InternalSwap(Api* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _internal_mutable_methods()->InternalSwap(other->_internal_mutable_methods());
-  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
-  _internal_mutable_mixins()->InternalSwap(other->_internal_mutable_mixins());
+  _impl_.methods_.InternalSwap(&other->_impl_.methods_);
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  _impl_.mixins_.InternalSwap(&other->_impl_.mixins_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.version_, lhs_arena,
@@ -1008,7 +1008,7 @@ void Method::InternalSwap(Method* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_options()->InternalSwap(other->_internal_mutable_options());
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
                                        &other->_impl_.name_, rhs_arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.request_type_url_, lhs_arena,

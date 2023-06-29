@@ -1147,7 +1147,7 @@ inline ::google::protobuf::Syntax Api::syntax() const {
   return _internal_syntax();
 }
 inline void Api::set_syntax(::google::protobuf::Syntax value) {
-   _internal_set_syntax(value);
+  _internal_set_syntax(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Api.syntax)
 }
 inline ::google::protobuf::Syntax Api::_internal_syntax() const {
@@ -1413,7 +1413,7 @@ inline ::google::protobuf::Syntax Method::syntax() const {
   return _internal_syntax();
 }
 inline void Method::set_syntax(::google::protobuf::Syntax value) {
-   _internal_set_syntax(value);
+  _internal_set_syntax(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.syntax)
 }
 inline ::google::protobuf::Syntax Method::_internal_syntax() const {

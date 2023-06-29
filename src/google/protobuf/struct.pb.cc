@@ -992,7 +992,7 @@ PROTOBUF_NOINLINE bool ListValue::IsInitialized() const {
 void ListValue::InternalSwap(ListValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _internal_mutable_values()->InternalSwap(other->_internal_mutable_values());
+  _impl_.values_.InternalSwap(&other->_impl_.values_);
 }
 
 ::google::protobuf::Metadata ListValue::GetMetadata() const {

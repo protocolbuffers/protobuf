@@ -1835,7 +1835,7 @@ inline ::google::protobuf::Syntax Type::syntax() const {
   return _internal_syntax();
 }
 inline void Type::set_syntax(::google::protobuf::Syntax value) {
-   _internal_set_syntax(value);
+  _internal_set_syntax(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Type.syntax)
 }
 inline ::google::protobuf::Syntax Type::_internal_syntax() const {
@@ -1912,7 +1912,7 @@ inline ::google::protobuf::Field_Kind Field::kind() const {
   return _internal_kind();
 }
 inline void Field::set_kind(::google::protobuf::Field_Kind value) {
-   _internal_set_kind(value);
+  _internal_set_kind(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.kind)
 }
 inline ::google::protobuf::Field_Kind Field::_internal_kind() const {
@@ -1934,7 +1934,7 @@ inline ::google::protobuf::Field_Cardinality Field::cardinality() const {
   return _internal_cardinality();
 }
 inline void Field::set_cardinality(::google::protobuf::Field_Cardinality value) {
-   _internal_set_cardinality(value);
+  _internal_set_cardinality(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.cardinality)
 }
 inline ::google::protobuf::Field_Cardinality Field::_internal_cardinality() const {
@@ -2511,7 +2511,7 @@ inline ::google::protobuf::Syntax Enum::syntax() const {
   return _internal_syntax();
 }
 inline void Enum::set_syntax(::google::protobuf::Syntax value) {
-   _internal_set_syntax(value);
+  _internal_set_syntax(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.syntax)
 }
 inline ::google::protobuf::Syntax Enum::_internal_syntax() const {
