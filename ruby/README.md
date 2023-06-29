@@ -43,8 +43,7 @@ mymessage.field3 = SubMessage.new(:foo => 100)
 
 encoded_data = MyTestMessage.encode(mymessage)
 decoded = MyTestMessage.decode(encoded_data)
-assert decoded == mymessage
-
+assert_equal mymessage, decoded
 puts "JSON:"
 puts MyTestMessage.encode_json(mymessage)
 ```
@@ -85,6 +84,14 @@ To run the specs:
 This gem includes the upb parsing and serialization library as a single-file
 amalgamation. It is up-to-date with upb git commit
 `535bc2fe2f2b467f59347ffc9449e11e47791257`.
+
+Alternatively, you can use Bazel to build and to run tests.
+
+From the project root (rather than the `ruby` directory):
+
+```
+$ bazel test //ruby/tests/...
+```
 
 Version Number Scheme
 ---------------------
