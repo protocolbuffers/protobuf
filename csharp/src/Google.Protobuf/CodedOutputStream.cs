@@ -185,15 +185,7 @@ namespace Google.Protobuf
         /// maps are sorted on the lexicographical order of the UTF8 encoded keys.</description></item>
         /// </list>
         /// </remarks>
-        public void UseDeterministicSerialization() {
-            serializationDeterministic = true;
-        }
-
-        internal bool IsSerializationDeterministic() {
-            return serializationDeterministic;
-        }
-
-        private bool serializationDeterministic;
+        public bool Deterministic { get; set; }
 
         #region Writing of values (not including tags)
 

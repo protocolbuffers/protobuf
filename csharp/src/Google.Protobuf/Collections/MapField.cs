@@ -452,22 +452,27 @@ namespace Google.Protobuf.Collections
             WriteContext.Initialize(output, out WriteContext ctx);
             try
             {
-                if (output.IsSerializationDeterministic())
-                {
-                    var sorted = new List<KeyValuePair<TKey, TValue>>(list);
-                    sorted.Sort((pair1, pair2) => Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key));
+                IEnumerable<KeyValuePair<TKey, TValue>> listToWrite = list;
 
-                    WriteTo(ref ctx, codec, sorted);
-                }
-                else
+                if (output.Deterministic)
                 {
-                    WriteTo(ref ctx, codec, list);
+                    listToWrite = GetSortedListCopy(list);
                 }
+                WriteTo(ref ctx, codec, listToWrite);
             }
             finally
             {
                 ctx.CopyStateTo(output);
             }
+        }
+
+        internal IEnumerable<KeyValuePair<TKey, TValue>> GetSortedListCopy(IEnumerable<KeyValuePair<TKey, TValue>> listToSort)
+        {
+            // We can't sort the list in place, as that would invalidate the linked list.
+            // Instead, we create a new list, sort that, and then write it out.
+            var listToWrite = new List<KeyValuePair<TKey, TValue>>(listToSort);
+            listToWrite.Sort((pair1, pair2) => Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key));
+            return listToWrite;
         }
 
         /// <summary>
@@ -479,19 +484,12 @@ namespace Google.Protobuf.Collections
         [SecuritySafeCritical]
         public void WriteTo(ref WriteContext ctx, Codec codec)
         {
-            if (ctx.state.CodedOutputStream is not null && ctx.state.CodedOutputStream.IsSerializationDeterministic())
+            IEnumerable<KeyValuePair<TKey, TValue>> listToWrite = list;
+            if (ctx.state.CodedOutputStream?.Deterministic ?? false)
             {
-                // We can't sort the list in place, as that would invalidate the linked list.
-                // Instead, we create a new list, sort that, and then write it out.
-                var sorted = new List<KeyValuePair<TKey, TValue>>(list);
-                sorted.Sort((pair1, pair2) => Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key));
-
-                WriteTo(ref ctx, codec, sorted);
+                listToWrite = GetSortedListCopy(list);
             }
-            else
-            {
-                WriteTo(ref ctx, codec, list);
-            }
+            WriteTo(ref ctx, codec, listToWrite);
         }
 
         private void WriteTo(ref WriteContext ctx, Codec codec, IEnumerable<KeyValuePair<TKey, TValue>> listKvp)
