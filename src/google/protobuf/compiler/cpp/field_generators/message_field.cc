@@ -832,27 +832,25 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "}\n");
 
   p->Emit(R"cc(
-    inline const $pb$::RepeatedPtrField<$Submsg$>&
-    $classname$::_internal_$name$() const {
+    inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
+    $Msg$::_internal$_weak$_$name$() const {
       $TsanDetectConcurrentRead$;
-      return $field$$.weak$;
+      return $field_$;
     }
-    inline $pb$::RepeatedPtrField<$Submsg$>*
-    $classname$::_internal_mutable_$name$() {
+    inline $pb$::$Weak$RepeatedPtrField<$Submsg$>*
+    $Msg$::_internal_mutable$_weak$_$name$() {
       $TsanDetectConcurrentRead$;
-      return &$field$$.weak$;
+      return &$field_$;
     }
   )cc");
   if (weak_) {
     p->Emit(R"cc(
-      inline const $pb$::WeakRepeatedPtrField<$Submsg$>&
-      $Msg$::_internal_weak_$name$() const {
-        $TsanDetectConcurrentRead$;
-        return $field$;
+      inline const $pb$::RepeatedPtrField<$Submsg$>& $Msg$::_internal_$name$()
+          const {
+        return _internal_weak_$name$().weak;
       }
-      inline $pb$::WeakRepeatedPtrField<$Submsg$>*
-      $Msg$::_internal_mutable_weak_$name$() {
-        return &$field$;
+      inline $pb$::RepeatedPtrField<$Submsg$>* $Msg$::_internal_mutable_$name$() {
+        return &_internal_mutable_weak_$name$()->weak;
       }
     )cc");
   }
@@ -869,9 +867,10 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
-  p->Emit(
-      "_internal_mutable$_weak$_$name$()->InternalSwap(other->_internal_"
-      "mutable$_weak$_$name$());\n");
+  ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+  p->Emit(R"cc(
+    $field_$.InternalSwap(&other->$field_$);
+  )cc");
 }
 
 void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
