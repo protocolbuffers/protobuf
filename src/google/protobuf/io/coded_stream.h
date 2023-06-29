@@ -131,6 +131,8 @@ class EpsCopyByteStream;
 
 namespace io {
 
+// PROTOBUF_EXPORT extern bool g_sve_is_available;
+
 // Defined in this file.
 class CodedInputStream;
 class CodedOutputStream;
@@ -929,8 +931,205 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     return (static_cast<uint64_t>(v) << 1) ^ static_cast<uint64_t>(v >> 63);
   }
 
+#ifdef __aarch64__
+  constexpr static uint64_t varint_mask64[] = {
+      0x8008080808080808,
+
+      0x7000080808080808,
+      0x7000080808080808,
+      0x7000080808080808,
+      0x7000080808080808,
+      0x7000080808080808,
+      0x7000080808080808,
+      0x7000080808080808,
+
+      0x6000000808080808,
+      0x6000000808080808,
+      0x6000000808080808,
+      0x6000000808080808,
+      0x6000000808080808,
+      0x6000000808080808,
+      0x6000000808080808,
+
+      0x5000000008080808,
+      0x5000000008080808,
+      0x5000000008080808,
+      0x5000000008080808,
+      0x5000000008080808,
+      0x5000000008080808,
+      0x5000000008080808,
+
+      0x4000000000080808,
+      0x4000000000080808,
+      0x4000000000080808,
+      0x4000000000080808,
+      0x4000000000080808,
+      0x4000000000080808,
+      0x4000000000080808,
+
+      0x3000000000000808,
+      0x3000000000000808,
+      0x3000000000000808,
+      0x3000000000000808,
+      0x3000000000000808,
+      0x3000000000000808,
+      0x3000000000000808,
+
+      0x2000000000000008,
+      0x2000000000000008,
+      0x2000000000000008,
+      0x2000000000000008,
+      0x2000000000000008,
+      0x2000000000000008,
+      0x2000000000000008,
+
+      0x1000000000000000,
+      0x1000000000000000,
+      0x1000000000000000,
+      0x1000000000000000,
+      0x1000000000000000,
+      0x1000000000000000,
+      0x1000000000000000,
+
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+  };
+
+  PROTOBUF_NOINLINE static uint8_t* WriteTail2(uint8_t* p, uint64_t res) {
+    uint64_t leading_bits3 = 0;
+    leading_bits3 = __clzl(res);
+    uint64_t merged = 0;
+    uint64_t tmp1 = 0;
+    uint64_t tmp2 = 0;
+    uint64_t tmp3 = 0;
+    uint64_t tmp4 = 0;
+    uint64_t tmp5 = 0x0;
+    asm volatile(
+        "ldr %[merged], [%[table2], %[leading_bits], LSL #3]\n"
+        "ubfx %[tmp1], %[res], #14, #7\n"
+        "ubfx %[tmp2], %[res], #21, #7\n"
+        "ubfx %[tmp3], %[res], #28, #7\n"
+        "ubfx %[tmp4], %[res], #35, #7\n"
+
+        "orr %[tmp1], %[tmp1], %[tmp2], LSL #8\n"
+        "orr %[tmp2], %[tmp3], %[tmp4], LSL #8\n"
+
+        "ubfx %[tmp5], %[res], #0, #7\n"
+        "ubfx %[tmp3], %[res], #7, #7\n"
+        "orr %[tmp5], %[tmp5], #0x8080808080808080\n"
+        "orr %[tmp5], %[tmp5], %[tmp3], LSL #8\n"
+        "orr %[tmp1], %[tmp1], %[merged], LSL #4\n"
+        "strh %w[tmp5], [%[p]], #2\n"
+        // "add %[p], %[p], #2\n"
+        "orr %[tmp1], %[tmp1], %[tmp2], LSL #16\n"
+        "LSR %[leading_bits], %[merged], #60\n"
+        "tbz %[merged], #27, 1f\n"
+
+        "ubfx %[tmp3], %[res], #42, #7\n"
+        "ubfx %[tmp4], %[res], #49, #7\n"
+        "ubfx %[tmp2], %[res], #56, #8\n"
+        "orr %[tmp3], %[tmp3], %[tmp4], LSL #8\n"
+        "orr %[tmp4], %[tmp2], %[tmp5], LSL #8\n"
+
+        "orr %[tmp3], %[tmp3], %[tmp4], LSL #16\n"
+        "orr %[tmp1], %[tmp1], %[tmp3], LSL #32\n"
+        "1:\n"
+        ".arch armv8-a+sve\n"
+
+        "whilelt p0.b, xzr, %[leading_bits]\n"
+        "dup z0.d, %[tmp1]\n"
+        "st1b	z0.b, p0, [%[p], 0, mul vl]\n"
+        "add %[p], %[p], %[leading_bits]\n"
+        : [tmp1] "=&r"(tmp1), [tmp2] "=&r"(tmp2), [tmp3] "=&r"(tmp3),
+          [tmp4] "=&r"(tmp4), [tmp5] "=&r"(tmp5), [merged] "=&r"(merged),
+          [p] "+r"(p), [leading_bits] "+r"(leading_bits3)
+        : [res] "r"(res), [table2] "r"(&varint_mask64[0]));
+    return p;
+  }
+
+  PROTOBUF_NOINLINE static uint8_t* WriteTail2(uint8_t* p, uint32_t res) {
+    // res = 0x1010101020202020;
+    uint64_t leading_bits3 = 0;
+    leading_bits3 = __clzl(res);
+    uint64_t merged = 0;
+    uint64_t tmp1 = 0;
+    uint64_t tmp2 = 0;
+    uint64_t tmp3 = 0;
+    uint64_t tmp4 = 0;
+    uint64_t tmp5 = 0x0;
+    asm volatile(
+        "ldr %[merged], [%[table2], %[leading_bits], LSL #3]\n"
+        "ubfx %[tmp1], %[res], #14, #7\n"
+        "ubfx %[tmp2], %[res], #21, #7\n"
+        "ubfx %[tmp3], %[res], #28, #7\n"
+        "ubfx %[tmp4], %[res], #35, #7\n"
+
+        "orr %[tmp1], %[tmp1], %[tmp2], LSL #8\n"
+        "orr %[tmp2], %[tmp3], %[tmp4], LSL #8\n"
+
+        "ubfx %[tmp5], %[res], #0, #7\n"
+        "ubfx %[tmp3], %[res], #7, #7\n"
+        "orr %[tmp5], %[tmp5], #0x8080808080808080\n"
+        "orr %[tmp5], %[tmp5], %[tmp3], LSL #8\n"
+        "orr %[tmp1], %[tmp1], %[merged], LSL #4\n"
+        "strh %w[tmp5], [%[p]], #2\n"
+        // "add %[p], %[p], #2\n"
+        "orr %[tmp1], %[tmp1], %[tmp2], LSL #16\n"
+        "LSR %[leading_bits], %[merged], #60\n"
+
+        ".arch armv8-a+sve\n"
+
+        "whilelt p0.b, xzr, %[leading_bits]\n"
+        "dup z0.d, %[tmp1]\n"
+        "st1b	z0.b, p0, [%[p], 0, mul vl]\n"
+        "add %[p], %[p], %[leading_bits]\n"
+        : [tmp1] "=&r"(tmp1), [tmp2] "=&r"(tmp2), [tmp3] "=&r"(tmp3),
+          [tmp4] "=&r"(tmp4), [tmp5] "=&r"(tmp5), [merged] "=&r"(merged),
+          [p] "+r"(p), [leading_bits] "+r"(leading_bits3)
+        : [res] "r"((uint64_t)res), [table2] "r"(&varint_mask64[0]));
+    return p;
+  }
+
+#endif
+
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint(T value, uint8_t* ptr) {
+#if defined(__aarch64__)
+    static bool sve = false;
+
+    // Check if SVE is supported by the OS and Hardware
+    if (getauxval(AT_HWCAP) & HWCAP_SVE) {
+      sve = true;
+    }
+    if (sve && ABSL_PREDICT_TRUE(value >= 16384)) {
+      return WriteTail2(ptr, value);
+    }
+    // For aarch64, we have a fast path for 1 and 2 byte varints,
+    // and we fall back to the baseline for >= 3 bytes if SVE is not available.
+    if (ABSL_PREDICT_TRUE(value < 16384)) {
+      if (ABSL_PREDICT_FALSE(value >= 128)) {
+        *ptr = static_cast<uint8_t>(value) | 0x80;
+        *(ptr + 1) = static_cast<uint8_t>(value >> 7);
+        return ptr + 2;
+      } else {
+        *ptr = static_cast<uint8_t>(value);
+        return ptr + 1;
+      }
+    }
+#endif
     static_assert(std::is_unsigned<T>::value,
                   "Varint serialization must be unsigned");
     while (ABSL_PREDICT_FALSE(value >= 0x80)) {
