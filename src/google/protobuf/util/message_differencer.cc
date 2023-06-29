@@ -60,7 +60,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
 #include "google/protobuf/port_def.inc"
@@ -548,27 +547,6 @@ bool MessageDifferencer::FieldBefore(const FieldDescriptor* field1,
 
   // Always order fields by their tag number
   return (field1->number() < field2->number());
-}
-
-bool MessageDifferencer::Compare(const Message& message1,
-                                 const Message& message2) {
-  std::vector<SpecificField> parent_fields;
-  force_compare_no_presence_fields_.clear();
-  force_compare_failure_triggering_fields_.clear();
-
-  bool result = false;
-  // Setup the internal reporter if need be.
-  if (output_string_) {
-    io::StringOutputStream output_stream(output_string_);
-    StreamReporter reporter(&output_stream);
-    reporter.SetMessages(message1, message2);
-    reporter_ = &reporter;
-    result = Compare(message1, message2, false, &parent_fields);
-    reporter_ = NULL;
-  } else {
-    result = Compare(message1, message2, false, &parent_fields);
-  }
-  return result;
 }
 
 bool MessageDifferencer::CompareWithFields(

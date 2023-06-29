@@ -46,8 +46,10 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
+#include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.h"  // FieldDescriptor
 #include "google/protobuf/message.h"     // Message
 #include "google/protobuf/unknown_field_set.h"
@@ -56,6 +58,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "google/protobuf/message_static_reflection.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
@@ -627,8 +630,76 @@ class PROTOBUF_EXPORT MessageDifferencer {
   //
   // This method REQUIRES that the two messages have the same
   // Descriptor (message1.GetDescriptor() == message2.GetDescriptor()).
-  bool Compare(const Message& message1, const Message& message2);
+  template <typename T, typename = void>
+  struct is_complete : public ::std::false_type {};
+  template <typename T>
+  struct is_complete<
+      T, std::void_t<std::integral_constant<std::size_t, sizeof(T)>>>
+      : public std::true_type {};
 
+  template <typename T, typename = void>
+  class is_static_proto : public ::std::false_type {};
+
+  template <typename T>
+  class is_static_proto<T, typename std::enable_if<is_complete<
+                               typename T::MessageInfoImpl>::value>::type> {
+    template <typename U>
+    using is_proto_base = std::is_base_of<google::protobuf::Message, U>;
+
+    template <typename V>
+    static constexpr bool is_concrete() {
+      if constexpr (google::protobuf::FieldInfo<V>::has_extensions) return false;
+      bool is_static = true;
+      google::protobuf::ForEach<V>([&](auto field) {
+        if (!is_static) return;
+        constexpr auto field_info_t = decltype(field)::field_info_type;
+        using value_t = typename decltype(field)::value_type;
+
+        if constexpr (field_info_t == google::protobuf::FieldInfoType::kSingularMessage) {
+          is_static = is_static_proto<value_t>::value;
+        } else if constexpr (field_info_t == google::protobuf::FieldInfoType::kRepeated) {
+          is_static = is_static_proto<typename value_t::value_type>::value;
+        } else if constexpr (field_info_t == google::protobuf::FieldInfoType::kMap) {
+          is_static = is_static_proto<typename value_t::mapped_type>::value;
+        }
+      });
+
+      return is_static;
+    }
+
+   public:
+    static constexpr bool value = is_concrete<T>();
+  };
+
+  template <typename T, typename = std::enable_if_t<is_static_proto<T>::value>>
+  bool Compare(const T& message1, const T& message2) {
+    return Compare_(message1, message2);
+  }
+
+  // force conversion
+  bool Compare_(const Message& message1, const Message& message2) {
+    return Compare(message1, message2);
+  }
+
+  bool Compare(const Message& message1, const Message& message2) {
+    std::vector<SpecificField> parent_fields;
+    force_compare_no_presence_fields_.clear();
+    force_compare_failure_triggering_fields_.clear();
+
+    bool result = false;
+    // Setup the internal reporter if need be.
+    if (output_string_) {
+      io::StringOutputStream output_stream(output_string_);
+      StreamReporter reporter(&output_stream);
+      reporter.SetMessages(message1, message2);
+      reporter_ = &reporter;
+      result = Compare(message1, message2, false, &parent_fields);
+      reporter_ = NULL;
+    } else {
+      result = Compare(message1, message2, false, &parent_fields);
+    }
+    return result;
+  }
   // Same as above, except comparing only the list of fields specified by the
   // two vectors of FieldDescriptors.
   bool CompareWithFields(
