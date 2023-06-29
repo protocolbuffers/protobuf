@@ -8927,6 +8927,11 @@ Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
   }
 }
 
+bool IsLazilyInitializedFile(absl::string_view filename) {
+  return filename == "net/proto2/proto/descriptor.proto" ||
+         filename == "google/protobuf/descriptor.proto";
+}
+
 }  // namespace cpp
 }  // namespace internal
 

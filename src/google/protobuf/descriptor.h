@@ -2756,6 +2756,11 @@ PROTOBUF_EXPORT Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
                                                bool is_lite);
 #endif  // !SWIG
 
+// Returns whether or not this file is lazily initialized rather than
+// pre-main via static initialization.  This has to be done for our bootstrapped
+// protos to avoid linker bloat in lite runtimes.
+PROTOBUF_EXPORT bool IsLazilyInitializedFile(absl::string_view filename);
+
 }  // namespace cpp
 }  // namespace internal
 
