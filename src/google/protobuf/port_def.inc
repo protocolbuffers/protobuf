@@ -1054,7 +1054,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma clang diagnostic ignored "-Wunused-parameter"
 // -Wshadow means that declaration shadows a variable.
-// for (int i = 0; i < file_->public_dependency_count(); ++i) 
+// for (int i = 0; i < file_->public_dependency_count(); ++i)
 //   for (int i = 0; i < public_dep->message_type_count(); ++i)
 #pragma clang diagnostic ignored "-Wshadow"
 #endif
@@ -1081,7 +1081,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 // -Wshadow means that declaration shadows a variable.
-// for (int i = 0; i < file_->public_dependency_count(); ++i) 
+// for (int i = 0; i < file_->public_dependency_count(); ++i)
 //   for (int i = 0; i < public_dep->message_type_count(); ++i)
 #pragma GCC diagnostic ignored "-Wshadow"
 #ifndef __clang__
