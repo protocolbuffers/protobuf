@@ -256,19 +256,21 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
 
 void FileGenerator::GenerateHeader(io::Printer* p) const {
   GenerateFile(p, GeneratedFileType::kHeader, [&] {
-    p->Print("CF_EXTERN_C_BEGIN\n\n");
-
     absl::btree_set<std::string> fwd_decls;
     for (const auto& generator : message_generators_) {
       generator->DetermineForwardDeclarations(&fwd_decls,
                                               /* include_external_types = */
                                               HeadersUseForwardDeclarations());
     }
+
+    p->Emit("CF_EXTERN_C_BEGIN\n\n");
+
     if (!fwd_decls.empty()) {
-      p->Print("$fwd_decls$\n\n", "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+      p->Emit({{"fwd_decls", absl::StrJoin(fwd_decls, "\n")}},
+              "$fwd_decls$\n\n");
     }
 
-    p->Print("NS_ASSUME_NONNULL_BEGIN\n\n");
+    p->Emit("NS_ASSUME_NONNULL_BEGIN\n\n");
 
     for (const auto& generator : enum_generators_) {
       generator->GenerateHeader(p);
@@ -276,51 +278,47 @@ void FileGenerator::GenerateHeader(io::Printer* p) const {
 
     // For extensions to chain together, the Root gets created even if there
     // are no extensions.
-    p->Print(
-        // clang-format off
-        "#pragma mark - $root_class_name$\n"
-        "\n"
-        "/**\n"
-        " * Exposes the extension registry for this file.\n"
-        " *\n"
-        " * The base class provides:\n"
-        " * @code\n"
-        " *   + (GPBExtensionRegistry *)extensionRegistry;\n"
-        " * @endcode\n"
-        " * which is a @c GPBExtensionRegistry that includes all the extensions defined by\n"
-        " * this file and all files that it depends on.\n"
-        " **/\n"
-        "GPB_FINAL @interface $root_class_name$ : GPBRootObject\n"
-        "@end\n"
-        "\n",
-        // clang-format on
-        "root_class_name", root_class_name_);
+    p->Emit(R"objc(
+      #pragma mark - $root_class_name$
+
+      /**
+       * Exposes the extension registry for this file.
+       *
+       * The base class provides:
+       * @code
+       *   + (GPBExtensionRegistry *)extensionRegistry;
+       * @endcode
+       * which is a @c GPBExtensionRegistry that includes all the extensions defined by
+       * this file and all files that it depends on.
+       **/
+      GPB_FINAL @interface $root_class_name$ : GPBRootObject
+      @end
+    )objc");
+    p->Emit("\n");
 
     // The dynamic methods block is only needed if there are extensions that are
     // file level scoped (not message scoped). The first
     // file_->extension_count() of extension_generators_ are the file scoped
     // ones.
     if (file_->extension_count()) {
-      p->Print("@interface $root_class_name$ (DynamicMethods)\n",
-               "root_class_name", root_class_name_);
+      p->Emit("@interface $root_class_name$ (DynamicMethods)\n");
 
       for (int i = 0; i < file_->extension_count(); i++) {
         extension_generators_[i]->GenerateMembersHeader(p);
       }
 
-      p->Print("@end\n\n");
+      p->Emit("@end\n\n");
     }  // file_->extension_count()
 
     for (const auto& generator : message_generators_) {
       generator->GenerateMessageHeader(p);
     }
 
-    // clang-format off
-    p->Print(
-      "NS_ASSUME_NONNULL_END\n"
-      "\n"
-      "CF_EXTERN_C_END\n");
-    // clang-format on
+    p->Emit(R"objc(
+      NS_ASSUME_NONNULL_END
+
+      CF_EXTERN_C_END
+    )objc");
   });
 }
 
