@@ -3999,12 +3999,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
 
   std::vector<const FieldDescriptor*> ordered_fields =
       SortFieldsByNumber(descriptor_);
-  ordered_fields.erase(
-      std::remove_if(ordered_fields.begin(), ordered_fields.end(),
-                     [this](const FieldDescriptor* f) {
-                       return !IsFieldUsed(f, options_);
-                     }),
-      ordered_fields.end());
 
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   sorted_extensions.reserve(descriptor_->extension_range_count());
