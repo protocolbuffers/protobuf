@@ -396,10 +396,6 @@ bool ShouldSplit(const FieldDescriptor* field, const Options& options);
 bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
                                          const Options& options);
 
-inline bool IsFieldUsed(const FieldDescriptor* /* field */, const Options&) {
-  return true;
-}
-
 // Does the file contain any definitions that need extension_set.h?
 bool HasExtensionsOrExtendableMessage(const FileDescriptor* file);
 
