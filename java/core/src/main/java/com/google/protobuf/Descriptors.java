@@ -2820,10 +2820,6 @@ public final class Descriptors {
       return proto.getOptions();
     }
 
-    public boolean isSynthetic() {
-      return fields.length == 1 && fields[0].isProto3Optional;
-    }
-
     /** Get a list of this message type's fields. */
     public List<FieldDescriptor> getFields() {
       return Collections.unmodifiableList(Arrays.asList(fields));
@@ -2836,6 +2832,12 @@ public final class Descriptors {
     @Override
     public OneofDescriptorProto toProto() {
       return proto;
+    }
+
+    @Deprecated
+    public
+    boolean isSynthetic() {
+      return fields.length == 1 && fields[0].isProto3Optional;
     }
 
     private void setProto(final OneofDescriptorProto proto) {

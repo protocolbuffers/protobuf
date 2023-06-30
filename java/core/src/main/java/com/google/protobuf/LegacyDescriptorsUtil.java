@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.Descriptors.OneofDescriptor;
 
 /**
  * This file is meant to be a temporary housing for legacy descriptor APIs we want to deprecate and
@@ -67,6 +68,16 @@ public final class LegacyDescriptorsUtil {
     }
 
     private LegacyFileDescriptor() {}
+  }
+
+  /** Wraps OneofDescriptor */
+  public static final class LegacyOneofDescriptor {
+
+    public static boolean isSynthetic(OneofDescriptor descriptor) {
+      return descriptor.isSynthetic();
+    }
+
+    private LegacyOneofDescriptor() {}
   }
 
   private LegacyDescriptorsUtil() {}
