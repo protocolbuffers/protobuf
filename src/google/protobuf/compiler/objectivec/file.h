@@ -108,13 +108,13 @@ class FileGenerator {
     GenerateFile(p, file_type, file_options, body);
   }
 
-  void PrintRootImplementation(
+  void EmitRootImplementation(
       io::Printer* p,
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
-  void PrintRootExtensionRegistryImplementation(
+  void EmitRootExtensionRegistryImplementation(
       io::Printer* p,
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
-  void PrintFileDescription(io::Printer* p) const;
+  void EmitFileDescription(io::Printer* p) const;
 
   bool HeadersUseForwardDeclarations() const {
     // The bundled protos (WKTs) don't make use of forward declarations.

@@ -368,8 +368,8 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
 
   GenerateFile(p, GeneratedFileType::kSource, file_options, [&] {
     EmitSourceFwdDecls(fwd_decls, p);
-    PrintRootImplementation(p, deps_with_extensions);
-    PrintFileDescription(p);
+    EmitRootImplementation(p, deps_with_extensions);
+    EmitFileDescription(p);
 
     for (const auto& generator : enum_generators_) {
       generator->GenerateSource(p);
@@ -406,7 +406,7 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
 
   GenerateFile(p, GeneratedFileType::kSource, file_options, [&] {
     EmitSourceFwdDecls(fwd_decls, p);
-    PrintRootImplementation(p, deps_with_extensions);
+    EmitRootImplementation(p, deps_with_extensions);
   });
 }
 
@@ -438,7 +438,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
 
   GenerateFile(p, GeneratedFileType::kSource, file_options, [&] {
     EmitSourceFwdDecls(fwd_decls, p);
-    PrintFileDescription(p);
+    EmitFileDescription(p);
     generator->GenerateSource(p);
   });
 }
@@ -580,109 +580,111 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
   )objc");
 }
 
-void FileGenerator::PrintRootImplementation(
+void FileGenerator::EmitRootImplementation(
     io::Printer* p,
     const std::vector<const FileDescriptor*>& deps_with_extensions) const {
-  p->Print(
-      // clang-format off
-      "#pragma mark - $root_class_name$\n"
-      "\n"
-      "@implementation $root_class_name$\n"
-      "\n",
-      // clang-format on
-      "root_class_name", root_class_name_);
+  p->Emit(
+      R"objc(
+        #pragma mark - $root_class_name$
 
-  // If there were any extensions or this file has any dependencies, output a
-  // registry to override to create the file specific registry.
+        @implementation $root_class_name$
+      )objc");
+
+  p->Emit("\n");
+
+  // If there were any extensions or this file has any dependencies,
+  // output a registry to override to create the file specific
+  // registry.
   if (extension_generators_.empty() && deps_with_extensions.empty()) {
     if (file_->dependency_count() == 0) {
-      // clang-format off
-      p->Print(
-          "// No extensions in the file and no imports, so no need to generate\n"
-          "// +extensionRegistry.\n");
-      // clang-format on
+      p->Emit(R"objc(
+        // No extensions in the file and no imports, so no need to generate
+        // +extensionRegistry.
+      )objc");
     } else {
-      // clang-format off
-      p->Print(
-          "// No extensions in the file and none of the imports (direct or indirect)\n"
-          "// defined extensions, so no need to generate +extensionRegistry.\n");
-      // clang-format on
+      p->Emit(R"objc(
+        // No extensions in the file and none of the imports (direct or indirect)
+        // defined extensions, so no need to generate +extensionRegistry.
+      )objc");
     }
   } else {
-    PrintRootExtensionRegistryImplementation(p, deps_with_extensions);
+    EmitRootExtensionRegistryImplementation(p, deps_with_extensions);
   }
 
-  p->Print("\n@end\n\n");
+  p->Emit("\n");
+  p->Emit("@end\n\n");
 }
 
-void FileGenerator::PrintRootExtensionRegistryImplementation(
+void FileGenerator::EmitRootExtensionRegistryImplementation(
     io::Printer* p,
     const std::vector<const FileDescriptor*>& deps_with_extensions) const {
-  // clang-format off
-  p->Print(
-      "+ (GPBExtensionRegistry*)extensionRegistry {\n"
-      "  // This is called by +initialize so there is no need to worry\n"
-      "  // about thread safety and initialization of registry.\n"
-      "  static GPBExtensionRegistry* registry = nil;\n"
-      "  if (!registry) {\n"
-      "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n"
-      "    registry = [[GPBExtensionRegistry alloc] init];\n");
-  // clang-format on
-
-  p->Indent();
-  p->Indent();
-
-  if (!extension_generators_.empty()) {
-    p->Print("static GPBExtensionDescription descriptions[] = {\n");
-    p->Indent();
-    for (const auto& generator : extension_generators_) {
-      generator->GenerateStaticVariablesInitialization(p);
-    }
-    p->Outdent();
-    // clang-format off
-    p->Print(
-        "};\n"
-        "for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {\n"
-        "  GPBExtensionDescriptor *extension =\n"
-        "      [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]\n"
-        "                                                     usesClassRefs:YES];\n"
-        "  [registry addExtension:extension];\n"
-        "  [self globallyRegisterExtension:extension];\n"
-        "  [extension release];\n"
-        "}\n");
-    // clang-format on
-  }
-
-  if (deps_with_extensions.empty()) {
-    // clang-format off
-    p->Print(
-        "// None of the imports (direct or indirect) defined extensions, so no need to add\n"
-        "// them to this registry.\n");
-    // clang-format on
-  } else {
-    // clang-format off
-    p->Print(
-        "// Merge in the imports (direct or indirect) that defined extensions.\n");
-    // clang-format on
-    for (const auto& dep : deps_with_extensions) {
-      const std::string root_class_name(FileClassName((dep)));
-      p->Print("[registry addExtensions:[$dependency$ extensionRegistry]];\n",
-               "dependency", root_class_name);
-    }
-  }
-
-  p->Outdent();
-  p->Outdent();
-
-  // clang-format off
-  p->Print(
-      "  }\n"
-      "  return registry;\n"
-      "}\n");
-  // clang-format on
+  p->Emit(
+      {
+          {"register_local_extensions",
+           [&] {
+             if (extension_generators_.empty()) {
+               return;
+             }
+             p->Emit(
+                 {
+                     {"register_local_extensions_variable_blocks",
+                      [&] {
+                        for (const auto& generator : extension_generators_) {
+                          generator->GenerateStaticVariablesInitialization(p);
+                        }
+                      }},
+                 },
+                 R"objc(
+                   static GPBExtensionDescription descriptions[] = {
+                     $register_local_extensions_variable_blocks$
+                   };
+                   for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {
+                     GPBExtensionDescriptor *extension =
+                         [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]
+                                                                        usesClassRefs:YES];
+                     [registry addExtension:extension];
+                     [self globallyRegisterExtension:extension];
+                     [extension release];
+                   }
+                 )objc");
+           }},
+          {"register_imports",
+           [&] {
+             if (deps_with_extensions.empty()) {
+               p->Emit(R"objc(
+                 // None of the imports (direct or indirect) defined extensions, so no need to add
+                 // them to this registry.
+               )objc");
+             } else {
+               p->Emit(R"objc(
+                 // Merge in the imports (direct or indirect) that defined extensions.
+               )objc");
+               for (const auto& dep : deps_with_extensions) {
+                 p->Emit({{"dependency", FileClassName(dep)}},
+                         R"objc(
+                           [registry addExtensions:[$dependency$ extensionRegistry]];
+                         )objc");
+               }
+             }
+           }},
+      },
+      R"objc(
+        + (GPBExtensionRegistry*)extensionRegistry {
+          // This is called by +initialize so there is no need to worry
+          // about thread safety and initialization of registry.
+          static GPBExtensionRegistry* registry = nil;
+          if (!registry) {
+            GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
+            registry = [[GPBExtensionRegistry alloc] init];
+            $register_local_extensions$;
+            $register_imports$
+          }
+          return registry;
+        }
+      )objc");
 }
 
-void FileGenerator::PrintFileDescription(io::Printer* p) const {
+void FileGenerator::EmitFileDescription(io::Printer* p) const {
   // File descriptor only needed if there are messages to use it.
   if (message_generators_.empty()) {
     return;
