@@ -144,12 +144,12 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v1
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-e6272cdfe97c6df307e17b83f3a7a70844f6fc08
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.CCACHE_CMAKE_FLAGS }}
-            -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_TESTS=ON
-            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+            -Dprotobuf_BUILD_TESTS=ON -Dprotobuf_USE_EXTERNAL_GTEST=ON
+            -Dprotobuf_ABSL_PROVIDER=package
 
   linux-cmake-install:
     name: Linux CMake Install
