@@ -662,9 +662,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
                                        DescriptorPool::ErrorCollector::OTHER);
 
     if (require_syntax_identifier_ || LookingAt("syntax")
-#ifdef PROTOBUF_FUTURE_EDITIONS
         || LookingAt("edition")
-#endif  // PROTOBUF_FUTURE_EDITIONS
     ) {
       if (!ParseSyntaxIdentifier(file, root_location)) {
         // Don't attempt to parse the file if we didn't recognize the syntax
@@ -674,11 +672,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       // Store the syntax into the file.
       if (file != nullptr) {
         file->set_syntax(syntax_identifier_);
-#ifdef PROTOBUF_FUTURE_EDITIONS
         if (syntax_identifier_ == "editions") {
           file->set_edition(edition_);
         }
-#endif  // PROTOBUF_FUTURE_EDITIONS
       }
     } else if (!stop_after_syntax_identifier_) {
       ABSL_LOG(WARNING) << "No syntax specified for the proto file: "
@@ -718,20 +714,16 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
                                    const LocationRecorder& parent) {
   LocationRecorder syntax_location(parent,
                                    FileDescriptorProto::kSyntaxFieldNumber);
-#ifdef PROTOBUF_FUTURE_EDITIONS
   syntax_location.RecordLegacyLocation(
       file, DescriptorPool::ErrorCollector::EDITIONS);
   bool has_edition = false;
   if (TryConsume("edition")) {
     has_edition = true;
   } else {
-#endif  // PROTOBUF_FUTURE_EDITIONS
     DO(Consume("syntax",
                "File must begin with a syntax statement, e.g. 'syntax = "
                "\"proto2\";'."));
-#ifdef PROTOBUF_FUTURE_EDITIONS
   }
-#endif  // PROTOBUF_FUTURE_EDITIONS
 
   DO(Consume("="));
   io::Tokenizer::Token syntax_token = input_->current();
@@ -739,7 +731,6 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
   DO(ConsumeString(&syntax, "Expected syntax identifier."));
   DO(ConsumeEndOfDeclaration(";", &syntax_location));
 
-#ifdef PROTOBUF_FUTURE_EDITIONS
   (has_edition ? edition_ : syntax_identifier_) = syntax;
   if (has_edition) {
     if (syntax.empty()) {
@@ -751,7 +742,6 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
     syntax_identifier_ = "editions";
     return true;
   }
-#endif  // PROTOBUF_FUTURE_EDITIONS
   syntax_identifier_ = syntax;
   if (syntax != "proto2" && syntax != "proto3" &&
       !stop_after_syntax_identifier_) {
@@ -2343,7 +2333,6 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
       !LookingAt("required")) {
     return false;
   }
-#ifdef PROTOBUF_FUTURE_EDITIONS
   if (LookingAt("optional") && syntax_identifier_ == "editions") {
     RecordError(
         "Label \"optional\" is not supported in editions.  By default, all "
@@ -2354,7 +2343,6 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
         "Label \"required\" is not supported in editions, use "
         "features.field_presence = LEGACY_REQUIRED.");
   }
-#endif  // PROTOBUF_FUTURE_EDITIONS
 
   LocationRecorder location(field_location,
                             FieldDescriptorProto::kLabelFieldNumber);
@@ -2374,7 +2362,6 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
   const auto& type_names_table = GetTypeNameTable();
   auto iter = type_names_table.find(input_->current().text);
   if (iter != type_names_table.end()) {
-#ifdef PROTOBUF_FUTURE_EDITIONS
     if (syntax_identifier_ == "editions" &&
         iter->second == FieldDescriptorProto::TYPE_GROUP) {
       RecordError(
@@ -2382,7 +2369,6 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
           "behavior you can specify features.message_encoding = DELIMITED on a "
           "message field.");
     }
-#endif  // PROTOBUF_FUTURE_EDITIONS
     *type = iter->second;
     input_->Next();
   } else {
