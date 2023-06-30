@@ -76,6 +76,31 @@ extend ParentMessage.ExtendedMessage {
 }
 
 message TestMessage {
+  optional string string_field = 1;
+  optional string string_field_utf = 2;
+  optional string string_field_noutf = 3;
+  optional string options_strip_beginning = 4 [
+    enforce_utf8 = false,
+    ctype = STRING_PIECE,
+    default = "hello world abcd"
+  ];
+  optional string options_strip_middle = 5 [
+    ctype = STRING_PIECE,
+    enforce_utf8 = false,
+    default = "hello world abcd"
+  ];
+  optional string options_strip_end = 6 [
+    ctype = STRING_PIECE,
+    default = "hello world abcd",
+    enforce_utf8 = false
+  ];
+
+  map<string, string> string_map_field = 7;
+
+  repeated int32 int_field = 8;
+  repeated int32 int_field_packed = 9 [packed = true];
+  repeated int32 int_field_unpacked = 10 [packed = false];
+
   optional group OptionalGroup = 16 {
     optional int32 a = 17;
   }

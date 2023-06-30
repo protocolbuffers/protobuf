@@ -34,4 +34,5 @@ package protobuf_editions_test.proto3;
 
 message Proto3Utf8Strict {
   string string_field = 1;
+  map<string, string> map_field = 10;
 }

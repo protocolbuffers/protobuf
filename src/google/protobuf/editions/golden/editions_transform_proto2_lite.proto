@@ -36,73 +36,16 @@ option features.string_field_validation = HINT;
 option features.json_format = LEGACY_BEST_EFFORT;
 option features.(pb.cpp).legacy_closed_enum = true;
 
-// This file contains various edge cases we've collected from migrating real
-// protos in order to lock down the transformations.
-
-// LINT: ALLOW_GROUPS
-
 package protobuf_editions_test;
 
-option java_multiple_files = true;
-option cc_enable_arenas = true;
+option optimize_for = LITE_RUNTIME;
 
-message EmptyMessage {}
-message EmptyMessage2 {}
-
-service EmptyService {}
-
-service BasicService {
-  rpc BasicMethod(EmptyMessage) returns (EmptyMessage) {}
-}
-
-// clang-format off
-message UnformattedMessage{
-  int32 a=1 ;
-  message Foo { int32 a = 1; }
-  Foo foo = 2 [features.message_encoding = DELIMITED];
-  string string_piece_with_zero = 3 [ctype=STRING_PIECE, default="ab\000c"];
-  float long_float_name_wrapped = 4;
-
-}
-// clang-format on
-
-message ParentMessage {
-  message ExtendedMessage {
-    extensions 536860000 to 536869999 [declaration = {
-      number: 536860000
-      full_name: ".protobuf_editions_test.extension"
-      type: ".protobuf_editions_test.EmptyMessage"
-    }];
-  }
-}
-
-extend ParentMessage.ExtendedMessage {
-  EmptyMessage extension = 536860000;
-}
-
-message TestMessage {
+message TestMessageLite {
   string string_field = 1;
   string string_field_utf = 2;
   string string_field_noutf = 3;
-  string options_strip_beginning = 4 [  ctype = STRING_PIECE, default = "hello world abcd" ];
-  string options_strip_middle = 5 [ ctype = STRING_PIECE,  default = "hello world abcd" ];
-  string options_strip_end = 6 [ ctype = STRING_PIECE, default = "hello world abcd" ];
 
-  map<string, string> string_map_field = 7;
+  map<string, string> string_map_field = 4;
 
-  repeated int32 int_field = 8;
-  repeated int32 int_field_packed = 9 [features.repeated_field_encoding = PACKED];
-  repeated int32 int_field_unpacked = 10;
-
-  message OptionalGroup {
-    int32 a = 17;
-  }
-  OptionalGroup optionalgroup = 16 [features.message_encoding = DELIMITED];
-}
-
-enum TestEnum {
-  FOO = 1;  // Non-zero default
-  BAR = 2;
-  BAZ = 3;
-  NEG = -1;  // Intentionally negative.
+  int32 int_field = 5;
 }

@@ -28,12 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-syntax = "proto2";
+edition = "2023";
+option features.field_presence = IMPLICIT;
 
-package protobuf_editions_test.proto2;
+package protobuf_editions_test;
 
 
-message Proto2Utf8Disabled {
-  optional string string_field = 1;
-  map<string, string> map_field = 2;
+message TestMessageProto3 {
+  string string_field = 1 [features.string_field_validation = NONE];
+  string string_field_utf = 2 [features.string_field_validation = NONE];
+  string string_field_noutf = 3 [features.string_field_validation = NONE];
+
+  map<string, string> string_map_field = 4 [features.string_field_validation = NONE];
+
+  repeated int32 int_field = 7;
 }

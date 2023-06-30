@@ -104,6 +104,17 @@ cc_proto_library(
 )
 
 proto_library(
+    name = "proto2_utf8_lite_proto",
+    srcs = ["proto2_utf8_lite.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "proto2_utf8_lite_cc_proto",
+    deps = [":proto2_utf8_lite_proto"],
+)
+
+proto_library(
     name = "proto2_proto3_enum_proto",
     srcs = ["proto2_proto3_enum.proto"],
     strip_import_prefix = "/src",
