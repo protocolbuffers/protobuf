@@ -431,6 +431,7 @@ filegroup(
         ],
         allow_empty = True,
     ) + [
+        "//src/google/protobuf/compiler/allowlists:test_srcs",
         "//src/google/protobuf/compiler/cpp:test_srcs",
         "//src/google/protobuf/compiler/csharp:test_srcs",
         "//src/google/protobuf/compiler/java:test_srcs",

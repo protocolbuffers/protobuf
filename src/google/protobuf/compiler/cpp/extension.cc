@@ -89,6 +89,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["field_type"] =
       absl::StrCat(static_cast<int>(descriptor_->type()));
   variables_["packed"] = descriptor_->is_packed() ? "true" : "false";
+  variables_["dllexport_decl"] = options.dllexport_decl;
 
   std::string scope;
   if (IsScoped()) {
@@ -177,13 +178,14 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
 
   if (IsLazilyInitializedFile(descriptor_->file()->name())) {
     format(
-        "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2\n"
+        "PROTOBUF_CONSTINIT$ dllexport_decl$ "
+        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2\n"
         "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
         "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
         "  $scoped_name$($constant_name$);\n");
   } else {
     format(
-        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
+        "$dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
         "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
         "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
         "  $scoped_name$($constant_name$, $1$, $verify_fn$);\n",

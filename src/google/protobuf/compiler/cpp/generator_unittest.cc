@@ -50,7 +50,7 @@ class CppGeneratorTest : public CommandLineInterfaceTester {
 
     // Generate built-in protos.
     CreateTempFile(
-        "net/proto2/proto/descriptor.proto",
+        "google/protobuf/descriptor.proto",
         google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   }
 };
