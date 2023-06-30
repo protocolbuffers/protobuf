@@ -139,3 +139,12 @@ upb_cc_proto_library_copts(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
 )
+
+cc_test(
+    name = "repeated_field_iterator_test",
+    srcs = ["repeated_field_iterator_test.cc"],
+    deps = [
+        ":repeated_field",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

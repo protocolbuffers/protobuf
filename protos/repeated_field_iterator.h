@@ -42,12 +42,66 @@
 #include "upb/port/def.inc"
 
 namespace protos {
-
 namespace internal {
 
 // TODO(b/279086429): Implement std iterator for strings and messages
 template <typename T>
 class RepeatedFieldScalarProxy;
+
+struct IteratorTestPeer;
+
+template <typename T>
+class RepeatedScalarIterator;
+
+template <typename T>
+class ReferenceProxy {
+ public:
+  ReferenceProxy(const ReferenceProxy&) = default;
+  ReferenceProxy& operator=(const ReferenceProxy& other) {
+    // Assign through the references
+    *ptr_ = *other.ptr_;
+    return *this;
+  }
+  friend void swap(ReferenceProxy a, ReferenceProxy b) {
+    using std::swap;
+    swap(*a.ptr_, *b.ptr_);
+  }
+
+  operator T() const { return *ptr_; }
+  void operator=(const T& value) const { *ptr_ = value; }
+  void operator=(T&& value) const { *ptr_ = std::move(value); }
+  RepeatedScalarIterator<T> operator&() const {
+    return RepeatedScalarIterator<T>(ptr_);
+  }
+
+ private:
+  friend IteratorTestPeer;
+  friend ReferenceProxy<const T>;
+  friend RepeatedScalarIterator<T>;
+
+  explicit ReferenceProxy(T& elem) : ptr_(&elem) {}
+  T* ptr_;
+};
+
+template <typename T>
+class ReferenceProxy<const T> {
+ public:
+  ReferenceProxy(ReferenceProxy<T> p) : ptr_(p.ptr_) {}
+  ReferenceProxy(const ReferenceProxy&) = default;
+  ReferenceProxy& operator=(const ReferenceProxy&) = delete;
+
+  operator T() const { return *ptr_; }
+  RepeatedScalarIterator<const T> operator&() const {
+    return RepeatedScalarIterator<const T>(ptr_);
+  }
+
+ private:
+  friend IteratorTestPeer;
+  friend RepeatedScalarIterator<const T>;
+
+  explicit ReferenceProxy(const T& ptr) : ptr_(&ptr) {}
+  const T* ptr_;
+};
 
 template <typename T>
 class RepeatedScalarIterator {
@@ -55,17 +109,21 @@ class RepeatedScalarIterator {
   using iterator_category = std::random_access_iterator_tag;
   using value_type = typename std::remove_const<T>::type;
   using difference_type = std::ptrdiff_t;
-  using pointer = T*;
-  using reference = T&;
+  using pointer = RepeatedScalarIterator;
+  using reference = ReferenceProxy<T>;
 
   constexpr RepeatedScalarIterator() noexcept : it_(nullptr) {}
   RepeatedScalarIterator(const RepeatedScalarIterator& other) = default;
   RepeatedScalarIterator& operator=(const RepeatedScalarIterator& other) =
       default;
+  template <typename U = T,
+            typename = std::enable_if_t<std::is_const<U>::value>>
+  RepeatedScalarIterator(
+      const RepeatedScalarIterator<std::remove_const_t<U>>& other)
+      : it_(other.it_) {}
 
-  // deref TODO(b/286450722) Change to use a proxy.
-  constexpr reference operator*() const noexcept { return *it_; }
-  constexpr pointer operator->() const noexcept { return it_; }
+  constexpr reference operator*() const noexcept { return reference(*it_); }
+  // No operator-> needed because T is a scalar.
 
  private:
   // Hide the internal type.
@@ -132,7 +190,7 @@ class RepeatedScalarIterator {
 
   // indexable
   constexpr reference operator[](difference_type d) const noexcept {
-    return it_[d];
+    return reference(it_[d]);
   }
 
   // random access iterator
@@ -141,6 +199,9 @@ class RepeatedScalarIterator {
   }
 
  private:
+  friend IteratorTestPeer;
+  friend ReferenceProxy<T>;
+  friend RepeatedScalarIterator<const T>;
   friend class RepeatedFieldScalarProxy<T>;
 
   // Create from internal::RepeatedFieldScalarProxy.
@@ -151,7 +212,6 @@ class RepeatedScalarIterator {
 };
 
 }  // namespace internal
-
 }  // namespace protos
 
 #endif  // UPB_PROTOS_REPEATED_FIELD_ITERATOR_H_

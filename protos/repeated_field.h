@@ -208,6 +208,14 @@ class RepeatedFieldScalarProxy
   static constexpr bool kIsConst = std::is_const_v<T>;
 
  public:
+  using value_type = std::remove_const_t<T>;
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
+  using iterator = internal::RepeatedScalarIterator<T>;
+  using reference = typename iterator::reference;
+  using pointer = typename iterator::pointer;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+
   explicit RepeatedFieldScalarProxy(const upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldScalarProxy(upb_Array* arr, upb_Arena* arena)
@@ -230,25 +238,16 @@ class RepeatedFieldScalarProxy
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
 
-  // Iterator support.
-  using iterator = internal::RepeatedScalarIterator<T>;
-
   iterator begin() const { return iterator(unsafe_array()); }
   iterator cbegin() const { return begin(); }
   iterator end() const { return iterator(unsafe_array() + this->size()); }
   iterator cend() const { return end(); }
 
   // Reverse iterator support.
-  using const_reverse_iterator = std::reverse_iterator<iterator>;
-  using reverse_iterator = std::reverse_iterator<iterator>;
-  reverse_iterator rbegin() { return reverse_iterator(end()); }
-  const_reverse_iterator rbegin() const {
-    return const_reverse_iterator(end());
-  }
-  reverse_iterator rend() { return reverse_iterator(begin()); }
-  const_reverse_iterator rend() const {
-    return const_reverse_iterator(begin());
-  }
+  reverse_iterator rbegin() const { return reverse_iterator(end()); }
+  reverse_iterator rend() const { return reverse_iterator(begin()); }
+  reverse_iterator crbegin() const { return reverse_iterator(end()); }
+  reverse_iterator crend() const { return reverse_iterator(begin()); }
 
  private:
   T* unsafe_array() const {

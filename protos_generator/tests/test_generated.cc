@@ -27,7 +27,9 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
@@ -50,6 +52,7 @@ using ::protos_generator::test::protos::TestModel_Category_NEWS;
 using ::protos_generator::test::protos::TestModel_Category_VIDEO;
 using ::protos_generator::test::protos::theme;
 using ::protos_generator::test::protos::ThemeExtension;
+using ::testing::ElementsAre;
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
 
@@ -412,10 +415,22 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForScalars) {
   EXPECT_EQ((*test_model.mutable_value_array())[1], 16);
   EXPECT_EQ((*test_model.mutable_value_array())[2], 27);
 
-  ASSERT_EQ(test_model.value_array().size(), 3);
-  EXPECT_EQ(test_model.value_array()[0], 5);
-  EXPECT_EQ(test_model.value_array()[1], 16);
-  EXPECT_EQ(test_model.value_array()[2], 27);
+  const auto value_array = test_model.value_array();
+  ASSERT_EQ(value_array.size(), 3);
+  EXPECT_EQ(value_array[0], 5);
+  EXPECT_EQ(value_array[1], 16);
+  EXPECT_EQ(value_array[2], 27);
+
+  EXPECT_THAT(value_array, ElementsAre(5, 16, 27));
+
+  EXPECT_THAT(std::vector(value_array.begin(), value_array.end()),
+              ElementsAre(5, 16, 27));
+  EXPECT_THAT(std::vector(value_array.cbegin(), value_array.cend()),
+              ElementsAre(5, 16, 27));
+  EXPECT_THAT(std::vector(value_array.rbegin(), value_array.rend()),
+              ElementsAre(27, 16, 5));
+  EXPECT_THAT(std::vector(value_array.crbegin(), value_array.crend()),
+              ElementsAre(27, 16, 5));
 }
 
 TEST(CppGeneratedCode, RepeatedScalarIterator) {
