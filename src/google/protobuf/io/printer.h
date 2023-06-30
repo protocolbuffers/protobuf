@@ -219,9 +219,8 @@ class AnnotationProtoCollector : public AnnotationCollector {
 //
 // Substitutions can be configured to "chomp" a single character after them, to
 // help make indentation work out. This can be configured by passing a
-// two-argument io::Printer::Value into Emit's substitution map:
-//
-//   p.Emit({{"var", io::Printer::Value{var_decl, ";"}}}, R"cc(
+// io::Printer::Sub().WithSuffix() into Emit's substitution map:
+//   p.Emit({io::Printer::Sub("var", var_decl).WithSuffix(";")}, R"cc(
 //     class $class$ {
 //      public:
 //       $var$;
