@@ -42,7 +42,7 @@ namespace compiler {
 static constexpr auto kEarlyEditionsFile = internal::MakeAllowlist(
     {
 // Intentionally left blank.
-        "google/protobuf/editions/",
+        "google/protobuf/",
     },
     internal::AllowlistFlags::kMatchPrefix);
 

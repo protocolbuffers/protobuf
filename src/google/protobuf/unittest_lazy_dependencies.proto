@@ -34,7 +34,7 @@
 //
 // A proto file we will use for unit testing.
 
-syntax = "proto2";
+edition = "2023";
 
 import "google/protobuf/unittest_lazy_dependencies_custom_option.proto";
 
@@ -64,7 +64,7 @@ option java_outer_classname = "UnittestLazyImportsProto";
 // descriptor lazily and return it.
 
 message ImportedMessage {
-  optional LazyMessage lazy_message = 1;
+  LazyMessage lazy_message = 1;
 }
 
 message MessageCustomOption {}

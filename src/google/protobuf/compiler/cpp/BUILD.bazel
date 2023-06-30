@@ -141,7 +141,7 @@ cc_test(
     srcs = ["unittest.cc"],
     copts = COPTS,
     data = [
-        "//:test_proto_srcs",
+        "//src/google/protobuf:test_proto_all_srcs",
         "//src/google/protobuf:testdata",
     ],
     deps = [
