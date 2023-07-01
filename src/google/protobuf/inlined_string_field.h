@@ -117,6 +117,10 @@ class PROTOBUF_EXPORT InlinedStringField {
       : value_{} {}
   explicit InlinedStringField(const std::string& default_value);
   explicit InlinedStringField(Arena* arena);
+
+  InlinedStringField(Arena* arena, const InlinedStringField& rhs,
+                     uint32_t& donating_state, uint32_t mask);
+
   ~InlinedStringField() { Destruct(); }
 
   // Lvalue Set. To save space, we pack the donating states of multiple
@@ -442,6 +446,16 @@ inline PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
   (void)rhs_msg;
   lhs->get_mutable()->swap(*rhs->get_mutable());
 #endif
+}
+
+inline InlinedStringField::InlinedStringField(Arena* arena,
+                                              const InlinedStringField& rhs,
+                                              uint32_t& donating_state,
+                                              uint32_t mask) {
+  const std::string& src = *rhs.get_const();
+  (void)donating_state;
+  (void)mask;
+  new (value_) std::string(src);
 }
 
 inline void InlinedStringField::Set(absl::string_view value, Arena* arena,

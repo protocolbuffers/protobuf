@@ -136,6 +136,8 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
+  void GenerateMemberCopyConstructor(io::Printer* p) const;
+  void GenerateMemberInPlaceCopyConstruct(io::Printer* p) const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
   void GenerateAggregateInitializer(io::Printer* p) const override;
   void GenerateCopyAggregateInitializer(io::Printer* p) const override;
@@ -504,6 +506,14 @@ void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
         "  if (!$field_$->IsInitialized()) return false;\n"
         "}\n");
   }
+}
+
+void SingularMessage::GenerateMemberCopyConstructor(io::Printer* p) const {
+  p->Emit("$name$_{rhs.$name$_->Copy(arena)}");
+}
+
+void SingularMessage::GenerateMemberInPlaceCopyConstruct(io::Printer* p) const {
+  p->Emit("$field$ = rhs.$field$->Copy(arena);");
 }
 
 void SingularMessage::GenerateConstexprAggregateInitializer(

@@ -107,6 +107,14 @@ class FieldGeneratorBase {
         << descriptor_->cpp_type_name();
   }
 
+  // Generates initialization code of the `name_{<args>}`. Generators must
+  // include the `$separator$` var as a prefix if they emit any initialization.
+  // Constexpr initialization must at all times emit initialization code.
+  virtual void GenerateMemberConstructorInit(io::Printer* p) const;
+  virtual void GenerateMemberCopyConstructor(io::Printer* p) const;
+  virtual void GenerateMemberInPlaceCopyConstruct(io::Printer* p) const;
+  virtual void GenerateMemberConstexprConstructor(io::Printer* p) const;
+
   virtual void GenerateAggregateInitializer(io::Printer* p) const;
 
   virtual void GenerateConstexprAggregateInitializer(io::Printer* p) const;
@@ -176,6 +184,26 @@ class FieldGenerator {
   void GenerateStaticMembers(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateStaticMembers(p);
+  }
+
+  void GenerateMemberConstructorInit(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberConstructorInit(p);
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberCopyConstructor(p);
+  }
+
+  void GenerateMemberInPlaceCopyConstruct(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberInPlaceCopyConstruct(p);
+  }
+
+  void GenerateMemberConstexprConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberConstexprConstructor(p);
   }
 
   // Generates declarations for all of the accessor functions related to this

@@ -130,6 +130,46 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   return vars;
 }
 
+void FieldGeneratorBase::GenerateMemberConstructorInit(io::Printer* p) const {
+  if (descriptor_->is_repeated() || descriptor_->is_extension()) {
+    p->Emit("$name$_{arena}");
+  } else {
+    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+            "$name$_{$default$}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
+  if (descriptor_->is_repeated() || descriptor_->is_extension()) {
+    p->Emit("$name$_{arena, rhs.$name$_}");
+  } else {
+    p->Emit("$name$_{rhs.$name$_}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberInPlaceCopyConstruct(
+    io::Printer* p) const {
+  if (descriptor_->is_repeated() || descriptor_->is_extension()) {
+    p->Emit("new ($field$) decltype($field$){arena, rhs.$field$});\n");
+  } else {
+    p->Emit("$field$ = rhs.$field$;\n");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberConstexprConstructor(
+    io::Printer* p) const {
+  p->Emit("/* GenericField */");
+  if (descriptor_->is_repeated() || descriptor_->is_extension() ||
+      descriptor_->is_map()) {
+    p->Emit("$name$_{}");
+  } else if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    p->Emit("$name$_{nullptr}");
+  } else {
+    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+            "$name$_{$default$}");
+  }
+}
+
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
   if (ShouldSplit(descriptor_, options_)) {
     p->Emit(R"cc(
@@ -251,6 +291,8 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+  vars.emplace_back("inlined_string_index", index);
+  vars.emplace_back("inlined_string_mask", mask);
 
   absl::string_view array = IsMapEntryMessage(field->containing_type())
                                 ? "_inlined_string_donated_"

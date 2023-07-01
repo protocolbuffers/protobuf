@@ -115,6 +115,12 @@ TaggedStringPtr CreateArenaString(Arena& arena, absl::string_view s) {
 
 }  // namespace
 
+TaggedStringPtr TaggedStringPtr::CopySlow(Arena* arena) const {
+  ABSL_DCHECK(!IsDefault());
+  return arena != nullptr ? CreateArenaString(*arena, *Get())
+                          : CreateString(*Get());
+}
+
 void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   if (IsDefault()) {

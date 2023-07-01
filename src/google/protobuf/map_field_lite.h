@@ -69,6 +69,10 @@ class MapFieldLite {
 
   constexpr MapFieldLite() : map_() {}
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
+  explicit MapFieldLite(Arena* arena, const MapFieldLite& rhs)
+      : MapFieldLite(arena) {
+    MergeFrom(rhs);
+  }
   MapFieldLite(ArenaInitialized, Arena* arena) : MapFieldLite(arena) {}
 
 #ifdef NDEBUG

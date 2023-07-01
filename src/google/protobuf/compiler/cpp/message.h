@@ -81,6 +81,9 @@ class MessageGenerator {
   // file).
   void GenerateInlineMethods(io::Printer* p);
 
+  void GenerateSplitConstructors(io::Printer* p) const;
+  void GenerateImplConstructors(io::Printer* p) const;
+
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* p);
 
@@ -107,8 +110,12 @@ class MessageGenerator {
   void GenerateFieldAccessorDeclarations(io::Printer* p);
   void GenerateFieldAccessorDefinitions(io::Printer* p);
 
+  void GenerateZeroInitFields(io::Printer* p);
+  void GenerateCopyInitFields(io::Printer* p);
+
   // Generate constructors and destructor.
   void GenerateStructors(io::Printer* p);
+  void GenerateStructorsNew(io::Printer* p);
 
   // The compiler typically generates multiple copies of each constructor and
   // destructor: http://gcc.gnu.org/bugs.html#nonbugs_cxx
@@ -116,6 +123,7 @@ class MessageGenerator {
   //
   // Generate the shared constructor code.
   void GenerateSharedConstructorCode(io::Printer* p);
+  void GenerateSharedConstructorCodeNew(io::Printer* p);
   // Generate the shared destructor code.
   void GenerateSharedDestructorCode(io::Printer* p);
   // Generate the arena-specific destructor code.
@@ -164,7 +172,7 @@ class MessageGenerator {
   bool ImplHasCopyCtor() const;
 
   // Generates the body of the message's copy constructor.
-  void GenerateCopyConstructorBody(io::Printer* p) const;
+  void GenerateMemberCopyConstructorBody(io::Printer* p) const;
   void GenerateCopyConstructorBodyImpl(io::Printer* p) const;
   void GenerateCopyConstructorBodyOneofs(io::Printer* p) const;
 

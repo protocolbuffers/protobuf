@@ -158,6 +158,10 @@ struct WeakRepeatedPtrField {
   using TypeHandler = internal::ImplicitWeakTypeHandler<T>;
   constexpr WeakRepeatedPtrField() : weak() {}
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
+  WeakRepeatedPtrField(Arena* arena, const WeakRepeatedPtrField& rhs)
+      : WeakRepeatedPtrField(arena) {
+    MergeFrom(rhs);
+  }
   ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
 
   typedef internal::RepeatedPtrIterator<MessageLite> iterator;

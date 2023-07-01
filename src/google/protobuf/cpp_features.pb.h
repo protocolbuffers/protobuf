@@ -82,6 +82,7 @@ class PROTOBUF_EXPORT CppFeatures final :
   explicit PROTOBUF_CONSTEXPR CppFeatures(::google::protobuf::internal::ConstantInitialized);
 
   CppFeatures(const CppFeatures& from);
+  CppFeatures(::google::protobuf::Arena*, const CppFeatures& from);
   CppFeatures(CppFeatures&& from) noexcept
     : CppFeatures() {
     *this = ::std::move(from);
@@ -151,6 +152,10 @@ class PROTOBUF_EXPORT CppFeatures final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  CppFeatures* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<CppFeatures>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -224,6 +229,11 @@ class PROTOBUF_EXPORT CppFeatures final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     bool legacy_closed_enum_;

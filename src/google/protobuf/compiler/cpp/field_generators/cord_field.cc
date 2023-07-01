@@ -92,6 +92,8 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateMemberConstructorInit(io::Printer* p) const override;
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override;
   void GenerateAggregateInitializer(io::Printer* printer) const override;
   void GenerateConstexprAggregateInitializer(
       io::Printer* printer) const override;
@@ -260,6 +262,27 @@ void CordFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       "total_size += $tag_size$ +\n"
       "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
       "    this->_internal_$name$());\n");
+}
+
+void CordFieldGenerator::GenerateMemberConstructorInit(io::Printer* p) const {
+  Formatter format(p, variables_);
+  if (descriptor_->default_value_string().empty()) {
+    format("$name$_{}");
+  } else {
+    format("$name$_{::absl::string_view($default$, $default_length$)}");
+  }
+}
+
+void CordFieldGenerator::GenerateMemberConstexprConstructor(
+    io::Printer* p) const {
+  p->Emit("/* CordField */");
+  if (descriptor_->default_value_string().empty()) {
+    p->Emit("$name$_{}");
+  } else {
+    p->Emit({{"Split", ShouldSplit(descriptor_, options_) ? "Split::" : ""}},
+            "$name$_{::absl::strings_internal::MakeStringConstant("
+            "$classname$::Impl_::$Split$_default_$name$_func_{})}");
+  }
 }
 
 void CordFieldGenerator::GenerateConstexprAggregateInitializer(

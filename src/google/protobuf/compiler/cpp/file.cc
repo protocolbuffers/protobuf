@@ -471,6 +471,8 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
         #include $h_include$
 
         #include <algorithm>
+        #include <cstddef>
+        #include <cstdint>
       )");
 
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
@@ -545,11 +547,8 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   }
 }
 
-void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
+void FileGenerator::GenerateSplitDefaultInstance(int idx, io::Printer* p) {
   MessageGenerator* generator = message_generators_[idx].get();
-
-  // Generate the split instance first because it's needed in the constexpr
-  // constructor.
   if (ShouldSplit(generator->descriptor(), options_)) {
     // Use a union to disable the destructor of the _instance member.
     // We can constant initialize, but the object will still have a non-trivial
@@ -572,7 +571,11 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
         },
         R"cc(
           struct $type$ {
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+            PROTOBUF_CONSTEXPR $type$() : _instance($pbi$::ConstantInitialized{}) {}
+#else
             PROTOBUF_CONSTEXPR $type$() : _instance{$default$} {}
+#endif
             union {
               $class$ _instance;
             };
@@ -582,6 +585,10 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$;
         )cc");
   }
+}
+
+void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
+  MessageGenerator* generator = message_generators_[idx].get();
 
   generator->GenerateConstexprConstructor(p);
 
@@ -774,11 +781,22 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
     NamespaceOpener ns(Namespace(file_, options_), p);
     p->Emit(
         {
+            {"split_class_ctors",
+             [&] { message_generators_[idx]->GenerateSplitConstructors(p); }},
+            {"impl_class_ctors",
+             [&] { message_generators_[idx]->GenerateImplConstructors(p); }},
+            {"split_defaults", [&] { GenerateSplitDefaultInstance(idx, p); }},
             {"defaults", [&] { GenerateSourceDefaultInstance(idx, p); }},
             {"class_methods",
              [&] { message_generators_[idx]->GenerateClassMethods(p); }},
         },
         R"cc(
+          $split_class_ctors$;
+
+          $split_defaults$;
+
+          $impl_class_ctors$;
+
           $defaults$;
 
           $class_methods$;
@@ -845,6 +863,9 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   {
     NamespaceOpener ns(Namespace(file_, options_), p);
     for (int i = 0; i < message_generators_.size(); ++i) {
+      message_generators_[i]->GenerateSplitConstructors(p);
+      GenerateSplitDefaultInstance(i, p);
+      message_generators_[i]->GenerateImplConstructors(p);
       GenerateSourceDefaultInstance(i, p);
     }
   }

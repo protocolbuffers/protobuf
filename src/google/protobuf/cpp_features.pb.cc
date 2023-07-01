@@ -4,6 +4,8 @@
 #include "google/protobuf/cpp_features.pb.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -21,13 +23,37 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace pb {
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr CppFeatures::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */legacy_closed_enum_{false} {}
+
+inline CppFeatures::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{} {}
+
+inline CppFeatures::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.legacy_closed_enum_)*/ false,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct CppFeaturesDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CppFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CppFeaturesDefaultTypeInternal() {}
@@ -124,6 +150,25 @@ class CppFeatures::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  _impl_.legacy_closed_enum_ = {};
+  // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
+}
+CppFeatures::CppFeatures(const CppFeatures& rhs)
+    : CppFeatures(nullptr, rhs) {}
+
+CppFeatures::CppFeatures(::google::protobuf::Arena* arena,
+                         const CppFeatures& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  _impl_.legacy_closed_enum_ = rhs._impl_.legacy_closed_enum_;
+  // @@protoc_insertion_point(copy_constructor:pb.CppFeatures)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -135,6 +180,13 @@ CppFeatures::CppFeatures(const CppFeatures& from)
       from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:pb.CppFeatures)
 }
+CppFeatures::CppFeatures(::google::protobuf::Arena* arena,
+                         const CppFeatures& from)
+    : ::google::protobuf::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  // @@protoc_insertion_point(arena_copy_constructor:pb.CppFeatures)
+}
 inline void CppFeatures::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -143,6 +195,7 @@ inline void CppFeatures::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.legacy_closed_enum_){false},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 CppFeatures::~CppFeatures() {
   // @@protoc_insertion_point(destructor:pb.CppFeatures)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();

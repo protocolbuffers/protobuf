@@ -535,6 +535,13 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 
   explicit TypeDefinedMapFieldBase(Arena* arena)
       : MapFieldBase(arena), map_(arena) {}
+  explicit TypeDefinedMapFieldBase(Arena* arena,
+                                   const TypeDefinedMapFieldBase& rhs)
+      : MapFieldBase(arena), map_(arena) {
+    if (!rhs.GetRepeatedField().empty()) {
+      MergeFrom(rhs);
+    }
+  }
   TypeDefinedMapFieldBase(ArenaInitialized, Arena* arena)
       : TypeDefinedMapFieldBase(arena) {}
 
@@ -617,6 +624,8 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
 
   explicit MapField(Arena* arena) : TypeDefinedMapFieldBase<Key, T>(arena) {}
   MapField(ArenaInitialized, Arena* arena) : MapField(arena) {}
+  MapField(Arena* arena, const MapField& rhs)
+      : TypeDefinedMapFieldBase<Key, T>(arena, rhs) {}
 
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is nullptr.

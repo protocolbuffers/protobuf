@@ -180,8 +180,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 #endif
   }
 
+ public:
   bool empty() const { return current_size_ == 0; }
   int size() const { return current_size_; }
+
+ protected:
   int Capacity() const { return total_size_; }
 
   template <typename TypeHandler>
@@ -925,6 +928,10 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
  public:
   constexpr RepeatedPtrField();
   explicit RepeatedPtrField(Arena* arena);
+  explicit RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs)
+      : RepeatedPtrField(arena) {
+    MergeFrom(rhs);
+  }
 
   RepeatedPtrField(const RepeatedPtrField& other);
 

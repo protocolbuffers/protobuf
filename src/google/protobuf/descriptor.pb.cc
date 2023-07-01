@@ -4,6 +4,8 @@
 #include "google/protobuf/descriptor.pb.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -22,12 +24,35 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr FileDescriptorSet::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : /* GenericField */file_{},
+        _cached_size_{} {}
+
+inline FileDescriptorSet::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : file_{arena},
+        _cached_size_{} {}
+
+inline FileDescriptorSet::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : file_{arena, rhs.file_},
+        _cached_size_{} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_.file_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct FileDescriptorSetDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FileDescriptorSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -43,8 +68,64 @@ struct FileDescriptorSetDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr FileDescriptorProto::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */dependency_{},
+        /* GenericField */message_type_{},
+        /* GenericField */enum_type_{},
+        /* GenericField */service_{},
+        /* GenericField */extension_{},
+        /* GenericField */public_dependency_{},
+        /* GenericField */weak_dependency_{},
+        /* SingularString */name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */package_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */syntax_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */edition_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */options_{nullptr},
+        /* GenericField */source_code_info_{nullptr} {}
+
+inline FileDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        dependency_{arena},
+        message_type_{arena},
+        enum_type_{arena},
+        service_{arena},
+        extension_{arena},
+        public_dependency_{arena},
+        weak_dependency_{arena},
+        name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        package_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        syntax_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        edition_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline FileDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        dependency_{arena, rhs.dependency_},
+        message_type_{arena, rhs.message_type_},
+        enum_type_{arena, rhs.enum_type_},
+        service_{arena, rhs.service_},
+        extension_{arena, rhs.extension_},
+        public_dependency_{arena, rhs.public_dependency_},
+        weak_dependency_{arena, rhs.weak_dependency_},
+        name_{arena, rhs.name_},
+        package_{arena, rhs.package_},
+        syntax_{arena, rhs.syntax_},
+        edition_{arena, rhs.edition_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -73,7 +154,9 @@ PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInit
       },
       /*decltype(_impl_.options_)*/ nullptr,
       /*decltype(_impl_.source_code_info_)*/ nullptr,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct FileDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FileDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -89,15 +172,41 @@ struct FileDescriptorProtoDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr DescriptorProto_ExtensionRange::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */options_{nullptr},
+        /* GenericField */start_{0},
+        /* GenericField */end_{0} {}
+
+inline DescriptorProto_ExtensionRange::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{} {}
+
+inline DescriptorProto_ExtensionRange::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.options_)*/ nullptr,
       /*decltype(_impl_.start_)*/ 0,
       /*decltype(_impl_.end_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct DescriptorProto_ExtensionRangeDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr DescriptorProto_ExtensionRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -113,14 +222,39 @@ struct DescriptorProto_ExtensionRangeDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr DescriptorProto_ReservedRange::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */start_{0},
+        /* GenericField */end_{0} {}
+
+inline DescriptorProto_ReservedRange::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{} {}
+
+inline DescriptorProto_ReservedRange::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.start_)*/ 0,
       /*decltype(_impl_.end_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct DescriptorProto_ReservedRangeDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr DescriptorProto_ReservedRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -136,8 +270,57 @@ struct DescriptorProto_ReservedRangeDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr DescriptorProto::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */field_{},
+        /* GenericField */nested_type_{},
+        /* GenericField */enum_type_{},
+        /* GenericField */extension_range_{},
+        /* GenericField */extension_{},
+        /* GenericField */oneof_decl_{},
+        /* GenericField */reserved_range_{},
+        /* GenericField */reserved_name_{},
+        /* SingularString */name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */options_{nullptr} {}
+
+inline DescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        field_{arena},
+        nested_type_{arena},
+        enum_type_{arena},
+        extension_range_{arena},
+        extension_{arena},
+        oneof_decl_{arena},
+        reserved_range_{arena},
+        reserved_name_{arena},
+        name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline DescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        field_{arena, rhs.field_},
+        nested_type_{arena, rhs.nested_type_},
+        enum_type_{arena, rhs.enum_type_},
+        extension_range_{arena, rhs.extension_range_},
+        extension_{arena, rhs.extension_},
+        oneof_decl_{arena, rhs.oneof_decl_},
+        reserved_range_{arena, rhs.reserved_range_},
+        reserved_name_{arena, rhs.reserved_name_},
+        name_{arena, rhs.name_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -154,7 +337,9 @@ PROTOBUF_CONSTEXPR DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized)
           ::_pbi::ConstantInitialized{},
       },
       /*decltype(_impl_.options_)*/ nullptr,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct DescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr DescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -170,8 +355,38 @@ struct DescriptorProtoDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr ExtensionRangeOptions_Declaration::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* SingularString */full_name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */type_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */number_{0},
+        /* GenericField */reserved_{false},
+        /* GenericField */repeated_{false} {}
+
+inline ExtensionRangeOptions_Declaration::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        full_name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        type_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline ExtensionRangeOptions_Declaration::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        full_name_{arena, rhs.full_name_},
+        type_{arena, rhs.type_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -186,7 +401,9 @@ PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Decl
       /*decltype(_impl_.number_)*/ 0,
       /*decltype(_impl_.reserved_)*/ false,
       /*decltype(_impl_.repeated_)*/ false,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct ExtensionRangeOptions_DeclarationDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr ExtensionRangeOptions_DeclarationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -202,8 +419,41 @@ struct ExtensionRangeOptions_DeclarationDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptions_DeclarationDefaultTypeInternal _ExtensionRangeOptions_Declaration_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr ExtensionRangeOptions::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */declaration_{},
+        /* GenericField */uninterpreted_option_{},
+        /* GenericField */features_{nullptr},
+        /* GenericField */verification_{static_cast< ::google::protobuf::ExtensionRangeOptions_VerificationState >(1)} {}
+
+inline ExtensionRangeOptions::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{},
+        declaration_{arena},
+        uninterpreted_option_{arena},
+        verification_{static_cast< ::google::protobuf::ExtensionRangeOptions_VerificationState >(1)} {}
+
+inline ExtensionRangeOptions::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        declaration_{arena, rhs.declaration_},
+        uninterpreted_option_{arena, rhs.uninterpreted_option_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
@@ -212,7 +462,9 @@ PROTOBUF_CONSTEXPR ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::Constant
       /*decltype(_impl_.uninterpreted_option_)*/ {},
       /*decltype(_impl_.features_)*/ nullptr,
       /*decltype(_impl_.verification_)*/ 1,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct ExtensionRangeOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr ExtensionRangeOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -228,8 +480,52 @@ struct ExtensionRangeOptionsDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr FieldDescriptorProto::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* SingularString */name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */extendee_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */type_name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */default_value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */json_name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */options_{nullptr},
+        /* GenericField */number_{0},
+        /* GenericField */oneof_index_{0},
+        /* GenericField */proto3_optional_{false},
+        /* GenericField */label_{static_cast< ::google::protobuf::FieldDescriptorProto_Label >(1)},
+        /* GenericField */type_{static_cast< ::google::protobuf::FieldDescriptorProto_Type >(1)} {}
+
+inline FieldDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        extendee_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        type_name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        default_value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        json_name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        label_{static_cast< ::google::protobuf::FieldDescriptorProto_Label >(1)},
+        type_{static_cast< ::google::protobuf::FieldDescriptorProto_Type >(1)} {}
+
+inline FieldDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        name_{arena, rhs.name_},
+        extendee_{arena, rhs.extendee_},
+        type_name_{arena, rhs.type_name_},
+        default_value_{arena, rhs.default_value_},
+        json_name_{arena, rhs.json_name_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -259,7 +555,9 @@ PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantIn
       /*decltype(_impl_.proto3_optional_)*/ false,
       /*decltype(_impl_.label_)*/ 1,
       /*decltype(_impl_.type_)*/ 1,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct FieldDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FieldDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -275,8 +573,33 @@ struct FieldDescriptorProtoDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr OneofDescriptorProto::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* SingularString */name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */options_{nullptr} {}
+
+inline OneofDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline OneofDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        name_{arena, rhs.name_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -285,7 +608,9 @@ PROTOBUF_CONSTEXPR OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantIn
           ::_pbi::ConstantInitialized{},
       },
       /*decltype(_impl_.options_)*/ nullptr,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct OneofDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr OneofDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -301,14 +626,39 @@ struct OneofDescriptorProtoDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */start_{0},
+        /* GenericField */end_{0} {}
+
+inline EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{} {}
+
+inline EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.start_)*/ 0,
       /*decltype(_impl_.end_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -324,8 +674,42 @@ struct EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal _EnumDescriptorProto_EnumReservedRange_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr EnumDescriptorProto::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */value_{},
+        /* GenericField */reserved_range_{},
+        /* GenericField */reserved_name_{},
+        /* SingularString */name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */options_{nullptr} {}
+
+inline EnumDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        value_{arena},
+        reserved_range_{arena},
+        reserved_name_{arena},
+        name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline EnumDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        value_{arena, rhs.value_},
+        reserved_range_{arena, rhs.reserved_range_},
+        reserved_name_{arena, rhs.reserved_name_},
+        name_{arena, rhs.name_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -337,7 +721,9 @@ PROTOBUF_CONSTEXPR EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInit
           ::_pbi::ConstantInitialized{},
       },
       /*decltype(_impl_.options_)*/ nullptr,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct EnumDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -353,8 +739,34 @@ struct EnumDescriptorProtoDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr EnumValueDescriptorProto::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* SingularString */name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */options_{nullptr},
+        /* GenericField */number_{0} {}
+
+inline EnumValueDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline EnumValueDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        name_{arena, rhs.name_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -364,7 +776,9 @@ PROTOBUF_CONSTEXPR EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::Co
       },
       /*decltype(_impl_.options_)*/ nullptr,
       /*decltype(_impl_.number_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct EnumValueDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumValueDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -380,8 +794,36 @@ struct EnumValueDescriptorProtoDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr ServiceDescriptorProto::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */method_{},
+        /* SingularString */name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */options_{nullptr} {}
+
+inline ServiceDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        method_{arena},
+        name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline ServiceDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        method_{arena, rhs.method_},
+        name_{arena, rhs.name_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -391,7 +833,9 @@ PROTOBUF_CONSTEXPR ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::Consta
           ::_pbi::ConstantInitialized{},
       },
       /*decltype(_impl_.options_)*/ nullptr,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct ServiceDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr ServiceDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -407,8 +851,41 @@ struct ServiceDescriptorProtoDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr MethodDescriptorProto::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* SingularString */name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */input_type_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */output_type_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */options_{nullptr},
+        /* GenericField */client_streaming_{false},
+        /* GenericField */server_streaming_{false} {}
+
+inline MethodDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        input_type_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        output_type_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline MethodDescriptorProto::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        name_{arena, rhs.name_},
+        input_type_{arena, rhs.input_type_},
+        output_type_{arena, rhs.output_type_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -427,7 +904,9 @@ PROTOBUF_CONSTEXPR MethodDescriptorProto::MethodDescriptorProto(::_pbi::Constant
       /*decltype(_impl_.options_)*/ nullptr,
       /*decltype(_impl_.client_streaming_)*/ false,
       /*decltype(_impl_.server_streaming_)*/ false,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct MethodDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr MethodDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -443,8 +922,78 @@ struct MethodDescriptorProtoDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr FileOptions::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */uninterpreted_option_{},
+        /* SingularString */java_package_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */java_outer_classname_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */go_package_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */objc_class_prefix_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */csharp_namespace_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */swift_prefix_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */php_class_prefix_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */php_namespace_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */php_metadata_namespace_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */ruby_package_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */features_{nullptr},
+        /* GenericField */java_multiple_files_{false},
+        /* GenericField */java_generate_equals_and_hash_{false},
+        /* GenericField */java_string_check_utf8_{false},
+        /* GenericField */cc_generic_services_{false},
+        /* GenericField */java_generic_services_{false},
+        /* GenericField */py_generic_services_{false},
+        /* GenericField */php_generic_services_{false},
+        /* GenericField */deprecated_{false},
+        /* GenericField */optimize_for_{static_cast< ::google::protobuf::FileOptions_OptimizeMode >(1)},
+        /* GenericField */cc_enable_arenas_{true} {}
+
+inline FileOptions::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{},
+        uninterpreted_option_{arena},
+        java_package_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        java_outer_classname_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        go_package_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        objc_class_prefix_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        csharp_namespace_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        swift_prefix_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        php_class_prefix_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        php_namespace_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        php_metadata_namespace_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        ruby_package_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        optimize_for_{static_cast< ::google::protobuf::FileOptions_OptimizeMode >(1)},
+        cc_enable_arenas_{true} {}
+
+inline FileOptions::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        uninterpreted_option_{arena, rhs.uninterpreted_option_},
+        java_package_{arena, rhs.java_package_},
+        java_outer_classname_{arena, rhs.java_outer_classname_},
+        go_package_{arena, rhs.go_package_},
+        objc_class_prefix_{arena, rhs.objc_class_prefix_},
+        csharp_namespace_{arena, rhs.csharp_namespace_},
+        swift_prefix_{arena, rhs.swift_prefix_},
+        php_class_prefix_{arena, rhs.php_class_prefix_},
+        php_namespace_{arena, rhs.php_namespace_},
+        php_metadata_namespace_{arena, rhs.php_metadata_namespace_},
+        ruby_package_{arena, rhs.ruby_package_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR FileOptions::FileOptions(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
@@ -501,7 +1050,9 @@ PROTOBUF_CONSTEXPR FileOptions::FileOptions(::_pbi::ConstantInitialized)
       /*decltype(_impl_.deprecated_)*/ false,
       /*decltype(_impl_.optimize_for_)*/ 1,
       /*decltype(_impl_.cc_enable_arenas_)*/ true,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct FileOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FileOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -517,8 +1068,41 @@ struct FileOptionsDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileOptionsDefaultTypeInternal _FileOptions_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr MessageOptions::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */uninterpreted_option_{},
+        /* GenericField */features_{nullptr},
+        /* GenericField */message_set_wire_format_{false},
+        /* GenericField */no_standard_descriptor_accessor_{false},
+        /* GenericField */deprecated_{false},
+        /* GenericField */map_entry_{false},
+        /* GenericField */deprecated_legacy_json_field_conflicts_{false} {}
+
+inline MessageOptions::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{},
+        uninterpreted_option_{arena} {}
+
+inline MessageOptions::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        uninterpreted_option_{arena, rhs.uninterpreted_option_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR MessageOptions::MessageOptions(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
@@ -530,7 +1114,9 @@ PROTOBUF_CONSTEXPR MessageOptions::MessageOptions(::_pbi::ConstantInitialized)
       /*decltype(_impl_.deprecated_)*/ false,
       /*decltype(_impl_.map_entry_)*/ false,
       /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/ false,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct MessageOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr MessageOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -546,8 +1132,35 @@ struct MessageOptionsDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr FieldOptions_EditionDefault::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* SingularString */edition_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline FieldOptions_EditionDefault::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        edition_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline FieldOptions_EditionDefault::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        edition_{arena, rhs.edition_},
+        value_{arena, rhs.value_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -559,7 +1172,9 @@ PROTOBUF_CONSTEXPR FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_p
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct FieldOptions_EditionDefaultDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FieldOptions_EditionDefaultDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -575,8 +1190,51 @@ struct FieldOptions_EditionDefaultDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultDefaultTypeInternal _FieldOptions_EditionDefault_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr FieldOptions::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */targets_{},
+        /* GenericField */edition_defaults_{},
+        /* GenericField */uninterpreted_option_{},
+        /* GenericField */features_{nullptr},
+        /* GenericField */ctype_{static_cast< ::google::protobuf::FieldOptions_CType >(0)},
+        /* GenericField */jstype_{static_cast< ::google::protobuf::FieldOptions_JSType >(0)},
+        /* GenericField */packed_{false},
+        /* GenericField */lazy_{false},
+        /* GenericField */unverified_lazy_{false},
+        /* GenericField */deprecated_{false},
+        /* GenericField */weak_{false},
+        /* GenericField */debug_redact_{false},
+        /* GenericField */retention_{static_cast< ::google::protobuf::FieldOptions_OptionRetention >(0)} {}
+
+inline FieldOptions::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{},
+        targets_{arena},
+        edition_defaults_{arena},
+        uninterpreted_option_{arena} {}
+
+inline FieldOptions::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        targets_{arena, rhs.targets_},
+        edition_defaults_{arena, rhs.edition_defaults_},
+        uninterpreted_option_{arena, rhs.uninterpreted_option_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR FieldOptions::FieldOptions(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
@@ -594,7 +1252,9 @@ PROTOBUF_CONSTEXPR FieldOptions::FieldOptions(::_pbi::ConstantInitialized)
       /*decltype(_impl_.weak_)*/ false,
       /*decltype(_impl_.debug_redact_)*/ false,
       /*decltype(_impl_.retention_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct FieldOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FieldOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -610,15 +1270,45 @@ struct FieldOptionsDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr OneofOptions::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */uninterpreted_option_{},
+        /* GenericField */features_{nullptr} {}
+
+inline OneofOptions::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{},
+        uninterpreted_option_{arena} {}
+
+inline OneofOptions::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        uninterpreted_option_{arena, rhs.uninterpreted_option_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR OneofOptions::OneofOptions(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.uninterpreted_option_)*/ {},
       /*decltype(_impl_.features_)*/ nullptr,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct OneofOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr OneofOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -634,8 +1324,39 @@ struct OneofOptionsDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr EnumOptions::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */uninterpreted_option_{},
+        /* GenericField */features_{nullptr},
+        /* GenericField */allow_alias_{false},
+        /* GenericField */deprecated_{false},
+        /* GenericField */deprecated_legacy_json_field_conflicts_{false} {}
+
+inline EnumOptions::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{},
+        uninterpreted_option_{arena} {}
+
+inline EnumOptions::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        uninterpreted_option_{arena, rhs.uninterpreted_option_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR EnumOptions::EnumOptions(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
@@ -645,7 +1366,9 @@ PROTOBUF_CONSTEXPR EnumOptions::EnumOptions(::_pbi::ConstantInitialized)
       /*decltype(_impl_.allow_alias_)*/ false,
       /*decltype(_impl_.deprecated_)*/ false,
       /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/ false,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct EnumOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -661,8 +1384,38 @@ struct EnumOptionsDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr EnumValueOptions::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */uninterpreted_option_{},
+        /* GenericField */features_{nullptr},
+        /* GenericField */deprecated_{false},
+        /* GenericField */debug_redact_{false} {}
+
+inline EnumValueOptions::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{},
+        uninterpreted_option_{arena} {}
+
+inline EnumValueOptions::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        uninterpreted_option_{arena, rhs.uninterpreted_option_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
@@ -671,7 +1424,9 @@ PROTOBUF_CONSTEXPR EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialize
       /*decltype(_impl_.features_)*/ nullptr,
       /*decltype(_impl_.deprecated_)*/ false,
       /*decltype(_impl_.debug_redact_)*/ false,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct EnumValueOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumValueOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -687,8 +1442,37 @@ struct EnumValueOptionsDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr ServiceOptions::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */uninterpreted_option_{},
+        /* GenericField */features_{nullptr},
+        /* GenericField */deprecated_{false} {}
+
+inline ServiceOptions::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{},
+        uninterpreted_option_{arena} {}
+
+inline ServiceOptions::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        uninterpreted_option_{arena, rhs.uninterpreted_option_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
@@ -696,7 +1480,9 @@ PROTOBUF_CONSTEXPR ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized)
       /*decltype(_impl_.uninterpreted_option_)*/ {},
       /*decltype(_impl_.features_)*/ nullptr,
       /*decltype(_impl_.deprecated_)*/ false,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct ServiceOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr ServiceOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -712,8 +1498,38 @@ struct ServiceOptionsDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr MethodOptions::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */uninterpreted_option_{},
+        /* GenericField */features_{nullptr},
+        /* GenericField */deprecated_{false},
+        /* GenericField */idempotency_level_{static_cast< ::google::protobuf::MethodOptions_IdempotencyLevel >(0)} {}
+
+inline MethodOptions::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{},
+        uninterpreted_option_{arena} {}
+
+inline MethodOptions::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        uninterpreted_option_{arena, rhs.uninterpreted_option_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR MethodOptions::MethodOptions(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
@@ -722,7 +1538,9 @@ PROTOBUF_CONSTEXPR MethodOptions::MethodOptions(::_pbi::ConstantInitialized)
       /*decltype(_impl_.features_)*/ nullptr,
       /*decltype(_impl_.deprecated_)*/ false,
       /*decltype(_impl_.idempotency_level_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct MethodOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr MethodOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -738,8 +1556,33 @@ struct MethodOptionsDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr UninterpretedOption_NamePart::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* SingularString */name_part_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */is_extension_{false} {}
+
+inline UninterpretedOption_NamePart::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        name_part_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline UninterpretedOption_NamePart::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        name_part_{arena, rhs.name_part_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -748,7 +1591,9 @@ PROTOBUF_CONSTEXPR UninterpretedOption_NamePart::UninterpretedOption_NamePart(::
           ::_pbi::ConstantInitialized{},
       },
       /*decltype(_impl_.is_extension_)*/ false,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct UninterpretedOption_NamePartDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr UninterpretedOption_NamePartDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -764,8 +1609,44 @@ struct UninterpretedOption_NamePartDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr UninterpretedOption::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */name_{},
+        /* SingularString */identifier_value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */string_value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */aggregate_value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */positive_int_value_{::uint64_t{0u}},
+        /* GenericField */negative_int_value_{::int64_t{0}},
+        /* GenericField */double_value_{0} {}
+
+inline UninterpretedOption::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        name_{arena},
+        identifier_value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        string_value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        aggregate_value_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline UninterpretedOption::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        name_{arena, rhs.name_},
+        identifier_value_{arena, rhs.identifier_value_},
+        string_value_{arena, rhs.string_value_},
+        aggregate_value_{arena, rhs.aggregate_value_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -785,7 +1666,9 @@ PROTOBUF_CONSTEXPR UninterpretedOption::UninterpretedOption(::_pbi::ConstantInit
       /*decltype(_impl_.positive_int_value_)*/ ::uint64_t{0u},
       /*decltype(_impl_.negative_int_value_)*/ ::int64_t{0},
       /*decltype(_impl_.double_value_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct UninterpretedOptionDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr UninterpretedOptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -801,8 +1684,38 @@ struct UninterpretedOptionDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr FeatureSet::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _extensions_{},
+        _has_bits_{},
+        _cached_size_{},
+        /* GenericField */field_presence_{static_cast< ::google::protobuf::FeatureSet_FieldPresence >(0)},
+        /* GenericField */enum_type_{static_cast< ::google::protobuf::FeatureSet_EnumType >(0)},
+        /* GenericField */repeated_field_encoding_{static_cast< ::google::protobuf::FeatureSet_RepeatedFieldEncoding >(0)},
+        /* GenericField */string_field_validation_{static_cast< ::google::protobuf::FeatureSet_StringFieldValidation >(0)},
+        /* GenericField */message_encoding_{static_cast< ::google::protobuf::FeatureSet_MessageEncoding >(0)},
+        /* GenericField */json_format_{static_cast< ::google::protobuf::FeatureSet_JsonFormat >(0)} {}
+
+inline FeatureSet::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _extensions_{arena},
+        _has_bits_{},
+        _cached_size_{} {}
+
+inline FeatureSet::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _extensions_{arena, internal_default_instance(), rhs._extensions_},
+        _has_bits_{rhs._has_bits_},
+        _cached_size_{} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
@@ -813,7 +1726,9 @@ PROTOBUF_CONSTEXPR FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
       /*decltype(_impl_.string_field_validation_)*/ 0,
       /*decltype(_impl_.message_encoding_)*/ 0,
       /*decltype(_impl_.json_format_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct FeatureSetDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FeatureSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -829,8 +1744,44 @@ struct FeatureSetDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultTypeInternal _FeatureSet_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr SourceCodeInfo_Location::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */path_{},
+        /* GenericField */span_{},
+        /* GenericField */leading_detached_comments_{},
+        /* SingularString */leading_comments_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* SingularString */trailing_comments_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline SourceCodeInfo_Location::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        path_{arena},
+        span_{arena},
+        leading_detached_comments_{arena},
+        leading_comments_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        trailing_comments_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline SourceCodeInfo_Location::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        path_{arena, rhs.path_},
+        span_{arena, rhs.span_},
+        leading_detached_comments_{arena, rhs.leading_detached_comments_},
+        leading_comments_{arena, rhs.leading_comments_},
+        trailing_comments_{arena, rhs.trailing_comments_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -847,7 +1798,9 @@ PROTOBUF_CONSTEXPR SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::Cons
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct SourceCodeInfo_LocationDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr SourceCodeInfo_LocationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -863,12 +1816,35 @@ struct SourceCodeInfo_LocationDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr SourceCodeInfo::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : /* GenericField */location_{},
+        _cached_size_{} {}
+
+inline SourceCodeInfo::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : location_{arena},
+        _cached_size_{} {}
+
+inline SourceCodeInfo::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : location_{arena, rhs.location_},
+        _cached_size_{} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_.location_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct SourceCodeInfoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr SourceCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -884,8 +1860,38 @@ struct SourceCodeInfoDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr GeneratedCodeInfo_Annotation::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        /* GenericField */path_{},
+        /* SingularString */source_file_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        /* GenericField */begin_{0},
+        /* GenericField */end_{0},
+        /* GenericField */semantic_{static_cast< ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic >(0)} {}
+
+inline GeneratedCodeInfo_Annotation::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        path_{arena},
+        source_file_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}) {}
+
+inline GeneratedCodeInfo_Annotation::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        path_{arena, rhs.path_},
+        source_file_{arena, rhs.source_file_} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -898,7 +1904,9 @@ PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::
       /*decltype(_impl_.begin_)*/ 0,
       /*decltype(_impl_.end_)*/ 0,
       /*decltype(_impl_.semantic_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr GeneratedCodeInfo_AnnotationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -914,12 +1922,35 @@ struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
+// --------------------------------
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr GeneratedCodeInfo::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : /* GenericField */annotation_{},
+        _cached_size_{} {}
+
+inline GeneratedCodeInfo::Impl_::Impl_(::google::protobuf::Arena* arena)
+      : annotation_{arena},
+        _cached_size_{} {}
+
+inline GeneratedCodeInfo::Impl_::Impl_(::google::protobuf::Arena* arena,
+                                 const Impl_& rhs)
+      : annotation_{arena, rhs.annotation_},
+        _cached_size_{} {}
+
+#endif // PROTOBUF_NEW_CONSTRUCTORS
+// --------------------------------
         template <typename>
 PROTOBUF_CONSTEXPR GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
     : _impl_{
       /*decltype(_impl_.annotation_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct GeneratedCodeInfoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr GeneratedCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -2337,12 +3368,30 @@ class FileDescriptorSet::_Internal {
  public:
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorSet)
+}
+FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& rhs)
+    : FileDescriptorSet(nullptr, rhs) {}
+
+FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena,
+                         const FileDescriptorSet& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorSet)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorSet)
 }
-FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from) : ::google::protobuf::Message() {
+FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from)
+    : ::google::protobuf::Message() {
   FileDescriptorSet* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -2351,8 +3400,19 @@ FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from) : ::google::
   };
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorSet)
+}
+FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena,
+                         const FileDescriptorSet& from)
+    : ::google::protobuf::Message(arena) {
+  FileDescriptorSet* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.file_){from._impl_.file_},
+      /*decltype(_impl_._cached_size_)*/ {},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.FileDescriptorSet)
 }
 inline void FileDescriptorSet::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -2361,6 +3421,7 @@ inline void FileDescriptorSet::SharedCtor(::_pb::Arena* arena) {
       /*decltype(_impl_._cached_size_)*/ {},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 FileDescriptorSet::~FileDescriptorSet() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorSet)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -2539,12 +3600,36 @@ const ::google::protobuf::FileOptions& FileDescriptorProto::_Internal::options(c
 const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::_Internal::source_code_info(const FileDescriptorProto* msg) {
   return *msg->_impl_.source_code_info_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.options_, 0,
+           reinterpret_cast<::size_t>(&_impl_.source_code_info_) -
+               reinterpret_cast<::size_t>(&_impl_.options_) + sizeof(_impl_.source_code_info_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorProto)
+}
+FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& rhs)
+    : FileDescriptorProto(nullptr, rhs) {}
+
+FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena,
+                         const FileDescriptorProto& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.options_ = (cached_has_bits & 0x00000010u) ? rhs._impl_.options_->Copy(arena) : nullptr;
+  _impl_.source_code_info_ = (cached_has_bits & 0x00000020u) ? rhs._impl_.source_code_info_->Copy(arena) : nullptr;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorProto)
 }
-FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from) : ::google::protobuf::Message() {
+FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
+    : ::google::protobuf::Message() {
   FileDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -2600,8 +3685,66 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from) : ::go
   if ((from._impl_._has_bits_[0] & 0x00000020u) != 0) {
     _this->_impl_.source_code_info_ = new ::google::protobuf::SourceCodeInfo(*from._impl_.source_code_info_);
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
+}
+FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena,
+                         const FileDescriptorProto& from)
+    : ::google::protobuf::Message(arena) {
+  FileDescriptorProto* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.dependency_){from._impl_.dependency_},
+      decltype(_impl_.message_type_){from._impl_.message_type_},
+      decltype(_impl_.enum_type_){from._impl_.enum_type_},
+      decltype(_impl_.service_){from._impl_.service_},
+      decltype(_impl_.extension_){from._impl_.extension_},
+      decltype(_impl_.public_dependency_){from._impl_.public_dependency_},
+      decltype(_impl_.weak_dependency_){from._impl_.weak_dependency_},
+      decltype(_impl_.name_){},
+      decltype(_impl_.package_){},
+      decltype(_impl_.syntax_){},
+      decltype(_impl_.edition_){},
+      decltype(_impl_.options_){nullptr},
+      decltype(_impl_.source_code_info_){nullptr},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  _impl_.package_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.package_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.package_.Set(from._internal_package(), _this->GetArenaForAllocation());
+  }
+  _impl_.syntax_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.syntax_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000004u) != 0) {
+    _this->_impl_.syntax_.Set(from._internal_syntax(), _this->GetArenaForAllocation());
+  }
+  _impl_.edition_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.edition_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000008u) != 0) {
+    _this->_impl_.edition_.Set(from._internal_edition(), _this->GetArenaForAllocation());
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000010u) != 0) {
+    _this->_impl_.options_ = new ::google::protobuf::FileOptions(*from._impl_.options_);
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000020u) != 0) {
+    _this->_impl_.source_code_info_ = new ::google::protobuf::SourceCodeInfo(*from._impl_.source_code_info_);
+  }
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.FileDescriptorProto)
 }
 inline void FileDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -2639,6 +3782,7 @@ inline void FileDescriptorProto::SharedCtor(::_pb::Arena* arena) {
         _impl_.edition_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 FileDescriptorProto::~FileDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -3172,12 +4316,38 @@ class DescriptorProto_ExtensionRange::_Internal {
 const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::_Internal::options(const DescriptorProto_ExtensionRange* msg) {
   return *msg->_impl_.options_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.options_, 0,
+           reinterpret_cast<::size_t>(&_impl_.end_) -
+               reinterpret_cast<::size_t>(&_impl_.options_) + sizeof(_impl_.end_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ExtensionRange)
+}
+DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& rhs)
+    : DescriptorProto_ExtensionRange(nullptr, rhs) {}
+
+DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena,
+                         const DescriptorProto_ExtensionRange& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.options_ = (cached_has_bits & 0x00000001u) ? rhs._impl_.options_->Copy(arena) : nullptr;
+  ::memcpy(&_impl_.start_, &rhs._impl_.start_,
+           reinterpret_cast<::size_t>(&_impl_.end_) -
+               reinterpret_cast<::size_t>(&_impl_.start_) + sizeof(_impl_.end_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ExtensionRange)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ExtensionRange)
 }
-DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from) : ::google::protobuf::Message() {
+DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from)
+    : ::google::protobuf::Message() {
   DescriptorProto_ExtensionRange* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -3195,8 +4365,28 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorP
   ::memcpy(&_impl_.start_, &from._impl_.start_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.end_) -
     reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ExtensionRange)
+}
+DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena,
+                         const DescriptorProto_ExtensionRange& from)
+    : ::google::protobuf::Message(arena) {
+  DescriptorProto_ExtensionRange* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.options_){nullptr},
+      decltype(_impl_.start_){},
+      decltype(_impl_.end_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.options_ = new ::google::protobuf::ExtensionRangeOptions(*from._impl_.options_);
+  }
+  ::memcpy(&_impl_.start_, &from._impl_.start_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.end_) -
+    reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.DescriptorProto.ExtensionRange)
 }
 inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -3208,6 +4398,7 @@ inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.end_){0},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ExtensionRange)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -3439,6 +4630,29 @@ class DescriptorProto_ReservedRange::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.start_, 0,
+           reinterpret_cast<::size_t>(&_impl_.end_) -
+               reinterpret_cast<::size_t>(&_impl_.start_) + sizeof(_impl_.end_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ReservedRange)
+}
+DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& rhs)
+    : DescriptorProto_ReservedRange(nullptr, rhs) {}
+
+DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* arena,
+                         const DescriptorProto_ReservedRange& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::memcpy(&_impl_.start_, &rhs._impl_.start_,
+           reinterpret_cast<::size_t>(&_impl_.end_) -
+               reinterpret_cast<::size_t>(&_impl_.start_) + sizeof(_impl_.end_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ReservedRange)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -3450,6 +4664,13 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(const DescriptorPro
       from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
+DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* arena,
+                         const DescriptorProto_ReservedRange& from)
+    : ::google::protobuf::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.DescriptorProto.ReservedRange)
+}
 inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -3459,6 +4680,7 @@ inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.end_){0},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ReservedRange)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -3661,12 +4883,33 @@ class DescriptorProto::_Internal {
 const ::google::protobuf::MessageOptions& DescriptorProto::_Internal::options(const DescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  _impl_.options_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto)
+}
+DescriptorProto::DescriptorProto(const DescriptorProto& rhs)
+    : DescriptorProto(nullptr, rhs) {}
+
+DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena,
+                         const DescriptorProto& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? rhs._impl_.options_->Copy(arena) : nullptr;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto)
 }
-DescriptorProto::DescriptorProto(const DescriptorProto& from) : ::google::protobuf::Message() {
+DescriptorProto::DescriptorProto(const DescriptorProto& from)
+    : ::google::protobuf::Message() {
   DescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -3695,8 +4938,39 @@ DescriptorProto::DescriptorProto(const DescriptorProto& from) : ::google::protob
   if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
     _this->_impl_.options_ = new ::google::protobuf::MessageOptions(*from._impl_.options_);
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
+}
+DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena,
+                         const DescriptorProto& from)
+    : ::google::protobuf::Message(arena) {
+  DescriptorProto* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.field_){from._impl_.field_},
+      decltype(_impl_.nested_type_){from._impl_.nested_type_},
+      decltype(_impl_.enum_type_){from._impl_.enum_type_},
+      decltype(_impl_.extension_range_){from._impl_.extension_range_},
+      decltype(_impl_.extension_){from._impl_.extension_},
+      decltype(_impl_.oneof_decl_){from._impl_.oneof_decl_},
+      decltype(_impl_.reserved_range_){from._impl_.reserved_range_},
+      decltype(_impl_.reserved_name_){from._impl_.reserved_name_},
+      decltype(_impl_.name_){},
+      decltype(_impl_.options_){nullptr},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.options_ = new ::google::protobuf::MessageOptions(*from._impl_.options_);
+  }
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.DescriptorProto)
 }
 inline void DescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -3719,6 +4993,7 @@ inline void DescriptorProto::SharedCtor(::_pb::Arena* arena) {
         _impl_.name_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 DescriptorProto::~DescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -4157,12 +5432,36 @@ class ExtensionRangeOptions_Declaration::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.number_, 0,
+           reinterpret_cast<::size_t>(&_impl_.repeated_) -
+               reinterpret_cast<::size_t>(&_impl_.number_) + sizeof(_impl_.repeated_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
+}
+ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& rhs)
+    : ExtensionRangeOptions_Declaration(nullptr, rhs) {}
+
+ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena,
+                         const ExtensionRangeOptions_Declaration& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::memcpy(&_impl_.number_, &rhs._impl_.number_,
+           reinterpret_cast<::size_t>(&_impl_.repeated_) -
+               reinterpret_cast<::size_t>(&_impl_.number_) + sizeof(_impl_.repeated_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
 }
-ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from) : ::google::protobuf::Message() {
+ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from)
+    : ::google::protobuf::Message() {
   ExtensionRangeOptions_Declaration* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -4193,8 +5492,41 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(const Exten
   ::memcpy(&_impl_.number_, &from._impl_.number_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.repeated_) -
     reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.repeated_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
+}
+ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena,
+                         const ExtensionRangeOptions_Declaration& from)
+    : ::google::protobuf::Message(arena) {
+  ExtensionRangeOptions_Declaration* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.full_name_){},
+      decltype(_impl_.type_){},
+      decltype(_impl_.number_){},
+      decltype(_impl_.reserved_){},
+      decltype(_impl_.repeated_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.full_name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.full_name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.full_name_.Set(from._internal_full_name(), _this->GetArenaForAllocation());
+  }
+  _impl_.type_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.type_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.type_.Set(from._internal_type(), _this->GetArenaForAllocation());
+  }
+  ::memcpy(&_impl_.number_, &from._impl_.number_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.repeated_) -
+    reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.repeated_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
 }
 inline void ExtensionRangeOptions_Declaration::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -4216,6 +5548,7 @@ inline void ExtensionRangeOptions_Declaration::SharedCtor(::_pb::Arena* arena) {
         _impl_.type_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 ExtensionRangeOptions_Declaration::~ExtensionRangeOptions_Declaration() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions.Declaration)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -4507,12 +5840,34 @@ class ExtensionRangeOptions::_Internal {
 const ::google::protobuf::FeatureSet& ExtensionRangeOptions::_Internal::features(const ExtensionRangeOptions* msg) {
   return *msg->_impl_.features_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  _impl_.features_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions)
+}
+ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& rhs)
+    : ExtensionRangeOptions(nullptr, rhs) {}
+
+ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena,
+                         const ExtensionRangeOptions& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? rhs._impl_.features_->Copy(arena) : nullptr;
+  _impl_.verification_ = rhs._impl_.verification_;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions)
 }
-ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from) : ::google::protobuf::Message() {
+ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from)
+    : ::google::protobuf::Message() {
   ExtensionRangeOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -4532,8 +5887,30 @@ ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from) 
     _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
   }
   _this->_impl_.verification_ = from._impl_.verification_;
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
+}
+ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena,
+                         const ExtensionRangeOptions& from)
+    : ::google::protobuf::Message(arena) {
+  ExtensionRangeOptions* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.declaration_){from._impl_.declaration_},
+      decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
+      decltype(_impl_.features_){nullptr},
+      decltype(_impl_.verification_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
+  }
+  _this->_impl_.verification_ = from._impl_.verification_;
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.ExtensionRangeOptions)
 }
 inline void ExtensionRangeOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -4547,6 +5924,7 @@ inline void ExtensionRangeOptions::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.verification_){1},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 ExtensionRangeOptions::~ExtensionRangeOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -4854,12 +6232,38 @@ class FieldDescriptorProto::_Internal {
 const ::google::protobuf::FieldOptions& FieldDescriptorProto::_Internal::options(const FieldDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.options_, 0,
+           reinterpret_cast<::size_t>(&_impl_.proto3_optional_) -
+               reinterpret_cast<::size_t>(&_impl_.options_) + sizeof(_impl_.proto3_optional_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldDescriptorProto)
+}
+FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& rhs)
+    : FieldDescriptorProto(nullptr, rhs) {}
+
+FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena,
+                         const FieldDescriptorProto& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.options_ = (cached_has_bits & 0x00000020u) ? rhs._impl_.options_->Copy(arena) : nullptr;
+  ::memcpy(&_impl_.number_, &rhs._impl_.number_,
+           reinterpret_cast<::size_t>(&_impl_.type_) -
+               reinterpret_cast<::size_t>(&_impl_.number_) + sizeof(_impl_.type_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldDescriptorProto)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldDescriptorProto)
 }
-FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from) : ::google::protobuf::Message() {
+FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
+    : ::google::protobuf::Message() {
   FieldDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -4920,8 +6324,71 @@ FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from) : :
   ::memcpy(&_impl_.number_, &from._impl_.number_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.type_) -
     reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.type_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldDescriptorProto)
+}
+FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena,
+                         const FieldDescriptorProto& from)
+    : ::google::protobuf::Message(arena) {
+  FieldDescriptorProto* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.name_){},
+      decltype(_impl_.extendee_){},
+      decltype(_impl_.type_name_){},
+      decltype(_impl_.default_value_){},
+      decltype(_impl_.json_name_){},
+      decltype(_impl_.options_){nullptr},
+      decltype(_impl_.number_){},
+      decltype(_impl_.oneof_index_){},
+      decltype(_impl_.proto3_optional_){},
+      decltype(_impl_.label_){},
+      decltype(_impl_.type_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  _impl_.extendee_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.extendee_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.extendee_.Set(from._internal_extendee(), _this->GetArenaForAllocation());
+  }
+  _impl_.type_name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.type_name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000004u) != 0) {
+    _this->_impl_.type_name_.Set(from._internal_type_name(), _this->GetArenaForAllocation());
+  }
+  _impl_.default_value_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.default_value_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000008u) != 0) {
+    _this->_impl_.default_value_.Set(from._internal_default_value(), _this->GetArenaForAllocation());
+  }
+  _impl_.json_name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.json_name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000010u) != 0) {
+    _this->_impl_.json_name_.Set(from._internal_json_name(), _this->GetArenaForAllocation());
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000020u) != 0) {
+    _this->_impl_.options_ = new ::google::protobuf::FieldOptions(*from._impl_.options_);
+  }
+  ::memcpy(&_impl_.number_, &from._impl_.number_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.type_) -
+    reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.type_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.FieldDescriptorProto)
 }
 inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -4961,6 +6428,7 @@ inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* arena) {
         _impl_.json_name_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 FieldDescriptorProto::~FieldDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -5431,12 +6899,33 @@ class OneofDescriptorProto::_Internal {
 const ::google::protobuf::OneofOptions& OneofDescriptorProto::_Internal::options(const OneofDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  _impl_.options_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofDescriptorProto)
+}
+OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& rhs)
+    : OneofDescriptorProto(nullptr, rhs) {}
+
+OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena,
+                         const OneofDescriptorProto& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? rhs._impl_.options_->Copy(arena) : nullptr;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofDescriptorProto)
 }
-OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from) : ::google::protobuf::Message() {
+OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from)
+    : ::google::protobuf::Message() {
   OneofDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -5457,8 +6946,31 @@ OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from) : :
   if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
     _this->_impl_.options_ = new ::google::protobuf::OneofOptions(*from._impl_.options_);
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
+}
+OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena,
+                         const OneofDescriptorProto& from)
+    : ::google::protobuf::Message(arena) {
+  OneofDescriptorProto* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.name_){},
+      decltype(_impl_.options_){nullptr},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.options_ = new ::google::protobuf::OneofOptions(*from._impl_.options_);
+  }
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.OneofDescriptorProto)
 }
 inline void OneofDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -5473,6 +6985,7 @@ inline void OneofDescriptorProto::SharedCtor(::_pb::Arena* arena) {
         _impl_.name_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 OneofDescriptorProto::~OneofDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.OneofDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -5684,6 +7197,29 @@ class EnumDescriptorProto_EnumReservedRange::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.start_, 0,
+           reinterpret_cast<::size_t>(&_impl_.end_) -
+               reinterpret_cast<::size_t>(&_impl_.start_) + sizeof(_impl_.end_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+}
+EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& rhs)
+    : EnumDescriptorProto_EnumReservedRange(nullptr, rhs) {}
+
+EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena,
+                         const EnumDescriptorProto_EnumReservedRange& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::memcpy(&_impl_.start_, &rhs._impl_.start_,
+           reinterpret_cast<::size_t>(&_impl_.end_) -
+               reinterpret_cast<::size_t>(&_impl_.start_) + sizeof(_impl_.end_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -5695,6 +7231,13 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(con
       from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
+EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena,
+                         const EnumDescriptorProto_EnumReservedRange& from)
+    : ::google::protobuf::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+}
 inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
@@ -5704,6 +7247,7 @@ inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* aren
       decltype(_impl_.end_){0},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -5906,12 +7450,33 @@ class EnumDescriptorProto::_Internal {
 const ::google::protobuf::EnumOptions& EnumDescriptorProto::_Internal::options(const EnumDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  _impl_.options_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto)
+}
+EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& rhs)
+    : EnumDescriptorProto(nullptr, rhs) {}
+
+EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena,
+                         const EnumDescriptorProto& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? rhs._impl_.options_->Copy(arena) : nullptr;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto)
 }
-EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from) : ::google::protobuf::Message() {
+EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
+    : ::google::protobuf::Message() {
   EnumDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -5935,8 +7500,34 @@ EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from) : ::go
   if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
     _this->_impl_.options_ = new ::google::protobuf::EnumOptions(*from._impl_.options_);
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
+}
+EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena,
+                         const EnumDescriptorProto& from)
+    : ::google::protobuf::Message(arena) {
+  EnumDescriptorProto* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.value_){from._impl_.value_},
+      decltype(_impl_.reserved_range_){from._impl_.reserved_range_},
+      decltype(_impl_.reserved_name_){from._impl_.reserved_name_},
+      decltype(_impl_.name_){},
+      decltype(_impl_.options_){nullptr},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.options_ = new ::google::protobuf::EnumOptions(*from._impl_.options_);
+  }
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.EnumDescriptorProto)
 }
 inline void EnumDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -5954,6 +7545,7 @@ inline void EnumDescriptorProto::SharedCtor(::_pb::Arena* arena) {
         _impl_.name_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 EnumDescriptorProto::~EnumDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -6252,12 +7844,36 @@ class EnumValueDescriptorProto::_Internal {
 const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::_Internal::options(const EnumValueDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.options_, 0,
+           reinterpret_cast<::size_t>(&_impl_.number_) -
+               reinterpret_cast<::size_t>(&_impl_.options_) + sizeof(_impl_.number_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueDescriptorProto)
+}
+EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProto& rhs)
+    : EnumValueDescriptorProto(nullptr, rhs) {}
+
+EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* arena,
+                         const EnumValueDescriptorProto& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? rhs._impl_.options_->Copy(arena) : nullptr;
+  _impl_.number_ = rhs._impl_.number_;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueDescriptorProto)
 }
-EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProto& from) : ::google::protobuf::Message() {
+EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProto& from)
+    : ::google::protobuf::Message() {
   EnumValueDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -6280,8 +7896,33 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProt
     _this->_impl_.options_ = new ::google::protobuf::EnumValueOptions(*from._impl_.options_);
   }
   _this->_impl_.number_ = from._impl_.number_;
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
+}
+EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* arena,
+                         const EnumValueDescriptorProto& from)
+    : ::google::protobuf::Message(arena) {
+  EnumValueDescriptorProto* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.name_){},
+      decltype(_impl_.options_){nullptr},
+      decltype(_impl_.number_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.options_ = new ::google::protobuf::EnumValueOptions(*from._impl_.options_);
+  }
+  _this->_impl_.number_ = from._impl_.number_;
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.EnumValueDescriptorProto)
 }
 inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -6297,6 +7938,7 @@ inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* arena) {
         _impl_.name_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 EnumValueDescriptorProto::~EnumValueDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValueDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -6542,12 +8184,33 @@ class ServiceDescriptorProto::_Internal {
 const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::_Internal::options(const ServiceDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  _impl_.options_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceDescriptorProto)
+}
+ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& rhs)
+    : ServiceDescriptorProto(nullptr, rhs) {}
+
+ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena,
+                         const ServiceDescriptorProto& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? rhs._impl_.options_->Copy(arena) : nullptr;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceDescriptorProto)
 }
-ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& from) : ::google::protobuf::Message() {
+ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& from)
+    : ::google::protobuf::Message() {
   ServiceDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -6569,8 +8232,32 @@ ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& fro
   if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
     _this->_impl_.options_ = new ::google::protobuf::ServiceOptions(*from._impl_.options_);
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
+}
+ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena,
+                         const ServiceDescriptorProto& from)
+    : ::google::protobuf::Message(arena) {
+  ServiceDescriptorProto* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.method_){from._impl_.method_},
+      decltype(_impl_.name_){},
+      decltype(_impl_.options_){nullptr},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.options_ = new ::google::protobuf::ServiceOptions(*from._impl_.options_);
+  }
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.ServiceDescriptorProto)
 }
 inline void ServiceDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -6586,6 +8273,7 @@ inline void ServiceDescriptorProto::SharedCtor(::_pb::Arena* arena) {
         _impl_.name_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 ServiceDescriptorProto::~ServiceDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -6841,12 +8529,38 @@ class MethodDescriptorProto::_Internal {
 const ::google::protobuf::MethodOptions& MethodDescriptorProto::_Internal::options(const MethodDescriptorProto* msg) {
   return *msg->_impl_.options_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.options_, 0,
+           reinterpret_cast<::size_t>(&_impl_.server_streaming_) -
+               reinterpret_cast<::size_t>(&_impl_.options_) + sizeof(_impl_.server_streaming_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodDescriptorProto)
+}
+MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& rhs)
+    : MethodDescriptorProto(nullptr, rhs) {}
+
+MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena,
+                         const MethodDescriptorProto& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.options_ = (cached_has_bits & 0x00000008u) ? rhs._impl_.options_->Copy(arena) : nullptr;
+  ::memcpy(&_impl_.client_streaming_, &rhs._impl_.client_streaming_,
+           reinterpret_cast<::size_t>(&_impl_.server_streaming_) -
+               reinterpret_cast<::size_t>(&_impl_.client_streaming_) + sizeof(_impl_.server_streaming_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodDescriptorProto)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodDescriptorProto)
 }
-MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from) : ::google::protobuf::Message() {
+MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
+    : ::google::protobuf::Message() {
   MethodDescriptorProto* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -6888,8 +8602,52 @@ MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from) 
   ::memcpy(&_impl_.client_streaming_, &from._impl_.client_streaming_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.server_streaming_) -
     reinterpret_cast<char*>(&_impl_.client_streaming_)) + sizeof(_impl_.server_streaming_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodDescriptorProto)
+}
+MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena,
+                         const MethodDescriptorProto& from)
+    : ::google::protobuf::Message(arena) {
+  MethodDescriptorProto* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.name_){},
+      decltype(_impl_.input_type_){},
+      decltype(_impl_.output_type_){},
+      decltype(_impl_.options_){nullptr},
+      decltype(_impl_.client_streaming_){},
+      decltype(_impl_.server_streaming_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.name_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.name_.Set(from._internal_name(), _this->GetArenaForAllocation());
+  }
+  _impl_.input_type_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.input_type_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.input_type_.Set(from._internal_input_type(), _this->GetArenaForAllocation());
+  }
+  _impl_.output_type_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.output_type_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000004u) != 0) {
+    _this->_impl_.output_type_.Set(from._internal_output_type(), _this->GetArenaForAllocation());
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000008u) != 0) {
+    _this->_impl_.options_ = new ::google::protobuf::MethodOptions(*from._impl_.options_);
+  }
+  ::memcpy(&_impl_.client_streaming_, &from._impl_.client_streaming_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.server_streaming_) -
+    reinterpret_cast<char*>(&_impl_.client_streaming_)) + sizeof(_impl_.server_streaming_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.MethodDescriptorProto)
 }
 inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -6916,6 +8674,7 @@ inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* arena) {
         _impl_.output_type_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 MethodDescriptorProto::~MethodDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -7301,12 +9060,38 @@ class FileOptions::_Internal {
 const ::google::protobuf::FeatureSet& FileOptions::_Internal::features(const FileOptions* msg) {
   return *msg->_impl_.features_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+FileOptions::FileOptions(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.features_, 0,
+           reinterpret_cast<::size_t>(&_impl_.deprecated_) -
+               reinterpret_cast<::size_t>(&_impl_.features_) + sizeof(_impl_.deprecated_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.FileOptions)
+}
+FileOptions::FileOptions(const FileOptions& rhs)
+    : FileOptions(nullptr, rhs) {}
+
+FileOptions::FileOptions(::google::protobuf::Arena* arena,
+                         const FileOptions& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = (cached_has_bits & 0x00000400u) ? rhs._impl_.features_->Copy(arena) : nullptr;
+  ::memcpy(&_impl_.java_multiple_files_, &rhs._impl_.java_multiple_files_,
+           reinterpret_cast<::size_t>(&_impl_.cc_enable_arenas_) -
+               reinterpret_cast<::size_t>(&_impl_.java_multiple_files_) + sizeof(_impl_.cc_enable_arenas_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.FileOptions)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 FileOptions::FileOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileOptions)
 }
-FileOptions::FileOptions(const FileOptions& from) : ::google::protobuf::Message() {
+FileOptions::FileOptions(const FileOptions& from)
+    : ::google::protobuf::Message() {
   FileOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -7416,8 +9201,120 @@ FileOptions::FileOptions(const FileOptions& from) : ::google::protobuf::Message(
   ::memcpy(&_impl_.java_multiple_files_, &from._impl_.java_multiple_files_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.cc_enable_arenas_) -
     reinterpret_cast<char*>(&_impl_.java_multiple_files_)) + sizeof(_impl_.cc_enable_arenas_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileOptions)
+}
+FileOptions::FileOptions(::google::protobuf::Arena* arena,
+                         const FileOptions& from)
+    : ::google::protobuf::Message(arena) {
+  FileOptions* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
+      decltype(_impl_.java_package_){},
+      decltype(_impl_.java_outer_classname_){},
+      decltype(_impl_.go_package_){},
+      decltype(_impl_.objc_class_prefix_){},
+      decltype(_impl_.csharp_namespace_){},
+      decltype(_impl_.swift_prefix_){},
+      decltype(_impl_.php_class_prefix_){},
+      decltype(_impl_.php_namespace_){},
+      decltype(_impl_.php_metadata_namespace_){},
+      decltype(_impl_.ruby_package_){},
+      decltype(_impl_.features_){nullptr},
+      decltype(_impl_.java_multiple_files_){},
+      decltype(_impl_.java_generate_equals_and_hash_){},
+      decltype(_impl_.java_string_check_utf8_){},
+      decltype(_impl_.cc_generic_services_){},
+      decltype(_impl_.java_generic_services_){},
+      decltype(_impl_.py_generic_services_){},
+      decltype(_impl_.php_generic_services_){},
+      decltype(_impl_.deprecated_){},
+      decltype(_impl_.optimize_for_){},
+      decltype(_impl_.cc_enable_arenas_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  _impl_.java_package_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.java_package_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.java_package_.Set(from._internal_java_package(), _this->GetArenaForAllocation());
+  }
+  _impl_.java_outer_classname_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.java_outer_classname_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.java_outer_classname_.Set(from._internal_java_outer_classname(), _this->GetArenaForAllocation());
+  }
+  _impl_.go_package_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.go_package_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000004u) != 0) {
+    _this->_impl_.go_package_.Set(from._internal_go_package(), _this->GetArenaForAllocation());
+  }
+  _impl_.objc_class_prefix_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.objc_class_prefix_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000008u) != 0) {
+    _this->_impl_.objc_class_prefix_.Set(from._internal_objc_class_prefix(), _this->GetArenaForAllocation());
+  }
+  _impl_.csharp_namespace_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.csharp_namespace_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000010u) != 0) {
+    _this->_impl_.csharp_namespace_.Set(from._internal_csharp_namespace(), _this->GetArenaForAllocation());
+  }
+  _impl_.swift_prefix_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.swift_prefix_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000020u) != 0) {
+    _this->_impl_.swift_prefix_.Set(from._internal_swift_prefix(), _this->GetArenaForAllocation());
+  }
+  _impl_.php_class_prefix_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.php_class_prefix_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000040u) != 0) {
+    _this->_impl_.php_class_prefix_.Set(from._internal_php_class_prefix(), _this->GetArenaForAllocation());
+  }
+  _impl_.php_namespace_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.php_namespace_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000080u) != 0) {
+    _this->_impl_.php_namespace_.Set(from._internal_php_namespace(), _this->GetArenaForAllocation());
+  }
+  _impl_.php_metadata_namespace_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.php_metadata_namespace_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000100u) != 0) {
+    _this->_impl_.php_metadata_namespace_.Set(from._internal_php_metadata_namespace(), _this->GetArenaForAllocation());
+  }
+  _impl_.ruby_package_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.ruby_package_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000200u) != 0) {
+    _this->_impl_.ruby_package_.Set(from._internal_ruby_package(), _this->GetArenaForAllocation());
+  }
+  if ((from._impl_._has_bits_[0] & 0x00000400u) != 0) {
+    _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
+  }
+  ::memcpy(&_impl_.java_multiple_files_, &from._impl_.java_multiple_files_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.cc_enable_arenas_) -
+    reinterpret_cast<char*>(&_impl_.java_multiple_files_)) + sizeof(_impl_.cc_enable_arenas_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.FileOptions)
 }
 inline void FileOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -7489,6 +9386,7 @@ inline void FileOptions::SharedCtor(::_pb::Arena* arena) {
         _impl_.ruby_package_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 FileOptions::~FileOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -8271,12 +10169,38 @@ class MessageOptions::_Internal {
 const ::google::protobuf::FeatureSet& MessageOptions::_Internal::features(const MessageOptions* msg) {
   return *msg->_impl_.features_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+MessageOptions::MessageOptions(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.features_, 0,
+           reinterpret_cast<::size_t>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+               reinterpret_cast<::size_t>(&_impl_.features_) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.MessageOptions)
+}
+MessageOptions::MessageOptions(const MessageOptions& rhs)
+    : MessageOptions(nullptr, rhs) {}
+
+MessageOptions::MessageOptions(::google::protobuf::Arena* arena,
+                         const MessageOptions& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? rhs._impl_.features_->Copy(arena) : nullptr;
+  ::memcpy(&_impl_.message_set_wire_format_, &rhs._impl_.message_set_wire_format_,
+           reinterpret_cast<::size_t>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+               reinterpret_cast<::size_t>(&_impl_.message_set_wire_format_) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.MessageOptions)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 MessageOptions::MessageOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MessageOptions)
 }
-MessageOptions::MessageOptions(const MessageOptions& from) : ::google::protobuf::Message() {
+MessageOptions::MessageOptions(const MessageOptions& from)
+    : ::google::protobuf::Message() {
   MessageOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -8301,8 +10225,35 @@ MessageOptions::MessageOptions(const MessageOptions& from) : ::google::protobuf:
   ::memcpy(&_impl_.message_set_wire_format_, &from._impl_.message_set_wire_format_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
     reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MessageOptions)
+}
+MessageOptions::MessageOptions(::google::protobuf::Arena* arena,
+                         const MessageOptions& from)
+    : ::google::protobuf::Message(arena) {
+  MessageOptions* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
+      decltype(_impl_.features_){nullptr},
+      decltype(_impl_.message_set_wire_format_){},
+      decltype(_impl_.no_standard_descriptor_accessor_){},
+      decltype(_impl_.deprecated_){},
+      decltype(_impl_.map_entry_){},
+      decltype(_impl_.deprecated_legacy_json_field_conflicts_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
+  }
+  ::memcpy(&_impl_.message_set_wire_format_, &from._impl_.message_set_wire_format_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+    reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.MessageOptions)
 }
 inline void MessageOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -8319,6 +10270,7 @@ inline void MessageOptions::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.deprecated_legacy_json_field_conflicts_){false},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 MessageOptions::~MessageOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MessageOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -8648,12 +10600,30 @@ class FieldOptions_EditionDefault::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.EditionDefault)
+}
+FieldOptions_EditionDefault::FieldOptions_EditionDefault(const FieldOptions_EditionDefault& rhs)
+    : FieldOptions_EditionDefault(nullptr, rhs) {}
+
+FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* arena,
+                         const FieldOptions_EditionDefault& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions.EditionDefault)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.EditionDefault)
 }
-FieldOptions_EditionDefault::FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from) : ::google::protobuf::Message() {
+FieldOptions_EditionDefault::FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from)
+    : ::google::protobuf::Message() {
   FieldOptions_EditionDefault* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -8678,8 +10648,35 @@ FieldOptions_EditionDefault::FieldOptions_EditionDefault(const FieldOptions_Edit
   if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
     _this->_impl_.value_.Set(from._internal_value(), _this->GetArenaForAllocation());
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions.EditionDefault)
+}
+FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* arena,
+                         const FieldOptions_EditionDefault& from)
+    : ::google::protobuf::Message(arena) {
+  FieldOptions_EditionDefault* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.edition_){},
+      decltype(_impl_.value_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.edition_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.edition_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.edition_.Set(from._internal_edition(), _this->GetArenaForAllocation());
+  }
+  _impl_.value_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.value_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.value_.Set(from._internal_value(), _this->GetArenaForAllocation());
+  }
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.FieldOptions.EditionDefault)
 }
 inline void FieldOptions_EditionDefault::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -8698,6 +10695,7 @@ inline void FieldOptions_EditionDefault::SharedCtor(::_pb::Arena* arena) {
         _impl_.value_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 FieldOptions_EditionDefault::~FieldOptions_EditionDefault() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions.EditionDefault)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -8934,12 +10932,38 @@ class FieldOptions::_Internal {
 const ::google::protobuf::FeatureSet& FieldOptions::_Internal::features(const FieldOptions* msg) {
   return *msg->_impl_.features_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+FieldOptions::FieldOptions(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.features_, 0,
+           reinterpret_cast<::size_t>(&_impl_.retention_) -
+               reinterpret_cast<::size_t>(&_impl_.features_) + sizeof(_impl_.retention_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions)
+}
+FieldOptions::FieldOptions(const FieldOptions& rhs)
+    : FieldOptions(nullptr, rhs) {}
+
+FieldOptions::FieldOptions(::google::protobuf::Arena* arena,
+                         const FieldOptions& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? rhs._impl_.features_->Copy(arena) : nullptr;
+  ::memcpy(&_impl_.ctype_, &rhs._impl_.ctype_,
+           reinterpret_cast<::size_t>(&_impl_.retention_) -
+               reinterpret_cast<::size_t>(&_impl_.ctype_) + sizeof(_impl_.retention_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 FieldOptions::FieldOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions)
 }
-FieldOptions::FieldOptions(const FieldOptions& from) : ::google::protobuf::Message() {
+FieldOptions::FieldOptions(const FieldOptions& from)
+    : ::google::protobuf::Message() {
   FieldOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -8970,8 +10994,41 @@ FieldOptions::FieldOptions(const FieldOptions& from) : ::google::protobuf::Messa
   ::memcpy(&_impl_.ctype_, &from._impl_.ctype_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.retention_) -
     reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.retention_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions)
+}
+FieldOptions::FieldOptions(::google::protobuf::Arena* arena,
+                         const FieldOptions& from)
+    : ::google::protobuf::Message(arena) {
+  FieldOptions* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.targets_){from._internal_targets()},
+      decltype(_impl_.edition_defaults_){from._impl_.edition_defaults_},
+      decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
+      decltype(_impl_.features_){nullptr},
+      decltype(_impl_.ctype_){},
+      decltype(_impl_.jstype_){},
+      decltype(_impl_.packed_){},
+      decltype(_impl_.lazy_){},
+      decltype(_impl_.unverified_lazy_){},
+      decltype(_impl_.deprecated_){},
+      decltype(_impl_.weak_){},
+      decltype(_impl_.debug_redact_){},
+      decltype(_impl_.retention_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
+  }
+  ::memcpy(&_impl_.ctype_, &from._impl_.ctype_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.retention_) -
+    reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.retention_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.FieldOptions)
 }
 inline void FieldOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -8994,6 +11051,7 @@ inline void FieldOptions::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.retention_){0},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 FieldOptions::~FieldOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -9480,12 +11538,33 @@ class OneofOptions::_Internal {
 const ::google::protobuf::FeatureSet& OneofOptions::_Internal::features(const OneofOptions* msg) {
   return *msg->_impl_.features_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+OneofOptions::OneofOptions(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  _impl_.features_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofOptions)
+}
+OneofOptions::OneofOptions(const OneofOptions& rhs)
+    : OneofOptions(nullptr, rhs) {}
+
+OneofOptions::OneofOptions(::google::protobuf::Arena* arena,
+                         const OneofOptions& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? rhs._impl_.features_->Copy(arena) : nullptr;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 OneofOptions::OneofOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofOptions)
 }
-OneofOptions::OneofOptions(const OneofOptions& from) : ::google::protobuf::Message() {
+OneofOptions::OneofOptions(const OneofOptions& from)
+    : ::google::protobuf::Message() {
   OneofOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -9502,8 +11581,27 @@ OneofOptions::OneofOptions(const OneofOptions& from) : ::google::protobuf::Messa
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
+}
+OneofOptions::OneofOptions(::google::protobuf::Arena* arena,
+                         const OneofOptions& from)
+    : ::google::protobuf::Message(arena) {
+  OneofOptions* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
+      decltype(_impl_.features_){nullptr},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
+  }
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.OneofOptions)
 }
 inline void OneofOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -9515,6 +11613,7 @@ inline void OneofOptions::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.features_){nullptr},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 OneofOptions::~OneofOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.OneofOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -9738,12 +11837,38 @@ class EnumOptions::_Internal {
 const ::google::protobuf::FeatureSet& EnumOptions::_Internal::features(const EnumOptions* msg) {
   return *msg->_impl_.features_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+EnumOptions::EnumOptions(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.features_, 0,
+           reinterpret_cast<::size_t>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+               reinterpret_cast<::size_t>(&_impl_.features_) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumOptions)
+}
+EnumOptions::EnumOptions(const EnumOptions& rhs)
+    : EnumOptions(nullptr, rhs) {}
+
+EnumOptions::EnumOptions(::google::protobuf::Arena* arena,
+                         const EnumOptions& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? rhs._impl_.features_->Copy(arena) : nullptr;
+  ::memcpy(&_impl_.allow_alias_, &rhs._impl_.allow_alias_,
+           reinterpret_cast<::size_t>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+               reinterpret_cast<::size_t>(&_impl_.allow_alias_) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumOptions)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 EnumOptions::EnumOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumOptions)
 }
-EnumOptions::EnumOptions(const EnumOptions& from) : ::google::protobuf::Message() {
+EnumOptions::EnumOptions(const EnumOptions& from)
+    : ::google::protobuf::Message() {
   EnumOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -9766,8 +11891,33 @@ EnumOptions::EnumOptions(const EnumOptions& from) : ::google::protobuf::Message(
   ::memcpy(&_impl_.allow_alias_, &from._impl_.allow_alias_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
     reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumOptions)
+}
+EnumOptions::EnumOptions(::google::protobuf::Arena* arena,
+                         const EnumOptions& from)
+    : ::google::protobuf::Message(arena) {
+  EnumOptions* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
+      decltype(_impl_.features_){nullptr},
+      decltype(_impl_.allow_alias_){},
+      decltype(_impl_.deprecated_){},
+      decltype(_impl_.deprecated_legacy_json_field_conflicts_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
+  }
+  ::memcpy(&_impl_.allow_alias_, &from._impl_.allow_alias_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+    reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.EnumOptions)
 }
 inline void EnumOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -9782,6 +11932,7 @@ inline void EnumOptions::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.deprecated_legacy_json_field_conflicts_){false},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 EnumOptions::~EnumOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -10078,12 +12229,38 @@ class EnumValueOptions::_Internal {
 const ::google::protobuf::FeatureSet& EnumValueOptions::_Internal::features(const EnumValueOptions* msg) {
   return *msg->_impl_.features_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.features_, 0,
+           reinterpret_cast<::size_t>(&_impl_.debug_redact_) -
+               reinterpret_cast<::size_t>(&_impl_.features_) + sizeof(_impl_.debug_redact_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueOptions)
+}
+EnumValueOptions::EnumValueOptions(const EnumValueOptions& rhs)
+    : EnumValueOptions(nullptr, rhs) {}
+
+EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena,
+                         const EnumValueOptions& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? rhs._impl_.features_->Copy(arena) : nullptr;
+  ::memcpy(&_impl_.deprecated_, &rhs._impl_.deprecated_,
+           reinterpret_cast<::size_t>(&_impl_.debug_redact_) -
+               reinterpret_cast<::size_t>(&_impl_.deprecated_) + sizeof(_impl_.debug_redact_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueOptions)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueOptions)
 }
-EnumValueOptions::EnumValueOptions(const EnumValueOptions& from) : ::google::protobuf::Message() {
+EnumValueOptions::EnumValueOptions(const EnumValueOptions& from)
+    : ::google::protobuf::Message() {
   EnumValueOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -10105,8 +12282,32 @@ EnumValueOptions::EnumValueOptions(const EnumValueOptions& from) : ::google::pro
   ::memcpy(&_impl_.deprecated_, &from._impl_.deprecated_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.debug_redact_) -
     reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.debug_redact_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueOptions)
+}
+EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena,
+                         const EnumValueOptions& from)
+    : ::google::protobuf::Message(arena) {
+  EnumValueOptions* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
+      decltype(_impl_.features_){nullptr},
+      decltype(_impl_.deprecated_){},
+      decltype(_impl_.debug_redact_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
+  }
+  ::memcpy(&_impl_.deprecated_, &from._impl_.deprecated_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.debug_redact_) -
+    reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.debug_redact_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.EnumValueOptions)
 }
 inline void EnumValueOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -10120,6 +12321,7 @@ inline void EnumValueOptions::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.debug_redact_){false},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 EnumValueOptions::~EnumValueOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValueOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -10395,12 +12597,36 @@ class ServiceOptions::_Internal {
 const ::google::protobuf::FeatureSet& ServiceOptions::_Internal::features(const ServiceOptions* msg) {
   return *msg->_impl_.features_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.features_, 0,
+           reinterpret_cast<::size_t>(&_impl_.deprecated_) -
+               reinterpret_cast<::size_t>(&_impl_.features_) + sizeof(_impl_.deprecated_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceOptions)
+}
+ServiceOptions::ServiceOptions(const ServiceOptions& rhs)
+    : ServiceOptions(nullptr, rhs) {}
+
+ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena,
+                         const ServiceOptions& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? rhs._impl_.features_->Copy(arena) : nullptr;
+  _impl_.deprecated_ = rhs._impl_.deprecated_;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceOptions)
 }
-ServiceOptions::ServiceOptions(const ServiceOptions& from) : ::google::protobuf::Message() {
+ServiceOptions::ServiceOptions(const ServiceOptions& from)
+    : ::google::protobuf::Message() {
   ServiceOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -10419,8 +12645,29 @@ ServiceOptions::ServiceOptions(const ServiceOptions& from) : ::google::protobuf:
     _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
   }
   _this->_impl_.deprecated_ = from._impl_.deprecated_;
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
+}
+ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena,
+                         const ServiceOptions& from)
+    : ::google::protobuf::Message(arena) {
+  ServiceOptions* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
+      decltype(_impl_.features_){nullptr},
+      decltype(_impl_.deprecated_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
+  }
+  _this->_impl_.deprecated_ = from._impl_.deprecated_;
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.ServiceOptions)
 }
 inline void ServiceOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -10433,6 +12680,7 @@ inline void ServiceOptions::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.deprecated_){false},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 ServiceOptions::~ServiceOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -10686,12 +12934,38 @@ class MethodOptions::_Internal {
 const ::google::protobuf::FeatureSet& MethodOptions::_Internal::features(const MethodOptions* msg) {
   return *msg->_impl_.features_;
 }
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+MethodOptions::MethodOptions(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.features_, 0,
+           reinterpret_cast<::size_t>(&_impl_.idempotency_level_) -
+               reinterpret_cast<::size_t>(&_impl_.features_) + sizeof(_impl_.idempotency_level_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodOptions)
+}
+MethodOptions::MethodOptions(const MethodOptions& rhs)
+    : MethodOptions(nullptr, rhs) {}
+
+MethodOptions::MethodOptions(::google::protobuf::Arena* arena,
+                         const MethodOptions& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? rhs._impl_.features_->Copy(arena) : nullptr;
+  ::memcpy(&_impl_.deprecated_, &rhs._impl_.deprecated_,
+           reinterpret_cast<::size_t>(&_impl_.idempotency_level_) -
+               reinterpret_cast<::size_t>(&_impl_.deprecated_) + sizeof(_impl_.idempotency_level_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodOptions)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 MethodOptions::MethodOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodOptions)
 }
-MethodOptions::MethodOptions(const MethodOptions& from) : ::google::protobuf::Message() {
+MethodOptions::MethodOptions(const MethodOptions& from)
+    : ::google::protobuf::Message() {
   MethodOptions* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -10713,8 +12987,32 @@ MethodOptions::MethodOptions(const MethodOptions& from) : ::google::protobuf::Me
   ::memcpy(&_impl_.deprecated_, &from._impl_.deprecated_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.idempotency_level_) -
     reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.idempotency_level_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodOptions)
+}
+MethodOptions::MethodOptions(::google::protobuf::Arena* arena,
+                         const MethodOptions& from)
+    : ::google::protobuf::Message(arena) {
+  MethodOptions* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.uninterpreted_option_){from._impl_.uninterpreted_option_},
+      decltype(_impl_.features_){nullptr},
+      decltype(_impl_.deprecated_){},
+      decltype(_impl_.idempotency_level_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.features_ = new ::google::protobuf::FeatureSet(*from._impl_.features_);
+  }
+  ::memcpy(&_impl_.deprecated_, &from._impl_.deprecated_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.idempotency_level_) -
+    reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.idempotency_level_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.MethodOptions)
 }
 inline void MethodOptions::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -10728,6 +13026,7 @@ inline void MethodOptions::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.idempotency_level_){0},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 MethodOptions::~MethodOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -11007,12 +13306,32 @@ class UninterpretedOption_NamePart::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  _impl_.is_extension_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption.NamePart)
+}
+UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOption_NamePart& rhs)
+    : UninterpretedOption_NamePart(nullptr, rhs) {}
+
+UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* arena,
+                         const UninterpretedOption_NamePart& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  _impl_.is_extension_ = rhs._impl_.is_extension_;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption.NamePart)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption.NamePart)
 }
-UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from) : ::google::protobuf::Message() {
+UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from)
+    : ::google::protobuf::Message() {
   UninterpretedOption_NamePart* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -11031,8 +13350,29 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOp
     _this->_impl_.name_part_.Set(from._internal_name_part(), _this->GetArenaForAllocation());
   }
   _this->_impl_.is_extension_ = from._impl_.is_extension_;
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption.NamePart)
+}
+UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* arena,
+                         const UninterpretedOption_NamePart& from)
+    : ::google::protobuf::Message(arena) {
+  UninterpretedOption_NamePart* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.name_part_){},
+      decltype(_impl_.is_extension_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.name_part_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.name_part_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.name_part_.Set(from._internal_name_part(), _this->GetArenaForAllocation());
+  }
+  _this->_impl_.is_extension_ = from._impl_.is_extension_;
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.UninterpretedOption.NamePart)
 }
 inline void UninterpretedOption_NamePart::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -11047,6 +13387,7 @@ inline void UninterpretedOption_NamePart::SharedCtor(::_pb::Arena* arena) {
         _impl_.name_part_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption.NamePart)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -11262,12 +13603,36 @@ class UninterpretedOption::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.positive_int_value_, 0,
+           reinterpret_cast<::size_t>(&_impl_.double_value_) -
+               reinterpret_cast<::size_t>(&_impl_.positive_int_value_) + sizeof(_impl_.double_value_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption)
+}
+UninterpretedOption::UninterpretedOption(const UninterpretedOption& rhs)
+    : UninterpretedOption(nullptr, rhs) {}
+
+UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena,
+                         const UninterpretedOption& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::memcpy(&_impl_.positive_int_value_, &rhs._impl_.positive_int_value_,
+           reinterpret_cast<::size_t>(&_impl_.double_value_) -
+               reinterpret_cast<::size_t>(&_impl_.positive_int_value_) + sizeof(_impl_.double_value_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption)
 }
-UninterpretedOption::UninterpretedOption(const UninterpretedOption& from) : ::google::protobuf::Message() {
+UninterpretedOption::UninterpretedOption(const UninterpretedOption& from)
+    : ::google::protobuf::Message() {
   UninterpretedOption* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -11307,8 +13672,50 @@ UninterpretedOption::UninterpretedOption(const UninterpretedOption& from) : ::go
   ::memcpy(&_impl_.positive_int_value_, &from._impl_.positive_int_value_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.double_value_) -
     reinterpret_cast<char*>(&_impl_.positive_int_value_)) + sizeof(_impl_.double_value_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption)
+}
+UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena,
+                         const UninterpretedOption& from)
+    : ::google::protobuf::Message(arena) {
+  UninterpretedOption* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.name_){from._impl_.name_},
+      decltype(_impl_.identifier_value_){},
+      decltype(_impl_.string_value_){},
+      decltype(_impl_.aggregate_value_){},
+      decltype(_impl_.positive_int_value_){},
+      decltype(_impl_.negative_int_value_){},
+      decltype(_impl_.double_value_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.identifier_value_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.identifier_value_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.identifier_value_.Set(from._internal_identifier_value(), _this->GetArenaForAllocation());
+  }
+  _impl_.string_value_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.string_value_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.string_value_.Set(from._internal_string_value(), _this->GetArenaForAllocation());
+  }
+  _impl_.aggregate_value_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.aggregate_value_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000004u) != 0) {
+    _this->_impl_.aggregate_value_.Set(from._internal_aggregate_value(), _this->GetArenaForAllocation());
+  }
+  ::memcpy(&_impl_.positive_int_value_, &from._impl_.positive_int_value_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.double_value_) -
+    reinterpret_cast<char*>(&_impl_.positive_int_value_)) + sizeof(_impl_.double_value_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.UninterpretedOption)
 }
 inline void UninterpretedOption::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -11336,6 +13743,7 @@ inline void UninterpretedOption::SharedCtor(::_pb::Arena* arena) {
         _impl_.aggregate_value_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 UninterpretedOption::~UninterpretedOption() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -11687,12 +14095,36 @@ class FeatureSet::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+FeatureSet::FeatureSet(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.field_presence_, 0,
+           reinterpret_cast<::size_t>(&_impl_.json_format_) -
+               reinterpret_cast<::size_t>(&_impl_.field_presence_) + sizeof(_impl_.json_format_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet)
+}
+FeatureSet::FeatureSet(const FeatureSet& rhs)
+    : FeatureSet(nullptr, rhs) {}
+
+FeatureSet::FeatureSet(::google::protobuf::Arena* arena,
+                         const FeatureSet& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::memcpy(&_impl_.field_presence_, &rhs._impl_.field_presence_,
+           reinterpret_cast<::size_t>(&_impl_.json_format_) -
+               reinterpret_cast<::size_t>(&_impl_.field_presence_) + sizeof(_impl_.json_format_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSet)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 FeatureSet::FeatureSet(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet)
 }
-FeatureSet::FeatureSet(const FeatureSet& from) : ::google::protobuf::Message() {
+FeatureSet::FeatureSet(const FeatureSet& from)
+    : ::google::protobuf::Message() {
   FeatureSet* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -11713,8 +14145,31 @@ FeatureSet::FeatureSet(const FeatureSet& from) : ::google::protobuf::Message() {
   ::memcpy(&_impl_.field_presence_, &from._impl_.field_presence_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.json_format_) -
     reinterpret_cast<char*>(&_impl_.field_presence_)) + sizeof(_impl_.json_format_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSet)
+}
+FeatureSet::FeatureSet(::google::protobuf::Arena* arena,
+                         const FeatureSet& from)
+    : ::google::protobuf::Message(arena) {
+  FeatureSet* const _this = this;
+  new (&_impl_) Impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.field_presence_){},
+      decltype(_impl_.enum_type_){},
+      decltype(_impl_.repeated_field_encoding_){},
+      decltype(_impl_.string_field_validation_){},
+      decltype(_impl_.message_encoding_){},
+      decltype(_impl_.json_format_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_._extensions_.MergeFrom(internal_default_instance(),
+                         from._impl_._extensions_);
+  ::memcpy(&_impl_.field_presence_, &from._impl_.field_presence_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.json_format_) -
+    reinterpret_cast<char*>(&_impl_.field_presence_)) + sizeof(_impl_.json_format_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.FeatureSet)
 }
 inline void FeatureSet::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -11730,6 +14185,7 @@ inline void FeatureSet::SharedCtor(::_pb::Arena* arena) {
       decltype(_impl_.json_format_){0},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 FeatureSet::~FeatureSet() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSet)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -12035,12 +14491,30 @@ class SourceCodeInfo_Location::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo.Location)
+}
+SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& rhs)
+    : SourceCodeInfo_Location(nullptr, rhs) {}
+
+SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* arena,
+                         const SourceCodeInfo_Location& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo.Location)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo.Location)
 }
-SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& from) : ::google::protobuf::Message() {
+SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& from)
+    : ::google::protobuf::Message() {
   SourceCodeInfo_Location* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -12070,8 +14544,40 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& 
   if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
     _this->_impl_.trailing_comments_.Set(from._internal_trailing_comments(), _this->GetArenaForAllocation());
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo.Location)
+}
+SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* arena,
+                         const SourceCodeInfo_Location& from)
+    : ::google::protobuf::Message(arena) {
+  SourceCodeInfo_Location* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.path_){from._impl_.path_},
+      /* _impl_._path_cached_byte_size_ = */ {0},
+      decltype(_impl_.span_){from._impl_.span_},
+      /* _impl_._span_cached_byte_size_ = */ {0},
+      decltype(_impl_.leading_detached_comments_){from._impl_.leading_detached_comments_},
+      decltype(_impl_.leading_comments_){},
+      decltype(_impl_.trailing_comments_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.leading_comments_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.leading_comments_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.leading_comments_.Set(from._internal_leading_comments(), _this->GetArenaForAllocation());
+  }
+  _impl_.trailing_comments_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.trailing_comments_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    _this->_impl_.trailing_comments_.Set(from._internal_trailing_comments(), _this->GetArenaForAllocation());
+  }
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.SourceCodeInfo.Location)
 }
 inline void SourceCodeInfo_Location::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -12095,6 +14601,7 @@ inline void SourceCodeInfo_Location::SharedCtor(::_pb::Arena* arena) {
         _impl_.trailing_comments_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 SourceCodeInfo_Location::~SourceCodeInfo_Location() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceCodeInfo.Location)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -12386,12 +14893,30 @@ class SourceCodeInfo::_Internal {
  public:
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo)
+}
+SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& rhs)
+    : SourceCodeInfo(nullptr, rhs) {}
+
+SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena,
+                         const SourceCodeInfo& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo)
 }
-SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& from) : ::google::protobuf::Message() {
+SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& from)
+    : ::google::protobuf::Message() {
   SourceCodeInfo* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -12400,8 +14925,19 @@ SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& from) : ::google::protobuf:
   };
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo)
+}
+SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena,
+                         const SourceCodeInfo& from)
+    : ::google::protobuf::Message(arena) {
+  SourceCodeInfo* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.location_){from._impl_.location_},
+      /*decltype(_impl_._cached_size_)*/ {},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.SourceCodeInfo)
 }
 inline void SourceCodeInfo::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -12410,6 +14946,7 @@ inline void SourceCodeInfo::SharedCtor(::_pb::Arena* arena) {
       /*decltype(_impl_._cached_size_)*/ {},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 SourceCodeInfo::~SourceCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceCodeInfo)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -12572,12 +15109,36 @@ class GeneratedCodeInfo_Annotation::_Internal {
   }
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  ::memset(&_impl_.begin_, 0,
+           reinterpret_cast<::size_t>(&_impl_.semantic_) -
+               reinterpret_cast<::size_t>(&_impl_.begin_) + sizeof(_impl_.semantic_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
+}
+GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& rhs)
+    : GeneratedCodeInfo_Annotation(nullptr, rhs) {}
+
+GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena,
+                         const GeneratedCodeInfo_Annotation& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::memcpy(&_impl_.begin_, &rhs._impl_.begin_,
+           reinterpret_cast<::size_t>(&_impl_.semantic_) -
+               reinterpret_cast<::size_t>(&_impl_.begin_) + sizeof(_impl_.semantic_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
 }
-GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from) : ::google::protobuf::Message() {
+GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from)
+    : ::google::protobuf::Message() {
   GeneratedCodeInfo_Annotation* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -12602,8 +15163,35 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeIn
   ::memcpy(&_impl_.begin_, &from._impl_.begin_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.semantic_) -
     reinterpret_cast<char*>(&_impl_.begin_)) + sizeof(_impl_.semantic_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
+}
+GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena,
+                         const GeneratedCodeInfo_Annotation& from)
+    : ::google::protobuf::Message(arena) {
+  GeneratedCodeInfo_Annotation* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_},
+      /*decltype(_impl_._cached_size_)*/ {},
+      decltype(_impl_.path_){from._impl_.path_},
+      /* _impl_._path_cached_byte_size_ = */ {0},
+      decltype(_impl_.source_file_){},
+      decltype(_impl_.begin_){},
+      decltype(_impl_.end_){},
+      decltype(_impl_.semantic_){},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  _impl_.source_file_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        _impl_.source_file_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    _this->_impl_.source_file_.Set(from._internal_source_file(), _this->GetArenaForAllocation());
+  }
+  ::memcpy(&_impl_.begin_, &from._impl_.begin_,
+    static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.semantic_) -
+    reinterpret_cast<char*>(&_impl_.begin_)) + sizeof(_impl_.semantic_));
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
 }
 inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -12622,6 +15210,7 @@ inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* arena) {
         _impl_.source_file_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo.Annotation)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -12902,12 +15491,30 @@ class GeneratedCodeInfo::_Internal {
  public:
 };
 
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(arena) {
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo)
+}
+GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& rhs)
+    : GeneratedCodeInfo(nullptr, rhs) {}
+
+GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena,
+                         const GeneratedCodeInfo& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo)
 }
-GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& from) : ::google::protobuf::Message() {
+GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& from)
+    : ::google::protobuf::Message() {
   GeneratedCodeInfo* const _this = this;
   (void)_this;
   new (&_impl_) Impl_{
@@ -12916,8 +15523,19 @@ GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& from) : ::google::
   };
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo)
+}
+GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena,
+                         const GeneratedCodeInfo& from)
+    : ::google::protobuf::Message(arena) {
+  GeneratedCodeInfo* const _this = this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.annotation_){from._impl_.annotation_},
+      /*decltype(_impl_._cached_size_)*/ {},
+  };
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  // @@protoc_insertion_point(arena_copy_constructor:google.protobuf.GeneratedCodeInfo)
 }
 inline void GeneratedCodeInfo::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
@@ -12926,6 +15544,7 @@ inline void GeneratedCodeInfo::SharedCtor(::_pb::Arena* arena) {
       /*decltype(_impl_._cached_size_)*/ {},
   };
 }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 GeneratedCodeInfo::~GeneratedCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();

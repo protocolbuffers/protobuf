@@ -360,8 +360,9 @@ class RepeatedField final
 
   void MergeFromArray(const Element* array, size_t length);
 
- private:
   RepeatedField(Arena* arena, const RepeatedField& rhs);
+
+ private:
   template <typename T> friend class Arena::InternalHelper;
 
   // Gets the Arena on which this RepeatedField stores its elements.

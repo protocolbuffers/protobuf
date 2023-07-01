@@ -718,6 +718,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   explicit PROTOBUF_CONSTEXPR FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
 
   FileDescriptorSet(const FileDescriptorSet& from);
+  FileDescriptorSet(::google::protobuf::Arena*, const FileDescriptorSet& from);
   FileDescriptorSet(FileDescriptorSet&& from) noexcept
     : FileDescriptorSet() {
     *this = ::std::move(from);
@@ -787,6 +788,10 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  FileDescriptorSet* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<FileDescriptorSet>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -867,6 +872,11 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
@@ -884,6 +894,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   explicit PROTOBUF_CONSTEXPR FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   FileDescriptorProto(const FileDescriptorProto& from);
+  FileDescriptorProto(::google::protobuf::Arena*, const FileDescriptorProto& from);
   FileDescriptorProto(FileDescriptorProto&& from) noexcept
     : FileDescriptorProto() {
     *this = ::std::move(from);
@@ -953,6 +964,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  FileDescriptorProto* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<FileDescriptorProto>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -1261,6 +1276,11 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<std::string> dependency_;
@@ -1291,6 +1311,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
 
   DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from);
+  DescriptorProto_ExtensionRange(::google::protobuf::Arena*, const DescriptorProto_ExtensionRange& from);
   DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
     : DescriptorProto_ExtensionRange() {
     *this = ::std::move(from);
@@ -1360,6 +1381,10 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  DescriptorProto_ExtensionRange* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<DescriptorProto_ExtensionRange>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -1461,6 +1486,11 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::ExtensionRangeOptions* options_;
@@ -1481,6 +1511,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
 
   DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from);
+  DescriptorProto_ReservedRange(::google::protobuf::Arena*, const DescriptorProto_ReservedRange& from);
   DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
     : DescriptorProto_ReservedRange() {
     *this = ::std::move(from);
@@ -1550,6 +1581,10 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  DescriptorProto_ReservedRange* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<DescriptorProto_ReservedRange>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -1635,6 +1670,11 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
@@ -1654,6 +1694,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   explicit PROTOBUF_CONSTEXPR DescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   DescriptorProto(const DescriptorProto& from);
+  DescriptorProto(::google::protobuf::Arena*, const DescriptorProto& from);
   DescriptorProto(DescriptorProto&& from) noexcept
     : DescriptorProto() {
     *this = ::std::move(from);
@@ -1723,6 +1764,10 @@ class PROTOBUF_EXPORT DescriptorProto final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  DescriptorProto* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<DescriptorProto>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -1983,6 +2028,11 @@ class PROTOBUF_EXPORT DescriptorProto final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > field_;
@@ -2010,6 +2060,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
 
   ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from);
+  ExtensionRangeOptions_Declaration(::google::protobuf::Arena*, const ExtensionRangeOptions_Declaration& from);
   ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
     : ExtensionRangeOptions_Declaration() {
     *this = ::std::move(from);
@@ -2079,6 +2130,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  ExtensionRangeOptions_Declaration* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<ExtensionRangeOptions_Declaration>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -2212,6 +2267,11 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr full_name_;
@@ -2234,6 +2294,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
 
   ExtensionRangeOptions(const ExtensionRangeOptions& from);
+  ExtensionRangeOptions(::google::protobuf::Arena*, const ExtensionRangeOptions& from);
   ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
     : ExtensionRangeOptions() {
     *this = ::std::move(from);
@@ -2303,6 +2364,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  ExtensionRangeOptions* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<ExtensionRangeOptions>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -2603,6 +2668,11 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2626,6 +2696,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   FieldDescriptorProto(const FieldDescriptorProto& from);
+  FieldDescriptorProto(::google::protobuf::Arena*, const FieldDescriptorProto& from);
   FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
     : FieldDescriptorProto() {
     *this = ::std::move(from);
@@ -2695,6 +2766,10 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  FieldDescriptorProto* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<FieldDescriptorProto>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -2979,6 +3054,11 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -3007,6 +3087,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   OneofDescriptorProto(const OneofDescriptorProto& from);
+  OneofDescriptorProto(::google::protobuf::Arena*, const OneofDescriptorProto& from);
   OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
     : OneofDescriptorProto() {
     *this = ::std::move(from);
@@ -3076,6 +3157,10 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  OneofDescriptorProto* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<OneofDescriptorProto>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -3171,6 +3256,11 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -3190,6 +3280,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
 
   EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from);
+  EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena*, const EnumDescriptorProto_EnumReservedRange& from);
   EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
     : EnumDescriptorProto_EnumReservedRange() {
     *this = ::std::move(from);
@@ -3259,6 +3350,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  EnumDescriptorProto_EnumReservedRange* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<EnumDescriptorProto_EnumReservedRange>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -3344,6 +3439,11 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
@@ -3363,6 +3463,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   EnumDescriptorProto(const EnumDescriptorProto& from);
+  EnumDescriptorProto(::google::protobuf::Arena*, const EnumDescriptorProto& from);
   EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
     : EnumDescriptorProto() {
     *this = ::std::move(from);
@@ -3432,6 +3533,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  EnumDescriptorProto* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<EnumDescriptorProto>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -3596,6 +3701,11 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
@@ -3618,6 +3728,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   EnumValueDescriptorProto(const EnumValueDescriptorProto& from);
+  EnumValueDescriptorProto(::google::protobuf::Arena*, const EnumValueDescriptorProto& from);
   EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
     : EnumValueDescriptorProto() {
     *this = ::std::move(from);
@@ -3687,6 +3798,10 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  EnumValueDescriptorProto* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<EnumValueDescriptorProto>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -3794,6 +3909,11 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -3814,6 +3934,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   ServiceDescriptorProto(const ServiceDescriptorProto& from);
+  ServiceDescriptorProto(::google::protobuf::Arena*, const ServiceDescriptorProto& from);
   ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
     : ServiceDescriptorProto() {
     *this = ::std::move(from);
@@ -3883,6 +4004,10 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  ServiceDescriptorProto* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<ServiceDescriptorProto>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -3997,6 +4122,11 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
@@ -4017,6 +4147,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   MethodDescriptorProto(const MethodDescriptorProto& from);
+  MethodDescriptorProto(::google::protobuf::Arena*, const MethodDescriptorProto& from);
   MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
     : MethodDescriptorProto() {
     *this = ::std::move(from);
@@ -4086,6 +4217,10 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  MethodDescriptorProto* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<MethodDescriptorProto>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -4241,6 +4376,11 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -4264,6 +4404,7 @@ class PROTOBUF_EXPORT FileOptions final :
   explicit PROTOBUF_CONSTEXPR FileOptions(::google::protobuf::internal::ConstantInitialized);
 
   FileOptions(const FileOptions& from);
+  FileOptions(::google::protobuf::Arena*, const FileOptions& from);
   FileOptions(FileOptions&& from) noexcept
     : FileOptions() {
     *this = ::std::move(from);
@@ -4333,6 +4474,10 @@ class PROTOBUF_EXPORT FileOptions final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  FileOptions* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<FileOptions>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -4901,6 +5046,11 @@ class PROTOBUF_EXPORT FileOptions final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -4942,6 +5092,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   explicit PROTOBUF_CONSTEXPR MessageOptions(::google::protobuf::internal::ConstantInitialized);
 
   MessageOptions(const MessageOptions& from);
+  MessageOptions(::google::protobuf::Arena*, const MessageOptions& from);
   MessageOptions(MessageOptions&& from) noexcept
     : MessageOptions() {
     *this = ::std::move(from);
@@ -5011,6 +5162,10 @@ class PROTOBUF_EXPORT MessageOptions final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  MessageOptions* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<MessageOptions>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -5318,6 +5473,11 @@ class PROTOBUF_EXPORT MessageOptions final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -5344,6 +5504,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   explicit PROTOBUF_CONSTEXPR FieldOptions_EditionDefault(::google::protobuf::internal::ConstantInitialized);
 
   FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from);
+  FieldOptions_EditionDefault(::google::protobuf::Arena*, const FieldOptions_EditionDefault& from);
   FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept
     : FieldOptions_EditionDefault() {
     *this = ::std::move(from);
@@ -5413,6 +5574,10 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  FieldOptions_EditionDefault* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<FieldOptions_EditionDefault>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -5510,6 +5675,11 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr edition_;
@@ -5529,6 +5699,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   explicit PROTOBUF_CONSTEXPR FieldOptions(::google::protobuf::internal::ConstantInitialized);
 
   FieldOptions(const FieldOptions& from);
+  FieldOptions(::google::protobuf::Arena*, const FieldOptions& from);
   FieldOptions(FieldOptions&& from) noexcept
     : FieldOptions() {
     *this = ::std::move(from);
@@ -5598,6 +5769,10 @@ class PROTOBUF_EXPORT FieldOptions final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  FieldOptions* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<FieldOptions>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -6085,6 +6260,11 @@ class PROTOBUF_EXPORT FieldOptions final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -6117,6 +6297,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   explicit PROTOBUF_CONSTEXPR OneofOptions(::google::protobuf::internal::ConstantInitialized);
 
   OneofOptions(const OneofOptions& from);
+  OneofOptions(::google::protobuf::Arena*, const OneofOptions& from);
   OneofOptions(OneofOptions&& from) noexcept
     : OneofOptions() {
     *this = ::std::move(from);
@@ -6186,6 +6367,10 @@ class PROTOBUF_EXPORT OneofOptions final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  OneofOptions* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<OneofOptions>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -6433,6 +6618,11 @@ class PROTOBUF_EXPORT OneofOptions final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -6454,6 +6644,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   explicit PROTOBUF_CONSTEXPR EnumOptions(::google::protobuf::internal::ConstantInitialized);
 
   EnumOptions(const EnumOptions& from);
+  EnumOptions(::google::protobuf::Arena*, const EnumOptions& from);
   EnumOptions(EnumOptions&& from) noexcept
     : EnumOptions() {
     *this = ::std::move(from);
@@ -6523,6 +6714,10 @@ class PROTOBUF_EXPORT EnumOptions final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  EnumOptions* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<EnumOptions>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -6806,6 +7001,11 @@ class PROTOBUF_EXPORT EnumOptions final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -6830,6 +7030,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   explicit PROTOBUF_CONSTEXPR EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
 
   EnumValueOptions(const EnumValueOptions& from);
+  EnumValueOptions(::google::protobuf::Arena*, const EnumValueOptions& from);
   EnumValueOptions(EnumValueOptions&& from) noexcept
     : EnumValueOptions() {
     *this = ::std::move(from);
@@ -6899,6 +7100,10 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  EnumValueOptions* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<EnumValueOptions>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -7170,6 +7375,11 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -7193,6 +7403,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   explicit PROTOBUF_CONSTEXPR ServiceOptions(::google::protobuf::internal::ConstantInitialized);
 
   ServiceOptions(const ServiceOptions& from);
+  ServiceOptions(::google::protobuf::Arena*, const ServiceOptions& from);
   ServiceOptions(ServiceOptions&& from) noexcept
     : ServiceOptions() {
     *this = ::std::move(from);
@@ -7262,6 +7473,10 @@ class PROTOBUF_EXPORT ServiceOptions final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  ServiceOptions* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<ServiceOptions>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -7521,6 +7736,11 @@ class PROTOBUF_EXPORT ServiceOptions final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -7543,6 +7763,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   explicit PROTOBUF_CONSTEXPR MethodOptions(::google::protobuf::internal::ConstantInitialized);
 
   MethodOptions(const MethodOptions& from);
+  MethodOptions(::google::protobuf::Arena*, const MethodOptions& from);
   MethodOptions(MethodOptions&& from) noexcept
     : MethodOptions() {
     *this = ::std::move(from);
@@ -7612,6 +7833,10 @@ class PROTOBUF_EXPORT MethodOptions final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  MethodOptions* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<MethodOptions>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -7904,6 +8129,11 @@ class PROTOBUF_EXPORT MethodOptions final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -7927,6 +8157,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
 
   UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from);
+  UninterpretedOption_NamePart(::google::protobuf::Arena*, const UninterpretedOption_NamePart& from);
   UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
     : UninterpretedOption_NamePart() {
     *this = ::std::move(from);
@@ -7996,6 +8227,10 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  UninterpretedOption_NamePart* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<UninterpretedOption_NamePart>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -8087,6 +8322,11 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_part_;
@@ -8106,6 +8346,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   explicit PROTOBUF_CONSTEXPR UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
 
   UninterpretedOption(const UninterpretedOption& from);
+  UninterpretedOption(::google::protobuf::Arena*, const UninterpretedOption& from);
   UninterpretedOption(UninterpretedOption&& from) noexcept
     : UninterpretedOption() {
     *this = ::std::move(from);
@@ -8175,6 +8416,10 @@ class PROTOBUF_EXPORT UninterpretedOption final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  UninterpretedOption* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<UninterpretedOption>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -8347,6 +8592,11 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart > name_;
@@ -8371,6 +8621,7 @@ class PROTOBUF_EXPORT FeatureSet final :
   explicit PROTOBUF_CONSTEXPR FeatureSet(::google::protobuf::internal::ConstantInitialized);
 
   FeatureSet(const FeatureSet& from);
+  FeatureSet(::google::protobuf::Arena*, const FeatureSet& from);
   FeatureSet(FeatureSet&& from) noexcept
     : FeatureSet() {
     *this = ::std::move(from);
@@ -8440,6 +8691,10 @@ class PROTOBUF_EXPORT FeatureSet final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  FeatureSet* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<FeatureSet>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -8852,6 +9107,11 @@ class PROTOBUF_EXPORT FeatureSet final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -8877,6 +9137,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
 
   SourceCodeInfo_Location(const SourceCodeInfo_Location& from);
+  SourceCodeInfo_Location(::google::protobuf::Arena*, const SourceCodeInfo_Location& from);
   SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
     : SourceCodeInfo_Location() {
     *this = ::std::move(from);
@@ -8946,6 +9207,10 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  SourceCodeInfo_Location* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<SourceCodeInfo_Location>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -9110,6 +9375,11 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
@@ -9134,6 +9404,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   explicit PROTOBUF_CONSTEXPR SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
   SourceCodeInfo(const SourceCodeInfo& from);
+  SourceCodeInfo(::google::protobuf::Arena*, const SourceCodeInfo& from);
   SourceCodeInfo(SourceCodeInfo&& from) noexcept
     : SourceCodeInfo() {
     *this = ::std::move(from);
@@ -9203,6 +9474,10 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  SourceCodeInfo* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<SourceCodeInfo>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -9285,6 +9560,11 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
@@ -9302,6 +9582,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
 
   GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from);
+  GeneratedCodeInfo_Annotation(::google::protobuf::Arena*, const GeneratedCodeInfo_Annotation& from);
   GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
     : GeneratedCodeInfo_Annotation() {
     *this = ::std::move(from);
@@ -9371,6 +9652,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  GeneratedCodeInfo_Annotation* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<GeneratedCodeInfo_Annotation>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -9526,6 +9811,11 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
@@ -9549,6 +9839,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
   GeneratedCodeInfo(const GeneratedCodeInfo& from);
+  GeneratedCodeInfo(::google::protobuf::Arena*, const GeneratedCodeInfo& from);
   GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
     : GeneratedCodeInfo() {
     *this = ::std::move(from);
@@ -9618,6 +9909,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
+  }
+
+  GeneratedCodeInfo* Copy(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Arena::CreateMessage<GeneratedCodeInfo>(arena, *this);
   }
 
   // implements Message ----------------------------------------------
@@ -9700,6 +9995,11 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    explicit Impl_(::google::protobuf::Arena* arena = nullptr);
+    constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    Impl_(::google::protobuf::Arena* arena, const Impl_& from);
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER;

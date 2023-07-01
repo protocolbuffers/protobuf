@@ -320,6 +320,29 @@ const char kThickSeparator[] =
 const char kThinSeparator[] =
     "// -------------------------------------------------------------------\n";
 
+bool RequiresMemberInitialization(const FieldDescriptor* field,
+                                  const Options& options,
+                                  MessageSCCAnalyzer* scc_analyzer) {
+  if (field->is_repeated() || field->is_extension()) return true;
+
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return false;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return IsLazy(field, options, scc_analyzer);
+    case FieldDescriptor::CPPTYPE_STRING:
+      return true;
+  }
+  ABSL_LOG(FATAL) << "Unreachable";
+}
+
 bool CanInitializeByZeroing(const FieldDescriptor* field,
                             const Options& options,
                             MessageSCCAnalyzer* scc_analyzer) {
@@ -392,6 +415,23 @@ bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
       // Non-repeated, non-lazy message fields are simply raw pointers, so we
       // can swap them with memcpy.
       return !IsLazy(field, options, scc_analyzer);
+    default:
+      return false;
+  }
+}
+
+bool IsTrivial(const FieldDescriptor* field, const Options& options) {
+  if (field->is_repeated() || field->is_extension()) return false;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return true;
     default:
       return false;
   }

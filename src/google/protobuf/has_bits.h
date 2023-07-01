@@ -31,6 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_HAS_BITS_H__
 #define GOOGLE_PROTOBUF_HAS_BITS_H__
 
+#include <array>
+
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/port.h"
 
@@ -50,9 +52,10 @@ class HasBits {
  public:
   PROTOBUF_NDEBUG_INLINE constexpr HasBits() : has_bits_{} {}
 
-  PROTOBUF_NDEBUG_INLINE void Clear() {
-    memset(has_bits_, 0, sizeof(has_bits_));
-  }
+  explicit constexpr HasBits(std::array<uint32_t, doublewords> has_bits)
+      : has_bits_(has_bits) {}
+
+  PROTOBUF_NDEBUG_INLINE void Clear() { has_bits_.fill(0); }
 
   PROTOBUF_NDEBUG_INLINE uint32_t& operator[](int index) {
     return has_bits_[index];
@@ -63,7 +66,7 @@ class HasBits {
   }
 
   bool operator==(const HasBits<doublewords>& rhs) const {
-    return memcmp(has_bits_, rhs.has_bits_, sizeof(has_bits_)) == 0;
+    return has_bits_ == rhs.has_bits_;
   }
 
   bool operator!=(const HasBits<doublewords>& rhs) const {
@@ -77,7 +80,7 @@ class HasBits {
   bool empty() const;
 
  private:
-  uint32_t has_bits_[doublewords];
+  std::array<uint32_t, doublewords> has_bits_;
 };
 
 template <>
@@ -102,8 +105,8 @@ inline bool HasBits<4>::empty() const {
 
 template <int doublewords>
 inline bool HasBits<doublewords>::empty() const {
-  for (int i = 0; i < doublewords; ++i) {
-    if (has_bits_[i]) return false;
+  for (size_t bits : has_bits_) {
+    if (bits) return false;
   }
   return true;
 }

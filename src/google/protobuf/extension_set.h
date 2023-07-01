@@ -196,6 +196,11 @@ class PROTOBUF_EXPORT ExtensionSet {
  public:
   constexpr ExtensionSet();
   explicit ExtensionSet(Arena* arena);
+  ExtensionSet(Arena* arena, const MessageLite* extendee,
+               const ExtensionSet& rhs)
+      : ExtensionSet(arena) {
+    MergeFrom(extendee, rhs);
+  }
   ExtensionSet(ArenaInitialized, Arena* arena) : ExtensionSet(arena) {}
   ExtensionSet(const ExtensionSet&) = delete;
   ExtensionSet& operator=(const ExtensionSet&) = delete;

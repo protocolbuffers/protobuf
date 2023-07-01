@@ -195,7 +195,13 @@ class TaggedStringPtr {
   // A persisted ArenaStringPtr value is never null.
   inline bool IsNull() { return ptr_ == nullptr; }
 
+  TaggedStringPtr Copy(Arena* arena) const {
+    return IsDefault() ? *this : CopySlow(arena);
+  }
+
  private:
+  TaggedStringPtr CopySlow(Arena* arena) const;
+
   static inline void assert_aligned(const void* p) {
     ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(p) & kMask, 0UL);
   }
@@ -238,6 +244,9 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   constexpr ArenaStringPtr(ExplicitlyConstructedArenaString* default_value,
                            ConstantInitialized)
       : tagged_ptr_(default_value) {}
+
+  constexpr ArenaStringPtr(Arena* arena, const ArenaStringPtr& rhs)
+      : tagged_ptr_(rhs.tagged_ptr_.Copy(arena)) {}
 
   // Called from generated code / reflection runtime only. Resets value to point
   // to a default string pointer, with the semantics that this ArenaStringPtr

@@ -1158,9 +1158,14 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   // Internal Arena constructors: do not use!
   // TODO(b/242814184): remove non internal ctors
   explicit Map(Arena* arena) : Base(arena) { StaticValidityCheck(); }
+
   Map(internal::InternalVisibility, Arena* arena) : Map(arena) {}
   Map(internal::InternalVisibility, Arena* arena, const Map& other)
       : Map(arena, other) {}
+
+  Map(Arena* arena, const Map& rhs) : Map(arena) {
+    insert(rhs.begin(), rhs.end());
+  }
 
   Map(Map&& other) noexcept : Map() {
     if (other.arena() != nullptr) {
@@ -1197,10 +1202,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
  private:
-  Map(Arena* arena, const Map& other) : Base(arena) {
-    StaticValidityCheck();
-    insert(other.begin(), other.end());
-  }
   static_assert(!std::is_const<mapped_type>::value &&
                     !std::is_const<key_type>::value,
                 "We do not support const types.");

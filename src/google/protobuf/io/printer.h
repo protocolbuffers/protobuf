@@ -552,7 +552,7 @@ class PROTOBUF_EXPORT Printer {
   // Pushes a new variable lookup frame that stores `vars` by value.
   //
   // Returns an RAII object that pops the lookup frame.
-  auto WithVars(absl::Span<const Sub> vars);
+  auto WithVars(absl::Span<const Sub> vars, bool allow_callbacks = false);
 
   // Looks up a variable set with WithVars().
   //
@@ -1151,8 +1151,9 @@ inline auto Printer::WithDefs(absl::Span<const Sub> vars,
   });
 }
 
-inline auto Printer::WithVars(absl::Span<const Sub> vars) {
-  return WithDefs(vars, /*allow_callbacks=*/false);
+inline auto Printer::WithVars(absl::Span<const Sub> vars,
+                              bool allow_callbacks) {
+  return WithDefs(vars, allow_callbacks);
 }
 }  // namespace io
 }  // namespace protobuf

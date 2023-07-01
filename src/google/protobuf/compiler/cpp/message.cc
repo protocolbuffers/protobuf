@@ -680,76 +680,75 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    p->Emit(
-        {{"field_comment", FieldComment(field, options_)},
-         Sub("const_impl", "const;").WithSuffix(";"),
-         Sub("impl", ";").WithSuffix(";"),
-         {"sizer",
-          [&] {
-            if (!field->is_repeated()) return;
-            p->Emit({Sub("name_size", absl::StrCat(name, "_size"))
-                         .AnnotatedAs(field)},
-                    R"cc(
-                      $deprecated_attr $int $name_size$() $const_impl$;
-                    )cc");
+    p->Emit({{"field_comment", FieldComment(field, options_)},
+             Sub("const_impl", "const;").WithSuffix(";"),
+             Sub("impl", ";").WithSuffix(";"),
+             {"sizer",
+              [&] {
+                if (!field->is_repeated()) return;
+                p->Emit({Sub("name_size", absl::StrCat(name, "_size"))
+                             .AnnotatedAs(field)},
+                        R"cc(
+                          $deprecated_attr $int $name_size$() $const_impl$;
+                        )cc");
 
-            p->Emit({Sub("_internal_name_size",
-                         absl::StrCat("_internal_", name, "_size"))
-                         .AnnotatedAs(field)},
-                    R"cc(
-                      private:
-                      int $_internal_name_size$() const;
+                p->Emit({Sub("_internal_name_size",
+                             absl::StrCat("_internal_", name, "_size"))
+                             .AnnotatedAs(field)},
+                        R"cc(
+                          private:
+                          int $_internal_name_size$() const;
 
-                      public:
-                    )cc");
-          }},
-         {"hazzer",
-          [&] {
-            if (!field->has_presence()) return;
-            p->Emit({Sub("has_name", absl::StrCat("has_", name))
-                         .AnnotatedAs(field)},
-                    R"cc(
-                      $deprecated_attr $bool $has_name$() $const_impl$;
-                    )cc");
-          }},
-         {"internal_hazzer",
-          [&] {
-            if (field->is_repeated() || !HasInternalHasMethod(field)) {
-              return;
-            }
-            p->Emit(
-                {Sub("_internal_has_name", absl::StrCat("_internal_has_", name))
-                     .AnnotatedAs(field)},
-                R"cc(
-                  private:
-                  bool $_internal_has_name$() const;
+                          public:
+                        )cc");
+              }},
+             {"hazzer",
+              [&] {
+                if (!field->has_presence()) return;
+                p->Emit({Sub("has_name", absl::StrCat("has_", name))
+                             .AnnotatedAs(field)},
+                        R"cc(
+                          $deprecated_attr $bool $has_name$() $const_impl$;
+                        )cc");
+              }},
+             {"internal_hazzer",
+              [&] {
+                if (field->is_repeated() || !HasInternalHasMethod(field)) {
+                  return;
+                }
+                p->Emit({Sub("_internal_has_name",
+                             absl::StrCat("_internal_has_", name))
+                             .AnnotatedAs(field)},
+                        R"cc(
+                          private:
+                          bool $_internal_has_name$() const;
 
-                  public:
-                )cc");
-          }},
-         {"clearer",
-          [&] {
-            p->Emit({Sub("clear_name", absl::StrCat("clear_", name))
-                         .AnnotatedAs({
-                             field,
-                             Semantic::kSet,
-                         })},
-                    R"cc(
-                      $deprecated_attr $void $clear_name$() $impl$;
-                    )cc");
-          }},
-         {"accessors",
-          [&] {
-            field_generators_.get(field).GenerateAccessorDeclarations(p);
-          }}},
-        R"cc(
-          // $field_comment$
-          $sizer$;
-          $hazzer$;
-          $internal_hazzer$;
-          $clearer$;
-          $accessors$;
-        )cc");
+                          public:
+                        )cc");
+              }},
+             {"clearer",
+              [&] {
+                p->Emit({Sub("clear_name", absl::StrCat("clear_", name))
+                             .AnnotatedAs({
+                                 field,
+                                 Semantic::kSet,
+                             })},
+                        R"cc(
+                          $deprecated_attr $void $clear_name$() $impl$;
+                        )cc");
+              }},
+             {"accessors",
+              [&] {
+                field_generators_.get(field).GenerateAccessorDeclarations(p);
+              }}},
+            R"cc(
+              // $field_comment$
+              $sizer$;
+              $hazzer$;
+              $internal_hazzer$;
+              $clearer$;
+              $accessors$;
+            )cc");
   }
 
   if (descriptor_->extension_range_count() > 0) {
@@ -1148,6 +1147,271 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   GenerateOneofHasBits(p);
 }
 
+namespace {
+
+class MemberInitSeparator {
+ public:
+  explicit MemberInitSeparator(io::Printer* printer) : printer_(printer) {}
+  MemberInitSeparator(const MemberInitSeparator&) = delete;
+
+  ~MemberInitSeparator() {
+    if (separators_) printer_->Outdent();
+  }
+
+  void operator()() {
+    if (separators_++) {
+      printer_->Emit(",\n");
+    } else {
+      printer_->Emit(": ");
+      printer_->Indent();
+    }
+  }
+
+ private:
+  int separators_ = 0;
+  io::Printer* const printer_;
+};
+
+}  // namespace
+
+void MessageGenerator::GenerateSplitConstructors(io::Printer* p) const {
+  enum class InitType { kConstexpr, kArena, kArenaCopy };
+
+  if (IsMapEntryMessage(descriptor_)) return;
+  if (!ShouldSplit(descriptor_, options_)) return;
+
+  auto vars = p->WithVars(ClassVars(descriptor_, options_));
+
+  p->Emit("// --------------------------------\n");
+  p->Emit("#ifdef PROTOBUF_NEW_CONSTRUCTORS\n");
+
+  auto init_members = [&](InitType init_type) {
+    auto indent = p->WithIndent();
+    MemberInitSeparator separator(p);
+
+    for (auto* field : optimized_order_) {
+      if (!ShouldSplit(field, options_)) continue;
+
+      auto const& generator = field_generators_.get(field);
+      switch (init_type) {
+        case InitType::kConstexpr:
+          separator();
+          generator.GenerateMemberConstexprConstructor(p);
+          break;
+        case InitType::kArena:
+          if (!CanInitializeByZeroing(field, options_, scc_analyzer_)) {
+            separator();
+            generator.GenerateMemberConstructorInit(p);
+          }
+          break;
+        case InitType::kArenaCopy:
+          if (RequiresMemberInitialization(field, options_, scc_analyzer_)) {
+            separator();
+            generator.GenerateMemberCopyConstructor(p);
+          }
+          break;
+      }
+    }
+  };
+
+  // -------------------------------------------
+  // Constexpr constructor
+  // -------------------------------------------
+  p->Emit({{"impl_ctors", [&] { init_members(InitType::kConstexpr); }}},
+          R"cc(
+            inline constexpr $classname$::Impl_::Split::Split(
+                ::$proto_ns$::internal::ConstantInitialized)
+                //~
+                $impl_ctors$ {}
+          )cc");
+  p->Emit("\n");
+
+  // -------------------------------------------
+  // Regular constructor
+  // -------------------------------------------
+  p->Emit({{"ctors", [&] { init_members(InitType::kArena); }}},
+          R"cc(
+            inline $classname$::Impl_::Split::Split(::$proto_ns$::Arena* arena)
+                //~
+                $ctors$ {}
+          )cc");
+  p->Emit("\n");
+
+  // -------------------------------------------
+  // Copy constructor
+  // -------------------------------------------
+  p->Emit({{"ctors", [&] { init_members(InitType::kArenaCopy); }}},
+          R"cc(
+            inline $classname$::Impl_::Split::Split(::$proto_ns$::Arena* arena,
+                                                    const Split& rhs)
+                //~
+                $ctors$ {}
+          )cc");
+  p->Emit("\n");
+
+  p->Emit("#endif // PROTOBUF_NEW_CONSTRUCTORS\n");
+  p->Emit("// --------------------------------\n");
+}
+
+void MessageGenerator::GenerateImplConstructors(io::Printer* p) const {
+  enum class InitType { kConstexpr, kArena, kArenaCopy };
+
+  if (IsMapEntryMessage(descriptor_)) return;
+
+  auto vars = p->WithVars(ClassVars(descriptor_, options_));
+
+  p->Emit("// --------------------------------\n");
+  p->Emit("#ifdef PROTOBUF_NEW_CONSTRUCTORS\n");
+
+  auto init_members = [&](InitType init_type) {
+    auto indent = p->WithIndent();
+    MemberInitSeparator separator(p);
+
+    auto emit_cached_size = [&] {
+      if (!HasSimpleBaseClass(descriptor_, options_)) {
+        separator();
+        p->Emit("_cached_size_{}");
+      }
+    };
+
+    if (descriptor_->extension_range_count() > 0) {
+      separator();
+      if (init_type == InitType::kConstexpr) {
+        p->Emit("_extensions_{}");
+      } else if (init_type == InitType::kArena) {
+        p->Emit("_extensions_{arena}");
+      } else {
+        p->Emit(
+            "_extensions_{arena, internal_default_instance(), "
+            "rhs._extensions_}");
+      }
+    }
+
+    if (!inlined_string_indices_.empty()) {
+      bool dtor_on_demand = NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand;
+      auto values = [&] {
+        for (size_t i = 0; i < InlinedStringDonatedSize(); ++i) {
+          p->Emit(i ? ", ~0u" : dtor_on_demand ? "~0u" : "0xFFFFFFFEu");
+        }
+      };
+      separator();
+      p->Emit({{"values", values}}, "_inlined_string_donated_{{$values$}}");
+    }
+
+    if (!has_bit_indices_.empty()) {
+      separator();
+      if (init_type != InitType::kArenaCopy) {
+        p->Emit("_has_bits_{}");
+      } else {
+        p->Emit("_has_bits_{rhs._has_bits_}");
+      }
+      emit_cached_size();
+    }
+
+    for (auto* field : optimized_order_) {
+      if (ShouldSplit(field, options_)) continue;
+
+      auto const& generator = field_generators_.get(field);
+      switch (init_type) {
+        case InitType::kConstexpr:
+          separator();
+          generator.GenerateMemberConstexprConstructor(p);
+          break;
+        case InitType::kArena:
+          if (!CanInitializeByZeroing(field, options_, scc_analyzer_)) {
+            separator();
+            generator.GenerateMemberConstructorInit(p);
+          }
+          break;
+        case InitType::kArenaCopy:
+          if (RequiresMemberInitialization(field, options_, scc_analyzer_)) {
+            separator();
+            generator.GenerateMemberCopyConstructor(p);
+          }
+          break;
+      }
+    }
+
+    if (ShouldSplit(descriptor_, options_)) {
+      separator();
+      p->Emit({{"name", DefaultInstanceName(descriptor_, options_, true)}},
+              "_split_{const_cast<Split*>(&$name$._instance)}");
+    }
+
+    if (has_bit_indices_.empty()) {
+      emit_cached_size();
+    }
+    if (int count = descriptor_->real_oneof_decl_count()) {
+      separator();
+      if (init_type == InitType::kArenaCopy) {
+        auto cases = [&] {
+          for (int i = 0; i < count; i++) {
+            p->Emit({{"index", i}, {"comma", i ? ", " : ""}},
+                    "$comma$rhs._oneof_case_[$index$]");
+          }
+        };
+        p->Emit({{"cases", cases}}, "_oneof_case_{$cases$}");
+      } else {
+        p->Emit("_oneof_case_{}");
+      }
+    }
+
+    if (num_weak_fields_) {
+      separator();
+      if (init_type == InitType::kConstexpr) {
+        p->Emit("_weak_field_map_{}");
+      } else if (init_type == InitType::kArena) {
+        p->Emit("_weak_field_map_{arena}");
+      } else {
+        p->Emit("_weak_field_map_{arena, rhs._weak_field_map_}");
+      }
+    }
+
+    if (IsAnyMessage(descriptor_, options_)) {
+      separator();
+      p->Emit("_any_metadata_{&type_url_, &value_}");
+    }
+  };
+
+  // -------------------------------------------
+  // Constexpr constructors
+  // -------------------------------------------
+  p->Emit({{"impl_ctors", [&] { init_members(InitType::kConstexpr); }}},
+          R"cc(
+            inline constexpr $classname$::Impl_::Impl_(
+                ::$proto_ns$::internal::ConstantInitialized)
+                //~
+                $impl_ctors$ {}
+          )cc");
+  p->Emit("\n");
+
+  // -------------------------------------------
+  // Regular constructors
+  // -------------------------------------------
+  p->Emit({{"ctors", [&] { init_members(InitType::kArena); }}},
+          R"cc(
+            inline $classname$::Impl_::Impl_(::$proto_ns$::Arena* arena)
+                //~
+                $ctors$ {}
+          )cc");
+  p->Emit("\n");
+
+  // -------------------------------------------
+  // Copy constructor
+  // -------------------------------------------
+  p->Emit({{"ctors", [&] { init_members(InitType::kArenaCopy); }}},
+          R"cc(
+            inline $classname$::Impl_::Impl_(::$proto_ns$::Arena* arena,
+                                             const Impl_& rhs)
+                //~
+                $ctors$ {}
+          )cc");
+  p->Emit("\n");
+
+  p->Emit("#endif // PROTOBUF_NEW_CONSTRUCTORS\n");
+  p->Emit("// --------------------------------\n");
+}
+
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
@@ -1275,6 +1539,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "$classname$(::$proto_ns$::internal::ConstantInitialized);\n"
       "\n"
       "$classname$(const $classname$& from);\n"
+      "$classname$(::$proto_ns$::Arena*, const $classname$& from);\n"
       "$classname$($classname$&& from) noexcept\n"
       "  : $classname$() {\n"
       "  *this = ::std::move(from);\n"
@@ -1463,6 +1728,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "}\n");
 
   format(
+      "\n"
+      "$classname$* Copy(::$proto_ns$::Arena* arena = nullptr) const {\n"
+      "  return ::$proto_ns$::Arena::CreateMessage<$classname$>("
+      "arena, *this);\n"
+      "}\n"
       "\n"
       "// implements Message ----------------------------------------------\n"
       "\n"
@@ -1717,7 +1987,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   //     alignment.
   // (3) members assumed to align to 4 bytes.
 
-  format("struct Impl_ {\n");
+  p->Emit(R"cc(
+    struct Impl_ {
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+      explicit Impl_(::$proto_ns$::Arena* arena = nullptr);
+      constexpr Impl_($pbi$::ConstantInitialized);
+      Impl_(::$proto_ns$::Arena* arena, const Impl_& from);
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+  )cc");
   format.Indent();
 
   // Members assumed to align to 8 bytes:
@@ -1763,7 +2040,15 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     }
   }
   if (ShouldSplit(descriptor_, options_)) {
-    format("struct Split {\n");
+    p->Emit(R"cc(
+      struct Split {
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+        Split() = default;
+        constexpr Split($pbi$::ConstantInitialized);
+        Split(::$proto_ns$::Arena* arena);
+        Split(::$proto_ns$::Arena* arena, const Split& from);
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
+    )cc");
     format.Indent();
     for (auto field : optimized_order_) {
       if (!ShouldSplit(field, options_)) continue;
@@ -2008,6 +2293,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     }
   }
 
+  GenerateStructorsNew(p);
+  format("\n");
   GenerateStructors(p);
   format("\n");
 
@@ -2616,11 +2903,16 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
         //~ (warning in gcc 13).
         template <typename>
         $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
-            : _impl_{$init_body$} {}
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+            : _impl_(Impl_(::_pbi::ConstantInitialized{})){}
+#else
+            : _impl_{$init_body$} {
+        }
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
       )cc");
 }
 
-void MessageGenerator::GenerateCopyConstructorBody(io::Printer* p) const {
+void MessageGenerator::GenerateMemberCopyConstructorBody(io::Printer* p) const {
   Formatter format(p);
 
   const RunMap runs =
@@ -2835,26 +3127,35 @@ void MessageGenerator::GenerateCopyConstructorBodyOneofs(io::Printer* p) const {
 }
 
 void MessageGenerator::GenerateStructors(io::Printer* p) {
+  p->Emit("#ifndef PROTOBUF_NEW_CONSTRUCTORS\n");
+
+  auto maybe_own_destructor = [&] {
+    if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
+      p->Emit(R"cc(
+        if (arena != nullptr) {
+          arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
+        }
+      )cc");
+    }
+  };
+
   p->Emit(
       {
           {"superclass", SuperClassName(descriptor_, options_)},
           {"ctor_body",
            [&] {
              if (HasSimpleBaseClass(descriptor_, options_)) return;
-             p->Emit(R"cc(SharedCtor(arena);)cc");
-             if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
-               p->Emit(R"cc(
-                 if (arena != nullptr) {
-                   arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
-                 }
-               )cc");
-             }
+             p->Emit(R"cc(
+               SharedCtor(arena);
+             )cc");
            }},
+          {"maybe_own_destructor", maybe_own_destructor},
       },
       R"cc(
         $classname$::$classname$(::$proto_ns$::Arena* arena)
             : $superclass$(arena) {
           $ctor_body$;
+          $maybe_own_destructor$;
           // @@protoc_insertion_point(arena_constructor:$full_name$)
         }
       )cc");
@@ -2869,49 +3170,90 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       $classname$::$classname$(const $classname$& from) : $classname$() {
         MergeFrom(from);
       }
-    )cc");
-  } else if (ImplHasCopyCtor()) {
-    p->Emit(R"cc(
-      $classname$::$classname$(const $classname$& from)
-          : $superclass$(), _impl_(from._impl_) {
-        _internal_metadata_.MergeFrom<$unknown_fields_type$>(
-            from._internal_metadata_);
-        // @@protoc_insertion_point(copy_constructor:$full_name$)
+      $classname$::$classname$(::$proto_ns$::Arena* arena,
+                               const $classname$& from)
+          : $classname$(arena) {
+        MergeFrom(from);
       }
     )cc");
+  } else if (ImplHasCopyCtor()) {
+    p->Emit({{"maybe_own_destructor", maybe_own_destructor}},
+            R"cc(
+              $classname$::$classname$(const $classname$& from)
+                  : $superclass$(), _impl_(from._impl_) {
+                _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+                    from._internal_metadata_);
+                // @@protoc_insertion_point(copy_constructor:$full_name$)
+              }
+              $classname$::$classname$(::$proto_ns$::Arena* arena,
+                                       const $classname$& from)
+                  : $superclass$(), _impl_(from._impl_) {
+                $maybe_own_destructor$;
+                _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+                    from._internal_metadata_);
+                // @@protoc_insertion_point(arena_copy_constructor:$full_name$)
+              }
+            )cc");
   } else {
-    p->Emit(
-        {
-            {"copy_impl", [&] { GenerateCopyConstructorBodyImpl(p); }},
-            {"copy_extensions",
-             [&] {
-               if (descriptor_->extension_range_count() == 0) return;
-               p->Emit(R"cc(
-                 $extensions$.MergeFrom(internal_default_instance(),
-                                        from.$extensions$);
-               )cc");
-             }},
-            {"copy_body", [&] { GenerateCopyConstructorBody(p); }},
-            {"copy_oneofs", [&] { GenerateCopyConstructorBodyOneofs(p); }},
-        },
-        R"cc(
-          $classname$::$classname$(const $classname$& from) : $superclass$() {
-            $classname$* const _this = this;
-            (void)_this;
-            $copy_impl$;
-            _internal_metadata_.MergeFrom<$unknown_fields_type$>(
-                from._internal_metadata_);
-            $copy_extensions$;
-            $copy_body$;
-            $copy_oneofs$;
-
-            // @@protoc_insertion_point(copy_constructor:$full_name$)
-          }
-        )cc");
+    p->Emit({{"copy_impl", [&] { GenerateCopyConstructorBodyImpl(p); }},
+             {"copy_extensions",
+              [&] {
+                if (descriptor_->extension_range_count() == 0) return;
+                p->Emit(R"cc(
+                  $extensions$.MergeFrom(internal_default_instance(),
+                                         from.$extensions$);
+                )cc");
+              }},
+             {"copy_body", [&] { GenerateMemberCopyConstructorBody(p); }},
+             {"copy_oneofs", [&] { GenerateCopyConstructorBodyOneofs(p); }}},
+            R"cc(
+              $classname$::$classname$(const $classname$& from)
+                  : $superclass$() {
+                $classname$* const _this = this;
+                (void)_this;
+                $copy_impl$;
+                _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+                    from._internal_metadata_);
+                $copy_extensions$;
+                $copy_body$;
+                $copy_oneofs$;
+                // @@protoc_insertion_point(copy_constructor:$full_name$)
+              }
+            )cc");
+    p->Emit({{"copy_impl", [&] { GenerateCopyConstructorBodyImpl(p); }},
+             {"copy_extensions",
+              [&] {
+                if (descriptor_->extension_range_count() != 0) {
+                  p->Emit(R"cc(
+                    $extensions$.MergeFrom(internal_default_instance(),
+                                           from.$extensions$);
+                  )cc");
+                }
+              }},
+             {"copy_body", [&] { GenerateMemberCopyConstructorBody(p); }},
+             {"copy_oneofs", [&] { GenerateCopyConstructorBodyOneofs(p); }},
+             {"maybe_own_destructor", maybe_own_destructor}},
+            R"cc(
+              $classname$::$classname$(::$proto_ns$::Arena* arena,
+                                       const $classname$& from)
+                  : $superclass$(arena) {
+                $classname$* const _this = this;
+                $copy_impl$;
+                _this->_internal_metadata_.MergeFrom<$unknown_fields_type$>(
+                    from._internal_metadata_);
+                $copy_extensions$;
+                $copy_body$;
+                $copy_oneofs$;
+                $maybe_own_destructor$;
+                // @@protoc_insertion_point(arena_copy_constructor:$full_name$)
+              }
+            )cc");
   }
 
   // Generate the shared constructor code.
   GenerateSharedConstructorCode(p);
+
+  p->Emit("#endif  // PROTOBUF_NEW_CONSTRUCTORS\n");
 
   // Generate the destructor.
   if (HasSimpleBaseClass(descriptor_, options_)) {
@@ -2947,6 +3289,279 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       }
     )cc");
   }
+}
+
+void MessageGenerator::GenerateZeroInitFields(io::Printer* p) {
+  const FieldDescriptor* first = nullptr;
+
+  auto emit_zero_fields = [&](decltype(optimized_order_.begin()) end) {
+    if (first != nullptr) {
+      const FieldDescriptor* last = *(end - 1);
+      auto vars = p->WithVars({{"first", FieldMemberName(first, false)},
+                               {"last", FieldMemberName(last, false)}});
+      if (first != last) {
+        p->Emit(R"cc(
+          ::memset(&$first$, 0,
+                   reinterpret_cast<::size_t>(&$last$) -
+                       reinterpret_cast<::size_t>(&$first$) + sizeof($last$));
+        )cc");
+      } else {
+        p->Emit("$first$ = {};\n");
+      }
+      first = nullptr;
+    }
+  };
+
+  auto it = optimized_order_.begin();
+  auto end = optimized_order_.end();
+  for (; it != end && !ShouldSplit(*it, options_); ++it) {
+    if (CanInitializeByZeroing(*it, options_, scc_analyzer_)) {
+      if (first == nullptr) first = *it;
+    } else {
+      emit_zero_fields(it);
+    }
+  }
+  emit_zero_fields(it);
+}
+
+void MessageGenerator::GenerateCopyInitFields(io::Printer* p) {
+  auto begin = optimized_order_.begin();
+  auto end = optimized_order_.end();
+  const FieldDescriptor* first = nullptr;
+
+  auto emit_copy_fields = [&](decltype(end) itend, bool split) {
+    if (first != nullptr) {
+      const FieldDescriptor* last = *(itend - 1);
+      auto vars = p->WithVars({{"first", FieldMemberName(first, split)},
+                               {"last", FieldMemberName(last, split)}});
+      if (first != last) {
+        p->Emit(R"cc(
+          ::memcpy(&$first$, &rhs.$first$,
+                   reinterpret_cast<::size_t>(&$last$) -
+                       reinterpret_cast<::size_t>(&$first$) + sizeof($last$));
+        )cc");
+      } else {
+        p->Emit("$first$ = rhs.$first$;\n");
+      }
+      first = nullptr;
+    }
+  };
+
+  int has_bit_word_index = -1;
+  auto load_has_bits = [&](const FieldDescriptor* field) {
+    if (has_bit_indices_.empty()) return;
+    int has_bit_index = has_bit_indices_[field->index()];
+    if (has_bit_word_index != has_bit_index / 32) {
+      p->Emit({{"declare", has_bit_word_index < 0 ? "::uint32_t " : ""},
+               {"index", has_bit_index / 32}},
+              "$declare$cached_has_bits = _impl_._has_bits_[$index$];\n");
+      has_bit_word_index = has_bit_index / 32;
+    }
+  };
+
+  auto has_message = [&](const FieldDescriptor* field) {
+    if (has_bit_indices_.empty()) {
+      p->Emit("rhs.$field$ != nullptr");
+    } else {
+      int index = has_bit_indices_[field->index()];
+      std::string mask = absl::StrFormat("0x%08xu", 1u << (index % 32));
+      p->Emit({{"mask", mask}}, "cached_has_bits & $mask$");
+    }
+  };
+
+  auto generate_copy_fields = [&](bool split) {
+    for (auto it = begin; it != end; ++it) {
+      auto v = p->WithVars(FieldVars(*it, options_));
+      if (RequiresMemberInitialization(*it, options_, scc_analyzer_) ||
+          ShouldSplit(*it, options_) != split) {
+        emit_copy_fields(it, split);
+        continue;
+      }
+      if ((*it)->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        emit_copy_fields(it, split);
+        load_has_bits(*it);
+        p->Emit({{"has_msg", [&] { has_message(*it); }}}, R"cc(
+          $field$ = ($has_msg$) ? rhs.$field$->Copy(arena) : nullptr;
+        )cc");
+      } else if (first == nullptr) {
+        first = *it;
+      }
+    }
+    emit_copy_fields(end, split);
+  };
+
+  auto generate_copy_oneof_fields = [&]() {
+    for (const auto* oneof : OneOfRange(descriptor_)) {
+      p->Emit({{"name", oneof->name()},
+               {"NAME", absl::AsciiStrToUpper(oneof->name())},
+               {"cases",
+                [&] {
+                  for (const auto* field : FieldRange(oneof)) {
+                    p->Emit(
+                        {{"Name", UnderscoresToCamelCase(field->name(), true)},
+                         {"field", FieldMemberName(field, /*split=*/false)},
+                         {"body",
+                          [&] {
+                            field_generators_.get(field)
+                                .GenerateMemberInPlaceCopyConstruct(p);
+                          }}},
+                        R"cc(
+                          case k$Name$:
+                            $body$;
+                            break;
+                        )cc");
+                  }
+                }}},
+              R"cc(
+                switch ($name$_case()) {
+                  case $NAME$_NOT_SET:
+                    break;
+                    $cases$;
+                }
+              )cc");
+    }
+  };
+
+  p->Emit({{"copy_fields", [&] { generate_copy_fields(false); }},
+           {"copy_oneof_fields", [&] { generate_copy_oneof_fields(); }}},
+          R"cc(
+            $copy_fields$;
+            $copy_oneof_fields$;
+          )cc");
+
+  if (ShouldSplit(descriptor_, options_)) {
+    p->Emit({{"copy_split_fields", [&] { generate_copy_fields(true); }}},
+            R"cc(
+              if (PROTOBUF_PREDICT_FALSE(!rhs.IsSplitMessageDefault())) {
+                void* mem = arena ? arena->AllocateAligned(sizeof(Impl_::Split))
+                                  : ::operator new(sizeof(Impl_::Split));
+                _impl_._split_ = new (mem) Impl_::Split(arena, *rhs._impl_._split_);
+                $copy_split_fields$;
+              }
+            )cc");
+  }
+}
+
+void MessageGenerator::GenerateStructorsNew(io::Printer* p) {
+  p->Emit("#ifdef PROTOBUF_NEW_CONSTRUCTORS\n");
+
+  bool has_impl = !HasSimpleBaseClass(descriptor_, options_);
+
+  auto maybe_own_destructor = [&] {
+    if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
+      p->Emit(R"cc(
+        if (arena != nullptr) {
+          arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
+        }
+      )cc");
+    }
+  };
+
+  auto force_allocation = [&] {
+    if (!ShouldForceAllocationOnConstruction(descriptor_, options_)) return;
+    p->Emit(R"cc(
+#ifdef PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
+      $mutable_unknown_fields$;
+#endif  // PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
+    )cc");
+  };
+
+  // Generate the arena constructor.
+  p->Emit({{"superclass", SuperClassName(descriptor_, options_)},
+           {"init_impl", has_impl ? ", _impl_(arena)" : ""},
+           {"zero_init_fields", [&] { GenerateZeroInitFields(p); }},
+           {"force_allocation", force_allocation},
+           {"maybe_own_destructor", maybe_own_destructor}},
+          R"cc(
+            $classname$::$classname$(::$proto_ns$::Arena* arena)
+                : $superclass$(arena) $init_impl$ {
+              $maybe_own_destructor$;
+              $force_allocation$;
+              $zero_init_fields$;
+              // @@protoc_insertion_point(arena_constructor:$full_name$)
+            }
+          )cc");
+
+  // Generate the copy and arena copy constructor.
+  if (UsingImplicitWeakFields(descriptor_->file(), options_)) {
+    // If we are in lite mode and using implicit weak fields, we generate a
+    // one-liner copy constructor that delegates to MergeFrom. This saves some
+    // code size and also cuts down on the complexity of implicit weak fields.
+    // We might eventually want to do this for all lite protos.
+    p->Emit({{"force_allocation", force_allocation},
+             {"maybe_own_destructor", maybe_own_destructor}},
+            R"cc(
+              $classname$::$classname$(const $classname$& rhs) : $classname$() {
+                MergeFrom(rhs);
+              }
+              $classname$::$classname$(::$proto_ns$::Arena* arena,
+                                       const $classname$& rhs)
+                  : $classname$(arena) {
+                $maybe_own_destructor$;
+                $force_allocation$;
+                MergeFrom(rhs);
+              }
+            )cc");
+  } else {
+    p->Emit({{"superclass", SuperClassName(descriptor_, options_)},
+             {"init_impl", has_impl ? ", _impl_(arena, rhs._impl_)" : ""},
+             {"copy_init_fields", [&] { GenerateCopyInitFields(p); }},
+             {"force_allocation", force_allocation},
+             {"maybe_own_destructor", maybe_own_destructor}},
+            R"cc(
+              $classname$::$classname$(const $classname$& rhs)
+                  : $classname$(nullptr, rhs) {}
+
+              $classname$::$classname$(::$proto_ns$::Arena* arena,
+                                       const $classname$& rhs)
+                  : $superclass$(arena) $init_impl$ {
+                $maybe_own_destructor$;
+                _internal_metadata_.MergeFrom<$unknown_fields_type$>(rhs._internal_metadata_);
+                $force_allocation$;
+                $copy_init_fields$;
+                // @@protoc_insertion_point(copy_constructor:$full_name$)
+              }
+            )cc");
+  }
+  p->Emit("#endif  // PROTOBUF_NEW_CONSTRUCTORS\n");
+
+#ifdef THIS_PART_IS_UNCHANGED
+
+  // Generate the destructor.
+  if (HasSimpleBaseClass(descriptor_, options_)) {
+    // For messages using simple base classes, having no destructor
+    // allows our vtable to share the same destructor as every other
+    // message with a simple base class.  This works only as long as
+    // we have no fields needing destruction, of course.  (No strings
+    // or extensions)
+  } else {
+    p->Emit(
+        R"cc(
+          $classname$::~$classname$() {
+            // @@protoc_insertion_point(destructor:$full_name$)
+            _internal_metadata_.Delete<$unknown_fields_type$>();
+            SharedDtor();
+          }
+        )cc");
+  }
+
+  // Generate the shared destructor code.
+  GenerateSharedDestructorCode(p);
+
+  // Generate the arena-specific destructor code.
+  if (NeedsArenaDestructor() > ArenaDtorNeeds::kNone) {
+    GenerateArenaDestructorCode(p);
+  }
+
+  if (!HasSimpleBaseClass(descriptor_, options_)) {
+    // Generate SetCachedSize.
+    p->Emit(R"cc(
+      void $classname$::SetCachedSize(int size) const {
+        $cached_size$.Set(size);
+      }
+    )cc");
+  }
+#endif  // THIS_PART_IS_UNCHANGED
 }
 
 void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
@@ -3788,20 +4403,19 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   // If there are multiple fields in a row from the same oneof then we
   // coalesce them and emit a switch statement.  This is more efficient
-  // because it lets the C++ compiler know this is a "at most one can happen"
-  // situation. If we emitted "if (has_x()) ...; if (has_y()) ..." the C++
-  // compiler's emitted code might check has_y() even when has_x() is true.
+  // because it lets the C++ compiler know this is a "at most one can
+  // happen" situation. If we emitted "if (has_x()) ...; if (has_y()) ..."
+  // the C++ compiler's emitted code might check has_y() even when has_x()
+  // is true.
   class LazySerializerEmitter {
    public:
     LazySerializerEmitter(MessageGenerator* mg, io::Printer* p)
-        : mg_(mg),
-          p_(p),
-          cached_has_bit_index_(kNoHasbit) {}
+        : mg_(mg), p_(p), cached_has_bit_index_(kNoHasbit) {}
 
     ~LazySerializerEmitter() { Flush(); }
 
-    // If conditions allow, try to accumulate a run of fields from the same
-    // oneof, and handle them at the next Flush().
+    // If conditions allow, try to accumulate a run of fields from the
+    // same oneof, and handle them at the next Flush().
     void Emit(const FieldDescriptor* field) {
       if (!field->has_presence() || MustFlush(field)) {
         Flush();
@@ -3809,11 +4423,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       if (field->real_containing_oneof()) {
         v_.push_back(field);
       } else {
-        // TODO(ckennelly): Defer non-oneof fields similarly to oneof fields.
+        // TODO(ckennelly): Defer non-oneof fields similarly to oneof
+        // fields.
         if (HasHasbit(field) && field->has_presence()) {
-          // We speculatively load the entire _has_bits_[index] contents, even
-          // if it is for only one field.  Deferring non-oneof emitting would
-          // allow us to determine whether this is going to be useful.
+          // We speculatively load the entire _has_bits_[index] contents,
+          // even if it is for only one field.  Deferring non-oneof
+          // emitting would allow us to determine whether this is going to
+          // be useful.
           int has_bit_index = mg_->has_bit_indices_[field->index()];
           if (cached_has_bit_index_ != has_bit_index / 32) {
             // Reload.
@@ -3844,8 +4460,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     }
 
    private:
-    // If we have multiple fields in v_ then they all must be from the same
-    // oneof.  Would adding field to v_ break that invariant?
+    // If we have multiple fields in v_ then they all must be from the
+    // same oneof.  Would adding field to v_ break that invariant?
     bool MustFlush(const FieldDescriptor* field) {
       return !v_.empty() &&
              v_[0]->containing_oneof() != field->containing_oneof();
@@ -3892,12 +4508,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     int max_end_ = 0;
   };
 
-  // We need to track the largest weak field, because weak fields are serialized
-  // differently than normal fields.  The WeakFieldMap::FieldWriter will
-  // serialize all weak fields that are ordinally between the last serialized
-  // weak field and the current field.  In order to guarantee that all weak
-  // fields are serialized, we need to make sure to emit the code to serialize
-  // the largest weak field present at some point.
+  // We need to track the largest weak field, because weak fields are
+  // serialized differently than normal fields.  The
+  // WeakFieldMap::FieldWriter will serialize all weak fields that are
+  // ordinally between the last serialized weak field and the current
+  // field.  In order to guarantee that all weak fields are serialized, we
+  // need to make sure to emit the code to serialize the largest weak
+  // field present at some point.
   class LargestWeakFieldHolder {
    public:
     const FieldDescriptor* Release() {
@@ -4131,7 +4748,8 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   format(
       "::size_t $classname$::ByteSizeLong() const {\n"
       "$annotate_bytesize$"
-      "// @@protoc_insertion_point(message_byte_size_start:$full_name$)\n");
+      "// "
+      "@@protoc_insertion_point(message_byte_size_start:$full_name$)\n");
   format.Indent();
   format(
       "::size_t total_size = 0;\n"
@@ -4170,14 +4788,15 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           fields.size() > 1 && HasWordIndex(fields[0]) != kNoHasbit;
 
       if (have_outer_if) {
-        // Emit an if() that will let us skip the whole chunk if none are set.
+        // Emit an if() that will let us skip the whole chunk if none are
+        // set.
         uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
         std::string chunk_mask_str =
             absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
-        // Check (up to) 8 has_bits at a time if we have more than one field in
-        // this chunk.  Due to field layout ordering, we may check
-        // _has_bits_[last_chunk * 8 / 32] multiple times.
+        // Check (up to) 8 has_bits at a time if we have more than one
+        // field in this chunk.  Due to field layout ordering, we may
+        // check _has_bits_[last_chunk * 8 / 32] multiple times.
         ABSL_DCHECK_LE(2, popcnt(chunk_mask));
         ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
@@ -4234,13 +4853,14 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         }
       )cc");
 
-      // Reset here as it may have been updated in just closed if statement.
+      // Reset here as it may have been updated in just closed if
+      // statement.
       cached_has_word_index = -1;
     }
   }
 
-  // Fields inside a oneof don't use _has_bits_ so we count them in a separate
-  // pass.
+  // Fields inside a oneof don't use _has_bits_ so we count them in a
+  // separate pass.
   for (auto oneof : OneOfRange(descriptor_)) {
     format("switch ($1$_case()) {\n", oneof->name());
     format.Indent();
@@ -4269,23 +4889,24 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
   if (UseUnknownFieldSet(descriptor_->file(), options_)) {
     // We go out of our way to put the computation of the uncommon path of
-    // unknown fields in tail position. This allows for better code generation
-    // of this function for simple protos.
+    // unknown fields in tail position. This allows for better code
+    // generation of this function for simple protos.
     format(
-        "return MaybeComputeUnknownFieldsSize(total_size, &$cached_size$);\n");
+        "return MaybeComputeUnknownFieldsSize(total_size, "
+        "&$cached_size$);\n");
   } else {
     format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
     format("  total_size += $unknown_fields$.size();\n");
     format("}\n");
 
-    // We update _cached_size_ even though this is a const method.  Because
+    // We update _cached_size_ even though this is a const method. Because
     // const methods might be called concurrently this needs to be atomic
     // operations or the program is undefined.  In practice, since any
-    // concurrent writes will be writing the exact same value, normal writes
-    // will work on all common processors. We use a dedicated wrapper class to
-    // abstract away the underlying atomic. This makes it easier on platforms
-    // where even relaxed memory order might have perf impact to replace it with
-    // ordinary loads and stores.
+    // concurrent writes will be writing the exact same value, normal
+    // writes will work on all common processors. We use a dedicated
+    // wrapper class to abstract away the underlying atomic. This makes it
+    // easier on platforms where even relaxed memory order might have perf
+    // impact to replace it with ordinary loads and stores.
     format(
         "int cached_size = ::_pbi::ToCachedSize(total_size);\n"
         "SetCachedSize(cached_size);\n"

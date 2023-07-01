@@ -158,10 +158,17 @@ class SingularString : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
+
   void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
+
+  void GenerateMemberConstructorInit(io::Printer* p) const override;
+  void GenerateMemberCopyConstructor(io::Printer* p) const override;
+  void GenerateMemberInPlaceCopyConstruct(io::Printer* p) const override;
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override;
+
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
   void GenerateAggregateInitializer(io::Printer* p) const override;
 
@@ -665,6 +672,51 @@ void SingularString::GenerateSerializeWithCachedSizesToArray(
             $utf8_check$;
             target = stream->Write$DeclaredType$MaybeAliased($number$, _s, target);
           )cc");
+}
+
+void SingularString::GenerateMemberConstructorInit(io::Printer* p) const {
+  if (inlined_) {
+    p->Emit("$name$_{}");
+  } else {
+    p->Emit(
+        "$name$_(&$pbi$::fixed_address_empty_string, "
+        "::_pbi::ConstantInitialized{})");
+  }
+}
+
+void SingularString::GenerateMemberCopyConstructor(io::Printer* p) const {
+  if (inlined_) {
+    p->Emit(
+        "$name$_{arena, rhs.$name$_,"
+        " _inlined_string_donated_[$inlined_string_index$],"
+        " $inlined_string_mask$}");
+  } else {
+    p->Emit("$name$_{arena, rhs.$name$_}");
+  }
+}
+
+void SingularString::GenerateMemberInPlaceCopyConstruct(io::Printer* p) const {
+  if (inlined_) {
+    p->Emit(
+        "new (&$field$) decltype($field$){arena, rhs.$field$,"
+        " $inlined_string_donated_array$[$inlined_string_index$],"
+        " $inlined_string_mask$");
+  } else {
+    p->Emit("new (&$field$) decltype($field$){arena, rhs.$field$};\n");
+  }
+}
+
+void SingularString::GenerateMemberConstexprConstructor(io::Printer* p) const {
+  p->Emit("/* SingularString */");
+  if (inlined_) {
+    p->Emit("$name$_{nullptr, false}");
+  } else if (true || field_->default_value_string().empty()) {
+    p->Emit(
+        "$name$_(&$pbi$::fixed_address_empty_string, "
+        "::_pbi::ConstantInitialized{})");
+  } else {
+    p->Emit("$name$_()");
+  }
 }
 
 void SingularString::GenerateConstexprAggregateInitializer(
