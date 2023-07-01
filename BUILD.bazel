@@ -104,6 +104,12 @@ alias(
 # implementation, but are not Well-Known Types.
 
 alias(
+    name = "cpp_features_proto",
+    actual = "//src/google/protobuf:cpp_features_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "descriptor_proto",
     actual = "//src/google/protobuf:descriptor_proto",  # proto_library
     visibility = ["//visibility:public"],

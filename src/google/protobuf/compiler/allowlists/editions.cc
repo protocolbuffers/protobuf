@@ -39,9 +39,12 @@ namespace compiler {
 // NOTE: These files have early default access to go/editions.  The protoc flag
 // `--experimental_editions` can also be used to enable editions.
 
-static constexpr auto kEarlyEditionsFile = internal::MakeAllowlist({
+static constexpr auto kEarlyEditionsFile = internal::MakeAllowlist(
+    {
 // Intentionally left blank.
-});
+        "google/protobuf/editions/",
+    },
+    internal::AllowlistFlags::kMatchPrefix);
 
 bool IsEarlyEditionsFile(absl::string_view file) {
   return kEarlyEditionsFile.Allows(file);

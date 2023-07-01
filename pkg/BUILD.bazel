@@ -110,6 +110,7 @@ gen_file_lists(
         ":protoc": "libprotoc",
         # Protos:
         "//src/google/protobuf:well_known_type_protos": "wkt_protos",
+        "//src/google/protobuf:cpp_features_proto": "cpp_features_proto",
         "//src/google/protobuf:descriptor_proto": "descriptor_proto",
         "//src/google/protobuf/compiler:plugin_proto": "plugin_proto",
         # Test libraries:

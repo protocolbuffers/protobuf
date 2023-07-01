@@ -109,6 +109,7 @@ WELL_KNOWN_TYPES = [
 
 proto_library(
     name = "wkt_proto",
+    strip_import_prefix = "/src",
     visibility = ["//visibility:private"],
     deps = [wkt + "_proto" for wkt in WELL_KNOWN_TYPES],
 )
@@ -175,6 +176,14 @@ proto_library(
         "//:__pkg__",
         "//pkg:__pkg__",
     ],
+)
+
+proto_library(
+    name = "cpp_features_proto",
+    srcs = ["cpp_features.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
 )
 
 ################################################################################
@@ -419,11 +428,13 @@ cc_library(
     name = "protobuf_nowkt",
     srcs = [
         "any.cc",
+        "cpp_features.pb.cc",
         "descriptor.cc",
         "descriptor.pb.cc",
         "descriptor_database.cc",
         "dynamic_message.cc",
         "extension_set_heavy.cc",
+        "feature_resolver.cc",
         "generated_message_bases.cc",
         "generated_message_reflection.cc",
         "generated_message_tctable_full.cc",
@@ -439,12 +450,14 @@ cc_library(
         "wire_format.cc",
     ],
     hdrs = [
+        "cpp_features.pb.h",
         "descriptor.h",
         "descriptor.pb.h",
         "descriptor_database.h",
         "descriptor_legacy.h",
         "descriptor_visitor.h",
         "dynamic_message.h",
+        "feature_resolver.h",
         "field_access_listener.h",
         "generated_enum_reflection.h",
         "generated_message_bases.h",
@@ -575,6 +588,12 @@ filegroup(
 )
 
 filegroup(
+    name = "cpp_features_proto_srcs",
+    srcs = ["cpp_features.proto"],
+    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
+)
+
+filegroup(
     name = "testdata",
     srcs = glob(["testdata/**/*"]) + [
         "descriptor.cc",
@@ -630,8 +649,10 @@ filegroup(
         "unittest_embed_optimize_for.proto",
         "unittest_empty.proto",
         "unittest_enormous_descriptor.proto",
+        "unittest_features.proto",
         "unittest_import.proto",
         "unittest_import_public.proto",
+        "unittest_invalid_features.proto",
         "unittest_lazy_dependencies.proto",
         "unittest_lazy_dependencies_custom_option.proto",
         "unittest_lazy_dependencies_enum.proto",
@@ -789,6 +810,16 @@ filegroup(
     data = [
         "descriptor.pb.cc",
         "descriptor.pb.h",
+    ],
+    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
+)
+
+filegroup(
+    name = "cpp_features_cc_srcs",
+    testonly = 1,
+    data = [
+        "cpp_features.pb.cc",
+        "cpp_features.pb.h",
     ],
     visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
 )
@@ -981,7 +1012,10 @@ cc_library(
     testonly = True,
     hdrs = ["test_textproto.h"],
     strip_include_prefix = "/src",
-    visibility = ["//pkg:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf:__subpackages__",
+    ],
     deps = [
         ":protobuf",
         "@com_google_absl//absl/log:absl_check",
@@ -1039,6 +1073,23 @@ cc_test(
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/util:differencer",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "feature_resolver_test",
+    srcs = ["feature_resolver_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_textproto",
+        ":test_util",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

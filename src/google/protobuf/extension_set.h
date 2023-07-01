@@ -76,6 +76,9 @@ class Message;          // message.h
 class MessageFactory;   // message.h
 class Reflection;       // message.h
 class UnknownFieldSet;  // unknown_field_set.h
+#ifdef PROTOBUF_FUTURE_EDITIONS
+class FeatureSet;
+#endif  // PROTOBUF_FUTURE_EDITIONS
 namespace internal {
 class FieldSkipper;  // wire_format_lite.h
 class WireFormat;
@@ -83,6 +86,11 @@ enum class LazyVerifyOption;
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+#ifdef PROTOBUF_FUTURE_EDITIONS
+namespace pb {
+class CppFeatures;
+}  // namespace pb
+#endif  // PROTOBUF_FUTURE_EDITIONS
 
 namespace google {
 namespace protobuf {
@@ -1537,6 +1545,39 @@ class ExtensionIdentifier {
 extern PROTOBUF_ATTRIBUTE_WEAK ExtensionSet::LazyMessageExtension*
 MaybeCreateLazyExtension(Arena* arena);
 
+#ifdef PROTOBUF_FUTURE_EDITIONS
+// Define a specialization of ExtensionIdentifier for bootstrapped extensions
+// that we need to register lazily.
+template <>
+class ExtensionIdentifier<FeatureSet, MessageTypeTraits<::pb::CppFeatures>, 11,
+                          false> {
+ public:
+  explicit constexpr ExtensionIdentifier(int number) : number_(number) {}
+
+  int number() const { return number_; }
+  const ::pb::CppFeatures& default_value() const { return *default_value_; }
+
+  template <typename MessageType = ::pb::CppFeatures,
+            typename ExtendeeType = FeatureSet>
+  void LazyRegister(
+      const MessageType& default_instance = MessageType::default_instance(),
+      LazyEagerVerifyFnType verify_func = nullptr) const {
+    absl::call_once(once_, [&] {
+      default_value_ = &default_instance;
+      MessageTypeTraits<MessageType>::template Register<ExtendeeType>(
+          number_, 11, false, verify_func);
+    });
+  }
+
+  const ::pb::CppFeatures& default_value_ref() const { return *default_value_; }
+
+ private:
+  const int number_;
+  mutable const ::pb::CppFeatures* default_value_ = nullptr;
+  mutable absl::once_flag once_;
+};
+
+#endif  // PROTOBUF_FUTURE_EDITIONS
 
 }  // namespace internal
 

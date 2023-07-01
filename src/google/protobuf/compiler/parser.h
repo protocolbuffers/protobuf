@@ -530,6 +530,9 @@ class PROTOBUF_EXPORT Parser {
 
   // Whether fields without label default to optional fields.
   bool DefaultToOptionalFields() const {
+#ifdef PROTOBUF_FUTURE_EDITIONS
+    if (syntax_identifier_ == "editions") return true;
+#endif  // PROTOBUF_FUTURE_EDITIONS
     return syntax_identifier_ == "proto3";
   }
 
@@ -545,6 +548,9 @@ class PROTOBUF_EXPORT Parser {
   bool require_syntax_identifier_;
   bool stop_after_syntax_identifier_;
   std::string syntax_identifier_;
+#ifdef PROTOBUF_FUTURE_EDITIONS
+  std::string edition_;
+#endif  // PROTOBUF_FUTURE_EDITIONS
 
   // Leading doc comments for the next declaration.  These are not complete
   // yet; use ConsumeEndOfDeclaration() to get the complete comments.

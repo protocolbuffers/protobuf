@@ -3915,6 +3915,177 @@ TEST_F(SourceInfoTest, DocCommentsOneof) {
 
 // ===================================================================
 
+#ifdef PROTOBUF_FUTURE_EDITIONS
+typedef ParserTest ParseEditionsTest;
+
+TEST_F(ParseEditionsTest, Editions) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "super-cool";
+        message A {
+          int32 b = 1;
+        })schema",
+      "message_type \t {"
+      "  name: \"A\""
+      "  field {"
+      "    name: \"b\""
+      "    number: 1"
+      "    label: LABEL_OPTIONAL"
+      "    type: TYPE_INT32"
+      "  }"
+      "}"
+      "syntax: \"editions\""
+      "edition: \"super-cool\"\n");
+}
+
+TEST_F(ParseEditionsTest, ExtensionsParse) {
+  ExpectParsesTo(
+      R"schema(
+        edition = '2023';
+        message Foo {
+          extensions 100 to 199;
+        }
+        extend Foo { string foo = 101; })schema",
+      "message_type \t {"
+      "  name: \"Foo\""
+      "  extension_range {"
+      "    start: 100"
+      "    end: 200"
+      "  }"
+      "}"
+      "extension {"
+      "  name: \"foo\""
+      "  extendee: \"Foo\""
+      "  number: 101"
+      "  label: LABEL_OPTIONAL"
+      "  type: TYPE_STRING"
+      "}"
+      "syntax: \"editions\""
+      "edition: \"2023\"\n");
+}
+
+TEST_F(ParseEditionsTest, EmptyEdition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: A file's edition must be a nonempty string.\n");
+}
+
+TEST_F(ParseEditionsTest, SyntaxEditions) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        syntax = "editions";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:17: Unrecognized syntax identifier \"editions\".  This parser only "
+      "recognizes \"proto2\" and \"proto3\".\n");
+}
+
+TEST_F(ParseEditionsTest, MixedSyntaxAndEdition) {
+  ExpectHasErrors(
+      R"schema(
+        syntax = "proto2";
+        edition = "super-cool";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "2:8: Expected top-level statement (e.g. \"message\").\n");
+}
+
+TEST_F(ParseEditionsTest, MixedEditionAndSyntax) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "super-cool";
+        syntax = "proto2";
+        message A {
+          int32 b = 1;
+        })schema",
+      "2:8: Expected top-level statement (e.g. \"message\").\n");
+}
+
+TEST_F(ParseEditionsTest, OptionalKeywordBanned) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2023";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "3:10: Label \"optional\" is not supported in editions.  By default, all "
+      "singular fields have presence unless features.field_presence is set.\n");
+}
+
+TEST_F(ParseEditionsTest, RequiredKeywordBanned) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2023";
+        message A {
+          required int32 b = 1;
+        })schema",
+      "3:10: Label \"required\" is not supported in editions, use "
+      "features.field_presence = LEGACY_REQUIRED.\n");
+}
+
+TEST_F(ParseEditionsTest, GroupsBanned) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2023";
+        message TestMessage {
+          group TestGroup = 1 {};
+        })schema",
+      "3:10: Group syntax is no longer supported in editions. To get group "
+      "behavior you can specify features.message_encoding = DELIMITED on a "
+      "message field.\n");
+}
+
+TEST_F(ParseEditionsTest, ValidationError) {
+  ExpectHasValidationErrors(
+      R"schema(
+        edition = "2023";
+        option features.field_presence = IMPLICIT;
+        option java_package = "blah";
+        message TestMessage {
+          string foo = 1 [default = "hello"];
+        })schema",
+      "5:17: Implicit presence fields can't specify defaults.\n");
+}
+
+TEST_F(ParseEditionsTest, InvalidMerge) {
+  ExpectHasValidationErrors(
+      R"schema(
+        edition = "2023";
+        option features.field_presence = IMPLICIT;
+        option java_package = "blah";
+        message TestMessage {
+          string foo = 1 [
+            default = "hello",
+            features.field_presence = FIELD_PRESENCE_UNKNOWN,
+            features.string_field_validation = STRING_FIELD_VALIDATION_UNKNOWN
+          ];
+        })schema",
+      "5:17: Feature field google.protobuf.FeatureSet.field_presence must resolve to a "
+      "known value, found FIELD_PRESENCE_UNKNOWN\n");
+}
+
+TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {
+  ExpectHasValidationErrors(
+      R"schema(
+        syntax = "proto3";
+        option features.field_presence = IMPLICIT;
+        message TestMessage {
+          string foo = 1 [
+            default = "hello",
+            features.field_presence = EXPLICIT
+          ];
+        })schema",
+      "1:8: Features are only valid under editions.\n"
+      "4:17: Features are only valid under editions.\n");
+}
+
+#endif  // PROTOBUF_FUTURE_EDITIONS
 
 
 }  // anonymous namespace

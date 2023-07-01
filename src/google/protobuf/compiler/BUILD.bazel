@@ -294,8 +294,8 @@ cc_library(
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
-      "//pkg:__pkg__",
-      "//src/google/protobuf/compiler:__subpackages__",
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
     ],
     deps = [
         ":code_generator",

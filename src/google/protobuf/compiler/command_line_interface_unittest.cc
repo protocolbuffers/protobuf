@@ -1344,6 +1344,145 @@ TEST_F(CommandLineInterfaceTest, AllowServicesHasService) {
   ExpectGenerated("test_generator", "", "foo.proto", "Foo");
 }
 
+#ifdef PROTOBUF_FUTURE_EDITIONS
+
+TEST_F(CommandLineInterfaceTest, EditionsAreNotAllowed) {
+  CreateTempFile("foo.proto",
+                 "edition = \"very-cool\";\n"
+                 "message FooRequest {}\n");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+      "This file uses editions, but --experimental_editions has not been "
+      "enabled.");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionsFlagExplicitTrue) {
+  CreateTempFile("foo.proto",
+                 "edition = \"very-cool\";\n"
+                 "message FooRequest {}\n");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, FeaturesEditionZero) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [default = 5, features.field_presence = EXPLICIT];
+      int32 baz = 2;
+    })schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
+  CreateTempFile("net/proto2/proto/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("features.proto",
+                 R"schema(
+    syntax = "proto2";
+    package pb;
+    import "net/proto2/proto/descriptor.proto";
+    extend google.protobuf.FeatureSet {
+      optional TestFeatures test = 9999;
+    }
+    message TestFeatures {
+      optional int32 int_feature = 1 [
+        retention = RETENTION_RUNTIME,
+        targets = TARGET_TYPE_FIELD,
+        edition_defaults = { edition: "2023", value: "3" }
+      ];
+    })schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "features.proto";
+    message Foo {
+      int32 bar = 1;
+      int32 baz = 2 [features.(pb.test).int_feature = 5];
+    })schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [default = 5, features.field_presence = FIELD_PRESENCE_UNKNOWN];
+      int32 baz = 2;
+    })schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "FeatureSet.field_presence must resolve to a known value, found "
+      "FIELD_PRESENCE_UNKNOWN");
+}
+
+TEST_F(CommandLineInterfaceTest, FeatureTargetError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    message Foo {
+      option features.field_presence = IMPLICIT;
+      int32 bar = 1 [default = 5, features.field_presence = EXPLICIT];
+      int32 baz = 2;
+    })schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "FeatureSet.field_presence cannot be set on an entity of type `message`");
+}
+
+TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
+  CreateTempFile("net/proto2/proto/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("features.proto",
+                 R"schema(
+    syntax = "proto2";
+    package pb;
+    import "net/proto2/proto/descriptor.proto";
+    extend google.protobuf.FeatureSet {
+      optional TestFeatures test = 9999;
+    }
+    message TestFeatures {
+      repeated int32 repeated_feature = 1 [
+        retention = RETENTION_RUNTIME,
+        targets = TARGET_TYPE_FIELD,
+        edition_defaults = { edition: "2023", value: "3" }
+      ];
+    })schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "features.proto";
+    message Foo {
+      int32 bar = 1;
+      int32 baz = 2 [features.(pb.test).int_feature = 5];
+    })schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "Feature field pb.TestFeatures.repeated_feature is an unsupported "
+      "repeated field");
+}
+
+#endif  // PROTOBUF_FUTURE_EDITIONS
 
 
 TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing_EmptyList) {

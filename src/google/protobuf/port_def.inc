@@ -224,6 +224,10 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
               "Protobuf only supports Abseil version 20230125.3 and newer.");
 
+// Enable editions infrastructure by default.  This should be a no-op without
+// the --experimental_editions protoc flag.
+#define PROTOBUF_FUTURE_EDITIONS 1
+
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
@@ -241,10 +245,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Used to remove `RepeatedPtrField::GetArena() const`.
 // Owner: ezb@
 #define PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API 1
-
-// Used to remove Protobuf editions feature.
-// Owner: mkruskal@
-#define PROTOBUF_FUTURE_EDITIONS 1
 
 // Used to make ExtensionRange into a fully-fledged descriptor class.
 // Owner: mkruskal@
