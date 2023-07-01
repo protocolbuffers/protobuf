@@ -180,7 +180,7 @@ namespace Google.Protobuf
         /// change in the future)
         /// <list type="bullet">
         /// <item><description>Sort map entries by keys in lexicographical order or numerical order. Note: For string
-        /// keys, the order is based on comparing the Unicode value of each character in the strings.
+        /// keys, the order is based on comparing the UTF-16 code unit value of each character in the strings.
         /// The order may be different from the deterministic serialization in other languages where
         /// maps are sorted on the lexicographical order of the UTF8 encoded keys.</description></item>
         /// </list>

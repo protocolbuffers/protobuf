@@ -471,7 +471,15 @@ namespace Google.Protobuf.Collections
             // We can't sort the list in place, as that would invalidate the linked list.
             // Instead, we create a new list, sort that, and then write it out.
             var listToWrite = new List<KeyValuePair<TKey, TValue>>(listToSort);
-            listToWrite.Sort((pair1, pair2) => Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key));
+            listToWrite.Sort((pair1, pair2) =>
+            {
+                if (typeof(TKey) == typeof(string))
+                {
+                    // Use Ordinal, otherwise Comparer<string>.Default uses StringComparer.CurrentCulture
+                    return StringComparer.Ordinal.Compare(pair1.Key.ToString(), pair2.Key.ToString());
+                }
+                return Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key);
+            });
             return listToWrite;
         }
 
