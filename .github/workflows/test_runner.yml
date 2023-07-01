@@ -180,6 +180,8 @@ jobs:
     name: Staleness
     needs: [check-tag]
     uses: ./.github/workflows/staleness_check.yml
+    # Staleness tests have scheduled runs during off-hours to avoid race conditions.
+    if: ${{ github.event_name != 'schedule' }}
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
