@@ -896,6 +896,11 @@ bool IsRarelyPresent(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
+float GetPresenceProbability(const FieldDescriptor* field,
+                             const Options& options) {
+  return 1.f;
+}
+
 bool IsStringInlined(const FieldDescriptor* field, const Options& options) {
   (void)field;
   (void)options;
