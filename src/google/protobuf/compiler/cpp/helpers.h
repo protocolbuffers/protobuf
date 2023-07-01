@@ -345,10 +345,6 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
-bool IsProfileDriven(const Options& options);
-
-bool IsStringInlined(const FieldDescriptor* descriptor, const Options& options);
-
 inline bool IsCord(const FieldDescriptor* field, const Options& options) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
@@ -365,6 +361,14 @@ inline bool IsStringPiece(const FieldDescriptor* field,
          internal::cpp::EffectiveStringCType(field) ==
              FieldOptions::STRING_PIECE;
 }
+
+bool IsProfileDriven(const Options& options);
+
+// Returns true if `field` is unlikely to be present based on PDProto profile.
+bool IsRarelyPresent(const FieldDescriptor* field, const Options& options);
+
+// Returns true if `field` should be inlined based on PDProto profile.
+bool IsStringInlined(const FieldDescriptor* field, const Options& options);
 
 // Does the given FileDescriptor use lazy fields?
 bool HasLazyFields(const FileDescriptor* file, const Options& options,
@@ -384,6 +388,32 @@ bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
                            MessageSCCAnalyzer* scc_analyzer);
 
 bool IsLazilyVerifiedLazy(const FieldDescriptor* field, const Options& options);
+
+bool ShouldVerify(const Descriptor* descriptor, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer);
+bool ShouldVerify(const FileDescriptor* file, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer);
+bool ShouldVerifyRecursively(const FieldDescriptor* field);
+
+// Indicates whether to use predefined verify methods for a given message. If a
+// message is "simple" and needs no special verification per field (e.g. message
+// field, repeated packed, UTF8 string, etc.), we can use either VerifySimple or
+// VerifySimpleAlwaysCheckInt32 methods as all verification can be done based on
+// the wire type.
+//
+// Otherwise, we need "custom" verify methods tailored to a message to pass
+// which field needs a special verification; i.e. InternalVerify.
+enum class VerifySimpleType {
+  kSimpleInt32Never,   // Use VerifySimple
+  kSimpleInt32Always,  // Use VerifySimpleAlwaysCheckInt32
+  kCustom,             // Use InternalVerify and check only for int32
+  kCustomInt32Never,   // Use InternalVerify but never check for int32
+  kCustomInt32Always,  // Use InternalVerify and always check for int32
+};
+
+// Returns VerifySimpleType if messages can be verified by predefined methods.
+VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor);
+
 
 // Is the given message being split (go/pdsplit)?
 bool ShouldSplit(const Descriptor* desc, const Options& options);
@@ -1013,30 +1043,6 @@ inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 // Strips ".proto" or ".protodevel" from the end of a filename.
 PROTOC_EXPORT std::string StripProto(absl::string_view filename);
 
-bool ShouldVerify(const Descriptor* descriptor, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer);
-bool ShouldVerify(const FileDescriptor* file, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer);
-
-// Indicates whether to use predefined verify methods for a given message. If a
-// message is "simple" and needs no special verification per field (e.g. message
-// field, repeated packed, UTF8 string, etc.), we can use either VerifySimple or
-// VerifySimpleAlwaysCheckInt32 methods as all verification can be done based on
-// the wire type.
-//
-// Otherwise, we need "custom" verify methods tailored to a message to pass
-// which field needs a special verification; i.e. InternalVerify.
-enum class VerifySimpleType {
-  kSimpleInt32Never,   // Use VerifySimple
-  kSimpleInt32Always,  // Use VerifySimpleAlwaysCheckInt32
-  kCustom,             // Use InternalVerify and check only for int32
-  kCustomInt32Never,   // Use InternalVerify but never check for int32
-  kCustomInt32Always,  // Use InternalVerify and always check for int32
-};
-
-// Returns VerifySimpleType if messages can be verified by predefined methods.
-VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor);
-
 bool HasMessageFieldOrExtension(const Descriptor* desc);
 
 // Generates a vector of substitutions for use with Printer::WithVars that
@@ -1053,9 +1059,6 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
 // friends. This file needs special handling because it must be usable during
 // dynamic initialization.
 bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options);
-
-// Returns true if `field` is unlikely to be present based on PDProto profile.
-bool IsRarelyPresent(const FieldDescriptor* field, const Options& options);
 
 }  // namespace cpp
 }  // namespace compiler
