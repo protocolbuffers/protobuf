@@ -62,6 +62,7 @@
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
@@ -202,10 +203,6 @@ std::string IntTypeName(const Options& options, absl::string_view type) {
 
 
 }  // namespace
-
-bool IsRarelyPresent(const FieldDescriptor* field, const Options& options) {
-  return false;
-}
 
 bool IsLazy(const FieldDescriptor* field, const Options& options,
             MessageSCCAnalyzer* scc_analyzer) {
@@ -894,9 +891,13 @@ std::string SafeFunctionName(const Descriptor* descriptor,
 bool IsProfileDriven(const Options& options) {
   return options.access_info_map != nullptr;
 }
-bool IsStringInlined(const FieldDescriptor* descriptor,
-                     const Options& options) {
-  (void)descriptor;
+
+bool IsRarelyPresent(const FieldDescriptor* field, const Options& options) {
+  return false;
+}
+
+bool IsStringInlined(const FieldDescriptor* field, const Options& options) {
+  (void)field;
   (void)options;
   return false;
 }
@@ -936,6 +937,32 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options,
     }
   }
   return false;
+}
+
+bool ShouldVerify(const Descriptor* descriptor, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer) {
+  (void)descriptor;
+  (void)options;
+  (void)scc_analyzer;
+  return false;
+}
+
+bool ShouldVerify(const FileDescriptor* file, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer) {
+  (void)file;
+  (void)options;
+  (void)scc_analyzer;
+  return false;
+}
+
+bool ShouldVerifyRecursively(const FieldDescriptor* field) {
+  (void)field;
+  return false;
+}
+
+VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
+  (void)descriptor;
+  return VerifySimpleType::kCustom;
 }
 
 bool ShouldSplit(const Descriptor*, const Options&) { return false; }
@@ -1067,28 +1094,6 @@ bool HasEnumDefinitions(const FileDescriptor* file) {
     if (HasEnumDefinitions(file->message_type(i))) return true;
   }
   return false;
-}
-
-bool ShouldVerify(const Descriptor* descriptor, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer) {
-  (void)descriptor;
-  (void)options;
-  (void)scc_analyzer;
-  return false;
-}
-
-bool ShouldVerify(const FileDescriptor* file, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer) {
-  (void)file;
-  (void)options;
-  (void)scc_analyzer;
-  return false;
-}
-
-
-VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
-  (void)descriptor;
-  return VerifySimpleType::kCustom;
 }
 
 bool IsStringOrMessage(const FieldDescriptor* field) {
