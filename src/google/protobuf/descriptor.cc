@@ -858,6 +858,22 @@ const int FieldDescriptor::kFirstReservedNumber;
 const int FieldDescriptor::kLastReservedNumber;
 #endif
 
+class InternalFieldDescriptorHelper {
+ public:
+  static bool IsMapType(const FieldDescriptor* field,
+                        const Descriptor* message) {
+    // Maps shouldn't be lazily loaded, since the type is always nested in the
+    // message.  More importantly, lazy loading can't be done during a build.
+    if (field->type_once_) return false;
+    // Non-message fields can't be maps and aren't safe with the code below.
+    if (field->type_ != FieldDescriptor::TYPE_MESSAGE) return false;
+    // Non-map fields clearly aren't going to be the map type.
+    if (!field->is_map_message_type()) return false;
+
+    return field->type_descriptor_.message_type == message;
+  }
+};
+
 namespace {
 
 std::string EnumValueToPascalCase(const std::string& input) {
@@ -1199,6 +1215,25 @@ const FeatureSet& GetParentFeatures(const FileDescriptor* file) {
 const FeatureSet& GetParentFeatures(const Descriptor* message) {
   if (message->containing_type() == nullptr) {
     return internal::InternalFeatureHelper::GetFeatures(*message->file());
+  }
+  if (message->options().map_entry()) {
+    // For generated map messages, find the corresponding field in the
+    // containing message to use as the parent.  We generally assume that there
+    // is always exactly one such field, but if users abuse this feature there
+    // may be multiple or none.  In those cases we can't error (since
+    // proto2/proto3 now use feature inheritance), so we just use a best-effort
+    // guess.
+    //
+    // If there are multiple fields for the same map type (which isn't possible
+    // due to map validation rules), it will inherit the features of the first
+    // one.  If no fields can be found (or exist in a separate scope), it will
+    // inherit the features of its containing message/file.
+    for (int i = 0; i < message->containing_type()->field_count(); ++i) {
+      const FieldDescriptor* field = message->containing_type()->field(i);
+      if (InternalFieldDescriptorHelper::IsMapType(field, message)) {
+        return internal::InternalFeatureHelper::GetFeatures(*field);
+      }
+    }
   }
   return internal::InternalFeatureHelper::GetFeatures(
       *message->containing_type());
@@ -7962,11 +7997,22 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
 }
 
+static bool IsStringMapType(const FieldDescriptor* field) {
+  if (!field->is_map()) return false;
+  for (int i = 0; i < field->message_type()->field_count(); ++i) {
+    if (field->message_type()->field(i)->type() == FieldDescriptor::TYPE_STRING)
+      return true;
+  }
+  return false;
+}
+
 void DescriptorBuilder::ValidateFieldFeatures(
     const FieldDescriptor* field, const FieldDescriptorProto& proto) {
 #ifdef PROTOBUF_FUTURE_EDITIONS
   // Rely on our legacy validation for proto2/proto3 files.
-  if (IsLegacyFeatureSet(field->features())) return;
+  if (IsLegacyFeatureSet(field->features())) {
+    return;
+  }
 
   // Validate fully resolved features.
   if (field->has_default_value() &&
@@ -7989,25 +8035,25 @@ void DescriptorBuilder::ValidateFieldFeatures(
   // Validate explicitly specified features on the field proto.
   if ((field->containing_oneof() != nullptr || field->is_repeated() ||
        field->message_type() != nullptr) &&
-      proto.options().features().field_presence() == FeatureSet::IMPLICIT) {
+      field->proto_features_->field_presence() == FeatureSet::IMPLICIT) {
     AddError(
         field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
         "Only singular scalar fields can specify implicit field presence.");
   }
   if ((field->containing_oneof() != nullptr || field->is_repeated()) &&
-      proto.options().features().field_presence() ==
-          FeatureSet::LEGACY_REQUIRED) {
+      field->proto_features_->field_presence() == FeatureSet::LEGACY_REQUIRED) {
     AddError(
         field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
         "Only singular scalar fields can specify required field presence.");
   }
   if (field->type() != FieldDescriptor::TYPE_STRING &&
-      proto.options().features().has_string_field_validation()) {
+      !IsStringMapType(field) &&
+      field->proto_features_->has_string_field_validation()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Only string fields can specify `string_field_validation`.");
   }
   if (!field->is_repeated() &&
-      proto.options().features().has_repeated_field_encoding()) {
+      field->proto_features_->has_repeated_field_encoding()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Only repeated fields can specify `repeated_field_encoding`.");
   }

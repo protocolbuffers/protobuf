@@ -1146,6 +1146,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   friend class FileDescriptor;
   friend class Descriptor;
   friend class OneofDescriptor;
+  friend class InternalFieldDescriptorHelper;
 };
 
 #ifdef PROTOBUF_FUTURE_EDITIONS

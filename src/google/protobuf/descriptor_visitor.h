@@ -94,10 +94,14 @@ struct VisitImpl {
       Visit(*descriptor.oneof_decl(i), proto.oneof_decl(i)...);
     }
 
+    // Fields must be visited *after* oneofs that can be a parent node to keep
+    // in-order traversal.
     for (int i = 0; i < descriptor.field_count(); i++) {
       Visit(*descriptor.field(i), proto.field(i)...);
     }
 
+    // Nested types must be visited *after* fields that can be map types that
+    // are logically nested under the field.
     for (int i = 0; i < descriptor.nested_type_count(); i++) {
       Visit(*descriptor.nested_type(i), proto.nested_type(i)...);
     }

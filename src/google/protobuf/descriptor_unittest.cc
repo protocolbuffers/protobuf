@@ -8106,6 +8106,181 @@ TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
   EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_file_feature(), 2);
 }
 
+TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
+  constexpr absl::string_view kProtoFile = R"schema(
+    edition = "2023";
+
+    import "google/protobuf/unittest_features.proto";
+
+    option features.(pb.test).int_file_feature = 99;
+    option features.(pb.test).int_multiple_feature = 1;
+    
+    message Foo {
+      option features.(pb.test).int_message_feature = 87;
+      option features.(pb.test).int_multiple_feature = 2;
+      
+      map<string, string> map_field = 1 [
+        features.(pb.test).int_field_feature = 100,
+        features.(pb.test).int_multiple_feature = 3
+      ];
+    }
+  )schema";
+  io::ArrayInputStream input_stream(kProtoFile.data(), kProtoFile.size());
+  SimpleErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  parser.RecordErrorsTo(&error_collector);
+  FileDescriptorProto proto;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
+      << error_collector.last_error() << "\n"
+      << kProtoFile;
+  ASSERT_EQ("", error_collector.last_error());
+  proto.set_name("foo.proto");
+
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file = pool_.BuildFile(proto);
+  ASSERT_THAT(file, NotNull());
+
+  const Descriptor* map_type = file->message_type(0)->nested_type(0);
+  const FieldDescriptor* map_field = file->message_type(0)->field(0);
+  const FieldDescriptor* key = map_field->message_type()->field(0);
+  const FieldDescriptor* value = map_field->message_type()->field(1);
+
+  auto validate = [](const auto* desc) {
+    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).int_file_feature(), 99);
+    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).int_message_feature(),
+              87);
+    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).int_field_feature(),
+              100);
+    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).int_multiple_feature(),
+              3);
+  };
+
+  validate(map_type);
+  validate(map_field);
+  validate(key);
+  validate(value);
+}
+
+TEST_F(FeaturesTest, MapFieldFeaturesAbuseNoField) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: "2023"
+        options {
+          features {
+            [pb.test] { int_file_feature: 99 }
+          }
+        }
+        message_type {
+          name: "MapFieldEntry"
+          field { name: "key" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: "value"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          options {
+            map_entry: true
+            features {
+              [pb.test] { int_multiple_feature: 99 }
+            }
+          }
+        }
+        message_type {
+          name: "Foo"
+          nested_type {
+            name: "MapFieldEntry"
+            field {
+              name: "key"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_INT32
+            }
+            field {
+              name: "value"
+              number: 2
+              label: LABEL_OPTIONAL
+              type: TYPE_INT32
+            }
+            options {
+              map_entry: true
+              features {
+                [pb.test] { int_multiple_feature: 87 }
+              }
+            }
+          }
+          options {
+            features {
+              [pb.test] { int_message_feature: 99 }
+            }
+          }
+        }
+      )pb");
+
+  const Descriptor* top = file->message_type(0);
+  const Descriptor* nested = file->message_type(1)->nested_type(0);
+
+  EXPECT_EQ(GetFeatures(top).GetExtension(pb::test).int_file_feature(), 99);
+  EXPECT_EQ(GetFeatures(top).GetExtension(pb::test).int_multiple_feature(), 99);
+  EXPECT_EQ(GetFeatures(nested).GetExtension(pb::test).int_file_feature(), 99);
+  EXPECT_EQ(GetFeatures(nested).GetExtension(pb::test).int_multiple_feature(),
+            87);
+  EXPECT_EQ(GetFeatures(nested).GetExtension(pb::test).int_message_feature(),
+            99);
+}
+
+TEST_F(FeaturesTest, MapFieldFeaturesStringValidation) {
+  constexpr absl::string_view kProtoFile = R"schema(
+    edition = "2023";
+
+    message Foo {
+      map<string, string> map_field = 1 [
+        features.string_field_validation = HINT
+      ];
+      map<int32, string> map_field_value = 2 [
+        features.string_field_validation = HINT
+      ];
+      map<string, int32> map_field_key = 3 [
+        features.string_field_validation = HINT
+      ];
+    }
+  )schema";
+  io::ArrayInputStream input_stream(kProtoFile.data(), kProtoFile.size());
+  SimpleErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  parser.RecordErrorsTo(&error_collector);
+  FileDescriptorProto proto;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
+      << error_collector.last_error() << "\n"
+      << kProtoFile;
+  ASSERT_EQ("", error_collector.last_error());
+  proto.set_name("foo.proto");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = pool_.BuildFile(proto);
+  ASSERT_THAT(file, NotNull());
+
+  auto validate_map_field = [](const FieldDescriptor* map_field) {
+    const FieldDescriptor* key = map_field->message_type()->field(0);
+    const FieldDescriptor* value = map_field->message_type()->field(1);
+
+    EXPECT_FALSE(map_field->requires_utf8_validation());
+    EXPECT_FALSE(key->requires_utf8_validation());
+    EXPECT_FALSE(value->requires_utf8_validation());
+  };
+
+  validate_map_field(file->message_type(0)->field(0));
+  validate_map_field(file->message_type(0)->field(1));
+  validate_map_field(file->message_type(0)->field(2));
+}
+
 TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
@@ -9136,6 +9311,53 @@ TEST_F(FeaturesTest, InvalidFieldNonStringWithStringValidation) {
         }
       )pb",
       "foo.proto: Foo.bar: NAME: Only string fields can specify "
+      "`string_field_validation`.\n");
+}
+
+TEST_F(FeaturesTest, InvalidFieldNonStringMapWithStringValidation) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: "2023"
+        message_type {
+          name: "Foo"
+          nested_type {
+            name: "MapFieldEntry"
+            field {
+              name: "key"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_INT32
+            }
+            field {
+              name: "value"
+              number: 2
+              label: LABEL_OPTIONAL
+              type: TYPE_INT32
+            }
+            options { map_entry: true }
+          }
+          field {
+            name: "map_field"
+            number: 1
+            label: LABEL_REPEATED
+            type_name: "MapFieldEntry"
+            options {
+              uninterpreted_option {
+                name { name_part: "features" is_extension: false }
+                name {
+                  name_part: "string_field_validation"
+                  is_extension: false
+                }
+                identifier_value: "HINT"
+              }
+            }
+          }
+        }
+      )pb",
+      "foo.proto: Foo.map_field: NAME: Only string fields can specify "
       "`string_field_validation`.\n");
 }
 
