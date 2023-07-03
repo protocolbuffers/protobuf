@@ -130,14 +130,14 @@ static void GPBWriteTagWithFormat(GPBOutputBufferState *state, uint32_t fieldNum
 }
 
 static void GPBWriteRawLittleEndian32(GPBOutputBufferState *state, int32_t value) {
-  GPBWriteRawByte(state, (value)&0xFF);
+  GPBWriteRawByte(state, (value) & 0xFF);
   GPBWriteRawByte(state, (value >> 8) & 0xFF);
   GPBWriteRawByte(state, (value >> 16) & 0xFF);
   GPBWriteRawByte(state, (value >> 24) & 0xFF);
 }
 
 static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value) {
-  GPBWriteRawByte(state, (int32_t)(value)&0xFF);
+  GPBWriteRawByte(state, (int32_t)(value) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 8) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 16) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 24) & 0xFF);
