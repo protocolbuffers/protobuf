@@ -7962,6 +7962,17 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
 }
 
+static bool IsStringMapType(const FieldDescriptor* field) {
+  if (!field->is_map()) return false;
+  for (int i = 0; i < field->message_type()->field_count(); ++i) {
+    if (field->message_type()->field(i)->type() ==
+        FieldDescriptor::TYPE_STRING) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void DescriptorBuilder::ValidateFieldFeatures(
     const FieldDescriptor* field, const FieldDescriptorProto& proto) {
 #ifdef PROTOBUF_FUTURE_EDITIONS
@@ -7986,28 +7997,37 @@ void DescriptorBuilder::ValidateFieldFeatures(
              "Extensions can't be required.");
   }
 
+  if (field->containing_type() != nullptr &&
+      field->containing_type()->options().map_entry()) {
+    // Skip validation of explicit features on generated map fields.  These will
+    // be blindly propagated from the original map field, and may violate a lot
+    // of these conditions.  Note: we do still validate the user-specified map
+    // field.
+    return;
+  }
+
   // Validate explicitly specified features on the field proto.
   if ((field->containing_oneof() != nullptr || field->is_repeated() ||
        field->message_type() != nullptr) &&
-      proto.options().features().field_presence() == FeatureSet::IMPLICIT) {
+      field->proto_features_->field_presence() == FeatureSet::IMPLICIT) {
     AddError(
         field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
         "Only singular scalar fields can specify implicit field presence.");
   }
   if ((field->containing_oneof() != nullptr || field->is_repeated()) &&
-      proto.options().features().field_presence() ==
-          FeatureSet::LEGACY_REQUIRED) {
+      field->proto_features_->field_presence() == FeatureSet::LEGACY_REQUIRED) {
     AddError(
         field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
         "Only singular scalar fields can specify required field presence.");
   }
   if (field->type() != FieldDescriptor::TYPE_STRING &&
-      proto.options().features().has_string_field_validation()) {
+      !IsStringMapType(field) &&
+      field->proto_features_->has_string_field_validation()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Only string fields can specify `string_field_validation`.");
   }
   if (!field->is_repeated() &&
-      proto.options().features().has_repeated_field_encoding()) {
+      field->proto_features_->has_repeated_field_encoding()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Only repeated fields can specify `repeated_field_encoding`.");
   }
