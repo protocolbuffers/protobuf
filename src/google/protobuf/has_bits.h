@@ -45,7 +45,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-template <size_t doublewords>
+template <int doublewords>
 class HasBits {
  public:
   PROTOBUF_NDEBUG_INLINE constexpr HasBits() : has_bits_{} {}
@@ -71,7 +71,7 @@ class HasBits {
   }
 
   void Or(const HasBits<doublewords>& rhs) {
-    for (size_t i = 0; i < doublewords; i++) has_bits_[i] |= rhs.has_bits_[i];
+    for (int i = 0; i < doublewords; i++) has_bits_[i] |= rhs.has_bits_[i];
   }
 
   bool empty() const;
@@ -100,9 +100,9 @@ inline bool HasBits<4>::empty() const {
   return !(has_bits_[0] | has_bits_[1] | has_bits_[2] | has_bits_[3]);
 }
 
-template <size_t doublewords>
+template <int doublewords>
 inline bool HasBits<doublewords>::empty() const {
-  for (size_t i = 0; i < doublewords; ++i) {
+  for (int i = 0; i < doublewords; ++i) {
     if (has_bits_[i]) return false;
   }
   return true;
