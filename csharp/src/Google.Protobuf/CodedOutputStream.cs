@@ -161,13 +161,13 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Configures serialization to be deterministic.
+        /// Configures whether or not serialization is deterministic.
         /// </summary>
         /// <remarks>
-        /// The deterministic serialization guarantees that for a given binary, equal messages (defined by the
+        /// Deterministic serialization guarantees that for a given binary, equal messages (defined by the
         /// equals methods in protos) will always be serialized to the same bytes. This implies:
         /// <list type="bullet">
-        /// <item><description>Repeated serialization of a message will return the same bytes</description></item>
+        /// <item><description>Repeated serialization of a message will return the same bytes.</description></item>
         /// <item><description>Different processes of the same binary (which may be executing on different machines)
         /// will serialize equal messages to the same bytes.</description></item>
         /// </list>
