@@ -32,8 +32,9 @@ syntax = "proto2";
 
 package protobuf_editions_test.proto2;
 
+option optimize_for = LITE_RUNTIME;
 
-message Proto2Utf8Disabled {
+message Proto2Utf8Lite {
   optional string string_field = 1;
   map<string, string> map_field = 2;
 }
