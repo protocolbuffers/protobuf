@@ -209,3 +209,32 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+proto_library(
+    name = "empty_srcs_proto",
+    testonly = 1,
+    srcs = [],
+    deps = [":test_proto"],
+)
+
+proto_library(
+    name = "test_import_empty_srcs_proto",
+    testonly = 1,
+    srcs = ["test_import_empty_srcs.proto"],
+    deps = [":empty_srcs_proto"],
+)
+
+upb_proto_library(
+    name = "test_import_empty_srcs_upb_proto",
+    testonly = 1,
+    deps = [":test_import_empty_srcs_proto"],
+)
+
+cc_test(
+    name = "test_import_empty_srcs",
+    srcs = ["test_import_empty_srcs.cc"],
+    deps = [
+        ":test_import_empty_srcs_upb_proto",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

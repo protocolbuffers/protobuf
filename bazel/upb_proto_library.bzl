@@ -291,52 +291,65 @@ def _upb_proto_rule_impl(ctx):
     ]
 
 def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, provide_cc_shared_library_hints = True):
-    proto_info = target[ProtoInfo]
-    files = _compile_upb_protos(ctx, generator, proto_info, proto_info.direct_sources)
-    deps = ctx.rule.attr.deps + getattr(ctx.attr, "_" + generator)
-    dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
-    dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
-    dep_ccinfos += [dep[_UpbDefsWrappedCcInfo].cc_info for dep in deps if _UpbDefsWrappedCcInfo in dep]
-    if generator == "upbdefs":
-        if UpbWrappedCcInfo not in target:
-            fail("Target should have UpbWrappedCcInfo provider")
-        dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
     name = ctx.rule.attr.name + "." + generator
     owners = [ctx.label.relative(name)]
-    cc_info = _cc_library_func(
-        ctx = ctx,
-        name = name,
-        hdrs = files.hdrs,
-        srcs = files.srcs,
-        includes = files.includes,
-        copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
-        dep_ccinfos = dep_ccinfos,
-    )
 
-    if files.thunks:
-        name_thunks = ctx.rule.attr.name + "." + generator + ".thunks"
-        owners.append(ctx.label.relative(name_thunks))
-        cc_info_with_thunks = _cc_library_func(
+    providers = []
+    if not getattr(ctx.rule.attr, "srcs", []):
+        # This target doesn't declare any sources, reexport all its deps instead.
+        deps = ctx.rule.attr.deps
+        providers += [cc_provider(cc_info = dep[CcInfo]) for dep in deps if CcInfo in dep]
+        providers += [dep[UpbWrappedCcInfo] for dep in deps if UpbWrappedCcInfo in dep]
+        providers += [dep[_UpbDefsWrappedCcInfo] for dep in deps if _UpbDefsWrappedCcInfo in dep]
+        providers += [dep[_UpbWrappedGeneratedSrcsInfo] for dep in deps if _UpbWrappedGeneratedSrcsInfo in dep]
+        providers += [dep[_WrappedDefsGeneratedSrcsInfo] for dep in deps if _WrappedDefsGeneratedSrcsInfo in dep]
+    else:
+        proto_info = target[ProtoInfo]
+        files = _compile_upb_protos(ctx, generator, proto_info, proto_info.direct_sources)
+        deps = ctx.rule.attr.deps + getattr(ctx.attr, "_" + generator)
+        dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
+        dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
+        dep_ccinfos += [dep[_UpbDefsWrappedCcInfo].cc_info for dep in deps if _UpbDefsWrappedCcInfo in dep]
+        if generator == "upbdefs":
+            if UpbWrappedCcInfo not in target:
+                fail("Target should have UpbWrappedCcInfo provider")
+            dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
+
+        cc_info = _cc_library_func(
             ctx = ctx,
-            name = name_thunks,
-            hdrs = [],
-            srcs = files.thunks,
+            name = name,
+            hdrs = files.hdrs,
+            srcs = files.srcs,
             includes = files.includes,
             copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
-            dep_ccinfos = dep_ccinfos + [cc_info],
+            dep_ccinfos = dep_ccinfos,
         )
-        wrapped_cc_info = cc_provider(
-            cc_info = cc_info,
-            cc_info_with_thunks = cc_info_with_thunks,
-        )
-    else:
-        wrapped_cc_info = cc_provider(
-            cc_info = cc_info,
-        )
-    providers = [
-        wrapped_cc_info,
-        file_provider(srcs = files),
-    ]
+
+        if files.thunks:
+            name_thunks = ctx.rule.attr.name + "." + generator + ".thunks"
+            owners.append(ctx.label.relative(name_thunks))
+            cc_info_with_thunks = _cc_library_func(
+                ctx = ctx,
+                name = name_thunks,
+                hdrs = [],
+                srcs = files.thunks,
+                includes = files.includes,
+                copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
+                dep_ccinfos = dep_ccinfos + [cc_info],
+            )
+            wrapped_cc_info = cc_provider(
+                cc_info = cc_info,
+                cc_info_with_thunks = cc_info_with_thunks,
+            )
+        else:
+            wrapped_cc_info = cc_provider(
+                cc_info = cc_info,
+            )
+        providers += [
+            wrapped_cc_info,
+            file_provider(srcs = files),
+        ]
+
     if provide_cc_shared_library_hints:
         if hasattr(cc_common, "CcSharedLibraryHintInfo"):
             providers.append(cc_common.CcSharedLibraryHintInfo(owners = owners))
