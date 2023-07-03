@@ -44,6 +44,7 @@
 #ifndef GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__
 #define GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__
 
+#include <cstddef>
 #include <utility>
 
 #ifdef _MSC_VER
@@ -59,6 +60,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
 #include "absl/base/attributes.h"
+#include "absl/container/internal/layout.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
@@ -144,6 +146,91 @@ struct IsMovable
     : std::integral_constant<bool, std::is_move_constructible<T>::value &&
                                        std::is_move_assignable<T>::value> {};
 
+// A wrapper to a pointer to a dynamically allocated memory that represents:
+//  - number of allocated elements (accessed by `num_allocated`);
+//  - pointers to all elements where first `num_allocated()` are allocated.
+class ElementsRep {
+ public:
+  using Element = void*;
+
+ private:
+  using RepLayout = absl::container_internal::Layout<int, void*>;
+
+  static constexpr auto kPartialLayout = RepLayout::Partial(1);
+
+ public:
+  static constexpr size_t kHeaderSize = kPartialLayout.Offset<1>();
+
+  static size_t BytesNeeded(size_t num_elements) {
+    RepLayout layout(1, num_elements);
+    return layout.AllocSize();
+  }
+  static size_t MaxElements(size_t bytes) {
+    size_t n = (bytes - kHeaderSize) / sizeof(Element);
+    ABSL_CHECK_LE(ElementsRep::BytesNeeded(n), bytes);
+    return n;
+  }
+
+  constexpr explicit ElementsRep(std::nullptr_t) : ptr_(nullptr) {}
+  constexpr explicit ElementsRep(unsigned char* ptr) : ptr_(ptr) {}
+
+  ElementsRep(const ElementsRep&) = default;
+  ElementsRep& operator=(const ElementsRep&) = default;
+
+  bool allocated() const { return ptr_ != nullptr; }
+  unsigned char* data() { return ptr_; }
+
+  inline int num_allocated() const {
+    ABSL_DCHECK(allocated());
+    return *kPartialLayout.Pointer<0>(ptr_);
+  }
+  inline int& num_allocated() {
+    ABSL_DCHECK(allocated());
+    return *kPartialLayout.Pointer<0>(ptr_);
+  }
+  inline Element* elements() {
+    ABSL_DCHECK(allocated());
+    return kPartialLayout.Pointer<1>(ptr_);
+  }
+  inline Element const* elements() const {
+    ABSL_DCHECK(allocated());
+    return kPartialLayout.Pointer<1>(ptr_);
+  }
+
+  template <typename TypeHandler>
+  inline typename TypeHandler::Type* const* typed_elements() const {
+    return reinterpret_cast<typename TypeHandler::Type* const*>(elements());
+  }
+  template <typename TypeHandler>
+  inline typename TypeHandler::Type** typed_elements() {
+    return reinterpret_cast<typename TypeHandler::Type**>(elements());
+  }
+
+  template <typename TypeHandler>
+  inline const typename TypeHandler::Type* typed_element(size_t index) const {
+    return reinterpret_cast<const typename TypeHandler::Type*>(
+        elements()[index]);
+  }
+  template <typename TypeHandler>
+  inline typename TypeHandler::Type* typed_element(size_t index) {
+    return reinterpret_cast<typename TypeHandler::Type*>(elements()[index]);
+  }
+
+  template <typename TypeHandler>
+  size_t SpaceUsedExcludingSelfLong() const {
+    if (!allocated()) return 0;
+    size_t allocated_bytes = kPartialLayout.Offset<1>();
+    for (int i = 0; i < num_allocated(); ++i) {
+      allocated_bytes +=
+          TypeHandler::SpaceUsedLong(*typed_element<TypeHandler>(i));
+    }
+    return allocated_bytes;
+  }
+
+ private:
+  unsigned char* ptr_;
+};
+
 // This is the common base class for RepeatedPtrFields.  It deals only in void*
 // pointers.  Users should not use this interface directly.
 //
@@ -188,29 +275,29 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   const typename TypeHandler::Type& at(int index) const {
     ABSL_CHECK_GE(index, 0);
     ABSL_CHECK_LT(index, current_size_);
-    return *cast<TypeHandler>(rep_->elements[index]);
+    return *rep_.typed_element<TypeHandler>(index);
   }
 
   template <typename TypeHandler>
   typename TypeHandler::Type& at(int index) {
     ABSL_CHECK_GE(index, 0);
     ABSL_CHECK_LT(index, current_size_);
-    return *cast<TypeHandler>(rep_->elements[index]);
+    return *rep_.typed_element<TypeHandler>(index);
   }
 
   template <typename TypeHandler>
   typename TypeHandler::Type* Mutable(int index) {
     ABSL_DCHECK_GE(index, 0);
     ABSL_DCHECK_LT(index, current_size_);
-    return cast<TypeHandler>(rep_->elements[index]);
+    return rep_.typed_element<TypeHandler>(index);
   }
 
   template <typename TypeHandler>
   typename TypeHandler::Type* Add(
       const typename TypeHandler::Type* prototype = nullptr) {
-    if (rep_ != nullptr && current_size_ < rep_->allocated_size) {
-      return cast<TypeHandler>(
-          rep_->elements[ExchangeCurrentSize(current_size_ + 1)]);
+    if (rep_.allocated() && current_size_ < rep_.num_allocated()) {
+      return rep_.typed_element<TypeHandler>(
+          ExchangeCurrentSize(current_size_ + 1));
     }
     typename TypeHandler::Type* result =
         TypeHandler::NewFromPrototype(prototype, arena_);
@@ -222,44 +309,40 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       typename TypeHandler,
       typename std::enable_if<TypeHandler::Movable::value>::type* = nullptr>
   inline void Add(typename TypeHandler::Type&& value) {
-    if (rep_ != nullptr && current_size_ < rep_->allocated_size) {
-      *cast<TypeHandler>(
-          rep_->elements[ExchangeCurrentSize(current_size_ + 1)]) =
+    if (rep_.allocated() && current_size_ < rep_.num_allocated()) {
+      *rep_.typed_element<TypeHandler>(ExchangeCurrentSize(current_size_ + 1)) =
           std::move(value);
       return;
     }
-    if (!rep_ || rep_->allocated_size == total_size_) {
+    if (!rep_.allocated() || rep_.num_allocated() == total_size_) {
       Reserve(total_size_ + 1);
     }
-    ++rep_->allocated_size;
-    typename TypeHandler::Type* result =
+    ++rep_.num_allocated();
+    rep_.elements()[ExchangeCurrentSize(current_size_ + 1)] =
         TypeHandler::New(arena_, std::move(value));
-    rep_->elements[ExchangeCurrentSize(current_size_ + 1)] = result;
   }
 
   template <typename TypeHandler>
   void Delete(int index) {
     ABSL_DCHECK_GE(index, 0);
     ABSL_DCHECK_LT(index, current_size_);
-    TypeHandler::Delete(cast<TypeHandler>(rep_->elements[index]), arena_);
+    TypeHandler::Delete(rep_.typed_element<TypeHandler>(index), arena_);
   }
 
   // Must be called from destructor.
   template <typename TypeHandler>
   void Destroy() {
-    if (rep_ != nullptr && arena_ == nullptr) {
-      int n = rep_->allocated_size;
-      void* const* elements = rep_->elements;
+    if (rep_.allocated() && arena_ == nullptr) {
+      int n = rep_.num_allocated();
       for (int i = 0; i < n; i++) {
-        TypeHandler::Delete(cast<TypeHandler>(elements[i]), nullptr);
+        TypeHandler::Delete(rep_.typed_element<TypeHandler>(i), nullptr);
       }
-      const size_t size = total_size_ * sizeof(elements[0]) + kRepHeaderSize;
-      internal::SizedDelete(rep_, size);
+      internal::SizedDelete(rep_.data(), ElementsRep::BytesNeeded(total_size_));
     }
-    rep_ = nullptr;
+    rep_ = ElementsRep(nullptr);
   }
 
-  bool NeedsDestroy() const { return rep_ != nullptr && arena_ == nullptr; }
+  bool NeedsDestroy() const { return rep_.allocated() && arena_ == nullptr; }
   void DestroyProtos();  // implemented in the cc file
 
  public:
@@ -271,7 +354,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   const typename TypeHandler::Type& Get(int index) const {
     ABSL_DCHECK_GE(index, 0);
     ABSL_DCHECK_LT(index, current_size_);
-    return *cast<TypeHandler>(rep_->elements[index]);
+    return *rep_.typed_element<TypeHandler>(index);
   }
 
   // Creates and adds an element using the given prototype, without introducing
@@ -324,7 +407,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     if (current_size_ == total_size_) {
       InternalExtend(1);
     }
-    return rep_->allocated_size == current_size_;
+    return rep_.num_allocated() == current_size_;
   }
 
   // Similar to `AddAllocated` but faster.
@@ -332,14 +415,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // or other calls to `AddAllocatedForParse`.
   template <typename TypeHandler>
   void AddAllocatedForParse(typename TypeHandler::Type* value) {
-    PROTOBUF_ASSUME(rep_ != nullptr);
-    PROTOBUF_ASSUME(current_size_ == rep_->allocated_size);
     if (current_size_ == total_size_) {
       // The array is completely full with no cleared objects, so grow it.
       InternalExtend(1);
     }
-    rep_->elements[current_size_++] = value;
-    ++rep_->allocated_size;
+    rep_.typed_elements<TypeHandler>()[current_size_++] = value;
+    ++rep_.num_allocated();
   }
 
  protected:
@@ -347,7 +428,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void RemoveLast() {
     ABSL_DCHECK_GT(current_size_, 0);
     ExchangeCurrentSize(current_size_ - 1);
-    TypeHandler::Clear(cast<TypeHandler>(rep_->elements[current_size_]));
+    TypeHandler::Clear(rep_.typed_element<TypeHandler>(current_size_));
   }
 
   template <typename TypeHandler>
@@ -370,24 +451,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   // Used for constructing iterators.
-  void* const* raw_data() const { return rep_ ? rep_->elements : nullptr; }
+  void* const* raw_data() const {
+    return rep_.allocated() ? rep_.elements() : nullptr;
+  }
   void** raw_mutable_data() const {
-    return rep_ ? const_cast<void**>(rep_->elements) : nullptr;
+    return rep_.allocated() ? const_cast<void**>(rep_.elements()) : nullptr;
   }
 
   template <typename TypeHandler>
   typename TypeHandler::Type** mutable_data() {
-    // TODO(kenton):  Breaks C++ aliasing rules.  We should probably remove this
-    //   method entirely.
-    return reinterpret_cast<typename TypeHandler::Type**>(raw_mutable_data());
+    return rep_.allocated() ? rep_.typed_elements<TypeHandler>() : nullptr;
   }
 
   template <typename TypeHandler>
   const typename TypeHandler::Type* const* data() const {
-    // TODO(kenton):  Breaks C++ aliasing rules.  We should probably remove this
-    //   method entirely.
-    return reinterpret_cast<const typename TypeHandler::Type* const*>(
-        raw_data());
+    return rep_.allocated() ? rep_.typed_elements<TypeHandler>() : nullptr;
   }
 
   template <typename TypeHandler>
@@ -407,20 +485,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   void SwapElements(int index1, int index2) {
     using std::swap;  // enable ADL with fallback
-    swap(rep_->elements[index1], rep_->elements[index2]);
+    swap(rep_.elements()[index1], rep_.elements()[index2]);
   }
 
   template <typename TypeHandler>
   size_t SpaceUsedExcludingSelfLong() const {
     size_t allocated_bytes = static_cast<size_t>(total_size_) * sizeof(void*);
-    if (rep_ != nullptr) {
-      for (int i = 0; i < rep_->allocated_size; ++i) {
-        allocated_bytes +=
-            TypeHandler::SpaceUsedLong(*cast<TypeHandler>(rep_->elements[i]));
-      }
-      allocated_bytes += kRepHeaderSize;
-    }
-    return allocated_bytes;
+    return allocated_bytes + rep_.SpaceUsedExcludingSelfLong<TypeHandler>();
   }
 
   // Advanced memory management --------------------------------------
@@ -428,12 +499,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Like Add(), but if there are no cleared objects to use, returns nullptr.
   template <typename TypeHandler>
   typename TypeHandler::Type* AddFromCleared() {
-    if (rep_ != nullptr && current_size_ < rep_->allocated_size) {
-      return cast<TypeHandler>(
-          rep_->elements[ExchangeCurrentSize(current_size_ + 1)]);
-    } else {
+    if (!rep_.allocated() || current_size_ >= rep_.num_allocated())
       return nullptr;
-    }
+    return rep_.typed_element<TypeHandler>(
+        ExchangeCurrentSize(current_size_ + 1));
   }
 
   template <typename TypeHandler>
@@ -445,28 +514,28 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   void UnsafeArenaAddAllocated(typename TypeHandler::Type* value) {
     // Make room for the new pointer.
-    if (!rep_ || current_size_ == total_size_) {
+    if (!rep_.allocated() || current_size_ == total_size_) {
       // The array is completely full with no cleared objects, so grow it.
       Reserve(total_size_ + 1);
-      ++rep_->allocated_size;
-    } else if (rep_->allocated_size == total_size_) {
+      ++rep_.num_allocated();
+    } else if (rep_.num_allocated() == total_size_) {
       // There is no more space in the pointer array because it contains some
       // cleared objects awaiting reuse.  We don't want to grow the array in
       // this case because otherwise a loop calling AddAllocated() followed by
       // Clear() would leak memory.
-      TypeHandler::Delete(cast<TypeHandler>(rep_->elements[current_size_]),
+      TypeHandler::Delete(rep_.typed_element<TypeHandler>(current_size_),
                           arena_);
-    } else if (current_size_ < rep_->allocated_size) {
+    } else if (current_size_ < rep_.num_allocated()) {
       // We have some cleared objects.  We don't care about their order, so we
       // can just move the first one to the end to make space.
-      rep_->elements[rep_->allocated_size] = rep_->elements[current_size_];
-      ++rep_->allocated_size;
+      rep_.elements()[rep_.num_allocated()] = rep_.elements()[current_size_];
+      ++rep_.num_allocated();
     } else {
       // There are no cleared objects.
-      ++rep_->allocated_size;
+      ++rep_.num_allocated();
     }
 
-    rep_->elements[ExchangeCurrentSize(current_size_ + 1)] = value;
+    rep_.elements()[ExchangeCurrentSize(current_size_ + 1)] = value;
   }
 
   template <typename TypeHandler>
@@ -482,19 +551,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   typename TypeHandler::Type* UnsafeArenaReleaseLast() {
     ABSL_DCHECK_GT(current_size_, 0);
     ExchangeCurrentSize(current_size_ - 1);
-    typename TypeHandler::Type* result =
-        cast<TypeHandler>(rep_->elements[current_size_]);
-    --rep_->allocated_size;
-    if (current_size_ < rep_->allocated_size) {
+    auto* result = rep_.typed_element<TypeHandler>(current_size_);
+    --rep_.num_allocated();
+    if (current_size_ < rep_.num_allocated()) {
       // There are cleared elements on the end; replace the removed element
       // with the last allocated element.
-      rep_->elements[current_size_] = rep_->elements[rep_->allocated_size];
+      rep_.elements()[current_size_] = rep_.elements()[rep_.num_allocated()];
     }
     return result;
   }
 
   int ClearedCount() const {
-    return rep_ ? (rep_->allocated_size - current_size_) : 0;
+    return rep_.allocated() ? (rep_.num_allocated() - current_size_) : 0;
   }
 
   template <typename TypeHandler>
@@ -504,10 +572,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
            "RepeatedPtrField not on an arena.";
     ABSL_DCHECK(TypeHandler::GetOwningArena(value) == nullptr)
         << "AddCleared() can only accept values not on an arena.";
-    if (!rep_ || rep_->allocated_size == total_size_) {
+    if (!rep_.allocated() || rep_.num_allocated() == total_size_) {
       Reserve(total_size_ + 1);
     }
-    rep_->elements[rep_->allocated_size++] = value;
+    rep_.elements()[rep_.num_allocated()++] = value;
   }
 
   template <typename TypeHandler>
@@ -515,9 +583,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK(GetOwningArena() == nullptr)
         << "ReleaseCleared() can only be used on a RepeatedPtrField not on "
         << "an arena.";
-    ABSL_DCHECK(rep_ != nullptr);
-    ABSL_DCHECK_GT(rep_->allocated_size, current_size_);
-    return cast<TypeHandler>(rep_->elements[--rep_->allocated_size]);
+    ABSL_DCHECK(rep_.allocated());
+    ABSL_DCHECK_GT(rep_.num_allocated(), current_size_);
+    return rep_.typed_element<TypeHandler>(--rep_.num_allocated());
   }
 
   template <typename TypeHandler>
@@ -526,18 +594,19 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     Arena* element_arena =
         reinterpret_cast<Arena*>(TypeHandler::GetOwningArena(value));
     Arena* arena = GetOwningArena();
-    if (arena == element_arena && rep_ && rep_->allocated_size < total_size_) {
+    if (arena == element_arena && rep_.allocated() &&
+        rep_.num_allocated() < total_size_) {
       // Fast path: underlying arena representation (tagged pointer) is equal to
       // our arena pointer, and we can add to array without resizing it (at
       // least one slot that is not allocated).
-      void** elems = rep_->elements;
-      if (current_size_ < rep_->allocated_size) {
+      void** elems = rep_.elements();
+      if (current_size_ < rep_.num_allocated()) {
         // Make space at [current] by moving first allocated element to end of
         // allocated list.
-        elems[rep_->allocated_size] = elems[current_size_];
+        elems[rep_.num_allocated()] = elems[current_size_];
       }
       elems[ExchangeCurrentSize(current_size_ + 1)] = value;
-      rep_->allocated_size = rep_->allocated_size + 1;
+      ++rep_.num_allocated();
     } else {
       AddAllocatedSlowWithCopy<TypeHandler>(value, element_arena, arena);
     }
@@ -548,18 +617,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // AddAllocated version that does not implement arena-safe copying
       // behavior.
       typename TypeHandler::Type* value, std::false_type) {
-    if (rep_ && rep_->allocated_size < total_size_) {
+    if (rep_.allocated() && rep_.num_allocated() < total_size_) {
       // Fast path: underlying arena representation (tagged pointer) is equal to
       // our arena pointer, and we can add to array without resizing it (at
       // least one slot that is not allocated).
-      void** elems = rep_->elements;
-      if (current_size_ < rep_->allocated_size) {
+      void** elems = rep_.elements();
+      if (current_size_ < rep_.num_allocated()) {
         // Make space at [current] by moving first allocated element to end of
         // allocated list.
-        elems[rep_->allocated_size] = elems[current_size_];
+        elems[rep_.num_allocated()] = elems[current_size_];
       }
       elems[ExchangeCurrentSize(current_size_ + 1)] = value;
-      ++rep_->allocated_size;
+      ++rep_.num_allocated();
     } else {
       UnsafeArenaAddAllocated<TypeHandler>(value);
     }
@@ -653,11 +722,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   static constexpr int kInitialSize = 0;
   // A few notes on internal representation:
   //
-  // We use an indirected approach, with struct Rep, to keep
+  // We use an indirected approach, with `ElementsRep`, to keep
   // sizeof(RepeatedPtrFieldBase) equivalent to what it was before arena support
-  // was added; namely, 3 8-byte machine words on x86-64. An instance of Rep is
-  // allocated only when the repeated field is non-empty, and it is a
-  // dynamically-sized struct (the header is directly followed by elements[]).
+  // was added; namely, 3 8-byte machine words on x86-64.
   // We place arena_ and current_size_ directly in the object to avoid cache
   // misses due to the indirection, because these fields are checked frequently.
   // Placing all fields directly in the RepeatedPtrFieldBase instance would cost
@@ -665,6 +732,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   Arena* arena_;
   int current_size_;
   int total_size_;
+  // Holds pointers to elements as well as the number of allocated elements.
+  ElementsRep rep_;
 
   // Replaces current_size_ with new_size and returns the previous value of
   // current_size_. This function is intended to be the only place where
@@ -675,37 +744,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return prev_size;
   }
 
-  struct Rep {
-    int allocated_size;
-    // Here we declare a huge array as a way of approximating C's "flexible
-    // array member" feature without relying on undefined behavior.
-    void* elements[(std::numeric_limits<int>::max() - 2 * sizeof(int)) /
-                   sizeof(void*)];
-  };
-  static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
-  Rep* rep_;
-
-  template <typename TypeHandler>
-  static inline typename TypeHandler::Type* cast(void* element) {
-    return reinterpret_cast<typename TypeHandler::Type*>(element);
-  }
-  template <typename TypeHandler>
-  static inline const typename TypeHandler::Type* cast(const void* element) {
-    return reinterpret_cast<const typename TypeHandler::Type*>(element);
-  }
 
   // Out-of-line helper routine for Clear() once the inlined check has
   // determined the container is non-empty
   template <typename TypeHandler>
   PROTOBUF_NOINLINE void ClearNonEmpty() {
     const int n = current_size_;
-    void* const* elements = rep_->elements;
     int i = 0;
     ABSL_DCHECK_GT(
         n,
         0);  // do/while loop to avoid initial test because we know n > 0
     do {
-      TypeHandler::Clear(cast<TypeHandler>(elements[i++]));
+      TypeHandler::Clear(rep_.typed_element<TypeHandler>(i++));
     } while (i < n);
     ExchangeCurrentSize(0);
   }
@@ -714,25 +764,26 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // pointer to the type-specific (templated) inner allocate/merge loop.
   PROTOBUF_NOINLINE void MergeFromInternal(
       const RepeatedPtrFieldBase& other,
-      void (RepeatedPtrFieldBase::*inner_loop)(void**, void**, int, int)) {
+      void (RepeatedPtrFieldBase::*inner_loop)(void**, void* const*, int,
+                                               int)) {
     // Note: wrapper has already guaranteed that other.rep_ != nullptr here.
     int other_size = other.current_size_;
-    void** other_elements = other.rep_->elements;
+    void* const* other_elements = other.rep_.elements();
     void** new_elements = InternalExtend(other_size);
-    int allocated_elems = rep_->allocated_size - current_size_;
+    int allocated_elems = rep_.num_allocated() - current_size_;
     (this->*inner_loop)(new_elements, other_elements, other_size,
                         allocated_elems);
     ExchangeCurrentSize(current_size_ + other_size);
-    if (rep_->allocated_size < current_size_) {
-      rep_->allocated_size = current_size_;
+    if (rep_.num_allocated() < current_size_) {
+      rep_.num_allocated() = current_size_;
     }
   }
 
   // Merges other_elems to our_elems.
   template <typename TypeHandler>
   PROTOBUF_NOINLINE void MergeFromInnerLoop(void** our_elems,
-                                            void** other_elems, int length,
-                                            int already_allocated) {
+                                            void* const* other_elems,
+                                            int length, int already_allocated) {
     if (already_allocated < length) {
       Arena* arena = GetOwningArena();
       typename TypeHandler::Type* elem_prototype =
