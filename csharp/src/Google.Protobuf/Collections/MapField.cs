@@ -500,6 +500,7 @@ namespace Google.Protobuf.Collections
             WriteTo(ref ctx, codec, listToWrite);
         }
 
+        [SecuritySafeCritical]
         private void WriteTo(ref WriteContext ctx, Codec codec, IEnumerable<KeyValuePair<TKey, TValue>> listKvp)
         {
             foreach (var entry in listKvp)
