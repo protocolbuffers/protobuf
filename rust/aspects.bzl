@@ -112,7 +112,6 @@ def _compile_cc(
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
         srcs = [src],
-        grep_includes = ctx.file._grep_includes,
         user_compile_flags = attr.copts if hasattr(attr, "copts") else [],
         compilation_contexts = [cc_info.compilation_context],
     )
