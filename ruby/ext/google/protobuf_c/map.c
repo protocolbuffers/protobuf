@@ -319,7 +319,9 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   self->map = upb_Map_New(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
-  ObjectCache_GetSet(self->map, _self);
+  VALUE stored = ObjectCache_GetSet(self->map, _self);
+  (void)stored;
+  PBRUBY_ASSERT(stored == _self);
 
   if (init_arg != Qnil) {
     Map_merge_into_self(_self, init_arg);
