@@ -297,12 +297,42 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, p
     providers = []
     if not getattr(ctx.rule.attr, "srcs", []):
         # This target doesn't declare any sources, reexport all its deps instead.
-        deps = ctx.rule.attr.deps
-        providers += [cc_provider(cc_info = dep[CcInfo]) for dep in deps if CcInfo in dep]
-        providers += [dep[UpbWrappedCcInfo] for dep in deps if UpbWrappedCcInfo in dep]
-        providers += [dep[_UpbDefsWrappedCcInfo] for dep in deps if _UpbDefsWrappedCcInfo in dep]
-        providers += [dep[_UpbWrappedGeneratedSrcsInfo] for dep in deps if _UpbWrappedGeneratedSrcsInfo in dep]
-        providers += [dep[_WrappedDefsGeneratedSrcsInfo] for dep in deps if _WrappedDefsGeneratedSrcsInfo in dep]
+        srcs = []
+        hdrs = []
+        thunks = []
+        includes = []
+        cc_infos = []
+        cc_infos_with_thunks = []
+        for dep in ctx.rule.attr.deps:
+            if CcInfo in dep:
+                cc_infos.append(dep[CcInfo])
+            if UpbWrappedCcInfo in dep:
+                cc_infos.append(dep[UpbWrappedCcInfo].cc_info)
+                cc_infos_with_thunks.append(dep[UpbWrappedCcInfo].cc_info_with_thunks)
+            if _UpbDefsWrappedCcInfo in dep:
+                cc_infos.append(dep[_UpbDefsWrappedCcInfo].cc_info)
+
+            if _UpbWrappedGeneratedSrcsInfo in dep:
+                unwrapped_sources = dep[_UpbWrappedGeneratedSrcsInfo].srcs
+                srcs += unwrapped_sources.srcs
+                hdrs += unwrapped_sources.hdrs
+                thunks += unwrapped_sources.thunks
+                includes += unwrapped_sources.includes
+            if _WrappedDefsGeneratedSrcsInfo in dep:
+                unwrapped_sources = dep[_WrappedDefsGeneratedSrcsInfo].srcs
+                srcs += unwrapped_sources.srcs
+                hdrs += unwrapped_sources.hdrs
+                thunks += unwrapped_sources.thunks
+                includes += unwrapped_sources.includes
+
+        if len(cc_infos_with_thunks) > 0:
+            providers.append(cc_provider(
+                cc_info = cc_common.merge_cc_infos(direct_cc_infos = cc_infos),
+                cc_info_with_thunks = cc_common.merge_cc_infos(direct_cc_infos = cc_infos_with_thunks),
+            ))
+        else:
+            providers.append(cc_provider(cc_info = cc_common.merge_cc_infos(direct_cc_infos = cc_infos)))
+        providers.append(file_provider(srcs = GeneratedSrcsInfo(srcs = srcs, hdrs = hdrs, thunks = thunks, includes = includes)))
     else:
         proto_info = target[ProtoInfo]
         files = _compile_upb_protos(ctx, generator, proto_info, proto_info.direct_sources)
