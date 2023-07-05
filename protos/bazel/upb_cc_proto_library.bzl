@@ -112,11 +112,6 @@ def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
         unsupported_features = ctx.disabled_features,
     )
 
-    blaze_only_args = {}
-
-    if _is_google3:
-        blaze_only_args["grep_includes"] = ctx.file._grep_includes
-
     (compilation_context, compilation_outputs) = cc_common.compile(
         actions = ctx.actions,
         feature_configuration = feature_configuration,
@@ -126,7 +121,6 @@ def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
         public_hdrs = hdrs,
         user_compile_flags = copts,
         compilation_contexts = compilation_contexts,
-        **blaze_only_args
     )
 
     # buildifier: disable=unused-variable
@@ -137,7 +131,6 @@ def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
         cc_toolchain = toolchain,
         compilation_outputs = compilation_outputs,
         linking_contexts = linking_contexts,
-        **blaze_only_args
     )
 
     return CcInfo(
