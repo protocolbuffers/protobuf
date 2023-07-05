@@ -72,7 +72,7 @@ jobs:
       - name: Download Linkage Monitor
         run: curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
       - name: Fails if there's new linkage errors compared with baseline
-        run: java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:libraries-bom
+        run: java -Xmx4096m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:libraries-bom
 
   protobuf-bom:
     name: Protobuf Maven BOM
