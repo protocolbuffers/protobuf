@@ -35,7 +35,7 @@
 import io
 import unittest
 
-import pddm
+from objectivec.DevTools import pddm
 
 
 class TestParsingMacros(unittest.TestCase):
