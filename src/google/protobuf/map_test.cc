@@ -36,6 +36,7 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/internal_visibility_for_testing.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
@@ -79,6 +80,108 @@ namespace {
 using ::testing::FieldsAre;
 using ::testing::UnorderedElementsAre;
 
+
+TEST(MapTest, CopyConstructIntegers) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using MapType = Map<int32_t, int32_t>;
+  MapType original;
+  original[1] = 2;
+  original[2] = 3;
+
+  MapType map1(original);
+  ASSERT_EQ(map1.size(), 2);
+  EXPECT_EQ(map1[1], 2);
+  EXPECT_EQ(map1[2], 3);
+
+  MapType map2(token, nullptr, original);
+  ASSERT_EQ(map2.size(), 2);
+  EXPECT_EQ(map2[1], 2);
+  EXPECT_EQ(map2[2], 3);
+}
+
+TEST(MapTest, CopyConstructStrings) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using MapType = Map<std::string, std::string>;
+  MapType original;
+  original["1"] = "2";
+  original["2"] = "3";
+
+  MapType map1(original);
+  ASSERT_EQ(map1.size(), 2);
+  EXPECT_EQ(map1["1"], "2");
+  EXPECT_EQ(map1["2"], "3");
+
+  MapType map2(token, nullptr, original);
+  ASSERT_EQ(map2.size(), 2);
+  EXPECT_EQ(map2["1"], "2");
+  EXPECT_EQ(map2["2"], "3");
+}
+
+TEST(MapTest, CopyConstructMessages) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using MapType = Map<std::string, TestAllTypes>;
+  MapType original;
+  original["1"].set_optional_int32(1);
+  original["2"].set_optional_int32(2);
+
+  MapType map1(original);
+  ASSERT_EQ(map1.size(), 2);
+  EXPECT_EQ(map1["1"].optional_int32(), 1);
+  EXPECT_EQ(map1["2"].optional_int32(), 2);
+
+  MapType map2(token, nullptr, original);
+  ASSERT_EQ(map2.size(), 2);
+  EXPECT_EQ(map2["1"].optional_int32(), 1);
+  EXPECT_EQ(map2["2"].optional_int32(), 2);
+}
+
+TEST(MapTest, CopyConstructIntegersWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using MapType = Map<int32_t, int32_t>;
+  MapType original;
+  original[1] = 2;
+  original[2] = 3;
+
+  Arena arena;
+  alignas(MapType) char mem1[sizeof(MapType)];
+  MapType& map1 = *new (mem1) MapType(token, &arena, original);
+  ASSERT_EQ(map1.size(), 2);
+  EXPECT_EQ(map1[1], 2);
+  EXPECT_EQ(map1[2], 3);
+  EXPECT_EQ(map1[2], 3);
+}
+
+TEST(MapTest, CopyConstructStringsWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using MapType = Map<std::string, std::string>;
+  MapType original;
+  original["1"] = "2";
+  original["2"] = "3";
+
+  Arena arena;
+  alignas(MapType) char mem1[sizeof(MapType)];
+  MapType& map1 = *new (mem1) MapType(token, &arena, original);
+  ASSERT_EQ(map1.size(), 2);
+  EXPECT_EQ(map1["1"], "2");
+  EXPECT_EQ(map1["2"], "3");
+}
+
+TEST(MapTest, CopyConstructMessagesWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using MapType = Map<std::string, TestAllTypes>;
+  MapType original;
+  original["1"].set_optional_int32(1);
+  original["2"].set_optional_int32(2);
+
+  Arena arena;
+  alignas(MapType) char mem1[sizeof(MapType)];
+  MapType& map1 = *new (mem1) MapType(token, &arena, original);
+  ASSERT_EQ(map1.size(), 2);
+  EXPECT_EQ(map1["1"].optional_int32(), 1);
+  EXPECT_EQ(map1["1"].GetArena(), &arena);
+  EXPECT_EQ(map1["2"].optional_int32(), 2);
+  EXPECT_EQ(map1["2"].GetArena(), &arena);
+}
 
 template <typename Aligned, bool on_arena = false>
 void MapTest_Aligned() {

@@ -338,6 +338,30 @@ cc_library(
 )
 
 cc_library(
+    name = "internal_visibility",
+    hdrs = ["internal_visibility.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "internal_visibility_for_testing",
+    testonly = 1,
+    hdrs = ["internal_visibility_for_testing.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [":internal_visibility"],
+)
+
+cc_library(
     name = "protobuf_lite",
     srcs = [
         "any_lite.cc",
@@ -405,6 +429,7 @@ cc_library(
     deps = [
         ":arena",
         ":arena_align",
+        ":internal_visibility",
         ":string_block",
         ":varint_shuffle",
         "//src/google/protobuf/io",
@@ -1208,6 +1233,7 @@ cc_test(
     data = [":testdata"],
     deps = [
         ":cc_test_protos",
+        ":internal_visibility_for_testing",
         ":protobuf",
         ":test_util",
         ":test_util2",
