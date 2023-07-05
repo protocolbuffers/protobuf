@@ -84,7 +84,7 @@ $PROTOC -Isrc -I. \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
     --include_source_info \
     --include_imports \
-    csharp/protos/unittest_nullable_proto3.proto
+    csharp/protos/unittest_nrt_proto3.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \

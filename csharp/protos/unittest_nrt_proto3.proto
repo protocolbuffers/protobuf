@@ -36,11 +36,11 @@ option csharp_namespace = "Google.Protobuf.TestProtos";
 
 package protobuf_unittest3;
 
-message TestNullableMessage {
-  message TestNullableNestedMessage {
+message TestNrtMessage {
+  message TestNrtNestedMessage {
     int32 int32_field = 1;
     string string_field = 2;
   }
 
-  TestNullableNestedMessage reference_field = 1;
+  TestNrtNestedMessage reference_field = 1;
 }

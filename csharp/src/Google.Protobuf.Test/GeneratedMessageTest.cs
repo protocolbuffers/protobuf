@@ -335,7 +335,7 @@ namespace Google.Protobuf
 
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
 
-            var key = 10; // Field 1 
+            var key = 10; // Field 1
             var value = 20; // Field 2
             var extra = 30; // Field 3
 
@@ -857,7 +857,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// unittest_nullable_proto3.proto is generated with enable_nullable_reference_types flag.
+        /// unittest_nrt_proto3.proto is generated with enable_nullable_reference_types flag.
         /// This allows retreivable nullability information for reference types, which is otherwise
         /// ignored because of the &lt;auto-generated&gt; attribute.
         /// </summary>
@@ -866,13 +866,13 @@ namespace Google.Protobuf
         {
             NullabilityInfoContext context = new();
 
-            PropertyInfo referenceProperty = typeof(TestNullableMessage).GetProperty("ReferenceField", BindingFlags.Instance | BindingFlags.Public)!;
+            PropertyInfo referenceProperty = typeof(TestNrtMessage).GetProperty("ReferenceField", BindingFlags.Instance | BindingFlags.Public)!;
             Assert.NotNull(referenceProperty);
             NullabilityInfo referenceNullabilityInfo = context.Create(referenceProperty);
             Assert.AreEqual(NullabilityState.NotNull, referenceNullabilityInfo.ReadState);
             Assert.AreEqual(NullabilityState.NotNull, referenceNullabilityInfo.WriteState);
 
-            PropertyInfo stringProperty = typeof(TestNullableMessage.Types.TestNullableNestedMessage).GetProperty("StringField", BindingFlags.Instance | BindingFlags.Public)!;
+            PropertyInfo stringProperty = typeof(TestNrtMessage.Types.TestNrtNestedMessage).GetProperty("StringField", BindingFlags.Instance | BindingFlags.Public)!;
             Assert.NotNull(referenceProperty);
             NullabilityInfo stringNullabilityInfo = context.Create(stringProperty);
             Assert.AreEqual(NullabilityState.NotNull, stringNullabilityInfo.ReadState);
