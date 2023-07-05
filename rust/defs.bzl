@@ -11,7 +11,10 @@ load(
     "rust_upb_proto_library_aspect",
 )
 
-visibility(["//rust/..."])
+visibility([
+    "//rust/...",
+    "//experimental/...",
+])
 
 def rust_proto_library(name, deps, visibility = [], **args):
     """Declares all the boilerplate needed to use Rust protobufs conveniently. 
