@@ -62,10 +62,6 @@ module Google
           @map[key] ||= value
         end
       end
-
-      def purge
-        # noop to expose the same interface as LegacyObjectCache
-      end
     end
 
     class LegacyObjectCache
@@ -109,6 +105,8 @@ module Google
           @map[secondary_key] ||= value
         end
       end
+
+      private
 
       def purge
         @mutex.synchronize do
