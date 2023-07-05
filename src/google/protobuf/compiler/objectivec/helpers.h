@@ -38,6 +38,7 @@
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -108,13 +109,32 @@ std::string BuildFlagsString(FlagType type,
 std::string ObjCClass(absl::string_view class_name);
 
 // Declares an Objective-C class without initializing the class so that it can
-// be refrerred to by ObjCClass.
+// be referred to by ObjCClass.
 std::string ObjCClassDeclaration(absl::string_view class_name);
 
 // Builds HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
 std::string BuildCommentsString(const SourceLocation& location,
                                 bool prefer_single_line);
+
+// Emits HeaderDoc/appledoc style comments out of the comments in the .proto
+// file.
+void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
+                        bool prefer_single_line,
+                        bool add_leading_newilne = false);
+
+// Emits HeaderDoc/appledoc style comments out of the comments in the .proto
+// file.
+template <class TDescriptor>
+void EmitCommentsString(io::Printer* printer, const TDescriptor* descriptor,
+                        bool prefer_single_line,
+                        bool add_leading_newilne = false) {
+  SourceLocation location;
+  if (descriptor->GetSourceLocation(&location)) {
+    EmitCommentsString(printer, location, prefer_single_line,
+                       add_leading_newilne);
+  }
+}
 
 template <class TDescriptor>
 std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
