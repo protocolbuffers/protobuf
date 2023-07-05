@@ -86,7 +86,7 @@ void Arena_Pin(VALUE arena, VALUE obj);
 
 // Tries to add a new entry to the cache, returning the newly installed value or
 // the pre-existing entry.
-VALUE ObjectCache_GetSet(const void* key, VALUE val);
+VALUE ObjectCache_TryAdd(const void* key, VALUE val);
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key);

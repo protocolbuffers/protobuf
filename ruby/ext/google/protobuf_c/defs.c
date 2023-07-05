@@ -129,7 +129,7 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
 
   RB_OBJ_WRITE(ret, &self->def_to_descriptor, rb_hash_new());
   self->symtab = upb_DefPool_New();
-  return ObjectCache_GetSet(self->symtab, ret);
+  return ObjectCache_TryAdd(self->symtab, ret);
 }
 
 /*

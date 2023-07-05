@@ -57,7 +57,7 @@ module Google
         @map[key]
       end
 
-      def getset(key, value)
+      def try_add(key, value)
         @map[key] || @mutex.synchronize do
           @map[key] ||= value
         end
@@ -93,7 +93,7 @@ module Google
         value
       end
 
-      def getset(key, value)
+      def try_add(key, value)
         if secondary_key = @secondary_map[key]
           if old_value = @map[secondary_key]
             return old_value

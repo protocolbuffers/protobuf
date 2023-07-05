@@ -257,11 +257,11 @@ void Arena_register(VALUE module) {
 
 VALUE weak_obj_cache = Qnil;
 ID item_get;
-ID item_getset;
+ID item_try_add;
 
 static void ObjectCache_Init(VALUE protobuf) {
   item_get = rb_intern("get");
-  item_getset = rb_intern("getset");
+  item_try_add = rb_intern("try_add");
 
   rb_gc_register_address(&weak_obj_cache);
 #if RUBY_API_VERSION_CODE >= 20700 && SIZEOF_LONG >= SIZEOF_VALUE
@@ -274,10 +274,10 @@ static void ObjectCache_Init(VALUE protobuf) {
   rb_const_set(protobuf, rb_intern("OBJECT_CACHE"), weak_obj_cache);
 }
 
-VALUE ObjectCache_GetSet(const void *key, VALUE val) {
+VALUE ObjectCache_TryAdd(const void *key, VALUE val) {
   VALUE key_val = (VALUE)key;
   PBRUBY_ASSERT((key_val & 3) == 0);
-  return rb_funcall(weak_obj_cache, item_getset, 2, LL2NUM(key_val), val);
+  return rb_funcall(weak_obj_cache, item_try_add, 2, LL2NUM(key_val), val);
 }
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.

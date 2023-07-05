@@ -102,7 +102,7 @@ VALUE Map_GetRubyWrapper(upb_Map* map, upb_CType key_type, TypeInfo value_type,
       const upb_MessageDef* val_m = self->value_type_info.def.msgdef;
       self->value_type_class = Descriptor_DefToClass(val_m);
     }
-    return ObjectCache_GetSet(map, val);
+    return ObjectCache_TryAdd(map, val);
   }
 
   return val;
@@ -319,7 +319,7 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   self->map = upb_Map_New(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
-  VALUE stored = ObjectCache_GetSet(self->map, _self);
+  VALUE stored = ObjectCache_TryAdd(self->map, _self);
   (void)stored;
   PBRUBY_ASSERT(stored == _self);
 
