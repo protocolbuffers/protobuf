@@ -45,7 +45,8 @@ struct Options {
       base_namespace(""),
       base_namespace_specified(false),
       internal_access(false),
-      serializable(false) {
+      serializable(false),
+      enable_nullable_reference_types(false) {
   }
   // Extension of the generated file. Defaults to ".cs"
   std::string file_extension;
@@ -68,9 +69,12 @@ struct Options {
   // Whether the generated classes should have accessibility level of "internal".
   // Defaults to false that generates "public" classes.
   bool internal_access;
-  // Whether the generated classes should have a global::System.Serializable attribute added
-  // Defaults to false
+  // Whether the generated classes should have a global::System.Serializable attribute added.
+  // Defaults to false.
   bool serializable;
+  // Whether the generated files are annotated with "#nullable enable" to display warnings on potential null assignments. 
+  // Defaults to false.
+  bool enable_nullable_reference_types;
 };
 
 }  // namespace csharp

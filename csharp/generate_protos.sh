@@ -75,6 +75,16 @@ $PROTOC -Isrc -I. \
     src/google/protobuf/test_messages_proto2.proto \
     src/google/protobuf/unittest_proto3_optional.proto \
     src/google/protobuf/unittest_retention.proto
+# Test proto for nullable reference types tests
+$PROTOC -Isrc -I. \
+    --experimental_allow_proto3_optional \
+    --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \
+    --csharp_opt=file_extension=.pb.cs \
+    --csharp_opt=enable_nullable_reference_types \
+    --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
+    --include_source_info \
+    --include_imports \
+    csharp/protos/unittest_nullable_proto3.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \

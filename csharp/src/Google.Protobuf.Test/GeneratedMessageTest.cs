@@ -35,6 +35,7 @@ using System.IO;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using System.Linq;
+using System.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using Google.Protobuf.Collections;
 
@@ -835,5 +836,48 @@ namespace Google.Protobuf
             };
             Assert.AreEqual(expected, message1.MapStringString);
         }
+
+#if NET6_0_OR_GREATER
+
+        /// <summary>
+        /// By default, the nullable references types feature ignored because the generated files
+        /// are marked with &lt;auto-generated&gt; attribute. This tests shows that code generated
+        /// without the enable_nullable_reference_types flag does not have nullability information.
+        /// </summary>
+        [Test]
+        public void NullableReferenceTypes_IsDisabled()
+        {
+            NullabilityInfoContext context = new();
+
+            PropertyInfo stringProperty = typeof(TestAllTypes).GetProperty("SingleString", BindingFlags.Instance | BindingFlags.Public)!;
+            Assert.NotNull(stringProperty);
+            NullabilityInfo stringNullabilityInfo = context.Create(stringProperty);
+            Assert.AreEqual(NullabilityState.Unknown, stringNullabilityInfo.ReadState);
+            Assert.AreEqual(NullabilityState.Unknown, stringNullabilityInfo.WriteState);
+        }
+
+        /// <summary>
+        /// unittest_nullable_proto3.proto is generated with enable_nullable_reference_types flag.
+        /// This allows retreivable nullability information for reference types, which is otherwise
+        /// ignored because of the &lt;auto-generated&gt; attribute.
+        /// </summary>
+        [Test]
+        public void NullableReferenceTypes_IsEnabled()
+        {
+            NullabilityInfoContext context = new();
+
+            PropertyInfo referenceProperty = typeof(TestNullableMessage).GetProperty("ReferenceField", BindingFlags.Instance | BindingFlags.Public)!;
+            Assert.NotNull(referenceProperty);
+            NullabilityInfo referenceNullabilityInfo = context.Create(referenceProperty);
+            Assert.AreEqual(NullabilityState.NotNull, referenceNullabilityInfo.ReadState);
+            Assert.AreEqual(NullabilityState.NotNull, referenceNullabilityInfo.WriteState);
+
+            PropertyInfo stringProperty = typeof(TestNullableMessage.Types.TestNullableNestedMessage).GetProperty("StringField", BindingFlags.Instance | BindingFlags.Public)!;
+            Assert.NotNull(referenceProperty);
+            NullabilityInfo stringNullabilityInfo = context.Create(stringProperty);
+            Assert.AreEqual(NullabilityState.NotNull, stringNullabilityInfo.ReadState);
+            Assert.AreEqual(NullabilityState.NotNull, stringNullabilityInfo.WriteState);
+        }
+#endif
     }
 }
