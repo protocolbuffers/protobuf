@@ -1222,40 +1222,44 @@ void Parser::GenerateMapEntry(const MapField& map_field,
   } else {
     value_field->set_type_name(map_field.value_type_name);
   }
-  // Propagate the "enforce_utf8" option to key and value fields if they
-  // are strings. This helps simplify the implementation of code generators
-  // and also reflection-based parsing code.
+  // Propagate all features to the generated key and value fields. This helps
+  // simplify the implementation of code generators and also reflection-based
+  // parsing code. Instead of having to implement complex inheritance rules
+  // special-casing maps, we can just copy them at generation time.
   //
   // The following definition:
   //   message Foo {
-  //     map<string, string> value = 1 [enforce_utf8 = false];
+  //     map<string, string> value = 1 [features.some_feature = VALUE];
   //   }
   // will be interpreted as:
   //   message Foo {
   //     message ValueEntry {
   //       option map_entry = true;
-  //       string key = 1 [enforce_utf8 = false];
-  //       string value = 2 [enforce_utf8 = false];
+  //       string key = 1 [features.some_feature = VALUE];
+  //       string value = 2 [features.some_feature = VALUE];
   //     }
-  //     repeated ValueEntry value = 1 [enforce_utf8 = false];
+  //     repeated ValueEntry value = 1 [features.some_feature = VALUE];
   //  }
-  //
-  // TODO(xiaofeng): Remove this when the "enforce_utf8" option is removed
-  // from protocol compiler.
   for (int i = 0; i < field->options().uninterpreted_option_size(); ++i) {
     const UninterpretedOption& option =
         field->options().uninterpreted_option(i);
+    // Legacy handling for the `enforce_utf8` option, which bears a striking
+    // similarity to features in many respects.
+    // TODO(b/289755572) Delete this once proto2/proto3 have been turned down.
     if (option.name_size() == 1 &&
         option.name(0).name_part() == "enforce_utf8" &&
         !option.name(0).is_extension()) {
       if (key_field->type() == FieldDescriptorProto::TYPE_STRING) {
-        key_field->mutable_options()->add_uninterpreted_option()->CopyFrom(
-            option);
+        *key_field->mutable_options()->add_uninterpreted_option() = option;
       }
       if (value_field->type() == FieldDescriptorProto::TYPE_STRING) {
-        value_field->mutable_options()->add_uninterpreted_option()->CopyFrom(
-            option);
+        *value_field->mutable_options()->add_uninterpreted_option() = option;
       }
+    }
+    if (option.name(0).name_part() == "features" &&
+        !option.name(0).is_extension()) {
+      *key_field->mutable_options()->add_uninterpreted_option() = option;
+      *value_field->mutable_options()->add_uninterpreted_option() = option;
     }
   }
 }

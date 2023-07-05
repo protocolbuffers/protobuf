@@ -3964,6 +3964,65 @@ TEST_F(ParseEditionsTest, ExtensionsParse) {
       "edition: \"2023\"\n");
 }
 
+TEST_F(ParseEditionsTest, MapFeatures) {
+  ExpectParsesTo(
+      R"schema(
+        edition = '2023';
+        message Foo {
+          map<string, int> map_field = 1 [
+            features.my_feature = SOMETHING
+          ];
+        })schema",
+      R"pb(message_type {
+             name: "Foo"
+             field {
+               name: "map_field"
+               number: 1
+               label: LABEL_REPEATED
+               type_name: "MapFieldEntry"
+               options {
+                 uninterpreted_option {
+                   name { name_part: "features" is_extension: false }
+                   name { name_part: "my_feature" is_extension: false }
+                   identifier_value: "SOMETHING"
+                 }
+               }
+             }
+             nested_type {
+               name: "MapFieldEntry"
+               field {
+                 name: "key"
+                 number: 1
+                 label: LABEL_OPTIONAL
+                 type: TYPE_STRING
+                 options {
+                   uninterpreted_option {
+                     name { name_part: "features" is_extension: false }
+                     name { name_part: "my_feature" is_extension: false }
+                     identifier_value: "SOMETHING"
+                   }
+                 }
+               }
+               field {
+                 name: "value"
+                 number: 2
+                 label: LABEL_OPTIONAL
+                 type_name: "int"
+                 options {
+                   uninterpreted_option {
+                     name { name_part: "features" is_extension: false }
+                     name { name_part: "my_feature" is_extension: false }
+                     identifier_value: "SOMETHING"
+                   }
+                 }
+               }
+               options { map_entry: true }
+             }
+           }
+           syntax: "editions"
+           edition: "2023")pb");
+}
+
 TEST_F(ParseEditionsTest, EmptyEdition) {
   ExpectHasEarlyExitErrors(
       R"schema(
