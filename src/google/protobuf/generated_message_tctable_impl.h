@@ -804,12 +804,13 @@ class PROTOBUF_EXPORT TcParser final {
   enum Utf8Type { kNoUtf8 = 0, kUtf8 = 1, kUtf8ValidateOnly = 2 };
   template <typename TagType, typename FieldType, Utf8Type utf8>
   static inline const char* SingularString(PROTOBUF_TC_PARAM_DECL);
-  template <typename TagType, typename FieldType, Utf8Type utf8>
+  template <typename TagType, Utf8Type utf8>
   static inline const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
 
-  static inline const char* ParseRepeatedStringOnce(
-      const char* ptr, SerialArena* serial_arena, ParseContext* ctx,
-      RepeatedPtrField<std::string>& field);
+  static inline const char* ParseRepeatedStringOnce(const char* ptr,
+                                                    SerialArena* serial_arena,
+                                                    ParseContext* ctx,
+                                                    std::string** str);
 
   static void AddUnknownEnum(MessageLite* msg, const TcParseTableBase* table,
                              uint32_t tag, int32_t enum_value);

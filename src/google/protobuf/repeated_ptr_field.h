@@ -332,8 +332,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // or other calls to `AddAllocatedForParse`.
   template <typename TypeHandler>
   void AddAllocatedForParse(typename TypeHandler::Type* value) {
-    PROTOBUF_ASSUME(rep_ != nullptr);
-    PROTOBUF_ASSUME(current_size_ == rep_->allocated_size);
+    PROTOBUF_ASSUME(rep_ == nullptr || current_size_ == rep_->allocated_size);
     if (current_size_ == total_size_) {
       // The array is completely full with no cleared objects, so grow it.
       InternalExtend(1);
@@ -692,6 +691,15 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   static inline const typename TypeHandler::Type* cast(const void* element) {
     return reinterpret_cast<const typename TypeHandler::Type*>(element);
+  }
+
+  template <typename TypeHandler>
+  typename TypeHandler::Type* TryGetAllocated() {
+    if (rep_ != nullptr && current_size_ < rep_->allocated_size) {
+      return cast<TypeHandler>(
+          rep_->elements[ExchangeCurrentSize(current_size_ + 1)]);
+    }
+    return nullptr;
   }
 
   // Out-of-line helper routine for Clear() once the inlined check has
