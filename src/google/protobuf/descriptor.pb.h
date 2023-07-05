@@ -2132,7 +2132,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     kFullNameFieldNumber = 2,
     kTypeFieldNumber = 3,
     kNumberFieldNumber = 1,
-    kIsRepeatedFieldNumber = 4,
     kReservedFieldNumber = 5,
     kRepeatedFieldNumber = 6,
   };
@@ -2181,17 +2180,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   void _internal_set_number(::int32_t value);
 
   public:
-  // optional bool is_repeated = 4 [deprecated = true];
-  [[deprecated]]  bool has_is_repeated() const;
-  [[deprecated]]  void clear_is_repeated() ;
-  [[deprecated]] bool is_repeated() const;
-  [[deprecated]] void set_is_repeated(bool value);
-
-  private:
-  bool _internal_is_repeated() const;
-  void _internal_set_is_repeated(bool value);
-
-  public:
   // optional bool reserved = 5;
   bool has_reserved() const;
   void clear_reserved() ;
@@ -2219,7 +2207,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 6, 0, 71, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<3, 5, 0, 71, 2> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -2229,7 +2217,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     ::google::protobuf::internal::ArenaStringPtr full_name_;
     ::google::protobuf::internal::ArenaStringPtr type_;
     ::int32_t number_;
-    bool is_repeated_;
     bool reserved_;
     bool repeated_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
@@ -5767,7 +5754,6 @@ class PROTOBUF_EXPORT FieldOptions final :
     kWeakFieldNumber = 10,
     kDebugRedactFieldNumber = 16,
     kRetentionFieldNumber = 17,
-    kTargetObsoleteDoNotUseFieldNumber = 18,
   };
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
   int targets_size() const;
@@ -5938,17 +5924,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   void _internal_set_retention(::google::protobuf::FieldOptions_OptionRetention value);
 
   public:
-  // optional .google.protobuf.FieldOptions.OptionTargetType target_obsolete_do_not_use = 18 [deprecated = true];
-  [[deprecated]]  bool has_target_obsolete_do_not_use() const;
-  [[deprecated]]  void clear_target_obsolete_do_not_use() ;
-  [[deprecated]] ::google::protobuf::FieldOptions_OptionTargetType target_obsolete_do_not_use() const;
-  [[deprecated]] void set_target_obsolete_do_not_use(::google::protobuf::FieldOptions_OptionTargetType value);
-
-  private:
-  ::google::protobuf::FieldOptions_OptionTargetType _internal_target_obsolete_do_not_use() const;
-  void _internal_set_target_obsolete_do_not_use(::google::protobuf::FieldOptions_OptionTargetType value);
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
@@ -6105,7 +6080,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<4, 14, 8, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<4, 13, 7, 0, 7> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -6127,7 +6102,6 @@ class PROTOBUF_EXPORT FieldOptions final :
     bool weak_;
     bool debug_redact_;
     int retention_;
-    int target_obsolete_do_not_use_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
@@ -11600,41 +11574,14 @@ inline void ExtensionRangeOptions_Declaration::set_allocated_type(std::string* v
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.type)
 }
 
-// optional bool is_repeated = 4 [deprecated = true];
-inline bool ExtensionRangeOptions_Declaration::has_is_repeated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
-  return value;
-}
-inline void ExtensionRangeOptions_Declaration::clear_is_repeated() {
-  _impl_.is_repeated_ = false;
-  _impl_._has_bits_[0] &= ~0x00000008u;
-}
-inline bool ExtensionRangeOptions_Declaration::is_repeated() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.is_repeated)
-  return _internal_is_repeated();
-}
-inline void ExtensionRangeOptions_Declaration::set_is_repeated(bool value) {
-  _internal_set_is_repeated(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.is_repeated)
-}
-inline bool ExtensionRangeOptions_Declaration::_internal_is_repeated() const {
-  PROTOBUF_TSAN_READ_PRIMITIVE(&_impl_._tsan_detect_race);
-  return _impl_.is_repeated_;
-}
-inline void ExtensionRangeOptions_Declaration::_internal_set_is_repeated(bool value) {
-  PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.is_repeated_ = value;
-}
-
 // optional bool reserved = 5;
 inline bool ExtensionRangeOptions_Declaration::has_reserved() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void ExtensionRangeOptions_Declaration::clear_reserved() {
   _impl_.reserved_ = false;
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline bool ExtensionRangeOptions_Declaration::reserved() const {
   // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.reserved)
@@ -11650,18 +11597,18 @@ inline bool ExtensionRangeOptions_Declaration::_internal_reserved() const {
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_reserved(bool value) {
   PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.reserved_ = value;
 }
 
 // optional bool repeated = 6;
 inline bool ExtensionRangeOptions_Declaration::has_repeated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void ExtensionRangeOptions_Declaration::clear_repeated() {
   _impl_.repeated_ = false;
-  _impl_._has_bits_[0] &= ~0x00000020u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline bool ExtensionRangeOptions_Declaration::repeated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.repeated)
@@ -11677,7 +11624,7 @@ inline bool ExtensionRangeOptions_Declaration::_internal_repeated() const {
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_repeated(bool value) {
   PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.repeated_ = value;
 }
 
@@ -15848,34 +15795,6 @@ inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOpt
 FieldOptions::_internal_mutable_uninterpreted_option() {
   PROTOBUF_TSAN_READ_REPEATED(&_impl_._tsan_detect_race);
   return &_impl_.uninterpreted_option_;
-}
-
-// optional .google.protobuf.FieldOptions.OptionTargetType target_obsolete_do_not_use = 18 [deprecated = true];
-inline bool FieldOptions::has_target_obsolete_do_not_use() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000400u) != 0;
-  return value;
-}
-inline void FieldOptions::clear_target_obsolete_do_not_use() {
-  _impl_.target_obsolete_do_not_use_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000400u;
-}
-inline ::google::protobuf::FieldOptions_OptionTargetType FieldOptions::target_obsolete_do_not_use() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.target_obsolete_do_not_use)
-  return _internal_target_obsolete_do_not_use();
-}
-inline void FieldOptions::set_target_obsolete_do_not_use(::google::protobuf::FieldOptions_OptionTargetType value) {
-  _internal_set_target_obsolete_do_not_use(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.target_obsolete_do_not_use)
-}
-inline ::google::protobuf::FieldOptions_OptionTargetType FieldOptions::_internal_target_obsolete_do_not_use() const {
-  PROTOBUF_TSAN_READ_PRIMITIVE(&_impl_._tsan_detect_race);
-  return static_cast<::google::protobuf::FieldOptions_OptionTargetType>(_impl_.target_obsolete_do_not_use_);
-}
-inline void FieldOptions::_internal_set_target_obsolete_do_not_use(::google::protobuf::FieldOptions_OptionTargetType value) {
-  PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
-  assert(::google::protobuf::FieldOptions_OptionTargetType_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000400u;
-  _impl_.target_obsolete_do_not_use_ = value;
 }
 
 // -------------------------------------------------------------------

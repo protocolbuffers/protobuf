@@ -146,9 +146,6 @@ message ExtensionRangeOptions {
     // and enums.
     optional string type = 3;
 
-    // Deprecated. Please use "repeated".
-    optional bool is_repeated = 4 [deprecated = true];
-
     // If true, indicates that the number is reserved in the extension range,
     // and any extension field with the number will fail to compile. Set this
     // when a declared extension field is deleted.
@@ -157,6 +154,8 @@ message ExtensionRangeOptions {
     // If true, indicates that the extension must be defined as repeated.
     // Otherwise the extension must be defined as optional.
     optional bool repeated = 6;
+
+    reserved 4;  // removed is_repeated
   }
 
   // For external users: DO NOT USE. We are in the process of open sourcing
@@ -736,8 +735,8 @@ message FieldOptions {
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
 
-  reserved 4;  // removed jtype
-  optional OptionTargetType target_obsolete_do_not_use = 18 [deprecated = true];
+  reserved 4;   // removed jtype
+  reserved 18;  // reserve target, target_obsolete_do_not_use
 }
 
 message OneofOptions {
