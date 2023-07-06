@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 
@@ -68,6 +69,16 @@ public final class LegacyDescriptorsUtil {
     }
 
     private LegacyFileDescriptor() {}
+  }
+
+  /** Wraps FieldDescriptor */
+  public static final class LegacyFieldDescriptor {
+
+    public static boolean hasOptionalKeyword(FieldDescriptor descriptor) {
+      return descriptor.hasOptionalKeyword();
+    }
+
+    private LegacyFieldDescriptor() {}
   }
 
   /** Wraps OneofDescriptor */
