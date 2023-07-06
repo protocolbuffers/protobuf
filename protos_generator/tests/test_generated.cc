@@ -515,10 +515,22 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForStrings) {
   EXPECT_EQ(test_model.repeated_string()[1], "b");
   EXPECT_EQ(test_model.repeated_string()[2], "c");
 
+  EXPECT_THAT(test_model.repeated_string(), ElementsAre("a", "b", "c"));
+  EXPECT_THAT(*test_model.mutable_repeated_string(),
+              ElementsAre("a", "b", "c"));
+
   ASSERT_EQ(test_model.mutable_repeated_string()->size(), 3);
   EXPECT_EQ((*test_model.mutable_repeated_string())[0], "a");
   EXPECT_EQ((*test_model.mutable_repeated_string())[1], "b");
   EXPECT_EQ((*test_model.mutable_repeated_string())[2], "c");
+
+  // The const accessor can't be used to modify the element
+  EXPECT_FALSE((std::is_assignable<decltype(test_model.repeated_string()[1]),
+                                   absl::string_view>::value));
+  // But the mutable one is fine.
+  (*test_model.mutable_repeated_string())[1] = "other";
+  EXPECT_THAT(test_model.repeated_string(), ElementsAre("a", "other", "c"));
+
   test_model.mutable_repeated_string()->clear();
   EXPECT_EQ(test_model.mutable_repeated_string()->size(), 0);
 }

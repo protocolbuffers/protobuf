@@ -71,22 +71,12 @@ class RepeatedFieldProxyBase {
   bool empty() const { return size() == 0; }
 
  protected:
-  // Returns upb_Array string member.
-  inline absl::string_view GetString(size_t n) const;
-
   // Returns upb_Array message member.
   inline upb_Message* GetMessage(size_t n) const;
 
   Array* arr_;
   upb_Arena* arena_;
 };
-
-template <class T>
-inline absl::string_view RepeatedFieldProxyBase<T>::GetString(size_t n) const {
-  upb_MessageValue message_value = upb_Array_Get(arr_, n);
-  return absl::string_view(message_value.str_val.data,
-                           message_value.str_val.size);
-}
 
 template <class T>
 upb_Message* RepeatedFieldProxyBase<T>::GetMessage(size_t n) const {
@@ -174,6 +164,14 @@ class RepeatedFieldStringProxy
   static constexpr bool kIsConst = std::is_const_v<T>;
 
  public:
+  using value_type = std::remove_const_t<T>;
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
+  using iterator = internal::Iterator<StringIteratorPolicy<T>>;
+  using reference = typename iterator::reference;
+  using pointer = typename iterator::pointer;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+
   // Immutable constructor.
   explicit RepeatedFieldStringProxy(const upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyBase<T>(arr, arena) {}
@@ -183,7 +181,7 @@ class RepeatedFieldStringProxy
   // Constructor used by ::protos::Ptr.
   RepeatedFieldStringProxy(const RepeatedFieldStringProxy&) = default;
 
-  T operator[](size_t n) const { return this->GetString(n); }
+  reference operator[](size_t n) const { return begin()[n]; }
 
   template <int&... DeductionBlocker, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
@@ -197,6 +195,13 @@ class RepeatedFieldStringProxy
     message_value.str_val = upb_StringView_FromDataAndSize(data, t.size());
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
+
+  iterator begin() const { return iterator({this->arr_, this->arena_, 0}); }
+  iterator end() const {
+    return iterator({this->arr_, this->arena_, this->size()});
+  }
+  reverse_iterator rbegin() const { return reverse_iterator(end()); }
+  reverse_iterator rend() const { return reverse_iterator(begin()); }
 };
 
 // RepeatedField proxy for repeated scalar types.
@@ -211,7 +216,7 @@ class RepeatedFieldScalarProxy
   using value_type = std::remove_const_t<T>;
   using size_type = size_t;
   using difference_type = ptrdiff_t;
-  using iterator = internal::RepeatedScalarIterator<T>;
+  using iterator = internal::Iterator<ScalarIteratorPolicy<T>>;
   using reference = typename iterator::reference;
   using pointer = typename iterator::pointer;
   using reverse_iterator = std::reverse_iterator<iterator>;
@@ -238,9 +243,9 @@ class RepeatedFieldScalarProxy
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
 
-  iterator begin() const { return iterator(unsafe_array()); }
+  iterator begin() const { return iterator({unsafe_array()}); }
   iterator cbegin() const { return begin(); }
-  iterator end() const { return iterator(unsafe_array() + this->size()); }
+  iterator end() const { return iterator({unsafe_array() + this->size()}); }
   iterator cend() const { return end(); }
 
   // Reverse iterator support.
