@@ -39,7 +39,7 @@ edition = "2023";
 import "google/protobuf/cpp_features.proto";
 option features.enum_type = CLOSED;
 option features.repeated_field_encoding = EXPANDED;
-option features.string_field_validation = NONE;
+option features.string_field_validation = HINT;
 option features.json_format = LEGACY_BEST_EFFORT;
 option features.(pb.cpp).legacy_closed_enum = true;
 

@@ -30,10 +30,15 @@
 
 syntax = "proto2";
 
-package protobuf_editions_test.proto2;
+package protobuf_editions_test;
 
 
-message Proto2Utf8Disabled {
+message TestMessageUtf8Disabled {
   optional string string_field = 1;
-  map<string, string> map_field = 2;
+  optional string string_field_utf = 2;
+  optional string string_field_noutf = 3;
+
+  map<string, string> string_map_field = 4;
+
+  optional int32 int_field = 5;
 }

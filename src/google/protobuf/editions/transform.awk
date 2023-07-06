@@ -41,6 +41,16 @@ function join(array, len, sep)
     return result
 }
 
+function strip_option(option, options_list)
+{
+  # First try to strip out matching commas
+  sub("\\<" option "\\s*,", "", options_list)
+  sub(",\\s*" option "\\>", "", options_list)
+  # Fallback to just stripping the option
+  sub(option, "", options_list)
+  return options_list
+}
+
 function transform_field(field)
 {
   if (!match(field, /\w+\s*=\s*[0-9-]+/)) {
@@ -59,20 +69,28 @@ function transform_field(field)
   num_options = 0
 
   if(syntax == 2) {
-    sub(/\<optional /, "", field_def)
+    sub(/\<optional\s*/, "", field_def)
     sub(/\<packed = true\>/, "features.repeated_field_encoding = PACKED", existing_options)
-    sub(/\<packed = false\>,/, "", existing_options)
-    sub(/,?packed = false\>/, "", existing_options)
-    if (match($0, /\<required\>/)) {
-      sub(/\<required /, "", field_def)
+    existing_options = strip_option("packed = false", existing_options)
+    existing_options = strip_option("enforce_utf8 = (true|false)", existing_options)
+    if (match(field_def, /^\s*required\>/)) {
+      sub(/\<required\s*/, "", field_def)
       options[++num_options] = "features.field_presence = LEGACY_REQUIRED"
+    }
+    if (disable_utf8 && match(field_def, /^\s*(string|repeated\s*string|map<string,\s*string>)/)) {
+      options[++num_options] = "features.string_field_validation = NONE"
     }
   }
 
   if(syntax == 3) {
+    if (disable_utf8 && match(field_def, /^\s*(string|repeated\s*string|map<string,\s*string>)/)) {
+      options[++num_options] = "features.string_field_validation = NONE"
+    } else {
+      sub(/\<enforce_utf8 = false\>/, "features.string_field_validation = HINT", existing_options)
+    }
     sub(/\<packed = false\>/, "features.repeated_field_encoding = EXPANDED", existing_options)
-    sub(/\<packed = true\>,/, "", existing_options)
-    sub(/,?packed = true\>/, "", existing_options)
+    existing_options = strip_option("packed = true", existing_options)
+    existing_options = strip_option("enforce_utf8 = (true|false)", existing_options)
     if (match($0, /\<optional\>/)) {
       sub(/\<optional /, "", field_def)
       options[++num_options] = "features.field_presence = EXPLICIT"
@@ -103,7 +121,7 @@ function transform_field(field)
   print "import \"third_party/protobuf/cpp_features.proto\";"
   print "option features.enum_type = CLOSED;"
   print "option features.repeated_field_encoding = EXPANDED;"
-  print "option features.string_field_validation = NONE;"
+  print "option features.string_field_validation = HINT;"
   print "option features.json_format = LEGACY_BEST_EFFORT;"
   print "option features.(pb.cpp).legacy_closed_enum = true;"
   syntax = 2
@@ -115,6 +133,13 @@ function transform_field(field)
   print "option features.field_presence = IMPLICIT;"
   syntax = 3
   next
+}
+
+# utf8 validation handling
+/option (cc_utf8_verification\s*=\s*false)/ {
+  disable_utf8 = 1
+  # Strip this option and replace with feature setting.
+  next;
 }
 
 # Group handling.

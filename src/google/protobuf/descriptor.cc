@@ -3875,19 +3875,18 @@ bool FieldDescriptor::is_packed() const {
   }
 }
 
-static bool FieldEnforceUtf8(const FieldDescriptor* field) {
-  return
+static bool IsStrictUtf8(const FieldDescriptor* field) {
 #ifdef PROTOBUF_FUTURE_EDITIONS
-      internal::InternalFeatureHelper::GetFeatures(*field)
-              .string_field_validation() == FeatureSet::MANDATORY;
+  return internal::InternalFeatureHelper::GetFeatures(*field)
+             .string_field_validation() == FeatureSet::MANDATORY;
 #else   // PROTOBUF_FUTURE_EDITIONS
-      FileDescriptorLegacy(field->file()).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_PROTO3;
+  return FileDescriptorLegacy(field->file()).syntax() ==
+         FileDescriptorLegacy::Syntax::SYNTAX_PROTO3;
 #endif  // PROTOBUF_FUTURE_EDITIONS
 }
 
 bool FieldDescriptor::requires_utf8_validation() const {
-  return type() == TYPE_STRING && FieldEnforceUtf8(this);
+  return type() == TYPE_STRING && IsStrictUtf8(this);
 }
 
 bool FieldDescriptor::has_presence() const {
@@ -9567,15 +9566,16 @@ bool HasHasbit(const FieldDescriptor* field) {
          !field->options().weak();
 }
 
-static bool FileUtf8Verification(const FileDescriptor* file) {
+static bool IsVerifyUtf8(const FieldDescriptor* field, bool is_lite) {
+  if (is_lite) return false;
   return true;
 }
 
 // Which level of UTF-8 enforcemant is placed on this file.
 Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
-  if (FieldEnforceUtf8(field)) {
+  if (IsStrictUtf8(field)) {
     return Utf8CheckMode::kStrict;
-  } else if (!is_lite && FileUtf8Verification(field->file())) {
+  } else if (IsVerifyUtf8(field, is_lite)) {
     return Utf8CheckMode::kVerify;
   } else {
     return Utf8CheckMode::kNone;
