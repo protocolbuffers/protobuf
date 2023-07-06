@@ -30,7 +30,6 @@
 
 #include "google/protobuf/compiler/objectivec/enum.h"
 
-#include <algorithm>
 #include <limits>
 #include <string>
 
@@ -89,19 +88,6 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
 }
 
 void EnumGenerator::GenerateHeader(io::Printer* printer) const {
-  std::string enum_comments;
-  SourceLocation location;
-  if (descriptor_->GetSourceLocation(&location)) {
-    enum_comments = BuildCommentsString(location, true);
-  } else {
-    enum_comments = "";
-  }
-
-  printer->Print(
-      "#pragma mark - Enum $name$\n"
-      "\n",
-      "name", name_);
-
   // Swift 5 included SE0192 "Handling Future Enum Cases"
   //   https://github.com/apple/swift-evolution/blob/master/proposals/0192-non-exhaustive-enums.md
   // Since a .proto file can get new values added to an enum at any time, they
@@ -116,69 +102,74 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
   // doesn't have to bother with the `enum_extensibility` attribute, as the
   // default will be what is needed.
 
-  printer->Print(
-      "$comments$typedef$deprecated_attribute$ GPB_ENUM($name$) {\n",
-      "comments", enum_comments, "deprecated_attribute",
-      GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file()), "name",
-      name_);
-  printer->Indent();
+  printer->Emit(
+      {
+          {"enum_name", name_},
+          {"enum_comments",
+           [&] { EmitCommentsString(printer, descriptor_, true); }},
+          {"enum_deprecated_attribute",
+           GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file())},
+          {"maybe_unknown_value",
+           [&] {
+             if (descriptor_->is_closed()) return;
 
-  if (!descriptor_->is_closed()) {
-    // Include the unknown value.
-    printer->Print(
-        // clang-format off
-        "/**\n"
-        " * Value used if any message's field encounters a value that is not defined\n"
-        " * by this enum. The message will also have C functions to get/set the rawValue\n"
-        " * of the field.\n"
-        " **/\n"
-        "$name$_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,\n",
-        // clang-format on
-        "name", name_);
-  }
-  for (int i = 0; i < all_values_.size(); i++) {
-    if (alias_values_to_skip_.find(all_values_[i]) !=
-        alias_values_to_skip_.end()) {
-      continue;
-    }
-    if (all_values_[i]->GetSourceLocation(&location)) {
-      std::string comments = BuildCommentsString(location, true);
-      if (comments.length() > 0) {
-        if (i > 0) {
-          printer->Print("\n");
-        }
-        printer->Print(comments);
-      }
-    }
+             // Include the unknown value.
+             printer->Emit(R"objc(
+               /**
+                * Value used if any message's field encounters a value that is not defined
+                * by this enum. The message will also have C functions to get/set the rawValue
+                * of the field.
+                **/
+               $enum_name$_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,
+             )objc");
+           }},
+          {"enum_values",
+           [&] {
+             bool add_leading_newilne = false;
+             for (const auto* v : all_values_) {
+               if (alias_values_to_skip_.contains(v)) continue;
+               printer->Emit(
+                   {
+                       {"name", EnumValueName(v)},
+                       {"comments",
+                        [&] {
+                          EmitCommentsString(printer, v, true,
+                                             add_leading_newilne);
+                        }},
+                       {"deprecated_attribute",
+                        GetOptionalDeprecatedAttribute(v)},
+                       {"value", SafelyPrintIntToCode(v->number())},
 
-    printer->Print("$name$$deprecated_attribute$ = $value$,\n", "name",
-                   EnumValueName(all_values_[i]), "deprecated_attribute",
-                   GetOptionalDeprecatedAttribute(all_values_[i]), "value",
-                   SafelyPrintIntToCode(all_values_[i]->number()));
-  }
-  printer->Outdent();
-  printer->Print(
-      // clang-format off
-      "};\n"
-      "\n"
-      "GPBEnumDescriptor *$name$_EnumDescriptor(void);\n"
-      "\n"
-      "/**\n"
-      " * Checks to see if the given value is defined by the enum or was not known at\n"
-      " * the time this source was generated.\n"
-      " **/\n"
-      "BOOL $name$_IsValidValue(int32_t value);\n"
-      // clang-format on
-      "\n",
-      "name", name_);
+                   },
+                   R"objc(
+                     $comments$
+                     $name$$deprecated_attribute$ = $value$,
+                   )objc");
+               add_leading_newilne = true;
+             }
+           }},
+      },
+      R"objc(
+        #pragma mark - Enum $enum_name$
+
+        $enum_comments$
+        typedef$enum_deprecated_attribute$ GPB_ENUM($enum_name$) {
+          $maybe_unknown_value$
+          $enum_values$
+        };
+
+        GPBEnumDescriptor *$enum_name$_EnumDescriptor(void);
+
+        /**
+         * Checks to see if the given value is defined by the enum or was not known at
+         * the time this source was generated.
+         **/
+        BOOL $enum_name$_IsValidValue(int32_t value);
+      )objc");
+  printer->Emit("\n");
 }
 
 void EnumGenerator::GenerateSource(io::Printer* printer) const {
-  printer->Print(
-      "#pragma mark - Enum $name$\n"
-      "\n",
-      "name", name_);
-
   // Note: For the TextFormat decode info, we can't use the enum value as
   // the key because protocol buffer enums have 'allow_alias', which lets
   // a value be used more than once. Instead, the index into the list of
@@ -188,106 +179,109 @@ void EnumGenerator::GenerateSource(io::Printer* printer) const {
   int enum_value_description_key = -1;
   std::string text_blob;
 
-  for (int i = 0; i < all_values_.size(); i++) {
+  for (const auto* v : all_values_) {
     ++enum_value_description_key;
-    std::string short_name(EnumValueShortName(all_values_[i]));
+    std::string short_name(EnumValueShortName(v));
     text_blob += short_name + '\0';
-    if (UnCamelCaseEnumShortName(short_name) != all_values_[i]->name()) {
+    if (UnCamelCaseEnumShortName(short_name) != v->name()) {
       text_format_decode_data.AddString(enum_value_description_key, short_name,
-                                        all_values_[i]->name());
+                                        v->name());
     }
   }
 
-  printer->Print(
-      // clang-format off
-      "GPBEnumDescriptor *$name$_EnumDescriptor(void) {\n"
-      "  static _Atomic(GPBEnumDescriptor*) descriptor = nil;\n"
-      "  if (!descriptor) {\n"
-      "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n",
-      // clang-format on
-      "name", name_);
+  printer->Emit(
+      {{"name", name_},
+       {"values_name_blob",
+        [&] {
+          static const int kBytesPerLine = 40;  // allow for escaping
+          for (size_t i = 0; i < text_blob.size(); i += kBytesPerLine) {
+            printer->Emit({{"data", EscapeTrigraphs(absl::CEscape(
+                                        text_blob.substr(i, kBytesPerLine)))},
+                           {"ending_semi",
+                            (i + kBytesPerLine) < text_blob.size() ? "" : ";"}},
+                          R"objc(
+                            "$data$"$ending_semi$
+                          )objc");
+          }
+        }},
+       {"values",
+        [&] {
+          for (const auto* v : all_values_) {
+            printer->Emit({{"value_name", EnumValueName(v)}},
+                          R"objc(
+                            $value_name$,
+                          )objc");
+          }
+        }},
+       {"maybe_extra_text_format_decl",
+        [&] {
+          if (text_format_decode_data.num_entries()) {
+            printer->Emit({{"extraTextFormatInfo",
+                            absl::CEscape(text_format_decode_data.Data())}},
+                          R"objc(
+                            static const char *extraTextFormatInfo = "$extraTextFormatInfo$";
+                          )objc");
+          }
+        }},
+       {"maybe_extraTextFormatInfo",
+        // Could not find a better way to get this extra line inserted and
+        // correctly formatted.
+        (text_format_decode_data.num_entries() == 0
+             ? ""
+             : "\n                              "
+               "extraTextFormatInfo:extraTextFormatInfo")},
+       {"enum_flags", descriptor_->is_closed()
+                          ? "GPBEnumDescriptorInitializationFlag_IsClosed"
+                          : "GPBEnumDescriptorInitializationFlag_None"},
+       {"enum_cases",
+        [&] {
+          for (const auto* v : base_values_) {
+            printer->Emit({{"case_name", EnumValueName(v)}},
+                          R"objc(
+                            case $case_name$:
+                          )objc");
+          }
+        }}},
+      R"objc(
+        #pragma mark - Enum $name$
 
-  static const int kBytesPerLine = 40;  // allow for escaping
-  printer->Print("    static const char *valueNames =");
-  for (int i = 0; i < text_blob.size(); i += kBytesPerLine) {
-    printer->Print(
-        "\n        \"$data$\"", "data",
-        EscapeTrigraphs(absl::CEscape(text_blob.substr(i, kBytesPerLine))));
-  }
-  printer->Print(
-      ";\n"
-      "    static const int32_t values[] = {\n");
-  for (int i = 0; i < all_values_.size(); i++) {
-    printer->Print("        $name$,\n", "name", EnumValueName(all_values_[i]));
-  }
-  printer->Print("    };\n");
+        GPBEnumDescriptor *$name$_EnumDescriptor(void) {
+          static _Atomic(GPBEnumDescriptor*) descriptor = nil;
+          if (!descriptor) {
+            GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
+            static const char *valueNames =
+                $values_name_blob$
+            static const int32_t values[] = {
+                $values$
+            };
+            $maybe_extra_text_format_decl$
+            GPBEnumDescriptor *worker =
+                [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)
+                                               valueNames:valueNames
+                                                   values:values
+                                                    count:(uint32_t)(sizeof(values) / sizeof(int32_t))
+                                             enumVerifier:$name$_IsValidValue
+                                                    flags:$enum_flags$$maybe_extraTextFormatInfo$];
+            GPBEnumDescriptor *expected = nil;
+            if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
+              [worker release];
+            }
+          }
+          return descriptor;
+        }
 
-  if (text_format_decode_data.num_entries() == 0) {
-    printer->Print(
-        // clang-format off
-        "    GPBEnumDescriptor *worker =\n"
-        "        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)\n"
-        "                                       valueNames:valueNames\n"
-        "                                           values:values\n"
-        "                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))\n"
-        "                                     enumVerifier:$name$_IsValidValue\n"
-        "                                            flags:$flags$];\n",
-        // clang-format on
-        "name", name_, "flags",
-        (descriptor_->is_closed()
-             ? "GPBEnumDescriptorInitializationFlag_IsClosed"
-             : "GPBEnumDescriptorInitializationFlag_None"));
-  } else {
-    printer->Print(
-        // clang-format off
-        "    static const char *extraTextFormatInfo = \"$extraTextFormatInfo$\";\n"
-        "    GPBEnumDescriptor *worker =\n"
-        "        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)\n"
-        "                                       valueNames:valueNames\n"
-        "                                           values:values\n"
-        "                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))\n"
-        "                                     enumVerifier:$name$_IsValidValue\n"
-        "                                            flags:$flags$\n"
-        "                              extraTextFormatInfo:extraTextFormatInfo];\n",
-        // clang-format on
-        "name", name_, "flags",
-        (descriptor_->is_closed()
-             ? "GPBEnumDescriptorInitializationFlag_IsClosed"
-             : "GPBEnumDescriptorInitializationFlag_None"),
-        "extraTextFormatInfo", absl::CEscape(text_format_decode_data.Data()));
-  }
-  // clang-format off
-  printer->Print(
-    "    GPBEnumDescriptor *expected = nil;\n"
-    "    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {\n"
-    "      [worker release];\n"
-    "    }\n"
-    "  }\n"
-    "  return descriptor;\n"
-    "}\n\n");
-  // clang-format on
-
-  printer->Print(
-      // clang-format off
-      "BOOL $name$_IsValidValue(int32_t value__) {\n"
-      "  switch (value__) {\n",
-      // clang-format on
-      "name", name_);
-
-  for (int i = 0; i < base_values_.size(); i++) {
-    printer->Print("    case $name$:\n", "name",
-                   EnumValueName(base_values_[i]));
-  }
-
-  // clang-format off
-  printer->Print(
-      "      return YES;\n"
-      "    default:\n"
-      "      return NO;\n"
-      "  }\n"
-      "}\n\n");
-  // clang-format on
+        BOOL $name$_IsValidValue(int32_t value__) {
+          switch (value__) {
+            $enum_cases$
+              return YES;
+            default:
+              return NO;
+          }
+        }
+      )objc");
+  printer->Emit("\n");
 }
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
