@@ -17,14 +17,6 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - name: 7.3 Debug
-            version-short: "7.3"
-            version: 7.3.28-dbg
-            command: composer test \&\& composer test_c
-          - name: 7.4 Debug
-            version-short: "7.4"
-            version: 7.4.18-dbg
-            command: composer test \&\& composer test_c
           - name: 8.0 Optimized
             version: "8.0.5"
             version-short: "8.0"
@@ -68,7 +60,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['7.4', '8.0']
+        version: ['8.0']
         suffix: [ '', '-zts']
         test: ['test', 'test_c']
         exclude:
@@ -115,9 +107,9 @@ jobs:
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
           command: >-
             /bin/bash -cex '
+            PATH="/usr/local/php-${{ matrix.version }}${{matrix.suffix}}/bin:$PATH";
             cd php && php -v && php -m;
             composer update --ignore-platform-reqs;
-            PATH="/usr/local/php-${{ matrix.version }}${{matrix.suffix}}/bin:$PATH"
             composer ${{ matrix.test }}'
 
   linux-aarch64:
@@ -140,7 +132,7 @@ jobs:
       - name: Setup composer
         uses: protocolbuffers/protobuf-ci/composer-setup@v1
         with:
-          cache-prefix: php-7.3
+          cache-prefix: php-8.0
           directory: php
 
       - name: Run tests
@@ -162,7 +154,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['7.4', '8.0']
+        version: ['8.0']
 
     name: MacOS PHP ${{ matrix.version }}
     runs-on: macos-12
