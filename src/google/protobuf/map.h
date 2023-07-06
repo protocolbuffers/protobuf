@@ -59,6 +59,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/port.h"
 
@@ -1152,9 +1153,14 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using hasher = typename TS::hash;
 
   constexpr Map() : Base(nullptr) { StaticValidityCheck(); }
-  explicit Map(Arena* arena) : Base(arena) { StaticValidityCheck(); }
+  Map(const Map& other) : Map(nullptr, other) {}
 
-  Map(const Map& other) : Map() { insert(other.begin(), other.end()); }
+  // Internal Arena constructors: do not use!
+  // TODO(b/242814184): remove non internal ctors
+  explicit Map(Arena* arena) : Base(arena) { StaticValidityCheck(); }
+  Map(internal::InternalVisibility, Arena* arena) : Map(arena) {}
+  Map(internal::InternalVisibility, Arena* arena, const Map& other)
+      : Map(arena, other) {}
 
   Map(Map&& other) noexcept : Map() {
     if (other.arena() != nullptr) {
@@ -1191,6 +1197,10 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
  private:
+  Map(Arena* arena, const Map& other) : Base(arena) {
+    StaticValidityCheck();
+    insert(other.begin(), other.end());
+  }
   static_assert(!std::is_const<mapped_type>::value &&
                     !std::is_const<key_type>::value,
                 "We do not support const types.");
