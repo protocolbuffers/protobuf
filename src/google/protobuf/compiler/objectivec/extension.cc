@@ -30,13 +30,10 @@
 
 #include "google/protobuf/compiler/objectivec/extension.h"
 
-#include <iostream>
-#include <ostream>
 #include <string>
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -60,38 +57,25 @@ ExtensionGenerator::ExtensionGenerator(absl::string_view root_class_name,
 }
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
-  vars["method_name"] = method_name_;
-  if (IsRetainedName(method_name_)) {
-    vars["storage_attribute"] = " NS_RETURNS_NOT_RETAINED";
-  } else {
-    vars["storage_attribute"] = "";
-  }
-  SourceLocation location;
-  if (descriptor_->GetSourceLocation(&location)) {
-    vars["comments"] = BuildCommentsString(location, true);
-  } else {
-    vars["comments"] = "";
-  }
-  // Unlike normal message fields, check if the file for the extension was
-  // deprecated.
-  vars["deprecated_attribute"] =
-      GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file());
-  // clang-format off
-  printer->Print(
-      vars,
-      "$comments$"
-      "+ (GPBExtensionDescriptor *)$method_name$$storage_attribute$$deprecated_attribute$;\n");
-  // clang-format on
+  printer->Emit(
+      {{"method_name", method_name_},
+       {"comments", [&] { EmitCommentsString(printer, descriptor_, true); }},
+       {"storage_attribute",
+        IsRetainedName(method_name_) ? "NS_RETURNS_NOT_RETAINED" : ""},
+       {"deprecated_attribute",
+        // Unlike normal message fields, check if the file for the extension was
+        // deprecated.
+        GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file())}},
+      R"objc(
+        $comments$
+        + (GPBExtensionDescriptor *)$method_name$$ storage_attribute$$deprecated_attribute$;
+      )objc");
 }
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
     io::Printer* printer) const {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
-  vars["root_class_and_method_name"] = root_class_and_method_name_;
   const std::string containing_type = ClassName(descriptor_->containing_type());
-  vars["extended_type"] = ObjCClass(containing_type);
-  vars["number"] = absl::StrCat(descriptor_->number());
+  ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
 
   std::vector<std::string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");
@@ -99,46 +83,37 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   if (descriptor_->containing_type()->options().message_set_wire_format()) {
     options.push_back("GPBExtensionSetWireFormat");
   }
-  vars["options"] = BuildFlagsString(FLAGTYPE_EXTENSION, options);
 
-  ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
-  if (objc_type == OBJECTIVECTYPE_MESSAGE) {
-    std::string message_type = ClassName(descriptor_->message_type());
-    vars["type"] = ObjCClass(message_type);
-  } else {
-    vars["type"] = "Nil";
-  }
-
-  vars["default_name"] = GPBGenericValueFieldName(descriptor_);
-  if (descriptor_->is_repeated()) {
-    vars["default"] = "nil";
-  } else {
-    vars["default"] = DefaultValue(descriptor_);
-  }
-  std::string type = GetCapitalizedType(descriptor_);
-  vars["extension_type"] = absl::StrCat("GPBDataType", type);
-
-  if (objc_type == OBJECTIVECTYPE_ENUM) {
-    vars["enum_desc_func_name"] =
-        absl::StrCat(EnumName(descriptor_->enum_type()), "_EnumDescriptor");
-  } else {
-    vars["enum_desc_func_name"] = "NULL";
-  }
-
-  // clang-format off
-  printer->Print(
-      vars,
-      "{\n"
-      "  .defaultValue.$default_name$ = $default$,\n"
-      "  .singletonName = GPBStringifySymbol($root_class_and_method_name$),\n"
-      "  .extendedClass.clazz = $extended_type$,\n"
-      "  .messageOrGroupClass.clazz = $type$,\n"
-      "  .enumDescriptorFunc = $enum_desc_func_name$,\n"
-      "  .fieldNumber = $number$,\n"
-      "  .dataType = $extension_type$,\n"
-      "  .options = $options$,\n"
-      "},\n");
-  // clang-format on
+  printer->Emit(
+      {{"default",
+        descriptor_->is_repeated() ? "nil" : DefaultValue(descriptor_)},
+       {"default_name", GPBGenericValueFieldName(descriptor_)},
+       {"enum_desc_func_name",
+        objc_type == OBJECTIVECTYPE_ENUM
+            ? absl::StrCat(EnumName(descriptor_->enum_type()),
+                           "_EnumDescriptor")
+            : "NULL"},
+       {"extended_type", ObjCClass(containing_type)},
+       {"extension_type",
+        absl::StrCat("GPBDataType", GetCapitalizedType(descriptor_))},
+       {"number", descriptor_->number()},
+       {"options", BuildFlagsString(FLAGTYPE_EXTENSION, options)},
+       {"root_class_and_method_name", root_class_and_method_name_},
+       {"type", objc_type == OBJECTIVECTYPE_MESSAGE
+                    ? ObjCClass(ClassName(descriptor_->message_type()))
+                    : "Nil"}},
+      R"objc(
+        {
+          .defaultValue.$default_name$ = $default$,
+          .singletonName = GPBStringifySymbol($root_class_and_method_name$),
+          .extendedClass.clazz = $extended_type$,
+          .messageOrGroupClass.clazz = $type$,
+          .enumDescriptorFunc = $enum_desc_func_name$,
+          .fieldNumber = $number$,
+          .dataType = $extension_type$,
+          .options = $options$,
+        },
+      )objc");
 }
 
 void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
@@ -154,11 +129,10 @@ void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
 
 void ExtensionGenerator::GenerateRegistrationSource(
     io::Printer* printer) const {
-  // clang-format off
-  printer->Print(
-      "[registry addExtension:$root_class_and_method_name$];\n",
-      "root_class_and_method_name", root_class_and_method_name_);
-  // clang-format on
+  printer->Emit({{"root_class_and_method_name", root_class_and_method_name_}},
+                R"objc(
+                  [registry addExtension:$root_class_and_method_name$];
+                )objc");
 }
 
 }  // namespace objectivec
