@@ -1410,6 +1410,7 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
+        ":internal_visibility_for_testing",
         ":lite_test_util",
         ":protobuf",
         ":protobuf_lite",

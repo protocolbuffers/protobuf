@@ -63,6 +63,7 @@
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -186,9 +187,10 @@ class RepeatedField final
 
  public:
   constexpr RepeatedField();
-  explicit RepeatedField(Arena* arena);
+  RepeatedField(const RepeatedField& rhs) : RepeatedField(nullptr, rhs) {}
 
-  RepeatedField(const RepeatedField& rhs);
+  // TODO(b/290091828): make this constructor private
+  explicit RepeatedField(Arena* arena);
 
   template <typename Iter,
             typename = typename std::enable_if<std::is_constructible<
@@ -196,6 +198,13 @@ class RepeatedField final
   RepeatedField(Iter begin, Iter end);
 
   ~RepeatedField();
+
+  // Arena enabled constructors: for internal use only.
+  RepeatedField(internal::InternalVisibility, Arena* arena)
+      : RepeatedField(arena) {}
+  RepeatedField(internal::InternalVisibility, Arena* arena,
+                const RepeatedField& rhs)
+      : RepeatedField(arena, rhs) {}
 
   RepeatedField& operator=(const RepeatedField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -352,6 +361,7 @@ class RepeatedField final
   void MergeFromArray(const Element* array, size_t length);
 
  private:
+  RepeatedField(Arena* arena, const RepeatedField& rhs);
   template <typename T> friend class Arena::InternalHelper;
 
   // Gets the Arena on which this RepeatedField stores its elements.
@@ -519,8 +529,9 @@ inline RepeatedField<Element>::RepeatedField(Arena* arena)
 }
 
 template <typename Element>
-inline RepeatedField<Element>::RepeatedField(const RepeatedField& rhs)
-    : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {
+inline RepeatedField<Element>::RepeatedField(Arena* arena,
+                                             const RepeatedField& rhs)
+    : current_size_(0), total_size_(0), arena_or_elements_(arena) {
   StaticValidityCheck();
   if (auto size = rhs.current_size_) {
     Grow(0, size);
