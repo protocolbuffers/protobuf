@@ -175,3 +175,35 @@ rust_upb_proto_library(
     ],
     deps = [":no_package_proto"],
 )
+
+proto_library(
+    name = "reserved_proto",
+    testonly = True,
+    srcs = ["reserved.proto"],
+)
+
+cc_proto_library(
+    name = "reserved_cc_proto",
+    testonly = True,
+    deps = [":reserved_proto"],
+)
+
+rust_cc_proto_library(
+    name = "reserved_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/cpp:__subpackages__",
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":reserved_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "reserved_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
+    ],
+    deps = [":reserved_proto"],
+)
