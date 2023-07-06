@@ -105,9 +105,9 @@ module Google
         if n
           results = []
           n.times{ results << pop_one }
-          return results
+          results
         else
-          return pop_one
+          pop_one
         end
       end
 
