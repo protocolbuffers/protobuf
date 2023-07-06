@@ -3006,6 +3006,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
             HasByteIndex(a) == HasByteIndex(b) &&
             a->is_repeated() == b->is_repeated() &&
             ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
+            IsRarelyPresent(a, options_) == IsRarelyPresent(b, options_) &&
             (CanClearByZeroing(a) == CanClearByZeroing(b) ||
              (CanClearByZeroing(a) && (chunk_count == 1 || merge_zero_init)));
         if (!same) chunk_count = 0;
@@ -3400,7 +3401,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       optimized_order_, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         return HasByteIndex(a) == HasByteIndex(b) &&
-               ShouldSplit(a, options_) == ShouldSplit(b, options_);
+               ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
+               IsRarelyPresent(a, options_) == IsRarelyPresent(b, options_);
       });
 
   auto it = chunks.begin();
@@ -4147,7 +4149,8 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
       optimized_order_, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
-               ShouldSplit(a, options_) == ShouldSplit(b, options_);
+               ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
+               IsRarelyPresent(a, options_) == IsRarelyPresent(b, options_);
       });
 
   auto it = chunks.begin();
