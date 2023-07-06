@@ -136,6 +136,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/implicit_weak_message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_message_util.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_visibility.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/coded_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/gzip_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/io_win32.h
@@ -252,6 +253,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/has_bits.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/implicit_weak_message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_visibility.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/coded_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/io_win32.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream.h
@@ -586,6 +588,7 @@ set(common_test_srcs
 set(common_test_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_tester.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_visibility_for_testing.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_textproto.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.h
