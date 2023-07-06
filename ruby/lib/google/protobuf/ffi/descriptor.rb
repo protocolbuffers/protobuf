@@ -755,8 +755,10 @@ module Google
 
             mini_table_ptr = Google::Protobuf::FFI.get_mini_table(descriptor)
             size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
-            encoding = Google::Protobuf::FFI.encode_message(msg, mini_table_ptr, encoding_options, temporary_arena, size_ptr)
-            yield encoding, size_ptr.read(:size_t), mini_table_ptr
+            pointer_ptr = ::FFI::MemoryPointer.new(:pointer, 1)
+            encoding_status = Google::Protobuf::FFI.encode_message(msg, mini_table_ptr, encoding_options, temporary_arena, pointer_ptr.to_ptr, size_ptr)
+            raise "Encoding failed due to #{encoding_status}" unless encoding_status == :Ok
+            yield pointer_ptr.read(:pointer), size_ptr.read(:size_t), mini_table_ptr
           end
         end
       end

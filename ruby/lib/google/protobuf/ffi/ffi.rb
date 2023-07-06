@@ -197,6 +197,15 @@ module Google
         :MissingRequired,
       )
 
+      EncodeStatus = enum(
+        :Ok,
+        :OutOfMemory,       # Arena alloc failed
+        :MaxDepthExceeded,  # Exceeded UPB_DECODE_MAXDEPTH
+
+        # CheckRequired failed, but the parse otherwise succeeded.
+        :MissingRequired,
+      )
+
       class MiniTable < ::FFI::Struct
         layout :subs, :pointer,
                :fields, :pointer,
@@ -329,10 +338,10 @@ module Google
 
       # Message
       attach_function :clear_message_field,     :upb_Message_ClearField,      [:Message, FieldDescriptor], :void
-      attach_function :get_message_value,       :upb_Message_Get,             [:Message, FieldDescriptor], MessageValue.by_value
-      attach_function :get_message_has,         :upb_Message_Has,             [:Message, FieldDescriptor], :bool
-      attach_function :set_message_field,       :upb_Message_Set,             [:Message, FieldDescriptor, MessageValue.by_value, Arena], :bool
-      attach_function :encode_message,          :upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Arena, :pointer], :binary_string
+      attach_function :get_message_value,       :upb_Message_GetFieldByDef,   [:Message, FieldDescriptor], MessageValue.by_value
+      attach_function :get_message_has,         :upb_Message_HasFieldByDef,   [:Message, FieldDescriptor], :bool
+      attach_function :set_message_field,       :upb_Message_SetFieldByDef,   [:Message, FieldDescriptor, MessageValue.by_value, Arena], :bool
+      attach_function :encode_message,          :upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Arena, :pointer, :pointer], EncodeStatus
       attach_function :json_decode_message,     :upb_JsonDecode,              [:binary_string, :size_t, :Message, MessageDef, :DefPool, :int, Arena, Status.by_ref], :bool
       attach_function :json_encode_message,     :upb_JsonEncode,              [:Message, MessageDef, :DefPool, :int, :binary_string, :size_t, Status.by_ref], :size_t
       attach_function :decode_message,          :upb_Decode,                  [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Arena], DecodeStatus
@@ -341,8 +350,8 @@ module Google
       attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, MessageDef, :int], :bool
 
       # MessageValue
-      attach_function :message_value_equal,     :Msgval_IsEqual,              [MessageValue.by_value, MessageValue.by_value, CType, MessageDef], :bool
-      attach_function :message_value_hash,      :Msgval_GetHash,              [MessageValue.by_value, CType, MessageDef, :uint64_t], :uint64_t
+      attach_function :message_value_equal,     :shared_Msgval_IsEqual,       [MessageValue.by_value, MessageValue.by_value, CType, MessageDef], :bool
+      attach_function :message_value_hash,      :shared_Msgval_GetHash,       [MessageValue.by_value, CType, MessageDef, :uint64_t], :uint64_t
 
       # OneofDescriptor
       attach_function :get_oneof_name,           :upb_OneofDef_Name,       [OneofDef], :string
