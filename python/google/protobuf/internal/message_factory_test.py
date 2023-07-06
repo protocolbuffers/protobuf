@@ -122,7 +122,8 @@ class MessageFactoryTest(unittest.TestCase):
       # Get messages should work when a file comes before its dependencies:
       # factory_test2_fd comes before factory_test1_fd.
       messages = message_factory.GetMessages([self.factory_test2_fd,
-                                              self.factory_test1_fd])
+                                              self.factory_test1_fd],
+                                             descriptor_pool.Default())
       self.assertTrue(
           set(['google.protobuf.python.internal.Factory2Message',
                'google.protobuf.python.internal.Factory1Message'],
@@ -256,17 +257,13 @@ class MessageFactoryTest(unittest.TestCase):
         extendee='Container',
     )
 
-    class SimpleDescriptorDB:
-
-      def __init__(self, files):
-        self._files = files
-
-      def FindFileByName(self, name):
-        return self._files[name]
-
-    db = SimpleDescriptorDB({f1.name: f1, f2.name: f2, f3.name: f3})
-
-    pool = descriptor_pool.DescriptorPool(db)
+    pool = descriptor_pool.Default()
+    try:
+      pool.Add(f1)
+      pool.Add(f2)
+      pool.Add(f3)
+    except:
+      pass
     msgs = message_factory.GetMessageClassesForFiles(
         [f1.name, f3.name], pool)  # Deliberately not f2.
     msg = msgs['google.protobuf.python.internal.Container']
@@ -278,11 +275,24 @@ class MessageFactoryTest(unittest.TestCase):
     m.Extensions[ext2].setting = 345
     serialized = m.SerializeToString()
 
-    pool = descriptor_pool.DescriptorPool(db)
+    f1.name='google/protobuf/internal/another/container.proto'
+    f1.package='google.protobuf.python.internal.another'
+    f2.name='google/protobuf/internal/another/value_type.proto'
+    f2.package='google.protobuf.python.internal.another'
+    f3.name='google/protobuf/internal/another/extension.proto'
+    f3.package='google.protobuf.python.internal.another'
+    f3.ClearField('dependency')
+    f3.dependency.extend([f1.name, f2.name])
+    try:
+      pool.Add(f1)
+      pool.Add(f2)
+      pool.Add(f3)
+    except:
+      pass
     msgs = message_factory.GetMessageClassesForFiles(
         [f1.name, f3.name], pool)  # Deliberately not f2.
-    msg = msgs['google.protobuf.python.internal.Container']
-    desc = msgs['google.protobuf.python.internal.Extension'].DESCRIPTOR
+    msg = msgs['google.protobuf.python.internal.another.Container']
+    desc = msgs['google.protobuf.python.internal.another.Extension'].DESCRIPTOR
     ext1 = desc.file.extensions_by_name['top_level_extension_field']
     ext2 = desc.extensions_by_name['nested_extension_field']
     m = msg.FromString(serialized)
