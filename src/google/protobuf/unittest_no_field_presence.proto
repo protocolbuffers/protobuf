@@ -30,7 +30,10 @@
 
 // A proto file used to test a message type with no explicit field presence.
 
-syntax = "proto3";
+edition = "2023";
+
+// Treat all fields as implicit present by default (proto3 behavior).
+option features.field_presence = IMPLICIT;
 
 // We want to test embedded proto2 messages, so include some proto2 types.
 package proto2_nofieldpresence_unittest;

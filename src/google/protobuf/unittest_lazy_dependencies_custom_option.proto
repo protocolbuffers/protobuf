@@ -34,7 +34,7 @@
 //
 // A proto file we will use for unit testing.
 
-syntax = "proto2";
+edition = "2023";
 
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/unittest_lazy_dependencies_enum.proto";
@@ -59,9 +59,9 @@ option optimize_for = SPEED;
 option java_outer_classname = "UnittestLazyImportsCustomOptionProto";
 
 message LazyMessage {
-  optional int32 a = 1;
+  int32 a = 1;
 }
 
 extend google.protobuf.MessageOptions {
-  optional LazyEnum lazy_enum_option = 138596335 [default = LAZY_ENUM_1];
+  LazyEnum lazy_enum_option = 138596335 [default = LAZY_ENUM_1];
 }

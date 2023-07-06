@@ -665,12 +665,9 @@ filegroup(
     srcs = [
         "any_test.proto",
         "map_proto2_unittest.proto",
-        "map_proto3_unittest.proto",
         "map_unittest.proto",
         "unittest.proto",
-        "unittest_arena.proto",
         "unittest_custom_options.proto",
-        "unittest_drop_unknown_fields.proto",
         "unittest_embed_optimize_for.proto",
         "unittest_empty.proto",
         "unittest_enormous_descriptor.proto",
@@ -678,17 +675,11 @@ filegroup(
         "unittest_import.proto",
         "unittest_import_public.proto",
         "unittest_invalid_features.proto",
-        "unittest_lazy_dependencies.proto",
-        "unittest_lazy_dependencies_custom_option.proto",
-        "unittest_lazy_dependencies_enum.proto",
         "unittest_lite_imports_nonlite.proto",
         "unittest_mset.proto",
         "unittest_mset_wire_format.proto",
-        "unittest_no_field_presence.proto",
         "unittest_no_generic_services.proto",
         "unittest_optimize_for.proto",
-        "unittest_preserve_unknown_enum.proto",
-        "unittest_preserve_unknown_enum2.proto",
         "unittest_proto3.proto",
         "unittest_proto3_arena.proto",
         "unittest_proto3_arena_lite.proto",
@@ -701,9 +692,34 @@ filegroup(
     visibility = ["//:__subpackages__"],
 )
 
+filegroup(
+    name = "test_proto_editions_srcs",
+    srcs = [
+        "map_proto3_unittest.proto",
+        "unittest_arena.proto",
+        "unittest_drop_unknown_fields.proto",
+        "unittest_lazy_dependencies.proto",
+        "unittest_lazy_dependencies_custom_option.proto",
+        "unittest_lazy_dependencies_enum.proto",
+        "unittest_no_field_presence.proto",
+        "unittest_preserve_unknown_enum.proto",
+        "unittest_preserve_unknown_enum2.proto",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "test_proto_all_srcs",
+    srcs = [
+        ":test_proto_editions_srcs",
+        ":test_proto_srcs",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
 proto_library(
     name = "test_protos",
-    srcs = [":test_proto_srcs"],
+    srcs = [":test_proto_all_srcs"],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
