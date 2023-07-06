@@ -165,6 +165,17 @@ vendor/
 /bazel-*
 
 # ruby test output
+ruby/lib/google/protobuf/any_pb.rb
+ruby/lib/google/protobuf/api_pb.rb
+ruby/lib/google/protobuf/descriptor_pb.rb
+ruby/lib/google/protobuf/duration_pb.rb
+ruby/lib/google/protobuf/empty_pb.rb
+ruby/lib/google/protobuf/field_mask_pb.rb
+ruby/lib/google/protobuf/source_context_pb.rb
+ruby/lib/google/protobuf/struct_pb.rb
+ruby/lib/google/protobuf/timestamp_pb.rb
+ruby/lib/google/protobuf/type_pb.rb
+ruby/lib/google/protobuf/wrappers_pb.rb
 ruby/tests/basic_test_pb.rb
 ruby/tests/basic_test_proto2_pb.rb
 ruby/tests/generated_code_pb.rb
